@@ -7,8 +7,9 @@ RUN apt-get update && apt-get install -y \
 ENV CODE_PATH="source_googleanalytics_singer"
 ENV AIRBYTE_IMPL_MODULE="source_googleanalytics_singer"
 ENV AIRBYTE_IMPL_PATH="GoogleAnalyticsSingerSource"
+ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/source.py"
 
-LABEL io.airbyte.version=0.2.3
+LABEL io.airbyte.version=0.2.6
 LABEL io.airbyte.name=airbyte/source-googleanalytics-singer
 
 WORKDIR /airbyte/integration_code

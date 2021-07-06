@@ -6,6 +6,9 @@ out
 .DS_Store
 data
 .dockerversions
+.classpath
+.project
+.settings
 
 # Secrets
 secrets
@@ -18,6 +21,7 @@ __pycache__
 .venv
 .mypy_cache
 .ipynb_checkpoints
+.pytest_
 
 # dbt
 profiles.yml

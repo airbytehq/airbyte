@@ -43,15 +43,14 @@ Run the interactive generator:
 
 ```text
 cd airbyte-integrations/connector-templates/generator
-npm install
-npm run generate
+./generate.sh
 ```
 
 and choose the relevant template. This will generate a new connector in the `airbyte-integrations/connectors/<your-connector>` directory.
 
 Search the generated directory for "TODO"s and follow them to implement your connector.
 
-If you are developing a Python connector, you may find the [building a Python connector tutorial](../../tutorials/tutorials/building-a-python-source.md) helpful.
+If you are developing a Python connector, you may find the [building a Python connector tutorial](../tutorials/building-a-python-source.md) helpful.
 
 ### 2. Integration tests
 
@@ -93,11 +92,11 @@ Once you've finished iterating on the changes to a connector as specified in its
 
 1. Bump the version in the `Dockerfile` of the connector \(`LABEL io.airbyte.version=X.X.X`\). 
 2. Update the connector definition in the Airbyte connector index to use the new version:
-   * `airbyte-config/init/src/main/resources/seed/source_definitions.yaml` if it is a source
-   * `airbyte-config/init/src/main/resources/seed/destination_definitions.yaml` if it is a destination.
+   * `airbyte-server/src/main/resources/seed/source_definitions.yaml` if it is a source
+   * `airbyte-server/src/main/resources/seed/destination_definitions.yaml` if it is a destination.
 3. Update the connector JSON definition. To find the appropriate JSON file to update, find a JSON file `<uuid>.json` where the UUID portion is the ID specified in the YAML file you modified in step 2. The relevant directories are: 
-   * `airbyte-config/init/src/main/resources/config/STANDARD_SOURCE_DEFINITION/<uuid>.json` for sources
-   * `airbyte-config/init/src/main/resources/config/STANDARD_DESTINATION_DEFINITION/<uuid>.json` for destinations
+   * `airbyte-server/src/main/resources/config/STANDARD_SOURCE_DEFINITION/<uuid>.json` for sources
+   * `airbyte-server/src/main/resources/config/STANDARD_DESTINATION_DEFINITION/<uuid>.json` for destinations
 4. Submit a PR containing the changes you made.
 5. One of Airbyte maintainers will review the change and publish the new version of the connector to Docker hub. Triggering tests and publishing connectors can be done by leaving a comment on the PR with the following format \(the PR must be from the Airbyte repo, not a fork\):
 

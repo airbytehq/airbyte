@@ -86,7 +86,17 @@ public class DebeziumRecordPublisher implements AutoCloseable {
           // more on the tombstone:
           // https://debezium.io/documentation/reference/configuration/event-flattening.html
           if (e.value() != null) {
-            queue.add(e);
+            boolean inserted = false;
+            while (!inserted) {
+              inserted = queue.offer(e);
+              if (!inserted) {
+                try {
+                  Thread.sleep(10);
+                } catch (InterruptedException interruptedException) {
+                  throw new RuntimeException(interruptedException);
+                }
+              }
+            }
           }
         })
         .using((success, message, error) -> {
@@ -138,6 +148,10 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     props.setProperty("offset.storage", "org.apache.kafka.connect.storage.FileOffsetBackingStore");
     props.setProperty("offset.storage.file.filename", offsetManager.getOffsetFilePath().toString());
     props.setProperty("offset.flush.interval.ms", "1000"); // todo: make this longer
+
+    // https://debezium.io/documentation/reference/connectors/mysql.html#mysql-boolean-values
+    props.setProperty("converters", "boolean");
+    props.setProperty("boolean.type", "io.debezium.connector.mysql.converters.TinyIntOneToBooleanConverter");
 
     // snapshot config
     // https://debezium.io/documentation/reference/1.4/connectors/mysql.html#mysql-property-snapshot-mode

@@ -35,14 +35,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.JobGetSpecConfig;
-import io.airbyte.config.StandardCheckConnectionInput;
-import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
-import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.config.StandardTapConfig;
-import io.airbyte.config.State;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -51,30 +44,16 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
-import io.airbyte.workers.DefaultCheckConnectionWorker;
-import io.airbyte.workers.DefaultDiscoverCatalogWorker;
-import io.airbyte.workers.DefaultGetSpecWorker;
-import io.airbyte.workers.WorkerException;
-import io.airbyte.workers.process.AirbyteIntegrationLauncher;
-import io.airbyte.workers.process.DockerProcessFactory;
-import io.airbyte.workers.process.ProcessFactory;
-import io.airbyte.workers.protocols.airbyte.AirbyteSource;
-import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class SourceAcceptanceTest {
+public abstract class SourceAcceptanceTest extends SourceAbstractTest {
 
   public static final String CDC_LSN = "_ab_cdc_lsn";
   public static final String CDC_UPDATED_AT = "_ab_cdc_updated_at";
@@ -82,16 +61,7 @@ public abstract class SourceAcceptanceTest {
   public static final String CDC_LOG_FILE = "_ab_cdc_log_file";
   public static final String CDC_LOG_POS = "_ab_cdc_log_pos";
 
-  private static final long JOB_ID = 0L;
-  private static final int JOB_ATTEMPT = 0;
-
   private static final Logger LOGGER = LoggerFactory.getLogger(SourceAcceptanceTest.class);
-
-  private TestDestinationEnv testEnv;
-
-  private Path jobRoot;
-  protected Path localRoot;
-  private ProcessFactory processFactory;
 
   /**
    * TODO hack: Various Singer integrations use cursor fields inclusively i.e: they output records
@@ -130,27 +100,12 @@ public abstract class SourceAcceptanceTest {
       "airbyte/source-google-workspace-admin-reports");
 
   /**
-   * Name of the docker image that the tests will run against.
-   *
-   * @return docker image name
-   */
-  protected abstract String getImageName();
-
-  /**
    * Specification for integration. Will be passed to integration where appropriate in each test.
    * Should be valid.
    *
    * @return integration-specific configuration
    */
   protected abstract ConnectorSpecification getSpec() throws Exception;
-
-  /**
-   * Configuration specific to the integration. Will be passed to integration where appropriate in
-   * each test. Should be valid.
-   *
-   * @return integration-specific configuration
-   */
-  protected abstract JsonNode getConfig() throws Exception;
 
   /**
    * The catalog to use to validate the output of read operations. This will be used as follows:
@@ -177,48 +132,6 @@ public abstract class SourceAcceptanceTest {
    * @throws Exception - thrown when attempting ot access the regexes fails
    */
   protected abstract List<String> getRegexTests() throws Exception;
-
-  /**
-   * Function that performs any setup of external resources required for the test. e.g. instantiate a
-   * postgres database. This function will be called before EACH test.
-   *
-   * @param testEnv - information about the test environment.
-   * @throws Exception - can throw any exception, test framework will handle.
-   */
-  protected abstract void setup(TestDestinationEnv testEnv) throws Exception;
-
-  /**
-   * Function that performs any clean up of external resources required for the test. e.g. delete a
-   * postgres database. This function will be called after EACH test. It MUST remove all data in the
-   * destination so that there is no contamination across tests.
-   *
-   * @param testEnv - information about the test environment.
-   * @throws Exception - can throw any exception, test framework will handle.
-   */
-  protected abstract void tearDown(TestDestinationEnv testEnv) throws Exception;
-
-  @BeforeEach
-  public void setUpInternal() throws Exception {
-    final Path testDir = Path.of("/tmp/airbyte_tests/");
-    Files.createDirectories(testDir);
-    final Path workspaceRoot = Files.createTempDirectory(testDir, "test");
-    jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"));
-    localRoot = Files.createTempDirectory(testDir, "output");
-    testEnv = new TestDestinationEnv(localRoot);
-
-    setup(testEnv);
-
-    processFactory = new DockerProcessFactory(
-        workspaceRoot,
-        workspaceRoot.toString(),
-        localRoot.toString(),
-        "host");
-  }
-
-  @AfterEach
-  public void tearDownInternal() throws Exception {
-    tearDown(testEnv);
-  }
 
   /**
    * Verify that a spec operation issued to the connector returns a valid spec.
@@ -379,6 +292,16 @@ public abstract class SourceAcceptanceTest {
     assertSameRecords(fullRefreshRecords, emptyStateRecords, assertionMessage);
   }
 
+  /**
+   * In order to launch a source on Kubernetes in a pod, we need to be able to wrap the entrypoint.
+   * The source connector must specify its entrypoint in the AIRBYTE_ENTRYPOINT variable. This test
+   * ensures that the entrypoint environment variable is set.
+   */
+  @Test
+  public void testEntrypointEnvVar() throws Exception {
+    checkEntrypointEnvVariable();
+  }
+
   private List<AirbyteRecordMessage> filterRecords(Collection<AirbyteMessage> messages) {
     return messages.stream()
         .filter(m -> m.getType() == Type.RECORD)
@@ -419,43 +342,6 @@ public abstract class SourceAcceptanceTest {
     return false;
   }
 
-  private ConnectorSpecification runSpec() throws WorkerException {
-    return new DefaultGetSpecWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory))
-        .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
-  }
-
-  private StandardCheckConnectionOutput runCheck() throws Exception {
-    return new DefaultCheckConnectionWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory))
-        .run(new StandardCheckConnectionInput().withConnectionConfiguration(getConfig()), jobRoot);
-  }
-
-  private AirbyteCatalog runDiscover() throws Exception {
-    return new DefaultDiscoverCatalogWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory))
-        .run(new StandardDiscoverCatalogInput().withConnectionConfiguration(getConfig()), jobRoot);
-  }
-
-  private List<AirbyteMessage> runRead(ConfiguredAirbyteCatalog configuredCatalog) throws Exception {
-    return runRead(configuredCatalog, null);
-  }
-
-  // todo (cgardens) - assume no state since we are all full refresh right now.
-  private List<AirbyteMessage> runRead(ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
-    final StandardTapConfig sourceConfig = new StandardTapConfig()
-        .withSourceConnectionConfiguration(getConfig())
-        .withState(state == null ? null : new State().withState(state))
-        .withCatalog(catalog);
-
-    final AirbyteSource source = new DefaultAirbyteSource(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory));
-    final List<AirbyteMessage> messages = new ArrayList<>();
-    source.start(sourceConfig, jobRoot);
-    while (!source.isFinished()) {
-      source.attemptRead().ifPresent(messages::add);
-    }
-    source.close();
-
-    return messages;
-  }
-
   private void assertSameRecords(List<AirbyteRecordMessage> expected, List<AirbyteRecordMessage> actual, String message) {
     final List<AirbyteRecordMessage> prunedExpected = expected.stream().map(this::pruneEmittedAt).collect(Collectors.toList());
     final List<AirbyteRecordMessage> prunedActual = actual
@@ -480,20 +366,6 @@ public abstract class SourceAcceptanceTest {
     ((ObjectNode) clone.getData()).remove(CDC_UPDATED_AT);
     ((ObjectNode) clone.getData()).remove(CDC_DELETED_AT);
     return clone;
-  }
-
-  public static class TestDestinationEnv {
-
-    private final Path localRoot;
-
-    public TestDestinationEnv(Path localRoot) {
-      this.localRoot = localRoot;
-    }
-
-    public Path getLocalRoot() {
-      return localRoot;
-    }
-
   }
 
 }

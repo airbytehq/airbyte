@@ -1,6 +1,8 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
+namespace: default
+
 bases:
   - ../../resources
 
@@ -20,5 +22,4 @@ images:
 
 configMapGenerator:
   - name: airbyte-env
-    envs:
-      - .env
+    env: .env

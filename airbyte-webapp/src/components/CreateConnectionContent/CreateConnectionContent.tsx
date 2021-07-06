@@ -1,4 +1,4 @@
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
@@ -9,18 +9,17 @@ import LoadingSchema from "components/LoadingSchema";
 import ContentCard from "components/ContentCard";
 import { JobsLogItem } from "components/JobItem";
 import ConnectionForm from "views/Connection/ConnectionForm";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { Button } from "components";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 
 import { AnalyticsService } from "core/analytics/AnalyticsService";
 import { Source } from "core/resources/Source";
 import { Destination } from "core/resources/Destination";
-import { SyncSchema } from "core/domain/catalog";
 
-import useConnection from "components/hooks/services/useConnectionHook";
+import useConnection, {
+  ValuesProps,
+} from "components/hooks/services/useConnectionHook";
 import { useDiscoverSchema } from "components/hooks/services/useSchemaHook";
-import { useDestinationDefinitionSpecificationLoad } from "components/hooks/services/useDestinationHook";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 
@@ -52,17 +51,11 @@ const CreateConnectionContent: React.FC<IProps> = ({
   additionBottomControls,
 }) => {
   const { createConnection } = useConnection();
-  const [errorStatusRequest, setErrorStatusRequest] = useState<number>(0);
-  const {
-    schema,
-    isLoading,
-    schemaErrorStatus,
-    onDiscoverSchema,
-  } = useDiscoverSchema(source?.sourceId);
 
   const sourceDefinition = useResource(SourceDefinitionResource.detailShape(), {
     sourceDefinitionId: source.sourceDefinitionId,
   });
+
   const destinationDefinition = useResource(
     DestinationDefinitionResource.detailShape(),
     {
@@ -71,12 +64,22 @@ const CreateConnectionContent: React.FC<IProps> = ({
   );
 
   const {
-    isLoading: loadingDestination,
-  } = useDestinationDefinitionSpecificationLoad(
-    destination?.destinationDefinitionId
+    schema,
+    isLoading,
+    schemaErrorStatus,
+    onDiscoverSchema,
+  } = useDiscoverSchema(source?.sourceId);
+
+  const connection = useMemo(
+    () => ({
+      syncCatalog: schema,
+      destination,
+      source,
+    }),
+    [schema, destination, source]
   );
 
-  if (isLoading || loadingDestination) {
+  if (isLoading) {
     return (
       <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
         <LoadingSchema />
@@ -96,36 +99,23 @@ const CreateConnectionContent: React.FC<IProps> = ({
     );
   }
 
-  const onSubmitConnectionStep = async (values: {
-    frequency: string;
-    prefix: string;
-    schema: SyncSchema;
-  }) => {
-    setErrorStatusRequest(0);
-    try {
-      await createConnection({
-        values: {
-          frequency: values.frequency,
-          prefix: values.prefix,
-          syncCatalog: values.schema,
-        },
-        source: source,
-        destination: destination,
-        sourceDefinition: {
-          name: source?.name ?? "",
-          sourceDefinitionId: source?.sourceDefinitionId ?? "",
-        },
-        destinationDefinition: {
-          name: destination?.name ?? "",
-          destinationDefinitionId: destination?.destinationDefinitionId ?? "",
-        },
-      });
+  const onSubmitConnectionStep = async (values: ValuesProps) => {
+    await createConnection({
+      values,
+      source: source,
+      destination: destination,
+      sourceDefinition: {
+        name: source?.name ?? "",
+        sourceDefinitionId: source?.sourceDefinitionId ?? "",
+      },
+      destinationDefinition: {
+        name: destination?.name ?? "",
+        destinationDefinitionId: destination?.destinationDefinitionId ?? "",
+      },
+    });
 
-      if (afterSubmitConnection) {
-        afterSubmitConnection();
-      }
-    } catch (e) {
-      setErrorStatusRequest(e.status);
+    if (afterSubmitConnection) {
+      afterSubmitConnection();
     }
   };
 
@@ -140,27 +130,20 @@ const CreateConnectionContent: React.FC<IProps> = ({
     });
   };
 
-  const RefreshSchemaButton = () => {
-    return (
-      <Button onClick={onDiscoverSchema} type="button">
-        <TryArrow icon={faRedoAlt} />
-        <FormattedMessage id="connection.refreshSchema" />
-      </Button>
-    );
-  };
-
   return (
     <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
       <Suspense fallback={<LoadingSchema />}>
         <ConnectionForm
+          connection={connection}
           additionBottomControls={additionBottomControls}
           onDropDownSelect={onSelectFrequency}
-          additionalSchemaControl={RefreshSchemaButton()}
+          additionalSchemaControl={
+            <Button onClick={onDiscoverSchema} type="button">
+              <TryArrow icon={faRedoAlt} />
+              <FormattedMessage id="connection.refreshSchema" />
+            </Button>
+          }
           onSubmit={onSubmitConnectionStep}
-          errorMessage={createFormErrorMessage({ status: errorStatusRequest })}
-          schema={schema}
-          source={source}
-          destination={destination}
           sourceIcon={sourceDefinition?.icon}
           destinationIcon={destinationDefinition?.icon}
         />

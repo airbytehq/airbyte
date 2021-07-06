@@ -1,8 +1,0 @@
-{
-  "sourceDefinitionId": "40d24d0f-b8f9-4fe0-9e6c-b06c0f3f45e4",
-  "name": "Zendesk Chat",
-  "dockerRepository": "airbyte/source-zendesk-chat",
-  "dockerImageTag": "0.1.0",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-zendesk-chat",
-  "icon": "zendesk.svg"
-}

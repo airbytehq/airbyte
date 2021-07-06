@@ -36,7 +36,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
-import io.airbyte.config.StandardTargetConfig;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.TestConfigHelpers;
 import io.airbyte.workers.WorkerConstants;
@@ -63,7 +64,8 @@ class DefaultAirbyteDestinationTest {
   private static final String STREAM_NAME = "user_preferences";
   private static final String FIELD_NAME = "favorite_color";
 
-  private static final StandardTargetConfig DESTINATION_CONFIG = WorkerUtils.syncToTargetConfig(TestConfigHelpers.createSyncConfig().getValue());
+  private static final WorkerDestinationConfig DESTINATION_CONFIG =
+      WorkerUtils.syncToWorkerDestinationConfig(TestConfigHelpers.createSyncConfig().getValue());
 
   private static final List<AirbyteMessage> MESSAGES = Lists.newArrayList(
       AirbyteMessageUtils.createStateMessage("checkpoint", "1"),
@@ -87,8 +89,13 @@ class DefaultAirbyteDestinationTest {
 
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     final InputStream inputStream = mock(InputStream.class);
-    when(integrationLauncher.write(jobRoot, WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME))
-        .thenReturn(process);
+    when(integrationLauncher.write(
+        jobRoot,
+        WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
+        Jsons.serialize(DESTINATION_CONFIG.getDestinationConnectionConfiguration()),
+        WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME,
+        Jsons.serialize(DESTINATION_CONFIG.getCatalog())))
+            .thenReturn(process);
 
     when(process.isAlive()).thenReturn(true);
     when(process.getInputStream()).thenReturn(inputStream);

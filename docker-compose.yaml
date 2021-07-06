@@ -34,7 +34,7 @@ services:
     # Pre-populate the volume if it is empty.
     # See: https://docs.docker.com/storage/volumes/#populate-a-volume-using-a-container
     volumes:
-      - data:/app/seed
+      - data:/latest_seeds
   scheduler:
     image: airbyte/scheduler:${VERSION}
     logging: *default-logging
@@ -44,10 +44,10 @@ services:
       - WEBAPP_URL=${WEBAPP_URL}
       - WAIT_BEFORE_HOSTS=5
       - WAIT_HOSTS_TIMEOUT=45
-      - WAIT_HOSTS=db:5432
+      - WAIT_HOSTS=${DATABASE_HOST}:${DATABASE_PORT}
       - DATABASE_USER=${DATABASE_USER}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
-      - DATABASE_URL=jdbc:postgresql://db:5432/${DATABASE_DB}
+      - DATABASE_URL=${DATABASE_URL}
       - WORKSPACE_ROOT=${WORKSPACE_ROOT}
       - WORKSPACE_DOCKER_MOUNT=${WORKSPACE_DOCKER_MOUNT}
       - LOCAL_ROOT=${LOCAL_ROOT}
@@ -57,13 +57,17 @@ services:
       - AIRBYTE_VERSION=${VERSION}
       - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
       - TEMPORAL_HOST=${TEMPORAL_HOST}
+      - S3_LOG_BUCKET=${S3_LOG_BUCKET}
+      - S3_LOG_BUCKET_REGION=${S3_LOG_BUCKET_REGION}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - workspace:${WORKSPACE_ROOT}
       - ${LOCAL_ROOT}:${LOCAL_ROOT}
       - data:${CONFIG_ROOT}
   server:
-    image: airbyte/server:${VERSION}
+    image: airbyte/server:dev
     logging: *default-logging
     container_name: airbyte-server
     restart: unless-stopped
@@ -71,21 +75,26 @@ services:
       - WEBAPP_URL=${WEBAPP_URL}
       - WAIT_BEFORE_HOSTS=5
       - WAIT_HOSTS_TIMEOUT=45
-      - WAIT_HOSTS=db:5432
+      - WAIT_HOSTS=${DATABASE_HOST}:${DATABASE_PORT}
       - DATABASE_USER=${DATABASE_USER}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
-      - DATABASE_URL=jdbc:postgresql://db:5432/${DATABASE_DB}
+      - DATABASE_URL=${DATABASE_URL}
       - WORKSPACE_ROOT=${WORKSPACE_ROOT}
       - CONFIG_ROOT=${CONFIG_ROOT}
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
       - AIRBYTE_VERSION=${VERSION}
       - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
       - TEMPORAL_HOST=${TEMPORAL_HOST}
+      - S3_LOG_BUCKET=${S3_LOG_BUCKET}
+      - S3_LOG_BUCKET_REGION=${S3_LOG_BUCKET_REGION}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
     ports:
       - 8001:8001
     volumes:
       - workspace:${WORKSPACE_ROOT}
       - data:${CONFIG_ROOT}
+      - ${LOCAL_ROOT}:${LOCAL_ROOT}
   webapp:
     image: airbyte/webapp:${VERSION}
     logging: *default-logging
@@ -99,6 +108,7 @@ services:
       - API_URL=${API_URL:-}
       - IS_DEMO=${IS_DEMO:-}
       - PAPERCUPS_STORYTIME=${PAPERCUPS_STORYTIME:-}
+      - FULLSTORY=${FULLSTORY:-}
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
       - INTERNAL_API_HOST=${INTERNAL_API_HOST}
   airbyte-temporal:
@@ -110,10 +120,10 @@ services:
       - 7233:7233
     environment:
       - DB=postgresql
-      - DB_PORT=5432
+      - DB_PORT=${DATABASE_PORT}
       - POSTGRES_USER=${DATABASE_USER}
       - POSTGRES_PWD=${DATABASE_PASSWORD}
-      - POSTGRES_SEEDS=db
+      - POSTGRES_SEEDS=${DATABASE_HOST}
       - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml
     volumes:
       - ./temporal/dynamicconfig:/etc/temporal/config/dynamicconfig

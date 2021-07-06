@@ -25,8 +25,11 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from datetime import datetime, timedelta
 import logging
+import backoff
 
 import requests
+from requests.exceptions import ConnectionError
+from requests.structures import CaseInsensitiveDict
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -44,6 +47,17 @@ class DatascopeStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
+    @backoff.on_exception(backoff.expo, requests.exceptions.ConnectionError, max_tries=7)
+    def _request(self, url: str, method: str = "GET", data: dict = None) -> List[dict]:
+        response = requests.request(method, url, headers=self._headers, json=data)
+
+        if response.status_code == 200:
+            response_data = response.json()
+            if isinstance(response_data, list):
+                return response_data
+            else:
+                return [response_data]
+        return []
 
 
 class DatascopeIncrementalStream(DatascopeStream, ABC):
@@ -51,11 +65,18 @@ class DatascopeIncrementalStream(DatascopeStream, ABC):
     primary_key = "form_answer_id"
     cursor_field = "updated_at"
 
-    def __init__(self, token: str, form_id: str, start_date: str, **kwargs):
+    def __init__(self, token: str, form_id: str, start_date: str, schema_type: str, **kwargs):
         super().__init__()
         self.token = token
         self.form_id = form_id
         self.start_date = start_date
+        self.schema_type = schema_type
+        self.BASE_URL = "https://mydatascope.com"
+        self._headers = {
+            "Authorization": f"Bearer {self.token}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
 
     def request_params(
             self,
@@ -65,6 +86,13 @@ class DatascopeIncrementalStream(DatascopeStream, ABC):
     ) -> MutableMapping[str, Any]:
         # The api requires that we include the base currency as a query param so we do that in this method
         return {'token': self.token, 'form_id': self.form_id, 'start': stream_slice['updated_at'], 'date_modified': True, 'order_date': True}
+
+    def get_json_schema(self):
+        schema = super().get_json_schema()
+        if str(self.schema_type) == 'dynamic':
+            return self._request(f"{self.BASE_URL}/api/external/v2/airbyte_schema?token={self.token}&form_id={self.form_id}")[0]
+        else:
+            return schema
 
     def parse_response(
             self,
@@ -84,7 +112,10 @@ class DatascopeIncrementalStream(DatascopeStream, ABC):
             current_parsed_date = datetime.strptime(current_stream_state['updated_at'], '%Y-%m-%dT%H:%M:%S%z')
             # latest_record_date = datetime.strptime(current_stream_state['updated_at'], '%Y-%m-%dT%H:%M:%S%z')
             last_date = latest_record['updated_at'].split('.')[0] + '+0000'
-            latest_record_date = datetime.strptime(last_date, '%Y-%m-%dT%H:%M:%S%z')
+            if self.schema_type == 'dynamic':
+                latest_record_date = datetime.strptime(last_date, '%d/%m/%Y %H:%M%z')
+            else:
+                latest_record_date = datetime.strptime(last_date, '%Y-%m-%dT%H:%M:%S%z')
             return {'updated_at': max(current_parsed_date, latest_record_date).strftime('%Y-%m-%dT%H:%M:%S%z')}
         else:
             return {'updated_at': self.start_date.strftime('%Y-%m-%dT%H:%M:%S%z')}
@@ -113,7 +144,10 @@ class Forms(DatascopeIncrementalStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return "answers"
+        if self.schema_type == 'dynamic':
+            return "v2/airbyte"
+        else:
+            return "answers"
 
 # Source
 class SourceDatascope(AbstractSource):
@@ -123,4 +157,5 @@ class SourceDatascope(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = NoAuth()
         start_date = datetime.strptime(config['start_date'], '%Y-%m-%dT%H:%M:%S%z') 
-        return [Forms(authenticator=auth, token=config['api_key'], form_id=config['form_name'], start_date=start_date)]
+        schema_type = config.get('schema_type', 'static')
+        return [Forms(authenticator=auth, token=config['api_key'], form_id=config['form_id'], start_date=start_date, schema_type=schema_type)]

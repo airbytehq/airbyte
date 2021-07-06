@@ -1,7 +1,0 @@
-{
-  "sourceDefinitionId": "29b409d9-30a5-4cc8-ad50-886eb846fea3",
-  "name": "Quickbooks",
-  "dockerRepository": "airbyte/source-quickbooks-singer",
-  "dockerImageTag": "0.1.0",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-quickbooks-singer"
-}

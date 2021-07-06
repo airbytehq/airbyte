@@ -36,9 +36,9 @@ from source_acceptance_test.utils import ConnectorRunner, JsonSchemaHelper, filt
 @pytest.fixture(name="future_state_path")
 def future_state_path_fixture(inputs, base_path) -> Path:
     """Fixture with connector's future state path (relative to base_path)"""
-    if getattr(inputs, "state_path"):
-        return Path(base_path) / getattr(inputs, "state_path")
-    pytest.skip("`state_path` not specified, skipping")
+    if getattr(inputs, "future_state_path"):
+        return Path(base_path) / getattr(inputs, "future_state_path")
+    pytest.skip("`future_state_path` not specified, skipping")
 
 
 @pytest.fixture(name="future_state")
@@ -51,7 +51,7 @@ def future_state_fixture(future_state_path) -> Path:
 
 @pytest.fixture(name="cursor_paths")
 def cursor_paths_fixture(inputs, configured_catalog_for_incremental) -> Mapping[str, Any]:
-    cursor_paths = getattr(inputs, "cursor_paths")
+    cursor_paths = getattr(inputs, "cursor_paths") or {}
     result = {}
 
     for stream in configured_catalog_for_incremental.streams:
@@ -66,7 +66,16 @@ def configured_catalog_for_incremental_fixture(configured_catalog) -> Configured
     catalog = incremental_only_catalog(configured_catalog)
     for stream in catalog.streams:
         if not stream.cursor_field:
-            pytest.fail("Configured catalog should have cursor_field specified for all incremental streams")
+            if stream.stream.default_cursor_field:
+                stream.cursor_field = stream.stream.default_cursor_field[:]
+            else:
+                pytest.fail(
+                    f"All incremental streams should either have `cursor_field` \
+                    declared in the configured_catalog or `default_cursor_field` \
+                    specified in the catalog output by discover. \
+                    Stream {stream.stream.name} does not have either property defined."
+                )
+
     return catalog
 
 
@@ -81,7 +90,7 @@ def records_with_state(records, state, stream_mapping, state_cursor_paths) -> It
         yield record_value, state_value
 
 
-@pytest.mark.timeout(20 * 60)
+@pytest.mark.default_timeout(20 * 60)
 class TestIncremental(BaseTest):
     def test_two_sequential_reads(self, connector_config, configured_catalog_for_incremental, cursor_paths, docker_runner: ConnectorRunner):
         stream_mapping = {stream.stream.name: stream for stream in configured_catalog_for_incremental.streams}

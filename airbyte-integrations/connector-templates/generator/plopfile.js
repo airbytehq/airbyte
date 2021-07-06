@@ -8,7 +8,7 @@ const getSuccessMessage = function(connectorName, outputPath, additionalMessage)
 
 Success! 
 
-Your ${connectorName} connector has been created at ${path.resolve(outputPath)}.
+Your ${connectorName} connector has been created at .${path.resolve(outputPath)}.
 
 Follow the TODOs in the generated module to implement your connector. 
 
@@ -24,11 +24,12 @@ ${additionalMessage || ""}
 
 module.exports = function (plop) {
   const docRoot = '../../../docs/integrations';
-  const definitionRoot = '../../../airbyte-config/init/src/main/resources';
+  const definitionRoot = '../../../airbyte-server/src/main/resources';
 
   const pythonSourceInputRoot = '../source-python';
   const singerSourceInputRoot = '../source-singer';
   const genericSourceInputRoot = '../source-generic';
+  const genericJdbcSourceInputRoot = '../source-java-jdbc';
   const httpApiInputRoot = '../source-python-http-api';
   const javaDestinationInput = '../destination-java';
 
@@ -36,6 +37,7 @@ module.exports = function (plop) {
   const pythonSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
   const singerSourceOutputRoot = `${outputDir}/source-{{dashCase name}}-singer`;
   const genericSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
+  const genericJdbcSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
   const httpApiOutputRoot = `${outputDir}/source-{{dashCase name}}`;
   const javaDestinationOutputRoot = `${outputDir}/destination-{{dashCase name}}`;
 
@@ -122,6 +124,21 @@ module.exports = function (plop) {
             },
             {type: 'emitSuccess', outputPath: pythonSourceOutputRoot, message: "For a checklist of what to do next go to https://docs.airbyte.io/tutorials/building-a-python-source"}]
     });
+
+  plop.setGenerator('Java JDBC Source', {
+    description: 'Generate a minimal Java JDBC Airbyte Source Connector.',
+    prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "mysql"'}],
+    actions: [
+      {
+        abortOnFail: true,
+        type:'addMany',
+        destination: genericJdbcSourceOutputRoot,
+        base: genericJdbcSourceInputRoot,
+        templateFiles: `${genericJdbcSourceInputRoot}/**/**`,
+      },
+      {type: 'emitSuccess', outputPath: genericJdbcSourceOutputRoot}
+    ]
+  });
 
   plop.setGenerator('Generic Source', {
       description: 'Use if none of the other templates apply to your use case.',

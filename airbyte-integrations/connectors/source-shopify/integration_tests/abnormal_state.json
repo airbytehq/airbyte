@@ -1,0 +1,41 @@
+{
+  "orders": {
+    "id": 2497723957406484
+  },
+  "collects": {
+    "id": 1727945110336789
+  },
+  "products": {
+    "id": 505931153421589
+  },
+  "customers": {
+    "id": 366477377551899
+  },
+  "metafields": {
+    "id": 1126916852947498
+  },
+  "transactions": {
+    "id": 312557948124698
+  },
+  "order_refunds": {
+    "id": 63997837325598
+  },
+  "custom_collections": {
+    "id": 15327628499498
+  },
+  "abandoned_checkouts": {
+    "id": 142548663666229
+  },
+  "order_risks": {
+    "id": 593300439055898
+  },
+  "pages": {
+    "id": 131092082366699
+  },
+  "price_rules": {
+    "id": 935355809987999
+  },
+  "discount_codes": {
+    "id": 980808098689434
+  }
+}

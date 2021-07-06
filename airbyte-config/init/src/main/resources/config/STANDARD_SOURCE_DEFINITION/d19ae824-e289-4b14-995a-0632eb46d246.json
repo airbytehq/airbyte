@@ -1,7 +1,0 @@
-{
-  "sourceDefinitionId": "d19ae824-e289-4b14-995a-0632eb46d246",
-  "name": "Google Directory",
-  "dockerRepository": "airbyte/source-google-directory",
-  "dockerImageTag": "0.1.2",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-google-directory"
-}

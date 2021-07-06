@@ -1,8 +1,0 @@
-{
-  "sourceDefinitionId": "932e6363-d006-4464-a9f5-102b82e07c06",
-  "name": "Twilio",
-  "dockerRepository": "airbyte/source-twilio-singer",
-  "dockerImageTag": "0.2.2",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-twilio-singer",
-  "icon": "twilio.svg"
-}

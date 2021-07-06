@@ -8,7 +8,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Destination Spec",
     "type": "object",
-    "required": ["project_id", "dataset_id", "credentials_json"],
+    "required": ["project_id", "dataset_id"],
     "additionalProperties": false,
     "properties": {
       "project_id": {
@@ -21,18 +21,48 @@
         "description": "Default BigQuery Dataset ID tables are replicated to if the source does not specify a namespace.",
         "title": "Default Dataset ID"
       },
+      "dataset_location": {
+        "type": "string",
+        "description": "The location of the dataset. Warning: Changes made after creation will not be applied.",
+        "title": "Dataset Location",
+        "default": "US",
+        "enum": [
+          "US",
+          "EU",
+          "asia-east1",
+          "asia-east2",
+          "asia-northeast1",
+          "asia-northeast2",
+          "asia-northeast3",
+          "asia-south1",
+          "asia-southeast1",
+          "asia-southeast2",
+          "australia-southeast1",
+          "europe-central1",
+          "europe-central2",
+          "europe-north1",
+          "europe-west1",
+          "europe-west2",
+          "europe-west3",
+          "europe-west4",
+          "europe-west5",
+          "europe-west6",
+          "northamerica-northeast1",
+          "southamerica-east1",
+          "us-central1",
+          "us-east1",
+          "us-east4",
+          "us-west-1",
+          "us-west-2",
+          "us-west-3",
+          "us-west-4"
+        ]
+      },
       "credentials_json": {
         "type": "string",
-        "description": "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.io/integrations/destinations/bigquery\">docs</a> if you need help generating this key.",
+        "description": "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.io/integrations/destinations/bigquery\">docs</a> if you need help generating this key. Default credentials will be used if this field is left empty.",
         "title": "Credentials JSON",
         "airbyte_secret": true
-      },
-      "basic_normalization": {
-        "type": "boolean",
-        "default": true,
-        "description": "Whether or not to normalize the data in the destination. See <a href=\"https://docs.airbyte.io/architecture/basic-normalization\">basic normalization</a> for more details.",
-        "title": "Basic Normalization",
-        "examples": [true, false]
       }
     }
   }
