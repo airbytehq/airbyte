@@ -48,14 +48,14 @@ public class {{pascalCase name}}Source extends AbstractJdbcSource implements Sou
 
   // TODO The config is based on spec.json, update according to your DB
   @Override
-  public JsonNode toJdbcConfig(JsonNode aqqConfig) {
+  public JsonNode toDatabaseConfig(JsonNode aqqConfig) {
     // TODO create DB config. Ex: "Jsons.jsonNode(ImmutableMap.builder().put("username",
     // userName).put("password", pas)...build());
     return null;
   }
 
   @Override
-  public Set<String> getExcludedInternalSchemas() {
+  public Set<String> getExcludedInternalNameSpaces() {
     // TODO Add tables to exaclude, Ex "INFORMATION_SCHEMA", "sys", "spt_fallback_db", etc
     return Set.of("");
   }

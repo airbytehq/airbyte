@@ -49,7 +49,7 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public JsonNode toJdbcConfig(JsonNode mssqlConfig) {
+  public JsonNode toDatabaseConfig(JsonNode mssqlConfig) {
     List<String> additionalParameters = new ArrayList<>();
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
@@ -73,7 +73,7 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public Set<String> getExcludedInternalSchemas() {
+  public Set<String> getExcludedInternalNameSpaces() {
     return Set.of(
         "INFORMATION_SCHEMA",
         "sys",
