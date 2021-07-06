@@ -350,8 +350,8 @@ public class PostresSourceComprehensiveTest extends SourceComprehensiveTest {
         TestDataHolder.builder()
             .fullSourceDataType("numeric(13,4)")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("0.1880", "null")
-            .addExpectedValues("0.1880", null)
+            .addInsertValues("0.1880", "10.0000", "5213.3400", "null")
+            .addExpectedValues("0.1880", "10.0000", "5213.3400", null)
             .build());
 
     addDataTypeTestData(
