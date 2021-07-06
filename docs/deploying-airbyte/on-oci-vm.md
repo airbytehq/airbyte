@@ -23,6 +23,7 @@ chmod 600 private-key-file
 
 ssh -i private-key-file opc@oci-private-instance-ip
 
+## Install Prerequisites
 
 Install docker
 --------------
