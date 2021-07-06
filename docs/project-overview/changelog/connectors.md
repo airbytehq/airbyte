@@ -11,27 +11,28 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on.
 
 ## 7/06/2021
-1 new source:
+2 new sources:
 * [**Airbyte-native Gitlab**](https://docs.airbyte.io/integrations/sources/gitlab)
+* [**Airbyte-native GitHub**](https://docs.airbyte.io/integrations/sources/github)
 
-## 7/01/2021 
+## 7/01/2021
 
 Bugfixes:
 * **Looker** source: Now supports the Run Look stream.
 * **Google Adwords**: CI is fixed and new version is published.
 * **Slack** source: Now Airbyte native and supports channels, channel members, messages, users, and threads streams.
-* **Freshdesk** source: Does not fail after 300 pages anymore.  
+* **Freshdesk** source: Does not fail after 300 pages anymore.
 * **MSSQL** source: Now has comprehensive data type tests.
 
-## 6/24/2021 
+## 6/24/2021
 
 1 new source:
 * [**Db2**](https://docs.airbyte.io/integrations/sources/db2)
 
 New features:
 * **S3** destination: supports Avro and Jsonl output!
-* **BigQuery** destination: now supports loading JSON data as structured data.  
-* **Looker** source: Now supports self-hosted instances.  
+* **BigQuery** destination: now supports loading JSON data as structured data.
+* **Looker** source: Now supports self-hosted instances.
 * **Facebook** source: is now migrated to the CDK.
 
 ## 6/18/2021
@@ -49,7 +50,7 @@ New features:
 ## 6/10/2021
 1 new destination:
 * [**S3**](https://docs.airbyte.io/integrations/destinations/s3)
-  
+
 3 new sources:
 * [**Harvest**](https://docs.airbyte.io/integrations/sources/harvest)
 * [**Amplitude**](https://docs.airbyte.io/integrations/sources/amplitude)
@@ -93,7 +94,7 @@ Bugfixes:
 
 ## 05/25/2021
 
-4 new sources: 
+4 new sources:
 * [**Asana**](https://docs.airbyte.io/integrations/sources/asana)
 * [**Klaviyo**](https://docs.airbyte.io/integrations/sources/klaviyo)
 * [**Recharge**](https://docs.airbyte.io/integrations/sources/recharge)
@@ -101,7 +102,7 @@ Bugfixes:
 
 Progress on connectors:
 * **CDC for MySQL** is now available!
-* **Sendgrid** source: support incremental sync, as rewritten using HTTP CDK ([#3445](https://github.com/airbytehq/airbyte/pull/3445)) 
+* **Sendgrid** source: support incremental sync, as rewritten using HTTP CDK ([#3445](https://github.com/airbytehq/airbyte/pull/3445))
 * **Github** source bugfix: exception when parsing null date values, use `created_at` as cursor value for issue_milestones ([#3314](https://github.com/airbytehq/airbyte/pull/3314))
 * **Slack** source bugfix: don't overwrite thread_ts in threads stream  ([#3483](https://github.com/airbytehq/airbyte/pull/3483))
 * **Facebook Marketing** source: allow configuring insights lookback window ([#3396](https://github.com/airbytehq/airbyte/pull/3396))
@@ -127,7 +128,7 @@ Progress on connectors:
 * [**PokeAPI**](https://docs.airbyte.io/integrations/sources/pokeapi) \(talking about long tail and having fun ;\)\)
 
 Progress on connectors:
-* **Zoom**: bugfix on declaring correct types to match data coming from API \([\#3159](https://github.com/airbytehq/airbyte/pull/3159)\), thanks to [vovavovavovavova](https://github.com/vovavovavovavova) 
+* **Zoom**: bugfix on declaring correct types to match data coming from API \([\#3159](https://github.com/airbytehq/airbyte/pull/3159)\), thanks to [vovavovavovavova](https://github.com/vovavovavovavova)
 * **Smartsheets**: bugfix on gracefully handling empty cell values \([\#3337](https://github.com/airbytehq/airbyte/pull/3337)\), thanks to [Nathan Nowack](https://github.com/zzstoatzz)
 * **Stripe**: fix date property name, only add connected account header when set, and set primary key \(\#3210\), thanks to [Nathan Yergler](https://github.com/nyergler)
 
@@ -160,7 +161,7 @@ Progress on connectors:
 3 new source connectors!
 
 * [**Zendesk Talk**](https://docs.airbyte.io/integrations/sources/zendesk-talk)
-* [**Iterable**](https://docs.airbyte.io/integrations/sources/iterable) 
+* [**Iterable**](https://docs.airbyte.io/integrations/sources/iterable)
 * [**Quickbooks**](https://docs.airbyte.io/integrations/sources/quickbooks)
 
 Other progress on connectors:
@@ -175,7 +176,7 @@ Other progress on connectors:
 
 ## 04/13/2021
 
-* New connector: [**Oracle DB**](https://docs.airbyte.io/integrations/sources/oracle), thanks to [Marcos Marx](https://github.com/marcosmarxm) 
+* New connector: [**Oracle DB**](https://docs.airbyte.io/integrations/sources/oracle), thanks to [Marcos Marx](https://github.com/marcosmarxm)
 
 ## 04/07/2021
 
@@ -188,8 +189,8 @@ Other progress on connectors:
 
 ## 03/29/2021
 
-* We started measuring throughput of connectors. This will help us improve that point for all connectors. 
-* **Redshift**: implemented Copy strategy to improve its throughput. 
+* We started measuring throughput of connectors. This will help us improve that point for all connectors.
+* **Redshift**: implemented Copy strategy to improve its throughput.
 * **Instagram**: bugfix an issue which caused media and media\_insights streams to stop syncing prematurely.
 * Support NCHAR and NVCHAR types in SQL-based database sources.
 * Add the ability to specify a custom JDBC parameters for the MySQL source connector.
@@ -197,7 +198,7 @@ Other progress on connectors:
 ## 03/22/2021
 
 * 2 new source connectors: [**Gitlab**](https://docs.airbyte.io/integrations/sources/gitlab) and [**Airbyte-native Hubspot**](https://docs.airbyte.io/integrations/sources/hubspot)
-* Developing connectors now requires almost no interaction with Gradle, Airbyte’s  monorepo build tool. If you’re building a Python connector, you never have to worry about developing outside your typical flow. See [the updated documentation](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector). 
+* Developing connectors now requires almost no interaction with Gradle, Airbyte’s  monorepo build tool. If you’re building a Python connector, you never have to worry about developing outside your typical flow. See [the updated documentation](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector).
 
 ## 03/15/2021
 
@@ -234,13 +235,13 @@ Other progress on connectors:
 * Other fixes:
   * Thanks to [@ns-admetrics](https://github.com/ns-admetrics) for contributing an upgrade to the **Shopify** source connector which now provides the landing\_site field containing UTM parameters in the Orders table.
   * **Sendgrid** source connector supports most available endpoints available in the API
-  * **Facebook** Source connector now supports syncing Ad Insights data 
+  * **Facebook** Source connector now supports syncing Ad Insights data
   * **Freshdesk** source connector now supports syncing satisfaction ratings and conversations
-  * **Microsoft Teams** source connector now gracefully handles rate limiting 
-  * Bug fix in **Slack** source where the last few records in a sync were sporadically dropped 
+  * **Microsoft Teams** source connector now gracefully handles rate limiting
+  * Bug fix in **Slack** source where the last few records in a sync were sporadically dropped
   * Bug fix in **Google Analytics** source where the last few records in sync were sporadically dropped
-  * In **Redshift source**, support non alpha-numeric table names 
-  * Bug fix in **Github Source** to fix instances where syncs didn’t always fail if there was an error while reading data from the API 
+  * In **Redshift source**, support non alpha-numeric table names
+  * Bug fix in **Github Source** to fix instances where syncs didn’t always fail if there was an error while reading data from the API
 
 ## 02/02/2021
 
@@ -249,7 +250,7 @@ Other progress on connectors:
   * Enhanced continuous testing for Tempo and Looker sources
 * Other fixes / features:
   * Correctly handle boolean types in the File Source
-  * Add docs for [App Store](https://docs.airbyte.io/integrations/sources/appstore) source 
+  * Add docs for [App Store](https://docs.airbyte.io/integrations/sources/appstore) source
   * Fix a bug in Snowflake destination where the connector didn’t check for all needed write permissions, causing some syncs to fail
 
 ## 01/26/2021
@@ -264,7 +265,7 @@ Other progress on connectors:
 * **1 new source:** App Store \(thanks to [@Muriloo](https://github.com/Muriloo)\)
 * Fixes on connectors:
   * Bug fix writing boolean columns to Redshift
-  * Bug fix where getting a connector’s input configuration hung indefinitely 
+  * Bug fix where getting a connector’s input configuration hung indefinitely
   * Stripe connector now gracefully handles rate limiting from the Stripe API
 
 ## 01/12/2021
@@ -301,7 +302,7 @@ Other progress on connectors:
 
 ## 12/04/2020
 
-**New sources:** [Redshift](../../integrations/sources/redshift.md), [Greenhouse](../../integrations/sources/greenhouse.md)  
+**New sources:** [Redshift](../../integrations/sources/redshift.md), [Greenhouse](../../integrations/sources/greenhouse.md)
 **New destination:** [Redshift](../../integrations/destinations/redshift.md)
 
 ## 11/30/2020
@@ -334,7 +335,7 @@ Other progress on connectors:
 
 ## 11/04/2020
 
-**New sources:** [Facebook Ads](connectors.md), [Google Ads](../../integrations/sources/google-adwords.md), [Marketo](../../integrations/sources/marketo.md)  
+**New sources:** [Facebook Ads](connectors.md), [Google Ads](../../integrations/sources/google-adwords.md), [Marketo](../../integrations/sources/marketo.md)
 **New destination:** [Snowflake](../../integrations/destinations/snowflake.md)
 
 ## 10/30/2020
@@ -347,6 +348,6 @@ Other progress on connectors:
 
 ## 09/23/2020
 
-**New sources:** [Stripe](../../integrations/sources/stripe.md), [Postgres](../../integrations/sources/postgres.md)  
+**New sources:** [Stripe](../../integrations/sources/stripe.md), [Postgres](../../integrations/sources/postgres.md)
 **New destinations:** [BigQuery](../../integrations/destinations/bigquery.md), [Postgres](../../integrations/destinations/postgres.md), [local CSV](../../integrations/destinations/local-csv.md)
 
