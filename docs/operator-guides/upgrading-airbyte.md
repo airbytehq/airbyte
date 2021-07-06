@@ -88,14 +88,14 @@ If you are upgrading from  (i.e. your current version of Airbyte is) Airbyte ver
    # Careful, this is deleting data!
    kubectl delete -k kube/overlays/stable
    ```
-4. Follow **Step 2** in the [Docker upgrade process](#Upgrading-\(Docker\)) to check out the most recent version of Airbyte. Although it is possible to
+4. Follow **Step 2** in the `Upgrading on Docker` section to check out the most recent version of Airbyte. Although it is possible to
    migrate by changing the `.env` file in the kube overlay directory, this is not recommended as it does not capture any changes to the Kubernetes manifests.
 
 5. Bring Airbyte back up.
    ```bash
    kubectl apply -k kube/overlays/stable
    ```
-6. Follow **Step 8** in the [Docker upgrade process](#Upgrading-\(Docker\)) to upload your migrated Archive and restore your configuration and data.
+6. Switching over to your browser, navigate to the Admin page in the UI. Then go to the Configuration Tab and click on Import. Upload your migrated archive.
 
 If you prefer to import and export your data via API instead the UI, follow these instructions:
 
