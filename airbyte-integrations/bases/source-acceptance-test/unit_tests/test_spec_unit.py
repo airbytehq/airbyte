@@ -23,64 +23,77 @@
 #
 
 import io
-import os
-from pathlib import Path
 
 import docker
+import pytest
 from source_acceptance_test.utils import ConnectorRunner
 
 
+def create_dockerfile(text, tag, tmp_path):
+    client = docker.from_env()
+    fileobj = io.BytesIO()
+    fileobj.write(text)
+
+    fileobj.seek(0)
+    args = {
+        "fileobj": fileobj,
+        "tag": tag,
+        "forcerm": True,
+        "rm": True,
+    }
+    image, iterools_tee = client.images.build(**args)
+    docker_runner = ConnectorRunner(image_name=tag, volume=tmp_path)
+    return docker_runner
+
+
+@pytest.fixture
+def dockerfile_valid(tmp_path):
+    dockerfile_text = b"""
+        FROM scratch
+        ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
+        ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
+        """
+    docker_runner = create_dockerfile(dockerfile_text, "my-valid-one", tmp_path)
+    return docker_runner
+
+
+@pytest.fixture
+def dockerfile_no_env(tmp_path):
+    dockerfile_text = b"""
+        FROM python:3.7-slim
+        RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
+        ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
+        """
+    docker_runner = create_dockerfile(dockerfile_text, "my-no-env", tmp_path)
+    return docker_runner
+
+
+@pytest.fixture
+def dockerfile_ne_properties(tmp_path):
+    dockerfile_text = b"""
+        FROM python:3.7-slim
+        RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
+        ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
+        ENTRYPOINT ["python3", "/airbyte/integration_code/main.py"]
+        """
+    docker_runner = create_dockerfile(dockerfile_text, "my-ne-properties", tmp_path)
+    return docker_runner
+
+
 class TestEnvAttributes:
-    def create_dockerfile(self, text, tag):
-        # nano ~/.docker/config.json credsStore-> credStore to enable on MAC
-        client = docker.from_env()
-        fileobj = io.BytesIO()
-        fileobj.write(text)
+    def test_build_dockerfile_valid(self, dockerfile_valid):
 
-        fileobj.seek(0)
-        args = {
-            "path": os.path.abspath("."),
-            "fileobj": fileobj,
-            "tag": tag,
-            "forcerm": True,
-            "rm": True,
-        }
-        image, iterools_tee = client.images.build(**args)
-        docker_runner = ConnectorRunner(image_name=tag, volume=Path("."))
-        return docker_runner
-
-    def test_build_dockerfile_valid(self):
-        dockerfile_text = b"""
-            FROM python:3.7-slim
-            RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
-            ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
-            ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
-            """
-        docker_runner = self.create_dockerfile(dockerfile_text, 'my-valid-one')
-
-        assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT"), "AIRBYTE_ENTRYPOINT must be set in dockerfile"
-        assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT") == " ".join(
-            docker_runner.entry_point
+        assert dockerfile_valid.env_variables.get("AIRBYTE_ENTRYPOINT"), "AIRBYTE_ENTRYPOINT must be set in dockerfile"
+        assert dockerfile_valid.env_variables.get("AIRBYTE_ENTRYPOINT") == " ".join(
+            dockerfile_valid.entry_point
         ), "env should be equal to space-joined entrypoint"
 
-    def test_build_dockerfile_no_env(self):
-        dockerfile_text = b"""
-            FROM python:3.7-slim
-            RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
-            ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
-            """
-        docker_runner = self.create_dockerfile(dockerfile_text, 'my-no-env-one')
-        assert not docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT"), "this test should fail if AIRBYTE_ENTRYPOINT defined"
+    def test_build_dockerfile_no_env(self, dockerfile_no_env):
+        assert not dockerfile_no_env.env_variables.get("AIRBYTE_ENTRYPOINT"), "this test should fail if AIRBYTE_ENTRYPOINT defined"
 
-    def test_build_dockerfile_ne_properties(self):
-        dockerfile_text = b"""
-            FROM python:3.7-slim
-            RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
-            ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
-            ENTRYPOINT ["python3", "/airbyte/integration_code/main.py"]
-            """
-        docker_runner = self.create_dockerfile(dockerfile_text, 'ne__one')
-        assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT"), "AIRBYTE_ENTRYPOINT must be set in dockerfile"
-        assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT") != " ".join(docker_runner.entry_point), (
+    def test_build_dockerfile_ne_properties(self, dockerfile_ne_properties):
+
+        assert dockerfile_ne_properties.env_variables.get("AIRBYTE_ENTRYPOINT"), "AIRBYTE_ENTRYPOINT must be set in dockerfile"
+        assert dockerfile_ne_properties.env_variables.get("AIRBYTE_ENTRYPOINT") != " ".join(dockerfile_ne_properties.entry_point), (
             "This test should fail if " ".join(ENTRYPOINT)==ENV"
         )
