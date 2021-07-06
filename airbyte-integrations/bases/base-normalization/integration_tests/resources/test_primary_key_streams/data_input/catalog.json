@@ -173,6 +173,41 @@
     },
     {
       "stream": {
+        "name": "conflict_stream_name",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "type": ["null", "number", "string"]
+            },
+          "conflict_stream_name": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "group": {
+                  "type": "string"
+                },
+                "description": "The name of the group."
+              },
+              "other_info": {
+                "type": "string",
+                "description": "The group name with the matched query string highlighted with the HTML bold tag."
+              }
+            }
+          }
+        }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
         "name": "dedup_cdc_excluded",
         "json_schema": {
           "type": ["null", "object"],

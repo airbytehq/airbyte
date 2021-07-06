@@ -656,9 +656,12 @@ from {{ from_table }}
         return result
 
     def hash_id(self) -> str:
+        if self.parent:
+            if self.normalized_stream_name() == self.parent.stream_name:
+                return self.name_transformer.normalize_column_name(f"_airbyte_{self.normalized_stream_name()}_child_hashid")
+
         return self.name_transformer.normalize_column_name(f"_airbyte_{self.normalized_stream_name()}_hashid")
 
-    # Nested Streams
 
     def parent_hash_id(self) -> str:
         if self.parent:
