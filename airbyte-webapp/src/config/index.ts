@@ -63,7 +63,9 @@ const config: Config = {
   papercups: {
     accountId: "74560291-451e-4ceb-a802-56706ece528b",
     baseUrl: "https://app.papercups.io",
-    enableStorytime: window.PAPERCUPS_STORYTIME !== "disabled",
+    enableStorytime:
+      !process.env.REACT_APP_PAPERCUPS_DISABLE_STORYTIME &&
+      window.PAPERCUPS_STORYTIME !== "disabled",
   },
   fullstory: {
     orgId: "13AXQ4",

@@ -15,6 +15,7 @@ import PreferencesPage from "./PreferencesPage";
 import OnboardingPage from "./OnboardingPage";
 import ConnectionPage from "./ConnectionPage";
 import AdminPage from "./AdminPage";
+
 import SettingsPage from "./SettingsPage";
 import LoadingPage from "components/LoadingPage";
 import MainView from "components/MainView";
