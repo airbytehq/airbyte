@@ -29,11 +29,15 @@ import com.google.api.gax.paging.Page;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
+import com.google.common.collect.Lists;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.config.Configs;
+import io.airbyte.config.EnvConfigs;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,8 +78,42 @@ public class GcsLogs implements CloudLogs {
 
   @Override
   public List<String> tailCloudLog(Configs configs, String logPath, int numLines) throws IOException {
+    LOGGER.debug("Tailing logs from GCS path: {}", logPath);
     createGcsClientIfNotExists(configs);
-    return null;
+
+    LOGGER.debug("Start GCS list request.");
+    Page<Blob> blobs = GCS.list(
+        configs.getGcpStorageBucket(),
+        Storage.BlobListOption.prefix(logPath));
+
+    var ascendingTimestampBlobs = new ArrayList<Blob>();
+    for (Blob blob : blobs.iterateAll()) {
+      ascendingTimestampBlobs.add(blob);
+    }
+    var descendingTimestampBlobs = Lists.reverse(ascendingTimestampBlobs);
+
+    var lines = new ArrayList<String>();
+    int linesRead = 0;
+
+    LOGGER.debug("Start getting GCS objects.");
+    while (linesRead <= numLines && !descendingTimestampBlobs.isEmpty()) {
+      var poppedBlob = descendingTimestampBlobs.remove(0);
+      var inMemoryData = new ByteArrayOutputStream();
+      poppedBlob.downloadTo(inMemoryData);
+      var currFileStr = inMemoryData.toString();
+      var currFileLines = currFileStr.split("\n");
+      List<String> currFileLinesReversed = Lists.reverse(List.of(currFileLines));
+      for (var line : currFileLinesReversed) {
+        if (linesRead == numLines) {
+          break;
+        }
+        lines.add(0, line);
+        linesRead++;
+      }
+    }
+
+    LOGGER.debug("Done retrieving GCS logs: {}.", logPath);
+    return lines;
   }
 
   private static void createGcsClientIfNotExists(Configs configs) {
@@ -104,6 +142,8 @@ public class GcsLogs implements CloudLogs {
       blob.downloadTo(os);
     }
     os.close();
+    var data = new GcsLogs().tailCloudLog(new EnvConfigs(), "tail", 6);
+    System.out.println(data);
   }
 
 }

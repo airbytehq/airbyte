@@ -97,18 +97,18 @@ public class S3Logs implements CloudLogs {
 
   @Override
   public List<String> tailCloudLog(Configs configs, String logPath, int numLines) throws IOException {
-    LOGGER.info("Tailing logs from S3 path: {}", logPath);
+    LOGGER.debug("Tailing logs from S3 path: {}", logPath);
     createS3ClientIfNotExist(configs);
 
     var s3Bucket = configs.getS3LogBucket();
-    LOGGER.info("Start making S3 list request.");
+    LOGGER.debug("Start making S3 list request.");
     ArrayList<String> ascendingTimestampKeys = getAscendingObjectKeys(logPath, s3Bucket);
     var descendingTimestampKeys = Lists.reverse(ascendingTimestampKeys);
 
     var lines = new ArrayList<String>();
     int linesRead = 0;
 
-    LOGGER.info("Start getting S3 objects.");
+    LOGGER.debug("Start getting S3 objects.");
     while (linesRead <= numLines && !descendingTimestampKeys.isEmpty()) {
       var poppedKey = descendingTimestampKeys.remove(0);
       List<String> currFileLinesReversed = Lists.reverse(getCurrFile(s3Bucket, poppedKey));
@@ -121,7 +121,7 @@ public class S3Logs implements CloudLogs {
       }
     }
 
-    LOGGER.info("Done retrieving S3 logs: {}.", logPath);
+    LOGGER.debug("Done retrieving S3 logs: {}.", logPath);
     return lines;
   }
 
