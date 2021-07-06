@@ -261,7 +261,6 @@ class UserInsights(InstagramIncrementalStream):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """Update stream state from latest record"""
-        print(f"{current_stream_state}, {latest_record}")
         record_value = latest_record[self.cursor_field]
         state_value = current_stream_state.get("business_account_id", {}).get(self.cursor_field) or record_value
         max_cursor = max(pendulum.parse(state_value), pendulum.parse(record_value))

@@ -47,7 +47,6 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
 
     def should_retry_api_error(exc: FacebookRequestError):
-        print("Got ERROR", exc)
         # Retryable OAuth Error Codes
         if exc.api_error_type() == "OAuthException" and exc.api_error_code() in (1, 2, 4, 17, 341, 368):
             return True
