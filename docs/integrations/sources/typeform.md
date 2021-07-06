@@ -59,6 +59,8 @@ Typeform API page size limit per source:
 
 Connector performs additional API call to fetch all possible `form ids` on an account using [retrieve forms endpoint](https://developer.typeform.com/create/reference/retrieve-forms/)
 
+API rate limits (2 requests per second): https://developer.typeform.com/get-started/#rate-limits
+
 ## Changelog
 
 | Version | Date       | Pull Request | Subject |

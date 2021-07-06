@@ -97,7 +97,7 @@ class TrimForms(TypeformStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"page_size": self.limit}
-        params["page"] = next_page_token if next_page_token else 1
+        params["page"] = next_page_token or 1
         return params
 
 
