@@ -33,7 +33,6 @@ from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
 from facebook_business.adobjects.iguser import IGUser
 from facebook_business.adobjects.page import Page
-from facebook_business.api import Cursor
 from facebook_business.exceptions import FacebookRequestError
 
 from source_instagram.common import InstagramAPIException, retry_pattern
