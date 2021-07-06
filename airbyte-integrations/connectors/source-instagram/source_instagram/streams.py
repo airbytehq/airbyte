@@ -95,7 +95,7 @@ class InstagramStream(Stream, ABC):
 
 
 class InstagramIncrementalStream(InstagramStream, ABC):
-    """TODO"""
+    """Base class for incremental streams"""
 
     def __init__(self, start_date: datetime, **kwargs):
         super().__init__(**kwargs)
@@ -103,7 +103,7 @@ class InstagramIncrementalStream(InstagramStream, ABC):
 
 
 class Users(InstagramStream):
-    """TODO"""
+    """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-user"""
 
     def read_records(
         self,
@@ -120,7 +120,7 @@ class Users(InstagramStream):
 
 
 class UserLifetimeInsights(InstagramStream):
-    """TODO"""
+    """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights"""
 
     primary_key = None
     LIFETIME_METRICS = ["audience_city", "audience_country", "audience_gender_age", "audience_locale"]
@@ -249,7 +249,7 @@ class UserInsights(InstagramIncrementalStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        """"""
+        """Append datetime range params"""
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice)
         return {
             **params,
@@ -384,7 +384,7 @@ class Stories(InstagramStream):
 
 
 class StoryInsights(Stories):
-    """TODO"""
+    """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights"""
 
     metrics = ["exits", "impressions", "reach", "replies", "taps_forward", "taps_back"]
 

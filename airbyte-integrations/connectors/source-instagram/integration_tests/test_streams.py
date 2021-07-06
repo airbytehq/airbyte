@@ -45,25 +45,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-import json
 from collections import Counter
 from typing import List, Tuple, Callable
 
-import pytest
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 from source_instagram.source import SourceInstagram
-
-
-@pytest.fixture(scope="session", name="config")
-def config_fixture():
-    with open("secrets/config.json", "r") as config_file:
-        return json.load(config_file)
-
-
-@pytest.fixture(scope="session", name="configured_catalog")
-def configured_catalog_fixture():
-    return ConfiguredAirbyteCatalog.parse_file("integration_tests/configured_catalog.json")
 
 
 class TestFacebookMarketingSource:
