@@ -254,9 +254,9 @@
   documentationUrl: https://hub.docker.com/r/airbyte/source-instagram
 - sourceDefinitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
   name: Gitlab
-  dockerRepository: airbyte/source-gitlab-singer
-  dockerImageTag: 0.1.2
-  documentationUrl: https://hub.docker.com/r/airbyte/source-gitlab-singer
+  dockerRepository: airbyte/source-gitlab
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-gitlab
 - sourceDefinitionId: ed9dfefa-1bbc-419d-8c5e-4d78f0ef6734
   name: Google Workspace Admin Reports
   dockerRepository: airbyte/source-google-workspace-admin-reports
