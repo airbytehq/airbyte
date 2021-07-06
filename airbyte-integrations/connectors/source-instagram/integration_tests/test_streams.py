@@ -46,7 +46,7 @@ def state_fixture() -> MutableMapping[str, Any]:
     }
 
 
-class TestFacebookMarketingSource:
+class TestInstagramSource:
     """Custom integration tests should test incremental with nested state"""
 
     def test_incremental_streams(self, configured_catalog, config, state):
