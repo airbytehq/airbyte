@@ -24,24 +24,28 @@
 
 
 import base64
-
+import time
 from abc import ABC
 from datetime import date, timedelta
+from pprint import pprint
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import parse_qs, urlparse
 
 import requests
+from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, TokenAuthenticator
-from airbyte_cdk.logger import AirbyteLogger
 
 
 class MixpanelStream(HttpStream, ABC):
 
     url_base = "https://mixpanel.com/api/2.0/"
     date_window_size = 30  # days
+
+    # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
+    rate_limit = 400  # 400 queries per hour == 1 req in 9 secs
 
     def __init__(
         self,
@@ -71,15 +75,18 @@ class MixpanelStream(HttpStream, ABC):
         start_date = min(start_date, self.end_date)
 
         while start_date <= self.end_date:
-            end_date = start_date + timedelta(days=self.date_window_size)
-            date_slices.append({
-                "start_date": str(start_date),
-                "end_date": str(min(end_date, self.end_date)),
-            })
+            end_date = start_date + timedelta(days=self.date_window_size - 1)  # -1 is needed because dates are inclusive
+            date_slices.append(
+                {
+                    "start_date": str(start_date),
+                    "end_date": str(min(end_date, self.end_date)),
+                }
+            )
             # add 1 additional day because date range is inclusive
             start_date = end_date + timedelta(days=1)
 
-        print(f"==== date_slices: {date_slices} \n")
+        print(f"==== date_slices len: {len(date_slices)} \n")
+        pprint(date_slices)
         return date_slices
 
     def request_headers(
@@ -93,6 +100,8 @@ class MixpanelStream(HttpStream, ABC):
         return {}
 
     def _send_request(self, request: requests.PreparedRequest) -> requests.Response:
+        # wait for 9 seconds before
+        time.sleep(3600 / self.rate_limit)
         try:
             return super()._send_request(request)
         except requests.exceptions.HTTPError as e:
@@ -119,7 +128,6 @@ class MixpanelStream(HttpStream, ABC):
 
 
 class IncrementalMixpanelStream(MixpanelStream, ABC):
-
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
         # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
         # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
@@ -151,7 +159,7 @@ class Funnels(IncrementalMixpanelStream):
     primary_key = ["funnel_id", "date"]
     data_field = "data"
     cursor_field = "date"
-    min_date = '90'  # days
+    min_date = "90"  # days
 
     def path(self, **kwargs) -> str:
         return "funnels"
@@ -161,7 +169,7 @@ class Funnels(IncrementalMixpanelStream):
     ) -> MutableMapping[str, Any]:
         return {
             "funnel_id": stream_slice["funnel_id"],
-            # 'unit': 'day'
+            "unit": "day",
             "from_date": stream_slice["start_date"],
             "to_date": stream_slice["end_date"],
         }
@@ -231,7 +239,8 @@ class Funnels(IncrementalMixpanelStream):
             for date_slice in date_slices:
                 stream_slices.append({**funnel_slice, **date_slice})
 
-        print(f"==== stream_slices: {stream_slices} \n")
+        print(f"==== stream_slices len: {len(stream_slices)} \n")
+        pprint(stream_slices)
         return stream_slices
 
 
@@ -305,6 +314,7 @@ class Engage(MixpanelStream):
 
     }
     """
+
     http_method = "POST"
     data_field = "results"
     primary_key = "distinct_id"
@@ -507,9 +517,12 @@ class Export(MixpanelStream):
     }
     ]
 
+
+    Raw Export API Rate Limit (https://data.mixpanel.com/api/2.0/export/) : A maximum of 100 concurrent queries, 3 queries per second and 60 queries per hour.
     """
+
     data_field = None
-    primary_key = 'time'
+    primary_key = "time"
     # cursor_field = 'time'
 
     def path(self, **kwargs) -> str:
@@ -574,15 +587,17 @@ class SourceMixpanel(AbstractSource):
 
         now = date.today()
 
-        start_date = config.get('start_date')
+        start_date = config.get("start_date")
         if start_date and isinstance(start_date, str):
-            start_date = date.fromisoformat(config['start_date'])
-        config['start_date'] = start_date or now - timedelta(days=365)  # set to 1 year ago by default
+            start_date = date.fromisoformat(config["start_date"])
+        year_ago = now - timedelta(days=365)
+        # start_date can't be older than 1 year ago
+        config["start_date"] = start_date if start_date and start_date >= year_ago else year_ago  # set to 1 year ago by default
 
-        end_date = config.get('end_date')
+        end_date = config.get("end_date")
         if end_date and isinstance(end_date, str):
             end_date = date.fromisoformat(end_date)
-        config['end_date'] = end_date or now  # set to now by default
+        config["end_date"] = end_date or now  # set to now by default
 
         AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
 

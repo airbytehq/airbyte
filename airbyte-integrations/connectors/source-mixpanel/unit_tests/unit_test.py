@@ -22,6 +22,60 @@
 # SOFTWARE.
 #
 
+from datetime import date, timedelta
 
-def test_example_method():
-    assert True
+from airbyte_cdk.sources.streams.http.auth import NoAuth
+from source_mixpanel.source import Funnels
+
+
+def test_date_slices():
+
+    now = date.today()
+
+    stream_slices = Funnels(authenticator=NoAuth(), start_date=now, end_date=now, date_window_size=1).date_slices(sync_mode="any")
+    assert 1 == len(stream_slices)
+
+    stream_slices = Funnels(authenticator=NoAuth(), start_date=now - timedelta(days=1), end_date=now, date_window_size=1).date_slices(
+        sync_mode="any"
+    )
+    assert 2 == len(stream_slices)
+
+    stream_slices = Funnels(authenticator=NoAuth(), start_date=now - timedelta(days=2), end_date=now, date_window_size=1).date_slices(
+        sync_mode="any"
+    )
+    assert 3 == len(stream_slices)
+
+    stream_slices = Funnels(authenticator=NoAuth(), start_date=now - timedelta(days=2), end_date=now, date_window_size=10).date_slices(
+        sync_mode="any"
+    )
+    assert 1 == len(stream_slices)
+
+    stream_slices = Funnels(
+        authenticator=NoAuth(), start_date=date.fromisoformat("2021-07-01"), end_date=date.fromisoformat("2021-07-01"), date_window_size=1
+    ).date_slices(sync_mode="any")
+    assert [{"start_date": "2021-07-01", "end_date": "2021-07-01"}] == stream_slices
+
+    stream_slices = Funnels(
+        authenticator=NoAuth(), start_date=date.fromisoformat("2021-07-01"), end_date=date.fromisoformat("2021-07-02"), date_window_size=1
+    ).date_slices(sync_mode="any")
+    assert [{"start_date": "2021-07-01", "end_date": "2021-07-01"}, {"start_date": "2021-07-02", "end_date": "2021-07-02"}] == stream_slices
+
+    stream_slices = Funnels(
+        authenticator=NoAuth(), start_date=date.fromisoformat("2021-07-01"), end_date=date.fromisoformat("2021-07-03"), date_window_size=1
+    ).date_slices(sync_mode="any")
+    assert [
+        {"start_date": "2021-07-01", "end_date": "2021-07-01"},
+        {"start_date": "2021-07-02", "end_date": "2021-07-02"},
+        {"start_date": "2021-07-03", "end_date": "2021-07-03"},
+    ] == stream_slices
+
+    stream_slices = Funnels(
+        authenticator=NoAuth(), start_date=date.fromisoformat("2021-07-01"), end_date=date.fromisoformat("2021-07-03"), date_window_size=2
+    ).date_slices(sync_mode="any")
+    assert [{"start_date": "2021-07-01", "end_date": "2021-07-02"}, {"start_date": "2021-07-03", "end_date": "2021-07-03"}] == stream_slices
+
+    # test with stream_state
+    stream_slices = Funnels(
+        authenticator=NoAuth(), start_date=date.fromisoformat("2021-07-01"), end_date=date.fromisoformat("2021-07-03"), date_window_size=1
+    ).date_slices(sync_mode="any", stream_state={"date": "2021-07-02"})
+    assert [{"start_date": "2021-07-02", "end_date": "2021-07-02"}, {"start_date": "2021-07-03", "end_date": "2021-07-03"}] == stream_slices
