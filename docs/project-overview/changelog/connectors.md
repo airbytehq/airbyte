@@ -10,6 +10,26 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on.
 
+## 7/01/2021 
+
+Bugfixes:
+* **Looker** source: Now supports the Run Look stream.
+* **Google Adwords**: CI is fixed and new version is published.
+* **Slack** source: Now Airbyte native and supports channels, channel members, messages, users, and threads streams.
+* **Freshdesk** source: Does not fail after 300 pages anymore.  
+* **MSSQL** source: Now has comprehensive data type tests.
+
+## 6/24/2021 
+
+1 new source:
+* [**Db2**](https://docs.airbyte.io/integrations/sources/db2)
+
+New features:
+* **S3** destination: supports Avro and Jsonl output!
+* **BigQuery** destination: now supports loading JSON data as structured data.  
+* **Looker** source: Now supports self-hosted instances.  
+* **Facebook** source: is now migrated to the CDK.
+
 ## 6/18/2021
 
 1 new source:

@@ -31,10 +31,16 @@ from normalization.transform_catalog.reserved_keywords import is_reserved_keywor
 from normalization.transform_catalog.utils import jinja_call
 
 DESTINATION_SIZE_LIMITS = {
+    # https://cloud.google.com/bigquery/quotas#all_tables
     DestinationType.BIGQUERY.value: 1024,
+    # https://docs.snowflake.com/en/sql-reference/identifiers-syntax.html
     DestinationType.SNOWFLAKE.value: 255,
+    # https://docs.aws.amazon.com/redshift/latest/dg/r_names.html
     DestinationType.REDSHIFT.value: 127,
+    # https://www.postgresql.org/docs/12/limits.html
     DestinationType.POSTGRES.value: 63,
+    # https://dev.mysql.com/doc/refman/8.0/en/identifier-length.html
+    DestinationType.MYSQL.value: 64,
 }
 
 # DBT also needs to generate suffix to table names, so we need to make sure it has enough characters to do so...
@@ -176,6 +182,9 @@ class DestinationNameTransformer:
         elif self.destination_type.value == DestinationType.SNOWFLAKE.value:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.upper()
+        elif self.destination_type.value == DestinationType.MYSQL.value:
+            if not is_quoted and not self.needs_quotes(input_name):
+                result = input_name.lower()
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result
