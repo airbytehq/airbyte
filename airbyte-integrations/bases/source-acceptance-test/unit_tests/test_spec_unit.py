@@ -50,13 +50,13 @@ class TestEnvAttributes:
         return docker_runner
 
     def test_build_dockerfile_valid(self):
-        valid_text = b"""
+        dockerfile_text = b"""
             FROM python:3.7-slim
             RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
             ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
             ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
             """
-        docker_runner = self.create_dockerfile(valid_text, 'my-valid-one')
+        docker_runner = self.create_dockerfile(dockerfile_text, 'my-valid-one')
 
         assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT"), "AIRBYTE_ENTRYPOINT must be set in dockerfile"
         assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT") == " ".join(
@@ -64,22 +64,22 @@ class TestEnvAttributes:
         ), "env should be equal to space-joined entrypoint"
 
     def test_build_dockerfile_no_env(self):
-        no_env_text = b"""
+        dockerfile_text = b"""
             FROM python:3.7-slim
             RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
             ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
             """
-        docker_runner = self.create_dockerfile(no_env_text, 'my-no-env-one')
+        docker_runner = self.create_dockerfile(dockerfile_text, 'my-no-env-one')
         assert not docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT"), "this test should fail if AIRBYTE_ENTRYPOINT defined"
 
     def test_build_dockerfile_ne_properties(self):
-        ne_env_entrypoint_text = b"""
+        dockerfile_text = b"""
             FROM python:3.7-slim
             RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
             ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
             ENTRYPOINT ["python3", "/airbyte/integration_code/main.py"]
             """
-        docker_runner = self.create_dockerfile(ne_env_entrypoint_text, 'ne__one')
+        docker_runner = self.create_dockerfile(dockerfile_text, 'ne__one')
         assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT"), "AIRBYTE_ENTRYPOINT must be set in dockerfile"
         assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT") != " ".join(docker_runner.entry_point), (
             "This test should fail if " ".join(ENTRYPOINT)==ENV"
