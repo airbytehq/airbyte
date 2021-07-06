@@ -57,8 +57,8 @@ sudo /usr/local/bin/docker-compose up -d
 
 
 
-Create SSH Tunnel to Login to the Instance
-------------------------------------------
+## Create SSH Tunnel to Login to the Instance
+
 
 it is highly recommended to not have a Public IP for the Instance where you are running Airbyte)
 
