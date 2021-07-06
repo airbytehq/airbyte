@@ -68,6 +68,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -359,8 +360,8 @@ public class CdcMySqlSourceTest {
             config.get("port").asInt()),
         DRIVER_CLASS);
 
-    MySqlCdcTargetPosition targetFilePosition = MySqlCdcTargetPosition.targetPosition(jdbcDatabase);
-    assertNotNull(targetFilePosition);
+    Optional<TargetFilePosition> targetFilePosition = TargetFilePosition.targetFilePosition(jdbcDatabase);
+    assertTrue(targetFilePosition.isPresent());
     /**
      * Debezium sets the binlog file name and position values for all the records fetched during
      * snapshot to the latest log position fetched via query SHOW MASTER STATUS Ref :
@@ -368,8 +369,8 @@ public class CdcMySqlSourceTest {
      */
     recordMessages.forEach(record -> {
       assertEquals(record.getData().get(CDC_LOG_FILE).asText(),
-          targetFilePosition.fileName);
-      assertEquals(record.getData().get(CDC_LOG_POS).asInt(), targetFilePosition.position);
+          targetFilePosition.get().fileName);
+      assertEquals(record.getData().get(CDC_LOG_POS).asInt(), targetFilePosition.get().position);
     });
 
     assertExpectedRecords(
