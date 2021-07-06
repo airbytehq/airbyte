@@ -24,7 +24,11 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
   );
 
   if (!job.attempts.length) {
-    return <Logs />;
+    return (
+      <Logs>
+        <FormattedMessage id="sources.emptyLogs" />
+      </Logs>
+    );
   }
 
   const data = job.attempts.map((item, index) => ({
@@ -64,11 +68,15 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
           />
         ) : null}
       </CenteredDetails>
-      <Logs
-        logsArray={
-          hasLogs ? job.logsByAttempt[attemptNumber].logLines : undefined
-        }
-      />
+      <Logs>
+        {hasLogs ? (
+          job.logsByAttempt[attemptNumber].logLines.map((item, key) => (
+            <div key={`log-${id}-${key}`}>{item}</div>
+          ))
+        ) : (
+          <FormattedMessage id="sources.emptyLogs" />
+        )}
+      </Logs>
     </>
   );
 };

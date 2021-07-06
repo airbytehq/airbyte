@@ -283,7 +283,7 @@ class TableNameRegistry:
         else:
             raise KeyError(f"Registry does not contain an entry for {schema} {json_path} {stream_name}")
 
-    def get_table_name(self, schema: str, json_path: List[str], stream_name: str, suffix: str, truncate: bool = False):
+    def get_table_name(self, schema: str, json_path: List[str], stream_name: str, suffix: str):
         """
         Return the table name from the registry that should be used for this combination of schema/json_path_to_substream
         """
@@ -296,9 +296,9 @@ class TableNameRegistry:
             norm_suffix = suffix if not suffix or suffix.startswith("_") else f"_{suffix}"
         else:
             norm_suffix = ""
-        return self.name_transformer.normalize_table_name(f"{table_name}{norm_suffix}", False, truncate)
+        return self.name_transformer.normalize_table_name(f"{table_name}{norm_suffix}", False, False)
 
-    def get_file_name(self, schema: str, json_path: List[str], stream_name: str, suffix: str, truncate: bool = False):
+    def get_file_name(self, schema: str, json_path: List[str], stream_name: str, suffix: str):
         """
         Return the file name from the registry that should be used for this combination of schema/json_path_to_substream
         """
@@ -311,7 +311,7 @@ class TableNameRegistry:
             norm_suffix = suffix if not suffix or suffix.startswith("_") else f"_{suffix}"
         else:
             norm_suffix = ""
-        return self.name_transformer.normalize_table_name(f"{file_name}{norm_suffix}", False, truncate)
+        return self.name_transformer.normalize_table_name(f"{file_name}{norm_suffix}", False, False)
 
     def to_dict(self, apply_function=(lambda x: x)) -> Dict:
         """

@@ -42,12 +42,12 @@ public class JdbcSource extends AbstractJdbcSource implements Source {
 
   // no-op for JdbcSource since the config it receives is designed to be use for JDBC.
   @Override
-  public JsonNode toDatabaseConfig(JsonNode config) {
+  public JsonNode toJdbcConfig(JsonNode config) {
     return config;
   }
 
   @Override
-  public Set<String> getExcludedInternalNameSpaces() {
+  public Set<String> getExcludedInternalSchemas() {
     return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
   }
 

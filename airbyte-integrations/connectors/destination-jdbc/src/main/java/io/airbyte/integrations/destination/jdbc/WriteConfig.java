@@ -78,16 +78,4 @@ public class WriteConfig {
     return syncMode;
   }
 
-  @Override
-  public String toString() {
-    return "WriteConfig{" +
-        "streamName=" + streamName +
-        ", namespace=" + namespace +
-        ", outputSchemaName=" + outputSchemaName +
-        ", tmpTableName=" + tmpTableName +
-        ", outputTableName=" + outputTableName +
-        ", syncMode=" + syncMode +
-        '}';
-  }
-
 }

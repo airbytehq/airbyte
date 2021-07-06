@@ -46,7 +46,7 @@ public class RedshiftSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public JsonNode toDatabaseConfig(JsonNode redshiftConfig) {
+  public JsonNode toJdbcConfig(JsonNode redshiftConfig) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("username", redshiftConfig.get("username").asText())
         .put("password", redshiftConfig.get("password").asText())
@@ -58,7 +58,7 @@ public class RedshiftSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public Set<String> getExcludedInternalNameSpaces() {
+  public Set<String> getExcludedInternalSchemas() {
     return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
   }
 

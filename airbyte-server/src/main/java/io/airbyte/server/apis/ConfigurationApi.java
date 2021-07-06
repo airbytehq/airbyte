@@ -83,7 +83,6 @@ import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WorkspaceCreate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
-import io.airbyte.api.model.WorkspaceReadList;
 import io.airbyte.api.model.WorkspaceUpdate;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.Configs;
@@ -187,11 +186,6 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   // WORKSPACE
-
-  @Override
-  public WorkspaceReadList listWorkspaces() {
-    return execute(workspacesHandler::listWorkspaces);
-  }
 
   @Override
   public WorkspaceRead createWorkspace(@Valid WorkspaceCreate workspaceCreate) {

@@ -41,20 +41,17 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.relationaldb.StateManager;
-import io.airbyte.integrations.source.relationaldb.TableInfo;
-import io.airbyte.integrations.source.relationaldb.models.CdcState;
+import io.airbyte.integrations.source.jdbc.JdbcStateManager;
+import io.airbyte.integrations.source.jdbc.models.CdcState;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
 import io.debezium.engine.ChangeEvent;
-import java.sql.JDBCType;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -190,7 +187,7 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public JsonNode toDatabaseConfig(JsonNode config) {
+  public JsonNode toJdbcConfig(JsonNode config) {
     final StringBuilder jdbc_url = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
         config.get("host").asText(),
         config.get("port").asText(),
@@ -224,25 +221,25 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JdbcDatabase database,
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JsonNode config,
+                                                                             JdbcDatabase database,
                                                                              ConfiguredAirbyteCatalog catalog,
-                                                                             Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
-                                                                             StateManager stateManager,
+                                                                             Map<String, TableInfoInternal> tableNameToTable,
+                                                                             JdbcStateManager stateManager,
                                                                              Instant emittedAt) {
-    JsonNode sourceConfig = database.getSourceConfig();
-    if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
+    if (isCdc(config) && shouldUseCDC(catalog)) {
       LOGGER.info("using CDC: {}", true);
       // TODO: Figure out how to set the isCDC of stateManager to true. Its always false
       final AirbyteFileOffsetBackingStore offsetManager = initializeState(stateManager);
       AirbyteSchemaHistoryStorage schemaHistoryManager = initializeDBHistory(stateManager);
-      FilteredFileDatabaseHistory.setDatabaseName(sourceConfig.get("database").asText());
+      FilteredFileDatabaseHistory.setDatabaseName(config.get("database").asText());
       /**
        * We use 10000 as capacity cause the default queue size and batch size of debezium is :
        * {@link io.debezium.config.CommonConnectorConfig#DEFAULT_MAX_BATCH_SIZE} is 2048
        * {@link io.debezium.config.CommonConnectorConfig#DEFAULT_MAX_QUEUE_SIZE} is 8192
        */
       final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(10000);
-      final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(sourceConfig, catalog, offsetManager, schemaHistoryManager);
+      final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(config, catalog, offsetManager, schemaHistoryManager);
       publisher.start(queue);
 
       Optional<TargetFilePosition> targetFilePosition = TargetFilePosition
@@ -296,13 +293,13 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
       return Collections.singletonList(messageIteratorWithStateDecorator);
     } else {
       LOGGER.info("using CDC: {}", false);
-      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager,
+      return super.getIncrementalIterators(config, database, catalog, tableNameToTable, stateManager,
           emittedAt);
     }
   }
 
   @Override
-  public Set<String> getExcludedInternalNameSpaces() {
+  public Set<String> getExcludedInternalSchemas() {
     return Set.of(
         "information_schema",
         "mysql",

@@ -42,10 +42,10 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.SourceJdbcUtils;
-import io.airbyte.integrations.source.relationaldb.models.DbState;
-import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
+import io.airbyte.integrations.source.jdbc.models.JdbcState;
+import io.airbyte.integrations.source.jdbc.models.JdbcStreamState;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -175,7 +175,7 @@ public abstract class JdbcSourceAcceptanceTest {
   public void setup() throws Exception {
     source = getSource();
     config = getConfig();
-    final JsonNode jdbcConfig = source.toDatabaseConfig(config);
+    final JsonNode jdbcConfig = source.toJdbcConfig(config);
 
     streamName = TABLE_NAME;
 
@@ -310,16 +310,16 @@ public abstract class JdbcSourceAcceptanceTest {
     database.execute(connection -> {
       connection.createStatement().execute(
           String.format("CREATE TABLE %s(id VARCHAR(200), name VARCHAR(200))",
-              SourceJdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, name) VALUES ('1','picard')",
-              SourceJdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, name) VALUES ('2', 'crusher')",
-              SourceJdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, name) VALUES ('3', 'vash')",
-              SourceJdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
     });
 
     final AirbyteCatalog actual = source.discover(config);
@@ -558,8 +558,8 @@ public abstract class JdbcSourceAcceptanceTest {
       airbyteStream.setDestinationSyncMode(DestinationSyncMode.APPEND);
     });
 
-    final DbState state = new DbState()
-        .withStreams(Lists.newArrayList(new DbStreamState().withStreamName(streamName).withStreamNamespace(namespace)));
+    final JdbcState state = new JdbcState()
+        .withStreams(Lists.newArrayList(new JdbcStreamState().withStreamName(streamName).withStreamNamespace(namespace)));
     final List<AirbyteMessage> actualMessagesFirstSync = MoreIterators
         .toList(source.read(config, configuredCatalog, Jsons.jsonNode(state)));
 
@@ -598,9 +598,9 @@ public abstract class JdbcSourceAcceptanceTest {
     expectedMessages.add(new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
-            .withData(Jsons.jsonNode(new DbState()
+            .withData(Jsons.jsonNode(new JdbcState()
                 .withCdc(false)
-                .withStreams(Lists.newArrayList(new DbStreamState()
+                .withStreams(Lists.newArrayList(new JdbcStreamState()
                     .withStreamName(streamName)
                     .withStreamNamespace(namespace)
                     .withCursorField(ImmutableList.of(COL_ID))
@@ -645,8 +645,8 @@ public abstract class JdbcSourceAcceptanceTest {
       airbyteStream.setDestinationSyncMode(DestinationSyncMode.APPEND);
     });
 
-    final DbState state = new DbState()
-        .withStreams(Lists.newArrayList(new DbStreamState().withStreamName(streamName).withStreamNamespace(namespace)));
+    final JdbcState state = new JdbcState()
+        .withStreams(Lists.newArrayList(new JdbcStreamState().withStreamName(streamName).withStreamNamespace(namespace)));
     final List<AirbyteMessage> actualMessagesFirstSync = MoreIterators
         .toList(source.read(config, configuredCatalog, Jsons.jsonNode(state)));
 
@@ -672,15 +672,15 @@ public abstract class JdbcSourceAcceptanceTest {
     expectedMessagesFirstSync.add(new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
-            .withData(Jsons.jsonNode(new DbState()
+            .withData(Jsons.jsonNode(new JdbcState()
                 .withCdc(false)
                 .withStreams(Lists.newArrayList(
-                    new DbStreamState()
+                    new JdbcStreamState()
                         .withStreamName(streamName)
                         .withStreamNamespace(namespace)
                         .withCursorField(ImmutableList.of(COL_ID))
                         .withCursor("3"),
-                    new DbStreamState()
+                    new JdbcStreamState()
                         .withStreamName(streamName2)
                         .withStreamNamespace(namespace)
                         .withCursorField(ImmutableList.of(COL_ID))))))));
@@ -689,15 +689,15 @@ public abstract class JdbcSourceAcceptanceTest {
     expectedMessagesFirstSync.add(new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
-            .withData(Jsons.jsonNode(new DbState()
+            .withData(Jsons.jsonNode(new JdbcState()
                 .withCdc(false)
                 .withStreams(Lists.newArrayList(
-                    new DbStreamState()
+                    new JdbcStreamState()
                         .withStreamName(streamName)
                         .withStreamNamespace(namespace)
                         .withCursorField(ImmutableList.of(COL_ID))
                         .withCursor("3"),
-                    new DbStreamState()
+                    new JdbcStreamState()
                         .withStreamName(streamName2)
                         .withStreamNamespace(namespace)
                         .withCursorField(ImmutableList.of(COL_ID))
@@ -745,8 +745,8 @@ public abstract class JdbcSourceAcceptanceTest {
     airbyteStream.setCursorField(Lists.newArrayList(cursorField));
     airbyteStream.setDestinationSyncMode(DestinationSyncMode.APPEND);
 
-    final DbState state = new DbState()
-        .withStreams(Lists.newArrayList(new DbStreamState()
+    final JdbcState state = new JdbcState()
+        .withStreams(Lists.newArrayList(new JdbcStreamState()
             .withStreamName(airbyteStream.getStream().getName())
             .withStreamNamespace(airbyteStream.getStream().getNamespace())
             .withCursorField(ImmutableList.of(initialCursorField))
@@ -764,9 +764,9 @@ public abstract class JdbcSourceAcceptanceTest {
     expectedMessages.add(new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
-            .withData(Jsons.jsonNode(new DbState()
+            .withData(Jsons.jsonNode(new JdbcState()
                 .withCdc(false)
-                .withStreams(Lists.newArrayList(new DbStreamState()
+                .withStreams(Lists.newArrayList(new JdbcStreamState()
                     .withStreamName(airbyteStream.getStream().getName())
                     .withStreamNamespace(airbyteStream.getStream().getNamespace())
                     .withCursorField(ImmutableList.of(cursorField))
@@ -847,26 +847,22 @@ public abstract class JdbcSourceAcceptanceTest {
       connection.createStatement()
           .execute(
               createTableQuery(getFullyQualifiedTableName(
-                  SourceJdbcUtils.enquoteIdentifier(connection, tableNameWithSpaces)),
-                  "id INTEGER, " + SourceJdbcUtils
-                      .enquoteIdentifier(connection, COL_LAST_NAME_WITH_SPACE)
+                  JdbcUtils.enquoteIdentifier(connection, tableNameWithSpaces)),
+                  "id INTEGER, " + JdbcUtils.enquoteIdentifier(connection, COL_LAST_NAME_WITH_SPACE)
                       + " VARCHAR(200)",
                   ""));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, %s) VALUES (1,'picard')",
-              getFullyQualifiedTableName(
-                  SourceJdbcUtils.enquoteIdentifier(connection, tableNameWithSpaces)),
-              SourceJdbcUtils.enquoteIdentifier(connection, COL_LAST_NAME_WITH_SPACE)));
+              getFullyQualifiedTableName(JdbcUtils.enquoteIdentifier(connection, tableNameWithSpaces)),
+              JdbcUtils.enquoteIdentifier(connection, COL_LAST_NAME_WITH_SPACE)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, %s) VALUES (2, 'crusher')",
-              getFullyQualifiedTableName(
-                  SourceJdbcUtils.enquoteIdentifier(connection, tableNameWithSpaces)),
-              SourceJdbcUtils.enquoteIdentifier(connection, COL_LAST_NAME_WITH_SPACE)));
+              getFullyQualifiedTableName(JdbcUtils.enquoteIdentifier(connection, tableNameWithSpaces)),
+              JdbcUtils.enquoteIdentifier(connection, COL_LAST_NAME_WITH_SPACE)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, %s) VALUES (3, 'vash')",
-              getFullyQualifiedTableName(
-                  SourceJdbcUtils.enquoteIdentifier(connection, tableNameWithSpaces)),
-              SourceJdbcUtils.enquoteIdentifier(connection, COL_LAST_NAME_WITH_SPACE)));
+              getFullyQualifiedTableName(JdbcUtils.enquoteIdentifier(connection, tableNameWithSpaces)),
+              JdbcUtils.enquoteIdentifier(connection, COL_LAST_NAME_WITH_SPACE)));
     });
 
     return CatalogHelpers.createConfiguredAirbyteStream(
@@ -877,7 +873,7 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   public String getFullyQualifiedTableName(String tableName) {
-    return SourceJdbcUtils.getFullyQualifiedTableName(getDefaultSchemaName(), tableName);
+    return JdbcUtils.getFullyQualifiedTableName(getDefaultSchemaName(), tableName);
   }
 
   public void createSchemas() throws SQLException {

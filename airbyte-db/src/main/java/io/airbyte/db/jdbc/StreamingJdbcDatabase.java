@@ -27,7 +27,6 @@ package io.airbyte.db.jdbc;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -40,7 +39,7 @@ import javax.sql.DataSource;
  * allows the developer to specify the correct configuration in order for a
  * {@link PreparedStatement} to execute as in a streaming / chunked manner.
  */
-public class StreamingJdbcDatabase extends JdbcDatabase {
+public class StreamingJdbcDatabase implements JdbcDatabase {
 
   private final DataSource dataSource;
   private final JdbcDatabase database;
@@ -50,11 +49,6 @@ public class StreamingJdbcDatabase extends JdbcDatabase {
     this.dataSource = dataSource;
     this.database = database;
     this.jdbcStreamingQueryConfiguration = jdbcStreamingQueryConfiguration;
-  }
-
-  @Override
-  public DatabaseMetaData getMetaData() throws SQLException {
-    return database.getMetaData();
   }
 
   @Override

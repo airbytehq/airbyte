@@ -41,7 +41,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CockroachDbSource extends AbstractJdbcSource {
+public class CockroachDbSource extends AbstractJdbcSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CockroachDbSource.class);
 
@@ -52,7 +52,7 @@ public class CockroachDbSource extends AbstractJdbcSource {
   }
 
   @Override
-  public JsonNode toDatabaseConfig(JsonNode config) {
+  public JsonNode toJdbcConfig(JsonNode config) {
 
     List<String> additionalParameters = new ArrayList<>();
 
@@ -80,7 +80,7 @@ public class CockroachDbSource extends AbstractJdbcSource {
   }
 
   @Override
-  public Set<String> getExcludedInternalNameSpaces() {
+  public Set<String> getExcludedInternalSchemas() {
     return Set
         .of("information_schema", "pg_catalog", "pg_internal", "catalog_history", "pg_extension",
             "crdb_internal");
