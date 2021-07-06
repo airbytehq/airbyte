@@ -6,16 +6,16 @@ set -e
 
 assert_root
 
+# Since KIND does not have access to the local docker agent, manually load the minimum images required for the Kubernetes Acceptance Tests.
+# See https://kind.sigs.k8s.io/docs/user/quick-start/#loading-an-image-into-your-cluster.
+echo "Loading images into KIND..."
+kind load docker-image airbyte/server:dev --name chart-testing
+kind load docker-image airbyte/scheduler:dev --name chart-testing
+kind load docker-image airbyte/webapp:dev --name chart-testing
+kind load docker-image airbyte/seed:dev --name chart-testing
+kind load docker-image airbyte/db:dev --name chart-testing
+
 echo "Starting app..."
-
-echo "Updating dev manifests with S3 logging configuration..."
-export AWS_ACCESS_KEY_ID="$(echo "$AWS_S3_INTEGRATION_TEST_CREDS" | jq -r .aws_access_key_id)"
-export AWS_SECRET_ACCESS_KEY="$(echo "$AWS_S3_INTEGRATION_TEST_CREDS" | jq -r .aws_secret_access_key)"
-
-sed -i 's/S3_LOG_BUCKET=/S3_LOG_BUCKET=airbyte-kube-integration-logging-test/g' kube/overlays/dev/.env
-sed -i "s/S3_LOG_BUCKET_REGION=/S3_LOG_BUCKET_REGION=us-west-2/g" kube/overlays/dev/.env
-sed -i "s/AWS_ACCESS_KEY_ID=/AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}/g" kube/overlays/dev/.env
-sed -i "s/AWS_SECRET_ACCESS_KEY=/AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}/g" kube/overlays/dev/.env
 
 echo "Applying dev manifests to kubernetes..."
 kubectl apply -k kube/overlays/dev

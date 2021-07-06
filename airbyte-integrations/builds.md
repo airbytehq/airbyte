@@ -11,6 +11,8 @@
 
  Asana   [![source-asana](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-asana%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-asana)
 
+ AWS CloudTrail   [![source-aws-cloudtrail](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-aws-cloudtrail%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-aws-cloudtrail)
+
  Braintree   [![source-braintree-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-braintree-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-braintree-singer) 
 
  Drift   [![source-drift](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-drift%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-drift) 
@@ -47,6 +49,7 @@
 
  Klaviyo   [![source-klaviyo](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-klaviyo%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-klaviyo) 
 
+ IBM Db2   [![source-db2](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-db2%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-db2)
 
  Instagram   [![source-instagram](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-instagram%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-instagram) 
 
@@ -77,6 +80,8 @@
  Plaid   [![source-plaid](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-plaid%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-plaid) 
 
  Postgres   [![source-postgres](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-postgres%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-postgres) 
+ 
+ CockroachDb   [![source-cockroachdb](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-cockroachdb%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-cockroachdb)
 
  Quickbooks   [![source-quickbooks-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-quickbooks-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-quickbooks-singer) 
 
@@ -90,7 +95,7 @@
 
  Sendgrid   [![source-sendgrid](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-sendgrid%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-sendgrid) 
 
- Shopify   [![source-shopify-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-shopify-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-shopify-singer) 
+ Shopify   [![source-shopify](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-shopify%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-shopify) 
 
  Slack   [![source-slack-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-slack-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-slack-singer) 
 
@@ -102,7 +107,7 @@
 
  Tempo   [![source-tempo](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-tempo%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-tempo) 
 
- Twilio   [![source-twilio-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-twilio-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-tempo) 
+ Twilio   [![source-twilio](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-twilio%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-twilio) 
 
  Zendesk Chat   [![source-zendesk-chat](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-zendesk-chat%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-zendesk-chat) 
 
@@ -122,7 +127,10 @@
 
  Postgres   [![destination-postgres](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fdestination-postgres%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/destination-postgres) 
 
+ Google PubSub   [![destination-pubsub](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fdestination-pubsub%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/destination-pubsub)
+
  Redshift   [![destination-redshift](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fdestination-redshift%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/destination-redshift) 
 
- Snowflake   [![destination-snowflake](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fdestination-snowflake%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/destination-snowflake) 
+ S3         [![destination-s3](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fdestination-s3%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/destination-s3)
 
+ Snowflake   [![destination-snowflake](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fdestination-snowflake%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/destination-snowflake) 

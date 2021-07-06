@@ -27,11 +27,14 @@ package io.airbyte.workers.process;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.config.ResourceRequirements;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
+import io.fabric8.kubernetes.api.model.Quantity;
+import io.fabric8.kubernetes.api.model.ResourceRequirementsBuilder;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
@@ -51,6 +54,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -99,6 +103,7 @@ public class KubePodProcess extends Process {
   private static final Logger LOGGER = LoggerFactory.getLogger(KubePodProcess.class);
 
   private static final String INIT_CONTAINER_NAME = "init";
+  private static final Long STATUS_CHECK_INTERVAL_MS = 30 * 1000L;
 
   private static final String PIPES_DIR = "/pipes";
   private static final String STDIN_PIPE_FILE = PIPES_DIR + "/stdin";
@@ -126,6 +131,8 @@ public class KubePodProcess extends Process {
   private final OutputStream stdin;
   private InputStream stdout;
   private InputStream stderr;
+  private Integer returnCode = null;
+  private Long lastStatusCheck = null;
 
   private final Consumer<Integer> portReleaser;
   private final ServerSocket stdoutServerSocket;
@@ -201,7 +208,12 @@ public class KubePodProcess extends Process {
         .build();
   }
 
-  private static Container getMain(String image, boolean usesStdin, String entrypoint, List<VolumeMount> mainVolumeMounts, String[] args)
+  private static Container getMain(String image,
+                                   boolean usesStdin,
+                                   String entrypoint,
+                                   List<VolumeMount> mainVolumeMounts,
+                                   ResourceRequirements resourceRequirements,
+                                   String[] args)
       throws IOException {
     var argsStr = String.join(" ", args);
     var entrypointWithArgs = entrypoint + " " + argsStr;
@@ -217,13 +229,17 @@ public class KubePodProcess extends Process {
         .replaceAll("STDERR_PIPE_FILE", STDERR_PIPE_FILE)
         .replaceAll("STDOUT_PIPE_FILE", STDOUT_PIPE_FILE);
 
-    return new ContainerBuilder()
+    final ContainerBuilder containerBuilder = new ContainerBuilder()
         .withName("main")
         .withImage(image)
         .withCommand("sh", "-c", mainCommand)
         .withWorkingDir(CONFIG_DIR)
-        .withVolumeMounts(mainVolumeMounts)
-        .build();
+        .withVolumeMounts(mainVolumeMounts);
+    final ResourceRequirementsBuilder resourceRequirementsBuilder = getResourceRequirementsBuilder(resourceRequirements);
+    if (resourceRequirementsBuilder != null) {
+      containerBuilder.withResources(resourceRequirementsBuilder.build());
+    }
+    return containerBuilder.build();
   }
 
   private static void copyFilesToKubeConfigVolume(ApiClient officialClient, String podName, String namespace, Map<String, String> files) {
@@ -277,6 +293,7 @@ public class KubePodProcess extends Process {
                         boolean usesStdin,
                         final Map<String, String> files,
                         final String entrypointOverride,
+                        ResourceRequirements resourceRequirements,
                         final String... args)
       throws IOException, InterruptedException {
     this.fabricClient = fabricClient;
@@ -326,7 +343,13 @@ public class KubePodProcess extends Process {
         .build();
 
     Container init = getInit(usesStdin, List.of(pipeVolumeMount, configVolumeMount));
-    Container main = getMain(image, usesStdin, entrypoint, List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount), args);
+    Container main = getMain(
+        image,
+        usesStdin,
+        entrypoint,
+        List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount),
+        resourceRequirements,
+        args);
 
     Container remoteStdin = new ContainerBuilder()
         .withName("remote-stdin")
@@ -527,7 +550,20 @@ public class KubePodProcess extends Process {
     }
   }
 
+  /**
+   * This method hits the Kube Api server to retrieve statuses. Most of the complexity here is
+   * minimising the api calls for performance.
+   */
   private int getReturnCode(Pod pod) {
+    if (returnCode != null) {
+      return returnCode;
+    }
+
+    // Reuse the last status check result to prevent overloading the Kube Api server.
+    if (lastStatusCheck != null && System.currentTimeMillis() - lastStatusCheck < STATUS_CHECK_INTERVAL_MS) {
+      throw new IllegalThreadStateException("Kube pod process has not exited yet.");
+    }
+
     var name = pod.getMetadata().getName();
     Pod refreshedPod = fabricClient.pods().inNamespace(pod.getMetadata().getNamespace()).withName(name).get();
     if (refreshedPod == null) {
@@ -540,25 +576,52 @@ public class KubePodProcess extends Process {
       // properly 2) this method is incorrectly called.
       throw new RuntimeException("Cannot find pod while trying to retrieve exit code. This probably means the Pod was not correctly created.");
     }
+
     if (!isTerminal(refreshedPod)) {
+      lastStatusCheck = System.currentTimeMillis();
       throw new IllegalThreadStateException("Kube pod process has not exited yet.");
     }
 
-    return refreshedPod.getStatus().getContainerStatuses()
+    returnCode = refreshedPod.getStatus().getContainerStatuses()
         .stream()
         .filter(containerStatus -> containerStatus.getState() != null && containerStatus.getState().getTerminated() != null)
         .map(containerStatus -> {
-          int statusCode = containerStatus.getState().getTerminated().getExitCode();
-          LOGGER.info("Exit code for pod {}, container {} is {}", name, containerStatus.getName(), statusCode);
-          return statusCode;
+          return containerStatus.getState().getTerminated().getExitCode();
         })
         .reduce(Integer::sum)
         .orElseThrow();
+
+    LOGGER.info("Exit code for pod {} is {}", name, returnCode);
+    return returnCode;
   }
 
   @Override
   public int exitValue() {
     return getReturnCode(podDefinition);
+  }
+
+  private static ResourceRequirementsBuilder getResourceRequirementsBuilder(ResourceRequirements resourceRequirements) {
+    if (resourceRequirements != null) {
+      final Map<String, Quantity> requestMap = new HashMap<>();
+      // if null then use unbounded resource allocation
+      if (!com.google.common.base.Strings.isNullOrEmpty(resourceRequirements.getCpuRequest())) {
+        requestMap.put("cpu", Quantity.parse(resourceRequirements.getCpuRequest()));
+      }
+      if (!com.google.common.base.Strings.isNullOrEmpty(resourceRequirements.getMemoryRequest())) {
+        requestMap.put("memory", Quantity.parse(resourceRequirements.getMemoryRequest()));
+      }
+      final Map<String, Quantity> limitMap = new HashMap<>();
+      if (!com.google.common.base.Strings.isNullOrEmpty(resourceRequirements.getCpuLimit())) {
+        limitMap.put("cpu", Quantity.parse(resourceRequirements.getCpuLimit()));
+      }
+      if (!com.google.common.base.Strings.isNullOrEmpty(resourceRequirements.getMemoryLimit())) {
+        limitMap.put("memory", Quantity.parse(resourceRequirements.getMemoryLimit()));
+      }
+      return new ResourceRequirementsBuilder()
+          .withRequests(requestMap)
+          .withLimits(limitMap);
+    }
+    return null;
   }
 
 }

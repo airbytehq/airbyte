@@ -65,6 +65,16 @@ public interface Configs {
 
   Set<Integer> getTemporalWorkerPorts();
 
+  String getKubeNamespace();
+
+  String getCpuRequest();
+
+  String getCpuLimit();
+
+  String getMemoryRequest();
+
+  String getMemoryLimit();
+
   // The following methods retrieve logging related information.
   String getS3LogBucket();
 
@@ -73,6 +83,8 @@ public interface Configs {
   String getAwsAccessKey();
 
   String getAwsSecretAccessKey();
+
+  String getS3MinioEndpoint();
 
   enum TrackingStrategy {
     SEGMENT,

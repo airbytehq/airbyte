@@ -33,7 +33,7 @@ import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogHelpers;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.DefaultConfigPersistence;
+import io.airbyte.config.persistence.FileSystemConfigPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
@@ -175,7 +175,8 @@ public class SchedulerApp {
       final BlockingQueue<Integer> workerPorts = new LinkedBlockingDeque<>(configs.getTemporalWorkerPorts());
       final String localIp = InetAddress.getLocalHost().getHostAddress();
       final String kubeHeartbeatUrl = localIp + ":" + KUBE_HEARTBEAT_PORT;
-      return new KubeProcessFactory("default", officialClient, fabricClient, kubeHeartbeatUrl, workerPorts);
+      LOGGER.info("Using Kubernetes namespace: {}", configs.getKubeNamespace());
+      return new KubeProcessFactory(configs.getKubeNamespace(), officialClient, fabricClient, kubeHeartbeatUrl, workerPorts);
     } else {
       return new DockerProcessFactory(
           configs.getWorkspaceRoot(),
@@ -209,7 +210,7 @@ public class SchedulerApp {
     final ProcessFactory processFactory = getProcessBuilderFactory(configs);
 
     final JobPersistence jobPersistence = new DefaultJobPersistence(database);
-    final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
+    final ConfigPersistence configPersistence = FileSystemConfigPersistence.createWithValidation(configRoot);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence);
     final JobCleaner jobCleaner = new JobCleaner(
         configs.getWorkspaceRetentionConfig(),
@@ -238,7 +239,8 @@ public class SchedulerApp {
 
     Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
     int loopCount = 0;
-    while (airbyteDatabaseVersion.isEmpty() && loopCount < 300) {
+    while ((airbyteDatabaseVersion.isEmpty() || !AirbyteVersion.isCompatible(configs.getAirbyteVersion(), airbyteDatabaseVersion.get()))
+        && loopCount < 300) {
       LOGGER.warn("Waiting for Server to start...");
       TimeUnit.SECONDS.sleep(1);
       airbyteDatabaseVersion = jobPersistence.getVersion();

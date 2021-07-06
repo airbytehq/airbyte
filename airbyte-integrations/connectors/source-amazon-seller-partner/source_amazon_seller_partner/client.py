@@ -63,7 +63,7 @@ class BaseClient:
         self._amazon_client = AmazonClient(credentials=self.credentials, marketplace=marketplace)
 
     def check_connection(self):
-        updated_after = pendulum.now().subtract(days=self.CONVERSION_WINDOW_DAYS)
+        updated_after = pendulum.now().subtract(days=self.CONVERSION_WINDOW_DAYS).to_date_string()
         return self._amazon_client.fetch_orders(updated_after, 10, None)
 
     def get_streams(self):
@@ -103,7 +103,7 @@ class BaseClient:
                 yield self._record(stream=stream_name, data=order, seller_id=self.seller_id)
 
             if cursor_value:
-                state[stream_name][cursor_field] = pendulum.parse(cursor_value).add(days=1)
+                state[stream_name][cursor_field] = pendulum.parse(cursor_value).add(days=1).to_date_string()
                 yield self._state(state)
 
             # Sleep for 2 seconds

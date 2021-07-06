@@ -29,7 +29,7 @@ from source_acceptance_test.base import BaseTest
 from source_acceptance_test.utils import ConnectorRunner, full_refresh_only_catalog, serialize
 
 
-@pytest.mark.timeout(20 * 60)
+@pytest.mark.default_timeout(20 * 60)
 class TestFullRefresh(BaseTest):
     def test_sequential_reads(self, connector_config, configured_catalog, docker_runner: ConnectorRunner):
         configured_catalog = full_refresh_only_catalog(configured_catalog)
