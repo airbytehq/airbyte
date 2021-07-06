@@ -36,6 +36,13 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from source_square.utils import separate_items_by_count
 
 
+def parse_square_error_response(error):
+    if error.response.content:
+        content = json.loads(error.response.content.decode())
+        if content and "errors" in content:
+            return SquareException(error.response.status_code, content["errors"])
+
+
 class SquareStream(HttpStream, ABC):
     def __init__(self, is_sandbox: bool, api_version: str, start_date: str, include_deleted_objects: bool, **kwargs):
         super().__init__(**kwargs)
@@ -60,7 +67,8 @@ class SquareStream(HttpStream, ABC):
             return {"cursor": next_page_cursor}
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         return {"Square-Version": self.api_version, "Content-Type": "application/json"}
 
@@ -73,14 +81,12 @@ class SquareStream(HttpStream, ABC):
         try:
             return super()._send_request(request)
         except requests.exceptions.HTTPError as e:
-            if e.response.content:
-                content = json.loads(e.response.content.decode())
-                if content and "errors" in content:
-                    square_exception = SquareException(e.response.status_code, content["errors"])
-                    self.logger.error(str(square_exception))
-                    exit(1)
-            else:
-                raise e
+            square_exception = parse_square_error_response(e)
+            if square_exception:
+                self.logger.error(str(square_exception))
+                exit(1)
+
+            raise e
 
 
 class SquareException(Exception):
@@ -96,21 +102,24 @@ class SquareException(Exception):
 
 class SquareStreamPageParam(SquareStream, ABC):
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {"cursor": next_page_token["cursor"]} if next_page_token else {}
 
 
 class SquareStreamPageJson(SquareStream, ABC):
     def request_body_json(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> Optional[Mapping]:
         return {"cursor": next_page_token["cursor"]} if next_page_token else {}
 
 
 class SquareStreamPageJsonAndLimit(SquareStreamPageJson, ABC):
     def request_body_json(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> Optional[Mapping]:
         json_payload = {"limit": self.items_per_page_limit}
         if next_page_token:
@@ -128,7 +137,8 @@ class SquareCatalogObjectsStream(SquareStreamPageJson):
         return "catalog/search"
 
     def request_body_json(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> Optional[Mapping]:
         json_payload = super().request_body_json(stream_state, stream_slice, next_page_token)
 
@@ -141,7 +151,8 @@ class SquareCatalogObjectsStream(SquareStreamPageJson):
 
 
 class IncrementalSquareGenericStream(SquareStream, ABC):
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
+    Mapping[str, Any]:
         if current_stream_state is not None and self.cursor_field in current_stream_state:
             return {self.cursor_field: max(current_stream_state[self.cursor_field], latest_record[self.cursor_field])}
         else:
@@ -174,10 +185,10 @@ class IncrementalSquareStream(IncrementalSquareGenericStream, SquareStreamPagePa
     cursor_field = "created_at"
 
     def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params_payload = super().request_params(stream_state, stream_slice, next_page_token)
 
@@ -381,8 +392,9 @@ class SourceSquare(AbstractSource):
             session.raise_for_status()
             return True, None
         except requests.exceptions.RequestException as e:
-            if e.response.status_code == 401:
-                return False, "Unauthorized. Check your credentials"
+            square_exception = parse_square_error_response(e)
+            if square_exception:
+                return False, square_exception.errors[0]['detail']
 
             return False, e
 
