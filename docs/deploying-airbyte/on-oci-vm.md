@@ -66,8 +66,7 @@ From your local workstation
 
 $ ssh -i private-key-file -L 8000:oci-private-instance-ip:8000 opc@bastion-host-public-ip
 
-Access Airbyte
---------------
+## Access Airbyte
 
 Open URL in Browser :  https://localhost:8000/
 
