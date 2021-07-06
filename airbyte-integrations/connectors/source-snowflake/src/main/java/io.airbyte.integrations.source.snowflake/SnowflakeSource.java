@@ -51,7 +51,7 @@ public class SnowflakeSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public JsonNode toJdbcConfig(JsonNode config) {
+  public JsonNode toDatabaseConfig(JsonNode config) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("jdbc_url", String.format("jdbc:snowflake://%s/",
             config.get("host").asText()))
@@ -67,7 +67,7 @@ public class SnowflakeSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public Set<String> getExcludedInternalSchemas() {
+  public Set<String> getExcludedInternalNameSpaces() {
     return Set.of(
         "INFORMATION_SCHEMA");
   }
