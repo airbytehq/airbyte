@@ -1,5 +1,4 @@
-Install Airbyte on Oracle Cloud Infrastructure (OCI) VM
--------------------------------------------------------
+# Install Airbyte on Oracle Cloud Infrastructure (OCI) VM
 
 Install Airbyte on Oracle Cloud Infrastructure VM running Oracle Linux 7
 
