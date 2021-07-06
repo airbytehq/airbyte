@@ -22,12 +22,12 @@
 # SOFTWARE.
 #
 
-from typing import Callable, List, Tuple, MutableMapping, Any
+from typing import Any, Callable, List, MutableMapping, Tuple
 
+import pendulum
 import pytest
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
-import pendulum
 from source_instagram.source import SourceInstagram
 
 
