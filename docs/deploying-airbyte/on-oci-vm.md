@@ -25,8 +25,7 @@ ssh -i private-key-file opc@oci-private-instance-ip
 
 ## Install Prerequisites
 
-Install docker
---------------
+### Install Docker
 
 sudo yum update -y
 
