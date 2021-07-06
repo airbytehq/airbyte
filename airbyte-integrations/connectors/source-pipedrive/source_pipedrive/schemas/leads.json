@@ -1,0 +1,253 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "http://example.com/example.json",
+    "type": "object",
+    "title": "The root schema",
+    "description": "The root schema comprises the entire JSON document.",
+    "default": {},
+    "examples": [
+        {
+            "id": "adf21080-0e10-11eb-879b-05d71fb426ec",
+            "title": "Jane Doe Lead",
+            "owner_id": 1,
+            "creator_id": 1,
+            "label_ids": [
+                "f08b42a0-4e75-11ea-9643-03698ef1cfd6",
+                "f08b42a1-4e75-11ea-9643-03698ef1cfd6"
+            ],
+            "person_id": 1092,
+            "organization_id": null,
+            "source_name": "API",
+            "is_archived": false,
+            "was_seen": false,
+            "value": {
+                "amount": 999,
+                "currency": "USD"
+            },
+            "expected_close_date": null,
+            "next_activity_id": 1,
+            "add_time": "2020-10-14T11:30:36.551Z",
+            "update_time": "2020-10-14T11:30:36.551Z"
+        }
+    ],
+    "required": [
+        "id",
+        "title",
+        "owner_id",
+        "creator_id",
+        "label_ids",
+        "person_id",
+        "organization_id",
+        "source_name",
+        "is_archived",
+        "was_seen",
+        "value",
+        "expected_close_date",
+        "next_activity_id",
+        "add_time",
+        "update_time"
+    ],
+    "properties": {
+        "id": {
+            "$id": "#/properties/id",
+            "type": "string",
+            "title": "The id schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "adf21080-0e10-11eb-879b-05d71fb426ec"
+            ]
+        },
+        "title": {
+            "$id": "#/properties/title",
+            "type": "string",
+            "title": "The title schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "Jane Doe Lead"
+            ]
+        },
+        "owner_id": {
+            "$id": "#/properties/owner_id",
+            "type": "integer",
+            "title": "The owner_id schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": 0,
+            "examples": [
+                1
+            ]
+        },
+        "creator_id": {
+            "$id": "#/properties/creator_id",
+            "type": "integer",
+            "title": "The creator_id schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": 0,
+            "examples": [
+                1
+            ]
+        },
+        "label_ids": {
+            "$id": "#/properties/label_ids",
+            "type": "array",
+            "title": "The label_ids schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": [],
+            "examples": [
+                [
+                    "f08b42a0-4e75-11ea-9643-03698ef1cfd6",
+                    "f08b42a1-4e75-11ea-9643-03698ef1cfd6"
+                ]
+            ],
+            "additionalItems": true,
+            "items": {
+                "$id": "#/properties/label_ids/items",
+                "anyOf": [
+                    {
+                        "$id": "#/properties/label_ids/items/anyOf/0",
+                        "type": "string",
+                        "title": "The first anyOf schema",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": "",
+                        "examples": [
+                            "f08b42a0-4e75-11ea-9643-03698ef1cfd6",
+                            "f08b42a1-4e75-11ea-9643-03698ef1cfd6"
+                        ]
+                    }
+                ]
+            }
+        },
+        "person_id": {
+            "$id": "#/properties/person_id",
+            "type": "integer",
+            "title": "The person_id schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": 0,
+            "examples": [
+                1092
+            ]
+        },
+        "organization_id": {
+            "$id": "#/properties/organization_id",
+            "type": "null",
+            "title": "The organization_id schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": null,
+            "examples": [
+                null
+            ]
+        },
+        "source_name": {
+            "$id": "#/properties/source_name",
+            "type": "string",
+            "title": "The source_name schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "API"
+            ]
+        },
+        "is_archived": {
+            "$id": "#/properties/is_archived",
+            "type": "boolean",
+            "title": "The is_archived schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": false,
+            "examples": [
+                false
+            ]
+        },
+        "was_seen": {
+            "$id": "#/properties/was_seen",
+            "type": "boolean",
+            "title": "The was_seen schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": false,
+            "examples": [
+                false
+            ]
+        },
+        "value": {
+            "$id": "#/properties/value",
+            "type": "object",
+            "title": "The value schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": {},
+            "examples": [
+                {
+                    "amount": 999,
+                    "currency": "USD"
+                }
+            ],
+            "required": [
+                "amount",
+                "currency"
+            ],
+            "properties": {
+                "amount": {
+                    "$id": "#/properties/value/properties/amount",
+                    "type": "integer",
+                    "title": "The amount schema",
+                    "description": "An explanation about the purpose of this instance.",
+                    "default": 0,
+                    "examples": [
+                        999
+                    ]
+                },
+                "currency": {
+                    "$id": "#/properties/value/properties/currency",
+                    "type": "string",
+                    "title": "The currency schema",
+                    "description": "An explanation about the purpose of this instance.",
+                    "default": "",
+                    "examples": [
+                        "USD"
+                    ]
+                }
+            },
+            "additionalProperties": true
+        },
+        "expected_close_date": {
+            "$id": "#/properties/expected_close_date",
+            "type": "null",
+            "title": "The expected_close_date schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": null,
+            "examples": [
+                null
+            ]
+        },
+        "next_activity_id": {
+            "$id": "#/properties/next_activity_id",
+            "type": "integer",
+            "title": "The next_activity_id schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": 0,
+            "examples": [
+                1
+            ]
+        },
+        "add_time": {
+            "$id": "#/properties/add_time",
+            "type": "string",
+            "title": "The add_time schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "2020-10-14T11:30:36.551Z"
+            ]
+        },
+        "update_time": {
+            "$id": "#/properties/update_time",
+            "type": "string",
+            "title": "The update_time schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "2020-10-14T11:30:36.551Z"
+            ]
+        }
+    },
+    "additionalProperties": true
+}

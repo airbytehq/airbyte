@@ -1,0 +1,161 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "http://example.com/example.json",
+    "type": "object",
+    "title": "The root schema",
+    "description": "The root schema comprises the entire JSON document.",
+    "default": {},
+    "examples": [
+        {
+            "id": 1,
+            "order_nr": 1,
+            "name": "Stage Name",
+            "active_flag": true,
+            "deal_probability": 100,
+            "pipeline_id": 1,
+            "rotten_flag": false,
+            "rotten_days": null,
+            "add_time": "2017-08-03 12:51:18",
+            "update_time": "2020-03-23 13:15:25",
+            "pipeline_name": "Pipeline",
+            "pipeline_deal_probability": false
+        }
+    ],
+    "required": [
+        "id",
+        "order_nr",
+        "name",
+        "active_flag",
+        "deal_probability",
+        "pipeline_id",
+        "rotten_flag",
+        "rotten_days",
+        "add_time",
+        "update_time",
+        "pipeline_name",
+        "pipeline_deal_probability"
+    ],
+    "properties": {
+        "id": {
+            "$id": "#/properties/id",
+            "type": "integer",
+            "title": "The id schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": 0,
+            "examples": [
+                1
+            ]
+        },
+        "order_nr": {
+            "$id": "#/properties/order_nr",
+            "type": "integer",
+            "title": "The order_nr schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": 0,
+            "examples": [
+                1
+            ]
+        },
+        "name": {
+            "$id": "#/properties/name",
+            "type": "string",
+            "title": "The name schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "Stage Name"
+            ]
+        },
+        "active_flag": {
+            "$id": "#/properties/active_flag",
+            "type": "boolean",
+            "title": "The active_flag schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": false,
+            "examples": [
+                true
+            ]
+        },
+        "deal_probability": {
+            "$id": "#/properties/deal_probability",
+            "type": "integer",
+            "title": "The deal_probability schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": 0,
+            "examples": [
+                100
+            ]
+        },
+        "pipeline_id": {
+            "$id": "#/properties/pipeline_id",
+            "type": "integer",
+            "title": "The pipeline_id schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": 0,
+            "examples": [
+                1
+            ]
+        },
+        "rotten_flag": {
+            "$id": "#/properties/rotten_flag",
+            "type": "boolean",
+            "title": "The rotten_flag schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": false,
+            "examples": [
+                false
+            ]
+        },
+        "rotten_days": {
+            "$id": "#/properties/rotten_days",
+            "type": "null",
+            "title": "The rotten_days schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": null,
+            "examples": [
+                null
+            ]
+        },
+        "add_time": {
+            "$id": "#/properties/add_time",
+            "type": "string",
+            "title": "The add_time schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "2017-08-03 12:51:18"
+            ]
+        },
+        "update_time": {
+            "$id": "#/properties/update_time",
+            "type": "string",
+            "title": "The update_time schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "2020-03-23 13:15:25"
+            ]
+        },
+        "pipeline_name": {
+            "$id": "#/properties/pipeline_name",
+            "type": "string",
+            "title": "The pipeline_name schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "Pipeline"
+            ]
+        },
+        "pipeline_deal_probability": {
+            "$id": "#/properties/pipeline_deal_probability",
+            "type": "boolean",
+            "title": "The pipeline_deal_probability schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": false,
+            "examples": [
+                false
+            ]
+        }
+    },
+    "additionalProperties": true
+}

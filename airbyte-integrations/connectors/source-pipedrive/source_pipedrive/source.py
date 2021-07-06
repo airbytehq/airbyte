@@ -45,87 +45,75 @@ There are additional required TODOs in the files within the integration_tests fo
 """
 
 
-# Basic full refresh stream
 class PipedriveStream(HttpStream, ABC):
-    """
-    TODO remove this comment
-
-    This class represents a stream output by the connector.
-    This is an abstract base class meant to contain all the common functionality at the API level e.g: the API base URL, pagination strategy,
-    parsing responses etc..
-
-    Each stream should extend this class (or another abstract subclass of it) to specify behavior unique to that stream.
-
-    Typically for REST APIs each stream corresponds to a resource in the API. For example if the API
-    contains the endpoints
-        - GET v1/customers
-        - GET v1/employees
-
-    then you should have three classes:
-    `class PipedriveStream(HttpStream, ABC)` which is the current class
-    `class Customers(PipedriveStream)` contains behavior to pull data for customers using v1/customers
-    `class Employees(PipedriveStream)` contains behavior to pull data for employees using v1/employees
-
-    If some streams implement incremental sync, it is typical to create another class
-    `class IncrementalPipedriveStream((PipedriveStream), ABC)` then have concrete stream implementations extend it. An example
-    is provided below.
-
-    See the reference docs for the full list of configurable options.
-    """
-
-    # TODO: Fill in the url base. Required.
-    url_base = "https://example-api.com/v1/"
+    url_base = "https://api.pipedrive.com/v1/"
+    primary_key = "id"
+    data_field = "data"
+    limit = 50
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
-        TODO: Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
-
-        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
-        to most other methods in this class to help you form headers, request bodies, query params, etc..
-
-        For example, if the API accepts a 'page' parameter to determine which page of the result to return, and a response from the API contains a
-        'page' number, then this method should probably return a dict {'page': response.json()['page'] + 1} to increment the page count by 1.
-        The request_params method should then read the input next_page_token and set the 'page' param to next_page_token['page'].
-
         :param response: the most recent response from the API
         :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
                 If there are no more pages in the result, return None.
         """
-        return None
+        pagination_data = response.json().get("additional_data", {}).get("pagination", {})
+        if pagination_data.get("more_items_in_collection"):
+            start = pagination_data.get("start", 0) + self.limit
+            return {"start": start}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
-        Usually contains common params e.g. pagination size etc.
-        """
-        return {}
+        next_page_token = next_page_token or {}
+
+        return {
+            "api_token": "a3ec5601216bd559972df83273b4063fb43c2542",
+            "limit": self.limit,
+            **next_page_token
+        }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
-        TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
-        yield {}
-
-
-class Customers(PipedriveStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "customer_id"
+        yield from response.json().get(self.data_field) or []
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
-        return "customers"
+        return self.name
+
+
+class Deals(PipedriveStream):
+    pass
+
+
+class Leads(PipedriveStream):
+    pass
+
+
+class Activities(PipedriveStream):
+    pass
+
+
+class Persons(PipedriveStream):
+    pass
+
+
+class Pipelines(PipedriveStream):
+    pass
+
+
+class Stages(PipedriveStream):
+    pass
+
+
+class Users(PipedriveStream):
+    pass
 
 
 # Basic incremental stream
@@ -215,10 +203,16 @@ class SourcePipedrive(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
-        TODO: Replace the streams below with your own streams.
-
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        # TODO remove the authenticator if not required.
-        auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
-        return [Customers(authenticator=auth), Employees(authenticator=auth)]
+        auth = TokenAuthenticator(token=config["api_token"])
+        streams = [
+            Deals(authenticator=auth),
+            Leads(authenticator=auth),
+            Activities(authenticator=auth),
+            Persons(authenticator=auth),
+            Pipelines(authenticator=auth),
+            Stages(authenticator=auth),
+            Users(authenticator=auth),
+        ]
+        return streams
