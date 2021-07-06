@@ -361,8 +361,8 @@ public class CdcPostgresSourceComprehensiveTest extends SourceComprehensiveTest 
             .sourceType("numeric")
             .fullSourceDataType("numeric(13,4)")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("0.1880", "10.0000", "5213.3400", "null")
-            .addExpectedValues("0.1880", "10.0000", "5213.3400", null)
+            .addInsertValues("0.1880", "10.0000", "5213.3468", "null")
+            .addExpectedValues("0.188", "10.0", "5213.3468", null)
             .build());
 
     addDataTypeTestData(
