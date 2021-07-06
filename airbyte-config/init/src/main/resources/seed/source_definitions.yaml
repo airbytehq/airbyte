@@ -74,7 +74,7 @@
 - sourceDefinitionId: 9e0556f4-69df-4522-a3fb-03264d36b348
   name: Marketo
   dockerRepository: airbyte/source-marketo-singer
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   documentationUrl: https://hub.docker.com/r/airbyte/source-marketo-singer
   icon: marketo.svg
 - sourceDefinitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
@@ -197,7 +197,7 @@
 - sourceDefinitionId: 859e501d-2b67-471f-91bb-1c801414d28f
   name: Mixpanel
   dockerRepository: airbyte/source-mixpanel-singer
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.4
   documentationUrl: https://hub.docker.com/r/airbyte/source-mixpanel-singer
   icon: mixpanel.svg
 - sourceDefinitionId: aea2fd0d-377d-465e-86c0-4fdc4f688e51
