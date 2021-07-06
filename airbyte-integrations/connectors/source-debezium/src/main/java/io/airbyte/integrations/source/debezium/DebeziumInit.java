@@ -78,7 +78,7 @@ public class DebeziumInit {
     // our goal is to get the state at the time this supplier is called (i.e. after all message records
     // have been produced)
     final Supplier<AirbyteMessage> stateMessageSupplier = () -> {
-      Map<String, String> offset = offsetManager.readMap();
+      Map<String, String> offset = offsetManager.read();
       String dbHistory = trackSchemaHistory ? schemaHistoryManager.read() : null;
 
       return cdcStateHandler.state(offset, dbHistory);

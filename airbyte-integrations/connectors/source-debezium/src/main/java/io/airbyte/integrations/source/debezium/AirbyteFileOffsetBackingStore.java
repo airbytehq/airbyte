@@ -70,7 +70,7 @@ public class AirbyteFileOffsetBackingStore {
     return offsetFilePath;
   }
 
-  public Map<String, String> readMap() {
+  public Map<String, String> read() {
     final Map<ByteBuffer, ByteBuffer> raw = load();
 
     return raw.entrySet().stream().collect(Collectors.toMap(
