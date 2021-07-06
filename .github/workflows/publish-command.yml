@@ -77,8 +77,8 @@ jobs:
 #          python-version: '3.7'
 #      - name: Manually Install Python & Pip
 #        run: sudo apt-get update && sudo apt-get install zlib1g-dev -y && cd /usr/src && sudo wget https://www.python.org/ftp/python/3.7.9/Python-3.7.9.tgz && sudo tar xzf Python-3.7.9.tgz && cd Python-3.7.9 && sudo ./configure --enable-optimizations && sudo make altinstall && sudo apt install python3-pip -y
-#      - name: Install Pyenv
-#        run: python3 -m pip install virtualenv==16.7.9 --user
+      - name: Install Pyenv
+        run: python3 -m pip install virtualenv==16.7.9 --user
 #      - name: Install Python Dev
 #        run: sudo apt-get update && sudo apt-get install -f -y clang
 #      - name: Install CSICO
