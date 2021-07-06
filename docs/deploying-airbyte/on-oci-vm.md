@@ -36,8 +36,7 @@ sudo service docker start
 sudo usermod -a -G docker $USER
 
 
-Install docker-compose
-----------------------
+### Install Docker Compose
 
 sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
 
