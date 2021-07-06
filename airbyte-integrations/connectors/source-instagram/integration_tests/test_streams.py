@@ -36,12 +36,8 @@ def state_fixture() -> MutableMapping[str, Any]:
     today = pendulum.today()
     return {
         "user_insights": {
-            "17841408147298757": {
-                "date": (today - pendulum.duration(days=10)).to_datetime_string()
-            },
-            "17841403112736866": {
-                "date": (today - pendulum.duration(days=5)).to_datetime_string()
-            }
+            "17841408147298757": {"date": (today - pendulum.duration(days=10)).to_datetime_string()},
+            "17841403112736866": {"date": (today - pendulum.duration(days=5)).to_datetime_string()},
         }
     }
 

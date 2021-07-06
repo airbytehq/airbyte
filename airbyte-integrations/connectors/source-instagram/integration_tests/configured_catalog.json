@@ -4,16 +4,10 @@
       "stream": {
         "name": "media",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": null,
         "default_cursor_field": null,
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ],
+        "source_defined_primary_key": [["id"]],
         "namespace": null
       },
       "sync_mode": "full_refresh",
@@ -25,16 +19,10 @@
       "stream": {
         "name": "media_insights",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": null,
         "default_cursor_field": null,
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ],
+        "source_defined_primary_key": [["id"]],
         "namespace": null
       },
       "sync_mode": "full_refresh",
@@ -46,16 +34,10 @@
       "stream": {
         "name": "stories",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": null,
         "default_cursor_field": null,
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ],
+        "source_defined_primary_key": [["id"]],
         "namespace": null
       },
       "sync_mode": "full_refresh",
@@ -67,16 +49,10 @@
       "stream": {
         "name": "story_insights",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": null,
         "default_cursor_field": null,
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ],
+        "source_defined_primary_key": [["id"]],
         "namespace": null
       },
       "sync_mode": "full_refresh",
@@ -88,16 +64,10 @@
       "stream": {
         "name": "users",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": null,
         "default_cursor_field": null,
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ],
+        "source_defined_primary_key": [["id"]],
         "namespace": null
       },
       "sync_mode": "full_refresh",
@@ -109,9 +79,7 @@
       "stream": {
         "name": "user_lifetime_insights",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": null,
         "default_cursor_field": null,
         "source_defined_primary_key": null,
@@ -126,14 +94,9 @@
       "stream": {
         "name": "user_insights",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date"
-        ],
+        "default_cursor_field": ["date"],
         "source_defined_primary_key": null,
         "namespace": null
       },
