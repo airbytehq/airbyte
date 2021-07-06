@@ -18,8 +18,7 @@ Select the Subnet > Security List > Add Ingress Rules
 <img width="1423" alt="OCIScreen3" src="https://github.com/airbytehq/airbyte/tree/master/docs/.gitbook/assets/OCIScreen3.png">
 
 
-Login to the Instance/VM with the SSH key and 'opc' user
---------------------------------------------------------
+## Login to the Instance/VM with the SSH key and 'opc' user
 chmod 600 private-key-file
 
 ssh -i private-key-file opc@oci-private-instance-ip
