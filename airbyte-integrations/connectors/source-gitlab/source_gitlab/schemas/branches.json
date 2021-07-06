@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "merged": {
+      "type": ["null", "boolean"]
+    },
+    "protected": {
+      "type": ["null", "boolean"]
+    },
+    "developers_can_push": {
+      "type": ["null", "boolean"]
+    },
+    "developers_can_merge": {
+      "type": ["null", "boolean"]
+    },
+    "can_push": {
+      "type": ["null", "boolean"]
+    },
+    "default": {
+      "type": ["null", "boolean"]
+    },
+    "web_url": {
+      "type": ["null", "string"]
+    },
+    "commit_id": {
+      "type": ["null", "string"]
+    }
+  }
+}

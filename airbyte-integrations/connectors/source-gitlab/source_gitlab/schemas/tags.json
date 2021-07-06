@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": ["null", "string"]
+    },
+    "message": {
+      "type": ["null", "string"]
+    },
+    "target": {
+      "type": ["null", "string"]
+    },
+    "release": {
+      "type": ["null", "object"],
+      "properties": {
+        "tag_name": {
+          "type": ["null", "string"]
+        },
+        "description": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "protected": {
+      "type": ["null", "boolean"]
+    },
+    "commit_id": {
+      "type": ["null", "string"]
+    },
+    "project_id": {
+      "type": ["null", "integer"]
+    }
+  }
+}
