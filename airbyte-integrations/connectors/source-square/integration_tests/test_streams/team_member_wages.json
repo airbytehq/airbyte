@@ -6,31 +6,23 @@
         "json_schema": {
           "type": ["null", "object"],
           "properties": {
-            "team_member_wages": {
-              "type": ["null", "array"],
-              "items": {
-                "type": ["null", "object"],
-                "properties": {
-                  "id": {
-                    "type": ["null", "string"]
-                  },
-                  "team_member_id": {
-                    "type": ["null", "string"]
-                  },
-                  "title": {
-                    "type": ["null", "string"]
-                  },
-                  "hourly_rate": {
-                    "type": ["null", "object"],
-                    "properties": {
-                      "amount": {
-                        "type": ["null", "integer"]
-                      },
-                      "currency": {
-                        "type": ["null", "string"]
-                      }
-                    }
-                  }
+            "id": {
+              "type": ["null", "string"]
+            },
+            "team_member_id": {
+              "type": ["null", "string"]
+            },
+            "title": {
+              "type": ["null", "string"]
+            },
+            "hourly_rate": {
+              "type": ["null", "object"],
+              "properties": {
+                "amount": {
+                  "type": ["null", "integer"]
+                },
+                "currency": {
+                  "type": ["null", "string"]
                 }
               }
             }
