@@ -42,7 +42,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-public class S3LogClientTest {
+public class S3LogsTest {
 
   @Test
   public void testMissingAwsCredentials() {

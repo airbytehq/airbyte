@@ -320,6 +320,7 @@ jobs:
         run: ./tools/bin/cloud_storage_logging_test.sh
         env:
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
+          GOOGLE_CLOUD_STORAGE_TEST_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
 
       - name: Run Kubernetes End-to-End Acceptance Tests
         env:
