@@ -26,6 +26,7 @@ We understand that we're not "production-ready" for a lot of companies yet. In t
 * OAuth support for connector configuration \([\#768](https://github.com/airbytehq/airbyte/issues/768)\).
 * Adapt automatically to sources' schema changes.
 * Webhook connector.
+* Airbyte Cloud Beta.
 
 Our goal is to become "production-ready" for any company whatever their data stack, infrastructure, architecture, data volume, and connector needs. **If you see anything missing in this list that you would need before deploying us in prod, please talk to us via** [**Slack**](https://slack.airbyte.io) **or** [**email**](mailto:contact@airbyte.io)**!**
 

@@ -95,6 +95,7 @@ class BasicReadTestConfig(BaseConfig):
     configured_catalog_path: Optional[str] = configured_catalog_path
     validate_output_from_all_streams: bool = Field(False, description="Verify that all streams have records")
     expect_records: Optional[ExpectedRecordsConfig] = Field(description="Expected records from the read")
+    validate_schema: bool = Field(True, description="Ensure that records match the schema of the corresponding stream")
     timeout_seconds: int = timeout_seconds
 
 

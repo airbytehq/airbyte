@@ -37,6 +37,7 @@ import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.WorkspaceCreate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
+import io.airbyte.api.model.WorkspaceReadList;
 import io.airbyte.api.model.WorkspaceUpdate;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -47,8 +48,10 @@ import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.errors.ValueConflictKnownException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class WorkspacesHandler {
 
@@ -141,6 +144,13 @@ public class WorkspacesHandler {
     configRepository.writeStandardWorkspace(persistedWorkspace);
   }
 
+  public WorkspaceReadList listWorkspaces() throws JsonValidationException, IOException {
+    final List<WorkspaceRead> reads = configRepository.listStandardWorkspaces(false).stream()
+        .map(WorkspacesHandler::buildWorkspaceRead)
+        .collect(Collectors.toList());
+    return new WorkspaceReadList().workspaces(reads);
+  }
+
   public WorkspaceRead getWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final UUID workspaceId = workspaceIdRequestBody.getWorkspaceId();
@@ -201,7 +211,7 @@ public class WorkspacesHandler {
     return buildWorkspaceRead(workspace);
   }
 
-  private WorkspaceRead buildWorkspaceRead(StandardWorkspace workspace) {
+  private static WorkspaceRead buildWorkspaceRead(StandardWorkspace workspace) {
     return new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
         .customerId(workspace.getCustomerId())

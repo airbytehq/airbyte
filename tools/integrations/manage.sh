@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
+set -x
 
 . tools/lib/lib.sh
 
@@ -29,16 +30,15 @@ cmd_build() {
   [ -d "$path" ] || error "Path must be the root path of the integration"
 
   local run_tests=$1; shift || run_tests=true
-
   echo "Building $path"
-  ./gradlew "$(_to_gradle_path "$path" clean)"
-  ./gradlew "$(_to_gradle_path "$path" build)"
+  ./gradlew --no-daemon "$(_to_gradle_path "$path" clean)"
+  ./gradlew --no-daemon "$(_to_gradle_path "$path" build)"
 
   if [ "$run_tests" = false ] ; then
     echo "Skipping integration tests..."
   else
     echo "Running integration tests..."
-    ./gradlew "$(_to_gradle_path "$path" integrationTest)"
+    ./gradlew --no-daemon "$(_to_gradle_path "$path" integrationTest)"
   fi
 }
 
