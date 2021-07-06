@@ -10,12 +10,6 @@ airbytePython {
 
 // We cannot run standard source tests with every build because it blows through the Salesforce quota. For now, turn this on as needed and run these tests locally; they will not be run in CI.
 // CRITICAL Salesforce has reported 13060/15000 (87.07%) total REST quota used across all Salesforce Applications. Terminating replication to not continue past configured percentage of 80% total quota.
-airbyteStandardSourceTestFile {
-   specPath = "source_salesforce_singer/spec.json"
-   configPath = "secrets/config.json"
-   configuredCatalogPath = "sample_files/configured_catalog.json"
-}
-
 
 dependencies {
     implementation files(project(':airbyte-integrations:bases:source-acceptance-test').airbyteDocker.outputs)
