@@ -15,6 +15,7 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog_without_stories.json"
       validate_output_from_all_streams: yes
+# disabled because the only incremental stream is user_insights and its state is nested
 #  incremental:
 #    - config_path: "secrets/config.json"
 #      configured_catalog_path: "integration_tests/configured_catalog.json"

@@ -209,7 +209,7 @@ class UserInsights(InstagramIncrementalStream):
             # we get only first record, because cursor will try to fetch next date interval
             cursor = ig_account.get_insights(params=params)
             if len(cursor):
-                insight_list += [insights.export_all_data() for insights in cursor[:len(cursor)]]
+                insight_list += [insights.export_all_data() for insights in cursor[: len(cursor)]]
 
         # end then merge all periods in one record
         insight_record = {"page_id": account["page_id"], "business_account_id": account_id}
