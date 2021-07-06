@@ -36,7 +36,7 @@ class InstagramAPIException(Exception):
     """General class for all API errors"""
 
 
-class InstagramExpectedError(FacebookRequestError):
+class InstagramExpectedError(InstagramAPIException):
     """Error that we expect to happen, we should continue reading without retrying failed query"""
 
 
@@ -46,19 +46,33 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         logger.info(str(exc))
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
 
-    def should_retry_api_error(exc):
-        if exc.http_status() in (status_codes.TOO_MANY_REQUESTS, status_codes.BAD_REQUEST):
+    def should_retry_api_error(exc: FacebookRequestError):
+        print("Got ERROR", exc)
+        # Retryable OAuth Error Codes
+        if exc.api_error_type() == "OAuthException" and exc.api_error_code() in (1, 2, 4, 17, 341, 368):
             return True
 
-        if exc.http_status() == status_codes.FORBIDDEN and exc.api_error_message() == "(#4) Application request limit reached":
+        # Rate Limiting Error Codes
+        if exc.api_error_code() in (4, 17, 32, 613):
             return True
+
+        if exc.http_status() == status_codes.TOO_MANY_REQUESTS:
+            return True
+
+        # FIXME: add type and http_status
+        if exc.api_error_code() == 10 and exc.api_error_message() == "(#10) Not enough viewers for the media to show insights":
+            return False  # expected error
 
         # Issue 4028, Sometimes an error about the Rate Limit is returned with a 400 HTTP code
-        if exc.http_status() == status_codes.BAD_REQUEST:
+        if exc.http_status() == status_codes.BAD_REQUEST and exc.api_error_code() == 100 and exc.api_error_subcode() == 33:
             return True
 
         if exc.api_transient_error():
             return True
+
+        # FIXME: add type, code and http_status
+        if exc.api_error_subcode() == 2108006:
+            return False
 
         return False
 

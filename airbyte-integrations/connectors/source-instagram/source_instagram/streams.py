@@ -174,6 +174,7 @@ class UserInsights(InstagramIncrementalStream):
         "lifetime": ["online_followers"],
     }
 
+    primary_key = None
     cursor_field = "date"
 
     # For some metrics we can only get insights not older than 30 days, it is Facebook policy
@@ -259,7 +260,7 @@ class UserInsights(InstagramIncrementalStream):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """Update stream state from latest record"""
-        print(f"{current_stream_state=}, {latest_record=}")
+        print(f"{current_stream_state}, {latest_record}")
         record_value = latest_record[self.cursor_field]
         state_value = current_stream_state.get("business_account_id", {}).get(self.cursor_field) or record_value
         max_cursor = max(pendulum.parse(state_value), pendulum.parse(record_value))
@@ -355,7 +356,7 @@ class MediaInsights(Media):
             # An error might occur if the media was posted before the most recent time that
             # the user's account was converted to a business account from a personal account
             if error.api_error_subcode() == 2108006:
-                self.logger.error(f"Insights error for business_account_id {account_id}: {error.body()}")
+                self.logger.error(f"Insights error for business_account_id {account_id}: {error.api_error_message()}")
 
                 # We receive all Media starting from the last one, and if on the next Media we get an Insight error,
                 # then no reason to make inquiries for each Media further, since they were published even earlier.
@@ -417,7 +418,7 @@ class StoryInsights(Stories):
             insights = story.get_insights(params={"metric": self.metrics})
             return {record["name"]: record["values"][0]["value"] for record in insights}
         except FacebookRequestError as error:
-            self.logger.error(f"Insights error: {error.api_error_message()}")
             if error.api_error_code() == 10:
+                self.logger.error(f"Insights error: {error.api_error_message()}")
                 return {}
             raise error

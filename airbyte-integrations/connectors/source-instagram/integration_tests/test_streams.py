@@ -55,6 +55,7 @@ from source_instagram.source import SourceInstagram
 
 
 class TestFacebookMarketingSource:
+    """Custom integration tests should test incremental with nested state"""
     def test_insights_has_data(self, configured_catalog, config):
         catalog = self.slice_catalog(configured_catalog, lambda name: name.endswith("_insights"))
         records, states = self._read_records(config, catalog)

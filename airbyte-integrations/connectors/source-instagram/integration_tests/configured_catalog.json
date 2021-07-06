@@ -134,11 +134,7 @@
         "default_cursor_field": [
           "date"
         ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ],
+        "source_defined_primary_key": null,
         "namespace": null
       },
       "sync_mode": "full_refresh",
