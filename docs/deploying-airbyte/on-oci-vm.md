@@ -2,8 +2,7 @@
 
 Install Airbyte on Oracle Cloud Infrastructure VM running Oracle Linux 7
 
-Create OCI Instance 
--------------------
+## Create OCI Instance 
 Go to OCI Console > Compute > Instances > Create Instance
 
 <img width="1665" alt="OCIScreen1" src="https://github.com/airbytehq/airbyte/tree/master/docs/.gitbook/assets/OCIScreen1.png">
