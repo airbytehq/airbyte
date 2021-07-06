@@ -98,7 +98,7 @@ public class GcsLogs implements CloudLogs {
     LOGGER.debug("Start getting GCS objects.");
     while (linesRead <= numLines && !descendingTimestampBlobs.isEmpty()) {
       var poppedBlob = descendingTimestampBlobs.remove(0);
-      try(var inMemoryData = new ByteArrayOutputStream()) {
+      try (var inMemoryData = new ByteArrayOutputStream()) {
         poppedBlob.downloadTo(inMemoryData);
         var currFileLines = inMemoryData.toString().split("\n");
         List<String> currFileLinesReversed = Lists.reverse(List.of(currFileLines));
