@@ -23,12 +23,12 @@
 #
 
 
-import urllib.parse as urlparse
 import sys
+import urllib.parse as urlparse
 
 import backoff
-from requests.status_codes import codes as status_codes
 from airbyte_cdk.entrypoint import logger  # FIXME (Eugene K): register logger as standard python logger
+from requests.status_codes import codes as status_codes
 
 
 class InstagramAPIException(Exception):

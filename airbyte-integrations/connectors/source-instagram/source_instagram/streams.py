@@ -24,7 +24,7 @@
 
 from abc import ABC
 from datetime import datetime
-from typing import Any, List, Optional, MutableMapping, Iterable, Mapping
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 from airbyte_cdk.models import SyncMode
@@ -54,12 +54,16 @@ class InstagramStream(Stream, ABC):
         fields = list(self.get_json_schema().get("properties", {}).keys())
         return list(set(fields) - set(non_object_fields))
 
-    def request_params(self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, ) -> MutableMapping[str, Any]:
+    def request_params(
+        self,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
         """Parameters that should be passed to query_records method"""
         return {"limit": self.page_size}
 
     def stream_slices(
-            self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Override to define the slices for this stream. See the stream slicing section of the docs for more information.
@@ -102,11 +106,11 @@ class Users(InstagramStream):
     """TODO"""
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         account = stream_slice["account"]
         ig_account = account["instagram_business_account"]
@@ -117,16 +121,17 @@ class Users(InstagramStream):
 
 class UserLifetimeInsights(InstagramStream):
     """TODO"""
+
     primary_key = None
     LIFETIME_METRICS = ["audience_city", "audience_country", "audience_gender_age", "audience_locale"]
     period = "lifetime"
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         account = stream_slice["account"]
         ig_account = account["instagram_business_account"]
@@ -139,7 +144,11 @@ class UserLifetimeInsights(InstagramStream):
                 "value": insight["values"][0]["value"],
             }
 
-    def request_params(self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, ) -> MutableMapping[str, Any]:
+    def request_params(
+        self,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_slice=stream_slice, stream_state=stream_state)
         params.update({"metric": self.LIFETIME_METRICS, "period": self.period})
         return params
@@ -147,6 +156,7 @@ class UserLifetimeInsights(InstagramStream):
 
 class UserInsights(InstagramIncrementalStream):
     """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights"""
+
     METRICS_BY_PERIOD = {
         "day": [
             "email_contacts",
@@ -175,11 +185,11 @@ class UserInsights(InstagramIncrementalStream):
         self._end_date = pendulum.now()
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         account = stream_slice["account"]
         ig_account = account["instagram_business_account"]
@@ -198,11 +208,7 @@ class UserInsights(InstagramIncrementalStream):
 
         insight_record = {"page_id": account["page_id"], "business_account_id": account_id}
         for insight in insight_list:
-            key = (
-                f"{insight.get('name')}_{insight.get('period')}"
-                if insight.get("period") in ["week", "days_28"]
-                else insight.get("name")
-            )
+            key = f"{insight.get('name')}_{insight.get('period')}" if insight.get("period") in ["week", "days_28"] else insight.get("name")
             insight_record[key] = insight.get("values")[0]["value"]  # this depends on days_increment value
             if not insight_record.get(self.cursor_field):
                 insight_record[self.cursor_field] = insight.get("values")[0]["end_time"]
@@ -210,10 +216,9 @@ class UserInsights(InstagramIncrementalStream):
         yield insight_record
 
     def stream_slices(
-            self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        """ Extend default slicing based on accounts with slices based on date intervals
-        """
+        """Extend default slicing based on accounts with slices based on date intervals"""
         stream_slices = super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
         for stream_slice in stream_slices:
             account = stream_slice["account"]
@@ -229,7 +234,11 @@ class UserInsights(InstagramIncrementalStream):
                     "until": until.to_datetime_string(),  # excluding
                 }
 
-    def request_params(self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, ) -> MutableMapping[str, Any]:
+    def request_params(
+        self,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
         """"""
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice)
         return {
@@ -239,13 +248,12 @@ class UserInsights(InstagramIncrementalStream):
         }
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        """Update stream state from latest record
-        """
+        """Update stream state from latest record"""
         record_value = latest_record[self.cursor_field]
-        state_value = current_stream_state.get('business_account_id', {}).get(self.cursor_field) or record_value
+        state_value = current_stream_state.get("business_account_id", {}).get(self.cursor_field) or record_value
         max_cursor = max(pendulum.parse(state_value), pendulum.parse(record_value))
 
-        current_stream_state[latest_record['business_account_id']] = {
+        current_stream_state[latest_record["business_account_id"]] = {
             self.cursor_field: str(max_cursor),
         }
 
@@ -253,23 +261,24 @@ class UserInsights(InstagramIncrementalStream):
 
 
 class Media(InstagramStream):
-    """ Children objects can only be of the media_type == "CAROUSEL_ALBUM".
+    """Children objects can only be of the media_type == "CAROUSEL_ALBUM".
     And children object does not support INVALID_CHILDREN_FIELDS fields,
     so they are excluded when trying to get child objects to avoid the error
     """
+
     INVALID_CHILDREN_FIELDS = ["caption", "comments_count", "is_comment_enabled", "like_count", "children"]
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
         This method should be overridden by subclasses to read records based on the inputs
         """
-        account = stream_slice['account']
+        account = stream_slice["account"]
         ig_account = account["instagram_business_account"]
         media = ig_account.get_media(params=self.request_params(), fields=self.fields)
         for record in media:
@@ -299,13 +308,13 @@ class MediaInsights(Media):
     CAROUSEL_ALBUM_METRICS = ["carousel_album_engagement", "carousel_album_impressions", "carousel_album_reach", "carousel_album_saved"]
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        account = stream_slice['account']
+        account = stream_slice["account"]
         ig_account = account["instagram_business_account"]
         media = ig_account.get_media(params=self.request_params(), fields=["media_type"])
         for ig_media in media:
@@ -347,13 +356,13 @@ class Stories(InstagramStream):
     """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories"""
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        account = stream_slice['account']
+        account = stream_slice["account"]
         ig_account = account["instagram_business_account"]
         stories = ig_account.get_stories(params=self.request_params(), fields=self.fields)
         for record in stories:
@@ -369,13 +378,13 @@ class StoriesInsights(Stories):
     metrics = ["exits", "impressions", "reach", "replies", "taps_forward", "taps_back"]
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        account = stream_slice['account']
+        account = stream_slice["account"]
         ig_account = account["instagram_business_account"]
         stories = ig_account.get_stories(params=self.request_params(), fields=[])
         for ig_story in stories:
