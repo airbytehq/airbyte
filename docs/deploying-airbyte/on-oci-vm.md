@@ -1,13 +1,15 @@
 Install Airbyte on Oracle Cloud Infrastructure (OCI) VM
 -------------------------------------------------------
 
+Install Airbyte on Oracle Cloud Infrastructure VM running Oracle Linux 7
+
 Create OCI Instance 
 -------------------
 Go to OCI Console > Compute > Instances > Create Instance
 
-<img width="1665" alt="Screen Shot 2021-07-02 at 3 15 01 AM" src="https://user-images.githubusercontent.com/39692236/124164422-f6530780-dae3-11eb-802e-cabb29840df1.png">
+<img width="1665" alt="OCIScreen1" src="https://github.com/airbytehq/airbyte/tree/master/docs/.gitbook/assets/OCIScreen1.png">
 
-<img width="1668" alt="Screen Shot 2021-07-02 at 3 18 04 AM" src="https://user-images.githubusercontent.com/39692236/124164566-25697900-dae4-11eb-82f5-2e86f5de2011.png">
+<img width="1668" alt="OCIScreen2" src="https://github.com/airbytehq/airbyte/tree/master/docs/.gitbook/assets/OCIScreen2.png">
 
 
 Whitelist Port 8000 for a CIDR range in Security List of OCI VM Subnet
@@ -16,11 +18,7 @@ Go to OCI Console > Networking > Virtual Cloud Network
 
 Select the Subnet > Security List > Add Ingress Rules
 
-<img width="1423" alt="Screen Shot 2021-07-02 at 3 22 30 AM" src="https://user-images.githubusercontent.com/39692236/124165247-e5ef5c80-dae4-11eb-9735-dbe748fa0531.png">
-
-
-
-
+<img width="1423" alt="OCIScreen3" src="https://github.com/airbytehq/airbyte/tree/master/docs/.gitbook/assets/OCIScreen3.png">
 
 
 Login to the Instance/VM with the SSH key and 'opc' user
@@ -64,6 +62,7 @@ which docker-compose
 sudo /usr/local/bin/docker-compose up -d
 
 
+
 Create SSH Tunnel to Login to the Instance
 ------------------------------------------
 
@@ -73,6 +72,11 @@ From your local workstation
 
 $ ssh -i private-key-file -L 8000:oci-private-instance-ip:8000 opc@bastion-host-public-ip
 
-From your browser window https://localhost:8000/
+Access Airbyte
+--------------
+
+Open URL in Browser :  https://localhost:8000/
+
+<img width="1323" alt="OCIScreen4" src="https://github.com/airbytehq/airbyte/tree/master/docs/.gitbook/assets/OCIScreen4.png">
 
 /* Please note Airbyte currently does not support SSL/TLS certificates */
