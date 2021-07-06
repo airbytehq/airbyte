@@ -90,6 +90,7 @@ public abstract class SourceAcceptanceTest extends SourceAbstractTest {
       "airbyte/source-gitlab-singer",
       "airbyte/source-google-workspace-admin-reports",
       "airbyte/source-zendesk-talk",
+      "airbyte/source-zendesk-support-singer",
       "airbyte/source-quickbooks-singer",
       "airbyte/source-jira");
 
@@ -290,6 +291,16 @@ public abstract class SourceAcceptanceTest extends SourceAbstractTest {
     assertFalse(fullRefreshRecords.isEmpty(), assertionMessage);
     assertFalse(emptyStateRecords.isEmpty(), assertionMessage);
     assertSameRecords(fullRefreshRecords, emptyStateRecords, assertionMessage);
+  }
+
+  /**
+   * In order to launch a source on Kubernetes in a pod, we need to be able to wrap the entrypoint.
+   * The source connector must specify its entrypoint in the AIRBYTE_ENTRYPOINT variable. This test
+   * ensures that the entrypoint environment variable is set.
+   */
+  @Test
+  public void testEntrypointEnvVar() throws Exception {
+    checkEntrypointEnvVariable();
   }
 
   private List<AirbyteRecordMessage> filterRecords(Collection<AirbyteMessage> messages) {

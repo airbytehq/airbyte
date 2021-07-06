@@ -100,12 +100,12 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected boolean implementsBasicNormalization() {
-    return false;
+  protected boolean implementsNamespaces() {
+    return true;
   }
 
   @Override
-  protected boolean implementsNamespaces() {
+  protected boolean supportsDBT() {
     return true;
   }
 

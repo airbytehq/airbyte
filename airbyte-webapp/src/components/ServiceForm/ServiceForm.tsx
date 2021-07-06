@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { Formik } from "formik";
 import { JSONSchema7 } from "json-schema";
 
@@ -11,6 +11,7 @@ import {
 import { ServiceFormValues } from "./types";
 import { ServiceFormContextProvider } from "./serviceFormContext";
 import { FormRoot } from "./FormRoot";
+import RequestConnectorModal from "views/Connector/RequestConnectorModal";
 import { SourceDefinition } from "core/resources/SourceDefinition";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import { FormBaseItem } from "core/form/types";
@@ -42,6 +43,8 @@ const FormikPatch: React.FC = () => {
 };
 
 const ServiceForm: React.FC<ServiceFormProps> = (props) => {
+  const [isOpenRequestModal, setIsOpenRequestModal] = useState(false);
+
   const {
     specifications,
     formType,
@@ -84,12 +87,14 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
             availableServices={props.availableServices}
             allowChangeConnector={props.allowChangeConnector}
             isEditMode={props.isEditMode}
+            onOpenRequestConnectorModal={() => setIsOpenRequestModal(true)}
           />
         ),
       },
     }),
     [
       formType,
+      setIsOpenRequestModal,
       props.allowChangeConnector,
       props.availableServices,
       props.documentationUrl,
@@ -135,40 +140,48 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   );
 
   return (
-    <Formik
-      validateOnBlur={true}
-      validateOnChange={true}
-      initialValues={initialValues}
-      validationSchema={validationSchema}
-      onSubmit={onFormSubmit}
-    >
-      {({ values, setSubmitting }) => (
-        <ServiceFormContextProvider
-          widgetsInfo={uiWidgetsInfo}
-          setUiWidgetsInfo={setUiWidgetsInfo}
-          formType={formType}
-          isEditMode={props.isEditMode}
-          isLoadingSchema={props.isLoading}
-        >
-          <FormikPatch />
-          <FormRoot
-            {...props}
-            onRetest={async () => {
-              setSubmitting(true);
-              await onRetestForm(values);
-              setSubmitting(false);
-            }}
-            selectedService={props.availableServices.find(
-              (s) =>
-                (isSourceDefinition(s)
-                  ? s.sourceDefinitionId
-                  : s.destinationDefinitionId) === values.serviceType
+    <>
+      <Formik
+        validateOnBlur={true}
+        validateOnChange={true}
+        initialValues={initialValues}
+        validationSchema={validationSchema}
+        onSubmit={onFormSubmit}
+      >
+        {({ values, setSubmitting }) => (
+          <ServiceFormContextProvider
+            widgetsInfo={uiWidgetsInfo}
+            setUiWidgetsInfo={setUiWidgetsInfo}
+            formType={formType}
+            isEditMode={props.isEditMode}
+            isLoadingSchema={props.isLoading}
+          >
+            <FormikPatch />
+            <FormRoot
+              {...props}
+              onRetest={async () => {
+                setSubmitting(true);
+                await onRetestForm(values);
+                setSubmitting(false);
+              }}
+              selectedService={props.availableServices.find(
+                (s) =>
+                  (isSourceDefinition(s)
+                    ? s.sourceDefinitionId
+                    : s.destinationDefinitionId) === values.serviceType
+              )}
+              formFields={formFields}
+            />
+            {isOpenRequestModal && (
+              <RequestConnectorModal
+                connectorType={formType}
+                onClose={() => setIsOpenRequestModal(false)}
+              />
             )}
-            formFields={formFields}
-          />
-        </ServiceFormContextProvider>
-      )}
-    </Formik>
+          </ServiceFormContextProvider>
+        )}
+      </Formik>
+    </>
   );
 };
 

@@ -109,19 +109,13 @@ public class JdbcBufferedConsumerFactory {
 
       final String streamName = abStream.getName();
       final String tableName = namingResolver.getRawTableName(streamName);
-      String tmpTableName = namingResolver.getTmpTableName(streamName);
-
-      // TODO (#2948): Refactor into StandardNameTransformed , this is for MySQL destination, the table
-      // names can't have more than 64 characters.
-      if (tmpTableName.length() > 64) {
-        String prefix = tmpTableName.substring(0, 31); // 31
-        String suffix = tmpTableName.substring(32, 63); // 31
-        tmpTableName = prefix + "__" + suffix;
-      }
-
+      final String tmpTableName = namingResolver.getTmpTableName(streamName);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
 
-      return new WriteConfig(streamName, abStream.getNamespace(), outputSchema, tmpTableName, tableName, syncMode);
+      final WriteConfig writeConfig = new WriteConfig(streamName, abStream.getNamespace(), outputSchema, tmpTableName, tableName, syncMode);
+      LOGGER.info("Write config: {}", writeConfig);
+
+      return writeConfig;
     };
   }
 

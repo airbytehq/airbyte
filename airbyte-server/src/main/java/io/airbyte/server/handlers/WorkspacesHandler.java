@@ -37,18 +37,21 @@ import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.WorkspaceCreate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
+import io.airbyte.api.model.WorkspaceReadList;
 import io.airbyte.api.model.WorkspaceUpdate;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.notification.NotificationClient;
 import io.airbyte.server.converters.NotificationConverter;
-import io.airbyte.server.errors.KnownException;
+import io.airbyte.server.errors.IdNotFoundKnownException;
+import io.airbyte.server.errors.ValueConflictKnownException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
-import org.eclipse.jetty.http.HttpStatus;
+import java.util.stream.Collectors;
 
 public class WorkspacesHandler {
 
@@ -80,7 +83,7 @@ public class WorkspacesHandler {
   }
 
   public WorkspaceRead createWorkspace(final WorkspaceCreate workspaceCreate)
-      throws JsonValidationException, IOException, ConfigNotFoundException, KnownException {
+      throws JsonValidationException, IOException, ConfigNotFoundException, ValueConflictKnownException {
 
     final String email = workspaceCreate.getEmail();
     final Boolean anonymousDataCollection = workspaceCreate.getAnonymousDataCollection();
@@ -106,7 +109,7 @@ public class WorkspacesHandler {
 
     try {
       if (configRepository.getWorkspaceBySlug(workspace.getSlug(), false) != null) {
-        throw new KnownException(HttpStatus.CONFLICT_409, "A workspace already exists with the same name");
+        throw new ValueConflictKnownException("A workspace already exists with the same name");
       }
     } catch (ConfigNotFoundException e) {
       // no workspace exists with the slug, lets create ours
@@ -139,6 +142,13 @@ public class WorkspacesHandler {
 
     persistedWorkspace.withTombstone(true);
     configRepository.writeStandardWorkspace(persistedWorkspace);
+  }
+
+  public WorkspaceReadList listWorkspaces() throws JsonValidationException, IOException {
+    final List<WorkspaceRead> reads = configRepository.listStandardWorkspaces(false).stream()
+        .map(WorkspacesHandler::buildWorkspaceRead)
+        .collect(Collectors.toList());
+    return new WorkspaceReadList().workspaces(reads);
   }
 
   public WorkspaceRead getWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody)
@@ -189,7 +199,7 @@ public class WorkspacesHandler {
         return new NotificationRead().status(StatusEnum.SUCCEEDED);
       }
     } catch (IllegalArgumentException e) {
-      throw new KnownException(HttpStatus.NOT_FOUND_404, e.getMessage());
+      throw new IdNotFoundKnownException(e.getMessage(), notification.getNotificationType().name());
     } catch (IOException | InterruptedException e) {
       return new NotificationRead().status(StatusEnum.FAILED).message(e.getMessage());
     }
@@ -201,7 +211,7 @@ public class WorkspacesHandler {
     return buildWorkspaceRead(workspace);
   }
 
-  private WorkspaceRead buildWorkspaceRead(StandardWorkspace workspace) {
+  private static WorkspaceRead buildWorkspaceRead(StandardWorkspace workspace) {
     return new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
         .customerId(workspace.getCustomerId())
