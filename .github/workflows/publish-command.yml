@@ -42,7 +42,6 @@ jobs:
   publish-image:
     needs: start-publish-image-runner
     runs-on: ${{ needs.start-publish-image-runner.outputs.label }}
-#    runs-on: ubuntu-latest
     steps:
       - name: Search for valid connector name format
         id: regex
