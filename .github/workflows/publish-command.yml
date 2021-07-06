@@ -65,24 +65,9 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: ${{github.event.pull_request.head.repo.full_name}} # always use the branch's repository
-
-#      - uses: actions/setup-java@v1
-#        with:
-#          java-version: '14'
-#      - uses: actions/setup-node@v1
-#        with:
-#          node-version: '14.7'
-#      - uses: actions/setup-python@v2
-#        with:
-#          python-version: '3.7'
-#      - name: Manually Install Python & Pip
-#        run: sudo apt-get update && sudo apt-get install zlib1g-dev -y && cd /usr/src && sudo wget https://www.python.org/ftp/python/3.7.9/Python-3.7.9.tgz && sudo tar xzf Python-3.7.9.tgz && cd Python-3.7.9 && sudo ./configure --enable-optimizations && sudo make altinstall && sudo apt install python3-pip -y
+      # Beside PyEnv, this does not set any runtimes up because it uses an AMI image that has everything pre-installed. See https://github.com/airbytehq/airbyte/issues/4559.
       - name: Install Pyenv
         run: python3 -m pip install virtualenv==16.7.9 --user
-#      - name: Install Python Dev
-#        run: sudo apt-get update && sudo apt-get install -f -y clang
-#      - name: Install CSICO
-#        run: pip install ciso8601
       - name: Write Integration Test Credentials # TODO DRY this with test-command.yml
         run: ./tools/bin/ci_credentials.sh
         env:

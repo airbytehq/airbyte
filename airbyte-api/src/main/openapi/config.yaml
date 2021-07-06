@@ -96,6 +96,19 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/workspaces/list:
+    post:
+      tags:
+        - workspace
+      summary: List all workspaces registered in the current Airbyte deployment
+      operationId: listWorkspaces
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceReadList"
   /v1/workspaces/get:
     post:
       tags:
@@ -1480,6 +1493,15 @@ components:
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
+    WorkspaceReadList:
+      type: object
+      required:
+        - workspaces
+      properties:
+        workspaces:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkspaceRead"
     WorkspaceRead:
       type: object
       required:
