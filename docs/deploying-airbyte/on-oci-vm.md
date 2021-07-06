@@ -45,8 +45,7 @@ sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
 
 
-Install Airbyte
-----------------
+### Install Airbyte
 
 mkdir airbyte && cd airbyte
 
