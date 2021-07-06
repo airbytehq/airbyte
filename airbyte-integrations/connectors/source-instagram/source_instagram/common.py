@@ -28,11 +28,16 @@ import urllib.parse as urlparse
 
 import backoff
 from airbyte_cdk.entrypoint import logger  # FIXME (Eugene K): register logger as standard python logger
+from facebook_business.exceptions import FacebookRequestError
 from requests.status_codes import codes as status_codes
 
 
 class InstagramAPIException(Exception):
     """General class for all API errors"""
+
+
+class InstagramExpectedError(FacebookRequestError):
+    """Error that we expect to happen, we should continue reading without retrying failed query"""
 
 
 def retry_pattern(backoff_type, exception, **wait_gen_kwargs):

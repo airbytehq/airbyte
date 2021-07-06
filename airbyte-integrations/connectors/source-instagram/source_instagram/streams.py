@@ -195,20 +195,28 @@ class UserInsights(InstagramIncrementalStream):
         ig_account = account["instagram_business_account"]
         account_id = ig_account.get("id")
 
-        params = self.request_params(stream_state=stream_state, stream_slice=stream_slice)
+        base_params = self.request_params(stream_state=stream_state, stream_slice=stream_slice)
         insight_list = []
+        # iterate over each period, query insights
         for period, metrics in self.METRICS_BY_PERIOD.items():
-            p = {
-                **params,
+            params = {
+                **base_params,
                 "metric": metrics,
                 "period": [period],
             }
-            # we get only first record, because cursor will try to fetch next date interval
-            insight_list += next(ig_account.get_insights(params=p))
 
+            # we get only first record, because cursor will try to fetch next date interval
+            cursor = ig_account.get_insights(params=params)
+            if len(cursor):
+                insight_list += [insights.export_all_data() for insights in cursor[:len(cursor)]]
+
+        # end then merge all periods in one record
         insight_record = {"page_id": account["page_id"], "business_account_id": account_id}
         for insight in insight_list:
-            key = f"{insight.get('name')}_{insight.get('period')}" if insight.get("period") in ["week", "days_28"] else insight.get("name")
+            key = insight["name"]
+            if insight["period"] in ["week", "days_28"]:
+                key += f"_{insight['period']}"
+
             insight_record[key] = insight.get("values")[0]["value"]  # this depends on days_increment value
             if not insight_record.get(self.cursor_field):
                 insight_record[self.cursor_field] = insight.get("values")[0]["end_time"]
@@ -219,6 +227,7 @@ class UserInsights(InstagramIncrementalStream):
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """Extend default slicing based on accounts with slices based on date intervals"""
+        stream_state = stream_state or {}
         stream_slices = super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
         for stream_slice in stream_slices:
             account = stream_slice["account"]
@@ -228,6 +237,7 @@ class UserInsights(InstagramIncrementalStream):
             start_date = max(start_date, self._start_date, pendulum.now().subtract(days=self.buffer_days))
             for since in pendulum.period(start_date, self._end_date).range("days", self.days_increment):
                 until = min(since.add(days=self.days_increment), self._end_date)
+                self.logger.info(f"Reading insights between {since.date()} and {until.date()}")
                 yield {
                     **stream_slice,
                     "since": since.to_datetime_string(),
@@ -249,6 +259,7 @@ class UserInsights(InstagramIncrementalStream):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """Update stream state from latest record"""
+        print(f"{current_stream_state=}, {latest_record=}")
         record_value = latest_record[self.cursor_field]
         state_value = current_stream_state.get("business_account_id", {}).get(self.cursor_field) or record_value
         max_cursor = max(pendulum.parse(state_value), pendulum.parse(record_value))
