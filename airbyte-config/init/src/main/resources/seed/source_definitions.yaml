@@ -203,7 +203,7 @@
 - sourceDefinitionId: aea2fd0d-377d-465e-86c0-4fdc4f688e51
   name: Zoom
   dockerRepository: airbyte/source-zoom-singer
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.4
   documentationUrl: https://hub.docker.com/r/airbyte/source-zoom-singer
   icon: zoom.svg
 - sourceDefinitionId: eaf50f04-21dd-4620-913b-2a83f5635227
@@ -285,7 +285,7 @@
 - sourceDefinitionId: 29b409d9-30a5-4cc8-ad50-886eb846fea3
   name: Quickbooks
   dockerRepository: airbyte/source-quickbooks-singer
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-quickbooks-singer
 - sourceDefinitionId: 2e875208-0c0b-4ee4-9e92-1cb3156ea799
   name: Iterable
