@@ -98,17 +98,17 @@ public class GcsLogs implements CloudLogs {
     LOGGER.debug("Start getting GCS objects.");
     while (linesRead <= numLines && !descendingTimestampBlobs.isEmpty()) {
       var poppedBlob = descendingTimestampBlobs.remove(0);
-      var inMemoryData = new ByteArrayOutputStream();
-      poppedBlob.downloadTo(inMemoryData);
-      var currFileStr = inMemoryData.toString();
-      var currFileLines = currFileStr.split("\n");
-      List<String> currFileLinesReversed = Lists.reverse(List.of(currFileLines));
-      for (var line : currFileLinesReversed) {
-        if (linesRead == numLines) {
-          break;
+      try(var inMemoryData = new ByteArrayOutputStream()) {
+        poppedBlob.downloadTo(inMemoryData);
+        var currFileLines = inMemoryData.toString().split("\n");
+        List<String> currFileLinesReversed = Lists.reverse(List.of(currFileLines));
+        for (var line : currFileLinesReversed) {
+          if (linesRead == numLines) {
+            break;
+          }
+          lines.add(0, line);
+          linesRead++;
         }
-        lines.add(0, line);
-        linesRead++;
       }
     }
 

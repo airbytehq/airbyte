@@ -74,12 +74,12 @@ public class LogClientSingleton {
   }
 
   public static File getServerLogFile(Configs configs) {
-    createCloudClientIfNull(configs);
     var logPathBase = getServerLogsRoot(configs);
-
     if (shouldUseLocalLogs(configs)) {
       return logPathBase.resolve(LOG_FILENAME).toFile();
     }
+
+    createCloudClientIfNull(configs);
     var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
     try {
       return logClient.downloadCloudLog(configs, cloudLogPath);
@@ -89,12 +89,12 @@ public class LogClientSingleton {
   }
 
   public static File getSchedulerLogFile(Configs configs) {
-    createCloudClientIfNull(configs);
     var logPathBase = getSchedulerLogsRoot(configs);
-
     if (shouldUseLocalLogs(configs)) {
       return logPathBase.resolve(LOG_FILENAME).toFile();
     }
+
+    createCloudClientIfNull(configs);
     var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
     try {
       return logClient.downloadCloudLog(configs, cloudLogPath);
@@ -104,12 +104,11 @@ public class LogClientSingleton {
   }
 
   public static List<String> getJobLogFile(Configs configs, Path logPath) throws IOException {
-    createCloudClientIfNull(configs);
-
     if (shouldUseLocalLogs(configs)) {
       return IOs.getTail(LOG_TAIL_SIZE, logPath);
     }
 
+    createCloudClientIfNull(configs);
     var cloudLogPath = JOB_LOGGING_CLOUD_PREFIX + logPath;
     return logClient.tailCloudLog(configs, cloudLogPath, LOG_TAIL_SIZE);
   }
