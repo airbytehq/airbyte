@@ -67,8 +67,7 @@ class SquareStream(HttpStream, ABC):
             return {"cursor": next_page_cursor}
 
     def request_headers(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         return {"Square-Version": self.api_version, "Content-Type": "application/json"}
 
@@ -102,24 +101,21 @@ class SquareException(Exception):
 
 class SquareStreamPageParam(SquareStream, ABC):
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {"cursor": next_page_token["cursor"]} if next_page_token else {}
 
 
 class SquareStreamPageJson(SquareStream, ABC):
     def request_body_json(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Optional[Mapping]:
         return {"cursor": next_page_token["cursor"]} if next_page_token else {}
 
 
 class SquareStreamPageJsonAndLimit(SquareStreamPageJson, ABC):
     def request_body_json(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Optional[Mapping]:
         json_payload = {"limit": self.items_per_page_limit}
         if next_page_token:
@@ -137,8 +133,7 @@ class SquareCatalogObjectsStream(SquareStreamPageJson):
         return "catalog/search"
 
     def request_body_json(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Optional[Mapping]:
         json_payload = super().request_body_json(stream_state, stream_slice, next_page_token)
 
@@ -151,8 +146,7 @@ class SquareCatalogObjectsStream(SquareStreamPageJson):
 
 
 class IncrementalSquareGenericStream(SquareStream, ABC):
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
-    Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         if current_stream_state is not None and self.cursor_field in current_stream_state:
             return {self.cursor_field: max(current_stream_state[self.cursor_field], latest_record[self.cursor_field])}
         else:
@@ -185,10 +179,10 @@ class IncrementalSquareStream(IncrementalSquareGenericStream, SquareStreamPagePa
     cursor_field = "created_at"
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params_payload = super().request_params(stream_state, stream_slice, next_page_token)
 
@@ -394,7 +388,7 @@ class SourceSquare(AbstractSource):
         except requests.exceptions.RequestException as e:
             square_exception = parse_square_error_response(e)
             if square_exception:
-                return False, square_exception.errors[0]['detail']
+                return False, square_exception.errors[0]["detail"]
 
             return False, e
 

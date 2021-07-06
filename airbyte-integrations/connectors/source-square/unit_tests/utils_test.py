@@ -22,9 +22,10 @@
 # SOFTWARE.
 #
 
-from source_square.utils import separate_items_by_count, separate_by_count
-import pytest
 import math
+
+import pytest
+from source_square.utils import separate_by_count, separate_items_by_count
 
 
 def test_separate_by_count():
@@ -82,6 +83,3 @@ def test_separate_items_by_count():
 
     result_list = separate_items_by_count(item_list=None, part_count=5)
     assert result_list == []
-
-
-
