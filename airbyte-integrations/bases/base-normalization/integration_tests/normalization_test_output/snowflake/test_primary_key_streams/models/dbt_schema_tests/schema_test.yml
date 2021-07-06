@@ -4,11 +4,11 @@ models:
   - name: EXCHANGE_RATE
     tests:
       - dbt_utils.equality:
-          description: check_streams_are_equal
-            In this integration test, we are sending the same records to both streams
-            exchange_rate and dedup_exchange_rate.
-            The SCD table of dedup_exchange_rate in append_dedup mode should therefore mirror
-            the final table with append or overwrite mode from exchange_rate.
+          # description: check_streams_are_equal
+          #  In this integration test, we are sending the same records to both streams
+          #  exchange_rate and dedup_exchange_rate.
+          #  The SCD table of dedup_exchange_rate in append_dedup mode should therefore mirror
+          #  the final table with append or overwrite mode from exchange_rate.
           compare_model: ref('DEDUP_EXCHANGE_RATE_SCD')
           compare_columns:
             - id
@@ -62,3 +62,9 @@ models:
       - name: ID
         tests:
           # - not_null # TODO Fix bug here
+
+  - name: DEDUP_CDC_EXCLUDED
+    columns:
+      - name: NAME
+        tests:
+          - not_null

@@ -14,8 +14,32 @@ on:
         required: false
 
 jobs:
-  integration_test:
+  start-test-runner:
+    name: Start Build EC2 Runner
     runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Start EC2 Runner
+        id: start-ec2-runner
+        uses: machulav/ec2-github-runner@v2
+        with:
+          mode: start
+          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+          ec2-image-id: ami-0a5f6900e1cc7e07e
+          ec2-instance-type: c5.2xlarge
+          subnet-id: subnet-0469a9e68a379c1d3
+          security-group-id: sg-0793f3c9413f21970
+  integration-test:
+    needs: start-test-runner
+    runs-on: ${{ needs.start-test-runner.outputs.label }}
     steps:
       - name: Search for valid connector name format
         id: regex
@@ -38,15 +62,9 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: ${{ github.event.inputs.repo }}
-      - uses: actions/setup-java@v1
-        with:
-          java-version: '14'
-      - uses: actions/setup-node@v1
-        with:
-          node-version: '14.7'
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.7'
+      # Beside PyEnv, this does not set any runtimes up because it uses an AMI image that has everything pre-installed. See https://github.com/airbytehq/airbyte/issues/4559/
+      - name: Install Pyenv
+        run: python3 -m pip install virtualenv==16.7.9 --user
       - name: Write Integration Test Credentials
         run: ./tools/bin/ci_credentials.sh
         env:
@@ -66,6 +84,7 @@ jobs:
           FRESHDESK_TEST_CREDS: ${{ secrets.FRESHDESK_TEST_CREDS }}
           GITLAB_INTEGRATION_TEST_CREDS: ${{ secrets.GITLAB_INTEGRATION_TEST_CREDS }}
           GH_INTEGRATION_TEST_CREDS: ${{ secrets.GH_INTEGRATION_TEST_CREDS }}
+          GH_NATIVE_INTEGRATION_TEST_CREDS: ${{ secrets.GH_NATIVE_INTEGRATION_TEST_CREDS }}
           GOOGLE_ADS_TEST_CREDS: ${{ secrets.GOOGLE_ADS_TEST_CREDS }}
           GOOGLE_ANALYTICS_TEST_CREDS: ${{ secrets.GOOGLE_ANALYTICS_TEST_CREDS }}
           GOOGLE_ANALYTICS_TEST_TRACKING_ID: ${{ secrets.GOOGLE_ANALYTICS_TEST_TRACKING_ID }}
@@ -105,6 +124,7 @@ jobs:
           SOURCE_RECURLY_INTEGRATION_TEST_CREDS: ${{ secrets.SOURCE_RECURLY_INTEGRATION_TEST_CREDS }}
           STRIPE_INTEGRATION_TEST_CREDS: ${{ secrets.STRIPE_INTEGRATION_TEST_CREDS }}
           STRIPE_INTEGRATION_CONNECTED_ACCOUNT_TEST_CREDS: ${{ secrets.STRIPE_INTEGRATION_CONNECTED_ACCOUNT_TEST_CREDS }}
+          SURVEYMONKEY_TEST_CREDS: ${{ secrets.SURVEYMONKEY_TEST_CREDS }}
           TEMPO_INTEGRATION_TEST_CREDS: ${{ secrets.TEMPO_INTEGRATION_TEST_CREDS }}
           TWILIO_TEST_CREDS: ${{ secrets.TWILIO_TEST_CREDS }}
           ZENDESK_CHAT_INTEGRATION_TEST_CREDS: ${{ secrets.ZENDESK_CHAT_INTEGRATION_TEST_CREDS }}
@@ -154,3 +174,25 @@ jobs:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :x: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+  # In case of self-hosted EC2 errors, remove this block.
+  stop-test-runner:
+    name: Stop Build EC2 Runner
+    needs:
+      - start-test-runner # required to get output from the start-runner job
+      - integration-test # required to wait when the main job is done
+    runs-on: ubuntu-latest
+    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Stop EC2 runner
+        uses: machulav/ec2-github-runner@v2
+        with:
+          mode: stop
+          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+          label: ${{ needs.start-test-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-test-runner.outputs.ec2-instance-id }}
