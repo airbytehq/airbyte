@@ -31,6 +31,7 @@ import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -181,5 +182,12 @@ public interface JobPersistence {
    *        version in the Database.
    */
   void importDatabase(String airbyteVersion, Map<DatabaseSchema, Stream<JsonNode>> data) throws IOException;
+
+  /**
+   * Purges job history while ensuring that the latest saved-state information is maintained.
+   *
+   * @throws IOException
+   */
+  void purgeJobHistory(LocalDateTime asOfDate) throws IOException;
 
 }

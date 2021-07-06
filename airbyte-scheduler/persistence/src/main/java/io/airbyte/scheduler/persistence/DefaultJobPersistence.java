@@ -82,6 +82,10 @@ import org.slf4j.LoggerFactory;
 
 public class DefaultJobPersistence implements JobPersistence {
 
+  public static final int JOB_HISTORY_MINIMUM_AGE_IN_DAYS = 10;
+  public static final int JOB_HISTORY_MINIMUM_RECENCY = 10;
+  public static final int JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS = 100;
+
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJobPersistence.class);
   private static final JSONFormat DB_JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
   protected static final String DEFAULT_SCHEMA = "public";
@@ -475,6 +479,49 @@ public class DefaultJobPersistence implements JobPersistence {
     } else {
       return List.of();
     }
+  }
+
+  @Override
+  public void purgeJobHistory(LocalDateTime asOfDate) throws IOException {
+    // JENNY TODO: Figure out how to accommodate timezone for asOfDate.
+    final String JOB_HISTORY_PURGE_SQL = "delete from jobs where jobs.id in ("
+        + "select jobs.id  \n"
+        + "from jobs \n"
+        + "left join (\n"
+        + "   select scope, count(jobs.id) as jobCount from jobs group by scope\n"
+        + ") counts on jobs.scope = counts.scope \n"
+        + "where \n"
+        + "  -- job must be at least MINIMUM_AGE_IN_DAYS old or connection has more than EXCESSIVE_NUMBER_OF_JOBS \n"
+        + "  (jobs.created_at < (CAST(? as TIMESTAMP) - interval '" + JOB_HISTORY_MINIMUM_AGE_IN_DAYS + "' day) or counts.jobCount >  ?) \n"
+        + "and jobs.id not in (\n"
+        + "  -- cannot be the last job with saved state \n"
+        + "   select max(job_id) as latest_job_id_with_state from (\n"
+        + "   select jobs.scope, \n"
+        + "   jobs.id as job_id, jobs.config_type, jobs.created_at, jobs.status, \n"
+        + "   bool_or(attempts.\"output\" -> 'sync' -> 'state' -> 'state' is not null) as outputStateExists\n"
+        + "   from jobs left join attempts on jobs.id = attempts.job_id \n"
+        + "   group by scope, jobs.id\n"
+        + "   having bool_or(attempts.\"output\" -> 'sync' -> 'state' -> 'state' is not null) = true\n"
+        + "   order by scope, jobs.created_at desc, jobs.id desc\n"
+        + "   ) jobs_with_state group by scope \n"
+        + ") and jobs.id not in (\n"
+        + "  -- cannot be one of the last MINIMUM_RECENCY jobs for that connection/scope\n"
+        + "    select job_id from (\n"
+        + "        select jobs.scope, \n"
+        + "        row_number() OVER (PARTITION BY scope ORDER BY jobs.created_at desc, jobs.id desc) as recency,\n"
+        + "        jobs.id as job_id, jobs.config_type, jobs.created_at, jobs.status\n"
+        + "        from jobs \n"
+        + "        group by scope, jobs.id\n"
+        + "        order by scope, jobs.created_at desc, jobs.id desc\n"
+        + "    ) jobs_by_recency \n"
+        + "    where recency <= ? \n"
+        + "))";
+
+    // JENNY TODO: figure out error handling around this, messaging, etc. Plus test cases.
+    database.transaction(ctx -> ctx.execute(JOB_HISTORY_PURGE_SQL, asOfDate,
+        JOB_HISTORY_MINIMUM_AGE_IN_DAYS,
+        JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS,
+        JOB_HISTORY_MINIMUM_RECENCY));
   }
 
   private Stream<JsonNode> exportTable(final String schema, final String tableName) throws IOException {

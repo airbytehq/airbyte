@@ -38,6 +38,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.text.Sqls;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobGetSpecConfig;
@@ -58,6 +59,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1000,6 +1003,151 @@ class DefaultJobPersistenceTest {
 
       final Job updated = jobPersistence.getJob(jobId);
       assertEquals(JobStatus.CANCELLED, updated.getStatus());
+    }
+
+    private Job persistJobForTesting(String scope, JobConfig jobConfig, JobStatus status, LocalDateTime runDate) throws IOException, SQLException {
+      Optional<Long> id = database.query(
+          ctx -> ctx.fetch(
+              "INSERT INTO jobs(config_type, scope, created_at, updated_at, status, config) " +
+                  "SELECT CAST(? AS JOB_CONFIG_TYPE), ?, ?, ?, CAST(? AS JOB_STATUS), CAST(? as JSONB) " +
+                  "RETURNING id ",
+              Sqls.toSqlName(jobConfig.getConfigType()),
+              scope,
+              runDate,
+              runDate,
+              Sqls.toSqlName(status),
+              Jsons.serialize(jobConfig)))
+          .stream()
+          .findFirst()
+          .map(r -> r.getValue("id", Long.class));
+      return jobPersistence.getJob(id.get());
+    }
+
+    private int persistAttemptForJobHistoryTesting(Job job, String logPath, LocalDateTime runDate, boolean shouldHaveState)
+        throws IOException, SQLException {
+      String attemptOutputWithState = "{\n"
+          + "  \"sync\": {\n"
+          + "    \"state\": {\n"
+          + "      \"state\": {\n"
+          + "        \"bookmarks\": {"
+          + "}}}}}";
+      String attemptOutputWithoutState = "{\n"
+          + "  \"sync\": {\n"
+          + "    \"output_catalog\": {"
+          + "}}}";
+      Integer attemptNumber = database.query(ctx -> ctx.fetch(
+          "INSERT INTO attempts(job_id, attempt_number, log_path, status, created_at, updated_at, output) "
+              + "VALUES(?, ?, ?, CAST(? AS ATTEMPT_STATUS), ?, ?, CAST(? as JSONB)) RETURNING attempt_number",
+          job.getId(),
+          job.getAttemptsCount(),
+          logPath,
+          Sqls.toSqlName(AttemptStatus.FAILED),
+          runDate,
+          runDate,
+          shouldHaveState ? attemptOutputWithState : attemptOutputWithoutState)
+          .stream()
+          .findFirst()
+          .map(r -> r.get("attempt_number", Integer.class))
+          .orElseThrow(() -> new RuntimeException("This should not happen")));
+      return attemptNumber;
+    }
+
+    @Test
+    @DisplayName("Should purge older job history but maintain certain more recent ones")
+    void testPurgeJobHistory() throws IOException, SQLException {
+      // a couple of connectors for testing against
+      final String SCOPE1 = UUID.randomUUID().toString();
+      final String SCOPE2 = UUID.randomUUID().toString();
+
+      // Business Rules for purging a job:
+      // Job must be older than X days or its conn has excessive number of jobs
+      // Job cannot be one of the last 10 jobs on that conn (last 10 jobs are always kept).
+      // Job cannot be holding the most recent saved state (most recent saved state is always kept).
+
+      // Test Scenarios
+      // 1. Goal: Purge jobs older than X days from connections with jobs X days old, except keep the most
+      // recent 10 and keep the latest with state.
+      // Against one connection/scope,
+      // - Setup: create a history of jobs that goes back X + 12 days (but produces no more than one job a
+      // day)
+      // - Setup: the most recent job with state in it should be at least X + 5 jobs back
+      // - Assert: ensure that after purging, there are X+1 jobs left (and at least 10), including the one
+      // with the most recent state.
+      // - Assert: ensure that after purging, there are X+1 jobs left (and at least 10), including the X
+      // most recent
+      // - Assert: ensure that after purging, all other job history has been deleted.
+
+      // Scenario 1 setup
+      LocalDateTime fakeNow = LocalDateTime.of(2021, 6, 20, 0, 0);
+      List<Job> allJobs = new ArrayList<>();
+      for (int i = 0; i < (DefaultJobPersistence.JOB_HISTORY_MINIMUM_AGE_IN_DAYS + 12); i++) {
+        allJobs.add(persistJobForTesting(SCOPE1, SYNC_JOB_CONFIG, JobStatus.FAILED, fakeNow.minusDays(i)));
+      }
+      // At least one job should have state, and it should be older than the recency limit.
+      Job lastJobWithState = allJobs.get(DefaultJobPersistence.JOB_HISTORY_MINIMUM_RECENCY + 1);
+      int attemptNumber = persistAttemptForJobHistoryTesting(lastJobWithState, LOG_PATH.toString(),
+          LocalDateTime.ofEpochSecond(lastJobWithState.getCreatedAtInSecond(), 0, ZoneOffset.UTC), true);
+      lastJobWithState = jobPersistence.getJob(lastJobWithState.getId()); // reloads with attempts
+      // sanity check
+      assertTrue(lastJobWithState.getAttempts().get(0).getOutput() != null);
+
+      // ----- remove me after troubleshooting ------
+      String sql1 = "select count(*) as rowcount from jobs where (jobs.created_at < (CAST('2021-06-20' as TIMESTAMP) - interval '15' day) ) ";
+      String sql2 = "select max(job_id) as latest_job_id_with_state from (\n"
+          + "   select jobs.scope, \n"
+          + "   jobs.id as job_id, jobs.config_type, jobs.created_at, jobs.status, \n"
+          + "   bool_or(attempts.\"output\" -> 'sync' -> 'state' -> 'state' is not null) as outputStateExists\n"
+          + "   from jobs left join attempts on jobs.id = attempts.job_id \n"
+          + "   group by scope, jobs.id\n"
+          + "   having bool_or(attempts.\"output\" -> 'sync' -> 'state' -> 'state' is not null) = true\n"
+          + "   order by scope, jobs.created_at desc, jobs.id desc\n"
+          + "   ) jobs_with_state group by scope \n";
+      String sql3 = "    select job_id from (\n"
+          + "        select jobs.scope, \n"
+          + "        row_number() OVER (PARTITION BY scope ORDER BY jobs.created_at desc, jobs.id desc) as recency,\n"
+          + "        jobs.id as job_id, jobs.config_type, jobs.created_at, jobs.status\n"
+          + "        from jobs \n"
+          + "        group by scope, jobs.id\n"
+          + "        order by scope, jobs.created_at desc, jobs.id desc\n"
+          + "    ) jobs_by_recency \n"
+          + "    where recency <= '10' \n";
+      List<Integer> ids = database.query(ctx -> ctx.fetch(sql3).getValues("job_id", Integer.class));
+      // TODO: JENNY on TUESDAY. It's weird that each piece of the sql query correctly checks out as to
+      // which ids it returns, yet when run together as a delete, it doesn't actually delete anything, and
+      // the jobs returned after the purge are the same ones as were there before purging. Maybe there is
+      // something funky happening with transactional commits not occuring?
+      // ----- remove me after troubleshooting ------
+
+      // Scenario 1 run purge
+      List<Job> beforePurge = jobPersistence.listJobs(ConfigType.SYNC, SCOPE1, 999, 0);
+      jobPersistence.purgeJobHistory(fakeNow);
+      List<Job> afterPurge = jobPersistence.listJobs(ConfigType.SYNC, SCOPE1, 999, 0);
+
+      // Scenario 1 test - contains most-recent plus saved-state, and no more than that
+      assertEquals(afterPurge.size(), DefaultJobPersistence.JOB_HISTORY_MINIMUM_AGE_IN_DAYS + 1);
+      // Scenario 1 test - most-recent are actually the most recent
+      for (int i = 0; i < (DefaultJobPersistence.JOB_HISTORY_MINIMUM_AGE_IN_DAYS); i++) {
+        assert (afterPurge.get(i).equals(allJobs.get(i)));
+      }
+      // Scenario 1 test - job with state is kept despite being older
+      assert (afterPurge.get(DefaultJobPersistence.JOB_HISTORY_MINIMUM_AGE_IN_DAYS + 1).equals(lastJobWithState));
+
+      // TODO take this out, just here for reference for now.
+      int minAge = DefaultJobPersistence.JOB_HISTORY_MINIMUM_AGE_IN_DAYS;
+      int minRecency = DefaultJobPersistence.JOB_HISTORY_MINIMUM_RECENCY;
+      int tooManyJobs = DefaultJobPersistence.JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS;
+
+      // 2. Goal: Purge jobs from connections with a large number of jobs, except keep the most recent 10
+      // and keep the latest with state.
+      // Against one connection/scope,
+      // - Setup: create a history of jobs that goes back only 3 days (but includes at least 200 jobs)
+      // - Setup: the most recent job with state in it should be at least 15 jobs back
+      // - Assert: ensure that after purging, there are 11 jobs left, including the one with the most
+      // recent state.
+      // - Assert: ensure that after purging, there are 11 jobs left, including the 10 most recent
+      // - Assert: ensure that after purging, all other job history has been deleted.
+      //
+
     }
 
   }
