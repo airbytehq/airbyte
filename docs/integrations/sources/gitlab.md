@@ -4,8 +4,6 @@
 
 The Gitlab source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This Gitlab source wraps the [Singer Gitlab Tap](https://gitlab.com/meltano/tap-gitlab).
-
 ### Output schema
 
 This connector outputs the following streams:
@@ -15,7 +13,7 @@ This connector outputs the following streams:
 * [Issues](https://docs.gitlab.com/ee/api/issues.html) \(Incremental\)
 * [Pipelines](https://docs.gitlab.com/ee/api/pipelines.html) \(Incremental\)
 * [Jobs](https://docs.gitlab.com/ee/api/jobs.html)
-* [Projects](https://docs.gitlab.com/ee/api/projects.html) \(Incremental\)
+* [Projects](https://docs.gitlab.com/ee/api/projects.html)
 * [Project Milestones](https://docs.gitlab.com/ee/api/milestones.html)
 * [Project Merge Requests](https://docs.gitlab.com/ee/api/merge_requests.html) \(Incremental\)
 * [Users](https://docs.gitlab.com/ee/api/users.html)
@@ -26,7 +24,7 @@ This connector outputs the following streams:
 * [Releases](https://docs.gitlab.com/ee/api/releases/index.html)
 * [Group Labels](https://docs.gitlab.com/ee/api/group_labels.html)
 * [Project Labels](https://docs.gitlab.com/ee/api/labels.html)
-* [Epics](https://docs.gitlab.com/ee/api/epics.html) \(Incremental, only available for GitLab Ultimate and GitLab.com Gold accounts\)
+* [Epics](https://docs.gitlab.com/ee/api/epics.html) \(only available for GitLab Ultimate and GitLab.com Gold accounts\)
 * [Epic Issues](https://docs.gitlab.com/ee/api/epic_issues.html) \(only available for GitLab Ultimate and GitLab.com Gold accounts\)
 
 ### Features
