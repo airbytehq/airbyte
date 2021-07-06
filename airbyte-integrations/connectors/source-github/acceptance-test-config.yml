@@ -23,8 +23,13 @@ tests:
       configured_catalog_path: "integration_tests/incremental_configured_catalog.json"
       future_state_path: "integration_tests/abnormal_state.json"
       cursor_paths:
-        issues: [ "updated_at" ]
-
+        issues: [ "airbytehq/airbyte", "updated_at" ]
+        comments: [ "airbytehq/airbyte", "updated_at" ]
+        commits: [ "airbytehq/airbyte", "created_at" ]
+        commit_comments: [ "airbytehq/airbyte", "updated_at" ]
+        issue_milestones: [ "airbytehq/airbyte", "updated_at" ]
+        projects: [ "airbytehq/airbyte", "updated_at" ]
+        releases: [ "airbytehq/airbyte", "created_at" ]
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/small_streams_configured_catalog.json"

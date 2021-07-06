@@ -55,8 +55,8 @@ class SourceGithub(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             authenticator = TokenAuthenticator(token=config["access_token"], auth_method="token")
-            collaborators_stream = Collaborators(authenticator=authenticator, repository=config["repository"])
-            next(collaborators_stream.read_records(sync_mode=SyncMode.full_refresh))
+            commits_stream = Commits(authenticator=authenticator, repository=config["repository"], start_date=config["start_date"])
+            next(commits_stream.read_records(sync_mode=SyncMode.full_refresh))
             return True, None
         except Exception as e:
             return False, repr(e)
