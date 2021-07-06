@@ -95,5 +95,5 @@ class TestEnvAttributes:
 
         assert dockerfile_ne_properties.env_variables.get("AIRBYTE_ENTRYPOINT"), "AIRBYTE_ENTRYPOINT must be set in dockerfile"
         assert dockerfile_ne_properties.env_variables.get("AIRBYTE_ENTRYPOINT") != " ".join(dockerfile_ne_properties.entry_point), (
-            "This test should fail if " ".join(ENTRYPOINT)==ENV"
+            "This test should fail if we have " ".join(ENTRYPOINT)==ENV"
         )
