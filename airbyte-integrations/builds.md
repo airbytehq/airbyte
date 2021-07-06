@@ -25,7 +25,7 @@
 
  Freshdesk   [![source-freshdesk](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-freshdesk%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-freshdesk) 
 
- GitHub   [![source-github-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-github-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-github-singer) 
+ GitHub   [![source-github](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-github%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-github) 
 
  GitLab   [![source-gitlab](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-gitlab%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-gitlab) 
 

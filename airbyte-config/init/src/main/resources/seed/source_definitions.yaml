@@ -33,9 +33,9 @@
   icon: google-adwords.svg
 - sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   name: GitHub
-  dockerRepository: airbyte/source-github-singer
-  dockerImageTag: 0.2.8
-  documentationUrl: https://hub.docker.com/r/airbyte/source-github-singer
+  dockerRepository: airbyte/source-github
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-github
   icon: github.svg
 - sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   name: Microsoft SQL Server (MSSQL)
