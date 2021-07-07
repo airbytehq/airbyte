@@ -131,7 +131,7 @@ public class S3Logs implements CloudLogs {
       var builder = S3Client.builder().region(Region.of(s3Region));
 
       var minioEndpoint = configs.getS3MinioEndpoint();
-      if (minioEndpoint != null) {
+      if (!minioEndpoint.isBlank()) {
         try {
           var minioUri = new URI(minioEndpoint);
           builder.endpointOverride(minioUri);
