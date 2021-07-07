@@ -28,13 +28,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.debezium.interfaces.CdcConnectorMetadata;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.debezium.engine.ChangeEvent;
 import java.time.Instant;
 
 public class DebeziumEventUtils {
+
+  public static final String CDC_UPDATED_AT = "_ab_cdc_updated_at";
+  public static final String CDC_DELETED_AT = "_ab_cdc_deleted_at";
 
   public static AirbyteMessage toAirbyteMessage(ChangeEvent<String, String> event, CdcConnectorMetadata cdcConnectorMetadata, Instant emittedAt) {
     final JsonNode debeziumRecord = Jsons.deserialize(event.value());
@@ -63,13 +65,13 @@ public class DebeziumEventUtils {
 
     long transactionMillis = source.get("ts_ms").asLong();
 
-    base.put(AbstractJdbcSource.CDC_UPDATED_AT, transactionMillis);
+    base.put(CDC_UPDATED_AT, transactionMillis);
     cdcConnectorMetadata.addMetaData(base, source);
 
     if (after.isNull()) {
-      base.put(AbstractJdbcSource.CDC_DELETED_AT, transactionMillis);
+      base.put(CDC_DELETED_AT, transactionMillis);
     } else {
-      base.put("_ab_cdc_deleted_at", (Long) null);
+      base.put(CDC_DELETED_AT, (Long) null);
     }
 
     return base;

@@ -24,7 +24,6 @@
 
 package io.airbyte.integrations.source.debezium;
 
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.debezium.document.Document;

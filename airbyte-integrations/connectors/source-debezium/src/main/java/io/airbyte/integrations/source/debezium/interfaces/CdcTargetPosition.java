@@ -29,4 +29,5 @@ import io.debezium.engine.ChangeEvent;
 public interface CdcTargetPosition {
 
   boolean reachedTargetPosition(ChangeEvent<String, String> event);
+
 }

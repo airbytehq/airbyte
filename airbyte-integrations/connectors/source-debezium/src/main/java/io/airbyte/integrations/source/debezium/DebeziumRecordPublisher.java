@@ -25,11 +25,14 @@
 package io.airbyte.integrations.source.debezium;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.SyncMode;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.format.Json;
 import io.debezium.engine.spi.OffsetCommitPolicy;
-import java.util.List;
 import java.util.Properties;
 import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
@@ -58,16 +61,16 @@ public class DebeziumRecordPublisher implements AutoCloseable {
   private final AtomicReference<Throwable> thrownError;
   private final CountDownLatch engineLatch;
   private final Properties properties;
-  private final List<String> tablesToSync;
+  private final ConfiguredAirbyteCatalog catalog;
 
   public DebeziumRecordPublisher(Properties properties,
-      JsonNode config,
-      List<String> tablesToSync,
-      AirbyteFileOffsetBackingStore offsetManager,
-      AirbyteSchemaHistoryStorage schemaHistoryManager) {
+                                 JsonNode config,
+                                 ConfiguredAirbyteCatalog catalog,
+                                 AirbyteFileOffsetBackingStore offsetManager,
+                                 AirbyteSchemaHistoryStorage schemaHistoryManager) {
     this.properties = properties;
     this.config = config;
-    this.tablesToSync  = tablesToSync;
+    this.catalog = catalog;
     this.offsetManager = offsetManager;
     this.schemaHistoryManager = schemaHistoryManager;
     this.hasClosed = new AtomicBoolean(false);
@@ -178,17 +181,21 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     }
 
     // table selection
-    final String tableWhitelist = getTableWhitelist(tablesToSync);
+    final String tableWhitelist = getTableWhitelist(catalog);
     props.setProperty("table.include.list", tableWhitelist);
     props.setProperty("database.include.list", config.get("database").asText());
 
     return props;
   }
 
-  private static String getTableWhitelist(List<String> tables) {
-    return tables.stream()
+  @VisibleForTesting
+  protected static String getTableWhitelist(ConfiguredAirbyteCatalog catalog) {
+    return catalog.getStreams().stream()
+        .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)
+        .map(ConfiguredAirbyteStream::getStream)
+        .map(stream -> stream.getNamespace() + "." + stream.getName())
         // debezium needs commas escaped to split properly
-        .map(x -> StringUtils.escape(x, new char[]{','}, "\\,"))
+        .map(x -> StringUtils.escape(x, new char[] {','}, "\\,"))
         .collect(Collectors.joining(","));
   }
 

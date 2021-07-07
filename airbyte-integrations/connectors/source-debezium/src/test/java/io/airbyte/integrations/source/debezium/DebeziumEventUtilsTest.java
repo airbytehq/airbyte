@@ -102,6 +102,7 @@ class DebeziumEventUtilsTest {
     public String namespace(JsonNode source) {
       return source.get("schema").asText();
     }
+
   }
 
 }

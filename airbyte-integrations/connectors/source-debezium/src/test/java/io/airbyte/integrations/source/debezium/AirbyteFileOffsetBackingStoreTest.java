@@ -31,7 +31,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.integrations.source.jdbc.models.CdcState;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

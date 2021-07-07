@@ -24,12 +24,9 @@
 
 package io.airbyte.integrations.source.debezium;
 
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.source.jdbc.JdbcStateManager;
-import io.airbyte.integrations.source.jdbc.models.CdcState;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
