@@ -1,4 +1,4 @@
-# PostHog
+# Surveymonkey
 
 ## Sync overview
 
@@ -33,7 +33,7 @@ This Source is capable of syncing the following core Streams:
 
 ### Performance considerations
 
-The SurveyMonkey API have request limitation. Your default private app has the following limits:
+The SurveyMonkey API applies heavy API quotas for default private apps, which have the following limits:
 * 125 requests per minute
 * 500 requests per day
 
@@ -51,7 +51,7 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-started).
 Register your application [here](https://developer.surveymonkey.com/apps/)
-Then go to Setting and copy your access token 
+Then go to Settings and copy your access token 
 
 ## Changelog
 
