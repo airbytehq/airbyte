@@ -179,7 +179,7 @@ class HttpStream(Stream, ABC):
             # TODO support non-json bodies
             args["json"] = json
 
-        return requests.Request(**args).prepare()
+        return self._session.prepare_request(requests.Request(**args))
 
     # TODO allow configuring these parameters. If we can get this into the requests library, then we can do it without the ugly exception hacks
     #  see https://github.com/litl/backoff/pull/122
