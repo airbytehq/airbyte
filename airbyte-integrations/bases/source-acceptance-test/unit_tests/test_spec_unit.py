@@ -84,13 +84,12 @@ def dockerfile_ne_properties(tmp_path):
 
 
 class TestEnvAttributes:
-    def test_build_dockerfile_valid(self, dockerfile_valid):
-
-        assert dockerfile_valid.env_variables.get("AIRBYTE_ENTRYPOINT"), "AIRBYTE_ENTRYPOINT must be set in dockerfile"
-        assert dockerfile_valid.env_variables.get("AIRBYTE_ENTRYPOINT") == " ".join(
-            dockerfile_valid.entry_point
+    def test_correct_connector_image(self, correct_connector_image, tmp_path):
+        docker_runner = ConnectorRunner(image_name=correct_connector_image, volume=tmp_path)
+        assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT"), "AIRBYTE_ENTRYPOINT must be set in dockerfile"
+        assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT") == " ".join(
+            docker_runner.entry_point
         ), "env should be equal to space-joined entrypoint"
-
     def test_build_dockerfile_no_env(self, dockerfile_no_env):
         assert not dockerfile_no_env.env_variables.get("AIRBYTE_ENTRYPOINT"), "this test should fail if AIRBYTE_ENTRYPOINT defined"
 
