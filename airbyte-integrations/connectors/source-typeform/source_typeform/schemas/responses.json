@@ -8,7 +8,7 @@
       "type": ["null", "string"]
     },
     "submitted_at": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "metadata": {
       "type": ["null", "object"],
@@ -59,38 +59,38 @@
       }
     },
     "answers": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "field": {
-            "type": "object",
+            "type": ["null", "object"],
             "properties": {
               "id": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "ref": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "type": {
-                "type": "string"
+                "type": ["null", "string"]
               }
             }
           },
           "type": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "text": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "choice": {
-            "type": "object",
+            "type": ["null", "object"],
             "properties": {
               "id": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "label": {
-                "type": "string"
+                "type": ["null", "string"]
               }
             }
           }

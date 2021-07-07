@@ -13,6 +13,7 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       validate_output_from_all_streams: yes
+  # incremental test doesn't work if a single stream has multiple states right now
   #incremental:
   #  - config_path: "secrets/config.json"
   #    configured_catalog_path: "integration_tests/configured_catalog.json"
