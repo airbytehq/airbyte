@@ -89,6 +89,7 @@
     * [Snowflake](integrations/sources/snowflake.md)
     * [Square](integrations/sources/square.md)
     * [Stripe](integrations/sources/stripe.md)
+    * [Surveymonkey](integrations/sources/surveymonkey.md)
     * [Tempo](integrations/sources/tempo.md)
     * [Twilio](integrations/sources/twilio.md)
     * [Zendesk Chat](integrations/sources/zendesk-chat.md)

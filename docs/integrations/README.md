@@ -68,6 +68,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Smartsheets](./sources/smartsheets.md)| Beta |
 |[Snowflake](./sources/snowflake.md)| Beta |
 |[Stripe](./sources/stripe.md)| Certified |
+|[SurveyMonkey](./sources/surveymonkey.md)| Beta |
 |[Tempo](./sources/tempo.md)| Beta |
 |[Twilio](./sources/twilio.md)| Beta |
 |[Zendesk Chat](./sources/zendesk-chat.md)| Certified |
