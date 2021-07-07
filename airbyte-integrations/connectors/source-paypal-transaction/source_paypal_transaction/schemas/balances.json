@@ -53,7 +53,7 @@
       "type": "datetime"
     },
     "last_refresh_time": {
-      "type": "datetime"
+      "type": ["null", "string"]
     }
   }
 }

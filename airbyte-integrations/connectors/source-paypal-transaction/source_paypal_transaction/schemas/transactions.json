@@ -18,7 +18,7 @@
           "type": ["null", "datetime"]
         },
         "transaction_updated_date": {
-          "type": ["null", "datetime"]
+          "type": ["null", "string"]
         },
         "transaction_amount": {
           "type": ["null", "object"],
