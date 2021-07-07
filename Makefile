@@ -4,6 +4,7 @@ build:
 	sudo apt-get -y install cmake
 	sudo apt-get -y install unzip
 	sudo apt-get -y install wget
+	sudo apt-get -y install python3-pip
 	sudo apt-get -y install curl
 	sudo curl -ssL https://get.docker.com | bash
 	sudo curl -L https://github.com/docker/compose/releases/download/1.29.1/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
