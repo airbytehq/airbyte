@@ -23,30 +23,12 @@
 #
 
 
-from setuptools import find_packages, setup
+import pytest
 
-MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1",
-    "cached_property~=1.5",
-    "facebook_business~=11.0",
-    "pendulum>=2,<3",
-    "backoff",
-]
+pytest_plugins = ("source_acceptance_test.plugin",)
 
-TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-    "requests_mock==1.8.0",
-]
 
-setup(
-    name="source_instagram",
-    description="Source implementation for Instagram.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
-    extras_require={
-        "tests": TEST_REQUIREMENTS,
-    },
-)
+@pytest.fixture(scope="session", autouse=True)
+def connector_setup():
+    """This fixture is a placeholder for external resources that acceptance test might require."""
+    yield
