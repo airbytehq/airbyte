@@ -116,7 +116,7 @@ public class AirbyteVersion {
     final String cleanVersion2 = version2.replace("\n", "").strip();
     return String.format(
         "Version mismatch between %s and %s.\n" +
-            "Please upgrade or reset your Airbyte Database, see more at https://docs.airbyte.io/tutorials/upgrading-airbyte",
+            "Please upgrade or reset your Airbyte Database, see more at https://docs.airbyte.io/operator-guides/upgrading-airbyte",
         cleanVersion1, cleanVersion2);
   }
 

@@ -118,6 +118,7 @@ public class KubePodProcess extends Process {
   // 143 is the typical SIGTERM exit code.
   private static final int KILLED_EXIT_CODE = 143;
   private static final int STDIN_REMOTE_PORT = 9001;
+  private static final Map<String, String> AIRBYTE_POD_LABELS = Map.of("airbyte", "worker-pod");
 
   private final KubernetesClient fabricClient;
   private final Pod podDefinition;
@@ -155,6 +156,7 @@ public class KubePodProcess extends Process {
         .withApiVersion("v1")
         .withNewMetadata()
         .withName(podName)
+        .withLabels(AIRBYTE_POD_LABELS)
         .endMetadata()
         .withNewSpec()
         .withRestartPolicy("Never")
@@ -395,6 +397,7 @@ public class KubePodProcess extends Process {
         .withApiVersion("v1")
         .withNewMetadata()
         .withName(podName)
+        .withLabels(AIRBYTE_POD_LABELS)
         .endMetadata()
         .withNewSpec()
         .withRestartPolicy("Never")
