@@ -1,6 +1,6 @@
 # Add a Source
 
-You can either start this from the onboarding, or skip the onboarding and 
+You can either follow this tutorial from the onboarding or through the UI, where you can first navigate to the `Sources` tab on the right bar.
 
 Our demo source will pull data from an external API, which will pull down the information on one specified Pokémon.
 
