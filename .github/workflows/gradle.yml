@@ -90,13 +90,13 @@ jobs:
         run: ./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates --scan
 
       - name: Format
-        run: ./gradlew --no-daemon format --scan --info --stacktrace
+        run: ./gradlew format --scan --info --stacktrace
 
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
 
       - name: Build
-        run: CORE_ONLY=true ./gradlew --no-daemon build --scan
+        run: CORE_ONLY=true ./gradlew build --scan
 
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
@@ -111,7 +111,7 @@ jobs:
 
       - name: Build Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
-        run: ./gradlew --no-daemon composeBuild --scan
+        run: ./gradlew composeBuild --scan
         env:
           GIT_REVISION: ${{ github.sha }}
 
@@ -122,7 +122,7 @@ jobs:
         run: ./tools/bin/acceptance_test.sh
 
       - name: Automatic Migration Acceptance Test
-        run: MIGRATION_TEST_VERSION=$(grep VERSION .env | tr  -d "VERSION=") ./gradlew --no-daemon :airbyte-tests:automaticMigrationAcceptanceTest --rerun-tasks --scan -i
+        run: MIGRATION_TEST_VERSION=$(grep VERSION .env | tr  -d "VERSION=") ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --rerun-tasks --scan -i
 
       - name: Slack Notification - Failure
         if: failure() && github.ref == 'refs/heads/master'
