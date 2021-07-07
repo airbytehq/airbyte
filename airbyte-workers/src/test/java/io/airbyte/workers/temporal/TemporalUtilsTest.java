@@ -24,9 +24,12 @@
 
 package io.airbyte.workers.temporal;
 
+import static io.airbyte.workers.temporal.TemporalUtils.waitForTemporalServerAndLog;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.temporal.activity.ActivityCancellationType;
@@ -34,7 +37,9 @@ import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.api.common.v1.WorkflowExecution;
+import io.temporal.api.namespace.v1.NamespaceInfo;
 import io.temporal.api.workflow.v1.WorkflowExecutionInfo;
+import io.temporal.api.workflowservice.v1.DescribeNamespaceResponse;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
@@ -44,11 +49,13 @@ import io.temporal.workflow.Workflow;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,6 +103,20 @@ public class TemporalUtilsTest {
 
     final String result = pair.getRight().get(1, TimeUnit.MINUTES);
     assertEquals("completed", result);
+  }
+
+  @Test
+  public void testWaitForTemporalServerAndLogThrowsException() {
+    WorkflowServiceStubs workflowServiceStubs = mock(WorkflowServiceStubs.class, Mockito.RETURNS_DEEP_STUBS);
+    DescribeNamespaceResponse describeNamespaceResponse = mock(DescribeNamespaceResponse.class);
+    NamespaceInfo namespaceInfo = mock(NamespaceInfo.class);
+
+    when(namespaceInfo.getName()).thenReturn("default");
+    when(describeNamespaceResponse.getNamespaceInfo()).thenReturn(namespaceInfo);
+    when(workflowServiceStubs.blockingStub().listNamespaces(any()).getNamespacesList())
+        .thenThrow(RuntimeException.class)
+        .thenReturn(List.of(describeNamespaceResponse));
+    waitForTemporalServerAndLog(workflowServiceStubs);
   }
 
   @WorkflowInterface
