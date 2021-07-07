@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - db.yaml
+  - pod-sweeper.yaml
   - scheduler.yaml
   - scheduler-service-account.yaml
   - server.yaml
