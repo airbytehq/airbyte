@@ -1,0 +1,86 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "employee_id": {
+      "type": ["null", "string"]
+    },
+    "location_id": {
+      "type": ["null", "string"]
+    },
+    "timezone": {
+      "type": ["null", "string"]
+    },
+    "start_at": {
+      "type": ["null", "string"]
+    },
+    "end_at": {
+      "type": ["null", "string"]
+    },
+    "wage": {
+      "type": ["null", "object"],
+      "properties": {
+        "title": {
+          "type": ["null", "string"]
+        },
+        "hourly_rate": {
+          "type": ["null", "object"],
+          "properties": {
+            "amount": {
+              "type": ["null", "integer"]
+            },
+            "currency": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "breaks": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "string"]
+          },
+          "start_at": {
+            "type": ["null", "string"]
+          },
+          "end_at": {
+            "type": ["null", "string"]
+          },
+          "break_type_id": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "expected_duration": {
+            "type": ["null", "string"]
+          },
+          "is_paid": {
+            "type": ["null", "boolean"]
+          }
+        }
+      }
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "version": {
+      "type": ["null", "integer"]
+    },
+    "created_at": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"]
+    },
+    "team_member_id": {
+      "type": ["null", "string"]
+    }
+  }
+}

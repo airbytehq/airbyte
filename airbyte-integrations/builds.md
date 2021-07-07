@@ -103,6 +103,8 @@
 
  Snowflake   [![source-snowflake](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-snowflake%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-snowflake)
 
+ Square   [![source-square](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-square%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-square)
+
  Stripe   [![source-stripe](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-stripe%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-stripe) 
 
  Tempo   [![source-tempo](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-tempo%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-tempo) 

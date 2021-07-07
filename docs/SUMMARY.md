@@ -87,6 +87,7 @@
     * [Slack](integrations/sources/slack.md)
     * [Smartsheets](integrations/sources/smartsheets.md)
     * [Snowflake](integrations/sources/snowflake.md)
+    * [Square](integrations/sources/square.md)
     * [Stripe](integrations/sources/stripe.md)
     * [Tempo](integrations/sources/tempo.md)
     * [Twilio](integrations/sources/twilio.md)
