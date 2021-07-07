@@ -28,7 +28,6 @@ import com.google.api.client.util.Preconditions;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.config.Configs;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -52,7 +51,7 @@ public class S3Logs implements CloudLogs {
 
   private static S3Client S3;
 
-  private static void checkValidCredentials(Configs configs) {
+  private static void assertValidS3Configuration(LogConfigs configs) {
     Preconditions.checkNotNull(configs.getAwsAccessKey());
     Preconditions.checkNotNull(configs.getAwsSecretAccessKey());
     Preconditions.checkNotNull(configs.getS3LogBucketRegion());
@@ -60,12 +59,12 @@ public class S3Logs implements CloudLogs {
   }
 
   @Override
-  public File downloadCloudLog(Configs configs, String logPath) throws IOException {
-    return getFile(configs, logPath, 1000);
+  public File downloadCloudLog(LogConfigs configs, String logPath) throws IOException {
+    return getFile(configs, logPath, LogClientSingleton.DEFAULT_PAGE_SIZE);
   }
 
   @VisibleForTesting
-  static File getFile(Configs configs, String logPath, int maxKeysPerPage) throws IOException {
+  static File getFile(LogConfigs configs, String logPath, int pageSize) throws IOException {
     LOGGER.debug("Retrieving logs from S3 path: {}", logPath);
     createS3ClientIfNotExist(configs);
 
@@ -76,7 +75,7 @@ public class S3Logs implements CloudLogs {
 
     LOGGER.debug("Start S3 list request.");
     var listObjReq = ListObjectsV2Request.builder().bucket(s3Bucket)
-        .prefix(logPath).maxKeys(maxKeysPerPage).build();
+        .prefix(logPath).maxKeys(pageSize).build();
     LOGGER.debug("Start getting S3 objects.");
     // Objects are returned in lexicographical order.
     for (var page : S3.listObjectsV2Paginator(listObjReq)) {
@@ -96,7 +95,7 @@ public class S3Logs implements CloudLogs {
   }
 
   @Override
-  public List<String> tailCloudLog(Configs configs, String logPath, int numLines) throws IOException {
+  public List<String> tailCloudLog(LogConfigs configs, String logPath, int numLines) throws IOException {
     LOGGER.debug("Tailing logs from S3 path: {}", logPath);
     createS3ClientIfNotExist(configs);
 
@@ -125,9 +124,9 @@ public class S3Logs implements CloudLogs {
     return lines;
   }
 
-  private static void createS3ClientIfNotExist(Configs configs) {
+  private static void createS3ClientIfNotExist(LogConfigs configs) {
     if (S3 == null) {
-      checkValidCredentials(configs);
+      assertValidS3Configuration(configs);
       var s3Region = configs.getS3LogBucketRegion();
       var builder = S3Client.builder().region(Region.of(s3Region));
 

@@ -29,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -45,8 +44,8 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 public class S3LogsTest {
 
   @Test
-  public void testMissingAwsCredentials() {
-    var configs = mock(Configs.class);
+  public void testMissingCredentials() {
+    var configs = mock(LogConfigs.class);
     when(configs.getAwsAccessKey()).thenReturn("");
     when(configs.getAwsSecretAccessKey()).thenReturn("");
 
@@ -60,7 +59,7 @@ public class S3LogsTest {
    */
   @Test
   public void testRetrieveAllLogs() throws IOException {
-    var configs = new EnvConfigs();
+    var configs = new LogConfigDelegator(new EnvConfigs());
     var data = S3Logs.getFile(configs, "paginate", 6);
 
     var retrieved = new ArrayList<String>();
@@ -80,7 +79,7 @@ public class S3LogsTest {
    */
   @Test
   public void testTail() throws IOException {
-    var configs = new EnvConfigs();
+    var configs = new LogConfigDelegator(new EnvConfigs());
     var data = new S3Logs().tailCloudLog(configs, "tail", 6);
 
     var expected = List.of("Line 4", "Line 5", "Line 6", "Line 7", "Line 8", "Line 9");

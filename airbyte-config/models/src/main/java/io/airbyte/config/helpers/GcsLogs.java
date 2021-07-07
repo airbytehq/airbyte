@@ -31,7 +31,6 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -49,11 +48,11 @@ public class GcsLogs implements CloudLogs {
   private static Storage GCS;
 
   @Override
-  public File downloadCloudLog(Configs configs, String logPath) throws IOException {
-    return getFile(configs, logPath, 1000);
+  public File downloadCloudLog(LogConfigs configs, String logPath) throws IOException {
+    return getFile(configs, logPath, LogClientSingleton.DEFAULT_PAGE_SIZE);
   }
 
-  static File getFile(Configs configs, String logPath, int maxKeysPerPags) throws IOException {
+  static File getFile(LogConfigs configs, String logPath, int pageSize) throws IOException {
     LOGGER.debug("Retrieving logs from GCS path: {}", logPath);
     createGcsClientIfNotExists(configs);
 
@@ -61,7 +60,7 @@ public class GcsLogs implements CloudLogs {
     Page<Blob> blobs = GCS.list(
         configs.getGcpStorageBucket(),
         Storage.BlobListOption.prefix(logPath),
-        Storage.BlobListOption.pageSize(maxKeysPerPags));
+        Storage.BlobListOption.pageSize(pageSize));
 
     var randomName = Strings.addRandomSuffix("logs", "-", 5);
     var tmpOutputFile = new File("/tmp/" + randomName);
@@ -77,7 +76,7 @@ public class GcsLogs implements CloudLogs {
   }
 
   @Override
-  public List<String> tailCloudLog(Configs configs, String logPath, int numLines) throws IOException {
+  public List<String> tailCloudLog(LogConfigs configs, String logPath, int numLines) throws IOException {
     LOGGER.debug("Tailing logs from GCS path: {}", logPath);
     createGcsClientIfNotExists(configs);
 
@@ -116,7 +115,7 @@ public class GcsLogs implements CloudLogs {
     return lines;
   }
 
-  private static void createGcsClientIfNotExists(Configs configs) {
+  private static void createGcsClientIfNotExists(LogConfigs configs) {
     if (GCS == null) {
       Preconditions.checkNotNull(configs.getGcpStorageBucket());
       Preconditions.checkNotNull(configs.getGoogleApplicationCredentials());
@@ -142,7 +141,7 @@ public class GcsLogs implements CloudLogs {
       blob.downloadTo(os);
     }
     os.close();
-    var data = new GcsLogs().tailCloudLog(new EnvConfigs(), "tail", 6);
+    var data = new GcsLogs().tailCloudLog(new LogConfigDelegator(new EnvConfigs()), "tail", 6);
     System.out.println(data);
   }
 

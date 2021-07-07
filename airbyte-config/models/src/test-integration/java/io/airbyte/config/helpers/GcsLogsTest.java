@@ -29,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -40,8 +39,8 @@ import org.junit.jupiter.api.Test;
 public class GcsLogsTest {
 
   @Test
-  public void testMissingAwsCredentials() {
-    var configs = mock(Configs.class);
+  public void testMissingConfiguration() {
+    var configs = mock(LogConfigs.class);
     when(configs.getGoogleApplicationCredentials()).thenReturn("");
     when(configs.getGcpStorageBucket()).thenReturn("");
 
@@ -55,7 +54,7 @@ public class GcsLogsTest {
    */
   @Test
   public void testRetrieveAllLogs() throws IOException {
-    var configs = new EnvConfigs();
+    var configs = new LogConfigDelegator(new EnvConfigs());
     var data = GcsLogs.getFile(configs, "paginate", 6);
 
     var retrieved = new ArrayList<String>();
@@ -75,7 +74,7 @@ public class GcsLogsTest {
    */
   @Test
   public void testTail() throws IOException {
-    var configs = new EnvConfigs();
+    var configs = new LogConfigDelegator(new EnvConfigs());
     var data = new GcsLogs().tailCloudLog(configs, "tail", 6);
 
     var expected = List.of("Line 4", "Line 5", "Line 6", "Line 7", "Line 8", "Line 9");
