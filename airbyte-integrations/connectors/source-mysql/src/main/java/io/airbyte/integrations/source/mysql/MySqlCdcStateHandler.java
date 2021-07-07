@@ -30,8 +30,8 @@ import static io.airbyte.integrations.source.mysql.MySqlSource.MYSQL_DB_HISTORY;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.debezium.interfaces.CdcStateHandler;
-import io.airbyte.integrations.source.jdbc.JdbcStateManager;
-import io.airbyte.integrations.source.jdbc.models.CdcState;
+import io.airbyte.integrations.source.relationaldb.StateManager;
+import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -44,9 +44,9 @@ public class MySqlCdcStateHandler implements CdcStateHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlCdcStateHandler.class);
 
-  private final JdbcStateManager stateManager;
+  private final StateManager stateManager;
 
-  public MySqlCdcStateHandler(JdbcStateManager stateManager) {
+  public MySqlCdcStateHandler(StateManager stateManager) {
     this.stateManager = stateManager;
   }
 

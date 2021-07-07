@@ -41,7 +41,6 @@ import io.airbyte.integrations.source.debezium.DebeziumInit;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.StateManager;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
-import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -218,10 +217,11 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
                                                                              ConfiguredAirbyteCatalog catalog,
                                                                              Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                                              StateManager stateManager,
-      JsonNode sourceConfig = database.getSourceConfig();                                                                         Instant emittedAt) {
-    if (isCdc(config) && shouldUseCDC(catalog)) {
+                                                                             Instant emittedAt) {
+    JsonNode sourceConfig = database.getSourceConfig();
+    if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       final DebeziumInit init =
-          new DebeziumInit(config, MySqlCdcTargetPosition.targetPosition(database), MySqlCdcProperties.getDebeziumProperties(), catalog, true);
+          new DebeziumInit(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), MySqlCdcProperties.getDebeziumProperties(), catalog, true);
 
       return init.getIncrementalIterators(new MySqlCdcSavedInfo(stateManager.getCdcStateManager().getCdcState()),
           new MySqlCdcStateHandler(stateManager), new MySqlCdcConnectorMetadata(), emittedAt);
