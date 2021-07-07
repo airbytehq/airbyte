@@ -79,6 +79,6 @@ class Connector(ABC):
     @abstractmethod
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
-        Tests if the input configuration can be used to successfully connect to the integration e.g: if a provided Stripe API token can be used to connect
-        to the Stripe API.
+        Tests if the input configuration can be used to successfully connect to the integration e.g:
+        if a provided Stripe API token can be used to connect to the Stripe API.
         """

@@ -54,17 +54,19 @@ class AbstractSource(Source, ABC):
     @abstractmethod
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
-        :param config: The user-provided configuration as specified by the source's spec. This usually contains information required to check connection e.g. tokens, secrets and keys etc.
-        :return: A tuple of (boolean, error). If boolean is true, then the connection check is successful and we can connect to the underlying data
-        source using the provided configuration.
-        Otherwise, the input config cannot be used to connect to the underlying data source, and the "error" object should describe what went wrong.
-        The error object will be cast to string to display the problem to the user.
+        :param config: The user-provided configuration as specified by the source's spec.
+            This usually contains information required to check connection e.g. tokens, secrets and keys etc.
+        :return: A tuple of (boolean, error). If boolean is true, then the connection check is successful and
+            we can connect to the underlying data source using the provided configuration.
+            Otherwise, the input config cannot be used to connect to the underlying data source, and
+            the "error" object should describe what went wrong. The error object will be cast to string to display the problem to the user.
         """
 
     @abstractmethod
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
-        :param config: The user-provided configuration as specified by the source's spec. Any stream construction related operation should happen here.
+        :param config: The user-provided configuration as specified by the source's spec.
+            Any stream construction related operation should happen here.
         :return: A list of the streams in this source connector.
         """
 
@@ -79,7 +81,10 @@ class AbstractSource(Source, ABC):
         return AirbyteCatalog(streams=streams)
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        """Implements the Check Connection operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
+        """
+        Implements the Check Connection operation from the Airbyte Specification.
+        See https://docs.airbyte.io/architecture/airbyte-specification.
+        """
         try:
             check_succeeded, error = self.check_connection(logger, config)
             if not check_succeeded:
