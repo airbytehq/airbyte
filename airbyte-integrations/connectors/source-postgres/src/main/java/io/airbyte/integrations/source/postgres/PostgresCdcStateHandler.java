@@ -27,8 +27,8 @@ package io.airbyte.integrations.source.postgres;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.debezium.interfaces.CdcStateHandler;
-import io.airbyte.integrations.source.jdbc.JdbcStateManager;
-import io.airbyte.integrations.source.jdbc.models.CdcState;
+import io.airbyte.integrations.source.relationaldb.StateManager;
+import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -39,9 +39,9 @@ import org.slf4j.LoggerFactory;
 public class PostgresCdcStateHandler implements CdcStateHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCdcStateHandler.class);
-  private final JdbcStateManager stateManager;
+  private final StateManager stateManager;
 
-  public PostgresCdcStateHandler(JdbcStateManager stateManager) {
+  public PostgresCdcStateHandler(StateManager stateManager) {
     this.stateManager = stateManager;
   }
 

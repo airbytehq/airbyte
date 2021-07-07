@@ -26,7 +26,7 @@ package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.source.debezium.interfaces.CdcSavedInfo;
-import io.airbyte.integrations.source.jdbc.models.CdcState;
+import io.airbyte.integrations.source.relationaldb.models.CdcState;
 
 public class PostgresCdcSavedInfo implements CdcSavedInfo {
 
