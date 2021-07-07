@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "nickname": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string"
+    },
+    "folder_id": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    },
+    "question_count": {
+      "type": "integer"
+    },
+    "page_count": {
+      "type": "integer"
+    },
+    "response_count": {
+      "type": "integer"
+    },
+    "date_created": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "date_modified": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "id": {
+      "type": "string"
+    },
+    "buttons_text": {
+      "type": "object",
+      "properties": {
+        "next_button": {
+          "type": "string"
+        },
+        "prev_button": {
+          "type": "string"
+        },
+        "done_button": {
+          "type": "string"
+        },
+        "exit_button": {
+          "type": "string"
+        }
+      }
+    },
+    "is_owner": {
+      "type": "boolean"
+    },
+    "footer": {
+      "type": "boolean"
+    },
+    "custom_variables": {
+      "type": "object"
+    },
+    "href": {
+      "type": "string"
+    },
+    "analyze_url": {
+      "type": "string"
+    },
+    "edit_url": {
+      "type": "string"
+    },
+    "collect_url": {
+      "type": "string"
+    },
+    "summary_url": {
+      "type": "string"
+    },
+    "preview": {
+      "type": "string"
+    }
+  }
+}
