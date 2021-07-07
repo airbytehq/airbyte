@@ -1,0 +1,40 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "team_member_wages",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "team_member_id": {
+              "type": ["null", "string"]
+            },
+            "title": {
+              "type": ["null", "string"]
+            },
+            "hourly_rate": {
+              "type": ["null", "object"],
+              "properties": {
+                "amount": {
+                  "type": ["null", "integer"]
+                },
+                "currency": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["id"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["id"],
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

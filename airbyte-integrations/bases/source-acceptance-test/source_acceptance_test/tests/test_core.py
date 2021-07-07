@@ -30,20 +30,26 @@ from typing import Any, List, Mapping, MutableMapping
 import pytest
 from airbyte_cdk.models import AirbyteMessage, ConnectorSpecification, Status, Type
 from docker.errors import ContainerError
+from jsonschema import validate
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
-from source_acceptance_test.utils import ConnectorRunner, serialize, verify_records_schema
+from source_acceptance_test.utils import ConnectorRunner, SecretDict, serialize, verify_records_schema
 
 
 @pytest.mark.default_timeout(10)
 class TestSpec(BaseTest):
-    def test_match_expected(self, connector_spec: ConnectorSpecification, docker_runner: ConnectorRunner):
+    def test_match_expected(self, connector_spec: ConnectorSpecification, connector_config: SecretDict, docker_runner: ConnectorRunner):
         output = docker_runner.call_spec()
         spec_messages = [message for message in output if message.type == Type.SPEC]
 
         assert len(spec_messages) == 1, "Spec message should be emitted exactly once"
         if connector_spec:
             assert spec_messages[0].spec == connector_spec, "Spec should be equal to the one in spec.json file"
+
+        # Getting rid of technical variables that start with an underscore
+        config = {key: value for key, value in connector_config.data.items() if not key.startswith("_")}
+
+        validate(instance=config, schema=spec_messages[0].spec.connectionSpecification)
 
     def test_required(self):
         """Check that connector will fail if any required field is missing"""
