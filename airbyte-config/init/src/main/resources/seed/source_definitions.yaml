@@ -23,12 +23,12 @@
 - sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   name: Google Ads
   dockerRepository: airbyte/source-google-ads
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-google-ads
 - sourceDefinitionId: fdc8b827-3257-4b33-83cc-106d234c34d4
   name: Google Adwords (Deprecated)
   dockerRepository: airbyte/source-google-adwords-singer
-  dockerImageTag: 0.2.5
+  dockerImageTag: 0.2.6
   documentationUrl: https://hub.docker.com/r/airbyte/source-google-adwords-singer
   icon: google-adwords.svg
 - sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
@@ -57,7 +57,7 @@
 - sourceDefinitionId: af6d50ee-dddf-4126-a8ee-7faee990774f
   name: PostHog
   dockerRepository: airbyte/source-posthog
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/posthog
 - sourceDefinitionId: cd42861b-01fc-4658-a8ab-5d11d0510f01
   name: Recurly
@@ -74,7 +74,7 @@
 - sourceDefinitionId: 9e0556f4-69df-4522-a3fb-03264d36b348
   name: Marketo
   dockerRepository: airbyte/source-marketo-singer
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   documentationUrl: https://hub.docker.com/r/airbyte/source-marketo-singer
   icon: marketo.svg
 - sourceDefinitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
@@ -92,7 +92,7 @@
 - sourceDefinitionId: 2470e835-feaf-4db6-96f3-70fd645acc77
   name: Salesforce
   dockerRepository: airbyte/source-salesforce-singer
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.4
   documentationUrl: https://hub.docker.com/r/airbyte/source-salesforce-singer
   icon: salesforce.svg
 - sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
@@ -161,7 +161,7 @@
 - sourceDefinitionId: 396e4ca3-8a97-4b85-aa4e-c9d8c2d5f992
   name: Braintree
   dockerRepository: airbyte/source-braintree-singer
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   documentationUrl: https://hub.docker.com/r/airbyte/source-braintree-singer
   icon: braintree.svg
 - sourceDefinitionId: 59f1e50a-331f-4f09-b3e8-2e8d4d355f44
@@ -197,13 +197,13 @@
 - sourceDefinitionId: 859e501d-2b67-471f-91bb-1c801414d28f
   name: Mixpanel
   dockerRepository: airbyte/source-mixpanel-singer
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.4
   documentationUrl: https://hub.docker.com/r/airbyte/source-mixpanel-singer
   icon: mixpanel.svg
 - sourceDefinitionId: aea2fd0d-377d-465e-86c0-4fdc4f688e51
   name: Zoom
   dockerRepository: airbyte/source-zoom-singer
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.4
   documentationUrl: https://hub.docker.com/r/airbyte/source-zoom-singer
   icon: zoom.svg
 - sourceDefinitionId: eaf50f04-21dd-4620-913b-2a83f5635227
@@ -233,7 +233,7 @@
 - sourceDefinitionId: 2af123bf-0aaf-4e0d-9784-cb497f23741a
   name: Appstore
   dockerRepository: airbyte/source-appstore-singer
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.4
   documentationUrl: https://hub.docker.com/r/airbyte/source-appstore-singer
   icon: appstore.svg
 - sourceDefinitionId: 487b930d-7f6a-43ce-8bac-46e6b2de0a55
@@ -285,7 +285,7 @@
 - sourceDefinitionId: 29b409d9-30a5-4cc8-ad50-886eb846fea3
   name: Quickbooks
   dockerRepository: airbyte/source-quickbooks-singer
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-quickbooks-singer
 - sourceDefinitionId: 2e875208-0c0b-4ee4-9e92-1cb3156ea799
   name: Iterable
@@ -300,7 +300,7 @@
 - sourceDefinitionId: 5a1d14c2-d829-49cd-8437-1e87dc9f5368
   name: Google Search Console
   dockerRepository: airbyte/source-google-search-console-singer
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://hub.docker.com/r/airbyte/source-google-search-console-singer
 - sourceDefinitionId: bad83517-5e54-4a3d-9b53-63e85fbd4d7c
   name: ClickHouse
@@ -341,7 +341,7 @@
 - sourceDefinitionId: 6ff047c0-f5d5-4ce5-8c81-204a830fa7e1
   name: AWS CloudTrail
   dockerRepository: airbyte/source-aws-cloudtrail
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/aws-cloudtrail
 - sourceDefinitionId: 1d4fdb25-64fc-4569-92da-fcdca79a8372
   name: Okta
