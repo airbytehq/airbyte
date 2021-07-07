@@ -18,7 +18,7 @@ For testing on GKE you can [create a cluster with the command line or the Cloud 
 For testing on EKS you can [install eksctl](https://eksctl.io/introduction/) and run `eksctl create cluster` to create an EKS cluster/VPC/subnets/etc. This process should take 10-15 minutes.
 
 For production, Airbyte should function on most clusters v1.19 and above. We have tested support on GKE and EKS. If you run into a problem starting
-Airbyte, please reach out on the `#issues` channel on our [Slack](https://slack.airbyte.io/) or [create an issue on GitHub](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fbug&template=bug-report.md&title=).
+Airbyte, please reach out on the `#troubleshooting` channel on our [Slack](https://slack.airbyte.io/) or [create an issue on GitHub](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fbug&template=bug-report.md&title=).
 
 ### Install `kubectl`
 
@@ -194,6 +194,27 @@ kubectl exec -it airbyte-scheduler-6b5747df5c-bj4fx ls /tmp/workspace/8
 ### Reading Files
 ```bash
 kubectl exec -it airbyte-scheduler-6b5747df5c-bj4fx cat /tmp/workspace/8/0/logs.log
+```
+
+### Persistent storage on GKE regional cluster
+To manage persistent storage on GKE regional cluster you need to enable [CSI driver](https://cloud.google.com/kubernetes-engine/docs/how-to/persistent-volumes/gce-pd-csi-driver)\
+When enabled you need to change storage class on [Volume config](../../kube/resources/volume-configs.yaml) and [Volume workspace](../../kube/resources/volume-workspace.yaml) \
+Add `storageClassName: standard-rwo` in volume spec \
+exemple for volume config:
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: airbyte-volume-configs
+  labels:
+    airbyte: volume-configs
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Mi
+  storageClassName: standard-rwo
 ```
 
 ## Troubleshooting
