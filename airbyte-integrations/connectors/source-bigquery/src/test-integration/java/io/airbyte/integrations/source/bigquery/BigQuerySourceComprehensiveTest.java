@@ -54,7 +54,7 @@ public class BigQuerySourceComprehensiveTest extends SourceComprehensiveTest {
 
     final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString);
     final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();
-//    final String datasetLocation = "US";
+    final String datasetLocation = "US";
 
     final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
 
@@ -62,7 +62,7 @@ public class BigQuerySourceComprehensiveTest extends SourceComprehensiveTest {
         .put(CONFIG_PROJECT_ID, projectId)
         .put(CONFIG_CREDS, credentialsJsonString)
         .put(CONFIG_DATASET_ID, datasetId)
-//        .put(CONFIG_DATASET_LOCATION, datasetLocation)
+        .put(CONFIG_DATASET_LOCATION, datasetLocation)
         .build());
 
     database = new TempBigQueryJoolDatabaseImpl(config.get(CONFIG_PROJECT_ID).asText(), credentialsJsonString);
