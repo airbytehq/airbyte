@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.10
+Add validation of input config.json against spec.json.
+
 ## 0.1.9
 Add configurable validation of schema for all records in BasicRead test: https://github.com/airbytehq/airbyte/pull/4345
 The validation is ON by default. 
