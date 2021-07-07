@@ -45,6 +45,7 @@ class BaseConfig(BaseModel):
 
 class SpecTestConfig(BaseConfig):
     spec_path: str = spec_path
+    config_path: str = config_path
     timeout_seconds: int = timeout_seconds
 
 
