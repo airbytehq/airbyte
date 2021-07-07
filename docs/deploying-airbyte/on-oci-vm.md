@@ -5,9 +5,9 @@ Install Airbyte on Oracle Cloud Infrastructure VM running Oracle Linux 7
 ## Create OCI Instance 
 Go to OCI Console > Compute > Instances > Create Instance
 
-<img width="1665" alt="OCIScreen1" src="https://github.com/shadabshaukat/airbyte/upload/patch-1/docs/.gitbook/assets/OCIScreen1.png">
+<img width="1665" alt="OCIScreen1" src="https://github.com/shadabshaukat/airbyte/blob/patch-1/docs/.gitbook/assets/OCIScreen1.png">
 
-<img width="1668" alt="OCIScreen2" src="https://github.com/shadabshaukat/airbyte/upload/patch-1/docs/.gitbook/assets/OCIScreen2.png">
+<img width="1668" alt="OCIScreen2" src="https://github.com/shadabshaukat/airbyte/blob/patch-1/docs/.gitbook/assets/OCIScreen2.png">
 
 
 ## Whitelist Port 8000 for a CIDR range in Security List of OCI VM Subnet
@@ -15,7 +15,7 @@ Go to OCI Console > Networking > Virtual Cloud Network
 
 Select the Subnet > Security List > Add Ingress Rules
 
-<img width="1423" alt="OCIScreen3" src="https://github.com/shadabshaukat/airbyte/upload/patch-1/docs/.gitbook/assets/OCIScreen3.png">
+<img width="1423" alt="OCIScreen3" src="https://github.com/shadabshaukat/airbyte/blob/patch-1/docs/.gitbook/assets/OCIScreen3.png">
 
 
 ## Login to the Instance/VM with the SSH key and 'opc' user
@@ -70,6 +70,6 @@ $ ssh -i private-key-file -L 8000:oci-private-instance-ip:8000 opc@bastion-host-
 
 Open URL in Browser :  https://localhost:8000/
 
-<img width="1323" alt="OCIScreen4" src="https://github.com/shadabshaukat/airbyte/upload/patch-1/docs/.gitbook/assets/OCIScreen4.png">
+<img width="1323" alt="OCIScreen4" src="https://github.com/shadabshaukat/airbyte/blob/patch-1/docs/.gitbook/assets/OCIScreen4.png">
 
 /* Please note Airbyte currently does not support SSL/TLS certificates */
