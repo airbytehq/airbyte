@@ -50,7 +50,7 @@
       "type": ["null", "string"]
     },
     "as_of_time": {
-      "type": "datetime"
+      "type": "string"
     },
     "last_refresh_time": {
       "type": ["null", "string"]

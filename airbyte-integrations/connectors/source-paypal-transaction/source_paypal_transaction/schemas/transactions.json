@@ -15,7 +15,7 @@
           "type": ["null", "string"]
         },
         "transaction_initiation_date": {
-          "type": ["null", "datetime"]
+          "type": ["null", "string"]
         },
         "transaction_updated_date": {
           "type": ["null", "string"]
@@ -238,7 +238,7 @@
       }
     },
     "store_info": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "store_id": {
           "type": ["null", "string"]
@@ -249,7 +249,7 @@
       }
     },
     "auction_info": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "auction_site": {
           "type": ["null", "string"]
@@ -266,7 +266,7 @@
       }
     },
     "incentive_info": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "incentive_details": {
           "type": "array",
