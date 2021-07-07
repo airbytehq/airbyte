@@ -82,9 +82,10 @@ import org.slf4j.LoggerFactory;
 
 public class DefaultJobPersistence implements JobPersistence {
 
-  public static final int JOB_HISTORY_MINIMUM_AGE_IN_DAYS = 10;
-  public static final int JOB_HISTORY_MINIMUM_RECENCY = 10;
-  public static final int JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS = 100;
+  // not final because job history test case manipulates these.
+  public static int JOB_HISTORY_MINIMUM_AGE_IN_DAYS = 15;
+  public static int JOB_HISTORY_MINIMUM_RECENCY = 5;
+  public static int JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS = 10;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJobPersistence.class);
   private static final JSONFormat DB_JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
@@ -492,7 +493,8 @@ public class DefaultJobPersistence implements JobPersistence {
         + ") counts on jobs.scope = counts.scope \n"
         + "where \n"
         + "  -- job must be at least MINIMUM_AGE_IN_DAYS old or connection has more than EXCESSIVE_NUMBER_OF_JOBS \n"
-        + "  (jobs.created_at < (CAST(? as TIMESTAMP) - interval '" + JOB_HISTORY_MINIMUM_AGE_IN_DAYS + "' day) or counts.jobCount >  ?) \n"
+        + "  (jobs.created_at < (TO_TIMESTAMP(?, 'YYYY-MM-DD') - interval '" + (JOB_HISTORY_MINIMUM_AGE_IN_DAYS - 1)
+        + "' day) or counts.jobCount >  ?) \n"
         + "and jobs.id not in (\n"
         + "  -- cannot be the last job with saved state \n"
         + "   select max(job_id) as latest_job_id_with_state from (\n"
@@ -503,23 +505,22 @@ public class DefaultJobPersistence implements JobPersistence {
         + "   group by scope, jobs.id\n"
         + "   having bool_or(attempts.\"output\" -> 'sync' -> 'state' -> 'state' is not null) = true\n"
         + "   order by scope, jobs.created_at desc, jobs.id desc\n"
-        + "   ) jobs_with_state group by scope \n"
+        + "   ) jobs_with_state group by scope\n "
         + ") and jobs.id not in (\n"
         + "  -- cannot be one of the last MINIMUM_RECENCY jobs for that connection/scope\n"
-        + "    select job_id from (\n"
-        + "        select jobs.scope, \n"
-        + "        row_number() OVER (PARTITION BY scope ORDER BY jobs.created_at desc, jobs.id desc) as recency,\n"
-        + "        jobs.id as job_id, jobs.config_type, jobs.created_at, jobs.status\n"
-        + "        from jobs \n"
+        + "    select id from (\n"
+        + "        select jobs.scope, jobs.id, jobs.created_at,\n"
+        + "        row_number() OVER (PARTITION BY scope ORDER BY jobs.created_at desc, jobs.id desc) as recency\n"
+        + "        from jobs\n"
         + "        group by scope, jobs.id\n"
         + "        order by scope, jobs.created_at desc, jobs.id desc\n"
         + "    ) jobs_by_recency \n"
-        + "    where recency <= ? \n"
+        + "    where recency <= ?\n"
         + "))";
 
     // JENNY TODO: figure out error handling around this, messaging, etc. Plus test cases.
-    database.transaction(ctx -> ctx.execute(JOB_HISTORY_PURGE_SQL, asOfDate,
-        JOB_HISTORY_MINIMUM_AGE_IN_DAYS,
+    final Integer rows = database.query(ctx -> ctx.execute(JOB_HISTORY_PURGE_SQL,
+        asOfDate.format(DateTimeFormatter.ofPattern("YYYY-MM-dd")),
         JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS,
         JOB_HISTORY_MINIMUM_RECENCY));
   }

@@ -82,6 +82,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
@@ -1006,6 +1008,7 @@ class DefaultJobPersistenceTest {
     }
 
     private Job persistJobForTesting(String scope, JobConfig jobConfig, JobStatus status, LocalDateTime runDate) throws IOException, SQLException {
+      String when = runDate.toString();
       Optional<Long> id = database.query(
           ctx -> ctx.fetch(
               "INSERT INTO jobs(config_type, scope, created_at, updated_at, status, config) " +
@@ -1052,102 +1055,110 @@ class DefaultJobPersistenceTest {
       return attemptNumber;
     }
 
-    @Test
+    /**
+     * Testing job history deletion is sensitive to exactly how the constants are configured for
+     * controlling deletion logic. Thus, the test case injects overrides for those constants, testing a
+     * comprehensive set of combinations to make sure that the logic is robust to reasonable
+     * configurations. Extreme configurations such as zero-day retention period are not covered.
+     *
+     * Business rules for deletions 1. Job must be older than X days or its conn has excessive number of
+     * jobs 2. Job cannot be one of the last N jobs on that conn (last N jobs are always kept). 3. Job
+     * cannot be holding the most recent saved state (most recent saved state is always kept).
+     *
+     * @param numJobs How many test jobs to generate; make this enough that all other parameters are
+     *        fully included, for predictable results.
+     * @param tooManyJobs Takes the place of DefaultJobPersistence.JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS
+     *        - how many jobs are needed before it ignores date-based age of job when doing deletions.
+     * @param ageCutoff Takes the place of DefaultJobPersistence.JOB_HISTORY_MINIMUM_AGE_IN_DAYS -
+     *        retention period in days for the most recent jobs; older than this gets deleted.
+     * @param recencyCutoff Takes the place of DefaultJobPersistence.JOB_HISTORY_MINIMUM_RECENCY -
+     *        retention period in number of jobs; at least this many jobs will be retained after
+     *        deletion (provided enough existed in the first place).
+     * @param lastStatePosition How far back in the list is the job with the latest saved state. This
+     *        can be manipulated to have the saved-state job inside or prior to the retention period.
+     * @param expectedAfterPurge How many matching jobs are expected after deletion, given the input
+     *        parameters. This was calculated by a human based on understanding the requirements.
+     * @param goalOfTestScenario Description of the purpose of that test scenario, so it's easier to
+     *        maintain and understand failures.
+     *
+     */
     @DisplayName("Should purge older job history but maintain certain more recent ones")
-    void testPurgeJobHistory() throws IOException, SQLException {
+    @ParameterizedTest
+    // Cols: numJobs, tooManyJobsCutoff, ageCutoff, recencyCutoff, lastSavedStatePosition,
+    // expectedAfterPurge, descr
+    @CsvSource(value = {
+      "50,100,10,5,9,10,'Validate age cutoff alone'",
+      "50,100,10,5,13,11,'Validate saved state after age cutoff'",
+      "50,100,10,15,9,15,'Validate recency cutoff alone'",
+      "50,100,10,15,17,16,'Validate saved state after recency cutoff'",
+      "50,20,30,10,9,10,'Validate excess jobs cutoff alone'",
+      "50,20,30,10,25,11,'Validate saved state after excess jobs cutoff'",
+      "50,20,30,20,9,20,'Validate recency cutoff with excess jobs cutoff'",
+      "50,20,30,20,25,21,'Validate saved state after recency and excess jobs cutoff but before age'",
+      "50,20,30,20,35,21,'Validate saved state after recency and excess jobs cutoff and after age'"
+    },
+               delimiter = ',')
+    void testPurgeJobHistory(int numJobs,
+                             int tooManyJobs,
+                             int ageCutoff,
+                             int recencyCutoff,
+                             int lastStatePosition,
+                             int expectedAfterPurge,
+                             String goalOfTestScenario)
+        throws IOException, SQLException {
       // a couple of connectors for testing against
       final String SCOPE1 = UUID.randomUUID().toString();
-      final String SCOPE2 = UUID.randomUUID().toString();
 
-      // Business Rules for purging a job:
-      // Job must be older than X days or its conn has excessive number of jobs
-      // Job cannot be one of the last 10 jobs on that conn (last 10 jobs are always kept).
-      // Job cannot be holding the most recent saved state (most recent saved state is always kept).
+      DefaultJobPersistence.JOB_HISTORY_MINIMUM_AGE_IN_DAYS = ageCutoff;
+      DefaultJobPersistence.JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS = tooManyJobs;
+      DefaultJobPersistence.JOB_HISTORY_MINIMUM_RECENCY = recencyCutoff;
 
-      // Test Scenarios
-      // 1. Goal: Purge jobs older than X days from connections with jobs X days old, except keep the most
-      // recent 10 and keep the latest with state.
+      // Goal: Set up jobs according to the parameters passed in. Then delete according to the rules, and
+      // make sure the right number of jobs are left.
       // Against one connection/scope,
-      // - Setup: create a history of jobs that goes back X + 12 days (but produces no more than one job a
+      // - Setup: create a history of jobs that goes back many days (but produces no more than one job a
       // day)
-      // - Setup: the most recent job with state in it should be at least X + 5 jobs back
-      // - Assert: ensure that after purging, there are X+1 jobs left (and at least 10), including the one
-      // with the most recent state.
-      // - Assert: ensure that after purging, there are X+1 jobs left (and at least 10), including the X
-      // most recent
+      // - Setup: the most recent job with state in it should be at least N jobs back
+      // - Assert: ensure that after purging, there are the right number of jobs left (and at least min
+      // recency), including the one with the most recent state.
+      // - Assert: ensure that after purging, there are the right number of jobs left (and at least min
+      // recency), including the X most recent
       // - Assert: ensure that after purging, all other job history has been deleted.
 
-      // Scenario 1 setup
+      // Setup
       LocalDateTime fakeNow = LocalDateTime.of(2021, 6, 20, 0, 0);
       List<Job> allJobs = new ArrayList<>();
-      for (int i = 0; i < (DefaultJobPersistence.JOB_HISTORY_MINIMUM_AGE_IN_DAYS + 12); i++) {
+
+      // Created in reverse chronological order; id order is the inverse of old-to-new date order.
+      // That simplifies comparison math for test cases, even though it's unintuitive for human viewing.
+      for (int i = 0; i < numJobs; i++) {
         allJobs.add(persistJobForTesting(SCOPE1, SYNC_JOB_CONFIG, JobStatus.FAILED, fakeNow.minusDays(i)));
       }
-      // At least one job should have state, and it should be older than the recency limit.
-      Job lastJobWithState = allJobs.get(DefaultJobPersistence.JOB_HISTORY_MINIMUM_RECENCY + 1);
-      int attemptNumber = persistAttemptForJobHistoryTesting(lastJobWithState, LOG_PATH.toString(),
+
+      // At least one job should have state. Find the desired job and add state to it.
+      Job lastJobWithState = allJobs.get(lastStatePosition);
+      persistAttemptForJobHistoryTesting(lastJobWithState, LOG_PATH.toString(),
           LocalDateTime.ofEpochSecond(lastJobWithState.getCreatedAtInSecond(), 0, ZoneOffset.UTC), true);
       lastJobWithState = jobPersistence.getJob(lastJobWithState.getId()); // reloads with attempts
-      // sanity check
-      assertTrue(lastJobWithState.getAttempts().get(0).getOutput() != null);
+      // sanity check that the attempt does have saved state so the purge history sql detects it correctly
+      assertTrue(lastJobWithState.getAttempts().get(0).getOutput() != null,
+          goalOfTestScenario + " - missing saved state on job that was supposed to have it.");
 
-      // ----- remove me after troubleshooting ------
-      String sql1 = "select count(*) as rowcount from jobs where (jobs.created_at < (CAST('2021-06-20' as TIMESTAMP) - interval '15' day) ) ";
-      String sql2 = "select max(job_id) as latest_job_id_with_state from (\n"
-          + "   select jobs.scope, \n"
-          + "   jobs.id as job_id, jobs.config_type, jobs.created_at, jobs.status, \n"
-          + "   bool_or(attempts.\"output\" -> 'sync' -> 'state' -> 'state' is not null) as outputStateExists\n"
-          + "   from jobs left join attempts on jobs.id = attempts.job_id \n"
-          + "   group by scope, jobs.id\n"
-          + "   having bool_or(attempts.\"output\" -> 'sync' -> 'state' -> 'state' is not null) = true\n"
-          + "   order by scope, jobs.created_at desc, jobs.id desc\n"
-          + "   ) jobs_with_state group by scope \n";
-      String sql3 = "    select job_id from (\n"
-          + "        select jobs.scope, \n"
-          + "        row_number() OVER (PARTITION BY scope ORDER BY jobs.created_at desc, jobs.id desc) as recency,\n"
-          + "        jobs.id as job_id, jobs.config_type, jobs.created_at, jobs.status\n"
-          + "        from jobs \n"
-          + "        group by scope, jobs.id\n"
-          + "        order by scope, jobs.created_at desc, jobs.id desc\n"
-          + "    ) jobs_by_recency \n"
-          + "    where recency <= '10' \n";
-      List<Integer> ids = database.query(ctx -> ctx.fetch(sql3).getValues("job_id", Integer.class));
-      // TODO: JENNY on TUESDAY. It's weird that each piece of the sql query correctly checks out as to
-      // which ids it returns, yet when run together as a delete, it doesn't actually delete anything, and
-      // the jobs returned after the purge are the same ones as were there before purging. Maybe there is
-      // something funky happening with transactional commits not occuring?
-      // ----- remove me after troubleshooting ------
-
-      // Scenario 1 run purge
-      List<Job> beforePurge = jobPersistence.listJobs(ConfigType.SYNC, SCOPE1, 999, 0);
+      // Execute the job history purge and check what jobs are left.
       jobPersistence.purgeJobHistory(fakeNow);
-      List<Job> afterPurge = jobPersistence.listJobs(ConfigType.SYNC, SCOPE1, 999, 0);
+      List<Job> afterPurge = jobPersistence.listJobs(ConfigType.SYNC, SCOPE1, 9999, 0);
 
-      // Scenario 1 test - contains most-recent plus saved-state, and no more than that
-      assertEquals(afterPurge.size(), DefaultJobPersistence.JOB_HISTORY_MINIMUM_AGE_IN_DAYS + 1);
-      // Scenario 1 test - most-recent are actually the most recent
-      for (int i = 0; i < (DefaultJobPersistence.JOB_HISTORY_MINIMUM_AGE_IN_DAYS); i++) {
-        assert (afterPurge.get(i).equals(allJobs.get(i)));
+      // Test - contains expected number of jobs and no more than that
+      assertEquals(expectedAfterPurge, afterPurge.size(), goalOfTestScenario + " - Incorrect number of jobs remain after deletion.");
+
+      // Test - most-recent are actually the most recent by date (fyi id order is inverse of
+      // date order due to creation above).
+      for (int i = 0; i < Math.min(ageCutoff, recencyCutoff); i++) {
+        assertEquals(allJobs.get(i).getId(), afterPurge.get(i).getId(), goalOfTestScenario + " - Incorrect sort order after deletion.");
       }
-      // Scenario 1 test - job with state is kept despite being older
-      assert (afterPurge.get(DefaultJobPersistence.JOB_HISTORY_MINIMUM_AGE_IN_DAYS + 1).equals(lastJobWithState));
 
-      // TODO take this out, just here for reference for now.
-      int minAge = DefaultJobPersistence.JOB_HISTORY_MINIMUM_AGE_IN_DAYS;
-      int minRecency = DefaultJobPersistence.JOB_HISTORY_MINIMUM_RECENCY;
-      int tooManyJobs = DefaultJobPersistence.JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS;
-
-      // 2. Goal: Purge jobs from connections with a large number of jobs, except keep the most recent 10
-      // and keep the latest with state.
-      // Against one connection/scope,
-      // - Setup: create a history of jobs that goes back only 3 days (but includes at least 200 jobs)
-      // - Setup: the most recent job with state in it should be at least 15 jobs back
-      // - Assert: ensure that after purging, there are 11 jobs left, including the one with the most
-      // recent state.
-      // - Assert: ensure that after purging, there are 11 jobs left, including the 10 most recent
-      // - Assert: ensure that after purging, all other job history has been deleted.
-      //
-
+      // Test - job with state is kept despite being older
+      assertTrue(afterPurge.contains(lastJobWithState), goalOfTestScenario + " - Missing last job with saved state after deletion.");
     }
 
   }
