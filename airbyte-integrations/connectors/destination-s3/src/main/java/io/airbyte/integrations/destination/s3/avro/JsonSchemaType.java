@@ -25,7 +25,6 @@
 package io.airbyte.integrations.destination.s3.avro;
 
 import org.apache.avro.Schema;
-import org.apache.avro.Schema.Type;
 
 /**
  * Mapping of JsonSchema types to Avro types.

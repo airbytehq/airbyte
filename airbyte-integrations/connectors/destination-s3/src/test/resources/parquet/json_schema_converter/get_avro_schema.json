@@ -267,7 +267,7 @@
               "format": "date-time"
             },
             {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             },
             {
               "type": "integer"
@@ -283,11 +283,7 @@
       "fields": [
         {
           "name": "created_at",
-          "type": [
-            "null",
-            "string",
-            "int"
-          ],
+          "type": ["null", "string", "int"],
           "default": null
         }
       ]
@@ -309,7 +305,7 @@
                   "format": "date-time"
                 },
                 {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 },
                 {
                   "type": "integer"
@@ -336,11 +332,7 @@
               "fields": [
                 {
                   "name": "created_at",
-                  "type": [
-                    "null",
-                    "string",
-                    "int"
-                  ],
+                  "type": ["null", "string", "int"],
                   "default": null
                 }
               ]
@@ -361,10 +353,7 @@
           "type": "array",
           "items": [
             {
-              "oneOf": [
-                { "type": "integer" },
-                { "type": "string" }
-              ]
+              "oneOf": [{ "type": "integer" }, { "type": "string" }]
             },
             {
               "type": "boolean"
