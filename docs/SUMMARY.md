@@ -180,6 +180,7 @@
   * [Founding Developer Evangelist](career-and-open-positions/founding-developer-evangelist.md)
   * [Senior Technical Writer / Editor in Chief](career-and-open-positions/technical-content-writer.md)
   * [Senior Technical Recruiter](career-and-open-positions/recruiter.md)
+  * [Head of Lead Generation](career-and-open-positions/head-of-lead-generation.md)
 * [Troubleshooting](troubleshooting/README.md)
   * [On Deploying](troubleshooting/on-deploying.md)
   * [On Setting up a New Connection](troubleshooting/new-connection.md)
