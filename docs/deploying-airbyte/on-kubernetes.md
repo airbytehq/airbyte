@@ -196,6 +196,27 @@ kubectl exec -it airbyte-scheduler-6b5747df5c-bj4fx ls /tmp/workspace/8
 kubectl exec -it airbyte-scheduler-6b5747df5c-bj4fx cat /tmp/workspace/8/0/logs.log
 ```
 
+### Persistent storage on GKE regional cluster
+To manage persistent storage on GKE regional cluster you need to enable [CSI driver](https://cloud.google.com/kubernetes-engine/docs/how-to/persistent-volumes/gce-pd-csi-driver)\
+When enabled you need to change storage class on [Volume config](../../kube/resources/volume-configs.yaml) and [Volume workspace](../../kube/resources/volume-workspace.yaml) \
+Add `storageClassName: standard-rwo` in volume spec \
+exemple for volume config:
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: airbyte-volume-configs
+  labels:
+    airbyte: volume-configs
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Mi
+  storageClassName: standard-rwo
+```
+
 ## Troubleshooting
 If you run into any problems operating Airbyte on Kubernetes, please reach out on the `#issues` channel on our [Slack](https://slack.airbyte.io/) or
 [create an issue on GitHub](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fbug&template=bug-report.md&title=).

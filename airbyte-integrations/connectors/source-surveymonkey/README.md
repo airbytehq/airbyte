@@ -129,3 +129,9 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 1. Create a Pull Request.
 1. Pat yourself on the back for being an awesome contributor.
 1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+
+### Performance considerations
+
+The SurveyMonkey API applies heavy API quotas for default private apps, which have the following limits:
+* 125 requests per minute
+* 500 requests per day
