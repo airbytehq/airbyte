@@ -490,14 +490,20 @@ select
     ) as _airbyte_end_at,
     lag({{ cursor_field }}) over (
         partition by {{ primary_key }}
-        order by {{ cursor_field }} desc, _airbyte_emitted_at desc
-    ) is null as _airbyte_active_row,
+        order by {{ cursor_field }} desc, _airbyte_emitted_at desc{{ cdc_updated_at_order }}
+    ) is null {{ cdc_active_row }}as _airbyte_active_row,
     _airbyte_emitted_at,
     {{ hash_id }}
 from {{ from_table }}
 {{ sql_table_comment }}
         """
         )
+
+        cdc_active_row_pattern = ""
+        cdc_updated_order_pattern = ""
+        if "_ab_cdc_deleted_at" in column_names.keys():
+            cdc_active_row_pattern = "and _ab_cdc_deleted_at is null "
+            cdc_updated_order_pattern = ", _ab_cdc_updated_at desc"
 
         sql = template.render(
             parent_hash_id=self.parent_hash_id(),
@@ -507,6 +513,8 @@ from {{ from_table }}
             hash_id=self.hash_id(),
             from_table=jinja_call(from_table),
             sql_table_comment=self.sql_table_comment(include_from_table=True),
+            cdc_active_row=cdc_active_row_pattern,
+            cdc_updated_at_order=cdc_updated_order_pattern,
         )
         return sql
 
@@ -582,8 +590,10 @@ from {{ from_table }}
 
     def add_to_outputs(self, sql: str, is_intermediate: bool, column_count: int = 0, suffix: str = "") -> str:
         schema = self.get_schema(is_intermediate)
-        table_name = self.tables_registry.get_table_name(schema, self.json_path, self.stream_name, suffix)
-        file_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, suffix)
+        # MySQL table names need to be manually truncated, because it does not do it automatically
+        truncate_name = self.destination_type == DestinationType.MYSQL
+        table_name = self.tables_registry.get_table_name(schema, self.json_path, self.stream_name, suffix, truncate_name)
+        file_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, suffix, truncate_name)
         file = f"{file_name}.sql"
         if is_intermediate:
             if column_count <= MAXIMUM_COLUMNS_TO_USE_EPHEMERAL:

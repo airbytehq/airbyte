@@ -92,9 +92,15 @@ spec:
             - name: DB
               value: "postgresql"
             - name: DB_PORT
-              value: "5432"
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: DATABASE_PORT
             - name: POSTGRES_SEEDS
-              value: "airbyte-db-svc"
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: DATABASE_HOST
 
           ports:
             - containerPort: 7233
