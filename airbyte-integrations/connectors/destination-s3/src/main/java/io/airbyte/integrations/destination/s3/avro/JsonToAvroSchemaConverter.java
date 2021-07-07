@@ -166,21 +166,16 @@ public class JsonToAvroSchemaConverter {
     return assembler.endRecord();
   }
 
-  Schema getSingleFieldType(String fieldName,
-                            JsonSchemaType fieldType,
-                            JsonNode fieldDefinition,
-                            boolean canBeComposite) {
+  Schema getSingleFieldType(String fieldName, JsonSchemaType fieldType, JsonNode fieldDefinition) {
     Preconditions
         .checkState(fieldType != JsonSchemaType.NULL, "Null types should have been filtered out");
-    Preconditions
-        .checkState(canBeComposite || fieldType.isPrimitive(), "Field %s has invalid type %s",
-            fieldName, fieldType);
+
     Schema fieldSchema;
     switch (fieldType) {
       case STRING, NUMBER, INTEGER, BOOLEAN -> fieldSchema = Schema.create(fieldType.getAvroType());
       case COMBINED -> {
         Optional<JsonNode> combinedRestriction = getCombinedRestriction(fieldDefinition);
-        List<Schema> unionTypes = getSchemaFromTypes(fieldName, (ArrayNode) combinedRestriction.get());
+        List<Schema> unionTypes = getSchemasFromTypes(fieldName, (ArrayNode) combinedRestriction.get());
         fieldSchema = Schema.createUnion(unionTypes);
       }
       case ARRAY -> {
@@ -190,7 +185,7 @@ public class JsonToAvroSchemaConverter {
         if (items.isObject()) {
           fieldSchema = Schema.createArray(getNullableFieldTypes(String.format("%s.items", fieldName), items));
         } else if (items.isArray()) {
-          List<Schema> arrayElementTypes = getSchemaFromTypes(fieldName, (ArrayNode) items);
+          List<Schema> arrayElementTypes = getSchemasFromTypes(fieldName, (ArrayNode) items);
           arrayElementTypes.add(0, Schema.create(Type.NULL));
           fieldSchema = Schema.createArray(Schema.createUnion(arrayElementTypes));
         } else {
@@ -205,14 +200,19 @@ public class JsonToAvroSchemaConverter {
     return fieldSchema;
   }
 
-  List<Schema> getSchemaFromTypes(String fieldName, ArrayNode types) {
-    List<Schema> schemas = MoreIterators.toList(types.elements())
+  List<Schema> getSchemasFromTypes(String fieldName, ArrayNode types) {
+    return MoreIterators.toList(types.elements())
         .stream()
-        .flatMap(definition -> getNonNullTypes(fieldName, definition).stream()
-            .map(type -> getSingleFieldType(fieldName, type, definition, false)))
+        .flatMap(definition -> getNonNullTypes(fieldName, definition).stream().flatMap(type -> {
+          Schema singleFieldSchema = getSingleFieldType(fieldName, type, definition);
+          if (singleFieldSchema.isUnion()) {
+            return singleFieldSchema.getTypes().stream();
+          } else {
+            return Stream.of(singleFieldSchema);
+          }
+        }))
         .distinct()
         .collect(Collectors.toList());
-    return schemas;
   }
 
   /**
@@ -223,7 +223,7 @@ public class JsonToAvroSchemaConverter {
     List<Schema> nonNullFieldTypes = getNonNullTypes(fieldName, fieldDefinition)
         .stream()
         .flatMap(fieldType -> {
-          Schema singleFieldSchema = getSingleFieldType(fieldName, fieldType, fieldDefinition, true);
+          Schema singleFieldSchema = getSingleFieldType(fieldName, fieldType, fieldDefinition);
           if (singleFieldSchema.isUnion()) {
             return singleFieldSchema.getTypes().stream();
           } else {
