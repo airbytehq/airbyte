@@ -31,10 +31,7 @@ from source_acceptance_test.utils import ConnectorRunner
 
 def create_dockerfile(text, tag, tmp_path):
     client = docker.from_env()
-    fileobj = io.BytesIO()
-    fileobj.write(text)
-
-    fileobj.seek(0)
+    fileobj = io.BytesIO(bytes(text))
     args = {
         "fileobj": fileobj,
         "tag": tag,
