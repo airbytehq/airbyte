@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - airbyte-minio.yaml
   - db.yaml
+  - pod-sweeper.yaml
   - scheduler.yaml
   - secret-gcs-log-creds.yaml
   - scheduler-service-account.yaml
