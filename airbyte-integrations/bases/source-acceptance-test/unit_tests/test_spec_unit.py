@@ -35,14 +35,14 @@ def build_docker_image(text: str, tag: str) -> docker.models.images.Image:
     and remove it also by a string name. But maybe we wanna use it somewhere
     """
     client = docker.from_env()
-    fileobj = io.BytesIO(bytes(text))
+    fileobj = io.BytesIO(bytes(text, "utf-8"))
     image, iterools_tee = client.images.build(fileobj=fileobj, tag=tag, forcerm=True, rm=True)
     return image
 
 
 @pytest.fixture
 def correct_connector_image() -> str:
-    dockerfile_text = b"""
+    dockerfile_text = """
         FROM scratch
         ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
         ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
@@ -56,7 +56,7 @@ def correct_connector_image() -> str:
 
 @pytest.fixture
 def connector_image_without_env():
-    dockerfile_text = b"""
+    dockerfile_text = """
         FROM scratch
         ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
         """
@@ -69,7 +69,7 @@ def connector_image_without_env():
 
 @pytest.fixture
 def connector_image_with_ne_properties():
-    dockerfile_text = b"""
+    dockerfile_text = """
         FROM scratch
         ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
         ENTRYPOINT ["python3", "/airbyte/integration_code/main.py"]
