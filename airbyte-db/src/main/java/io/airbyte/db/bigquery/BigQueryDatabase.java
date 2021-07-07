@@ -143,7 +143,8 @@ public class BigQueryDatabase extends SqlDatabase {
         .iterateAll()
         .forEach(dataset -> bigQuery.listTables(dataset.getDatasetId())
             .iterateAll()
-            .forEach(tableList::add));
+            .forEach(table -> tableList.add(bigQuery.getTable(table.getTableId())))
+        );
     return tableList;
   }
 
