@@ -36,6 +36,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.normalization.DefaultNormalizationRunner.DestinationType;
 import io.airbyte.workers.process.ProcessFactory;
 import java.io.ByteArrayInputStream;
@@ -70,7 +71,9 @@ class DefaultNormalizationRunnerTest {
         WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config),
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
-    when(processFactory.create(JOB_ID, JOB_ATTEMPT, jobRoot, DefaultNormalizationRunner.NORMALIZATION_IMAGE_NAME, false, files, null, "run",
+    when(processFactory.create(JOB_ID, JOB_ATTEMPT, jobRoot, DefaultNormalizationRunner.NORMALIZATION_IMAGE_NAME, false, files, null,
+        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
+        "run",
         "--integration-type", "bigquery",
         "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
         "--catalog", WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME))
@@ -85,7 +88,7 @@ class DefaultNormalizationRunnerTest {
 
     when(process.exitValue()).thenReturn(0);
 
-    assertTrue(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog));
+    assertTrue(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS));
   }
 
   @Test
@@ -93,7 +96,7 @@ class DefaultNormalizationRunnerTest {
     when(process.isAlive()).thenReturn(true).thenReturn(false);
 
     final NormalizationRunner runner = new DefaultNormalizationRunner(DestinationType.BIGQUERY, processFactory);
-    runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog);
+    runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
     runner.close();
 
     verify(process).destroy();
@@ -104,7 +107,8 @@ class DefaultNormalizationRunnerTest {
     doThrow(new RuntimeException()).when(process).exitValue();
 
     final NormalizationRunner runner = new DefaultNormalizationRunner(DestinationType.BIGQUERY, processFactory);
-    assertThrows(RuntimeException.class, () -> runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog));
+    assertThrows(RuntimeException.class,
+        () -> runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS));
 
     verify(process).destroy();
   }

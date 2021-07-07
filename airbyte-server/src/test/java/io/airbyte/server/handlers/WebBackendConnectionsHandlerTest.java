@@ -59,6 +59,7 @@ import io.airbyte.api.model.OperationCreateOrUpdate;
 import io.airbyte.api.model.OperationRead;
 import io.airbyte.api.model.OperationReadList;
 import io.airbyte.api.model.OperationUpdate;
+import io.airbyte.api.model.ResourceRequirements;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
@@ -86,6 +87,7 @@ import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.server.helpers.SourceDefinitionHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.time.Instant;
@@ -187,7 +189,12 @@ class WebBackendConnectionsHandlerTest {
         .operations(operationReadList.getOperations())
         .latestSyncJobCreatedAt(now.getEpochSecond())
         .latestSyncJobStatus(JobStatus.SUCCEEDED)
-        .isSyncing(false);
+        .isSyncing(false)
+        .resourceRequirements(new ResourceRequirements()
+            .cpuRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuRequest())
+            .cpuLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuLimit())
+            .memoryRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryRequest())
+            .memoryLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryLimit()));
 
     final AirbyteCatalog modifiedCatalog = ConnectionHelpers.generateBasicApiCatalog();
 
@@ -213,7 +220,12 @@ class WebBackendConnectionsHandlerTest {
         .operations(expected.getOperations())
         .latestSyncJobCreatedAt(expected.getLatestSyncJobCreatedAt())
         .latestSyncJobStatus(expected.getLatestSyncJobStatus())
-        .isSyncing(expected.getIsSyncing());
+        .isSyncing(expected.getIsSyncing())
+        .resourceRequirements(new ResourceRequirements()
+            .cpuRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuRequest())
+            .cpuLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuLimit())
+            .memoryRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryRequest())
+            .memoryLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryLimit()));
 
     when(schedulerHandler.resetConnection(any())).thenReturn(new JobInfoRead().job(new JobRead().status(JobStatus.SUCCEEDED)));
   }
@@ -355,7 +367,7 @@ class WebBackendConnectionsHandlerTest {
   public void testForConnectionCreateCompleteness() {
     final Set<String> handledMethods =
         Set.of("name", "namespaceDefinition", "namespaceFormat", "prefix", "sourceId", "destinationId", "operationIds", "syncCatalog", "schedule",
-            "status");
+            "status", "resourceRequirements");
 
     final Set<String> methods = Arrays.stream(ConnectionCreate.class.getMethods())
         .filter(method -> method.getReturnType() == ConnectionCreate.class)
@@ -373,7 +385,8 @@ class WebBackendConnectionsHandlerTest {
   @Test
   public void testForConnectionUpdateCompleteness() {
     final Set<String> handledMethods =
-        Set.of("schedule", "connectionId", "syncCatalog", "namespaceDefinition", "namespaceFormat", "prefix", "status", "operationIds");
+        Set.of("schedule", "connectionId", "syncCatalog", "namespaceDefinition", "namespaceFormat", "prefix", "status", "operationIds",
+            "resourceRequirements");
 
     final Set<String> methods = Arrays.stream(ConnectionUpdate.class.getMethods())
         .filter(method -> method.getReturnType() == ConnectionUpdate.class)
