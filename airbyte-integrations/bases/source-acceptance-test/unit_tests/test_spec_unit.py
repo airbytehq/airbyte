@@ -41,16 +41,15 @@ def build_docker_image(text: str, tag: str) -> docker.models.images.Image:
 
 
 @pytest.fixture
-def dockerfile_valid(tmp_path):
-    dockerfile_text = b"""
+def correct_connector_image() -> str:
+    dockerfile_text = """
         FROM scratch
         ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
         ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
         """
     tag = "my-valid-one"
     build_docker_image(dockerfile_text, tag)
-    docker_runner = ConnectorRunner(image_name=tag, volume=tmp_path)
-    yield docker_runner
+    yield tag
     client = docker.from_env()
     client.images.remove(image=tag, force=True)
 
