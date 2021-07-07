@@ -178,25 +178,35 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "type": ["null", "number", "string"]
+              "type": [
+                "null",
+                "number",
+                "string"
+              ]
             },
-          "conflict_stream_name": {
-            "type": "array",
-            "items": {
-              "type": "object",
+            "conflict_stream_name": {
+              "type": [
+                "null",
+                "object"
+              ],
               "properties": {
-                "group": {
-                  "type": "string"
-                },
-                "description": "The name of the group."
-              },
-              "other_info": {
-                "type": "string",
-                "description": "The group name with the matched query string highlighted with the HTML bold tag."
+                "conflict_stream_name": {
+                  "type": "object",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "groups": {
+                        "type": "string"
+                      }
+                    },
+                    "other_info": {
+                      "type": "string"
+                    }
+                  }
+                }
               }
             }
           }
-        }
         },
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": true,

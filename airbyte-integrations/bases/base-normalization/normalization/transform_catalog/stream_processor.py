@@ -658,7 +658,8 @@ from {{ from_table }}
     def hash_id(self) -> str:
         if self.parent:
             if self.normalized_stream_name() == self.parent.stream_name:
-                return self.name_transformer.normalize_column_name(f"_airbyte_{self.normalized_stream_name()}_child_hashid")
+                level = len(self.json_path)
+                return self.name_transformer.normalize_column_name(f"_airbyte_{self.normalized_stream_name()}_{level}_hashid")
 
         return self.name_transformer.normalize_column_name(f"_airbyte_{self.normalized_stream_name()}_hashid")
 
