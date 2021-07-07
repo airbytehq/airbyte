@@ -25,6 +25,7 @@
 package io.airbyte.integrations.destination.s3.avro;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
@@ -47,7 +48,7 @@ class JsonToAvroSchemaConverterTest {
     JsonNode input1 = Jsons.deserialize("{ \"type\": \"number\" }");
     assertEquals(
         Collections.singletonList(JsonSchemaType.NUMBER),
-        JsonToAvroSchemaConverter.getTypes("field", input1.get("type")));
+        JsonToAvroSchemaConverter.getTypes("field", input1));
   }
 
   @Test
@@ -55,7 +56,19 @@ class JsonToAvroSchemaConverterTest {
     JsonNode input2 = Jsons.deserialize("{ \"type\": [\"null\", \"string\"] }");
     assertEquals(
         Lists.newArrayList(JsonSchemaType.NULL, JsonSchemaType.STRING),
-        JsonToAvroSchemaConverter.getTypes("field", input2.get("type")));
+        JsonToAvroSchemaConverter.getTypes("field", input2));
+  }
+
+  @Test
+  public void testNoCombinedRestriction() {
+    JsonNode input1 = Jsons.deserialize("{ \"type\": \"number\" }");
+    assertTrue(JsonToAvroSchemaConverter.getCombinedRestriction(input1).isEmpty());
+  }
+
+  @Test
+  public void testWithCombinedRestriction() {
+    JsonNode input2 = Jsons.deserialize("{ \"anyOf\": [{ \"type\": \"string\" }, { \"type\": \"integer\" }] }");
+    assertTrue(JsonToAvroSchemaConverter.getCombinedRestriction(input2).isPresent());
   }
 
   public static class GetFieldTypeTestCaseProvider implements ArgumentsProvider {

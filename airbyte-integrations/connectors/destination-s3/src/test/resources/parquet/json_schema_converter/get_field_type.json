@@ -103,5 +103,26 @@
         ]
       }
     ]
+  },
+  {
+    "fieldName": "any_of_field",
+    "jsonFieldSchema": {
+      "anyOf": [{ "type": "string" }, { "type": "integer" }]
+    },
+    "avroFieldType": ["null", "string", "int"]
+  },
+  {
+    "fieldName": "all_of_field",
+    "jsonFieldSchema": {
+      "allOf": [{ "type": "string" }, { "type": "integer" }]
+    },
+    "avroFieldType": ["null", "string", "int"]
+  },
+  {
+    "fieldName": "one_of_field",
+    "jsonFieldSchema": {
+      "oneOf": [{ "type": "string" }, { "type": "integer" }]
+    },
+    "avroFieldType": ["null", "string", "int"]
   }
 ]
