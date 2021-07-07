@@ -88,6 +88,10 @@ public class DefaultJobPersistence implements JobPersistence {
   public static int JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS = 10;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJobPersistence.class);
+  private static final Set<String> SYSTEM_SCHEMA = Set
+      .of("pg_toast", "information_schema", "pg_catalog", "import_backup", "pg_internal",
+          "catalog_history");
+
   private static final JSONFormat DB_JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
   protected static final String DEFAULT_SCHEMA = "public";
   private static final String BACKUP_SCHEMA = "import_backup";
@@ -214,11 +218,15 @@ public class DefaultJobPersistence implements JobPersistence {
     return database.transaction(ctx -> {
       final Job job = getJob(ctx, jobId);
       if (job.isJobInTerminalState()) {
-        throw new IllegalStateException("Cannot create an attempt for a job that is in a terminal state: " + job.getStatus());
+        var errMsg = String.format("Cannot create an attempt for a job id: %s that is in a terminal state: %s for connection id: %s", job.getId(),
+            job.getStatus(), job.getScope());
+        throw new IllegalStateException(errMsg);
       }
 
       if (job.hasRunningAttempt()) {
-        throw new IllegalStateException("Cannot create an attempt for a job that has a running attempt: " + job.getStatus());
+        var errMsg = String.format("Cannot create an attempt for a job id: %s that has a running attempt: %s for connection id: %s", job.getId(),
+            job.getStatus(), job.getScope());
+        throw new IllegalStateException(errMsg);
       }
 
       updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.RUNNING, now);
@@ -441,10 +449,10 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public void setVersion(String airbyteVersion) throws IOException {
     database.query(ctx -> ctx.execute(String.format(
-        "INSERT INTO %s VALUES('%s', '%s'), ('%s_init_db', '%s');",
+        "INSERT INTO %s VALUES('%s', '%s'), ('%s_init_db', '%s') ON CONFLICT (key) DO UPDATE SET value = '%s'",
         AIRBYTE_METADATA_TABLE,
         AirbyteVersion.AIRBYTE_VERSION_KEY_NAME, airbyteVersion,
-        current_timestamp(), airbyteVersion)));
+        current_timestamp(), airbyteVersion, airbyteVersion)));
   }
 
   private static String current_timestamp() {
@@ -454,6 +462,27 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public Map<DatabaseSchema, Stream<JsonNode>> exportDatabase() throws IOException {
     return exportDatabase(DEFAULT_SCHEMA);
+  }
+
+  /**
+   * This is different from {@link #exportDatabase()} cause it exports all the tables in all the
+   * schemas available
+   */
+  @Override
+  public Map<String, Stream<JsonNode>> dump() throws IOException {
+    final Map<String, Stream<JsonNode>> result = new HashMap<>();
+    for (String schema : listSchemas()) {
+      final List<String> tables = listAllTables(schema);
+
+      for (final String table : tables) {
+        if (result.containsKey(table)) {
+          throw new RuntimeException("Multiple tables found with the same name " + table);
+        }
+        result.put(table.toUpperCase(), exportTable(schema, table));
+      }
+    }
+
+    return result;
   }
 
   private Map<DatabaseSchema, Stream<JsonNode>> exportDatabase(final String schema) throws IOException {
@@ -518,11 +547,29 @@ public class DefaultJobPersistence implements JobPersistence {
         + "    where recency <= ?\n"
         + "))";
 
-    // JENNY TODO: figure out error handling around this, messaging, etc. Plus test cases.
     final Integer rows = database.query(ctx -> ctx.execute(JOB_HISTORY_PURGE_SQL,
         asOfDate.format(DateTimeFormatter.ofPattern("YYYY-MM-dd")),
         JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS,
         JOB_HISTORY_MINIMUM_RECENCY));
+  }
+
+  private List<String> listAllTables(final String schema) throws IOException {
+    if (schema != null) {
+      return database.query(context -> context.meta().getSchemas(schema).stream()
+          .flatMap(s -> context.meta(s).getTables().stream())
+          .map(Named::getName)
+          .collect(Collectors.toList()));
+    } else {
+      return List.of();
+    }
+  }
+
+  private List<String> listSchemas() throws IOException {
+    return database.query(context -> context.meta().getSchemas().stream()
+        .map(Named::getName)
+        .filter(c -> !SYSTEM_SCHEMA.contains(c))
+        .collect(Collectors.toList()));
+
   }
 
   private Stream<JsonNode> exportTable(final String schema, final String tableName) throws IOException {
