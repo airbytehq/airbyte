@@ -23,7 +23,7 @@ chmod 600 private-key-file
 
 ssh -i private-key-file opc@oci-private-instance-ip
 
-## Install Prerequisites
+## Install Airbyte Prerequisites on OCI VM
 
 ### Install Docker
 
