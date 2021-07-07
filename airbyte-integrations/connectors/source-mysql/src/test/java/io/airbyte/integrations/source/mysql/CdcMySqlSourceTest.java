@@ -26,8 +26,8 @@ package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.integrations.source.debezium.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.source.debezium.DebeziumEventUtils.CDC_UPDATED_AT;
-import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CDC_LOG_FILE;
-import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CDC_LOG_POS;
+import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_LOG_FILE;
+import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_LOG_POS;
 import static io.airbyte.integrations.source.mysql.MySqlSource.DRIVER_CLASS;
 import static io.airbyte.integrations.source.mysql.MySqlSource.MYSQL_CDC_OFFSET;
 import static io.airbyte.integrations.source.mysql.MySqlSource.MYSQL_DB_HISTORY;

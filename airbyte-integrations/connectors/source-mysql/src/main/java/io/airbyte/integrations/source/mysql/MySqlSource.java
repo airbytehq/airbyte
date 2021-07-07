@@ -37,7 +37,7 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.source.debezium.DebeziumInit;
+import io.airbyte.integrations.source.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.StateManager;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
@@ -65,6 +65,8 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   public static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
   public static final String MYSQL_CDC_OFFSET = "mysql_cdc_offset";
   public static final String MYSQL_DB_HISTORY = "mysql_db_history";
+  public static final String CDC_LOG_FILE = "_ab_cdc_log_file";
+  public static final String CDC_LOG_POS = "_ab_cdc_log_pos";
 
   public MySqlSource() {
     super(DRIVER_CLASS, new MySqlJdbcStreamingQueryConfiguration());
@@ -220,10 +222,11 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
                                                                              Instant emittedAt) {
     JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
-      final DebeziumInit init =
-          new DebeziumInit(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), MySqlCdcProperties.getDebeziumProperties(), catalog, true);
+      final AirbyteDebeziumHandler handler =
+          new AirbyteDebeziumHandler(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), MySqlCdcProperties.getDebeziumProperties(),
+              catalog, true);
 
-      return init.getIncrementalIterators(new MySqlCdcSavedInfo(stateManager.getCdcStateManager().getCdcState()),
+      return handler.getIncrementalIterators(new MySqlCdcSavedInfo(stateManager.getCdcStateManager().getCdcState()),
           new MySqlCdcStateHandler(stateManager), new MySqlCdcConnectorMetadata(), emittedAt);
     } else {
       LOGGER.info("using CDC: {}", false);
