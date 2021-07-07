@@ -352,4 +352,4 @@
   name: Survey Monkey
   dockerRepository: airbyte/source-surveymonkey
   dockerImageTag: 0.1.0
-  documentationUrl: https://hub.docker.com/r/airbyte/source-surveymonkey
+  documentationUrl: https://docs.airbyte.io/integrations/sources/surveymonkey
