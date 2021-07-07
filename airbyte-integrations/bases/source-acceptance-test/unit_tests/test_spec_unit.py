@@ -29,18 +29,15 @@ import pytest
 from source_acceptance_test.utils import ConnectorRunner
 
 
-def create_dockerfile(text, tag, tmp_path):
+def build_docker_image(text: str, tag: str) -> docker.models.images.Image:
+    """
+    Really for this test we dont need to remove the image since we access it by a string name
+    and remove it also by a string name. But maybe we wanna use it somewhere
+    """
     client = docker.from_env()
     fileobj = io.BytesIO(bytes(text))
-    args = {
-        "fileobj": fileobj,
-        "tag": tag,
-        "forcerm": True,
-        "rm": True,
-    }
-    image, iterools_tee = client.images.build(**args)
-    docker_runner = ConnectorRunner(image_name=tag, volume=tmp_path)
-    return docker_runner
+    image, iterools_tee = client.images.build(fileobj=fileobj, tag=tag, forcerm=True, rm=True)
+    return image
 
 
 @pytest.fixture
@@ -50,31 +47,41 @@ def dockerfile_valid(tmp_path):
         ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
         ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
         """
-    docker_runner = create_dockerfile(dockerfile_text, "my-valid-one", tmp_path)
-    return docker_runner
+    tag = "my-valid-one"
+    build_docker_image(dockerfile_text, tag)
+    docker_runner = ConnectorRunner(image_name=tag, volume=tmp_path)
+    yield docker_runner
+    client = docker.from_env()
+    client.images.remove(image=tag, force=True)
 
 
 @pytest.fixture
 def dockerfile_no_env(tmp_path):
     dockerfile_text = b"""
-        FROM python:3.7-slim
-        RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
+        FROM scratch
         ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
         """
-    docker_runner = create_dockerfile(dockerfile_text, "my-no-env", tmp_path)
-    return docker_runner
+    tag = "my-no-env"
+    build_docker_image(dockerfile_text, tag)
+    docker_runner = ConnectorRunner(image_name=tag, volume=tmp_path)
+    yield docker_runner
+    client = docker.from_env()
+    client.images.remove(image=tag, force=True)
 
 
 @pytest.fixture
 def dockerfile_ne_properties(tmp_path):
     dockerfile_text = b"""
-        FROM python:3.7-slim
-        RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
+        FROM scratch
         ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
         ENTRYPOINT ["python3", "/airbyte/integration_code/main.py"]
         """
-    docker_runner = create_dockerfile(dockerfile_text, "my-ne-properties", tmp_path)
-    return docker_runner
+    tag = "my-ne-properties"
+    build_docker_image(dockerfile_text, tag)
+    docker_runner = ConnectorRunner(image_name=tag, volume=tmp_path)
+    yield docker_runner
+    client = docker.from_env()
+    client.images.remove(image=tag, force=True)
 
 
 class TestEnvAttributes:
