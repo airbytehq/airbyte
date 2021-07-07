@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "iid": {
+      "type": ["null", "integer"]
+    },
+    "project_id": {
+      "type": ["null", "integer"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "closed_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "labels": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "milestone_id": {
+      "type": ["null", "integer"]
+    },
+    "assignees": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "assignee_id": {
+      "type": ["null", "integer"]
+    },
+    "author_id": {
+      "type": ["null", "integer"]
+    },
+    "user_notes_count": {
+      "type": ["null", "integer"]
+    },
+    "upvotes": {
+      "type": ["null", "integer"]
+    },
+    "downvotes": {
+      "type": ["null", "integer"]
+    },
+    "due_date": {
+      "type": ["null", "string"]
+    },
+    "confidential": {
+      "type": ["null", "boolean"]
+    },
+    "weight": {
+      "type": ["null", "integer"]
+    },
+    "discussion_locked": {
+      "type": ["null", "boolean"]
+    },
+    "web_url": {
+      "type": ["null", "string"]
+    },
+    "time_stats": {
+      "type": ["null", "object"]
+    },
+    "_links": {
+      "type": ["null", "object"]
+    },
+    "epic_issue_id": {
+      "type": ["null", "integer"]
+    }
+  }
+}

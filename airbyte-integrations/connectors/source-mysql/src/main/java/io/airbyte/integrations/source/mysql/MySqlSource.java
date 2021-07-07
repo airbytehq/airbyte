@@ -39,13 +39,16 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.debezium.DebeziumInit;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.JdbcStateManager;
+import io.airbyte.integrations.source.relationaldb.StateManager;
+import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
+import java.sql.JDBCType;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -176,7 +179,7 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public JsonNode toJdbcConfig(JsonNode config) {
+  public JsonNode toDatabaseConfig(JsonNode config) {
     final StringBuilder jdbc_url = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
         config.get("host").asText(),
         config.get("port").asText(),
@@ -210,27 +213,27 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JsonNode config,
-                                                                             JdbcDatabase database,
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JdbcDatabase database,
                                                                              ConfiguredAirbyteCatalog catalog,
-                                                                             Map<String, TableInfoInternal> tableNameToTable,
-                                                                             JdbcStateManager stateManager,
+                                                                             Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+                                                                             StateManager stateManager,
                                                                              Instant emittedAt) {
-    if (isCdc(config) && shouldUseCDC(catalog)) {
+    JsonNode sourceConfig = database.getSourceConfig();
+    if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       final DebeziumInit init =
-          new DebeziumInit(config, MySqlCdcTargetPosition.targetPosition(database), MySqlCdcProperties.getDebeziumProperties(), catalog, true);
+          new DebeziumInit(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), MySqlCdcProperties.getDebeziumProperties(), catalog, true);
 
       return init.getIncrementalIterators(new MySqlCdcSavedInfo(stateManager.getCdcStateManager().getCdcState()),
           new MySqlCdcStateHandler(stateManager), new MySqlCdcConnectorMetadata(), emittedAt);
     } else {
       LOGGER.info("using CDC: {}", false);
-      return super.getIncrementalIterators(config, database, catalog, tableNameToTable, stateManager,
+      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager,
           emittedAt);
     }
   }
 
   @Override
-  public Set<String> getExcludedInternalSchemas() {
+  public Set<String> getExcludedInternalNameSpaces() {
     return Set.of(
         "information_schema",
         "mysql",

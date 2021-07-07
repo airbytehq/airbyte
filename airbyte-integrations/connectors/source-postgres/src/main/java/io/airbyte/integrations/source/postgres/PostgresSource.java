@@ -42,13 +42,16 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.debezium.DebeziumInit;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.JdbcStateManager;
+import io.airbyte.integrations.source.relationaldb.StateManager;
+import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.SyncMode;
+import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -69,7 +72,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public JsonNode toJdbcConfig(JsonNode config) {
+  public JsonNode toDatabaseConfig(JsonNode config) {
 
     List<String> additionalParameters = new ArrayList<>();
 
@@ -97,7 +100,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public Set<String> getExcludedInternalSchemas() {
+  public Set<String> getExcludedInternalNameSpaces() {
     return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
   }
 
@@ -178,11 +181,10 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JsonNode config,
-                                                                             JdbcDatabase database,
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JdbcDatabase database,
                                                                              ConfiguredAirbyteCatalog catalog,
-                                                                             Map<String, TableInfoInternal> tableNameToTable,
-                                                                             JdbcStateManager stateManager,
+                                                                             Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+                                                                             StateManager stateManager,
                                                                              Instant emittedAt) {
     /**
      * If a customer sets up a postgres source with cdc parameters (replication_slot and publication)
@@ -192,14 +194,15 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
      * have a check here as well to make sure that if no table is in INCREMENTAL mode then skip this
      * part
      */
-    if (isCdc(config)) {
-      final DebeziumInit init = new DebeziumInit(config, PostgresCdcTargetPosition.targetPosition(database),
-          PostgresCdcProperties.getDebeziumProperties(config), catalog, false);
+    JsonNode sourceConfig = database.getSourceConfig();
+    if (isCdc(sourceConfig)) {
+      final DebeziumInit init = new DebeziumInit(sourceConfig, PostgresCdcTargetPosition.targetPosition(database),
+          PostgresCdcProperties.getDebeziumProperties(sourceConfig), catalog, false);
       return init.getIncrementalIterators(new PostgresCdcSavedInfo(stateManager.getCdcStateManager().getCdcState()),
           new PostgresCdcStateHandler(stateManager), new PostgresCdcConnectorMetadata(), emittedAt);
 
     } else {
-      return super.getIncrementalIterators(config, database, catalog, tableNameToTable, stateManager, emittedAt);
+      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     }
   }
 
