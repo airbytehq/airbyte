@@ -57,5 +57,4 @@ Then go to Setting and copy your access token
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.1   | 2021-07-05 | [4539](https://github.com/airbytehq/airbyte/pull/4539) | Add `AIRBYTE_ENTRYPOINT` env variable for kubernetes support|
-| 0.1.0   | YYYY-MM-DD | [4097](https://github.com/airbytehq/airbyte/pull/4097) | Initial Release |
+| 0.1.0   | 2021-07-06 | [4097](https://github.com/airbytehq/airbyte/pull/4097) | Initial Release |
