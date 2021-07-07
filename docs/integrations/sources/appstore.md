@@ -58,3 +58,8 @@ One issue that can happen is the API not having the data available for the perio
 
 Generate/Find all requirements using this [external article](https://leapfin.com/blog/apple-appstore-integration/).
 
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.2.4   | 2021-07-06 | [4539](https://github.com/airbytehq/airbyte/pull/4539) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
