@@ -250,7 +250,7 @@
 - sourceDefinitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
   name: Instagram
   dockerRepository: airbyte/source-instagram
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://hub.docker.com/r/airbyte/source-instagram
 - sourceDefinitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
   name: Gitlab
@@ -348,3 +348,13 @@
   dockerRepository: airbyte/source-okta
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/okta
+- sourceDefinitionId: badc5925-0485-42be-8caa-b34096cb71b5
+  name: Survey Monkey
+  dockerRepository: airbyte/source-surveymonkey
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/surveymonkey
+- sourceDefinitionId: 77225a51-cd15-4a13-af02-65816bd0ecf4
+  name: Square
+  dockerRepository: airbyte/source-square
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/square

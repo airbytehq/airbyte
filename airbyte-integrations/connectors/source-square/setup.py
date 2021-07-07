@@ -23,11 +23,26 @@
 #
 
 
-import sys
+from setuptools import find_packages, setup
 
-from base_python.entrypoint import launch
-from source_instagram import SourceInstagram
+MAIN_REQUIREMENTS = [
+    "airbyte-cdk",
+]
 
-if __name__ == "__main__":
-    source = SourceInstagram()
-    launch(source, sys.argv[1:])
+TEST_REQUIREMENTS = [
+    "pytest~=6.1",
+    "source-acceptance-test",
+]
+
+setup(
+    name="source_square",
+    description="Source implementation for Square.",
+    author="Airbyte",
+    author_email="contact@airbyte.io",
+    packages=find_packages(),
+    install_requires=MAIN_REQUIREMENTS,
+    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
+    extras_require={
+        "tests": TEST_REQUIREMENTS,
+    },
+)

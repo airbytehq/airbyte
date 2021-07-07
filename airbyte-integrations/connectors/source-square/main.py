@@ -25,35 +25,9 @@
 
 import sys
 
-import backoff
-from base_python.entrypoint import logger
-from requests.status_codes import codes as status_codes
+from airbyte_cdk.entrypoint import launch
+from source_square import SourceSquare
 
-
-class InstagramAPIException(Exception):
-    """General class for all API errors"""
-
-
-def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
-    def log_retry_attempt(details):
-        _, exc, _ = sys.exc_info()
-        logger.info(str(exc))
-        logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
-
-    def should_retry_api_error(exc):
-        if (
-            exc.http_status() == status_codes.TOO_MANY_REQUESTS
-            or (exc.http_status() == status_codes.FORBIDDEN and exc.api_error_message() == "(#4) Application request limit reached")
-            or exc.api_transient_error()
-        ):
-            return True
-        return False
-
-    return backoff.on_exception(
-        backoff_type,
-        exception,
-        jitter=None,
-        on_backoff=log_retry_attempt,
-        giveup=lambda exc: not should_retry_api_error(exc),
-        **wait_gen_kwargs,
-    )
+if __name__ == "__main__":
+    source = SourceSquare()
+    launch(source, sys.argv[1:])
