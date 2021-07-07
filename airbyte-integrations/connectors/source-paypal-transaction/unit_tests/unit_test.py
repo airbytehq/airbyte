@@ -79,7 +79,7 @@ def now():
     return datetime.now().replace(microsecond=0).astimezone()
 
 
-def test_transactions_stream_slices():
+def transactions_stream_slices():
 
     start_date_max = Transactions.start_date_max
 

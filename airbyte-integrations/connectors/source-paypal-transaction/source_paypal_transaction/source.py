@@ -49,9 +49,10 @@ class PaypalTransactionStream(HttpStream, ABC):
 
     # Date limits are needed to prevent API error: Data for the given start date is not available
     # API limit: (now() - start_date_min) < start_date < (now() - start_date_max)
-    start_date_min: Mapping[str, int] = {"days": 3 * 364}  # API limit - 3 years
-    start_date_max: Mapping[str, int] = {"hours": 0}
-
+    start_date_min: Mapping[str, int] = {"hours": 3 * 364}  # API limit - 3 years
+    # Actual value can be found only in 'last_refreshed_datetime' attr of API response
+    # start_date_max: Mapping[str, int] = {"hours": 0}
+    last_refreshed_datetime: Optional[datetime] = None  # extracted from API response. Indicate the latest possible start_date
     stream_slice_period: Mapping[str, int] = {"days": 1}  # max period is 31 days (API limit)
 
     requests_per_minute: int = 30  # API limit is 50 reqs/min from 1 IP to all endpoints, otherwise IP is banned for 5 mins
@@ -82,7 +83,8 @@ class PaypalTransactionStream(HttpStream, ABC):
             )
             start_date = minimum_allowed_start_date
 
-        self.maximum_allowed_start_date = min(now - timedelta(**self.start_date_max), self.end_date)
+        # self.maximum_allowed_start_date = min(now - timedelta(**self.start_date_max), self.end_date)
+        self.maximum_allowed_start_date = min(now, self.end_date)
         if start_date > self.maximum_allowed_start_date:
             self.logger.log(
                 "WARN",
@@ -115,6 +117,11 @@ class PaypalTransactionStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
+
+        # Save extracted last_refreshed_datetime to use it as maximum allowed start_date
+        last_refreshed_datetime = json_response.get("last_refreshed_datetime")
+        self.last_refreshed_datetime = isoparse(last_refreshed_datetime) if last_refreshed_datetime else None
+
         if self.data_field is not None:
             data = json_response.get(self.data_field, [])
         else:
@@ -171,6 +178,9 @@ class PaypalTransactionStream(HttpStream, ABC):
         else:
             return {"date": self.start_date.isoformat()}
 
+    def get_last_refreshed_datetime(self, sync_mode):
+        return None
+
     def stream_slices(
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, any]]]:
@@ -182,16 +192,44 @@ class PaypalTransactionStream(HttpStream, ABC):
         """
         period = timedelta(**self.stream_slice_period)
 
-        slice_start_date = max(self.start_date, isoparse(stream_state.get("date")) if stream_state else self.start_date)
+        # get last_refreshed_datetime from API response to use as maximum allowed start_date
+        last_refreshed_datetime = self.get_last_refreshed_datetime(sync_mode)
+
+        if last_refreshed_datetime:
+            self.logger.info(f"Maximum possible start_date is {last_refreshed_datetime} based on info from API response")
+            self.maximum_allowed_start_date = min(last_refreshed_datetime, self.maximum_allowed_start_date)
+
+        slice_start_date = self.start_date
+
+        if stream_state:
+            # if stream_state_date is in the future (for example during tests) then reset it to now:
+            stream_state_date = min(isoparse(stream_state.get("date")), self.maximum_allowed_start_date)
+
+            # but slice_start_date should be the most recent date:
+            slice_start_date = max(slice_start_date, stream_state_date)
 
         slices = []
         while slice_start_date <= self.maximum_allowed_start_date:
             slices.append(
-                {"start_date": slice_start_date.isoformat(), "end_date": min(slice_start_date + period, self.end_date).isoformat()}
+                {
+                    "start_date": slice_start_date.isoformat(),
+                    "end_date": min(slice_start_date + period, self.end_date).isoformat(),
+                }
             )
             slice_start_date += period
 
         return slices
+
+    def _send_request(self, request: requests.PreparedRequest) -> requests.Response:
+        try:
+            return super()._send_request(request)
+        except requests.exceptions.HTTPError as e:
+            error_message = e.response.text
+            if error_message:
+                self.logger.error(f"Stream {self.name}: {e.response.status_code} {e.response.reason} - {error_message}")
+                exit(1)
+            else:
+                raise e
 
 
 class Transactions(PaypalTransactionStream):
@@ -207,7 +245,9 @@ class Transactions(PaypalTransactionStream):
     primary_key = [["transaction_info", "transaction_id"]]
     cursor_field = ["transaction_info", "transaction_initiation_date"]
 
-    start_date_max = {"hours": 36}  # this limit is found experimentally
+    # according to the docs, 3 hrs are needed for new transaction to appear in transaction list.
+    # In fact, this value can be up to 3 days. Actual value can be found only in 'last_refreshed_datetime' attr of API response
+    # start_date_max = {"hours": 3}
 
     # TODO handle API error when 1 request returns more than 10000 records.
     # https://github.com/airbytehq/airbyte/issues/4404
@@ -239,6 +279,21 @@ class Transactions(PaypalTransactionStream):
             "page_size": self.page_size,
             "page": page_number,
         }
+
+    def get_last_refreshed_datetime(self, sync_mode):
+        # Run new stream just in order to extract last_refreshed_datetime from API response
+        slice = {
+            "start_date": self.start_date.isoformat(),
+            "end_date": self.start_date.isoformat(),
+        }
+        paypal_transaction = Transactions(
+            authenticator=self.authenticator,
+            start_date=self.start_date,
+            end_date=self.start_date,
+            is_sandbox=self.is_sandbox,
+        )
+        list(paypal_transaction.read_records(sync_mode=sync_mode, stream_slice=slice))
+        return paypal_transaction.last_refreshed_datetime
 
 
 class Balances(PaypalTransactionStream):
