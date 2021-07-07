@@ -22,29 +22,56 @@
  * SOFTWARE.
  */
 
-package io.airbyte.server.handlers;
+package io.airbyte.config.helpers;
 
-import io.airbyte.api.model.LogsRequestBody;
 import io.airbyte.config.Configs;
-import io.airbyte.config.helpers.LogClientSingleton;
-import java.io.File;
 
 /**
- * This handler is only responsible for server and scheduler logs. Jobs logs paths are determined by
- * the submitJob function in the JobSubmitter class in the airbyte-server module.
+ * Implements {@link LogConfigs} by delegating to a {@link Configs} implementation. Because the
+ * logging configuration overlaps with other configuration, this delegation is intended to avoid
+ * multiple configurations existing at once.
  */
-public class LogsHandler {
+public class LogConfigDelegator implements LogConfigs {
 
-  public File getLogs(Configs configs, LogsRequestBody logsRequestBody) {
-    switch (logsRequestBody.getLogType()) {
-      case SERVER -> {
-        return LogClientSingleton.getServerLogFile(configs);
-      }
-      case SCHEDULER -> {
-        return LogClientSingleton.getSchedulerLogFile(configs);
-      }
-      default -> throw new IllegalStateException("Unexpected value: " + logsRequestBody.getLogType());
-    }
+  private final Configs delegate;
+
+  public LogConfigDelegator(Configs configs) {
+    delegate = configs;
+  }
+
+  @Override
+  public String getS3LogBucket() {
+    return delegate.getS3LogBucket();
+  }
+
+  @Override
+  public String getS3LogBucketRegion() {
+    return delegate.getS3LogBucketRegion();
+  }
+
+  @Override
+  public String getAwsAccessKey() {
+    return delegate.getAwsAccessKey();
+  }
+
+  @Override
+  public String getAwsSecretAccessKey() {
+    return delegate.getAwsSecretAccessKey();
+  }
+
+  @Override
+  public String getS3MinioEndpoint() {
+    return delegate.getS3MinioEndpoint();
+  }
+
+  @Override
+  public String getGcpStorageBucket() {
+    return delegate.getGcpStorageBucket();
+  }
+
+  @Override
+  public String getGoogleApplicationCredentials() {
+    return delegate.getGoogleApplicationCredentials();
   }
 
 }
