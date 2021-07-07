@@ -22,7 +22,7 @@
 # SOFTWARE.
 #
 
-
+import logging
 from collections import Counter, defaultdict
 from functools import reduce
 from typing import Any, List, Mapping, MutableMapping
@@ -30,10 +30,9 @@ from typing import Any, List, Mapping, MutableMapping
 import pytest
 from airbyte_cdk.models import AirbyteMessage, ConnectorSpecification, Status, Type
 from docker.errors import ContainerError
-from jsonschema import validate
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
-from source_acceptance_test.utils import ConnectorRunner, SecretDict, serialize
+from source_acceptance_test.utils import ConnectorRunner, SecretDict, serialize, verify_records_schema
 
 
 @pytest.mark.default_timeout(10)
@@ -50,6 +49,18 @@ class TestSpec(BaseTest):
         config = {key: value for key, value in connector_config.data.items() if not key.startswith("_")}
 
         validate(instance=config, schema=spec_messages[0].spec.connectionSpecification)
+
+    def test_required(self):
+        """Check that connector will fail if any required field is missing"""
+
+    def test_optional(self):
+        """Check that connector can work without any optional field"""
+
+    def test_has_secret(self):
+        """Check that spec has a secret. Not sure if this should be always the case"""
+
+    def test_secret_never_in_the_output(self):
+        """This test should be injected into any docker command it needs to know current config and spec"""
 
 
 @pytest.mark.default_timeout(30)
@@ -104,7 +115,7 @@ def primary_keys_for_records(streams, records):
             yield pk_values, stream_record
 
 
-@pytest.mark.default_timeout(300)
+@pytest.mark.default_timeout(5 * 60)
 class TestBasicRead(BaseTest):
     def test_read(
         self,
@@ -117,6 +128,16 @@ class TestBasicRead(BaseTest):
         output = docker_runner.call_read(connector_config, configured_catalog)
         records = [message.record for message in output if message.type == Type.RECORD]
         counter = Counter(record.stream for record in records)
+
+        if inputs.validate_schema:
+            streams_with_errors = set()
+            for record, errors in verify_records_schema(records, configured_catalog):
+                if record.stream not in streams_with_errors:
+                    logging.error(f"The {record.stream} stream has the following schema errors: {errors}")
+                    streams_with_errors.add(record.stream)
+
+            if streams_with_errors:
+                pytest.fail(f"Please check your json_schema in selected streams {streams_with_errors}.")
 
         all_streams = set(stream.stream.name for stream in configured_catalog.streams)
         streams_with_records = set(counter.keys())
