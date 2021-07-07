@@ -46,7 +46,7 @@ Note that while this is the most flexible way to implement a source connector, i
 
 An `AbstractSource` also owns a set of `Stream`s. This is populated via the `AbstractSource`'s `streams` [function](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/abstract_source.py#L63). `Discover` and `Read` rely on this populated set.
 
-`Discover` returns an `AirbyteCatalog` representing all the distinct resources the underlying API supports. Here is the [entrypoint](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/abstract_source.py#L74) for those interested in reading the code.
+`Discover` returns an `AirbyteCatalog` representing all the distinct resources the underlying API supports. Here is the [entrypoint](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/abstract_source.py#L74) for those interested in reading the code. See [schemas](schemas.md) for more information on how to declare the schema of a stream. 
 
 `Read` creates an in-memory stream reading from each of the `AbstractSource`'s streams. Here is the [entrypoint](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/abstract_source.py#L90) for those interested.
 
