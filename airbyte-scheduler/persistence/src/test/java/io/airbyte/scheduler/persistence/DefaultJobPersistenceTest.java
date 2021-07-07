@@ -1085,7 +1085,7 @@ class DefaultJobPersistenceTest {
     @DisplayName("Should purge older job history but maintain certain more recent ones")
     @ParameterizedTest
     // Cols: numJobs, tooManyJobsCutoff, ageCutoff, recencyCutoff, lastSavedStatePosition,
-    // expectedAfterPurge, descr
+    // expectedAfterPurge, description
     @CsvSource(value = {
       "50,100,10,5,9,10,'Validate age cutoff alone'",
       "50,100,10,5,13,11,'Validate saved state after age cutoff'",
