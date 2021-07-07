@@ -1,0 +1,88 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "type": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"]
+    },
+    "version": {
+      "type": ["null", "integer"]
+    },
+    "is_deleted": {
+      "type": ["null", "boolean"]
+    },
+    "present_at_all_locations": {
+      "type": ["null", "boolean"]
+    },
+    "modifier_list_data": {
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type": ["null", "string"]
+        },
+        "selection_type": {
+          "type": ["null", "string"]
+        },
+        "modifiers": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "type": {
+                "type": ["null", "string"]
+              },
+              "id": {
+                "type": ["null", "string"]
+              },
+              "updated_at": {
+                "type": ["null", "string"]
+              },
+              "version": {
+                "type": ["null", "integer"]
+              },
+              "is_deleted": {
+                "type": ["null", "boolean"]
+              },
+              "present_at_all_locations": {
+                "type": ["null", "boolean"]
+              },
+              "modifier_data": {
+                "type": ["null", "object"],
+                "properties": {
+                  "name": {
+                    "type": ["null", "string"]
+                  },
+                  "price_money": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "amount": {
+                        "type": ["null", "integer"]
+                      },
+                      "currency": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  },
+                  "on_by_default": {
+                    "type": ["null", "boolean"]
+                  },
+                  "ordinal": {
+                    "type": ["null", "integer"]
+                  },
+                  "modifier_list_id": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

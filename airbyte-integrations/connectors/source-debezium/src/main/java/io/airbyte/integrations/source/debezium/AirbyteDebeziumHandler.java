@@ -47,9 +47,9 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DebeziumInit {
+public class AirbyteDebeziumHandler {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumInit.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteDebeziumHandler.class);
   /**
    * We use 10000 as capacity cause the default queue size and batch size of debezium is :
    * {@link io.debezium.config.CommonConnectorConfig#DEFAULT_MAX_BATCH_SIZE}is 2048
@@ -65,11 +65,11 @@ public class DebeziumInit {
 
   private final LinkedBlockingQueue<ChangeEvent<String, String>> queue;
 
-  public DebeziumInit(JsonNode config,
-                      CdcTargetPosition cdcTargetPosition,
-                      Properties connectorProperties,
-                      ConfiguredAirbyteCatalog catalog,
-                      boolean trackSchemaHistory) {
+  public AirbyteDebeziumHandler(JsonNode config,
+                                CdcTargetPosition cdcTargetPosition,
+                                Properties connectorProperties,
+                                ConfiguredAirbyteCatalog catalog,
+                                boolean trackSchemaHistory) {
     this.config = config;
     this.cdcTargetPosition = cdcTargetPosition;
     this.connectorProperties = connectorProperties;
