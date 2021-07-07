@@ -103,5 +103,15 @@
         ]
       }
     ]
+  },
+  {
+    "fieldName": "combined_restriction_field",
+    "jsonFieldSchema": {
+      "anyOf": [
+        { "type": "string" },
+        { "type": "integer" }
+      ]
+    },
+    "avroFieldType": ["null", "string", "int"]
   }
 ]

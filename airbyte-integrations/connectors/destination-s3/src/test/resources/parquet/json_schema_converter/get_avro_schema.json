@@ -253,5 +253,44 @@
         }
       ]
     }
+  },
+  {
+    "schemaName": "combined_restriction",
+    "namespace": "namespace8",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "properties": {
+        "created_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": ["null","string"]
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        }
+      }
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "combined_restriction",
+      "namespace": "namespace8",
+      "fields": [
+        {
+          "name": "created_at",
+          "type": [
+            "null",
+            "string",
+            "int"
+          ],
+          "default": null
+        }
+      ]
+    }
   }
 ]
