@@ -6,7 +6,9 @@ select
     cast("id" as 
     varchar
 ) as "id",
-    conflict_stream_name,
+    cast(conflict_stream_name as 
+    jsonb
+) as conflict_stream_name,
     _airbyte_emitted_at
 from "postgres"._airbyte_test_normalization."conflict_stream_name_ab1"
 -- conflict_stream_name

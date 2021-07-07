@@ -3,7 +3,7 @@
 select
     *,
     {{ dbt_utils.surrogate_key([
-        adapter.quote('id'),
+        'id',
         'conflict_stream_name',
     ]) }} as _airbyte_conflict_stream_name_hashid
 from {{ ref('conflict_stream_name_ab2') }}
