@@ -26,7 +26,7 @@ package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.integrations.source.debezium.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.source.debezium.DebeziumEventUtils.CDC_UPDATED_AT;
-import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CDC_LSN;
+import static io.airbyte.integrations.source.postgres.PostgresSource.CDC_LSN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -48,7 +48,6 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.debezium.CdcSourceTest;
 import io.airbyte.integrations.source.debezium.interfaces.CdcTargetPosition;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -229,7 +228,7 @@ class CdcPostgresSourceTest extends CdcSourceTest {
     ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
 
     final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
-    properties.set(AbstractJdbcSource.CDC_LSN, numberType);
+    properties.set(CDC_LSN, numberType);
     properties.set(CDC_UPDATED_AT, numberType);
     properties.set(CDC_DELETED_AT, numberType);
 

@@ -24,6 +24,8 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.source.postgres.PostgresSource.CDC_LSN;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.integrations.source.debezium.interfaces.CdcConnectorMetadata;
@@ -33,7 +35,7 @@ public class PostgresCdcConnectorMetadata implements CdcConnectorMetadata {
   @Override
   public void addMetaData(ObjectNode event, JsonNode source) {
     long lsn = source.get("lsn").asLong();
-    event.put("_ab_cdc_lsn", lsn);
+    event.put(CDC_LSN, lsn);
   }
 
   @Override

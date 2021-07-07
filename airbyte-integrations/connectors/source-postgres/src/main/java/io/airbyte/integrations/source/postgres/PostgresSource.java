@@ -40,7 +40,7 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.source.debezium.DebeziumInit;
+import io.airbyte.integrations.source.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.StateManager;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
@@ -64,6 +64,7 @@ import org.slf4j.LoggerFactory;
 public class PostgresSource extends AbstractJdbcSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
+  public static final String CDC_LSN = "_ab_cdc_lsn";
 
   static final String DRIVER_CLASS = "org.postgresql.Driver";
 
@@ -196,9 +197,9 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
      */
     JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig)) {
-      final DebeziumInit init = new DebeziumInit(sourceConfig, PostgresCdcTargetPosition.targetPosition(database),
+      final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig, PostgresCdcTargetPosition.targetPosition(database),
           PostgresCdcProperties.getDebeziumProperties(sourceConfig), catalog, false);
-      return init.getIncrementalIterators(new PostgresCdcSavedInfo(stateManager.getCdcStateManager().getCdcState()),
+      return handler.getIncrementalIterators(new PostgresCdcSavedInfo(stateManager.getCdcStateManager().getCdcState()),
           new PostgresCdcStateHandler(stateManager), new PostgresCdcConnectorMetadata(), emittedAt);
 
     } else {
