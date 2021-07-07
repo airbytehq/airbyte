@@ -49,7 +49,7 @@ import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.config.State;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
-import io.airbyte.config.helpers.LogHelpers;
+import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
@@ -156,7 +156,7 @@ class DefaultReplicationWorkerTest {
     // set up the mdc so that actually log to a file, so that we can verify that file logging captures
     // threads.
     final Path jobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
-    LogHelpers.setJobMdc(jobRoot);
+    LogClientSingleton.setJobMdc(jobRoot);
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -169,7 +169,7 @@ class DefaultReplicationWorkerTest {
 
     worker.run(syncInput, jobRoot);
 
-    final Path logPath = jobRoot.resolve(LogHelpers.LOG_FILENAME);
+    final Path logPath = jobRoot.resolve(LogClientSingleton.LOG_FILENAME);
     final String logs = IOs.readFile(logPath);
 
     // make sure we get logs from the threads.

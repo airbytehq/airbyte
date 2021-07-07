@@ -35,30 +35,40 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-public class LogHelpers {
+/**
+ * Airbyte's logging layer entrypoint. Handles logs written to local disk as well as logs written to
+ * cloud storages.
+ *
+ * Although the configuration is passed in as {@link Configs}, it is transformed to
+ * {@link LogConfigs} within this class. Beyond this class, all configuration consumption is via the
+ * {@link LogConfigs} interface via the {@link CloudLogs} interface.
+ */
+public class LogClientSingleton {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(LogHelpers.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LogClientSingleton.class);
 
   private static final int LOG_TAIL_SIZE = 1000000;
-  private static final CloudLogs s3 = new S3Logs();
+  private static CloudLogs logClient;
 
   // Any changes to the following values must also be propagated to the log4j2.xml in main/resources.
   public static String WORKSPACE_MDC_KEY = "workspace_app_root";
   public static String JOB_LOG_PATH_MDC_KEY = "job_log_path";
 
+  // S3/Minio
   public static String S3_LOG_BUCKET = "S3_LOG_BUCKET";
   public static String S3_LOG_BUCKET_REGION = "S3_LOG_BUCKET_REGION";
   public static String AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID";
   public static String AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY";
   public static String S3_MINIO_ENDPOINT = "S3_MINIO_ENDPOINT";
 
+  // GCS
+  public static String GCP_STORAGE_BUCKET = "GCP_STORAGE_BUCKET";
+  public static String GOOGLE_APPLICATION_CREDENTIALS = "GOOGLE_APPLICATION_CREDENTIALS";
+
+  public static int DEFAULT_PAGE_SIZE = 1000;
   public static String LOG_FILENAME = "logs.log";
   public static String APP_LOGGING_CLOUD_PREFIX = "app-logging";
   public static String JOB_LOGGING_CLOUD_PREFIX = "job-logging";
-
-  public static boolean shouldUseLocalLogs(Configs configs) {
-    return configs.getWorkerEnvironment().equals(WorkerEnvironment.DOCKER) || s3.hasEmptyConfigs(configs);
-  }
 
   public static Path getServerLogsRoot(Configs configs) {
     return configs.getWorkspaceRoot().resolve("server/logs");
@@ -70,13 +80,15 @@ public class LogHelpers {
 
   public static File getServerLogFile(Configs configs) {
     var logPathBase = getServerLogsRoot(configs);
-
     if (shouldUseLocalLogs(configs)) {
       return logPathBase.resolve(LOG_FILENAME).toFile();
     }
+
+    var logConfigs = new LogConfigDelegator(configs);
+    createCloudClientIfNull(logConfigs);
     var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
     try {
-      return s3.downloadCloudLog(configs, cloudLogPath);
+      return logClient.downloadCloudLog(logConfigs, cloudLogPath);
     } catch (IOException e) {
       throw new RuntimeException("Error retrieving log file: " + cloudLogPath + " from S3", e);
     }
@@ -84,13 +96,15 @@ public class LogHelpers {
 
   public static File getSchedulerLogFile(Configs configs) {
     var logPathBase = getSchedulerLogsRoot(configs);
-
     if (shouldUseLocalLogs(configs)) {
       return logPathBase.resolve(LOG_FILENAME).toFile();
     }
+
+    var logConfigs = new LogConfigDelegator(configs);
+    createCloudClientIfNull(logConfigs);
     var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
     try {
-      return s3.downloadCloudLog(configs, cloudLogPath);
+      return logClient.downloadCloudLog(logConfigs, cloudLogPath);
     } catch (IOException e) {
       throw new RuntimeException("Error retrieving log file: " + cloudLogPath + " from S3", e);
     }
@@ -101,12 +115,24 @@ public class LogHelpers {
       return IOs.getTail(LOG_TAIL_SIZE, logPath);
     }
 
+    var logConfigs = new LogConfigDelegator(configs);
+    createCloudClientIfNull(logConfigs);
     var cloudLogPath = JOB_LOGGING_CLOUD_PREFIX + logPath;
-    return s3.tailCloudLog(configs, cloudLogPath, LOG_TAIL_SIZE);
+    return logClient.tailCloudLog(logConfigs, cloudLogPath, LOG_TAIL_SIZE);
   }
 
   public static void setJobMdc(Path path) {
-    MDC.put(LogHelpers.JOB_LOG_PATH_MDC_KEY, path.resolve(LogHelpers.LOG_FILENAME).toString());
+    MDC.put(LogClientSingleton.JOB_LOG_PATH_MDC_KEY, path.resolve(LogClientSingleton.LOG_FILENAME).toString());
+  }
+
+  private static boolean shouldUseLocalLogs(Configs configs) {
+    return configs.getWorkerEnvironment().equals(WorkerEnvironment.DOCKER) || CloudLogs.hasEmptyConfigs(new LogConfigDelegator(configs));
+  }
+
+  private static void createCloudClientIfNull(LogConfigs configs) {
+    if (logClient == null) {
+      logClient = CloudLogs.createCloudLogClient(configs);
+    }
   }
 
 }

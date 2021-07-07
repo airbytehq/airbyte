@@ -24,10 +24,10 @@
 
 package io.airbyte.config.helpers;
 
+import com.google.api.client.util.Preconditions;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.config.Configs;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -51,21 +51,21 @@ public class S3Logs implements CloudLogs {
 
   private static S3Client S3;
 
-  private static void checkValidCredentials(Configs configs) {
-    configs.getAwsAccessKey();
-    configs.getAwsSecretAccessKey();
-    configs.getS3LogBucketRegion();
-    configs.getS3LogBucket();
+  private static void assertValidS3Configuration(LogConfigs configs) {
+    Preconditions.checkNotNull(configs.getAwsAccessKey());
+    Preconditions.checkNotNull(configs.getAwsSecretAccessKey());
+    Preconditions.checkNotNull(configs.getS3LogBucketRegion());
+    Preconditions.checkNotNull(configs.getS3LogBucket());
   }
 
   @Override
-  public File downloadCloudLog(Configs configs, String logPath) throws IOException {
-    return getFile(configs, logPath, 1000);
+  public File downloadCloudLog(LogConfigs configs, String logPath) throws IOException {
+    return getFile(configs, logPath, LogClientSingleton.DEFAULT_PAGE_SIZE);
   }
 
   @VisibleForTesting
-  File getFile(Configs configs, String logPath, int maxKeysPerPage) throws IOException {
-    LOGGER.info("Retrieving logs from S3 path: {}", logPath);
+  static File getFile(LogConfigs configs, String logPath, int pageSize) throws IOException {
+    LOGGER.debug("Retrieving logs from S3 path: {}", logPath);
     createS3ClientIfNotExist(configs);
 
     var s3Bucket = configs.getS3LogBucket();
@@ -73,10 +73,10 @@ public class S3Logs implements CloudLogs {
     var tmpOutputFile = new File("/tmp/" + randomName);
     var os = new FileOutputStream(tmpOutputFile);
 
-    LOGGER.info("Start S3 list request.");
+    LOGGER.debug("Start S3 list request.");
     var listObjReq = ListObjectsV2Request.builder().bucket(s3Bucket)
-        .prefix(logPath).maxKeys(maxKeysPerPage).build();
-    LOGGER.info("Start getting S3 objects.");
+        .prefix(logPath).maxKeys(pageSize).build();
+    LOGGER.debug("Start getting S3 objects.");
     // Objects are returned in lexicographical order.
     for (var page : S3.listObjectsV2Paginator(listObjReq)) {
       for (var objMetadata : page.contents()) {
@@ -90,24 +90,24 @@ public class S3Logs implements CloudLogs {
     }
     os.close();
 
-    LOGGER.info("Done retrieving S3 logs: {}.", logPath);
+    LOGGER.debug("Done retrieving S3 logs: {}.", logPath);
     return tmpOutputFile;
   }
 
   @Override
-  public List<String> tailCloudLog(Configs configs, String logPath, int numLines) throws IOException {
-    LOGGER.info("Tailing logs from S3 path: {}", logPath);
+  public List<String> tailCloudLog(LogConfigs configs, String logPath, int numLines) throws IOException {
+    LOGGER.debug("Tailing logs from S3 path: {}", logPath);
     createS3ClientIfNotExist(configs);
 
     var s3Bucket = configs.getS3LogBucket();
-    LOGGER.info("Start making S3 list request.");
+    LOGGER.debug("Start making S3 list request.");
     ArrayList<String> ascendingTimestampKeys = getAscendingObjectKeys(logPath, s3Bucket);
     var descendingTimestampKeys = Lists.reverse(ascendingTimestampKeys);
 
     var lines = new ArrayList<String>();
     int linesRead = 0;
 
-    LOGGER.info("Start getting S3 objects.");
+    LOGGER.debug("Start getting S3 objects.");
     while (linesRead <= numLines && !descendingTimestampKeys.isEmpty()) {
       var poppedKey = descendingTimestampKeys.remove(0);
       List<String> currFileLinesReversed = Lists.reverse(getCurrFile(s3Bucket, poppedKey));
@@ -120,26 +120,18 @@ public class S3Logs implements CloudLogs {
       }
     }
 
-    LOGGER.info("Done retrieving S3 logs: {}.", logPath);
+    LOGGER.debug("Done retrieving S3 logs: {}.", logPath);
     return lines;
   }
 
-  @Override
-  public boolean hasEmptyConfigs(Configs configs) {
-    return configs.getAwsAccessKey().isBlank() ||
-        configs.getAwsSecretAccessKey().isBlank() ||
-        configs.getS3LogBucketRegion().isBlank() ||
-        configs.getS3LogBucket().isBlank();
-  }
-
-  private void createS3ClientIfNotExist(Configs configs) {
+  private static void createS3ClientIfNotExist(LogConfigs configs) {
     if (S3 == null) {
-      checkValidCredentials(configs);
+      assertValidS3Configuration(configs);
       var s3Region = configs.getS3LogBucketRegion();
       var builder = S3Client.builder().region(Region.of(s3Region));
 
       var minioEndpoint = configs.getS3MinioEndpoint();
-      if (minioEndpoint != null) {
+      if (!minioEndpoint.isBlank()) {
         try {
           var minioUri = new URI(minioEndpoint);
           builder.endpointOverride(minioUri);

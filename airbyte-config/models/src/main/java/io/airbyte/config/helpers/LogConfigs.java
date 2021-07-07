@@ -22,61 +22,15 @@
  * SOFTWARE.
  */
 
-package io.airbyte.config;
+package io.airbyte.config.helpers;
 
-import java.nio.file.Path;
-import java.util.Set;
+/**
+ * Configuration required to retrieve logs. This is a subset of the methods defined in
+ * {@link io.airbyte.config.Configs} so actual look up can be delegated in
+ * {@link LogConfigDelegator}. This prevents conflicting configuration existing at once.
+ */
+public interface LogConfigs {
 
-public interface Configs {
-
-  String getAirbyteRole();
-
-  String getAirbyteVersion();
-
-  String getAirbyteVersionOrWarning();
-
-  Path getConfigRoot();
-
-  Path getWorkspaceRoot();
-
-  Path getLocalRoot();
-
-  String getDatabaseUser();
-
-  String getDatabasePassword();
-
-  String getDatabaseUrl();
-
-  String getWebappUrl();
-
-  String getWorkspaceDockerMount();
-
-  String getLocalDockerMount();
-
-  String getDockerNetwork();
-
-  TrackingStrategy getTrackingStrategy();
-
-  WorkerEnvironment getWorkerEnvironment();
-
-  WorkspaceRetentionConfig getWorkspaceRetentionConfig();
-
-  String getTemporalHost();
-
-  Set<Integer> getTemporalWorkerPorts();
-
-  String getKubeNamespace();
-
-  // Resources
-  String getCpuRequest();
-
-  String getCpuLimit();
-
-  String getMemoryRequest();
-
-  String getMemoryLimit();
-
-  // Logging
   String getS3LogBucket();
 
   String getS3LogBucketRegion();
@@ -90,15 +44,5 @@ public interface Configs {
   String getGcpStorageBucket();
 
   String getGoogleApplicationCredentials();
-
-  enum TrackingStrategy {
-    SEGMENT,
-    LOGGING
-  }
-
-  enum WorkerEnvironment {
-    DOCKER,
-    KUBERNETES
-  }
 
 }

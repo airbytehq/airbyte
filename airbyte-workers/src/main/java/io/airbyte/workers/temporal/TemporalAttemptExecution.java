@@ -29,7 +29,7 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.config.EnvConfigs;
-import io.airbyte.config.helpers.LogHelpers;
+import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerUtils;
@@ -78,7 +78,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
         jobRunConfig,
         workerSupplier,
         inputSupplier,
-        LogHelpers::setJobMdc,
+        LogClientSingleton::setJobMdc,
         Files::createDirectories,
         cancellationHandler,
         () -> Activity.getExecutionContext().getInfo().getWorkflowId());

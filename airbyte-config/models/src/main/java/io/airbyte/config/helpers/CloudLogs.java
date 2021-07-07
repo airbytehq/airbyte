@@ -24,10 +24,11 @@
 
 package io.airbyte.config.helpers;
 
-import io.airbyte.config.Configs;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Interface for various Cloud Storage clients supporting Cloud log retrieval.
@@ -38,21 +39,52 @@ import java.util.List;
  */
 public interface CloudLogs {
 
+  Logger LOGGER = LoggerFactory.getLogger(CloudLogs.class);
+
   /**
    * Retrieve all objects at the given path in lexicographical order, and return their contents as one
    * file.
    */
-  File downloadCloudLog(Configs configs, String logPath) throws IOException;
+  File downloadCloudLog(LogConfigs configs, String logPath) throws IOException;
 
   /**
    * Assume all the lexicographically ordered objects at the given path form one giant log file,
    * return the last numLines lines.
    */
-  List<String> tailCloudLog(Configs configs, String logPath, int numLines) throws IOException;
+  List<String> tailCloudLog(LogConfigs configs, String logPath, int numLines) throws IOException;
 
   /**
-   * @return true if configuration is not set
+   * @return true if no cloud logging configuration is set;
    */
-  boolean hasEmptyConfigs(Configs configs);
+  static boolean hasEmptyConfigs(LogConfigs configs) {
+    return !hasS3Configuration(configs) && !hasGcpConfiguration(configs);
+  }
+
+  static CloudLogs createCloudLogClient(LogConfigs configs) {
+    // check if the configs exists, and pick a client.
+    if (hasS3Configuration(configs)) {
+      LOGGER.info("Creating AWS Log Client");
+      return new S3Logs();
+    }
+
+    if (hasGcpConfiguration(configs)) {
+      LOGGER.info("Creating GCS Log Client");
+      return new GcsLogs();
+    }
+
+    throw new RuntimeException("Error no cloud credentials configured..");
+  }
+
+  private static boolean hasS3Configuration(LogConfigs configs) {
+    return !configs.getAwsAccessKey().isBlank() &&
+        !configs.getAwsSecretAccessKey().isBlank() &&
+        !configs.getS3LogBucketRegion().isBlank() &&
+        !configs.getS3LogBucket().isBlank();
+  }
+
+  private static boolean hasGcpConfiguration(LogConfigs configs) {
+    return !configs.getGcpStorageBucket().isBlank() &&
+        !configs.getGoogleApplicationCredentials().isBlank();
+  }
 
 }

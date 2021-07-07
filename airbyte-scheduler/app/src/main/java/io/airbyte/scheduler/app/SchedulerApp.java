@@ -30,7 +30,7 @@ import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
-import io.airbyte.config.helpers.LogHelpers;
+import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.FileSystemConfigPersistence;
@@ -193,7 +193,7 @@ public class SchedulerApp {
     final Path configRoot = configs.getConfigRoot();
     LOGGER.info("configRoot = " + configRoot);
 
-    MDC.put(LogHelpers.WORKSPACE_MDC_KEY, LogHelpers.getSchedulerLogsRoot(configs).toString());
+    MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, LogClientSingleton.getSchedulerLogsRoot(configs).toString());
 
     final Path workspaceRoot = configs.getWorkspaceRoot();
     LOGGER.info("workspaceRoot = " + workspaceRoot);
