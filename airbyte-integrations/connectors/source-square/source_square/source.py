@@ -36,7 +36,18 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from source_square.utils import separate_items_by_count
 
 
-def parse_square_error_response(error):
+class SquareException(Exception):
+    """ Just for formatting the exception as Square"""
+
+    def __init__(self, status_code, errors):
+        self.status_code = status_code
+        self.errors = errors
+
+    def __str__(self):
+        return f"Code: {self.status_code}, Detail: {self.errors}"
+
+
+def parse_square_error_response(error: requests.exceptions.HTTPError) -> SquareException:
     if error.response.content:
         content = json.loads(error.response.content.decode())
         if content and "errors" in content:
@@ -83,22 +94,16 @@ class SquareStream(HttpStream, ABC):
             square_exception = parse_square_error_response(e)
             if square_exception:
                 self.logger.error(str(square_exception))
+                # Exiting is made for not to have a huge traceback in the airbyte log.
+                # The explicit square error message already been out with the command above.
                 exit(1)
 
             raise e
 
 
-class SquareException(Exception):
-    """ Just for formatting the exception as Square"""
-
-    def __init__(self, status_code, errors):
-        self.status_code = status_code
-        self.errors = errors
-
-    def __str__(self):
-        return f"Code: {self.status_code}, Detail: {self.errors}"
-
-
+# Some streams require next_page_token in request query parameters (TeamMemberWages, Customers)
+# but others in JSON payload (Items, Discounts, Orders, etc)
+# That's why this 2 classes SquareStreamPageParam and SquareStreamPageJson are made
 class SquareStreamPageParam(SquareStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None

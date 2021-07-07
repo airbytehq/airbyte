@@ -22,8 +22,10 @@
 # SOFTWARE.
 #
 
+from typing import Union
 
-def separate_by_count(total_length, part_count):
+
+def separate_by_count(total_length: int, part_count: int) -> (int, int):
     """
     Calculates parts needed to separate count by part_count value
     For example: separate_by_count(total_length=196582, part_count=10000) returns (19, 6582) -> 19*10000 + 6582=196582
@@ -37,7 +39,7 @@ def separate_by_count(total_length, part_count):
     return total_parts, last_part
 
 
-def separate_items_by_count(item_list, part_count):
+def separate_items_by_count(item_list: Union[list, tuple], part_count: int) -> list:
     if not item_list:
         return []
 

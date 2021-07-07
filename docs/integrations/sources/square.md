@@ -57,6 +57,10 @@ and [Access token](https://developer.squareup.com/docs/build-basics/access-token
 
 ## Performance considerations
 
+No defined API rate limits were found in Square documentation however considering 
+[this information](https://stackoverflow.com/questions/28033966/whats-the-rate-limit-on-the-square-connect-api/28053836#28053836) 
+it has 10 QPS limits. The connector doesn't handle rate limits exceptions, but no errors were raised during testing.  
+
 Some Square API endpoints has different page size limitation   
 
 - Items - 1000
