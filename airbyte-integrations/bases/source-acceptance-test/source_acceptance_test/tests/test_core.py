@@ -38,7 +38,7 @@ from source_acceptance_test.utils import ConnectorRunner, SecretDict, serialize,
 
 @pytest.mark.default_timeout(10)
 class TestSpec(BaseTest):
-    def test_spec(self, connector_spec: ConnectorSpecification, connector_config: SecretDict, docker_runner: ConnectorRunner):
+    def test_match_expected(self, connector_spec: ConnectorSpecification, connector_config: SecretDict, docker_runner: ConnectorRunner):
         output = docker_runner.call_spec()
         spec_messages = [message for message in output if message.type == Type.SPEC]
 
