@@ -38,9 +38,10 @@ class ConversationExport(HttpStream, ABC):
     primary_key = "id"
     cursor_field = "updated_at"
 
-    def __init__(self, start_timestamp: int, batch_size: int, logger: AirbyteLogger, **kwargs) -> None:
+    def __init__(self, start_date: datetime, batch_size: int, logger: AirbyteLogger, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.start_timestamp = ConversationExport._validate_ms_timestamp(start_timestamp)
+        self.start_date = start_date
+        self.start_timestamp = ConversationExport.datetime_to_ms_timestamp(self.start_date)
         # The upper bound is exclusive.
         self.end_timestamp = ConversationExport.datetime_to_ms_timestamp(datetime.now()) + 1
         self.batch_size = batch_size
@@ -163,7 +164,8 @@ class SourceDixa(AbstractSource):
         Try loading one day's worth of data.
         """
         try:
-            start_timestamp = int(config["start_timestamp"])
+            start_date = datetime.strptime(config["start_timestamp"], "%Y-%m-%d")
+            start_timestamp = ConversationExport.datetime_to_ms_timestamp(start_date)
             url = "https://exports.dixa.io/v1/conversation_export"
             headers = {"accept": "application/json"}
             response = requests.request(
@@ -188,7 +190,7 @@ class SourceDixa(AbstractSource):
         return [
             ConversationExport(
                 authenticator=auth,
-                start_timestamp=int(config["start_timestamp"]),
+                start_date=datetime.strptime(config["start_timestamp"], "%Y-%m-%d"),
                 batch_size=int(config["batch_size"]),
                 logger=AirbyteLogger()
             )

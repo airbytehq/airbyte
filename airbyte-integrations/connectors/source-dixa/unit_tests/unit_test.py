@@ -28,7 +28,7 @@ from source_dixa.source import ConversationExport
 @pytest.fixture
 def conversation_export():
     return ConversationExport(
-        start_timestamp=1625133600000, batch_size=1, logger=None
+        start_date=datetime(year=2021, month=7, day=1, hour=12), batch_size=1, logger=None
     )
 
 
@@ -97,7 +97,7 @@ def test_stream_slices_without_state(conversation_export):
 
 def test_stream_slices_without_state_large_batch():
     conversation_export = ConversationExport(
-        start_timestamp=1625133600000, batch_size=31, logger=None
+        start_date=datetime(year=2021, month=7, day=1, hour=12), batch_size=31, logger=None
     )
     conversation_export.end_timestamp = 1625263200001  # 2021-07-03 00:00:00 + 1 ms
     expected_slices = [
