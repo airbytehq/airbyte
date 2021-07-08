@@ -114,19 +114,7 @@ class ConversationExport(HttpStream, ABC):
         updated_after = max(
             stream_state.get(ConversationExport.cursor_field, 0), self.start_timestamp
         )
-        updated_before = min(
-            ConversationExport.add_days_to_ms_timestamp(
-                days=self.batch_size,
-                milliseconds=updated_after
-            ),
-            self.end_timestamp
-        )
-        slices.append({
-            'updated_after': updated_after,
-            'updated_before': updated_before
-        })
-        while updated_before < self.end_timestamp:
-            updated_after = updated_before
+        while updated_after < self.end_timestamp:
             updated_before = min(
                 ConversationExport.add_days_to_ms_timestamp(
                     days=self.batch_size,
@@ -138,6 +126,7 @@ class ConversationExport(HttpStream, ABC):
                 'updated_after': updated_after,
                 'updated_before': updated_before
             })
+            updated_after = updated_before
         return slices
 
     def path(
