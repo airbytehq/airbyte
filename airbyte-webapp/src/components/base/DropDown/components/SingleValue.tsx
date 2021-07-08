@@ -34,7 +34,6 @@ const Icon = styled.div`
 `;
 
 const SingleValue: React.FC<IProps> = (props) => {
-  console.log(props);
   // if (item.groupValue || item.groupValueText) {
   //   return (
   //     <div>
@@ -56,4 +55,4 @@ const SingleValue: React.FC<IProps> = (props) => {
   );
 };
 
-export default SingleValue;
+export default React.memo(SingleValue);

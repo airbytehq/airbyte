@@ -2,6 +2,7 @@ import React from "react";
 import { components, MenuProps, OptionTypeBase } from "react-select";
 import styled from "styled-components";
 import { theme } from "theme";
+import { IDataItem } from "./Option";
 
 // function getLength(options) {
 //   return options.reduce((acc, curr) => {
@@ -29,6 +30,7 @@ import { theme } from "theme";
 const MenuList = styled(components.Menu)`
   background: ${theme.textColor};
   background: red;
+
   &.react-select__menu {
     margin: 0;
     min-width: 260px;
@@ -57,7 +59,7 @@ const MenuList = styled(components.Menu)`
   }
 `;
 
-const Menu: React.FC<MenuProps<OptionTypeBase, boolean>> = (props) => {
+const Menu: React.FC<MenuProps<IDataItem, boolean>> = (props) => {
   return <MenuList {...props}>{props.children}</MenuList>;
 };
 

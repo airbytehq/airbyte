@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 
 import { Cell } from "components/SimpleTableComponents";
-import { DropDown, DropdownProps } from "components/base";
+import { DropDown, DropdownProps } from "components";
 
 const DropDownContainer = styled.div`
   padding-right: 10px;

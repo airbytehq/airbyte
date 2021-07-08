@@ -255,6 +255,7 @@ const useInitialValues = (
       prefix: connection.prefix || "",
       namespaceDefinition:
         connection.namespaceDefinition ?? ConnectionNamespaceDefinition.Source,
+      // eslint-disable-next-line no-template-curly-in-string
       namespaceFormat: connection.namespaceFormat ?? "${SOURCE_NAMESPACE}",
     };
 
@@ -291,9 +292,9 @@ const useFrequencyDropdownData = (): DropDownRow.IDataItem[] => {
   return useMemo(
     () =>
       FrequencyConfig.map((item) => ({
-        ...item,
-        text:
-          item.value === "manual"
+        value: item.config,
+        label:
+          item.config === null
             ? item.text
             : formatMessage(
                 {

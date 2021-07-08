@@ -11,7 +11,7 @@ export type IProps = {
 
 export type IDataItem = {
   label?: string;
-  value: string;
+  value?: any;
   groupValue?: string;
   groupValueText?: string;
   img?: React.ReactNode;

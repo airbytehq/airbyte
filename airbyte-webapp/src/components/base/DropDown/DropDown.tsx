@@ -6,17 +6,13 @@ import Select, { Props } from "react-select";
 import DropdownIndicator from "./components/DropdownIndicator";
 import Menu from "./components/Menu";
 import SingleValue from "./components/SingleValue";
-import Option, { IDataItem } from "./components/Option";
+import Option from "./components/Option";
+import { equal } from "utils/objects";
 
-type DropdownProps = Props & {
-  name?: string;
+type DropdownProps = Props<any> & {
   withBorder?: boolean;
   fullText?: boolean;
   error?: boolean;
-  options?: IDataItem[];
-  value?: string;
-  disabled?: boolean;
-  onChange?: (item: IDataItem) => void;
 };
 
 const CustomSelect = styled(Select)<{
@@ -69,21 +65,28 @@ const DropDown: React.FC<DropdownProps> = (props) => {
   //   .filter(Boolean)
   //   .join(" ");
 
+  const propsComponents = props.components;
+  const components = React.useMemo(
+    () => ({
+      ...(propsComponents ?? {}),
+      DropdownIndicator,
+      Menu,
+      Option,
+      SingleValue,
+    }),
+    [propsComponents]
+  );
+
   return (
     <CustomSelect
-      {...props}
-      value={
-        props.options
-          ? props.options.find((option) => option.value === props.value)
-          : ""
-      }
+      data-testid={props.name}
       className="react-select-container"
       classNamePrefix="react-select"
-      data-testid={props.name}
       menuPortalTarget={document.body}
-      components={{ DropdownIndicator, Menu, Option, SingleValue }}
-      placeholder={props.placeholder || "..."}
-      isDisabled={props.disabled}
+      placeholder={"..."}
+      {...props}
+      value={props.options?.find((op) => equal(op.value, props.value))}
+      components={components}
     />
   );
 };
