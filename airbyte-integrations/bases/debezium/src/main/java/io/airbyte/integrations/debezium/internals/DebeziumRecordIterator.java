@@ -26,6 +26,7 @@ package io.airbyte.integrations.debezium.internals;
 
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.commons.concurrency.VoidCallable;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
@@ -111,7 +112,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
 
   private boolean shouldSignalClose(ChangeEvent<String, String> event) {
 
-    return targetPosition.reachedTargetPosition(event);
+    return targetPosition.reachedTargetPosition(Jsons.deserialize(event.value()));
   }
 
   private void requestClose() {

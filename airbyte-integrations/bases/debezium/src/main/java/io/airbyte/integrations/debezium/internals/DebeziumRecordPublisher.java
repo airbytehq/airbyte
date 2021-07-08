@@ -158,7 +158,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
       // changes. If we don't do this, we can't fetch records for the table
       // We have implemented our own implementation to filter out the schema information from other
       // databases that the connector is not syncing
-      props.setProperty("database.history", "io.airbyte.integrations.source.debezium.FilteredFileDatabaseHistory");
+      props.setProperty("database.history", "io.airbyte.integrations.debezium.internals.FilteredFileDatabaseHistory");
       props.setProperty("database.history.file.filename", schemaHistoryManager.getPath().toString());
     }
 
