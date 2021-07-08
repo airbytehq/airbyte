@@ -513,7 +513,6 @@ public class DefaultJobPersistence implements JobPersistence {
 
   @Override
   public void purgeJobHistory(LocalDateTime asOfDate) throws IOException {
-    // JENNY TODO: Figure out how to accommodate timezone for asOfDate.
     final String JOB_HISTORY_PURGE_SQL = "delete from jobs where jobs.id in ("
         + "select jobs.id  \n"
         + "from jobs \n"
