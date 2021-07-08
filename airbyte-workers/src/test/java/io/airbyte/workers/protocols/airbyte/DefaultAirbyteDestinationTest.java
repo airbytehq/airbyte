@@ -154,4 +154,14 @@ class DefaultAirbyteDestinationTest {
     verify(outputStream).close();
   }
 
+  @Test
+  public void testNonzeroExitCodeThrowsException() throws Exception {
+    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher);
+    destination.start(DESTINATION_CONFIG, jobRoot);
+
+    when(process.isAlive()).thenReturn(false);
+    when(process.exitValue()).thenReturn(1);
+    Assertions.assertThrows(WorkerException.class, destination::close);
+  }
+
 }
