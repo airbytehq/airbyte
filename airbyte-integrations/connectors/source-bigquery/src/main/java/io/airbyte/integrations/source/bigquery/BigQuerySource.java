@@ -32,6 +32,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.Databases;
+import io.airbyte.db.SqlDatabase;
 import io.airbyte.db.bigquery.BigQueryDatabase;
 import io.airbyte.db.bigquery.BigQueryUtils;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -53,11 +54,12 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySource.class);
 
-  static final String CONFIG_DATASET_ID = "dataset_id";
-  static final String CONFIG_PROJECT_ID = "project_id";
-  static final String CONFIG_DATASET_LOCATION = "dataset_location";
-  static final String CONFIG_CREDS = "credentials_json";
-  private String quote = "";
+  public static final String CONFIG_DATASET_ID = "dataset_id";
+  public static final String CONFIG_PROJECT_ID = "project_id";
+  public static final String CONFIG_DATASET_LOCATION = "dataset_location";
+  public static final String CONFIG_CREDS = "credentials_json";
+
+  private String quote = "'";
   private JsonNode dbConfig;
 
   public BigQuerySource() {
@@ -96,7 +98,7 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   @Override
   protected List<TableInfo<CommonField<StandardSQLTypeName>>> discoverInternal(BigQueryDatabase database) {
     String projectId = dbConfig.get(CONFIG_PROJECT_ID).asText();
-    List<Table> tables = database.getProjectTables(projectId);
+    List<Table> tables = (isDatasetConfigured(database) ? database.getDatasetTables(projectId, getConfigDatasetId(database)) : database.getProjectTables(projectId));
     List<TableInfo<CommonField<StandardSQLTypeName>>> result = new ArrayList<>();
     tables.stream()
             .map(table -> Objects.requireNonNull(table.getDefinition().getSchema()).getFields())
@@ -138,6 +140,14 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
         throw new RuntimeException(e);
       }
     });
+  }
+
+  private boolean isDatasetConfigured(SqlDatabase database) {
+    return database.getSourceConfig().hasNonNull(CONFIG_DATASET_ID);
+  }
+
+  private String getConfigDatasetId(SqlDatabase database) {
+    return (isDatasetConfigured(database) ? database.getSourceConfig().get(CONFIG_DATASET_ID).asText() : null);
   }
 
   public static void main(String[] args) throws Exception {

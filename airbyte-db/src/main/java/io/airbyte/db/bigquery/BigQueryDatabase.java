@@ -137,6 +137,11 @@ public class BigQueryDatabase extends SqlDatabase {
     return executeQuery(queryJob);
   }
 
+  /**
+   * Returns full information about all tables from entire project
+   * @param projectId BigQuery project id
+   * @return          List of BigQuery tables
+   */
   public List<Table> getProjectTables(String projectId) {
     List<Table> tableList = new ArrayList<>();
     bigQuery.listDatasets(projectId)
@@ -144,6 +149,26 @@ public class BigQueryDatabase extends SqlDatabase {
         .forEach(dataset -> bigQuery.listTables(dataset.getDatasetId())
             .iterateAll()
             .forEach(table -> tableList.add(bigQuery.getTable(table.getTableId())))
+        );
+    return tableList;
+  }
+
+  /**
+   * Returns full information about all tables from specific Dataset
+   * @param projectId BigQuery project id
+   * @param datasetId BigQuery dataset id
+   * @return          List of BigQuery tables
+   */
+  public List<Table> getDatasetTables(String projectId, String datasetId) {
+    List<Table> tableList = new ArrayList<>();
+    bigQuery.listDatasets(projectId)
+        .iterateAll()
+        .forEach(dataset -> bigQuery.listTables(dataset.getDatasetId())
+            .iterateAll()
+            .forEach(table -> {
+              if (table.getTableId().getDataset().equalsIgnoreCase(datasetId))
+                tableList.add(bigQuery.getTable(table.getTableId()));
+            })
         );
     return tableList;
   }
