@@ -119,7 +119,7 @@
   * [Connector Development Kit \(Python\)](contributing-to-airbyte/python/README.md)
     * [Concepts](contributing-to-airbyte/python/concepts/README.md)
       * [Basic Concepts](contributing-to-airbyte/python/concepts/basic-concepts.md)
-      * [Defining Stream Schemas](contributing-to-airbyte/python/docs/concepts/schemas.md)
+      * [Defining Stream Schemas](contributing-to-airbyte/python/concepts/schemas.md)
       * [Full Refresh Streams](contributing-to-airbyte/python/concepts/full-refresh-stream.md)
       * [Incremental Streams](contributing-to-airbyte/python/concepts/incremental-stream.md)
       * [HTTP-API-based Connectors](contributing-to-airbyte/python/concepts/http-streams.md)
