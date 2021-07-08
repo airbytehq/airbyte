@@ -135,6 +135,9 @@ public class ConfigDumpImport {
         // 5. Set DB version
         LOGGER.info("Setting the DB Airbyte version to : " + targetVersion);
         postgresPersistence.setVersion(targetVersion);
+
+        // 6. check db version
+        checkDBVersion(targetVersion);
         result = new ImportRead().status(StatusEnum.SUCCEEDED);
       } finally {
         FileUtils.deleteDirectory(sourceRoot.toFile());
