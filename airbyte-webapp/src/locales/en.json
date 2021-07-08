@@ -129,6 +129,7 @@
   "form.all": "All",
   "form.selected": "Selected",
   "form.notSelected": "Not selected",
+  "form.nullable": "Nullable",
   "form.field.name": "Field name",
   "form.field.dataType": "Data type",
   "form.field.destinationName": "Destination name",

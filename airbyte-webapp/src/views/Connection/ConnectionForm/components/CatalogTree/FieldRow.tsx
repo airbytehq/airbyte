@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { Cell } from "components/SimpleTableComponents";
 import { CheckBox, RadioButton } from "components";
+import DataTypeCell from "./components/DataTypeCell";
 
 interface FieldRowProps {
   name: string;
@@ -45,10 +46,7 @@ const FieldRow: React.FC<FieldRowProps> = (props) => {
         </NameContainer>
       </FirstCell>
       <Cell />
-      <Cell>
-        {props.type}
-        {props.nullable}
-      </Cell>
+      <DataTypeCell nullable={props.nullable}>{props.type}</DataTypeCell>
       <Cell>{props.destinationName}</Cell>
       <Cell flex={1.5} />
       <Cell>
