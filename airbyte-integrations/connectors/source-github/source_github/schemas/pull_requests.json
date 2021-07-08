@@ -48,7 +48,7 @@
       "type": ["null", "string"]
     },
     "locked": {
-      "type": ["null", "integer"]
+      "type": ["null", "boolean"]
     },
     "title": {
       "type": ["null", "string"]

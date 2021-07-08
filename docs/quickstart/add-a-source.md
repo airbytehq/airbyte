@@ -1,6 +1,8 @@
 # Add a Source
 
-Our demo source will pull data from an external API. It will replicate the closing price of currencies compared to USD since the specified start date.
+You can either follow this tutorial from the onboarding or through the UI, where you can first navigate to the `Sources` tab on the left bar.
+
+Our demo source will pull data from an external API, which will pull down the information on one specified Pokémon.
 
 To set it up, just follow the instructions on the screenshot below.
 
@@ -8,5 +10,5 @@ To set it up, just follow the instructions on the screenshot below.
 You might have to wait ~30 seconds before the fields show up because it is the first time you're using Airbyte.
 {% endhint %}
 
-![](../.gitbook/assets/demo_source.png)
+![](../.gitbook/assets/getting-started-source.png)
 
