@@ -49,7 +49,7 @@ import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.config.State;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
-import io.airbyte.config.helpers.LogHelpers;
+import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
@@ -156,7 +156,7 @@ class DefaultReplicationWorkerTest {
     // set up the mdc so that actually log to a file, so that we can verify that file logging captures
     // threads.
     final Path jobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
-    LogHelpers.setJobMdc(jobRoot);
+    LogClientSingleton.setJobMdc(jobRoot);
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -169,7 +169,7 @@ class DefaultReplicationWorkerTest {
 
     worker.run(syncInput, jobRoot);
 
-    final Path logPath = jobRoot.resolve(LogHelpers.LOG_FILENAME);
+    final Path logPath = jobRoot.resolve(LogClientSingleton.LOG_FILENAME);
     final String logs = IOs.readFile(logPath);
 
     // make sure we get logs from the threads.
@@ -217,7 +217,43 @@ class DefaultReplicationWorkerTest {
 
   @Test
   void testPopulatesOutputOnSuccess() throws WorkerException {
-    testPopulatesOutput();
+    final JsonNode expectedState = Jsons.jsonNode(ImmutableMap.of("updated_at", 10L));
+    when(sourceMessageTracker.getRecordCount()).thenReturn(12L);
+    when(sourceMessageTracker.getBytesCount()).thenReturn(100L);
+    when(destinationMessageTracker.getOutputState()).thenReturn(Optional.of(new State().withState(expectedState)));
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        sourceMessageTracker,
+        destinationMessageTracker);
+
+    final ReplicationOutput actual = worker.run(syncInput, jobRoot);
+    final ReplicationOutput replicationOutput = new ReplicationOutput()
+        .withReplicationAttemptSummary(new ReplicationAttemptSummary()
+            .withRecordsSynced(12L)
+            .withBytesSynced(100L)
+            .withStatus(ReplicationStatus.COMPLETED))
+        .withOutputCatalog(syncInput.getCatalog())
+        .withState(new State().withState(expectedState));
+
+    // good enough to verify that times are present.
+    assertNotNull(actual.getReplicationAttemptSummary().getStartTime());
+    assertNotNull(actual.getReplicationAttemptSummary().getEndTime());
+
+    // verify output object matches declared json schema spec.
+    final Set<String> validate = new JsonSchemaValidator()
+        .validate(Jsons.jsonNode(Jsons.jsonNode(JsonSchemaValidator.getSchema(ConfigSchema.REPLICATION_OUTPUT.getFile()))), Jsons.jsonNode(actual));
+    assertTrue(validate.isEmpty(), "Validation errors: " + Strings.join(validate, ","));
+
+    // remove times so we can do the rest of the object <> object comparison.
+    actual.getReplicationAttemptSummary().withStartTime(null);
+    actual.getReplicationAttemptSummary().withEndTime(null);
+
+    assertEquals(replicationOutput, actual);
   }
 
   @Test
@@ -293,46 +329,6 @@ class DefaultReplicationWorkerTest {
         sourceMessageTracker,
         destinationMessageTracker);
     assertThrows(WorkerException.class, () -> worker.run(syncInput, jobRoot));
-  }
-
-  private void testPopulatesOutput() throws WorkerException {
-    final JsonNode expectedState = Jsons.jsonNode(ImmutableMap.of("updated_at", 10L));
-    when(sourceMessageTracker.getRecordCount()).thenReturn(12L);
-    when(sourceMessageTracker.getBytesCount()).thenReturn(100L);
-    when(destinationMessageTracker.getOutputState()).thenReturn(Optional.of(new State().withState(expectedState)));
-
-    final ReplicationWorker worker = new DefaultReplicationWorker(
-        JOB_ID,
-        JOB_ATTEMPT,
-        source,
-        mapper,
-        destination,
-        sourceMessageTracker,
-        destinationMessageTracker);
-
-    final ReplicationOutput actual = worker.run(syncInput, jobRoot);
-    final ReplicationOutput replicationOutput = new ReplicationOutput()
-        .withReplicationAttemptSummary(new ReplicationAttemptSummary()
-            .withRecordsSynced(12L)
-            .withBytesSynced(100L)
-            .withStatus(ReplicationStatus.COMPLETED))
-        .withOutputCatalog(syncInput.getCatalog())
-        .withState(new State().withState(expectedState));
-
-    // good enough to verify that times are present.
-    assertNotNull(actual.getReplicationAttemptSummary().getStartTime());
-    assertNotNull(actual.getReplicationAttemptSummary().getEndTime());
-
-    // verify output object matches declared json schema spec.
-    final Set<String> validate = new JsonSchemaValidator()
-        .validate(Jsons.jsonNode(Jsons.jsonNode(JsonSchemaValidator.getSchema(ConfigSchema.REPLICATION_OUTPUT.getFile()))), Jsons.jsonNode(actual));
-    assertTrue(validate.isEmpty(), "Validation errors: " + Strings.join(validate, ","));
-
-    // remove times so we can do the rest of the object <> object comparison.
-    actual.getReplicationAttemptSummary().withStartTime(null);
-    actual.getReplicationAttemptSummary().withEndTime(null);
-
-    assertEquals(replicationOutput, actual);
   }
 
 }
