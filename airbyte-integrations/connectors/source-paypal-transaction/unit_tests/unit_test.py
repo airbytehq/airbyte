@@ -79,60 +79,76 @@ def now():
     return datetime.now().replace(microsecond=0).astimezone()
 
 
-def transactions_stream_slices():
+def test_transactions_stream_slices():
 
-    start_date_max = Transactions.start_date_max
+    start_date_max = {"hours": 0}
 
     # if start_date > now - **start_date_max then no slices
-    stream_slices = Transactions(
+    transactions = Transactions(
         authenticator=NoAuth(),
         start_date=now() - timedelta(**start_date_max) - timedelta(minutes=2),
-    ).stream_slices(sync_mode="any")
+    )
+    transactions.get_last_refreshed_datetime = lambda x: None
+    stream_slices = transactions.stream_slices(sync_mode="any")
     assert 1 == len(stream_slices)
 
     # start_date <= now - **start_date_max
-    stream_slices = Transactions(
+    transactions = Transactions(
         authenticator=NoAuth(),
         start_date=now() - timedelta(**start_date_max),
-    ).stream_slices(sync_mode="any")
+    )
+    transactions.get_last_refreshed_datetime = lambda x: None
+    stream_slices = transactions.stream_slices(sync_mode="any")
     assert 1 == len(stream_slices)
 
-    stream_slices = Transactions(
+    transactions = Transactions(
         authenticator=NoAuth(),
         start_date=now() - timedelta(**start_date_max) + timedelta(minutes=2),
-    ).stream_slices(sync_mode="any")
+    )
+    transactions.get_last_refreshed_datetime = lambda x: None
+    stream_slices = transactions.stream_slices(sync_mode="any")
     assert 1 == len(stream_slices)
 
-    stream_slices = Transactions(
+    transactions = Transactions(
         authenticator=NoAuth(),
         start_date=now() - timedelta(**start_date_max) - timedelta(hours=2),
-    ).stream_slices(sync_mode="any")
+    )
+    transactions.get_last_refreshed_datetime = lambda x: None
+    stream_slices = transactions.stream_slices(sync_mode="any")
     assert 1 == len(stream_slices)
 
-    stream_slices = Transactions(
+    transactions = Transactions(
         authenticator=NoAuth(),
         start_date=now() - timedelta(**start_date_max) - timedelta(days=1),
-    ).stream_slices(sync_mode="any")
+    )
+    transactions.get_last_refreshed_datetime = lambda x: None
+    stream_slices = transactions.stream_slices(sync_mode="any")
     assert 2 == len(stream_slices)
 
-    stream_slices = Transactions(
+    transactions = Transactions(
         authenticator=NoAuth(),
         start_date=now() - timedelta(**start_date_max) - timedelta(days=1, hours=2),
-    ).stream_slices(sync_mode="any")
+    )
+    transactions.get_last_refreshed_datetime = lambda x: None
+    stream_slices = transactions.stream_slices(sync_mode="any")
     assert 2 == len(stream_slices)
 
-    stream_slices = Transactions(
+    transactions = Transactions(
         authenticator=NoAuth(),
         start_date=now() - timedelta(**start_date_max) - timedelta(days=30, minutes=1),
-    ).stream_slices(sync_mode="any")
+    )
+    transactions.get_last_refreshed_datetime = lambda x: None
+    stream_slices = transactions.stream_slices(sync_mode="any")
     assert 31 == len(stream_slices)
 
     # tests with specified end_date
-    stream_slices = Transactions(
+    transactions = Transactions(
         authenticator=NoAuth(),
         start_date=isoparse("2021-06-01T10:00:00+00:00"),
         end_date=isoparse("2021-06-04T12:00:00+00:00"),
-    ).stream_slices(sync_mode="any")
+    )
+    transactions.get_last_refreshed_datetime = lambda x: None
+    stream_slices = transactions.stream_slices(sync_mode="any")
     assert [
         {"start_date": "2021-06-01T10:00:00+00:00", "end_date": "2021-06-02T10:00:00+00:00"},
         {"start_date": "2021-06-02T10:00:00+00:00", "end_date": "2021-06-03T10:00:00+00:00"},
@@ -141,22 +157,26 @@ def transactions_stream_slices():
     ] == stream_slices
 
     # tests with specified end_date and stream_state
-    stream_slices = Transactions(
+    transactions = Transactions(
         authenticator=NoAuth(),
         start_date=isoparse("2021-06-01T10:00:00+00:00"),
         end_date=isoparse("2021-06-04T12:00:00+00:00"),
-    ).stream_slices(sync_mode="any", stream_state={"date": "2021-06-02T10:00:00+00:00"})
+    )
+    transactions.get_last_refreshed_datetime = lambda x: None
+    stream_slices = transactions.stream_slices(sync_mode="any", stream_state={"date": "2021-06-02T10:00:00+00:00"})
     assert [
         {"start_date": "2021-06-02T10:00:00+00:00", "end_date": "2021-06-03T10:00:00+00:00"},
         {"start_date": "2021-06-03T10:00:00+00:00", "end_date": "2021-06-04T10:00:00+00:00"},
         {"start_date": "2021-06-04T10:00:00+00:00", "end_date": "2021-06-04T12:00:00+00:00"},
     ] == stream_slices
 
-    stream_slices = Transactions(
+    transactions = Transactions(
         authenticator=NoAuth(),
         start_date=isoparse("2021-06-01T10:00:00+00:00"),
         end_date=isoparse("2021-06-04T12:00:00+00:00"),
-    ).stream_slices(sync_mode="any", stream_state={"date": "2021-06-04T10:00:00+00:00"})
+    )
+    transactions.get_last_refreshed_datetime = lambda x: None
+    stream_slices = transactions.stream_slices(sync_mode="any", stream_state={"date": "2021-06-04T10:00:00+00:00"})
     assert [{"start_date": "2021-06-04T10:00:00+00:00", "end_date": "2021-06-04T12:00:00+00:00"}] == stream_slices
 
 
@@ -167,36 +187,48 @@ def test_balances_stream_slices():
     now = datetime.now().replace(microsecond=0).astimezone()
 
     # Test without end_date (it equal <now> by default)
-    stream_slices = Balances(authenticator=NoAuth(), start_date=now).stream_slices(sync_mode="any")
+    balance = Balances(authenticator=NoAuth(), start_date=now)
+    balance.get_last_refreshed_datetime = lambda x: None
+    stream_slices = balance.stream_slices(sync_mode="any")
     assert 1 == len(stream_slices)
 
-    stream_slices = Balances(authenticator=NoAuth(), start_date=now - timedelta(minutes=1)).stream_slices(sync_mode="any")
+    balance = Balances(authenticator=NoAuth(), start_date=now - timedelta(minutes=1))
+    balance.get_last_refreshed_datetime = lambda x: None
+    stream_slices = balance.stream_slices(sync_mode="any")
     assert 1 == len(stream_slices)
 
-    stream_slices = Balances(
+    balance = Balances(
         authenticator=NoAuth(),
         start_date=now - timedelta(hours=23),
-    ).stream_slices(sync_mode="any")
+    )
+    balance.get_last_refreshed_datetime = lambda x: None
+    stream_slices = balance.stream_slices(sync_mode="any")
     assert 1 == len(stream_slices)
 
-    stream_slices = Balances(
+    balance = Balances(
         authenticator=NoAuth(),
         start_date=now - timedelta(days=1),
-    ).stream_slices(sync_mode="any")
+    )
+    balance.get_last_refreshed_datetime = lambda x: None
+    stream_slices = balance.stream_slices(sync_mode="any")
     assert 2 == len(stream_slices)
 
-    stream_slices = Balances(
+    balance = Balances(
         authenticator=NoAuth(),
         start_date=now - timedelta(days=1, minutes=1),
-    ).stream_slices(sync_mode="any")
+    )
+    balance.get_last_refreshed_datetime = lambda x: None
+    stream_slices = balance.stream_slices(sync_mode="any")
     assert 2 == len(stream_slices)
 
     # test with custom end_date
-    stream_slices = Balances(
+    balance = Balances(
         authenticator=NoAuth(),
         start_date=isoparse("2021-06-01T10:00:00+00:00"),
         end_date=isoparse("2021-06-03T12:00:00+00:00"),
-    ).stream_slices(sync_mode="any")
+    )
+    balance.get_last_refreshed_datetime = lambda x: None
+    stream_slices = balance.stream_slices(sync_mode="any")
     assert [
         {"start_date": "2021-06-01T10:00:00+00:00", "end_date": "2021-06-02T10:00:00+00:00"},
         {"start_date": "2021-06-02T10:00:00+00:00", "end_date": "2021-06-03T10:00:00+00:00"},
@@ -204,26 +236,32 @@ def test_balances_stream_slices():
     ] == stream_slices
 
     # Test with stream state
-    stream_slices = Balances(
+    balance = Balances(
         authenticator=NoAuth(),
         start_date=isoparse("2021-06-01T10:00:00+00:00"),
         end_date=isoparse("2021-06-03T12:00:00+00:00"),
-    ).stream_slices(sync_mode="any", stream_state={"date": "2021-06-02T10:00:00+00:00"})
+    )
+    balance.get_last_refreshed_datetime = lambda x: None
+    stream_slices = balance.stream_slices(sync_mode="any", stream_state={"date": "2021-06-02T10:00:00+00:00"})
     assert [
         {"start_date": "2021-06-02T10:00:00+00:00", "end_date": "2021-06-03T10:00:00+00:00"},
         {"start_date": "2021-06-03T10:00:00+00:00", "end_date": "2021-06-03T12:00:00+00:00"},
     ] == stream_slices
 
-    stream_slices = Balances(
+    balance = Balances(
         authenticator=NoAuth(),
         start_date=isoparse("2021-06-01T10:00:00+00:00"),
         end_date=isoparse("2021-06-03T12:00:00+00:00"),
-    ).stream_slices(sync_mode="any", stream_state={"date": "2021-06-03T11:00:00+00:00"})
+    )
+    balance.get_last_refreshed_datetime = lambda x: None
+    stream_slices = balance.stream_slices(sync_mode="any", stream_state={"date": "2021-06-03T11:00:00+00:00"})
     assert [{"start_date": "2021-06-03T11:00:00+00:00", "end_date": "2021-06-03T12:00:00+00:00"}] == stream_slices
 
-    stream_slices = Balances(
+    balance = Balances(
         authenticator=NoAuth(),
         start_date=isoparse("2021-06-01T10:00:00+00:00"),
         end_date=isoparse("2021-06-03T12:00:00+00:00"),
-    ).stream_slices(sync_mode="any", stream_state={"date": "2021-06-03T12:00:00+00:00"})
+    )
+    balance.get_last_refreshed_datetime = lambda x: None
+    stream_slices = balance.stream_slices(sync_mode="any", stream_state={"date": "2021-06-03T12:00:00+00:00"})
     assert [{"start_date": "2021-06-03T12:00:00+00:00", "end_date": "2021-06-03T12:00:00+00:00"}] == stream_slices

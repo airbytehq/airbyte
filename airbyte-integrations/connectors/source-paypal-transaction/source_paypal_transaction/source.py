@@ -44,15 +44,27 @@ def get_endpoint(is_sandbox: bool = False) -> str:
 
 
 class PaypalTransactionStream(HttpStream, ABC):
+    """Abstract class for Paypal Transaction Stream.
+
+    Important note about 'start_date' params:
+    'start_date' is one of required params, it comes from spec configuration or from stream state.
+    In both cases it must meet the following conditions:
+
+        minimum_allowed_start_date <= start_date <= end_date <= last_refreshed_datetime <= now()
+
+    otherwise API throws an "Data for the given start date is not available" error.
+
+    So the prevent this error 'start_date' will be reset to:
+        minimum_allowed_start_date                               - if 'start_date' is too old
+        min(maximum_allowed_start_date, last_refreshed_datetime) - if 'start_date' is too recent
+    """
 
     page_size = "500"  # API limit
 
-    # Date limits are needed to prevent API error: Data for the given start date is not available
-    # API limit: (now() - start_date_min) < start_date < (now() - start_date_max)
-    start_date_min: Mapping[str, int] = {"hours": 3 * 364}  # API limit - 3 years
-    # Actual value can be found only in 'last_refreshed_datetime' attr of API response
-    # start_date_max: Mapping[str, int] = {"hours": 0}
-    last_refreshed_datetime: Optional[datetime] = None  # extracted from API response. Indicate the latest possible start_date
+    # Date limits are needed to prevent API error: "Data for the given start date is not available"
+    # API limit: (now() - start_date_min) <= start_date <= end_date <= last_refreshed_datetime <= now
+    start_date_min: Mapping[str, int] = {"hours": 3 * 365}  # API limit - 3 years
+    last_refreshed_datetime: Optional[datetime] = None  # extracted from API response. Indicate the most resent possible start_date
     stream_slice_period: Mapping[str, int] = {"days": 1}  # max period is 31 days (API limit)
 
     requests_per_minute: int = 30  # API limit is 50 reqs/min from 1 IP to all endpoints, otherwise IP is banned for 5 mins
@@ -83,7 +95,6 @@ class PaypalTransactionStream(HttpStream, ABC):
             )
             start_date = minimum_allowed_start_date
 
-        # self.maximum_allowed_start_date = min(now - timedelta(**self.start_date_max), self.end_date)
         self.maximum_allowed_start_date = min(now, self.end_date)
         if start_date > self.maximum_allowed_start_date:
             self.logger.log(
@@ -179,7 +190,25 @@ class PaypalTransactionStream(HttpStream, ABC):
             return {"date": self.start_date.isoformat()}
 
     def get_last_refreshed_datetime(self, sync_mode):
-        return None
+        """Get last_refreshed_datetime attribute from API response by running PaypalTransactionStream().read_records()
+        with 'empty' stream_slice (range=0)
+
+        last_refreshed_datetime indicates the maximum available start_date for which API has data.
+        If request start_date > last_refreshed_datetime then API throws an error:
+            "Data for the given start date is not available"
+        """
+        paypal_stream = self.__class__(
+            authenticator=self.authenticator,
+            start_date=self.start_date,
+            end_date=self.start_date,
+            is_sandbox=self.is_sandbox,
+        )
+        stream_slice = {
+            "start_date": self.start_date.isoformat(),
+            "end_date": self.start_date.isoformat(),
+        }
+        list(paypal_stream.read_records(sync_mode=sync_mode, stream_slice=stream_slice))
+        return paypal_stream.last_refreshed_datetime
 
     def stream_slices(
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -187,25 +216,22 @@ class PaypalTransactionStream(HttpStream, ABC):
         """
         Returns a list of slices for each day (by default) between the start date and end date.
         The return value is a list of dicts {'start_date': date_string, 'end_date': date_string}.
-
-        Slice does not cover period for slice_start_date > maximum_allowed_start_date
         """
         period = timedelta(**self.stream_slice_period)
 
         # get last_refreshed_datetime from API response to use as maximum allowed start_date
-        last_refreshed_datetime = self.get_last_refreshed_datetime(sync_mode)
-
-        if last_refreshed_datetime:
-            self.logger.info(f"Maximum possible start_date is {last_refreshed_datetime} based on info from API response")
-            self.maximum_allowed_start_date = min(last_refreshed_datetime, self.maximum_allowed_start_date)
+        self.last_refreshed_datetime = self.get_last_refreshed_datetime(sync_mode)
+        if self.last_refreshed_datetime:
+            self.logger.info(f"Maximum allowed start_date is {self.last_refreshed_datetime} based on info from API response")
+            self.maximum_allowed_start_date = min(self.last_refreshed_datetime, self.maximum_allowed_start_date)
 
         slice_start_date = self.start_date
 
         if stream_state:
-            # if stream_state_date is in the future (for example during tests) then reset it to now:
+            # if stream_state_date is in the future (for example during tests) then reset it to maximum_allowed_start_date:
             stream_state_date = min(isoparse(stream_state.get("date")), self.maximum_allowed_start_date)
 
-            # but slice_start_date should be the most recent date:
+            # slice_start_date should be the most recent date:
             slice_start_date = max(slice_start_date, stream_state_date)
 
         slices = []
@@ -220,34 +246,16 @@ class PaypalTransactionStream(HttpStream, ABC):
 
         return slices
 
-    def _send_request(self, request: requests.PreparedRequest) -> requests.Response:
-        try:
-            return super()._send_request(request)
-        except requests.exceptions.HTTPError as e:
-            error_message = e.response.text
-            if error_message:
-                self.logger.error(f"Stream {self.name}: {e.response.status_code} {e.response.reason} - {error_message}")
-                exit(1)
-            else:
-                raise e
-
 
 class Transactions(PaypalTransactionStream):
-    """
-    Stream for Transactions /v1/reporting/transactions
-
-    API returns a list of transaction on a specific date range
-
+    """List Paypal Transactions on a specific date range
     API Docs: https://developer.paypal.com/docs/integration/direct/transaction-search/#list-transactions
+    Endpoint: /v1/reporting/transactions
     """
 
     data_field = "transaction_details"
     primary_key = [["transaction_info", "transaction_id"]]
     cursor_field = ["transaction_info", "transaction_initiation_date"]
-
-    # according to the docs, 3 hrs are needed for new transaction to appear in transaction list.
-    # In fact, this value can be up to 3 days. Actual value can be found only in 'last_refreshed_datetime' attr of API response
-    # start_date_max = {"hours": 3}
 
     # TODO handle API error when 1 request returns more than 10000 records.
     # https://github.com/airbytehq/airbyte/issues/4404
@@ -280,29 +288,10 @@ class Transactions(PaypalTransactionStream):
             "page": page_number,
         }
 
-    def get_last_refreshed_datetime(self, sync_mode):
-        # Run new stream just in order to extract last_refreshed_datetime from API response
-        slice = {
-            "start_date": self.start_date.isoformat(),
-            "end_date": self.start_date.isoformat(),
-        }
-        paypal_transaction = Transactions(
-            authenticator=self.authenticator,
-            start_date=self.start_date,
-            end_date=self.start_date,
-            is_sandbox=self.is_sandbox,
-        )
-        list(paypal_transaction.read_records(sync_mode=sync_mode, stream_slice=slice))
-        return paypal_transaction.last_refreshed_datetime
-
 
 class Balances(PaypalTransactionStream):
-    """
-    Stream for Balances /v1/reporting/balances
-
-    API returns account balance on a specific date
-
-    API Docs: https://developer.paypal.com/docs/integration/direct/transaction-search/#check-balances
+    """Get account balance on a specific date
+    API Docs: https://developer.paypal.com/docs/integration/direct/transaction-search/#check-balancess
     """
 
     primary_key = "as_of_time"
@@ -351,7 +340,13 @@ class PayPalOauth2Authenticator(Oauth2Authenticator):
             data = "grant_type=client_credentials"
             headers = {"Accept": "application/json", "Accept-Language": "en_US"}
             auth = (self.client_id, self.client_secret)
-            response = requests.request(method="POST", url=self.token_refresh_endpoint, data=data, headers=headers, auth=auth)
+            response = requests.request(
+                method="POST",
+                url=self.token_refresh_endpoint,
+                data=data,
+                headers=headers,
+                auth=auth,
+            )
             response.raise_for_status()
             response_json = response.json()
             return response_json["access_token"], response_json["expires_in"]
