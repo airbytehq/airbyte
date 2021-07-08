@@ -122,7 +122,8 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
     LOGGER.debug("Closing destination process");
     WorkerUtils.gentleClose(destinationProcess, 10, TimeUnit.HOURS);
     if (destinationProcess.isAlive() || destinationProcess.exitValue() != 0) {
-      String message = destinationProcess.isAlive() ? "Destination has not terminated " : "Destination process exit with code " + destinationProcess.exitValue();
+      String message =
+          destinationProcess.isAlive() ? "Destination has not terminated " : "Destination process exit with code " + destinationProcess.exitValue();
       throw new WorkerException(message + ". This warning is normal if the job was cancelled.");
     }
   }
