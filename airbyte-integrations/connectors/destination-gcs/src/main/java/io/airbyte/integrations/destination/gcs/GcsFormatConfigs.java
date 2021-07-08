@@ -22,12 +22,12 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.gcs;
+package io.airbyte.integrations.destination.s3;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.gcs.csv.GcsCsvFormatConfig;
-import io.airbyte.integrations.destination.gcs.parquet.GcsParquetFormatConfig;
+import io.airbyte.integrations.destination.s3.csv.GcsCsvFormatConfig;
+import io.airbyte.integrations.destination.s3.parquet.GcsParquetFormatConfig;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,17 +36,17 @@ public class GcsFormatConfigs {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(GcsFormatConfigs.class);
 
-  public static GcsFormatConfigs getGcsFormatConfig(JsonNode config) {
+  public static GcsFormatConfig getGcsFormatConfig(JsonNode config) {
     JsonNode formatConfig = config.get("format");
     LOGGER.info("GCS format config: {}", formatConfig.toString());
     GcsFormat formatType = GcsFormat.valueOf(formatConfig.get("format_type").asText().toUpperCase());
 
     switch (formatType) {
       case CSV -> {
-        return new GCSCsvFormatConfig(formatConfig);
+        return new GcsCsvFormatConfig(formatConfig);
       }
       case PARQUET -> {
-        return new GCSParquetFormatConfig(formatConfig);
+        return new GcsParquetFormatConfig(formatConfig);
       }
       default -> {
         throw new RuntimeException("Unexpected output format: " + Jsons.serialize(config));

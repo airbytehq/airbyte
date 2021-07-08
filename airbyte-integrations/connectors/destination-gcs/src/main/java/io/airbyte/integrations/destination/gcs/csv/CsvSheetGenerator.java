@@ -22,16 +22,16 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.gcs.csv;
+package io.airbyte.integrations.destination.s3.csv;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.destination.gcs.csv.GcsCsvFormatConfig.Flattening;
+import io.airbyte.integrations.destination.s3.csv.GcsCsvFormatConfig.Flattening;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.List;
 import java.util.UUID;
 
 /**
- * This class takes care of the generation of the CSV data sheet, including the header row and the
+ * This class takes case of the generation of the CSV data sheet, including the header row and the
  * data row.
  */
 public interface CsvSheetGenerator {

@@ -22,17 +22,17 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.gcs.writer;
+package io.airbyte.integrations.destination.s3.writer;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.DeleteObjectsRequest;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
-import io.airbyte.integrations.destination.gcs.GcsDestinationConstants;
-import io.airbyte.integrations.destination.gcs.GcsFormat;
-import io.airbyte.integrations.destination.gcs.util.GcsOutputPathHelper;
+import io.airbyte.integrations.destination.s3.GcsDestinationConfig;
+import io.airbyte.integrations.destination.s3.GcsDestinationConstants;
+import io.airbyte.integrations.destination.s3.GcsFormat;
+import io.airbyte.integrations.destination.s3.util.GcsOutputPathHelper;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -44,6 +44,8 @@ import java.util.List;
 import java.util.TimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 /**
  * The base implementation takes care of the following:
@@ -75,7 +77,7 @@ public abstract class BaseGcsWriter implements GcsWriter {
    * <li>2. Under OVERWRITE mode, delete all objects with the output prefix.</li>
    */
   @Override
-  public void initialize() {
+  public void initialize() throws IOException{
     String bucket = config.getBucketName();
     if (!s3Client.doesBucketExistV2(bucket)) {
       LOGGER.info("Bucket {} does not exist; creating...", bucket);
@@ -95,12 +97,41 @@ public abstract class BaseGcsWriter implements GcsWriter {
       if (keysToDelete.size() > 0) {
         LOGGER.info("Purging non-empty output path for stream '{}' under OVERWRITE mode...",
             stream.getName());
-        DeleteObjectsResult result = s3Client
-            .deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));
-        LOGGER.info("Deleted {} file(s) for stream '{}'.", result.getDeletedObjects().size(),
+        // Google Cloud Storage doesn't acceppt request to delete multiple objects so looping
+        for (KeyVersion keyToDelete : keysToDelete) {
+          s3Client.deleteObject(bucket, keyToDelete.getKey());
+        }
+        LOGGER.info("Deleted {} file(s) for stream '{}'.", keysToDelete.size(),
             stream.getName());
       }
     }
+  }
+
+  @Override
+  public void close(boolean hasFailed) throws IOException {
+    if (hasFailed) {
+      LOGGER.warn("Failure detected. Aborting upload of stream '{}'...", stream.getName());
+      closeWhenFail();
+      LOGGER.warn("Upload of stream '{}' aborted.", stream.getName());
+    } else {
+      LOGGER.info("Uploading remaining data for stream '{}'.", stream.getName());
+      closeWhenSucceed();
+      LOGGER.info("Upload completed for stream '{}'.", stream.getName());
+    }
+  }
+
+  /**
+   * Operations that will run when the write succeeds.
+   */
+  protected void closeWhenSucceed() throws IOException {
+    // Do nothing by default
+  }
+
+  /**
+   * Operations that will run when the write fails.
+   */
+  protected void closeWhenFail() throws IOException {
+    // Do nothing by default
   }
 
   // Filename: <upload-date>_<upload-millis>_0.<format-extension>

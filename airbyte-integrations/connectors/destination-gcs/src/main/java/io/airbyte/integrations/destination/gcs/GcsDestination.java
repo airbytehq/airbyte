@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.gcs;
+package io.airbyte.integrations.destination.s3;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.BaseConnector;
@@ -31,8 +31,8 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsConfig;
 import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsStreamCopier;
-import io.airbyte.integrations.destination.gcs.writer.ProductionWriterFactory;
-import io.airbyte.integrations.destination.gcs.writer.GcsWriterFactory;
+import io.airbyte.integrations.destination.s3.writer.ProductionWriterFactory;
+import io.airbyte.integrations.destination.s3.writer.GcsWriterFactory;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -55,7 +55,7 @@ public class GcsDestination extends BaseConnector implements Destination {
       GcsStreamCopier.attemptGcsWriteAndDelete(GcsConfig.getGcsConfig(config));
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
-      LOGGER.error("Exception attempting to access the Gcs bucket: ", e.toString());
+      LOGGER.error("Exception attempting to access the Gcs bucket: ", e.getMessage());
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
           .withMessage("Could not connect to the Gcs bucket with the provided configuration. \n" + e
@@ -70,4 +70,5 @@ public class GcsDestination extends BaseConnector implements Destination {
     GcsWriterFactory formatterFactory = new ProductionWriterFactory();
     return new GcsConsumer(GcsDestinationConfig.getGcsDestinationConfig(config), configuredCatalog, formatterFactory, outputRecordCollector);
   }
+
 }

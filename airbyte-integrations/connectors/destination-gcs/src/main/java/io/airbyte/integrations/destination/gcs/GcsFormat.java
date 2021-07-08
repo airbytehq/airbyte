@@ -22,11 +22,13 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.gcs;
+package io.airbyte.integrations.destination.s3;
 
 public enum GcsFormat {
-
+  
+  AVRO("avro"),
   CSV("csv"),
+  JSONL("jsonl"),
   PARQUET("parquet");
 
   private final String fileExtension;

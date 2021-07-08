@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.gcs.parquet;
+package io.airbyte.integrations.destination.s3.parquet;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -30,10 +30,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
-import io.airbyte.integrations.destination.gcs.GcsFormat;
-import io.airbyte.integrations.destination.gcs.writer.BaseGcsWriter;
-import io.airbyte.integrations.destination.gcs.writer.GcsWriter;
+import io.airbyte.integrations.destination.s3.GcsDestinationConfig;
+import io.airbyte.integrations.destination.s3.GcsFormat;
+import io.airbyte.integrations.destination.s3.writer.BaseGcsWriter;
+import io.airbyte.integrations.destination.s3.writer.GcsWriter;
+import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.IOException;
@@ -79,12 +80,13 @@ public class GcsParquetWriter extends BaseGcsWriter implements GcsWriter {
     String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, GcsFormat.PARQUET);
     String objectKey = String.join("/", outputPrefix, outputFilename);
 
-    LOGGER.info("Full Gcs path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
-        objectKey);
+    // LOGGER.info("Storage path for stream '{}': {}/{}", stream.getName(), config.getBucketName(), objectKey);
 
     URI uri = new URI(
         String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename));    // <----- CHECK
     Path path = new Path(uri);
+
+    // LOGGER.info("Full Gcs path for stream '{}': {}", stream.getName(), path.toString());
 
     GcsParquetFormatConfig formatConfig = (GcsParquetFormatConfig) config.getFormatConfig();
     Configuration hadoopConfig = getHadoopConfig(config);
@@ -102,19 +104,19 @@ public class GcsParquetWriter extends BaseGcsWriter implements GcsWriter {
   public static Configuration getHadoopConfig(GcsDestinationConfig config) {
     Configuration hadoopConfig = new Configuration();
 
+    // https://stackoverflow.com/questions/64141204/process-data-in-google-storage-on-an-aws-emr-cluster-in-spark
     hadoopConfig.set("fs.s3a.access.key", config.getAccessKeyId());
     hadoopConfig.set("fs.s3a.secret.key", config.getSecretAccessKey());
     hadoopConfig.setBoolean("fs.s3a.path.style.access", true);
     hadoopConfig.set("fs.s3a.endpoint", "storage.googleapis.com");
     hadoopConfig.setInt("fs.s3a.list.version", 1);
-
+    
     return hadoopConfig;
   }
 
   @Override
   public void write(UUID id, AirbyteRecordMessage recordMessage) throws IOException {
     JsonNode inputData = recordMessage.getData();
-    // LOGGER.info("InputData -> {}",inputData.toString());
     inputData = nameUpdater.getJsonWithStandardizedFieldNames(inputData);
 
     ObjectNode jsonRecord = MAPPER.createObjectNode();

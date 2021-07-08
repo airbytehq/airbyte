@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.gcs.writer;
+package io.airbyte.integrations.destination.s3.writer;
 
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.IOException;
@@ -35,17 +35,17 @@ import java.util.UUID;
 public interface GcsWriter {
 
   /**
-   * Prepare an Gcs writer for the stream.
+   * Prepare an S3 writer for the stream.
    */
   void initialize() throws IOException;
 
   /**
-   * Write an Airbyte record message to an Gcs object.
+   * Write an Airbyte record message to an S3 object.
    */
   void write(UUID id, AirbyteRecordMessage recordMessage) throws IOException;
 
   /**
-   * Close the Gcs writer for the stream.
+   * Close the S3 writer for the stream.
    */
   void close(boolean hasFailed) throws IOException;
 

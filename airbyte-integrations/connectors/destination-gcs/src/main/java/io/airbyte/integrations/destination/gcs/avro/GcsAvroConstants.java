@@ -22,28 +22,12 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.gcs.csv;
+package io.airbyte.integrations.destination.s3.avro;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+public class GcsAvroConstants {
 
-/**
- * CSV data row = ID column + timestamp column + record columns. This class takes care of the first
- * two columns, which is shared by downstream implementations.
- */
-public abstract class BaseSheetGenerator implements CsvSheetGenerator {
-
-  public List<Object> getDataRow(UUID id, AirbyteRecordMessage recordMessage) {
-    List<Object> data = new LinkedList<>();
-    data.add(id);
-    data.add(recordMessage.getEmittedAt());
-    data.addAll(getRecordColumns(recordMessage.getData()));
-    return data;
-  }
-
-  abstract List<String> getRecordColumns(JsonNode json);
+  // Field name with special character
+  public static final String DOC_KEY_VALUE_DELIMITER = ":";
+  public static final String DOC_KEY_ORIGINAL_NAME = "_airbyte_original_name";
 
 }

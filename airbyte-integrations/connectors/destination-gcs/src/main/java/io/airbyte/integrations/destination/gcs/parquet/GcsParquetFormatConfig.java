@@ -22,11 +22,11 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.gcs.parquet;
+package io.airbyte.integrations.destination.s3.parquet;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.destination.gcs.GcsFormat;
-import io.airbyte.integrations.destination.gcs.GcsFormatConfig;
+import io.airbyte.integrations.destination.s3.GcsFormat;
+import io.airbyte.integrations.destination.s3.GcsFormatConfig;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 
 public class GcsParquetFormatConfig implements GcsFormatConfig {

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.gcs;
+package io.airbyte.integrations.destination.s3;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -53,4 +53,5 @@ public interface GcsFormatConfig {
     }
     return value.asBoolean();
   }
+  
 }

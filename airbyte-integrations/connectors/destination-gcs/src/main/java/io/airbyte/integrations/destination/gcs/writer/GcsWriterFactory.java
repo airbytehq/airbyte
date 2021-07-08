@@ -22,10 +22,10 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.gcs.writer;
+package io.airbyte.integrations.destination.s3.writer;
 
 import com.amazonaws.services.s3.AmazonS3;
-import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.integrations.destination.s3.GcsDestinationConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.sql.Timestamp;
 

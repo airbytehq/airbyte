@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.gcs;
+package io.airbyte.integrations.destination.s3;
 
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 

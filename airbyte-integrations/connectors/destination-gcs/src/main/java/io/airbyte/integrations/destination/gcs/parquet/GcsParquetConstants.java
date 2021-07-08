@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.gcs.parquet;
+package io.airbyte.integrations.destination.s3.parquet;
 
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 

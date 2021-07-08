@@ -22,15 +22,15 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.gcs.writer;
+package io.airbyte.integrations.destination.s3.writer;
 
 import com.amazonaws.services.s3.AmazonS3;
-import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
-import io.airbyte.integrations.destination.gcs.GcsFormat;
-import io.airbyte.integrations.destination.gcs.csv.GcsCsvWriter;
-import io.airbyte.integrations.destination.gcs.parquet.JsonFieldNameUpdater;
-import io.airbyte.integrations.destination.gcs.parquet.JsonToAvroSchemaConverter;
-import io.airbyte.integrations.destination.gcs.parquet.GcsParquetWriter;
+import io.airbyte.integrations.destination.s3.GcsDestinationConfig;
+import io.airbyte.integrations.destination.s3.GcsFormat;
+import io.airbyte.integrations.destination.s3.csv.GcsCsvWriter;
+import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
+import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
+import io.airbyte.integrations.destination.s3.parquet.GcsParquetWriter;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.sql.Timestamp;
@@ -59,7 +59,7 @@ public class ProductionWriterFactory implements GcsWriterFactory {
       Schema avroSchema = schemaConverter.getAvroSchema(stream.getJsonSchema(), stream.getName(), stream.getNamespace(), true);
       JsonFieldNameUpdater nameUpdater = new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
 
-      LOGGER.info("Avro schema for stream {}: {}", stream.getName(), avroSchema.toString(false));
+      // LOGGER.info("Paquet schema for stream {}: {}", stream.getName(), avroSchema.toString(false));
       if (nameUpdater.hasNameUpdate()) {
         LOGGER.info("The following field names will be standardized: {}", nameUpdater);
       }
@@ -67,7 +67,7 @@ public class ProductionWriterFactory implements GcsWriterFactory {
       return new GcsParquetWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, nameUpdater);
     }
 
-    throw new RuntimeException("Unexpected S3 destination format: " + format);
+    throw new RuntimeException("Unexpected GCS destination format: " + format);
   }
 
 }

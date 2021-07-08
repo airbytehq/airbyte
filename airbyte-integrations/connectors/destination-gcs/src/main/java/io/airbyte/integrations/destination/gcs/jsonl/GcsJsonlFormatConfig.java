@@ -22,31 +22,16 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.gcs.csv;
+package io.airbyte.integrations.destination.s3.jsonl;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.Lists;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import java.util.Collections;
-import java.util.List;
+import io.airbyte.integrations.destination.s3.GcsFormat;
+import io.airbyte.integrations.destination.s3.GcsFormatConfig;
 
-public class NoFlatteningSheetGenerator extends BaseSheetGenerator implements CsvSheetGenerator {
+public class GcsJsonlFormatConfig implements GcsFormatConfig {
 
   @Override
-  public List<String> getHeaderRow() {
-    return Lists.newArrayList(
-        JavaBaseConstants.COLUMN_NAME_AB_ID,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
-        JavaBaseConstants.COLUMN_NAME_DATA);
-  }
-
-  /**
-   * When no flattening is needed, the record column is just one json blob.
-   */
-  @Override
-  List<String> getRecordColumns(JsonNode json) {
-    return Collections.singletonList(Jsons.serialize(json));
+  public GcsFormat getFormat() {
+    return GcsFormat.JSONL;
   }
 
 }

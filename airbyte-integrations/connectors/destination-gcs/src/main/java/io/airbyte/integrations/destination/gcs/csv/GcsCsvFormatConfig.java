@@ -22,12 +22,12 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.gcs.csv;
+package io.airbyte.integrations.destination.s3.csv;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.destination.gcs.GcsFormat;
-import io.airbyte.integrations.destination.gcs.GcsFormatConfig;
+import io.airbyte.integrations.destination.s3.GcsFormat;
+import io.airbyte.integrations.destination.s3.GcsFormatConfig;
 
 public class GcsCsvFormatConfig implements GcsFormatConfig {
 
