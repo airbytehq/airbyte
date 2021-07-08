@@ -73,6 +73,7 @@
     * [MySQL](integrations/sources/mysql.md)
     * [Okta](integrations/sources/okta.md)
     * [Oracle DB](integrations/sources/oracle.md)
+    * [Paypal Transaction](integrations/sources/paypal-transaction.md)
     * [Plaid](integrations/sources/plaid.md)
     * [PokéAPI](integrations/sources/pokeapi.md)
     * [Postgres](integrations/sources/postgres.md)
