@@ -38,6 +38,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+/**
+ * TODO Introduce a locking mechanism so that no DB operation is allowed when automatic migration is
+ * running
+ */
 public interface JobPersistence {
 
   Job getJob(long jobId) throws IOException;
