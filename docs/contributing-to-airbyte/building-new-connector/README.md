@@ -81,6 +81,7 @@ Typically this will be handled as part of code review by an Airbyter. There is a
 
 ## Updating an existing connector
 The steps for updating an existing connector are the same as for building a new connector minus the need to use the autogenerator to create a new connector. Therefore the steps are: 
+
 1. Iterate on the connector to make the needed changes
 2. Run tests
 3. Add any needed docs updates
