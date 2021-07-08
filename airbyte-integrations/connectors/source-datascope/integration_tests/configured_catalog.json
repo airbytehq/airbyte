@@ -3,7 +3,7 @@
   "streams": [
     {
       "stream": {
-        "name": "customers",
+        "name": "forms",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
@@ -24,33 +24,6 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "employees",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "string"]
-            },
-            "name": {
-              "type": ["null", "string"]
-            },
-            "years_of_service": {
-              "type": ["null", "integer"]
-            },
-            "start_date": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            }
-          }
-        },
-        "supported_sync_modes": ["full_refresh", "incremental"]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
     }
   ]
 }
