@@ -36,11 +36,13 @@ import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.IntegrationLauncher;
+
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,10 +68,9 @@ public class DefaultAirbyteSource implements AirbyteSource {
     this(integrationLauncher, new DefaultAirbyteStreamFactory(), new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION));
   }
 
-  @VisibleForTesting
-  DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
-                       final AirbyteStreamFactory streamFactory,
-                       final HeartbeatMonitor heartbeatMonitor) {
+  @VisibleForTesting DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
+                                          final AirbyteStreamFactory streamFactory,
+                                          final HeartbeatMonitor heartbeatMonitor) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
     this.heartbeatMonitor = heartbeatMonitor;
@@ -130,7 +131,8 @@ public class DefaultAirbyteSource implements AirbyteSource {
         FORCED_SHUTDOWN_DURATION);
 
     if (sourceProcess.isAlive() || sourceProcess.exitValue() != 0) {
-      throw new WorkerException("Source process exited with exit code: " + sourceProcess.exitValue());
+      String message = sourceProcess.isAlive() ? "Source has not terminated " : "Source process exit with code " + sourceProcess.exitValue();
+      throw new WorkerException(message + ". This warning is normal if the job was cancelled.");
     }
   }
 
