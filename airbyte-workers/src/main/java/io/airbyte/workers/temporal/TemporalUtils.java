@@ -24,8 +24,14 @@
 
 package io.airbyte.workers.temporal;
 
+import static java.util.stream.Collectors.toSet;
+
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.temporal.api.common.v1.WorkflowExecution;
+import io.temporal.api.namespace.v1.NamespaceInfo;
+import io.temporal.api.workflowservice.v1.DescribeNamespaceResponse;
+import io.temporal.api.workflowservice.v1.ListNamespacesRequest;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.client.WorkflowStub;
@@ -34,11 +40,16 @@ import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.workflow.Functions;
 import java.io.Serializable;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TemporalUtils {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(TemporalUtils.class);
 
   public static WorkflowServiceStubs createTemporalService(String temporalHost) {
     final WorkflowServiceStubsOptions options = WorkflowServiceStubsOptions.newBuilder()
@@ -46,7 +57,9 @@ public class TemporalUtils {
         .setTarget(temporalHost)
         .build();
 
-    return WorkflowServiceStubs.newInstance(options);
+    final WorkflowServiceStubs temporalService = WorkflowServiceStubs.newInstance(options);
+    waitForTemporalServerAndLog(temporalService);
+    return temporalService;
   }
 
   public static WorkflowClient createTemporalClient(String temporalHost) {
@@ -113,6 +126,39 @@ public class TemporalUtils {
     final WorkflowExecution workflowExecution = WorkflowClient.start(function, arg1);
     final CompletableFuture<R> resultAsync = untyped.getResultAsync(outputType);
     return ImmutablePair.of(workflowExecution, resultAsync);
+  }
+
+  public static void waitForTemporalServerAndLog(WorkflowServiceStubs temporalService) {
+    LOGGER.info("Waiting for temporal server...");
+
+    boolean temporalStatus = false;
+
+    while (!temporalStatus) {
+      LOGGER.warn("Waiting for default namespace to be initialized in temporal...");
+      Exceptions.toRuntime(() -> Thread.sleep(2000));
+
+      try {
+        temporalStatus = getNamespaces(temporalService).contains("default");
+      } catch (Exception e) {
+        // Ignore the exception because this likely means that the Temporal service is still initializing.
+        LOGGER.warn("Ignoring exception while trying to request Temporal namespaces:", e);
+      }
+    }
+
+    // sometimes it takes a few additional seconds for workflow queue listening to be available
+    Exceptions.toRuntime(() -> Thread.sleep(5000));
+
+    LOGGER.info("Found temporal default namespace!");
+  }
+
+  protected static Set<String> getNamespaces(WorkflowServiceStubs temporalService) {
+    return temporalService.blockingStub()
+        .listNamespaces(ListNamespacesRequest.newBuilder().build())
+        .getNamespacesList()
+        .stream()
+        .map(DescribeNamespaceResponse::getNamespaceInfo)
+        .map(NamespaceInfo::getName)
+        .collect(toSet());
   }
 
 }

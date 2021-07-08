@@ -44,3 +44,8 @@ The Mixpanel connector should not run into Mixpanel API limitations under normal
 
 Please read [Find API Secret](https://help.mixpanel.com/hc/en-us/articles/115004502806-Find-Project-Token-).
 
+## CHANGELOG
+
+| Version | Date | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| `0.2.4` | 2021-07-06 | [4539](https://github.com/airbytehq/airbyte/pull/4539) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |

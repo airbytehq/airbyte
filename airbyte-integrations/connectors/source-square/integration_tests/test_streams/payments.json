@@ -1,0 +1,214 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "payments",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "created_at": {
+              "type": ["null", "string"]
+            },
+            "updated_at": {
+              "type": ["null", "string"]
+            },
+            "amount_money": {
+              "type": ["null", "object"],
+              "properties": {
+                "amount": {
+                  "type": ["null", "integer"]
+                },
+                "currency": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "status": {
+              "type": ["null", "string"]
+            },
+            "delay_duration": {
+              "type": ["null", "string"]
+            },
+            "source_type": {
+              "type": ["null", "string"]
+            },
+            "card_details": {
+              "type": ["null", "object"],
+              "properties": {
+                "status": {
+                  "type": ["null", "string"]
+                },
+                "card": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "card_brand": {
+                      "type": ["null", "string"]
+                    },
+                    "last_4": {
+                      "type": ["null", "string"]
+                    },
+                    "exp_month": {
+                      "type": ["null", "integer"]
+                    },
+                    "exp_year": {
+                      "type": ["null", "integer"]
+                    },
+                    "fingerprint": {
+                      "type": ["null", "string"]
+                    },
+                    "card_type": {
+                      "type": ["null", "string"]
+                    },
+                    "prepaid_type": {
+                      "type": ["null", "string"]
+                    },
+                    "bin": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                },
+                "entry_method": {
+                  "type": ["null", "string"]
+                },
+                "cvv_status": {
+                  "type": ["null", "string"]
+                },
+                "avs_status": {
+                  "type": ["null", "string"]
+                },
+                "statement_description": {
+                  "type": ["null", "string"]
+                },
+                "card_payment_timeline": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "authorized_at": {
+                      "type": ["null", "string"]
+                    },
+                    "captured_at": {
+                      "type": ["null", "string"]
+                    },
+                    "voided_at": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            },
+            "location_id": {
+              "type": ["null", "string"]
+            },
+            "order_id": {
+              "type": ["null", "string"]
+            },
+            "risk_evaluation": {
+              "type": ["null", "object"],
+              "properties": {
+                "created_at": {
+                  "type": ["null", "string"]
+                },
+                "risk_level": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "processing_fee": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "effective_at": {
+                    "type": ["null", "string"]
+                  },
+                  "type": {
+                    "type": ["null", "string"]
+                  },
+                  "amount_money": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "amount": {
+                        "type": ["null", "integer"]
+                      },
+                      "currency": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "total_money": {
+              "type": ["null", "object"],
+              "properties": {
+                "amount": {
+                  "type": ["null", "integer"]
+                },
+                "currency": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "approved_money": {
+              "type": ["null", "object"],
+              "properties": {
+                "amount": {
+                  "type": ["null", "integer"]
+                },
+                "currency": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "receipt_number": {
+              "type": ["null", "string"]
+            },
+            "receipt_url": {
+              "type": ["null", "string"]
+            },
+            "delay_action": {
+              "type": ["null", "string"]
+            },
+            "delayed_until": {
+              "type": ["null", "string"]
+            },
+            "version_token": {
+              "type": ["null", "string"]
+            },
+            "note": {
+              "type": ["null", "string"]
+            },
+            "employee_id": {
+              "type": ["null", "string"]
+            },
+            "refunded_money": {
+              "type": ["null", "object"],
+              "properties": {
+                "amount": {
+                  "type": ["null", "integer"]
+                },
+                "currency": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "refund_ids": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["created_at"],
+      "destination_sync_mode": "append"
+    }
+  ]
+}
