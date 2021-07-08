@@ -41,6 +41,7 @@ class MailChimpStream(HttpStream, ABC):
         self.current_offset = 0
         self.data_center = kwargs["authenticator"].data_center
 
+    @property
     def url_base(self) -> str:
         return f"https://{self.data_center}.api.mailchimp.com/3.0/"
 
@@ -75,7 +76,7 @@ class MailChimpStream(HttpStream, ABC):
     @property
     @abstractmethod
     def data_field(self) -> str:
-        """the responce entry that contains useful data"""
+        """The responce entry that contains useful data"""
         pass
 
 

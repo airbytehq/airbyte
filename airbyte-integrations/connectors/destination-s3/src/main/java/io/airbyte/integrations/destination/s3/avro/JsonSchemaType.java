@@ -37,7 +37,8 @@ public enum JsonSchemaType {
   BOOLEAN("boolean", true, Schema.Type.BOOLEAN),
   NULL("null", true, Schema.Type.NULL),
   OBJECT("object", false, Schema.Type.RECORD),
-  ARRAY("array", false, Schema.Type.ARRAY);
+  ARRAY("array", false, Schema.Type.ARRAY),
+  COMBINED("combined", false, Schema.Type.UNION);
 
   private final String jsonSchemaType;
   private final boolean isPrimitive;

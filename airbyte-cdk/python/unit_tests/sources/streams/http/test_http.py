@@ -24,6 +24,7 @@
 
 
 from typing import Any, Iterable, Mapping, Optional
+from unittest.mock import ANY
 
 import pytest
 import requests
@@ -58,6 +59,18 @@ class StubBasicReadHttpStream(HttpStream):
         stubResp = {"data": self.resp_counter}
         self.resp_counter += 1
         yield stubResp
+
+
+def test_request_kwargs_used(mocker, requests_mock):
+    stream = StubBasicReadHttpStream()
+    request_kwargs = {"cert": None, "proxies": "google.com"}
+    mocker.patch.object(stream, "request_kwargs", return_value=request_kwargs)
+    mocker.patch.object(stream._session, "send", wraps=stream._session.send)
+    requests_mock.register_uri("GET", stream.url_base)
+
+    list(stream.read_records(sync_mode=SyncMode.full_refresh))
+
+    stream._session.send.assert_any_call(ANY, **request_kwargs)
 
 
 def test_stub_basic_read_http_stream_read_records(mocker):
