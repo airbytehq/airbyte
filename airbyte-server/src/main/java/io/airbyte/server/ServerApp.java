@@ -120,6 +120,7 @@ public class ServerApp {
             // todo (cgardens) - the CORs settings are wide open. will need to revisit when we add auth.
             // cors
             .register(new CorsFilter())
+            .register(new AuthenticationFilter())
             // request logging
             .register(new RequestLogger(mdc))
             // api

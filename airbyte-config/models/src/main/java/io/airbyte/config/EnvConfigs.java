@@ -57,6 +57,8 @@ public class EnvConfigs implements Configs {
   private static final String MAXIMUM_WORKSPACE_SIZE_MB = "MAXIMUM_WORKSPACE_SIZE_MB";
   private static final String TEMPORAL_HOST = "TEMPORAL_HOST";
   private static final String TEMPORAL_WORKER_PORTS = "TEMPORAL_WORKER_PORTS";
+  private static final String BLOTOUT_AUTH_ENDPOINT = "BLOTOUT_AUTH_ENDPOINT";
+  private static final String BLOTOUT_BASE_URL = "BLOTOUT_BASE_URL";
 
   private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
@@ -112,6 +114,16 @@ public class EnvConfigs implements Configs {
   @Override
   public String getDatabasePassword() {
     return getEnsureEnv(DATABASE_PASSWORD);
+  }
+
+  @Override
+  public String getBlotoutBaseUrl() {
+    return getEnsureEnv(BLOTOUT_BASE_URL);
+  }
+
+  @Override
+  public String getBlotoutAuthEndpoint() {
+    return getEnsureEnv(BLOTOUT_AUTH_ENDPOINT);
   }
 
   @Override

@@ -65,6 +65,10 @@ public interface Configs {
 
   Set<Integer> getTemporalWorkerPorts();
 
+  String getBlotoutBaseUrl();
+
+  String getBlotoutAuthEndpoint();
+
   enum TrackingStrategy {
     SEGMENT,
     LOGGING
