@@ -1065,11 +1065,11 @@ class DefaultJobPersistenceTest {
      * of jobs 2. Job cannot be one of the last N jobs on that conn (last N jobs are always kept). 3.
      * Job cannot be holding the most recent saved state (most recent saved state is always kept).
      *
-     * Testing Goal: Set up jobs according to the parameters passed in. Then delete according to the rules, and
-     * make sure the right number of jobs are left. Against one connection/scope,
+     * Testing Goal: Set up jobs according to the parameters passed in. Then delete according to the
+     * rules, and make sure the right number of jobs are left. Against one connection/scope,
      * <ol>
-     * <li>Setup: create a history of jobs that goes back many days (but produces
-     * no more than one job a day)</li>
+     * <li>Setup: create a history of jobs that goes back many days (but produces no more than one job a
+     * day)</li>
      * <li>Setup: the most recent job with state in it should be at least N jobs back</li>
      * <li>Assert: ensure that after purging, there are the right number of jobs left (and at least min
      * recency), including the one with the most recent state.</li>
@@ -1077,6 +1077,7 @@ class DefaultJobPersistenceTest {
      * recency), including the X most recent</li>
      * <li>Assert: ensure that after purging, all other job history has been deleted.</li>
      * </ol>
+     *
      * @param numJobs How many test jobs to generate; make this enough that all other parameters are
      *        fully included, for predictable results.
      * @param tooManyJobs Takes the place of DefaultJobPersistence.JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS
@@ -1129,7 +1130,8 @@ class DefaultJobPersistenceTest {
 
       LocalDateTime fakeNow = LocalDateTime.of(2021, 6, 20, 0, 0);
 
-      // Jobs are created in reverse chronological order; id order is the inverse of old-to-new date order.
+      // Jobs are created in reverse chronological order; id order is the inverse of old-to-new date
+      // order.
       // The most-recent job is in allJobs[0] which means keeping the 10 most recent is [0-9], simplifying
       // testing math as we don't have to care how many jobs total existed and were deleted.
       List<Job> allJobs = new ArrayList<>();
@@ -1141,11 +1143,11 @@ class DefaultJobPersistenceTest {
 
       // At least one job should have state. Find the desired job and add state to it.
       Job lastJobWithState = addStateToJob(allJobs.get(lastStatePosition));
-      addStateToJob(decoyJobs.get(lastStatePosition-1));
-      addStateToJob(decoyJobs.get(lastStatePosition+1));
+      addStateToJob(decoyJobs.get(lastStatePosition - 1));
+      addStateToJob(decoyJobs.get(lastStatePosition + 1));
 
       // An older job with state should also exist, so we ensure we picked the most-recent with queries.
-      Job olderJobWithState = addStateToJob(allJobs.get(lastStatePosition+1));
+      Job olderJobWithState = addStateToJob(allJobs.get(lastStatePosition + 1));
 
       // sanity check that the attempt does have saved state so the purge history sql detects it correctly
       assertTrue(lastJobWithState.getAttempts().get(0).getOutput() != null,
