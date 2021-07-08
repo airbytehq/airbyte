@@ -24,19 +24,14 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import io.airbyte.commons.json.Jsons;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.PgLsn;
 import io.airbyte.db.PostgresUtils;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.source.debezium.SnapshotMetadata;
-import io.airbyte.integrations.source.debezium.interfaces.CdcTargetPosition;
-import io.debezium.engine.ChangeEvent;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import io.airbyte.integrations.debezium.CdcTargetPosition;
+import io.airbyte.integrations.debezium.internals.SnapshotMetadata;
 import java.sql.SQLException;
 import java.util.Optional;
-import org.apache.kafka.connect.data.Struct;
-import org.apache.kafka.connect.source.SourceRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,45 +64,20 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
   }
 
   @Override
-  public boolean reachedTargetPosition(ChangeEvent<String, String> event) {
-    final PgLsn eventLsn = extractLsn(event);
+  public boolean reachedTargetPosition(JsonNode valueAsJson) {
+    final PgLsn eventLsn = extractLsn(valueAsJson);
 
     if (targetLsn.compareTo(eventLsn) > 0) {
       return false;
     } else {
-      final SnapshotMetadata snapshotMetadata = getSnapshotMetadata(event);
+      SnapshotMetadata snapshotMetadata = SnapshotMetadata.valueOf(valueAsJson.get("source").get("snapshot").asText().toUpperCase());
       // if not snapshot or is snapshot but last record in snapshot.
       return SnapshotMetadata.TRUE != snapshotMetadata;
     }
   }
 
-  private SnapshotMetadata getSnapshotMetadata(ChangeEvent<String, String> event) {
-    try {
-      /*
-       * Debezium emits EmbeddedEngineChangeEvent, but that class is not public and it is hidden behind
-       * the ChangeEvent iface. The EmbeddedEngineChangeEvent contains the information about whether the
-       * record was emitted in snapshot mode or not, which we need to determine whether to stop producing
-       * records or not. Thus we use reflection to access that hidden information.
-       */
-      final Method sourceRecordMethod = event.getClass().getMethod("sourceRecord");
-      sourceRecordMethod.setAccessible(true);
-      final SourceRecord sourceRecord = (SourceRecord) sourceRecordMethod.invoke(event);
-      final String snapshot = ((Struct) sourceRecord.value()).getStruct("source").getString("snapshot");
-
-      if (snapshot == null) {
-        return null;
-      }
-
-      // the snapshot field is an enum of true, false, and last.
-      return SnapshotMetadata.valueOf(snapshot.toUpperCase());
-    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private PgLsn extractLsn(ChangeEvent<String, String> event) {
-    return Optional.ofNullable(event.value())
-        .flatMap(value -> Optional.ofNullable(Jsons.deserialize(value).get("source")))
+  private PgLsn extractLsn(JsonNode valueAsJson) {
+    return Optional.ofNullable(valueAsJson.get("source"))
         .flatMap(source -> Optional.ofNullable(source.get("lsn").asText()))
         .map(Long::parseLong)
         .map(PgLsn::fromLong)

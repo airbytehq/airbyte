@@ -24,8 +24,8 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import static io.airbyte.integrations.source.debezium.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.integrations.source.debezium.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.postgres.PostgresSource.CDC_LSN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -46,8 +46,8 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.PgLsn;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.source.debezium.CdcSourceTest;
-import io.airbyte.integrations.source.debezium.interfaces.CdcTargetPosition;
+import io.airbyte.integrations.debezium.CdcSourceTest;
+import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteStateMessage;

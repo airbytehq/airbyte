@@ -26,7 +26,7 @@ package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.source.debezium.interfaces.CdcStateHandler;
+import io.airbyte.integrations.debezium.CdcStateHandler;
 import io.airbyte.integrations.source.relationaldb.StateManager;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.protocol.models.AirbyteMessage;
