@@ -33,6 +33,7 @@ import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.nio.file.Path;
@@ -129,9 +130,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
         FORCED_SHUTDOWN_DURATION);
 
     if (sourceProcess.isAlive() || sourceProcess.exitValue() != 0) {
-      LOGGER.warn(
-          "Source process might not have shut down correctly. source process alive: {}, source process exit value: {}. This warning is normal if the job was cancelled.",
-          sourceProcess.isAlive(), sourceProcess.exitValue());
+      throw new WorkerException("Source process exited with exit code: " + sourceProcess.exitValue());
     }
   }
 
