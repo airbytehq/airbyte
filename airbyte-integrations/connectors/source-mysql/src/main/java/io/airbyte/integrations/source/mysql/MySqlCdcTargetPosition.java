@@ -25,11 +25,9 @@
 package io.airbyte.integrations.source.mysql;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.source.debezium.SnapshotMetadata;
-import io.airbyte.integrations.source.debezium.interfaces.CdcTargetPosition;
-import io.debezium.engine.ChangeEvent;
+import io.airbyte.integrations.debezium.internals.SnapshotMetadata;
+import io.airbyte.integrations.debezium.CdcTargetPosition;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -84,8 +82,7 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition {
   }
 
   @Override
-  public boolean reachedTargetPosition(ChangeEvent<String, String> event) {
-    JsonNode valueAsJson = Jsons.deserialize(event.value());
+  public boolean reachedTargetPosition(JsonNode valueAsJson) {
     String eventFileName = valueAsJson.get("source").get("file").asText();
     int eventPosition = valueAsJson.get("source").get("pos").asInt();
 
