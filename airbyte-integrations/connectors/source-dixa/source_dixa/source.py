@@ -156,7 +156,7 @@ class SourceDixa(AbstractSource):
         Try loading one day's worth of data.
         """
         try:
-            start_date = datetime.strptime(config["start_timestamp"], "%Y-%m-%d")
+            start_date = datetime.strptime(config["start_date"], "%Y-%m-%d")
             start_timestamp = ConversationExport.datetime_to_ms_timestamp(start_date)
             url = "https://exports.dixa.io/v1/conversation_export"
             headers = {"accept": "application/json"}
@@ -182,7 +182,7 @@ class SourceDixa(AbstractSource):
         return [
             ConversationExport(
                 authenticator=auth,
-                start_date=datetime.strptime(config["start_timestamp"], "%Y-%m-%d"),
+                start_date=datetime.strptime(config["start_date"], "%Y-%m-%d"),
                 batch_size=int(config["batch_size"]),
                 logger=AirbyteLogger()
             )
