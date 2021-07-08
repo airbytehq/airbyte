@@ -24,7 +24,7 @@
 
 package io.airbyte.integrations.debezium;
 
-import io.debezium.engine.ChangeEvent;
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * This interface is used to define the target position at the beginning of the sync so that once we
@@ -32,6 +32,6 @@ import io.debezium.engine.ChangeEvent;
  */
 public interface CdcTargetPosition {
 
-  boolean reachedTargetPosition(ChangeEvent<String, String> event);
+  boolean reachedTargetPosition(JsonNode valueAsJson);
 
 }
