@@ -64,6 +64,10 @@ class SunshineStream(HttpStream, ABC):
         return {"Content-Type": "application/json"}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        """
+        The response data field is mostly a list of objects. Sometimes we can have object in data field.
+        (example `ObjectTypePolicies`). In this case this method should be overridden.
+        """
         response_json = response.json()
         yield from response_json.get(self.data_field, [])
 
@@ -98,6 +102,12 @@ class ObjectTypes(SunshineStream):
 
 
 class ObjectRecords(IncrementalSunshineStream):
+    """
+    The get method supports only the full-refresh way to get the information fron this source.
+    This source has date fields in all the endpoints, but we cannot query this field during GET requests.
+    To support Incremental for this stream I had to use `query` endpoint instead of `objects/records` -
+    this allows me to use date filters. This is the only way to have incremental support.
+    """
     http_method = "POST"
 
     def request_body_json(
@@ -199,6 +209,10 @@ class ObjectTypePolicies(SunshineStream):
 
 
 class Jobs(SunshineStream):
+    """
+    This stream is dynamic. The data can exist today, but may be absent tomorrow.
+    Since we need to have some data in the stream this stream is disabled.
+    """
     def path(self, **kwargs) -> str:
         return "jobs"
 

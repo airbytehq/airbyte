@@ -33,7 +33,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .streams import (  # CustomObjectEvents,; Jobs,
+from .streams import (
     Limits,
     ObjectRecords,
     ObjectTypePolicies,
@@ -43,7 +43,7 @@ from .streams import (  # CustomObjectEvents,; Jobs,
 )
 
 
-class HttpBasicAuthenticator(TokenAuthenticator):
+class Base64HttpAuthenticator(TokenAuthenticator):
     def __init__(self, auth: Tuple[str, str], auth_method: str = "Basic", **kwargs):
         auth_string = f"{auth[0]}:{auth[1]}".encode("utf8")
         b64_encoded = base64.b64encode(auth_string).decode("utf8")
@@ -54,7 +54,7 @@ class SourceZendeskSunshine(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             pendulum.parse(config["start_date"], strict=True)
-            authenticator = HttpBasicAuthenticator(auth=(f'{config["email"]}/token', config["api_token"]))
+            authenticator = Base64HttpAuthenticator(auth=(f'{config["email"]}/token', config["api_token"]))
             stream = Limits(authenticator=authenticator, subdomain=config["subdomain"], start_date=pendulum.parse(config["start_date"]))
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
@@ -74,7 +74,7 @@ class SourceZendeskSunshine(AbstractSource):
         After this time is passed we have no data. It will require permanent population, to pass
         the test criteria `stream should contain at least 1 record)
         """
-        authenticator = HttpBasicAuthenticator(auth=(f'{config["email"]}/token', config["api_token"]))
+        authenticator = Base64HttpAuthenticator(auth=(f'{config["email"]}/token', config["api_token"]))
         args = {"authenticator": authenticator, "subdomain": config["subdomain"], "start_date": config["start_date"]}
         return [
             ObjectTypes(**args),
