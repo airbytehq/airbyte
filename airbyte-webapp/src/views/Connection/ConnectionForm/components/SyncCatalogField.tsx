@@ -6,7 +6,7 @@ import styled from "styled-components";
 import type { DestinationSyncMode } from "core/domain/catalog";
 import { SyncSchemaStream } from "core/domain/catalog";
 
-import { CheckBox, RadioButton } from "components";
+import { CheckBox, LabeledRadioButton } from "components";
 import { Header, LightCell } from "components/SimpleTableComponents";
 import CatalogTree from "./CatalogTree";
 import Search from "./Search";
@@ -40,6 +40,16 @@ const NamespaceTitleCell = styled(LightCell)`
   display: flex;
   flex-direction: row;
   align-items: center;
+`;
+
+const SearchContent = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+`;
+
+const RadioButtonControl = styled(LabeledRadioButton)`
+  margin: 0 0 0 5px;
 `;
 
 type SchemaViewProps = {
@@ -106,10 +116,14 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
         </SchemaTitle>
         {additionalControl}
       </div>
-      <Search onSearch={setSearchString} />
-      <RadioButton />
-      <RadioButton />
-      <RadioButton />
+      <SearchContent>
+        <Search onSearch={setSearchString} />
+        <RadioButtonControl label={<FormattedMessage id="form.all" />} />
+        <RadioButtonControl label={<FormattedMessage id="form.selected" />} />
+        <RadioButtonControl
+          label={<FormattedMessage id="form.notSelected" />}
+        />
+      </SearchContent>
       <SchemaHeader>
         <NamespaceTitleCell flex={1.5}>
           <SelectAll>

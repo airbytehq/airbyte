@@ -10,12 +10,6 @@ type SearchProps = {
   onSearch: (value: string) => void;
 };
 
-const Content = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-`;
-
 const SearchInput = styled(Input)`
   padding: 3px 10px 3px 24px;
 `;
@@ -42,17 +36,15 @@ const Search: React.FC<SearchProps> = ({ onSearch }) => {
   const formatMessage = useIntl().formatMessage;
 
   return (
-    <Content>
-      <SearchContent>
-        <SearchIcon icon={faSearch} />
-        <SearchInput
-          placeholder={formatMessage({
-            id: `form.nameSearch`,
-          })}
-          onChange={(e) => onSearch(e.target.value)}
-        />
-      </SearchContent>
-    </Content>
+    <SearchContent>
+      <SearchIcon icon={faSearch} />
+      <SearchInput
+        placeholder={formatMessage({
+          id: `form.nameSearch`,
+        })}
+        onChange={(e) => onSearch(e.target.value)}
+      />
+    </SearchContent>
   );
 };
 
