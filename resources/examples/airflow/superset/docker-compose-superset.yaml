@@ -33,7 +33,7 @@ services:
       - redis:/data
 
   db:
-    env_file: docker/.env
+    env_file: ../docker/.env
     image: postgres:10
     container_name: superset_db
     restart: unless-stopped
@@ -41,7 +41,7 @@ services:
       - db_home:/var/lib/postgresql/data
 
   superset:
-    env_file: docker/.env-non-dev
+    env_file: ../docker/.env-non-dev
     image: *superset-image
     container_name: superset_app
     command: ["/app/docker/docker-bootstrap.sh", "app-gunicorn"]
@@ -56,7 +56,7 @@ services:
     image: *superset-image
     container_name: superset_init
     command: ["/app/docker/docker-init.sh"]
-    env_file: docker/.env-non-dev
+    env_file: ../docker/.env-non-dev
     depends_on: *superset-depends-on
     user: "root"
     volumes: *superset-volumes
@@ -65,7 +65,7 @@ services:
     image: *superset-image
     container_name: superset_worker
     command: ["/app/docker/docker-bootstrap.sh", "worker"]
-    env_file: docker/.env-non-dev
+    env_file: ../docker/.env-non-dev
     restart: unless-stopped
     depends_on: *superset-depends-on
     user: "root"
@@ -75,7 +75,7 @@ services:
     image: *superset-image
     container_name: superset_worker_beat
     command: ["/app/docker/docker-bootstrap.sh", "beat"]
-    env_file: docker/.env-non-dev
+    env_file: ../docker/.env-non-dev
     restart: unless-stopped
     depends_on: *superset-depends-on
     user: "root"
