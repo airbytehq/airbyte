@@ -5,7 +5,7 @@
     "title": "Paypal Transaction Search",
     "type": "object",
     "required": ["client_id", "secret", "start_date", "is_sandbox"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "client_id": {
         "title": "Client ID",
