@@ -77,7 +77,7 @@
 						"type": ["null", "number"]
 					},
 					"question_id": {
-						"type": ["null", "string"]
+						"type": ["null", "number"]
 					}
 				}
 			}
