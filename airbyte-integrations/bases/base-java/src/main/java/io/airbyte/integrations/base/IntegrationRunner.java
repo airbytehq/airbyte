@@ -33,12 +33,10 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.function.Consumer;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,10 +63,11 @@ public class IntegrationRunner {
     this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, source);
   }
 
-  @VisibleForTesting IntegrationRunner(IntegrationCliParser cliParser,
-                                       Consumer<AirbyteMessage> outputRecordCollector,
-                                       Destination destination,
-                                       Source source) {
+  @VisibleForTesting
+  IntegrationRunner(IntegrationCliParser cliParser,
+                    Consumer<AirbyteMessage> outputRecordCollector,
+                    Destination destination,
+                    Source source) {
     Preconditions.checkState(destination != null ^ source != null, "can only pass in a destination or a source");
     this.cliParser = cliParser;
     this.outputRecordCollector = outputRecordCollector;
