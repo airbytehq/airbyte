@@ -33,10 +33,12 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.function.Consumer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,11 +65,10 @@ public class IntegrationRunner {
     this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, source);
   }
 
-  @VisibleForTesting
-  IntegrationRunner(IntegrationCliParser cliParser,
-                    Consumer<AirbyteMessage> outputRecordCollector,
-                    Destination destination,
-                    Source source) {
+  @VisibleForTesting IntegrationRunner(IntegrationCliParser cliParser,
+                                       Consumer<AirbyteMessage> outputRecordCollector,
+                                       Destination destination,
+                                       Source source) {
     Preconditions.checkState(destination != null ^ source != null, "can only pass in a destination or a source");
     this.cliParser = cliParser;
     this.outputRecordCollector = outputRecordCollector;
@@ -102,12 +103,9 @@ public class IntegrationRunner {
       case READ -> {
 
         final JsonNode config = parseConfig(parsed.getConfigPath());
-        final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(),
-            ConfiguredAirbyteCatalog.class);
-        final Optional<JsonNode> stateOptional =
-            parsed.getStatePath().map(IntegrationRunner::parseConfig);
-        final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog,
-            stateOptional.orElse(null));
+        final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
+        final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
+        final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null));
         try (messageIterator) {
           messageIterator.forEachRemaining(outputRecordCollector::accept);
         }
