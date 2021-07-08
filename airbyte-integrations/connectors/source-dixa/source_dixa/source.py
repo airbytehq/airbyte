@@ -107,10 +107,13 @@ class ConversationExport(HttpStream, ABC):
         """
         slices = []
 
-        if stream_state and ConversationExport.cursor_field in stream_state:
-            updated_after = stream_state[ConversationExport.cursor_field]
-        else:
-            updated_after = self.start_timestamp
+        stream_state = stream_state or {}
+        # If stream_state contains the cursor field and the value of the cursor
+        # field is higher than start_timestamp, then start at the cursor field
+        # value. Otherwise, start at start_timestamp.
+        updated_after = max(
+            stream_state.get(ConversationExport.cursor_field, 0), self.start_timestamp
+        )
         updated_before = min(
             ConversationExport.add_days_to_ms_timestamp(
                 days=self.batch_size,

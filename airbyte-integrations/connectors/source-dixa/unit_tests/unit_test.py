@@ -124,6 +124,27 @@ def test_stream_slices_with_state(conversation_export):
     assert actual_slices == expected_slices
 
 
+def test_stream_slices_with_start_timestamp_larger_than_state():
+    """
+    Test that if start_timestamp is larger than state, then start at start_timestamp.
+    """
+    conversation_export = ConversationExport(
+        start_date=datetime(year=2021, month=12, day=1), batch_size=31,
+        logger=None
+    )
+    conversation_export.end_timestamp = 1638360000001  # 2021-12-01 12:00:00 + 1 ms
+    expected_slices = [
+        {
+            'updated_after': 1638313200000,  # 2021-07-01 12:00:00
+            'updated_before': 1638360000001
+        }
+    ]
+    actual_slices = conversation_export.stream_slices(
+        stream_state={'updated_at': 1625220000000}  # # 2021-07-02 12:00:00
+    )
+    assert actual_slices == expected_slices
+
+
 def test_get_updated_state_without_state(conversation_export):
     assert conversation_export.get_updated_state(
         current_stream_state=None, latest_record={'updated_at': 1625263200000}
