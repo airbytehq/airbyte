@@ -8,7 +8,7 @@
       "type": "string"
     },
     "external_id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "attributes": {
       "type": "object"
