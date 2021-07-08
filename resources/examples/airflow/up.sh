@@ -15,4 +15,5 @@ docker exec -ti airflow_webserver airflow variables set 'AIRBYTE_CONNECTION_ID' 
 docker exec -ti airflow_webserver airflow connections add 'airbyte_example' --conn-uri 'airbyte://host.docker.internal:8000'
 echo "Access Airflow at http://localhost:8085 to kick off your Airbyte sync DAG."
 # Create Superset containers.
+docker-compose -f docker-compose-superset.yaml down -v
 docker-compose -f docker-compose-superset.yaml up -d

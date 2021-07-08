@@ -2,4 +2,5 @@
 cd ../../..
 docker-compose down -v
 cd resources/examples/airflow || exit
-docker-compose down -v
+docker-compose -f docker-compose-superset.yaml down -v
+docker-compose -f docker-compose.yaml down -v
