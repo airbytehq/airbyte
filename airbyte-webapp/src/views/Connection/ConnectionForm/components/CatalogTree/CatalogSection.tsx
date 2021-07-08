@@ -177,13 +177,14 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
       </TreeRowWrapper>
       {isRowExpanded && hasChildren && (
         <>
-          <TreeRowWrapper depth={1}>
-            <FieldHeader />
+          <TreeRowWrapper noBorder>
+            <FieldHeader depth={1} />
           </TreeRowWrapper>
-          <Rows fields={fields}>
+          <Rows fields={fields} depth={1}>
             {(field) => (
               <TreeRowWrapper depth={1}>
                 <FieldRow
+                  depth={1}
                   name={field.name}
                   type={field.type}
                   destinationName={""}

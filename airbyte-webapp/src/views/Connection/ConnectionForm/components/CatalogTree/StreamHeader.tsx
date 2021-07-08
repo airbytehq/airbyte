@@ -4,7 +4,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { MainInfoCell } from "./components/MainInfoCell";
-import { Cell } from "components/SimpleTableComponents";
+import { Cell, LightTextCell } from "components/SimpleTableComponents";
 import { ExpandFieldCell } from "./components/ExpandFieldCell";
 import { SyncSettingsCell } from "./components/SyncSettingsCell";
 import { SyncSchemaStream } from "core/domain/catalog";
@@ -60,6 +60,9 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
           </EmptyField>
         )}
       </Cell>
+      {/*TODO: add data*/}
+      <LightTextCell>data</LightTextCell>
+      <Cell>data</Cell>
       <SyncSettingsCell
         value={`${stream.config.syncMode}.${stream.config.destinationSyncMode}`}
         data={availableSyncModes}

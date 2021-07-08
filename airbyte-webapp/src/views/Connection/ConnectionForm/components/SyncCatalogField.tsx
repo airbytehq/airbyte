@@ -7,7 +7,7 @@ import type { DestinationSyncMode } from "core/domain/catalog";
 import { SyncSchemaStream } from "core/domain/catalog";
 
 import { CheckBox, RadioButton } from "components";
-import { Cell, Header, LightCell } from "components/SimpleTableComponents";
+import { Header, LightCell } from "components/SimpleTableComponents";
 import CatalogTree from "./CatalogTree";
 import Search from "./Search";
 import SectionTitle from "./SectionTitle";
@@ -19,7 +19,7 @@ const TreeViewContainer = styled.div`
   margin-bottom: 29px;
   border-radius: 4px;
   max-height: 600px;
-  overflow-y: auto;
+  overflow-y: overlay;
 `;
 
 const SchemaHeader = styled(Header)`
@@ -30,6 +30,16 @@ const SchemaHeader = styled(Header)`
 const SchemaTitle = styled(SectionTitle)`
   display: inline-block;
   margin: 0 11px 13px 0;
+`;
+
+const SelectAll = styled.div`
+  margin: 0 9px 0 30px;
+`;
+
+const NamespaceTitleCell = styled(LightCell)`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 `;
 
 type SchemaViewProps = {
@@ -101,13 +111,12 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
       <RadioButton />
       <RadioButton />
       <SchemaHeader>
-        <Cell>
-          <CheckBox onChange={onCheckAll} checked={hasSelectedItem} />
-        </Cell>
-        <Cell flex={2}></Cell>
-        <LightCell>
+        <NamespaceTitleCell flex={1.5}>
+          <SelectAll>
+            <CheckBox onChange={onCheckAll} checked={hasSelectedItem} />
+          </SelectAll>
           <FormattedMessage id="form.sourceNamespace" />
-        </LightCell>
+        </NamespaceTitleCell>
         <LightCell>
           <FormattedMessage id="form.sourceStreamName" />
         </LightCell>

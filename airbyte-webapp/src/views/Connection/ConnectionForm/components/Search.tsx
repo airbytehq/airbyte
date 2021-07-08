@@ -11,7 +11,6 @@ type SearchProps = {
 };
 
 const Content = styled.div`
-  padding-left: 30px;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -31,7 +30,8 @@ const SearchIcon = styled(FontAwesomeIcon)`
 
 const SearchContent = styled.div`
   position: relative;
-  margin-left: 10px;
+  max-width: 270px;
+  width: 100%;
 
   &:before {
     content: attr(data-content);
