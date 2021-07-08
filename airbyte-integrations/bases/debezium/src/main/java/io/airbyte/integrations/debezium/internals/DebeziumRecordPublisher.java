@@ -196,7 +196,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
   }
 
   @VisibleForTesting
-  protected static String getTableWhitelist(ConfiguredAirbyteCatalog catalog) {
+  public static String getTableWhitelist(ConfiguredAirbyteCatalog catalog) {
     return catalog.getStreams().stream()
         .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)
         .map(ConfiguredAirbyteStream::getStream)
