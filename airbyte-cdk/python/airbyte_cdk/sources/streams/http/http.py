@@ -118,6 +118,19 @@ class HttpStream(Stream, ABC):
         """
         return None
 
+    def request_kwargs(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        """
+        Override to return a mapping of keyword arguments to be used when creating the HTTP request.
+        Any option listed in https://docs.python-requests.org/en/latest/api/#requests.adapters.BaseAdapter.send for can be returned from
+        this method. Note that these options do not conflict with request-level options such as headers, request params, etc..
+        """
+        return {}
+
     @abstractmethod
     def parse_response(
         self,
@@ -166,13 +179,13 @@ class HttpStream(Stream, ABC):
             # TODO support non-json bodies
             args["json"] = json
 
-        return requests.Request(**args).prepare()
+        return self._session.prepare_request(requests.Request(**args))
 
     # TODO allow configuring these parameters. If we can get this into the requests library, then we can do it without the ugly exception hacks
     #  see https://github.com/litl/backoff/pull/122
     @default_backoff_handler(max_tries=5, factor=5)
     @user_defined_backoff_handler(max_tries=5)
-    def _send_request(self, request: requests.PreparedRequest) -> requests.Response:
+    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
         """
         Wraps sending the request in rate limit and error handlers.
 
@@ -190,9 +203,8 @@ class HttpStream(Stream, ABC):
         Unexpected transient exceptions use the default backoff parameters.
         Unexpected persistent exceptions are not handled and will cause the sync to fail.
         """
-        response: requests.Response = self._session.send(request)
+        response: requests.Response = self._session.send(request, **request_kwargs)
         if self.should_retry(response):
-
             custom_backoff_time = self.backoff_time(response)
             if custom_backoff_time:
                 raise UserDefinedBackoffException(backoff=custom_backoff_time, request=request, response=response)
@@ -224,8 +236,8 @@ class HttpStream(Stream, ABC):
                 params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
                 json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             )
-
-            response = self._send_request(request)
+            request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+            response = self._send_request(request, request_kwargs)
             yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
 
             next_page_token = self.next_page_token(response)
