@@ -75,7 +75,7 @@ class MailChimpStream(HttpStream, ABC):
     @property
     @abstractmethod
     def data_field(self) -> str:
-        """the responce entry that contains useful data"""
+        """The responce entry that contains useful data"""
         pass
 
 
