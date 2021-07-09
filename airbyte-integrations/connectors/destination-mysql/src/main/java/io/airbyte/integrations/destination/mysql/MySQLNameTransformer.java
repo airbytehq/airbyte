@@ -26,6 +26,16 @@ package io.airbyte.integrations.destination.mysql;
 
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 
+/**
+ * Note that MySQL documentation discusses about identifiers case sensitivity using the
+ * lower_case_table_names system variable. As one of their recommendation is: "It is best to adopt a
+ * consistent convention, such as always creating and referring to databases and tables using
+ * lowercase names. This convention is recommended for maximum portability and ease of use.
+ *
+ * Source: https://dev.mysql.com/doc/refman/8.0/en/identifier-case-sensitivity.html"
+ *
+ * As a result, we are here forcing all identifier (table, schema and columns) names to lowercase.
+ */
 public class MySQLNameTransformer extends ExtendedNameTransformer {
 
   // These constants must match those in destination_name_transformer.py
@@ -39,19 +49,19 @@ public class MySQLNameTransformer extends ExtendedNameTransformer {
 
   @Override
   public String getIdentifier(String name) {
-    String identifier = super.getIdentifier(name);
+    String identifier = applyDefaultCase(super.getIdentifier(name));
     return truncateName(identifier, TRUNCATION_MAX_NAME_LENGTH);
   }
 
   @Override
   public String getTmpTableName(String streamName) {
-    String tmpTableName = super.getTmpTableName(streamName);
+    String tmpTableName = applyDefaultCase(super.getTmpTableName(streamName));
     return truncateName(tmpTableName, TRUNCATION_MAX_NAME_LENGTH);
   }
 
   @Override
   public String getRawTableName(String streamName) {
-    String rawTableName = super.getRawTableName(streamName);
+    String rawTableName = applyDefaultCase(super.getRawTableName(streamName));
     return truncateName(rawTableName, TRUNCATION_MAX_NAME_LENGTH);
   }
 
