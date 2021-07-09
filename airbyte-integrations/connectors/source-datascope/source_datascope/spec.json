@@ -20,7 +20,7 @@
       },
       "form_id": {
         "type": "string",
-        "description": "Form ID"
+        "description": "You can find the form ID on the URL at the moment to edit a form (https://mydatascope.com/task_forms/FORM_ID/edit)."
       },
       "schema_type": {
         "type": "string",
