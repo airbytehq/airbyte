@@ -3,9 +3,11 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { ContentCard } from "components";
-import { PreferencesForm } from "views/Settings/PreferencesForm";
+import NotificationsForm from "./components/NotificationsForm";
 import useWorkspace from "components/hooks/services/useWorkspaceHook";
-import WebHookForm from "./WebHookForm";
+import WebHookForm from "./components/WebHookForm";
+import HeadTitle from "components/HeadTitle";
+import useWorkspaceEditor from "../../components/useWorkspaceEditor";
 
 const SettingsCard = styled(ContentCard)`
   max-width: 638px;
@@ -21,15 +23,14 @@ const Content = styled.div`
   padding: 27px 26px 15px;
 `;
 
-const AccountSettings: React.FC = () => {
+const NotificationPage: React.FC = () => {
+  const { workspace, updateWebhook, testWebhook } = useWorkspace();
   const {
-    workspace,
-    updatePreferences,
-    updateWebhook,
-    testWebhook,
-  } = useWorkspace();
-  const [errorMessage, setErrorMessage] = useState<React.ReactNode>(null);
-  const [successMessage, setSuccessMessage] = useState<React.ReactNode>(null);
+    errorMessage,
+    successMessage,
+    loading,
+    updateData,
+  } = useWorkspaceEditor();
   const [
     errorWebhookMessage,
     setErrorWebhookMessage,
@@ -39,20 +40,11 @@ const AccountSettings: React.FC = () => {
     setSuccessWebhookMessage,
   ] = useState<React.ReactNode>(null);
 
-  const onSubmit = async (data: {
-    email: string;
-    anonymousDataCollection: boolean;
+  const onChange = async (data: {
     news: boolean;
     securityUpdates: boolean;
   }) => {
-    setErrorMessage(null);
-    setSuccessMessage(null);
-    try {
-      await updatePreferences(data);
-      setSuccessMessage(<FormattedMessage id="form.changesSaved" />);
-    } catch (e) {
-      setErrorMessage(<FormattedMessage id="form.someError" />);
-    }
+    await updateData({ ...workspace, ...data });
   };
 
   const onSubmitWebhook = async (data: { webhook: string }) => {
@@ -85,7 +77,12 @@ const AccountSettings: React.FC = () => {
 
   return (
     <>
-      <SettingsCard title={<FormattedMessage id="settings.webhook" />}>
+      <HeadTitle
+        titles={[{ id: "sidebar.settings" }, { id: "settings.notifications" }]}
+      />
+      <SettingsCard
+        title={<FormattedMessage id="settings.notificationSettings" />}
+      >
         <Content>
           <WebHookForm
             notificationUrl={initialWebhookUrl}
@@ -94,18 +91,13 @@ const AccountSettings: React.FC = () => {
             errorMessage={errorWebhookMessage}
             successMessage={successWebhookMessage}
           />
-        </Content>
-      </SettingsCard>
-      <SettingsCard title={<FormattedMessage id="settings.accountSettings" />}>
-        <Content>
-          <PreferencesForm
+
+          <NotificationsForm
+            isLoading={loading}
             errorMessage={errorMessage}
             successMessage={successMessage}
-            onSubmit={onSubmit}
-            isEdit
+            onChange={onChange}
             preferencesValues={{
-              email: workspace.email,
-              anonymousDataCollection: workspace.anonymousDataCollection,
               news: workspace.news,
               securityUpdates: workspace.securityUpdates,
             }}
@@ -116,4 +108,4 @@ const AccountSettings: React.FC = () => {
   );
 };
 
-export default AccountSettings;
+export default NotificationPage;
