@@ -1,1219 +1,1039 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "http://example.com/example.json",
-    "type": "object",
-    "title": "The root schema",
-    "description": "The root schema comprises the entire JSON document.",
-    "default": {},
-    "examples": [
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "http://example.com/example.json",
+  "type": "object",
+  "title": "The root schema",
+  "description": "The root schema comprises the entire JSON document.",
+  "default": {},
+  "examples": [
+    {
+      "id": 1,
+      "creator_user_id": {
+        "id": 8877,
+        "name": "Creator",
+        "email": "john.doe@pipedrive.com",
+        "has_pic": false,
+        "pic_hash": null,
+        "active_flag": true,
+        "value": 8877
+      },
+      "user_id": {
+        "id": 8877,
+        "name": "Creator",
+        "email": "john.doe@pipedrive.com",
+        "has_pic": false,
+        "pic_hash": null,
+        "active_flag": true,
+        "value": 8877
+      },
+      "person_id": {
+        "active_flag": true,
+        "name": "Person",
+        "email": [
+          {
+            "label": "work",
+            "value": "person@pipedrive.com",
+            "primary": true
+          }
+        ],
+        "phone": [
+          {
+            "label": "work",
+            "value": "37244499911",
+            "primary": true
+          }
+        ],
+        "value": 1101
+      },
+      "org_id": {
+        "name": "Organization",
+        "people_count": 2,
+        "owner_id": 8877,
+        "address": "Mustamäe tee 3a, 10615 Tallinn",
+        "active_flag": true,
+        "cc_email": "org@pipedrivemail.com",
+        "value": 5
+      },
+      "stage_id": 2,
+      "title": "Deal One",
+      "value": 5000,
+      "currency": "EUR",
+      "add_time": "2019-05-29 04:21:51",
+      "update_time": "2019-11-28 16:19:50",
+      "stage_change_time": "2019-11-28 15:41:22",
+      "active": true,
+      "deleted": false,
+      "status": "open",
+      "probability": null,
+      "next_activity_date": "2019-11-29",
+      "next_activity_time": "11:30:00",
+      "next_activity_id": 128,
+      "last_activity_id": null,
+      "last_activity_date": null,
+      "lost_reason": null,
+      "visible_to": "1",
+      "close_time": null,
+      "pipeline_id": 1,
+      "won_time": "2019-11-27 11:40:36",
+      "first_won_time": "2019-11-27 11:40:36",
+      "lost_time": null,
+      "products_count": 0,
+      "files_count": 0,
+      "notes_count": 2,
+      "followers_count": 0,
+      "email_messages_count": 4,
+      "activities_count": 1,
+      "done_activities_count": 0,
+      "undone_activities_count": 1,
+      "participants_count": 1,
+      "expected_close_date": "2019-06-29",
+      "last_incoming_mail_time": "2019-05-29 18:21:42",
+      "last_outgoing_mail_time": "2019-05-30 03:45:35",
+      "label": null,
+      "stage_order_nr": 2,
+      "person_name": "Person",
+      "org_name": "Organization",
+      "next_activity_subject": "Call",
+      "next_activity_type": "call",
+      "next_activity_duration": "00:30:00",
+      "next_activity_note": "Note content",
+      "formatted_value": "€5,000",
+      "weighted_value": 5000,
+      "formatted_weighted_value": "€5,000",
+      "weighted_value_currency": "EUR",
+      "rotten_time": null,
+      "owner_name": "Creator",
+      "cc_email": "company+deal1@pipedrivemail.com",
+      "org_hidden": false,
+      "person_hidden": false
+    }
+  ],
+  "required": [
+    "id",
+    "creator_user_id",
+    "user_id",
+    "person_id",
+    "org_id",
+    "stage_id",
+    "title",
+    "value",
+    "currency",
+    "add_time",
+    "update_time",
+    "stage_change_time",
+    "active",
+    "deleted",
+    "status",
+    "probability",
+    "next_activity_date",
+    "next_activity_time",
+    "next_activity_id",
+    "last_activity_id",
+    "last_activity_date",
+    "lost_reason",
+    "visible_to",
+    "close_time",
+    "pipeline_id",
+    "won_time",
+    "first_won_time",
+    "lost_time",
+    "products_count",
+    "files_count",
+    "notes_count",
+    "followers_count",
+    "email_messages_count",
+    "activities_count",
+    "done_activities_count",
+    "undone_activities_count",
+    "participants_count",
+    "expected_close_date",
+    "last_incoming_mail_time",
+    "last_outgoing_mail_time",
+    "label",
+    "stage_order_nr",
+    "person_name",
+    "org_name",
+    "next_activity_subject",
+    "next_activity_type",
+    "next_activity_duration",
+    "next_activity_note",
+    "formatted_value",
+    "weighted_value",
+    "formatted_weighted_value",
+    "weighted_value_currency",
+    "rotten_time",
+    "owner_name",
+    "cc_email",
+    "org_hidden",
+    "person_hidden"
+  ],
+  "properties": {
+    "id": {
+      "$id": "#/properties/id",
+      "type": "integer",
+      "title": "The id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [1]
+    },
+    "creator_user_id": {
+      "$id": "#/properties/creator_user_id",
+      "type": "object",
+      "title": "The creator_user_id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": {},
+      "examples": [
         {
-            "id": 1,
-            "creator_user_id": {
-                "id": 8877,
-                "name": "Creator",
-                "email": "john.doe@pipedrive.com",
-                "has_pic": false,
-                "pic_hash": null,
-                "active_flag": true,
-                "value": 8877
-            },
-            "user_id": {
-                "id": 8877,
-                "name": "Creator",
-                "email": "john.doe@pipedrive.com",
-                "has_pic": false,
-                "pic_hash": null,
-                "active_flag": true,
-                "value": 8877
-            },
-            "person_id": {
-                "active_flag": true,
-                "name": "Person",
-                "email": [
-                    {
-                        "label": "work",
-                        "value": "person@pipedrive.com",
-                        "primary": true
-                    }
-                ],
-                "phone": [
-                    {
-                        "label": "work",
-                        "value": "37244499911",
-                        "primary": true
-                    }
-                ],
-                "value": 1101
-            },
-            "org_id": {
-                "name": "Organization",
-                "people_count": 2,
-                "owner_id": 8877,
-                "address": "Mustamäe tee 3a, 10615 Tallinn",
-                "active_flag": true,
-                "cc_email": "org@pipedrivemail.com",
-                "value": 5
-            },
-            "stage_id": 2,
-            "title": "Deal One",
-            "value": 5000,
-            "currency": "EUR",
-            "add_time": "2019-05-29 04:21:51",
-            "update_time": "2019-11-28 16:19:50",
-            "stage_change_time": "2019-11-28 15:41:22",
-            "active": true,
-            "deleted": false,
-            "status": "open",
-            "probability": null,
-            "next_activity_date": "2019-11-29",
-            "next_activity_time": "11:30:00",
-            "next_activity_id": 128,
-            "last_activity_id": null,
-            "last_activity_date": null,
-            "lost_reason": null,
-            "visible_to": "1",
-            "close_time": null,
-            "pipeline_id": 1,
-            "won_time": "2019-11-27 11:40:36",
-            "first_won_time": "2019-11-27 11:40:36",
-            "lost_time": null,
-            "products_count": 0,
-            "files_count": 0,
-            "notes_count": 2,
-            "followers_count": 0,
-            "email_messages_count": 4,
-            "activities_count": 1,
-            "done_activities_count": 0,
-            "undone_activities_count": 1,
-            "participants_count": 1,
-            "expected_close_date": "2019-06-29",
-            "last_incoming_mail_time": "2019-05-29 18:21:42",
-            "last_outgoing_mail_time": "2019-05-30 03:45:35",
-            "label": null,
-            "stage_order_nr": 2,
-            "person_name": "Person",
-            "org_name": "Organization",
-            "next_activity_subject": "Call",
-            "next_activity_type": "call",
-            "next_activity_duration": "00:30:00",
-            "next_activity_note": "Note content",
-            "formatted_value": "€5,000",
-            "weighted_value": 5000,
-            "formatted_weighted_value": "€5,000",
-            "weighted_value_currency": "EUR",
-            "rotten_time": null,
-            "owner_name": "Creator",
-            "cc_email": "company+deal1@pipedrivemail.com",
-            "org_hidden": false,
-            "person_hidden": false
+          "id": 8877,
+          "name": "Creator",
+          "email": "john.doe@pipedrive.com",
+          "has_pic": false,
+          "pic_hash": null,
+          "active_flag": true,
+          "value": 8877
         }
-    ],
-    "required": [
+      ],
+      "required": [
         "id",
-        "creator_user_id",
-        "user_id",
-        "person_id",
-        "org_id",
-        "stage_id",
-        "title",
-        "value",
-        "currency",
-        "add_time",
-        "update_time",
-        "stage_change_time",
-        "active",
-        "deleted",
-        "status",
-        "probability",
-        "next_activity_date",
-        "next_activity_time",
-        "next_activity_id",
-        "last_activity_id",
-        "last_activity_date",
-        "lost_reason",
-        "visible_to",
-        "close_time",
-        "pipeline_id",
-        "won_time",
-        "first_won_time",
-        "lost_time",
-        "products_count",
-        "files_count",
-        "notes_count",
-        "followers_count",
-        "email_messages_count",
-        "activities_count",
-        "done_activities_count",
-        "undone_activities_count",
-        "participants_count",
-        "expected_close_date",
-        "last_incoming_mail_time",
-        "last_outgoing_mail_time",
-        "label",
-        "stage_order_nr",
-        "person_name",
-        "org_name",
-        "next_activity_subject",
-        "next_activity_type",
-        "next_activity_duration",
-        "next_activity_note",
-        "formatted_value",
-        "weighted_value",
-        "formatted_weighted_value",
-        "weighted_value_currency",
-        "rotten_time",
-        "owner_name",
-        "cc_email",
-        "org_hidden",
-        "person_hidden"
-    ],
-    "properties": {
+        "name",
+        "email",
+        "has_pic",
+        "pic_hash",
+        "active_flag",
+        "value"
+      ],
+      "properties": {
         "id": {
-            "$id": "#/properties/id",
-            "type": "integer",
-            "title": "The id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                1
-            ]
+          "$id": "#/properties/creator_user_id/properties/id",
+          "type": "integer",
+          "title": "The id schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": 0,
+          "examples": [8877]
         },
-        "creator_user_id": {
-            "$id": "#/properties/creator_user_id",
-            "type": "object",
-            "title": "The creator_user_id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": {},
-            "examples": [
-                {
-                    "id": 8877,
-                    "name": "Creator",
-                    "email": "john.doe@pipedrive.com",
-                    "has_pic": false,
-                    "pic_hash": null,
-                    "active_flag": true,
-                    "value": 8877
-                }
-            ],
-            "required": [
-                "id",
-                "name",
-                "email",
-                "has_pic",
-                "pic_hash",
-                "active_flag",
-                "value"
-            ],
-            "properties": {
-                "id": {
-                    "$id": "#/properties/creator_user_id/properties/id",
-                    "type": "integer",
-                    "title": "The id schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": 0,
-                    "examples": [
-                        8877
-                    ]
-                },
-                "name": {
-                    "$id": "#/properties/creator_user_id/properties/name",
-                    "type": "string",
-                    "title": "The name schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": "",
-                    "examples": [
-                        "Creator"
-                    ]
-                },
-                "email": {
-                    "$id": "#/properties/creator_user_id/properties/email",
-                    "type": "string",
-                    "title": "The email schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": "",
-                    "examples": [
-                        "john.doe@pipedrive.com"
-                    ]
-                },
-                "has_pic": {
-                    "$id": "#/properties/creator_user_id/properties/has_pic",
-                    "type": "boolean",
-                    "title": "The has_pic schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": false,
-                    "examples": [
-                        false
-                    ]
-                },
-                "pic_hash": {
-                    "$id": "#/properties/creator_user_id/properties/pic_hash",
-                    "type": "null",
-                    "title": "The pic_hash schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": null,
-                    "examples": [
-                        null
-                    ]
-                },
-                "active_flag": {
-                    "$id": "#/properties/creator_user_id/properties/active_flag",
-                    "type": "boolean",
-                    "title": "The active_flag schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": false,
-                    "examples": [
-                        true
-                    ]
-                },
-                "value": {
-                    "$id": "#/properties/creator_user_id/properties/value",
-                    "type": "integer",
-                    "title": "The value schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": 0,
-                    "examples": [
-                        8877
-                    ]
-                }
-            },
-            "additionalProperties": true
+        "name": {
+          "$id": "#/properties/creator_user_id/properties/name",
+          "type": "string",
+          "title": "The name schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": "",
+          "examples": ["Creator"]
         },
-        "user_id": {
-            "$id": "#/properties/user_id",
-            "type": "object",
-            "title": "The user_id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": {},
-            "examples": [
-                {
-                    "id": 8877,
-                    "name": "Creator",
-                    "email": "john.doe@pipedrive.com",
-                    "has_pic": false,
-                    "pic_hash": null,
-                    "active_flag": true,
-                    "value": 8877
-                }
-            ],
-            "required": [
-                "id",
-                "name",
-                "email",
-                "has_pic",
-                "pic_hash",
-                "active_flag",
-                "value"
-            ],
-            "properties": {
-                "id": {
-                    "$id": "#/properties/user_id/properties/id",
-                    "type": "integer",
-                    "title": "The id schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": 0,
-                    "examples": [
-                        8877
-                    ]
-                },
-                "name": {
-                    "$id": "#/properties/user_id/properties/name",
-                    "type": "string",
-                    "title": "The name schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": "",
-                    "examples": [
-                        "Creator"
-                    ]
-                },
-                "email": {
-                    "$id": "#/properties/user_id/properties/email",
-                    "type": "string",
-                    "title": "The email schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": "",
-                    "examples": [
-                        "john.doe@pipedrive.com"
-                    ]
-                },
-                "has_pic": {
-                    "$id": "#/properties/user_id/properties/has_pic",
-                    "type": "boolean",
-                    "title": "The has_pic schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": false,
-                    "examples": [
-                        false
-                    ]
-                },
-                "pic_hash": {
-                    "$id": "#/properties/user_id/properties/pic_hash",
-                    "type": "null",
-                    "title": "The pic_hash schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": null,
-                    "examples": [
-                        null
-                    ]
-                },
-                "active_flag": {
-                    "$id": "#/properties/user_id/properties/active_flag",
-                    "type": "boolean",
-                    "title": "The active_flag schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": false,
-                    "examples": [
-                        true
-                    ]
-                },
-                "value": {
-                    "$id": "#/properties/user_id/properties/value",
-                    "type": "integer",
-                    "title": "The value schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": 0,
-                    "examples": [
-                        8877
-                    ]
-                }
-            },
-            "additionalProperties": true
+        "email": {
+          "$id": "#/properties/creator_user_id/properties/email",
+          "type": "string",
+          "title": "The email schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": "",
+          "examples": ["john.doe@pipedrive.com"]
         },
-        "person_id": {
-            "$id": "#/properties/person_id",
-            "type": "object",
-            "title": "The person_id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": {},
-            "examples": [
-                {
-                    "active_flag": true,
-                    "name": "Person",
-                    "email": [
-                        {
-                            "label": "work",
-                            "value": "person@pipedrive.com",
-                            "primary": true
-                        }
-                    ],
-                    "phone": [
-                        {
-                            "label": "work",
-                            "value": "37244499911",
-                            "primary": true
-                        }
-                    ],
-                    "value": 1101
-                }
-            ],
-            "required": [
-                "active_flag",
-                "name",
-                "email",
-                "phone",
-                "value"
-            ],
-            "properties": {
-                "active_flag": {
-                    "$id": "#/properties/person_id/properties/active_flag",
-                    "type": "boolean",
-                    "title": "The active_flag schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": false,
-                    "examples": [
-                        true
-                    ]
-                },
-                "name": {
-                    "$id": "#/properties/person_id/properties/name",
-                    "type": "string",
-                    "title": "The name schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": "",
-                    "examples": [
-                        "Person"
-                    ]
-                },
-                "email": {
-                    "$id": "#/properties/person_id/properties/email",
-                    "type": "array",
-                    "title": "The email schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": [],
-                    "examples": [
-                        [
-                            {
-                                "label": "work",
-                                "value": "person@pipedrive.com",
-                                "primary": true
-                            }
-                        ]
-                    ],
-                    "additionalItems": true,
-                    "items": {
-                        "$id": "#/properties/person_id/properties/email/items",
-                        "anyOf": [
-                            {
-                                "$id": "#/properties/person_id/properties/email/items/anyOf/0",
-                                "type": "object",
-                                "title": "The first anyOf schema",
-                                "description": "An explanation about the purpose of this instance.",
-                                "default": {},
-                                "examples": [
-                                    {
-                                        "label": "work",
-                                        "value": "person@pipedrive.com",
-                                        "primary": true
-                                    }
-                                ],
-                                "required": [
-                                    "label",
-                                    "value",
-                                    "primary"
-                                ],
-                                "properties": {
-                                    "label": {
-                                        "$id": "#/properties/person_id/properties/email/items/anyOf/0/properties/label",
-                                        "type": "string",
-                                        "title": "The label schema",
-                                        "description": "An explanation about the purpose of this instance.",
-                                        "default": "",
-                                        "examples": [
-                                            "work"
-                                        ]
-                                    },
-                                    "value": {
-                                        "$id": "#/properties/person_id/properties/email/items/anyOf/0/properties/value",
-                                        "type": "string",
-                                        "title": "The value schema",
-                                        "description": "An explanation about the purpose of this instance.",
-                                        "default": "",
-                                        "examples": [
-                                            "person@pipedrive.com"
-                                        ]
-                                    },
-                                    "primary": {
-                                        "$id": "#/properties/person_id/properties/email/items/anyOf/0/properties/primary",
-                                        "type": "boolean",
-                                        "title": "The primary schema",
-                                        "description": "An explanation about the purpose of this instance.",
-                                        "default": false,
-                                        "examples": [
-                                            true
-                                        ]
-                                    }
-                                },
-                                "additionalProperties": true
-                            }
-                        ]
-                    }
-                },
-                "phone": {
-                    "$id": "#/properties/person_id/properties/phone",
-                    "type": "array",
-                    "title": "The phone schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": [],
-                    "examples": [
-                        [
-                            {
-                                "label": "work",
-                                "value": "37244499911",
-                                "primary": true
-                            }
-                        ]
-                    ],
-                    "additionalItems": true,
-                    "items": {
-                        "$id": "#/properties/person_id/properties/phone/items",
-                        "anyOf": [
-                            {
-                                "$id": "#/properties/person_id/properties/phone/items/anyOf/0",
-                                "type": "object",
-                                "title": "The first anyOf schema",
-                                "description": "An explanation about the purpose of this instance.",
-                                "default": {},
-                                "examples": [
-                                    {
-                                        "label": "work",
-                                        "value": "37244499911",
-                                        "primary": true
-                                    }
-                                ],
-                                "required": [
-                                    "label",
-                                    "value",
-                                    "primary"
-                                ],
-                                "properties": {
-                                    "label": {
-                                        "$id": "#/properties/person_id/properties/phone/items/anyOf/0/properties/label",
-                                        "type": "string",
-                                        "title": "The label schema",
-                                        "description": "An explanation about the purpose of this instance.",
-                                        "default": "",
-                                        "examples": [
-                                            "work"
-                                        ]
-                                    },
-                                    "value": {
-                                        "$id": "#/properties/person_id/properties/phone/items/anyOf/0/properties/value",
-                                        "type": "string",
-                                        "title": "The value schema",
-                                        "description": "An explanation about the purpose of this instance.",
-                                        "default": "",
-                                        "examples": [
-                                            "37244499911"
-                                        ]
-                                    },
-                                    "primary": {
-                                        "$id": "#/properties/person_id/properties/phone/items/anyOf/0/properties/primary",
-                                        "type": "boolean",
-                                        "title": "The primary schema",
-                                        "description": "An explanation about the purpose of this instance.",
-                                        "default": false,
-                                        "examples": [
-                                            true
-                                        ]
-                                    }
-                                },
-                                "additionalProperties": true
-                            }
-                        ]
-                    }
-                },
-                "value": {
-                    "$id": "#/properties/person_id/properties/value",
-                    "type": "integer",
-                    "title": "The value schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": 0,
-                    "examples": [
-                        1101
-                    ]
-                }
-            },
-            "additionalProperties": true
+        "has_pic": {
+          "$id": "#/properties/creator_user_id/properties/has_pic",
+          "type": "boolean",
+          "title": "The has_pic schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": false,
+          "examples": [false]
         },
-        "org_id": {
-            "$id": "#/properties/org_id",
-            "type": "object",
-            "title": "The org_id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": {},
-            "examples": [
-                {
-                    "name": "Organization",
-                    "people_count": 2,
-                    "owner_id": 8877,
-                    "address": "Mustamäe tee 3a, 10615 Tallinn",
-                    "active_flag": true,
-                    "cc_email": "org@pipedrivemail.com",
-                    "value": 5
-                }
-            ],
-            "required": [
-                "name",
-                "people_count",
-                "owner_id",
-                "address",
-                "active_flag",
-                "cc_email",
-                "value"
-            ],
-            "properties": {
-                "name": {
-                    "$id": "#/properties/org_id/properties/name",
-                    "type": "string",
-                    "title": "The name schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": "",
-                    "examples": [
-                        "Organization"
-                    ]
-                },
-                "people_count": {
-                    "$id": "#/properties/org_id/properties/people_count",
-                    "type": "integer",
-                    "title": "The people_count schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": 0,
-                    "examples": [
-                        2
-                    ]
-                },
-                "owner_id": {
-                    "$id": "#/properties/org_id/properties/owner_id",
-                    "type": "integer",
-                    "title": "The owner_id schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": 0,
-                    "examples": [
-                        8877
-                    ]
-                },
-                "address": {
-                    "$id": "#/properties/org_id/properties/address",
-                    "type": "string",
-                    "title": "The address schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": "",
-                    "examples": [
-                        "Mustamäe tee 3a, 10615 Tallinn"
-                    ]
-                },
-                "active_flag": {
-                    "$id": "#/properties/org_id/properties/active_flag",
-                    "type": "boolean",
-                    "title": "The active_flag schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": false,
-                    "examples": [
-                        true
-                    ]
-                },
-                "cc_email": {
-                    "$id": "#/properties/org_id/properties/cc_email",
-                    "type": "string",
-                    "title": "The cc_email schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": "",
-                    "examples": [
-                        "org@pipedrivemail.com"
-                    ]
-                },
-                "value": {
-                    "$id": "#/properties/org_id/properties/value",
-                    "type": "integer",
-                    "title": "The value schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": 0,
-                    "examples": [
-                        5
-                    ]
-                }
-            },
-            "additionalProperties": true
+        "pic_hash": {
+          "$id": "#/properties/creator_user_id/properties/pic_hash",
+          "type": "null",
+          "title": "The pic_hash schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": null,
+          "examples": [null]
         },
-        "stage_id": {
-            "$id": "#/properties/stage_id",
-            "type": "integer",
-            "title": "The stage_id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                2
-            ]
-        },
-        "title": {
-            "$id": "#/properties/title",
-            "type": "string",
-            "title": "The title schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "Deal One"
-            ]
+        "active_flag": {
+          "$id": "#/properties/creator_user_id/properties/active_flag",
+          "type": "boolean",
+          "title": "The active_flag schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": false,
+          "examples": [true]
         },
         "value": {
-            "$id": "#/properties/value",
-            "type": "integer",
-            "title": "The value schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                5000
-            ]
+          "$id": "#/properties/creator_user_id/properties/value",
+          "type": "integer",
+          "title": "The value schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": 0,
+          "examples": [8877]
+        }
+      },
+      "additionalProperties": true
+    },
+    "user_id": {
+      "$id": "#/properties/user_id",
+      "type": "object",
+      "title": "The user_id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": {},
+      "examples": [
+        {
+          "id": 8877,
+          "name": "Creator",
+          "email": "john.doe@pipedrive.com",
+          "has_pic": false,
+          "pic_hash": null,
+          "active_flag": true,
+          "value": 8877
+        }
+      ],
+      "required": [
+        "id",
+        "name",
+        "email",
+        "has_pic",
+        "pic_hash",
+        "active_flag",
+        "value"
+      ],
+      "properties": {
+        "id": {
+          "$id": "#/properties/user_id/properties/id",
+          "type": "integer",
+          "title": "The id schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": 0,
+          "examples": [8877]
         },
-        "currency": {
-            "$id": "#/properties/currency",
-            "type": "string",
-            "title": "The currency schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "EUR"
-            ]
+        "name": {
+          "$id": "#/properties/user_id/properties/name",
+          "type": "string",
+          "title": "The name schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": "",
+          "examples": ["Creator"]
         },
-        "add_time": {
-            "$id": "#/properties/add_time",
-            "type": "string",
-            "title": "The add_time schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "2019-05-29 04:21:51"
-            ]
+        "email": {
+          "$id": "#/properties/user_id/properties/email",
+          "type": "string",
+          "title": "The email schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": "",
+          "examples": ["john.doe@pipedrive.com"]
         },
-        "update_time": {
-            "$id": "#/properties/update_time",
-            "type": "string",
-            "title": "The update_time schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "2019-11-28 16:19:50"
-            ]
+        "has_pic": {
+          "$id": "#/properties/user_id/properties/has_pic",
+          "type": "boolean",
+          "title": "The has_pic schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": false,
+          "examples": [false]
         },
-        "stage_change_time": {
-            "$id": "#/properties/stage_change_time",
-            "type": "string",
-            "title": "The stage_change_time schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "2019-11-28 15:41:22"
-            ]
+        "pic_hash": {
+          "$id": "#/properties/user_id/properties/pic_hash",
+          "type": "null",
+          "title": "The pic_hash schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": null,
+          "examples": [null]
         },
-        "active": {
-            "$id": "#/properties/active",
-            "type": "boolean",
-            "title": "The active schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": false,
-            "examples": [
-                true
-            ]
+        "active_flag": {
+          "$id": "#/properties/user_id/properties/active_flag",
+          "type": "boolean",
+          "title": "The active_flag schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": false,
+          "examples": [true]
         },
-        "deleted": {
-            "$id": "#/properties/deleted",
-            "type": "boolean",
-            "title": "The deleted schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": false,
-            "examples": [
-                false
-            ]
+        "value": {
+          "$id": "#/properties/user_id/properties/value",
+          "type": "integer",
+          "title": "The value schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": 0,
+          "examples": [8877]
+        }
+      },
+      "additionalProperties": true
+    },
+    "person_id": {
+      "$id": "#/properties/person_id",
+      "type": "object",
+      "title": "The person_id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": {},
+      "examples": [
+        {
+          "active_flag": true,
+          "name": "Person",
+          "email": [
+            {
+              "label": "work",
+              "value": "person@pipedrive.com",
+              "primary": true
+            }
+          ],
+          "phone": [
+            {
+              "label": "work",
+              "value": "37244499911",
+              "primary": true
+            }
+          ],
+          "value": 1101
+        }
+      ],
+      "required": ["active_flag", "name", "email", "phone", "value"],
+      "properties": {
+        "active_flag": {
+          "$id": "#/properties/person_id/properties/active_flag",
+          "type": "boolean",
+          "title": "The active_flag schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": false,
+          "examples": [true]
         },
-        "status": {
-            "$id": "#/properties/status",
-            "type": "string",
-            "title": "The status schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "open"
-            ]
+        "name": {
+          "$id": "#/properties/person_id/properties/name",
+          "type": "string",
+          "title": "The name schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": "",
+          "examples": ["Person"]
         },
-        "probability": {
-            "$id": "#/properties/probability",
-            "type": "null",
-            "title": "The probability schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": null,
-            "examples": [
-                null
+        "email": {
+          "$id": "#/properties/person_id/properties/email",
+          "type": "array",
+          "title": "The email schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": [],
+          "examples": [
+            [
+              {
+                "label": "work",
+                "value": "person@pipedrive.com",
+                "primary": true
+              }
             ]
+          ],
+          "additionalItems": true,
+          "items": {
+            "$id": "#/properties/person_id/properties/email/items",
+            "anyOf": [
+              {
+                "$id": "#/properties/person_id/properties/email/items/anyOf/0",
+                "type": "object",
+                "title": "The first anyOf schema",
+                "description": "An explanation about the purpose of this instance.",
+                "default": {},
+                "examples": [
+                  {
+                    "label": "work",
+                    "value": "person@pipedrive.com",
+                    "primary": true
+                  }
+                ],
+                "required": ["label", "value", "primary"],
+                "properties": {
+                  "label": {
+                    "$id": "#/properties/person_id/properties/email/items/anyOf/0/properties/label",
+                    "type": "string",
+                    "title": "The label schema",
+                    "description": "An explanation about the purpose of this instance.",
+                    "default": "",
+                    "examples": ["work"]
+                  },
+                  "value": {
+                    "$id": "#/properties/person_id/properties/email/items/anyOf/0/properties/value",
+                    "type": "string",
+                    "title": "The value schema",
+                    "description": "An explanation about the purpose of this instance.",
+                    "default": "",
+                    "examples": ["person@pipedrive.com"]
+                  },
+                  "primary": {
+                    "$id": "#/properties/person_id/properties/email/items/anyOf/0/properties/primary",
+                    "type": "boolean",
+                    "title": "The primary schema",
+                    "description": "An explanation about the purpose of this instance.",
+                    "default": false,
+                    "examples": [true]
+                  }
+                },
+                "additionalProperties": true
+              }
+            ]
+          }
         },
-        "next_activity_date": {
-            "$id": "#/properties/next_activity_date",
-            "type": "string",
-            "title": "The next_activity_date schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "2019-11-29"
+        "phone": {
+          "$id": "#/properties/person_id/properties/phone",
+          "type": "array",
+          "title": "The phone schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": [],
+          "examples": [
+            [
+              {
+                "label": "work",
+                "value": "37244499911",
+                "primary": true
+              }
             ]
+          ],
+          "additionalItems": true,
+          "items": {
+            "$id": "#/properties/person_id/properties/phone/items",
+            "anyOf": [
+              {
+                "$id": "#/properties/person_id/properties/phone/items/anyOf/0",
+                "type": "object",
+                "title": "The first anyOf schema",
+                "description": "An explanation about the purpose of this instance.",
+                "default": {},
+                "examples": [
+                  {
+                    "label": "work",
+                    "value": "37244499911",
+                    "primary": true
+                  }
+                ],
+                "required": ["label", "value", "primary"],
+                "properties": {
+                  "label": {
+                    "$id": "#/properties/person_id/properties/phone/items/anyOf/0/properties/label",
+                    "type": "string",
+                    "title": "The label schema",
+                    "description": "An explanation about the purpose of this instance.",
+                    "default": "",
+                    "examples": ["work"]
+                  },
+                  "value": {
+                    "$id": "#/properties/person_id/properties/phone/items/anyOf/0/properties/value",
+                    "type": "string",
+                    "title": "The value schema",
+                    "description": "An explanation about the purpose of this instance.",
+                    "default": "",
+                    "examples": ["37244499911"]
+                  },
+                  "primary": {
+                    "$id": "#/properties/person_id/properties/phone/items/anyOf/0/properties/primary",
+                    "type": "boolean",
+                    "title": "The primary schema",
+                    "description": "An explanation about the purpose of this instance.",
+                    "default": false,
+                    "examples": [true]
+                  }
+                },
+                "additionalProperties": true
+              }
+            ]
+          }
         },
-        "next_activity_time": {
-            "$id": "#/properties/next_activity_time",
-            "type": "string",
-            "title": "The next_activity_time schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "11:30:00"
-            ]
+        "value": {
+          "$id": "#/properties/person_id/properties/value",
+          "type": "integer",
+          "title": "The value schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": 0,
+          "examples": [1101]
+        }
+      },
+      "additionalProperties": true
+    },
+    "org_id": {
+      "$id": "#/properties/org_id",
+      "type": "object",
+      "title": "The org_id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": {},
+      "examples": [
+        {
+          "name": "Organization",
+          "people_count": 2,
+          "owner_id": 8877,
+          "address": "Mustamäe tee 3a, 10615 Tallinn",
+          "active_flag": true,
+          "cc_email": "org@pipedrivemail.com",
+          "value": 5
+        }
+      ],
+      "required": [
+        "name",
+        "people_count",
+        "owner_id",
+        "address",
+        "active_flag",
+        "cc_email",
+        "value"
+      ],
+      "properties": {
+        "name": {
+          "$id": "#/properties/org_id/properties/name",
+          "type": "string",
+          "title": "The name schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": "",
+          "examples": ["Organization"]
         },
-        "next_activity_id": {
-            "$id": "#/properties/next_activity_id",
-            "type": "integer",
-            "title": "The next_activity_id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                128
-            ]
+        "people_count": {
+          "$id": "#/properties/org_id/properties/people_count",
+          "type": "integer",
+          "title": "The people_count schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": 0,
+          "examples": [2]
         },
-        "last_activity_id": {
-            "$id": "#/properties/last_activity_id",
-            "type": "null",
-            "title": "The last_activity_id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": null,
-            "examples": [
-                null
-            ]
+        "owner_id": {
+          "$id": "#/properties/org_id/properties/owner_id",
+          "type": "integer",
+          "title": "The owner_id schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": 0,
+          "examples": [8877]
         },
-        "last_activity_date": {
-            "$id": "#/properties/last_activity_date",
-            "type": "null",
-            "title": "The last_activity_date schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": null,
-            "examples": [
-                null
-            ]
+        "address": {
+          "$id": "#/properties/org_id/properties/address",
+          "type": "string",
+          "title": "The address schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": "",
+          "examples": ["Mustamäe tee 3a, 10615 Tallinn"]
         },
-        "lost_reason": {
-            "$id": "#/properties/lost_reason",
-            "type": "null",
-            "title": "The lost_reason schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": null,
-            "examples": [
-                null
-            ]
-        },
-        "visible_to": {
-            "$id": "#/properties/visible_to",
-            "type": "string",
-            "title": "The visible_to schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "1"
-            ]
-        },
-        "close_time": {
-            "$id": "#/properties/close_time",
-            "type": "null",
-            "title": "The close_time schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": null,
-            "examples": [
-                null
-            ]
-        },
-        "pipeline_id": {
-            "$id": "#/properties/pipeline_id",
-            "type": "integer",
-            "title": "The pipeline_id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                1
-            ]
-        },
-        "won_time": {
-            "$id": "#/properties/won_time",
-            "type": "string",
-            "title": "The won_time schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "2019-11-27 11:40:36"
-            ]
-        },
-        "first_won_time": {
-            "$id": "#/properties/first_won_time",
-            "type": "string",
-            "title": "The first_won_time schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "2019-11-27 11:40:36"
-            ]
-        },
-        "lost_time": {
-            "$id": "#/properties/lost_time",
-            "type": "null",
-            "title": "The lost_time schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": null,
-            "examples": [
-                null
-            ]
-        },
-        "products_count": {
-            "$id": "#/properties/products_count",
-            "type": "integer",
-            "title": "The products_count schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                0
-            ]
-        },
-        "files_count": {
-            "$id": "#/properties/files_count",
-            "type": "integer",
-            "title": "The files_count schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                0
-            ]
-        },
-        "notes_count": {
-            "$id": "#/properties/notes_count",
-            "type": "integer",
-            "title": "The notes_count schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                2
-            ]
-        },
-        "followers_count": {
-            "$id": "#/properties/followers_count",
-            "type": "integer",
-            "title": "The followers_count schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                0
-            ]
-        },
-        "email_messages_count": {
-            "$id": "#/properties/email_messages_count",
-            "type": "integer",
-            "title": "The email_messages_count schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                4
-            ]
-        },
-        "activities_count": {
-            "$id": "#/properties/activities_count",
-            "type": "integer",
-            "title": "The activities_count schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                1
-            ]
-        },
-        "done_activities_count": {
-            "$id": "#/properties/done_activities_count",
-            "type": "integer",
-            "title": "The done_activities_count schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                0
-            ]
-        },
-        "undone_activities_count": {
-            "$id": "#/properties/undone_activities_count",
-            "type": "integer",
-            "title": "The undone_activities_count schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                1
-            ]
-        },
-        "participants_count": {
-            "$id": "#/properties/participants_count",
-            "type": "integer",
-            "title": "The participants_count schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                1
-            ]
-        },
-        "expected_close_date": {
-            "$id": "#/properties/expected_close_date",
-            "type": "string",
-            "title": "The expected_close_date schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "2019-06-29"
-            ]
-        },
-        "last_incoming_mail_time": {
-            "$id": "#/properties/last_incoming_mail_time",
-            "type": "string",
-            "title": "The last_incoming_mail_time schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "2019-05-29 18:21:42"
-            ]
-        },
-        "last_outgoing_mail_time": {
-            "$id": "#/properties/last_outgoing_mail_time",
-            "type": "string",
-            "title": "The last_outgoing_mail_time schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "2019-05-30 03:45:35"
-            ]
-        },
-        "label": {
-            "$id": "#/properties/label",
-            "type": "null",
-            "title": "The label schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": null,
-            "examples": [
-                null
-            ]
-        },
-        "stage_order_nr": {
-            "$id": "#/properties/stage_order_nr",
-            "type": "integer",
-            "title": "The stage_order_nr schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                2
-            ]
-        },
-        "person_name": {
-            "$id": "#/properties/person_name",
-            "type": "string",
-            "title": "The person_name schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "Person"
-            ]
-        },
-        "org_name": {
-            "$id": "#/properties/org_name",
-            "type": "string",
-            "title": "The org_name schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "Organization"
-            ]
-        },
-        "next_activity_subject": {
-            "$id": "#/properties/next_activity_subject",
-            "type": "string",
-            "title": "The next_activity_subject schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "Call"
-            ]
-        },
-        "next_activity_type": {
-            "$id": "#/properties/next_activity_type",
-            "type": "string",
-            "title": "The next_activity_type schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "call"
-            ]
-        },
-        "next_activity_duration": {
-            "$id": "#/properties/next_activity_duration",
-            "type": "string",
-            "title": "The next_activity_duration schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "00:30:00"
-            ]
-        },
-        "next_activity_note": {
-            "$id": "#/properties/next_activity_note",
-            "type": "string",
-            "title": "The next_activity_note schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "Note content"
-            ]
-        },
-        "formatted_value": {
-            "$id": "#/properties/formatted_value",
-            "type": "string",
-            "title": "The formatted_value schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "€5,000"
-            ]
-        },
-        "weighted_value": {
-            "$id": "#/properties/weighted_value",
-            "type": "integer",
-            "title": "The weighted_value schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                5000
-            ]
-        },
-        "formatted_weighted_value": {
-            "$id": "#/properties/formatted_weighted_value",
-            "type": "string",
-            "title": "The formatted_weighted_value schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "€5,000"
-            ]
-        },
-        "weighted_value_currency": {
-            "$id": "#/properties/weighted_value_currency",
-            "type": "string",
-            "title": "The weighted_value_currency schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "EUR"
-            ]
-        },
-        "rotten_time": {
-            "$id": "#/properties/rotten_time",
-            "type": "null",
-            "title": "The rotten_time schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": null,
-            "examples": [
-                null
-            ]
-        },
-        "owner_name": {
-            "$id": "#/properties/owner_name",
-            "type": "string",
-            "title": "The owner_name schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "Creator"
-            ]
+        "active_flag": {
+          "$id": "#/properties/org_id/properties/active_flag",
+          "type": "boolean",
+          "title": "The active_flag schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": false,
+          "examples": [true]
         },
         "cc_email": {
-            "$id": "#/properties/cc_email",
-            "type": "string",
-            "title": "The cc_email schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "company+deal1@pipedrivemail.com"
-            ]
+          "$id": "#/properties/org_id/properties/cc_email",
+          "type": "string",
+          "title": "The cc_email schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": "",
+          "examples": ["org@pipedrivemail.com"]
         },
-        "org_hidden": {
-            "$id": "#/properties/org_hidden",
-            "type": "boolean",
-            "title": "The org_hidden schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": false,
-            "examples": [
-                false
-            ]
-        },
-        "person_hidden": {
-            "$id": "#/properties/person_hidden",
-            "type": "boolean",
-            "title": "The person_hidden schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": false,
-            "examples": [
-                false
-            ]
+        "value": {
+          "$id": "#/properties/org_id/properties/value",
+          "type": "integer",
+          "title": "The value schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": 0,
+          "examples": [5]
         }
+      },
+      "additionalProperties": true
     },
-    "additionalProperties": true
+    "stage_id": {
+      "$id": "#/properties/stage_id",
+      "type": "integer",
+      "title": "The stage_id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [2]
+    },
+    "title": {
+      "$id": "#/properties/title",
+      "type": "string",
+      "title": "The title schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["Deal One"]
+    },
+    "value": {
+      "$id": "#/properties/value",
+      "type": "integer",
+      "title": "The value schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [5000]
+    },
+    "currency": {
+      "$id": "#/properties/currency",
+      "type": "string",
+      "title": "The currency schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["EUR"]
+    },
+    "add_time": {
+      "$id": "#/properties/add_time",
+      "type": "string",
+      "title": "The add_time schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["2019-05-29 04:21:51"]
+    },
+    "update_time": {
+      "$id": "#/properties/update_time",
+      "type": "string",
+      "title": "The update_time schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["2019-11-28 16:19:50"]
+    },
+    "stage_change_time": {
+      "$id": "#/properties/stage_change_time",
+      "type": "string",
+      "title": "The stage_change_time schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["2019-11-28 15:41:22"]
+    },
+    "active": {
+      "$id": "#/properties/active",
+      "type": "boolean",
+      "title": "The active schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": false,
+      "examples": [true]
+    },
+    "deleted": {
+      "$id": "#/properties/deleted",
+      "type": "boolean",
+      "title": "The deleted schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": false,
+      "examples": [false]
+    },
+    "status": {
+      "$id": "#/properties/status",
+      "type": "string",
+      "title": "The status schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["open"]
+    },
+    "probability": {
+      "$id": "#/properties/probability",
+      "type": "null",
+      "title": "The probability schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": null,
+      "examples": [null]
+    },
+    "next_activity_date": {
+      "$id": "#/properties/next_activity_date",
+      "type": "string",
+      "title": "The next_activity_date schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["2019-11-29"]
+    },
+    "next_activity_time": {
+      "$id": "#/properties/next_activity_time",
+      "type": "string",
+      "title": "The next_activity_time schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["11:30:00"]
+    },
+    "next_activity_id": {
+      "$id": "#/properties/next_activity_id",
+      "type": "integer",
+      "title": "The next_activity_id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [128]
+    },
+    "last_activity_id": {
+      "$id": "#/properties/last_activity_id",
+      "type": "null",
+      "title": "The last_activity_id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": null,
+      "examples": [null]
+    },
+    "last_activity_date": {
+      "$id": "#/properties/last_activity_date",
+      "type": "null",
+      "title": "The last_activity_date schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": null,
+      "examples": [null]
+    },
+    "lost_reason": {
+      "$id": "#/properties/lost_reason",
+      "type": "null",
+      "title": "The lost_reason schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": null,
+      "examples": [null]
+    },
+    "visible_to": {
+      "$id": "#/properties/visible_to",
+      "type": "string",
+      "title": "The visible_to schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["1"]
+    },
+    "close_time": {
+      "$id": "#/properties/close_time",
+      "type": "null",
+      "title": "The close_time schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": null,
+      "examples": [null]
+    },
+    "pipeline_id": {
+      "$id": "#/properties/pipeline_id",
+      "type": "integer",
+      "title": "The pipeline_id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [1]
+    },
+    "won_time": {
+      "$id": "#/properties/won_time",
+      "type": "string",
+      "title": "The won_time schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["2019-11-27 11:40:36"]
+    },
+    "first_won_time": {
+      "$id": "#/properties/first_won_time",
+      "type": "string",
+      "title": "The first_won_time schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["2019-11-27 11:40:36"]
+    },
+    "lost_time": {
+      "$id": "#/properties/lost_time",
+      "type": "null",
+      "title": "The lost_time schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": null,
+      "examples": [null]
+    },
+    "products_count": {
+      "$id": "#/properties/products_count",
+      "type": "integer",
+      "title": "The products_count schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [0]
+    },
+    "files_count": {
+      "$id": "#/properties/files_count",
+      "type": "integer",
+      "title": "The files_count schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [0]
+    },
+    "notes_count": {
+      "$id": "#/properties/notes_count",
+      "type": "integer",
+      "title": "The notes_count schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [2]
+    },
+    "followers_count": {
+      "$id": "#/properties/followers_count",
+      "type": "integer",
+      "title": "The followers_count schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [0]
+    },
+    "email_messages_count": {
+      "$id": "#/properties/email_messages_count",
+      "type": "integer",
+      "title": "The email_messages_count schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [4]
+    },
+    "activities_count": {
+      "$id": "#/properties/activities_count",
+      "type": "integer",
+      "title": "The activities_count schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [1]
+    },
+    "done_activities_count": {
+      "$id": "#/properties/done_activities_count",
+      "type": "integer",
+      "title": "The done_activities_count schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [0]
+    },
+    "undone_activities_count": {
+      "$id": "#/properties/undone_activities_count",
+      "type": "integer",
+      "title": "The undone_activities_count schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [1]
+    },
+    "participants_count": {
+      "$id": "#/properties/participants_count",
+      "type": "integer",
+      "title": "The participants_count schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [1]
+    },
+    "expected_close_date": {
+      "$id": "#/properties/expected_close_date",
+      "type": "string",
+      "title": "The expected_close_date schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["2019-06-29"]
+    },
+    "last_incoming_mail_time": {
+      "$id": "#/properties/last_incoming_mail_time",
+      "type": "string",
+      "title": "The last_incoming_mail_time schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["2019-05-29 18:21:42"]
+    },
+    "last_outgoing_mail_time": {
+      "$id": "#/properties/last_outgoing_mail_time",
+      "type": "string",
+      "title": "The last_outgoing_mail_time schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["2019-05-30 03:45:35"]
+    },
+    "label": {
+      "$id": "#/properties/label",
+      "type": "null",
+      "title": "The label schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": null,
+      "examples": [null]
+    },
+    "stage_order_nr": {
+      "$id": "#/properties/stage_order_nr",
+      "type": "integer",
+      "title": "The stage_order_nr schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [2]
+    },
+    "person_name": {
+      "$id": "#/properties/person_name",
+      "type": "string",
+      "title": "The person_name schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["Person"]
+    },
+    "org_name": {
+      "$id": "#/properties/org_name",
+      "type": "string",
+      "title": "The org_name schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["Organization"]
+    },
+    "next_activity_subject": {
+      "$id": "#/properties/next_activity_subject",
+      "type": "string",
+      "title": "The next_activity_subject schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["Call"]
+    },
+    "next_activity_type": {
+      "$id": "#/properties/next_activity_type",
+      "type": "string",
+      "title": "The next_activity_type schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["call"]
+    },
+    "next_activity_duration": {
+      "$id": "#/properties/next_activity_duration",
+      "type": "string",
+      "title": "The next_activity_duration schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["00:30:00"]
+    },
+    "next_activity_note": {
+      "$id": "#/properties/next_activity_note",
+      "type": "string",
+      "title": "The next_activity_note schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["Note content"]
+    },
+    "formatted_value": {
+      "$id": "#/properties/formatted_value",
+      "type": "string",
+      "title": "The formatted_value schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["€5,000"]
+    },
+    "weighted_value": {
+      "$id": "#/properties/weighted_value",
+      "type": "integer",
+      "title": "The weighted_value schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [5000]
+    },
+    "formatted_weighted_value": {
+      "$id": "#/properties/formatted_weighted_value",
+      "type": "string",
+      "title": "The formatted_weighted_value schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["€5,000"]
+    },
+    "weighted_value_currency": {
+      "$id": "#/properties/weighted_value_currency",
+      "type": "string",
+      "title": "The weighted_value_currency schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["EUR"]
+    },
+    "rotten_time": {
+      "$id": "#/properties/rotten_time",
+      "type": "null",
+      "title": "The rotten_time schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": null,
+      "examples": [null]
+    },
+    "owner_name": {
+      "$id": "#/properties/owner_name",
+      "type": "string",
+      "title": "The owner_name schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["Creator"]
+    },
+    "cc_email": {
+      "$id": "#/properties/cc_email",
+      "type": "string",
+      "title": "The cc_email schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["company+deal1@pipedrivemail.com"]
+    },
+    "org_hidden": {
+      "$id": "#/properties/org_hidden",
+      "type": "boolean",
+      "title": "The org_hidden schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": false,
+      "examples": [false]
+    },
+    "person_hidden": {
+      "$id": "#/properties/person_hidden",
+      "type": "boolean",
+      "title": "The person_hidden schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": false,
+      "examples": [false]
+    }
+  },
+  "additionalProperties": true
 }

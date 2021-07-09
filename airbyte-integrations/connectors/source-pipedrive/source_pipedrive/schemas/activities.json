@@ -1,983 +1,838 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "http://example.com/example.json",
-    "type": "object",
-    "title": "The root schema",
-    "description": "The root schema comprises the entire JSON document.",
-    "default": {},
-    "examples": [
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "http://example.com/example.json",
+  "type": "object",
+  "title": "The root schema",
+  "description": "The root schema comprises the entire JSON document.",
+  "default": {},
+  "examples": [
+    {
+      "id": 8,
+      "company_id": 22122,
+      "user_id": 1234,
+      "done": false,
+      "type": "deadline",
+      "reference_type": "scheduler-service",
+      "reference_id": 7,
+      "conference_meeting_client": "871b8bc88d3a1202",
+      "conference_meeting_url": "https://pipedrive.zoom.us/link",
+      "conference_meeting_id": "01758746701",
+      "due_date": "2020-06-09",
+      "due_time": "10:00",
+      "duration": "01:00",
+      "busy_flag": true,
+      "add_time": "2020-06-08 12:37:56",
+      "marked_as_done_time": "2020-08-08 08:08:38",
+      "last_notification_time": "2020-08-08 12:37:56",
+      "last_notification_user_id": 7655,
+      "notification_language_id": 1,
+      "subject": "Deadline",
+      "public_description": "This is a description",
+      "calendar_sync_include_context": null,
+      "location": "Mustamäe tee 3, Tallinn, Estonia",
+      "org_id": 5,
+      "person_id": 1101,
+      "deal_id": 300,
+      "lead_id": null,
+      "active_flag": true,
+      "update_time": "2020-08-08 12:37:56",
+      "update_user_id": 5596,
+      "gcal_event_id": null,
+      "google_calendar_id": null,
+      "google_calendar_etag": null,
+      "source_timezone": null,
+      "rec_rule": "RRULE:FREQ=WEEKLY;BYDAY=WE",
+      "rec_rule_extension": null,
+      "rec_master_activity_id": null,
+      "series": null,
+      "note": "A note for the activity",
+      "created_by_user_id": 1234,
+      "location_subpremise": "",
+      "location_street_number": "3",
+      "location_route": "Mustamäe tee",
+      "location_sublocality": "Kristiine",
+      "location_locality": "Tallinn",
+      "location_lat": 59.4281884,
+      "location_long": 24.7041378,
+      "location_admin_area_level_1": "Harju maakond",
+      "location_admin_area_level_2": "",
+      "location_country": "Estonia",
+      "location_postal_code": "10616",
+      "location_formatted_address": "Mustamäe tee 3, 10616 Tallinn, Estonia",
+      "attendees": [
         {
-            "id": 8,
-            "company_id": 22122,
-            "user_id": 1234,
-            "done": false,
-            "type": "deadline",
-            "reference_type": "scheduler-service",
-            "reference_id": 7,
-            "conference_meeting_client": "871b8bc88d3a1202",
-            "conference_meeting_url": "https://pipedrive.zoom.us/link",
-            "conference_meeting_id": "01758746701",
-            "due_date": "2020-06-09",
-            "due_time": "10:00",
-            "duration": "01:00",
-            "busy_flag": true,
-            "add_time": "2020-06-08 12:37:56",
-            "marked_as_done_time": "2020-08-08 08:08:38",
-            "last_notification_time": "2020-08-08 12:37:56",
-            "last_notification_user_id": 7655,
-            "notification_language_id": 1,
-            "subject": "Deadline",
-            "public_description": "This is a description",
-            "calendar_sync_include_context": null,
-            "location": "Mustamäe tee 3, Tallinn, Estonia",
-            "org_id": 5,
-            "person_id": 1101,
-            "deal_id": 300,
-            "lead_id": null,
-            "active_flag": true,
-            "update_time": "2020-08-08 12:37:56",
-            "update_user_id": 5596,
-            "gcal_event_id": null,
-            "google_calendar_id": null,
-            "google_calendar_etag": null,
-            "source_timezone": null,
-            "rec_rule": "RRULE:FREQ=WEEKLY;BYDAY=WE",
-            "rec_rule_extension": null,
-            "rec_master_activity_id": null,
-            "series": null,
-            "note": "A note for the activity",
-            "created_by_user_id": 1234,
-            "location_subpremise": "",
-            "location_street_number": "3",
-            "location_route": "Mustamäe tee",
-            "location_sublocality": "Kristiine",
-            "location_locality": "Tallinn",
-            "location_lat": 59.4281884,
-            "location_long": 24.7041378,
-            "location_admin_area_level_1": "Harju maakond",
-            "location_admin_area_level_2": "",
-            "location_country": "Estonia",
-            "location_postal_code": "10616",
-            "location_formatted_address": "Mustamäe tee 3, 10616 Tallinn, Estonia",
-            "attendees": [
-                {
-                    "email_address": "attendee@pipedrivemail.com",
-                    "is_organizer": 0,
-                    "name": "Attendee",
-                    "person_id": 25312,
-                    "status": "noreply",
-                    "user_id": null
-                }
-            ],
-            "participants": [
-                {
-                    "person_id": 17985,
-                    "primary_flag": false
-                },
-                {
-                    "person_id": "1101,",
-                    "primary_flag": true
-                }
-            ],
-            "org_name": "Organization",
-            "person_name": "Person",
-            "deal_title": "Deal",
-            "owner_name": "Creator",
-            "person_dropbox_bcc": "company@pipedrivemail.com",
-            "deal_dropbox_bcc": "company+deal300@pipedrivemail.com",
-            "assigned_to_user_id": 1235,
-            "file": {
-                "id": "376892,",
-                "clean_name": "Audio 10:55:07.m4a",
-                "url": "https://pipedrive-files.s3-eu-west-1.amazonaws.com/Audio-recording.m4a"
-            }
+          "email_address": "attendee@pipedrivemail.com",
+          "is_organizer": 0,
+          "name": "Attendee",
+          "person_id": 25312,
+          "status": "noreply",
+          "user_id": null
         }
-    ],
-    "required": [
-        "id",
-        "company_id",
-        "user_id",
-        "done",
-        "type",
-        "reference_type",
-        "reference_id",
-        "conference_meeting_client",
-        "conference_meeting_url",
-        "conference_meeting_id",
-        "due_date",
-        "due_time",
-        "duration",
-        "busy_flag",
-        "add_time",
-        "marked_as_done_time",
-        "last_notification_time",
-        "last_notification_user_id",
-        "notification_language_id",
-        "subject",
-        "public_description",
-        "calendar_sync_include_context",
-        "location",
-        "org_id",
-        "person_id",
-        "deal_id",
-        "lead_id",
-        "active_flag",
-        "update_time",
-        "update_user_id",
-        "gcal_event_id",
-        "google_calendar_id",
-        "google_calendar_etag",
-        "source_timezone",
-        "rec_rule",
-        "rec_rule_extension",
-        "rec_master_activity_id",
-        "series",
-        "note",
-        "created_by_user_id",
-        "location_subpremise",
-        "location_street_number",
-        "location_route",
-        "location_sublocality",
-        "location_locality",
-        "location_lat",
-        "location_long",
-        "location_admin_area_level_1",
-        "location_admin_area_level_2",
-        "location_country",
-        "location_postal_code",
-        "location_formatted_address",
-        "attendees",
-        "participants",
-        "org_name",
-        "person_name",
-        "deal_title",
-        "owner_name",
-        "person_dropbox_bcc",
-        "deal_dropbox_bcc",
-        "assigned_to_user_id",
-        "file"
-    ],
-    "properties": {
-        "id": {
-            "$id": "#/properties/id",
-            "type": "integer",
-            "title": "The id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                8
-            ]
+      ],
+      "participants": [
+        {
+          "person_id": 17985,
+          "primary_flag": false
         },
-        "company_id": {
-            "$id": "#/properties/company_id",
-            "type": "integer",
-            "title": "The company_id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                22122
-            ]
-        },
-        "user_id": {
-            "$id": "#/properties/user_id",
-            "type": "integer",
-            "title": "The user_id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                1234
-            ]
-        },
-        "done": {
-            "$id": "#/properties/done",
-            "type": "boolean",
-            "title": "The done schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": false,
-            "examples": [
-                false
-            ]
-        },
-        "type": {
-            "$id": "#/properties/type",
-            "type": "string",
-            "title": "The type schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "deadline"
-            ]
-        },
-        "reference_type": {
-            "$id": "#/properties/reference_type",
-            "type": "string",
-            "title": "The reference_type schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "scheduler-service"
-            ]
-        },
-        "reference_id": {
-            "$id": "#/properties/reference_id",
-            "type": "integer",
-            "title": "The reference_id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                7
-            ]
-        },
-        "conference_meeting_client": {
-            "$id": "#/properties/conference_meeting_client",
-            "type": "string",
-            "title": "The conference_meeting_client schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "871b8bc88d3a1202"
-            ]
-        },
-        "conference_meeting_url": {
-            "$id": "#/properties/conference_meeting_url",
-            "type": "string",
-            "title": "The conference_meeting_url schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "https://pipedrive.zoom.us/link"
-            ]
-        },
-        "conference_meeting_id": {
-            "$id": "#/properties/conference_meeting_id",
-            "type": "string",
-            "title": "The conference_meeting_id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "01758746701"
-            ]
-        },
-        "due_date": {
-            "$id": "#/properties/due_date",
-            "type": "string",
-            "title": "The due_date schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "2020-06-09"
-            ]
-        },
-        "due_time": {
-            "$id": "#/properties/due_time",
-            "type": "string",
-            "title": "The due_time schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "10:00"
-            ]
-        },
-        "duration": {
-            "$id": "#/properties/duration",
-            "type": "string",
-            "title": "The duration schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "01:00"
-            ]
-        },
-        "busy_flag": {
-            "$id": "#/properties/busy_flag",
-            "type": "boolean",
-            "title": "The busy_flag schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": false,
-            "examples": [
-                true
-            ]
-        },
-        "add_time": {
-            "$id": "#/properties/add_time",
-            "type": "string",
-            "title": "The add_time schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "2020-06-08 12:37:56"
-            ]
-        },
-        "marked_as_done_time": {
-            "$id": "#/properties/marked_as_done_time",
-            "type": "string",
-            "title": "The marked_as_done_time schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "2020-08-08 08:08:38"
-            ]
-        },
-        "last_notification_time": {
-            "$id": "#/properties/last_notification_time",
-            "type": "string",
-            "title": "The last_notification_time schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "2020-08-08 12:37:56"
-            ]
-        },
-        "last_notification_user_id": {
-            "$id": "#/properties/last_notification_user_id",
-            "type": "integer",
-            "title": "The last_notification_user_id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                7655
-            ]
-        },
-        "notification_language_id": {
-            "$id": "#/properties/notification_language_id",
-            "type": "integer",
-            "title": "The notification_language_id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                1
-            ]
-        },
-        "subject": {
-            "$id": "#/properties/subject",
-            "type": "string",
-            "title": "The subject schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "Deadline"
-            ]
-        },
-        "public_description": {
-            "$id": "#/properties/public_description",
-            "type": "string",
-            "title": "The public_description schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "This is a description"
-            ]
-        },
-        "calendar_sync_include_context": {
-            "$id": "#/properties/calendar_sync_include_context",
-            "type": "null",
-            "title": "The calendar_sync_include_context schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": null,
-            "examples": [
-                null
-            ]
-        },
-        "location": {
-            "$id": "#/properties/location",
-            "type": "string",
-            "title": "The location schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "Mustamäe tee 3, Tallinn, Estonia"
-            ]
-        },
-        "org_id": {
-            "$id": "#/properties/org_id",
-            "type": "integer",
-            "title": "The org_id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                5
-            ]
-        },
-        "person_id": {
-            "$id": "#/properties/person_id",
-            "type": "integer",
-            "title": "The person_id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                1101
-            ]
-        },
-        "deal_id": {
-            "$id": "#/properties/deal_id",
-            "type": "integer",
-            "title": "The deal_id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                300
-            ]
-        },
-        "lead_id": {
-            "$id": "#/properties/lead_id",
-            "type": "null",
-            "title": "The lead_id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": null,
-            "examples": [
-                null
-            ]
-        },
-        "active_flag": {
-            "$id": "#/properties/active_flag",
-            "type": "boolean",
-            "title": "The active_flag schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": false,
-            "examples": [
-                true
-            ]
-        },
-        "update_time": {
-            "$id": "#/properties/update_time",
-            "type": "string",
-            "title": "The update_time schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "2020-08-08 12:37:56"
-            ]
-        },
-        "update_user_id": {
-            "$id": "#/properties/update_user_id",
-            "type": "integer",
-            "title": "The update_user_id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                5596
-            ]
-        },
-        "gcal_event_id": {
-            "$id": "#/properties/gcal_event_id",
-            "type": "null",
-            "title": "The gcal_event_id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": null,
-            "examples": [
-                null
-            ]
-        },
-        "google_calendar_id": {
-            "$id": "#/properties/google_calendar_id",
-            "type": "null",
-            "title": "The google_calendar_id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": null,
-            "examples": [
-                null
-            ]
-        },
-        "google_calendar_etag": {
-            "$id": "#/properties/google_calendar_etag",
-            "type": "null",
-            "title": "The google_calendar_etag schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": null,
-            "examples": [
-                null
-            ]
-        },
-        "source_timezone": {
-            "$id": "#/properties/source_timezone",
-            "type": "null",
-            "title": "The source_timezone schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": null,
-            "examples": [
-                null
-            ]
-        },
-        "rec_rule": {
-            "$id": "#/properties/rec_rule",
-            "type": "string",
-            "title": "The rec_rule schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "RRULE:FREQ=WEEKLY;BYDAY=WE"
-            ]
-        },
-        "rec_rule_extension": {
-            "$id": "#/properties/rec_rule_extension",
-            "type": "null",
-            "title": "The rec_rule_extension schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": null,
-            "examples": [
-                null
-            ]
-        },
-        "rec_master_activity_id": {
-            "$id": "#/properties/rec_master_activity_id",
-            "type": "null",
-            "title": "The rec_master_activity_id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": null,
-            "examples": [
-                null
-            ]
-        },
-        "series": {
-            "$id": "#/properties/series",
-            "type": "null",
-            "title": "The series schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": null,
-            "examples": [
-                null
-            ]
-        },
-        "note": {
-            "$id": "#/properties/note",
-            "type": "string",
-            "title": "The note schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "A note for the activity"
-            ]
-        },
-        "created_by_user_id": {
-            "$id": "#/properties/created_by_user_id",
-            "type": "integer",
-            "title": "The created_by_user_id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                1234
-            ]
-        },
-        "location_subpremise": {
-            "$id": "#/properties/location_subpremise",
-            "type": "string",
-            "title": "The location_subpremise schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                ""
-            ]
-        },
-        "location_street_number": {
-            "$id": "#/properties/location_street_number",
-            "type": "string",
-            "title": "The location_street_number schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "3"
-            ]
-        },
-        "location_route": {
-            "$id": "#/properties/location_route",
-            "type": "string",
-            "title": "The location_route schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "Mustamäe tee"
-            ]
-        },
-        "location_sublocality": {
-            "$id": "#/properties/location_sublocality",
-            "type": "string",
-            "title": "The location_sublocality schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "Kristiine"
-            ]
-        },
-        "location_locality": {
-            "$id": "#/properties/location_locality",
-            "type": "string",
-            "title": "The location_locality schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "Tallinn"
-            ]
-        },
-        "location_lat": {
-            "$id": "#/properties/location_lat",
-            "type": "number",
-            "title": "The location_lat schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0.0,
-            "examples": [
-                59.4281884
-            ]
-        },
-        "location_long": {
-            "$id": "#/properties/location_long",
-            "type": "number",
-            "title": "The location_long schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0.0,
-            "examples": [
-                24.7041378
-            ]
-        },
-        "location_admin_area_level_1": {
-            "$id": "#/properties/location_admin_area_level_1",
-            "type": "string",
-            "title": "The location_admin_area_level_1 schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "Harju maakond"
-            ]
-        },
-        "location_admin_area_level_2": {
-            "$id": "#/properties/location_admin_area_level_2",
-            "type": "string",
-            "title": "The location_admin_area_level_2 schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                ""
-            ]
-        },
-        "location_country": {
-            "$id": "#/properties/location_country",
-            "type": "string",
-            "title": "The location_country schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "Estonia"
-            ]
-        },
-        "location_postal_code": {
-            "$id": "#/properties/location_postal_code",
-            "type": "string",
-            "title": "The location_postal_code schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "10616"
-            ]
-        },
-        "location_formatted_address": {
-            "$id": "#/properties/location_formatted_address",
-            "type": "string",
-            "title": "The location_formatted_address schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "Mustamäe tee 3, 10616 Tallinn, Estonia"
-            ]
-        },
-        "attendees": {
-            "$id": "#/properties/attendees",
-            "type": "array",
-            "title": "The attendees schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": [],
-            "examples": [
-                [
-                    {
-                        "email_address": "attendee@pipedrivemail.com",
-                        "is_organizer": 0,
-                        "name": "Attendee",
-                        "person_id": 25312,
-                        "status": "noreply",
-                        "user_id": null
-                    }
-                ]
-            ],
-            "additionalItems": true,
-            "items": {
-                "$id": "#/properties/attendees/items",
-                "anyOf": [
-                    {
-                        "$id": "#/properties/attendees/items/anyOf/0",
-                        "type": "object",
-                        "title": "The first anyOf schema",
-                        "description": "An explanation about the purpose of this instance.",
-                        "default": {},
-                        "examples": [
-                            {
-                                "email_address": "attendee@pipedrivemail.com",
-                                "is_organizer": 0,
-                                "name": "Attendee",
-                                "person_id": 25312,
-                                "status": "noreply",
-                                "user_id": null
-                            }
-                        ],
-                        "required": [
-                            "email_address",
-                            "is_organizer",
-                            "name",
-                            "person_id",
-                            "status",
-                            "user_id"
-                        ],
-                        "properties": {
-                            "email_address": {
-                                "$id": "#/properties/attendees/items/anyOf/0/properties/email_address",
-                                "type": "string",
-                                "title": "The email_address schema",
-                                "description": "An explanation about the purpose of this instance.",
-                                "default": "",
-                                "examples": [
-                                    "attendee@pipedrivemail.com"
-                                ]
-                            },
-                            "is_organizer": {
-                                "$id": "#/properties/attendees/items/anyOf/0/properties/is_organizer",
-                                "type": "integer",
-                                "title": "The is_organizer schema",
-                                "description": "An explanation about the purpose of this instance.",
-                                "default": 0,
-                                "examples": [
-                                    0
-                                ]
-                            },
-                            "name": {
-                                "$id": "#/properties/attendees/items/anyOf/0/properties/name",
-                                "type": "string",
-                                "title": "The name schema",
-                                "description": "An explanation about the purpose of this instance.",
-                                "default": "",
-                                "examples": [
-                                    "Attendee"
-                                ]
-                            },
-                            "person_id": {
-                                "$id": "#/properties/attendees/items/anyOf/0/properties/person_id",
-                                "type": "integer",
-                                "title": "The person_id schema",
-                                "description": "An explanation about the purpose of this instance.",
-                                "default": 0,
-                                "examples": [
-                                    25312
-                                ]
-                            },
-                            "status": {
-                                "$id": "#/properties/attendees/items/anyOf/0/properties/status",
-                                "type": "string",
-                                "title": "The status schema",
-                                "description": "An explanation about the purpose of this instance.",
-                                "default": "",
-                                "examples": [
-                                    "noreply"
-                                ]
-                            },
-                            "user_id": {
-                                "$id": "#/properties/attendees/items/anyOf/0/properties/user_id",
-                                "type": "null",
-                                "title": "The user_id schema",
-                                "description": "An explanation about the purpose of this instance.",
-                                "default": null,
-                                "examples": [
-                                    null
-                                ]
-                            }
-                        },
-                        "additionalProperties": true
-                    }
-                ]
-            }
-        },
-        "participants": {
-            "$id": "#/properties/participants",
-            "type": "array",
-            "title": "The participants schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": [],
-            "examples": [
-                [
-                    {
-                        "person_id": 17985,
-                        "primary_flag": false
-                    },
-                    {
-                        "person_id": "1101,",
-                        "primary_flag": true
-                    }
-                ]
-            ],
-            "additionalItems": true,
-            "items": {
-                "$id": "#/properties/participants/items",
-                "anyOf": [
-                    {
-                        "$id": "#/properties/participants/items/anyOf/0",
-                        "type": "object",
-                        "title": "The first anyOf schema",
-                        "description": "An explanation about the purpose of this instance.",
-                        "default": {},
-                        "examples": [
-                            {
-                                "person_id": 17985,
-                                "primary_flag": false
-                            }
-                        ],
-                        "required": [
-                            "person_id",
-                            "primary_flag"
-                        ],
-                        "properties": {
-                            "person_id": {
-                                "$id": "#/properties/participants/items/anyOf/0/properties/person_id",
-                                "type": "integer",
-                                "title": "The person_id schema",
-                                "description": "An explanation about the purpose of this instance.",
-                                "default": 0,
-                                "examples": [
-                                    17985
-                                ]
-                            },
-                            "primary_flag": {
-                                "$id": "#/properties/participants/items/anyOf/0/properties/primary_flag",
-                                "type": "boolean",
-                                "title": "The primary_flag schema",
-                                "description": "An explanation about the purpose of this instance.",
-                                "default": false,
-                                "examples": [
-                                    false
-                                ]
-                            }
-                        },
-                        "additionalProperties": true
-                    }
-                ]
-            }
-        },
-        "org_name": {
-            "$id": "#/properties/org_name",
-            "type": "string",
-            "title": "The org_name schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "Organization"
-            ]
-        },
-        "person_name": {
-            "$id": "#/properties/person_name",
-            "type": "string",
-            "title": "The person_name schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "Person"
-            ]
-        },
-        "deal_title": {
-            "$id": "#/properties/deal_title",
-            "type": "string",
-            "title": "The deal_title schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "Deal"
-            ]
-        },
-        "owner_name": {
-            "$id": "#/properties/owner_name",
-            "type": "string",
-            "title": "The owner_name schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "Creator"
-            ]
-        },
-        "person_dropbox_bcc": {
-            "$id": "#/properties/person_dropbox_bcc",
-            "type": "string",
-            "title": "The person_dropbox_bcc schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "company@pipedrivemail.com"
-            ]
-        },
-        "deal_dropbox_bcc": {
-            "$id": "#/properties/deal_dropbox_bcc",
-            "type": "string",
-            "title": "The deal_dropbox_bcc schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": "",
-            "examples": [
-                "company+deal300@pipedrivemail.com"
-            ]
-        },
-        "assigned_to_user_id": {
-            "$id": "#/properties/assigned_to_user_id",
-            "type": "integer",
-            "title": "The assigned_to_user_id schema",
-            "description": "An explanation about the purpose of this instance.",
-            "default": 0,
-            "examples": [
-                1235
-            ]
-        },
-        "file": {
-            "$id": "#/properties/file",
+        {
+          "person_id": "1101,",
+          "primary_flag": true
+        }
+      ],
+      "org_name": "Organization",
+      "person_name": "Person",
+      "deal_title": "Deal",
+      "owner_name": "Creator",
+      "person_dropbox_bcc": "company@pipedrivemail.com",
+      "deal_dropbox_bcc": "company+deal300@pipedrivemail.com",
+      "assigned_to_user_id": 1235,
+      "file": {
+        "id": "376892,",
+        "clean_name": "Audio 10:55:07.m4a",
+        "url": "https://pipedrive-files.s3-eu-west-1.amazonaws.com/Audio-recording.m4a"
+      }
+    }
+  ],
+  "required": [
+    "id",
+    "company_id",
+    "user_id",
+    "done",
+    "type",
+    "reference_type",
+    "reference_id",
+    "conference_meeting_client",
+    "conference_meeting_url",
+    "conference_meeting_id",
+    "due_date",
+    "due_time",
+    "duration",
+    "busy_flag",
+    "add_time",
+    "marked_as_done_time",
+    "last_notification_time",
+    "last_notification_user_id",
+    "notification_language_id",
+    "subject",
+    "public_description",
+    "calendar_sync_include_context",
+    "location",
+    "org_id",
+    "person_id",
+    "deal_id",
+    "lead_id",
+    "active_flag",
+    "update_time",
+    "update_user_id",
+    "gcal_event_id",
+    "google_calendar_id",
+    "google_calendar_etag",
+    "source_timezone",
+    "rec_rule",
+    "rec_rule_extension",
+    "rec_master_activity_id",
+    "series",
+    "note",
+    "created_by_user_id",
+    "location_subpremise",
+    "location_street_number",
+    "location_route",
+    "location_sublocality",
+    "location_locality",
+    "location_lat",
+    "location_long",
+    "location_admin_area_level_1",
+    "location_admin_area_level_2",
+    "location_country",
+    "location_postal_code",
+    "location_formatted_address",
+    "attendees",
+    "participants",
+    "org_name",
+    "person_name",
+    "deal_title",
+    "owner_name",
+    "person_dropbox_bcc",
+    "deal_dropbox_bcc",
+    "assigned_to_user_id",
+    "file"
+  ],
+  "properties": {
+    "id": {
+      "$id": "#/properties/id",
+      "type": "integer",
+      "title": "The id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [8]
+    },
+    "company_id": {
+      "$id": "#/properties/company_id",
+      "type": "integer",
+      "title": "The company_id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [22122]
+    },
+    "user_id": {
+      "$id": "#/properties/user_id",
+      "type": "integer",
+      "title": "The user_id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [1234]
+    },
+    "done": {
+      "$id": "#/properties/done",
+      "type": "boolean",
+      "title": "The done schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": false,
+      "examples": [false]
+    },
+    "type": {
+      "$id": "#/properties/type",
+      "type": "string",
+      "title": "The type schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["deadline"]
+    },
+    "reference_type": {
+      "$id": "#/properties/reference_type",
+      "type": "string",
+      "title": "The reference_type schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["scheduler-service"]
+    },
+    "reference_id": {
+      "$id": "#/properties/reference_id",
+      "type": "integer",
+      "title": "The reference_id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [7]
+    },
+    "conference_meeting_client": {
+      "$id": "#/properties/conference_meeting_client",
+      "type": "string",
+      "title": "The conference_meeting_client schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["871b8bc88d3a1202"]
+    },
+    "conference_meeting_url": {
+      "$id": "#/properties/conference_meeting_url",
+      "type": "string",
+      "title": "The conference_meeting_url schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["https://pipedrive.zoom.us/link"]
+    },
+    "conference_meeting_id": {
+      "$id": "#/properties/conference_meeting_id",
+      "type": "string",
+      "title": "The conference_meeting_id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["01758746701"]
+    },
+    "due_date": {
+      "$id": "#/properties/due_date",
+      "type": "string",
+      "title": "The due_date schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["2020-06-09"]
+    },
+    "due_time": {
+      "$id": "#/properties/due_time",
+      "type": "string",
+      "title": "The due_time schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["10:00"]
+    },
+    "duration": {
+      "$id": "#/properties/duration",
+      "type": "string",
+      "title": "The duration schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["01:00"]
+    },
+    "busy_flag": {
+      "$id": "#/properties/busy_flag",
+      "type": "boolean",
+      "title": "The busy_flag schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": false,
+      "examples": [true]
+    },
+    "add_time": {
+      "$id": "#/properties/add_time",
+      "type": "string",
+      "title": "The add_time schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["2020-06-08 12:37:56"]
+    },
+    "marked_as_done_time": {
+      "$id": "#/properties/marked_as_done_time",
+      "type": "string",
+      "title": "The marked_as_done_time schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["2020-08-08 08:08:38"]
+    },
+    "last_notification_time": {
+      "$id": "#/properties/last_notification_time",
+      "type": "string",
+      "title": "The last_notification_time schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["2020-08-08 12:37:56"]
+    },
+    "last_notification_user_id": {
+      "$id": "#/properties/last_notification_user_id",
+      "type": "integer",
+      "title": "The last_notification_user_id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [7655]
+    },
+    "notification_language_id": {
+      "$id": "#/properties/notification_language_id",
+      "type": "integer",
+      "title": "The notification_language_id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [1]
+    },
+    "subject": {
+      "$id": "#/properties/subject",
+      "type": "string",
+      "title": "The subject schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["Deadline"]
+    },
+    "public_description": {
+      "$id": "#/properties/public_description",
+      "type": "string",
+      "title": "The public_description schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["This is a description"]
+    },
+    "calendar_sync_include_context": {
+      "$id": "#/properties/calendar_sync_include_context",
+      "type": "null",
+      "title": "The calendar_sync_include_context schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": null,
+      "examples": [null]
+    },
+    "location": {
+      "$id": "#/properties/location",
+      "type": "string",
+      "title": "The location schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["Mustamäe tee 3, Tallinn, Estonia"]
+    },
+    "org_id": {
+      "$id": "#/properties/org_id",
+      "type": "integer",
+      "title": "The org_id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [5]
+    },
+    "person_id": {
+      "$id": "#/properties/person_id",
+      "type": "integer",
+      "title": "The person_id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [1101]
+    },
+    "deal_id": {
+      "$id": "#/properties/deal_id",
+      "type": "integer",
+      "title": "The deal_id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [300]
+    },
+    "lead_id": {
+      "$id": "#/properties/lead_id",
+      "type": "null",
+      "title": "The lead_id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": null,
+      "examples": [null]
+    },
+    "active_flag": {
+      "$id": "#/properties/active_flag",
+      "type": "boolean",
+      "title": "The active_flag schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": false,
+      "examples": [true]
+    },
+    "update_time": {
+      "$id": "#/properties/update_time",
+      "type": "string",
+      "title": "The update_time schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["2020-08-08 12:37:56"]
+    },
+    "update_user_id": {
+      "$id": "#/properties/update_user_id",
+      "type": "integer",
+      "title": "The update_user_id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [5596]
+    },
+    "gcal_event_id": {
+      "$id": "#/properties/gcal_event_id",
+      "type": "null",
+      "title": "The gcal_event_id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": null,
+      "examples": [null]
+    },
+    "google_calendar_id": {
+      "$id": "#/properties/google_calendar_id",
+      "type": "null",
+      "title": "The google_calendar_id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": null,
+      "examples": [null]
+    },
+    "google_calendar_etag": {
+      "$id": "#/properties/google_calendar_etag",
+      "type": "null",
+      "title": "The google_calendar_etag schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": null,
+      "examples": [null]
+    },
+    "source_timezone": {
+      "$id": "#/properties/source_timezone",
+      "type": "null",
+      "title": "The source_timezone schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": null,
+      "examples": [null]
+    },
+    "rec_rule": {
+      "$id": "#/properties/rec_rule",
+      "type": "string",
+      "title": "The rec_rule schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["RRULE:FREQ=WEEKLY;BYDAY=WE"]
+    },
+    "rec_rule_extension": {
+      "$id": "#/properties/rec_rule_extension",
+      "type": "null",
+      "title": "The rec_rule_extension schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": null,
+      "examples": [null]
+    },
+    "rec_master_activity_id": {
+      "$id": "#/properties/rec_master_activity_id",
+      "type": "null",
+      "title": "The rec_master_activity_id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": null,
+      "examples": [null]
+    },
+    "series": {
+      "$id": "#/properties/series",
+      "type": "null",
+      "title": "The series schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": null,
+      "examples": [null]
+    },
+    "note": {
+      "$id": "#/properties/note",
+      "type": "string",
+      "title": "The note schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["A note for the activity"]
+    },
+    "created_by_user_id": {
+      "$id": "#/properties/created_by_user_id",
+      "type": "integer",
+      "title": "The created_by_user_id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [1234]
+    },
+    "location_subpremise": {
+      "$id": "#/properties/location_subpremise",
+      "type": "string",
+      "title": "The location_subpremise schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": [""]
+    },
+    "location_street_number": {
+      "$id": "#/properties/location_street_number",
+      "type": "string",
+      "title": "The location_street_number schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["3"]
+    },
+    "location_route": {
+      "$id": "#/properties/location_route",
+      "type": "string",
+      "title": "The location_route schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["Mustamäe tee"]
+    },
+    "location_sublocality": {
+      "$id": "#/properties/location_sublocality",
+      "type": "string",
+      "title": "The location_sublocality schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["Kristiine"]
+    },
+    "location_locality": {
+      "$id": "#/properties/location_locality",
+      "type": "string",
+      "title": "The location_locality schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["Tallinn"]
+    },
+    "location_lat": {
+      "$id": "#/properties/location_lat",
+      "type": "number",
+      "title": "The location_lat schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0.0,
+      "examples": [59.4281884]
+    },
+    "location_long": {
+      "$id": "#/properties/location_long",
+      "type": "number",
+      "title": "The location_long schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0.0,
+      "examples": [24.7041378]
+    },
+    "location_admin_area_level_1": {
+      "$id": "#/properties/location_admin_area_level_1",
+      "type": "string",
+      "title": "The location_admin_area_level_1 schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["Harju maakond"]
+    },
+    "location_admin_area_level_2": {
+      "$id": "#/properties/location_admin_area_level_2",
+      "type": "string",
+      "title": "The location_admin_area_level_2 schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": [""]
+    },
+    "location_country": {
+      "$id": "#/properties/location_country",
+      "type": "string",
+      "title": "The location_country schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["Estonia"]
+    },
+    "location_postal_code": {
+      "$id": "#/properties/location_postal_code",
+      "type": "string",
+      "title": "The location_postal_code schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["10616"]
+    },
+    "location_formatted_address": {
+      "$id": "#/properties/location_formatted_address",
+      "type": "string",
+      "title": "The location_formatted_address schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["Mustamäe tee 3, 10616 Tallinn, Estonia"]
+    },
+    "attendees": {
+      "$id": "#/properties/attendees",
+      "type": "array",
+      "title": "The attendees schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": [],
+      "examples": [
+        [
+          {
+            "email_address": "attendee@pipedrivemail.com",
+            "is_organizer": 0,
+            "name": "Attendee",
+            "person_id": 25312,
+            "status": "noreply",
+            "user_id": null
+          }
+        ]
+      ],
+      "additionalItems": true,
+      "items": {
+        "$id": "#/properties/attendees/items",
+        "anyOf": [
+          {
+            "$id": "#/properties/attendees/items/anyOf/0",
             "type": "object",
-            "title": "The file schema",
+            "title": "The first anyOf schema",
             "description": "An explanation about the purpose of this instance.",
             "default": {},
             "examples": [
-                {
-                    "id": "376892,",
-                    "clean_name": "Audio 10:55:07.m4a",
-                    "url": "https://pipedrive-files.s3-eu-west-1.amazonaws.com/Audio-recording.m4a"
-                }
+              {
+                "email_address": "attendee@pipedrivemail.com",
+                "is_organizer": 0,
+                "name": "Attendee",
+                "person_id": 25312,
+                "status": "noreply",
+                "user_id": null
+              }
             ],
             "required": [
-                "id",
-                "clean_name",
-                "url"
+              "email_address",
+              "is_organizer",
+              "name",
+              "person_id",
+              "status",
+              "user_id"
             ],
             "properties": {
-                "id": {
-                    "$id": "#/properties/file/properties/id",
-                    "type": "string",
-                    "title": "The id schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": "",
-                    "examples": [
-                        "376892,"
-                    ]
-                },
-                "clean_name": {
-                    "$id": "#/properties/file/properties/clean_name",
-                    "type": "string",
-                    "title": "The clean_name schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": "",
-                    "examples": [
-                        "Audio 10:55:07.m4a"
-                    ]
-                },
-                "url": {
-                    "$id": "#/properties/file/properties/url",
-                    "type": "string",
-                    "title": "The url schema",
-                    "description": "An explanation about the purpose of this instance.",
-                    "default": "",
-                    "examples": [
-                        "https://pipedrive-files.s3-eu-west-1.amazonaws.com/Audio-recording.m4a"
-                    ]
-                }
+              "email_address": {
+                "$id": "#/properties/attendees/items/anyOf/0/properties/email_address",
+                "type": "string",
+                "title": "The email_address schema",
+                "description": "An explanation about the purpose of this instance.",
+                "default": "",
+                "examples": ["attendee@pipedrivemail.com"]
+              },
+              "is_organizer": {
+                "$id": "#/properties/attendees/items/anyOf/0/properties/is_organizer",
+                "type": "integer",
+                "title": "The is_organizer schema",
+                "description": "An explanation about the purpose of this instance.",
+                "default": 0,
+                "examples": [0]
+              },
+              "name": {
+                "$id": "#/properties/attendees/items/anyOf/0/properties/name",
+                "type": "string",
+                "title": "The name schema",
+                "description": "An explanation about the purpose of this instance.",
+                "default": "",
+                "examples": ["Attendee"]
+              },
+              "person_id": {
+                "$id": "#/properties/attendees/items/anyOf/0/properties/person_id",
+                "type": "integer",
+                "title": "The person_id schema",
+                "description": "An explanation about the purpose of this instance.",
+                "default": 0,
+                "examples": [25312]
+              },
+              "status": {
+                "$id": "#/properties/attendees/items/anyOf/0/properties/status",
+                "type": "string",
+                "title": "The status schema",
+                "description": "An explanation about the purpose of this instance.",
+                "default": "",
+                "examples": ["noreply"]
+              },
+              "user_id": {
+                "$id": "#/properties/attendees/items/anyOf/0/properties/user_id",
+                "type": "null",
+                "title": "The user_id schema",
+                "description": "An explanation about the purpose of this instance.",
+                "default": null,
+                "examples": [null]
+              }
             },
             "additionalProperties": true
-        }
+          }
+        ]
+      }
     },
-    "additionalProperties": true
+    "participants": {
+      "$id": "#/properties/participants",
+      "type": "array",
+      "title": "The participants schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": [],
+      "examples": [
+        [
+          {
+            "person_id": 17985,
+            "primary_flag": false
+          },
+          {
+            "person_id": "1101,",
+            "primary_flag": true
+          }
+        ]
+      ],
+      "additionalItems": true,
+      "items": {
+        "$id": "#/properties/participants/items",
+        "anyOf": [
+          {
+            "$id": "#/properties/participants/items/anyOf/0",
+            "type": "object",
+            "title": "The first anyOf schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": {},
+            "examples": [
+              {
+                "person_id": 17985,
+                "primary_flag": false
+              }
+            ],
+            "required": ["person_id", "primary_flag"],
+            "properties": {
+              "person_id": {
+                "$id": "#/properties/participants/items/anyOf/0/properties/person_id",
+                "type": "integer",
+                "title": "The person_id schema",
+                "description": "An explanation about the purpose of this instance.",
+                "default": 0,
+                "examples": [17985]
+              },
+              "primary_flag": {
+                "$id": "#/properties/participants/items/anyOf/0/properties/primary_flag",
+                "type": "boolean",
+                "title": "The primary_flag schema",
+                "description": "An explanation about the purpose of this instance.",
+                "default": false,
+                "examples": [false]
+              }
+            },
+            "additionalProperties": true
+          }
+        ]
+      }
+    },
+    "org_name": {
+      "$id": "#/properties/org_name",
+      "type": "string",
+      "title": "The org_name schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["Organization"]
+    },
+    "person_name": {
+      "$id": "#/properties/person_name",
+      "type": "string",
+      "title": "The person_name schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["Person"]
+    },
+    "deal_title": {
+      "$id": "#/properties/deal_title",
+      "type": "string",
+      "title": "The deal_title schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["Deal"]
+    },
+    "owner_name": {
+      "$id": "#/properties/owner_name",
+      "type": "string",
+      "title": "The owner_name schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["Creator"]
+    },
+    "person_dropbox_bcc": {
+      "$id": "#/properties/person_dropbox_bcc",
+      "type": "string",
+      "title": "The person_dropbox_bcc schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["company@pipedrivemail.com"]
+    },
+    "deal_dropbox_bcc": {
+      "$id": "#/properties/deal_dropbox_bcc",
+      "type": "string",
+      "title": "The deal_dropbox_bcc schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": ["company+deal300@pipedrivemail.com"]
+    },
+    "assigned_to_user_id": {
+      "$id": "#/properties/assigned_to_user_id",
+      "type": "integer",
+      "title": "The assigned_to_user_id schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [1235]
+    },
+    "file": {
+      "$id": "#/properties/file",
+      "type": "object",
+      "title": "The file schema",
+      "description": "An explanation about the purpose of this instance.",
+      "default": {},
+      "examples": [
+        {
+          "id": "376892,",
+          "clean_name": "Audio 10:55:07.m4a",
+          "url": "https://pipedrive-files.s3-eu-west-1.amazonaws.com/Audio-recording.m4a"
+        }
+      ],
+      "required": ["id", "clean_name", "url"],
+      "properties": {
+        "id": {
+          "$id": "#/properties/file/properties/id",
+          "type": "string",
+          "title": "The id schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": "",
+          "examples": ["376892,"]
+        },
+        "clean_name": {
+          "$id": "#/properties/file/properties/clean_name",
+          "type": "string",
+          "title": "The clean_name schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": "",
+          "examples": ["Audio 10:55:07.m4a"]
+        },
+        "url": {
+          "$id": "#/properties/file/properties/url",
+          "type": "string",
+          "title": "The url schema",
+          "description": "An explanation about the purpose of this instance.",
+          "default": "",
+          "examples": [
+            "https://pipedrive-files.s3-eu-west-1.amazonaws.com/Audio-recording.m4a"
+          ]
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
 }
