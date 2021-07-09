@@ -13,7 +13,9 @@
 
  AWS CloudTrail   [![source-aws-cloudtrail](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-aws-cloudtrail%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-aws-cloudtrail)
 
- Braintree   [![source-braintree-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-braintree-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-braintree-singer) 
+ Braintree   [![source-braintree-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-braintree-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-braintree-singer)
+
+ Dixa   [![source-dixa](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-dixa%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-dixa)
 
  Drift   [![source-drift](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-drift%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-drift) 
 
@@ -77,6 +79,8 @@
 
  Oracle DB   [![source-oracle](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-oracle%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-oracle) 
 
+ Paypal Transaction   [![paypal-transaction](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-paypal-transaction%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-paypal-transaction)
+
  Plaid   [![source-plaid](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-plaid%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-plaid) 
 
  Postgres   [![source-postgres](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-postgres%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-postgres) 
@@ -102,6 +106,8 @@
  Smartsheets   [![source-smartsheets](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-smartsheets%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-smartsheets) 
 
  Snowflake   [![source-snowflake](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-snowflake%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-snowflake)
+
+ Square   [![source-square](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-square%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-square)
 
  Stripe   [![source-stripe](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-stripe%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-stripe) 
 
