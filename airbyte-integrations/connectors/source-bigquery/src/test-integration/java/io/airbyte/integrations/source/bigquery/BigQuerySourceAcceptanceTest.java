@@ -25,33 +25,77 @@
 package io.airbyte.integrations.source.bigquery;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.Dataset;
+import com.google.cloud.bigquery.DatasetInfo;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.string.Strings;
+import io.airbyte.db.bigquery.BigQueryDatabase;
+import io.airbyte.db.bigquery.TempBigQueryJoolDatabaseImpl;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import static io.airbyte.integrations.source.bigquery.BigQuerySource.*;
+
 public class BigQuerySourceAcceptanceTest extends SourceAcceptanceTest {
 
+  private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
+  private static final String SCHEMA_NAME = "public";
+  private static final String STREAM_NAME = "id_and_name";
+
+  private BigQueryDatabase database;
+  private Dataset dataset;
   private JsonNode config;
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv testEnv) {
-    // TODO create new container. Ex: "new OracleContainer("epiclabs/docker-oracle-xe-11g");"
-    // TODO make container started. Ex: "container.start();"
-    // TODO init JsonNode config
-    // TODO crete airbyte Database object "Databases.createJdbcDatabase(...)"
-    // TODO insert test data to DB. Ex: "database.execute(connection-> ...)"
-    // TODO close Database. Ex: "database.close();"
+  protected void setupEnvironment(TestDestinationEnv testEnv) throws IOException, SQLException {
+    if (!Files.exists(CREDENTIALS_PATH)) {
+      throw new IllegalStateException(
+              "Must provide path to a big query credentials file. By default {module-root}/" + CREDENTIALS_PATH
+                      + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
+    }
+
+    final String credentialsJsonString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+
+    final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString);
+    final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();
+    final String datasetLocation = "US";
+
+    final String datasetId = Strings.addRandomSuffix("airbyte_tests_acceptance", "_", 8);
+
+    config = Jsons.jsonNode(ImmutableMap.builder()
+            .put(CONFIG_PROJECT_ID, projectId)
+            .put(CONFIG_CREDS, credentialsJsonString)
+            .put(CONFIG_DATASET_ID, datasetId)
+            .put(CONFIG_DATASET_LOCATION, datasetLocation)
+            .build());
+
+    database = new BigQueryDatabase(config.get(CONFIG_PROJECT_ID).asText(), credentialsJsonString);
+
+    final DatasetInfo datasetInfo =
+            DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).setLocation(config.get(CONFIG_DATASET_LOCATION).asText()).build();
+    dataset = database.getBigQuery().create(datasetInfo);
+
+    database.execute("CREATE TABLE " + datasetId + ".id_and_name(id INT64, name STRING);");
+    database.execute("INSERT INTO " + datasetId + ".id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
   }
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) {
-    // TODO close container that was initialized in setup() method. Ex: "container.close();"
+    database.cleanDataSet(dataset.getDatasetId().getDataset());
   }
 
   @Override
@@ -71,8 +115,11 @@ public class BigQuerySourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    // TODO Return the ConfiguredAirbyteCatalog with ConfiguredAirbyteStream objects
-    return null;
+    return CatalogHelpers.createConfiguredAirbyteCatalog(
+            STREAM_NAME,
+            SCHEMA_NAME,
+            Field.of("id", JsonSchemaPrimitive.NUMBER),
+            Field.of("name", JsonSchemaPrimitive.STRING));
   }
 
   @Override

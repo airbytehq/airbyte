@@ -98,17 +98,20 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   @Override
   protected List<TableInfo<CommonField<StandardSQLTypeName>>> discoverInternal(BigQueryDatabase database) {
     String projectId = dbConfig.get(CONFIG_PROJECT_ID).asText();
+    String datasetId = getConfigDatasetId(database);
     List<Table> tables = (isDatasetConfigured(database) ? database.getDatasetTables(projectId, getConfigDatasetId(database)) : database.getProjectTables(projectId));
     List<TableInfo<CommonField<StandardSQLTypeName>>> result = new ArrayList<>();
-    tables.stream()
-            .map(table -> Objects.requireNonNull(table.getDefinition().getSchema()).getFields())
-            .forEach(fields -> fields.stream().map(field -> TableInfo.<CommonField<StandardSQLTypeName>>builder()
-                    .nameSpace(projectId)
-                    .name(field.getName())
-            .fields(fields.stream().map(f -> {
-              StandardSQLTypeName standardType = f.getType().getStandardType();
-              return new CommonField<>(f.getName(), standardType);
-            }).collect(Collectors.toList())).build()).forEach(result::add));
+    tables.stream().map(table -> TableInfo.<CommonField<StandardSQLTypeName>>builder()
+        .nameSpace(datasetId)
+        .name(table.getTableId().getTable())
+        .fields(Objects.requireNonNull(table.getDefinition().getSchema()).getFields().stream()
+            .map(f -> {
+                StandardSQLTypeName standardType = f.getType().getStandardType();
+                return new CommonField<>(f.getName(), standardType);
+            })
+            .collect(Collectors.toList()))
+        .build())
+        .forEach(result::add);
     return result;
   }
 
