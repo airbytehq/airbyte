@@ -72,6 +72,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Tempo](./sources/tempo.md)| Beta |
 |[Twilio](./sources/twilio.md)| Beta |
 |[Zendesk Chat](./sources/zendesk-chat.md)| Certified |
+|[Zendesk Sunshine](./sources/zendesk-sunshine.md)| Beta |
 |[Zendesk Support](./sources/zendesk-support.md)| Certified |
 |[Zendesk Talk](./sources/zendesk-talk.md)| Certified |
 |[Zoom](./sources/zoom.md)| Beta |
