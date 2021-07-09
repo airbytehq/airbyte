@@ -17,11 +17,11 @@ const Text = styled.div`
 
 const InputRow = styled(Row)`
   height: auto;
-  margin-bottom: 28px;
+  margin-bottom: 40px;
 `;
 
 const Message = styled(Text)`
-  margin: -19px 0 0;
+  margin: -40px 0 21px;
   padding: 0;
   color: ${({ theme }) => theme.greyColor40};
 `;

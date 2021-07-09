@@ -9,6 +9,8 @@ type ConnectorService = {
   hasNewVersions: boolean;
   hasNewSourceVersion: boolean;
   hasNewDestinationVersion: boolean;
+  countNewSourceVersion: number;
+  countNewDestinationVersion: number;
   updateAllSourceVersions: () => void;
   updateAllDestinationVersions: () => void;
 };
@@ -57,6 +59,23 @@ const useConnector = (): ConnectorService => {
     [hasNewSourceVersion, hasNewDestinationVersion]
   );
 
+  const countNewSourceVersion = useMemo(
+    () =>
+      sourceDefinitions.filter(
+        (source) => source.latestDockerImageTag !== source.dockerImageTag
+      ).length,
+    [sourceDefinitions]
+  );
+
+  const countNewDestinationVersion = useMemo(
+    () =>
+      destinationDefinitions.filter(
+        (destination) =>
+          destination.latestDockerImageTag !== destination.dockerImageTag
+      ).length,
+    [destinationDefinitions]
+  );
+
   const updateAllSourceVersions = async () => {
     const updateList = sourceDefinitions.filter(
       (source) => source.latestDockerImageTag !== source.dockerImageTag
@@ -100,6 +119,8 @@ const useConnector = (): ConnectorService => {
     hasNewDestinationVersion,
     updateAllSourceVersions,
     updateAllDestinationVersions,
+    countNewSourceVersion,
+    countNewDestinationVersion,
   };
 };
 

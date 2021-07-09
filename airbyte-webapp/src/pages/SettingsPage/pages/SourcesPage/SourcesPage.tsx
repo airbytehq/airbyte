@@ -5,20 +5,20 @@ import { useFetcher, useResource } from "rest-hooks";
 import { useAsyncFn } from "react-use";
 
 import Table from "components/Table";
-import ConnectorCell from "./ConnectorCell";
-import ImageCell from "./ImageCell";
-import VersionCell from "./VersionCell";
+import ConnectorCell from "./components/ConnectorCell";
+import ImageCell from "./components/ImageCell";
+import VersionCell from "./components/VersionCell";
 import config from "config";
-import { Block, FormContentTitle, Title } from "./PageComponents";
+import { Block, FormContentTitle, Title } from "./components/PageComponents";
 import SourceDefinitionResource, {
   SourceDefinition,
 } from "core/resources/SourceDefinition";
 import { SourceResource } from "core/resources/Source";
-import UpgradeAllButton from "./UpgradeAllButton";
+import UpgradeAllButton from "./components/UpgradeAllButton";
 import useConnector from "components/hooks/services/useConnector";
 import HeadTitle from "components/HeadTitle";
 
-const SourcesView: React.FC = () => {
+const SourcesPage: React.FC = () => {
   const [successUpdate, setSuccessUpdate] = useState(false);
   const formatMessage = useIntl().formatMessage;
   const { sources } = useResource(SourceResource.listShape(), {
@@ -192,4 +192,4 @@ const SourcesView: React.FC = () => {
   );
 };
 
-export default SourcesView;
+export default SourcesPage;
