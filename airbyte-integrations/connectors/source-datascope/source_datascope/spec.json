@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Datascope Spec",
     "type": "object",
-    "required": ["api_key", "form_id"],
+    "required": ["api_key", "form_id", "start_date"],
     "additionalProperties": false,
     "properties": {
       "api_key": {
@@ -24,7 +24,7 @@
       },
       "schema_type": {
         "type": "string",
-        "description": "Please select type of schema 'fixed' or 'dynamic'",
+        "description": "Please select type of schema 'fixed' or 'dynamic'. Fixed will use same schema for all forms and dynamic will change schema depending on the questions of the form",
         "enum": ["fixed", "dynamic"],
         "examples": ["fixed or dynamic"]
       }
