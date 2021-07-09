@@ -7,9 +7,7 @@ As depicted in our [High-Level View](../understanding-airbyte/high-level-view.md
 4) Webapp
 5) Database
 
-These components perform control plane operations which are low-scale low-resource work. On top of that, these components are also decently efficient.
-Unless your workload involves uncommonly large - more than a thousand - numbers of Airbyte resources (e.g. a connection of a source etc.) these components
-should not present any scaling issues.
+These components perform control plane operations that are low-scale, low-resource work. In addition to the work being low cost, these components are efficient and optimized for these jobs, meaning that only uncommonly large workloads will require deployments at scale. In general, you would only encounter scaling issues when running over a thousand connections.
 
 As a reference point, the typical Airbyte user has 5 - 20 connectors and 10 - 100 connections configured. Almost all of these connections are scheduled,
 either hourly or daily, resulting in at most 100 concurrent jobs.
