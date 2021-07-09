@@ -30,8 +30,7 @@ There are two resources to be aware of:
 ##### Memory
 
 #### Disk Space
-Airbyte used to use an on-disk queue resulting in significant disk space usage, especially for long-running syncs. Today Airbyte uses backpressure to try
-and read the minimal amount of logs required. Disk space is no longer a large concern as it was before.
+Airbyte uses backpressure to try and read the minimal amount of logs required. In the past, disk space was a large concern, but we've since deprecated the expensive on-disk queue approach.
 
 However, disk space might become an issue for the following reasons:
 
