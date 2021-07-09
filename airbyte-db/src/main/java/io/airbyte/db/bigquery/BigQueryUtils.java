@@ -62,18 +62,22 @@ public class BigQueryUtils {
     if (fieldValue.getAttribute().equals(Attribute.PRIMITIVE)) {
       LegacySQLTypeName fieldType = field.getType();
       String fieldName = field.getName();
-      switch (fieldType.getStandardType()) {
-        case BOOL -> node.put(fieldName, fieldValue.getBooleanValue());
-        case INT64 -> node.put(fieldName, fieldValue.getLongValue());
-        case FLOAT64 -> node.put(fieldName, fieldValue.getDoubleValue());
-        case NUMERIC -> node.put(fieldName, fieldValue.getNumericValue());
-        case BIGNUMERIC -> node.put(fieldName, nullIfInvalid(fieldValue::getNumericValue));
-        case STRING -> node.put(fieldName, fieldValue.getStringValue());
-        case BYTES -> node.put(fieldName, fieldValue.getBytesValue());
-        case TIMESTAMP, DATE, TIME, DATETIME -> node
-            .put(fieldName, toISO8601String(fieldValue.getTimestampValue()));
-        default -> node.put(fieldName, fieldValue.getStringValue());
+      if (fieldValue.isNull()) {
+        node.put(fieldName, (String) null);
       }
+      else
+        switch (fieldType.getStandardType()) {
+          case BOOL -> node.put(fieldName, fieldValue.getBooleanValue());
+          case INT64 -> node.put(fieldName, fieldValue.getLongValue());
+          case FLOAT64 -> node.put(fieldName, fieldValue.getDoubleValue());
+          case NUMERIC -> node.put(fieldName, fieldValue.getNumericValue());
+          case BIGNUMERIC -> node.put(fieldName, nullIfInvalid(fieldValue::getNumericValue));
+          case STRING -> node.put(fieldName, fieldValue.getStringValue());
+          case BYTES -> node.put(fieldName, fieldValue.getBytesValue());
+          case TIMESTAMP, DATE, TIME, DATETIME -> node
+              .put(fieldName, toISO8601String(fieldValue.getTimestampValue()));
+          default -> node.put(fieldName, fieldValue.getStringValue());
+        }
     }
   }
 
