@@ -1,4 +1,4 @@
-## Scaling Airbyte
+# Scaling Airbyte
 
 As depicted in our [High-Level View](../understanding-airbyte/high-level-view.md), Airbyte is made up of several components under the hood:
 1) Scheduler
@@ -14,7 +14,7 @@ should not present any scaling issues.
 As a reference point, the typical Airbyte user has 5 - 20 connectors and 10 - 100 connections configured. Almost all of these connections are scheduled,
 either hourly or daily, resulting in at most 100 concurrent jobs.
 
-### What To Scale
+## What To Scale
 [Workers](../understanding-airbyte/jobs.md) do all the heavy lifting within Airbyte. A worker is responsible for executing Airbyte operations (e.g. Discover, Read, Sync etc),
 and is created on demand whenever these operations are requested. Thus, every job has a corresponding worker executing its work.
 
@@ -27,10 +27,17 @@ There are two resources to be aware of:
 1) Memory
 2) Disk space
 
-##### Memory
+### Memory
 
-#### Disk Space
-Airbyte uses backpressure to try and read the minimal amount of logs required. In the past, disk space was a large concern, but we've since deprecated the expensive on-disk queue approach.
+
+#### Docker
+// How to do this - increase the docker agent. Link ticket to this
+
+#### Kubernetes
+
+
+### Disk Space
+Airbyte uses backpressure to try to read the minimal amount of logs required. In the past, disk space was a large concern, but we've since deprecated the expensive on-disk queue approach.
 
 However, disk space might become an issue for the following reasons:
 
@@ -39,4 +46,7 @@ However, disk space might become an issue for the following reasons:
 2) Although Airyte connector images aren't massive, they aren't exactly small either. The typical connector image is ~300MB. An Airbyte deployment with
 multiple connectors can easily use up to 10GBs of disk space.
 
-Because of this, we recommend allocating a minimum of 30GBs of disk space per node. Since storage is on the cheaper side, we'd recommend you being safe rather than sorry, so err on the side of overprovisioning.
+Because of this, we recommend allocating a minimum of 30GBs of disk space per node. Since storage is on the cheaper side, we'd recommend you be safe than sorry, so err on the side of over-provisioning.
+
+### On Kubernetes  
+Users running Airbyte Kubernetes have to also make sure the  
