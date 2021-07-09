@@ -38,8 +38,11 @@ from .zuora_auth import ZuoraAuthenticator
 class ZoqlExportClient:
 
     """
-    # TODO: Add the description about the Daat Query Method + Links
-    # TODO: Add description about class methods
+    # TODO: Create @backoff strategy for failed query: {Query failed: cannot resolve the field 'updateddate'},
+            on the step of _check_dq_job_status()
+    # TODO: Add the description about the ZOQL EXPORT + Links
+    # TODO: Add description to class methods
+    
     """
 
     logger = AirbyteLogger()

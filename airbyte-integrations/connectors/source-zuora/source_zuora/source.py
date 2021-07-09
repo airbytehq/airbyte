@@ -24,7 +24,6 @@
 
 
 from abc import ABC
-import json
 from typing import Any, Iterable, List, Mapping, MutableMapping, Tuple
 
 from airbyte_cdk import AirbyteLogger
@@ -137,5 +136,5 @@ class SourceZuora(AbstractSource):
         # created the class for each object
         streams = GenerateStreams.create_stream_class_from_object_name(zuora_objects)
 
-        # Return the list of stream classes with api_client
+        # Return the list of stream classes with calling Zuora API Client
         return [ streams[c](zuora_client) for c in range(len(streams)) ]
