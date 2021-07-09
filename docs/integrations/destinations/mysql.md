@@ -56,6 +56,18 @@ You should now have all the requirements needed to configure MySQL as a destinat
 * **Password**
 * **Database**
 
+## Known limitations
+
+Note that MySQL documentation discusses identifiers case sensitivity using the `lower_case_table_names` system variable.
+As one of their recommendation is:
+
+    "It is best to adopt a consistent convention, such as always creating and referring to databases and tables using lowercase names.
+     This convention is recommended for maximum portability and ease of use."
+
+[Source: MySQL docs](https://dev.mysql.com/doc/refman/8.0/en/identifier-case-sensitivity.html)
+
+As a result, Airbyte MySQL destinations forces all identifier (table, schema and columns) names to be lowercase.
+
 ## CHANGELOG
 
 | Version | Date | Pull Request | Subject |

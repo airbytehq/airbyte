@@ -24,6 +24,8 @@
 
 package io.airbyte.integrations.destination.mysql;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
@@ -31,8 +33,6 @@ import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -198,8 +198,23 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   @Test
+  void testCustomDbtTransformations() throws Exception {
+    // overrides test with a no-op until https://github.com/dbt-labs/jaffle_shop/pull/8 is merged
+  }
+
+  @Override
+  @Test
   public void testLineBreakCharacters() {
     // overrides test with a no-op until we handle full UTF-8 in the destination
+  }
+
+  protected void assertSameValue(JsonNode expectedValue, JsonNode actualValue) {
+    if (expectedValue.isBoolean()) {
+      // Boolean in MySQL are stored as TINYINT (0 or 1) so we force them to boolean values here
+      assertEquals(expectedValue.asBoolean(), actualValue.asBoolean());
+    } else {
+      assertEquals(expectedValue, actualValue);
+    }
   }
 
 }

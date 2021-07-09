@@ -34,9 +34,9 @@
     cast({{ field }} as boolean)
 {%- endmacro %}
 
--- cast(lower({{ field }})='true' as unsigned)
+{# -- MySQL does not support cast function converting string directly to boolean (alias to tiniyint(1), https://dev.mysql.com/doc/refman/8.0/en/cast-functions.html#function_cast #}
 {% macro mysql__cast_to_boolean(field) -%}
-    IF(lower({{ field }})='true', true, false)
+    IF(lower({{ field }}) = 'true', true, false)
 {%- endmacro %}
 
 {# -- Redshift does not support converting string directly to boolean, it must go through int first #}

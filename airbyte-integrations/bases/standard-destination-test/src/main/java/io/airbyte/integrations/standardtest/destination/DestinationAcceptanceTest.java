@@ -667,7 +667,7 @@ public abstract class DestinationAcceptanceTest {
 
   @Test
   void testCustomDbtTransformations() throws Exception {
-    //TODO: Fill this up
+    // TODO: Fill this up
     if (getImageName().equals("airbyte/destination-mysql:dev")) {
       return;
     }
@@ -1007,9 +1007,13 @@ public abstract class DestinationAcceptanceTest {
         }
         LOGGER.info("For {} Expected {} vs Actual {}", key, expectedValue, actualValue);
         assertTrue(actualData.has(key));
-        assertEquals(expectedValue, actualValue);
+        assertSameValue(expectedValue, actualValue);
       }
     }
+  }
+
+  protected void assertSameValue(JsonNode expectedValue, JsonNode actualValue) {
+    assertEquals(expectedValue, actualValue);
   }
 
   protected List<AirbyteRecordMessage> retrieveNormalizedRecords(AirbyteCatalog catalog, String defaultSchema) throws Exception {
