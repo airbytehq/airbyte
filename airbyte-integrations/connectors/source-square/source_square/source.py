@@ -87,9 +87,9 @@ class SquareStream(HttpStream, ABC):
         records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
         yield from records
 
-    def _send_request(self, request: requests.PreparedRequest) -> requests.Response:
+    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
         try:
-            return super()._send_request(request)
+            return super()._send_request(request, request_kwargs)
         except requests.exceptions.HTTPError as e:
             square_exception = parse_square_error_response(e)
             if square_exception:
