@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Zendesk Sunshine Spec",
     "type": "object",
-    "required": ["api_token", "email", "start_date" ,"subdomain"],
+    "required": ["api_token", "email", "start_date", "subdomain"],
     "additionalProperties": false,
     "properties": {
       "api_token": {

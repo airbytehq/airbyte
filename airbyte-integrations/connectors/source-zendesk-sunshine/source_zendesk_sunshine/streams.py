@@ -108,6 +108,7 @@ class ObjectRecords(IncrementalSunshineStream):
     To support Incremental for this stream I had to use `query` endpoint instead of `objects/records` -
     this allows me to use date filters. This is the only way to have incremental support.
     """
+
     http_method = "POST"
 
     def request_body_json(
@@ -213,6 +214,7 @@ class Jobs(SunshineStream):
     This stream is dynamic. The data can exist today, but may be absent tomorrow.
     Since we need to have some data in the stream this stream is disabled.
     """
+
     def path(self, **kwargs) -> str:
         return "jobs"
 

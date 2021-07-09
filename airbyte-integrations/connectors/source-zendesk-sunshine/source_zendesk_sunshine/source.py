@@ -33,14 +33,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .streams import (
-    Limits,
-    ObjectRecords,
-    ObjectTypePolicies,
-    ObjectTypes,
-    RelationshipRecords,
-    RelationshipTypes,
-)
+from .streams import Limits, ObjectRecords, ObjectTypePolicies, ObjectTypes, RelationshipRecords, RelationshipTypes
 
 
 class Base64HttpAuthenticator(TokenAuthenticator):
