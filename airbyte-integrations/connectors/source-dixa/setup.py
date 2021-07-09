@@ -37,7 +37,7 @@ TEST_REQUIREMENTS = [
 setup(
     name="source_dixa",
     description="Source implementation for Dixa.",
-    author="Airbyte",
+    author="Oliver Meyer, Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
