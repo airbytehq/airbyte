@@ -22,7 +22,6 @@
 
 
 from abc import ABC, abstractmethod
-from os import stat
 from typing import Any, List, Mapping, Optional, Tuple
 from traceback import format_exc
 from fnmatch import fnmatch
@@ -30,7 +29,8 @@ from fnmatch import fnmatch
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from source_blob.stream import IncrementalBlobStreamS3
+from .blobfile import BlobFileS3
+from .stream import IncrementalBlobStreamS3
 
 
 class SourceBlob(AbstractSource, ABC):

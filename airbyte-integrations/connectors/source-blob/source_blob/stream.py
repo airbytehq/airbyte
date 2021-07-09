@@ -117,10 +117,8 @@ class BlobStream(Stream, ABC):
         TODO docstring
         This enacts a full_refresh style read_records regardless of sync_mode 
         """
-
-        with concurrent futures :
-
-            
+        # TODO: with concurrent futures :
+        pass
 
 
 class IncrementalBlobStream(BlobStream, ABC):

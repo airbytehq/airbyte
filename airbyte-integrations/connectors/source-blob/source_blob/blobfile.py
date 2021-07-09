@@ -146,30 +146,35 @@ class BlobFile(ABC):
 class BlobFileS3(BlobFile):
     """TODO docstring"""
 
-    def _init_boto_session(self, func):
-        """TODO Docstring (this is a decorator)"""
-        # why we're making a new Session at file level rather than stream level
-        # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/resources.html#multithreading-and-multiprocessing
-        if not hasattr(self, '_boto_session'):
-            if self.use_aws_account:
-                self._boto_session = boto3session.Session(
-                    aws_access_key_id=self._provider.get("aws_access_key_id"),
-                    aws_secret_access_key=self._provider.get("aws_secret_access_key"))
-            else:
-                self._boto_session = boto3session.Session()
-        if not hasattr(self, '_boto_s3_resource'):
-            if self.use_aws_account:
-                self._boto_s3_resource = self._boto_session.resource('s3')
-            else:
-                self._boto_s3_resource = self._boto_session.resource('s3', config=Config(signature_version=UNSIGNED))
-        return func
+    class _Decorators():
+        """ TODO docstring """
+        @classmethod
+        def init_boto_session(cls, func):
+            """TODO Docstring (this is a decorator)"""
+            def inner(self, *args, **kwargs):
+                # why we're making a new Session at file level rather than stream level
+                # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/resources.html#multithreading-and-multiprocessing
+                if not hasattr(self, '_boto_session'):
+                    if self.use_aws_account:
+                        self._boto_session = boto3session.Session(
+                            aws_access_key_id=self._provider.get("aws_access_key_id"),
+                            aws_secret_access_key=self._provider.get("aws_secret_access_key"))
+                    else:
+                        self._boto_session = boto3session.Session()
+                if not hasattr(self, '_boto_s3_resource'):
+                    if self.use_aws_account:
+                        self._boto_s3_resource = self._boto_session.resource('s3')
+                    else:
+                        self._boto_s3_resource = self._boto_session.resource('s3', config=Config(signature_version=UNSIGNED))
+                return func(self, *args, **kwargs)
+            return inner
 
     @property
     def storage_scheme(self) -> str:
         return "s3://"
 
     @property
-    @_init_boto_session
+    @_Decorators.init_boto_session
     def last_modified(self) -> datetime:
         """ TODO docstring """
         obj = self._boto_s3_resource.Object(self._provider.get('bucket'), self.url)
