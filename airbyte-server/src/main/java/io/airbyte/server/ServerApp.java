@@ -32,10 +32,10 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.helpers.LogHelpers;
+import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.DefaultConfigPersistence;
+import io.airbyte.config.persistence.FileSystemConfigPersistence;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
@@ -80,7 +80,12 @@ public class ServerApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
   private static final int PORT = 8001;
-
+  /**
+   * We can't support automatic migration for kube before this version because we had a bug in kube
+   * which would cause airbyte db to erase state upon termination, as a result the automatic migration
+   * wouldn't run
+   */
+  private static final AirbyteVersion KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION = new AirbyteVersion("0.26.5-alpha");
   private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
   private final Configs configs;
@@ -181,13 +186,13 @@ public class ServerApp {
   public static void main(String[] args) throws Exception {
     final Configs configs = new EnvConfigs();
 
-    MDC.put(LogHelpers.WORKSPACE_MDC_KEY, LogHelpers.getServerLogsRoot(configs).toString());
+    MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, LogClientSingleton.getServerLogsRoot(configs).toString());
 
     final Path configRoot = configs.getConfigRoot();
     LOGGER.info("configRoot = " + configRoot);
 
     LOGGER.info("Creating config repository...");
-    final ConfigRepository configRepository = new ConfigRepository(new DefaultConfigPersistence(configRoot));
+    final ConfigRepository configRepository = new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot));
 
     // hack: upon installation we need to assign a random customerId so that when
     // tracking we can associate all action with the correct anonymous id.
@@ -213,24 +218,32 @@ public class ServerApp {
     }
 
     Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
-    boolean isKubernetes = configs.getWorkerEnvironment() == WorkerEnvironment.KUBERNETES;
-    if (!isKubernetes && airbyteDatabaseVersion.isPresent() && !AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())
-        && !isDatabaseVersionAheadOfAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
-      runAutomaticMigration(configRepository, jobPersistence, airbyteVersion, airbyteDatabaseVersion.get());
-      // After migration, upgrade the DB version
-      airbyteDatabaseVersion = jobPersistence.getVersion();
+    if (airbyteDatabaseVersion.isPresent() && isDatabaseVersionBehindAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
+      boolean isKubernetes = configs.getWorkerEnvironment() == WorkerEnvironment.KUBERNETES;
+      boolean versionSupportsAutoMigrate =
+          new AirbyteVersion(airbyteDatabaseVersion.get()).patchVersionCompareTo(KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION) >= 0;
+      if (!isKubernetes || versionSupportsAutoMigrate) {
+        runAutomaticMigration(configRepository, jobPersistence, airbyteVersion, airbyteDatabaseVersion.get());
+        // After migration, upgrade the DB version
+        airbyteDatabaseVersion = jobPersistence.getVersion();
+      } else {
+        LOGGER.info("Can not run automatic migration for Airbyte on KUBERNETES before version " + KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION.getVersion());
+      }
     }
 
     if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
       LOGGER.info("Starting server...");
       new ServerApp(configRepository, jobPersistence, configs).start();
     } else {
-      LOGGER.info("Start serving version mismatch errors. "
-          + (isKubernetes ? " Automatic migration can't run on KUBERNETES." : " Automatic migration must have failed"));
+      LOGGER.info("Start serving version mismatch errors. Automatic migration either failed or didn't run");
       new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.get(), PORT).start();
     }
   }
 
+  /**
+   * Ideally when automatic migration runs, we should make sure that we acquire a lock on database and
+   * no other operation is allowed
+   */
   private static void runAutomaticMigration(ConfigRepository configRepository,
                                             JobPersistence jobPersistence,
                                             String airbyteVersion,
@@ -246,15 +259,20 @@ public class ServerApp {
     }
   }
 
-  public static boolean isDatabaseVersionAheadOfAppVersion(String airbyteVersion, String airbyteDatabaseVersion) {
+  public static boolean isDatabaseVersionBehindAppVersion(String airbyteVersion, String airbyteDatabaseVersion) {
+    boolean bothVersionsCompatible = AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion);
+    if (bothVersionsCompatible) {
+      return false;
+    }
+
     AirbyteVersion serverVersion = new AirbyteVersion(airbyteVersion);
     AirbyteVersion databaseVersion = new AirbyteVersion(airbyteDatabaseVersion);
 
-    if (databaseVersion.getMajorVersion().compareTo(serverVersion.getMajorVersion()) > 0) {
+    if (databaseVersion.getMajorVersion().compareTo(serverVersion.getMajorVersion()) < 0) {
       return true;
     }
 
-    return databaseVersion.getMinorVersion().compareTo(serverVersion.getMinorVersion()) > 0;
+    return databaseVersion.getMinorVersion().compareTo(serverVersion.getMinorVersion()) < 0;
   }
 
 }

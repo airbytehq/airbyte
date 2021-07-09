@@ -67,7 +67,16 @@ public interface Configs {
 
   String getKubeNamespace();
 
-  // The following methods retrieve logging related information.
+  // Resources
+  String getCpuRequest();
+
+  String getCpuLimit();
+
+  String getMemoryRequest();
+
+  String getMemoryLimit();
+
+  // Logging
   String getS3LogBucket();
 
   String getS3LogBucketRegion();
@@ -77,6 +86,10 @@ public interface Configs {
   String getAwsSecretAccessKey();
 
   String getS3MinioEndpoint();
+
+  String getGcpStorageBucket();
+
+  String getGoogleApplicationCredentials();
 
   enum TrackingStrategy {
     SEGMENT,

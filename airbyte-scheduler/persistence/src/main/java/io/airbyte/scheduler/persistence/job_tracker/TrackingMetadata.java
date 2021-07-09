@@ -58,7 +58,12 @@ public class TrackingMetadata {
     metadata.put("namespace_definition", standardSync.getNamespaceDefinition());
     final boolean isUsingPrefix = standardSync.getPrefix() != null && !standardSync.getPrefix().isBlank();
     metadata.put("table_prefix", isUsingPrefix);
-
+    if (standardSync.getResourceRequirements() != null) {
+      metadata.put("sync_cpu_request", standardSync.getResourceRequirements().getCpuRequest());
+      metadata.put("sync_cpu_limit", standardSync.getResourceRequirements().getCpuLimit());
+      metadata.put("sync_memory_request", standardSync.getResourceRequirements().getMemoryRequest());
+      metadata.put("sync_memory_limit", standardSync.getResourceRequirements().getMemoryLimit());
+    }
     return metadata.build();
   }
 
