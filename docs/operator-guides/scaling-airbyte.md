@@ -49,4 +49,14 @@ multiple connectors can easily use up to 10GBs of disk space.
 Because of this, we recommend allocating a minimum of 30GBs of disk space per node. Since storage is on the cheaper side, we'd recommend you be safe than sorry, so err on the side of over-provisioning.
 
 ### On Kubernetes  
-Users running Airbyte Kubernetes have to also make sure the  
+Users running Airbyte Kubernetes also have to make sure the Kubernetes cluster can accommodate the number of pods Airbyte creates.
+
+Airbyte creates an additional setup pod for each worker Kubernetes pod it creates. This `command-fetcher` pod is responsible for retrieving a worker's entrypoint and helps Airbyte model Kubernetes pod as a local process.
+Although the `command-fetcher` pod is created before the worker pod, variable termination periods mean it can still be alive while the worker Kubernetes pod runs. This means every job requires at least **two** Kubernetes pods under the hood.
+
+Sync jobs - jobs syncing data from sources to destinations, the majority of jobs run - use two workers. One worker reads from the source; the other worker writes to the destination. This means Sync jobs can use up to **four** Kubernetes pod at one time.
+
+To be safe, make sure the Kubernetes cluster can schedule up to `2 x <number-of-possible-concurrent-connections>` pods at once. This is the worse case estimate, and most users should be fine with `2 x <number-of-possible-concurrent-connections>`
+as a rule of thumb.
+
+This is a **non-issue** for users running Airbyte Docker.
