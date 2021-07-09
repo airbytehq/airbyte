@@ -104,6 +104,10 @@ public class RunMigrationTest {
       resourceToBeCleanedUp.add(configRoot.toFile());
       final JobPersistence jobPersistence = getJobPersistence(stubAirbyteDB.getDatabase(), file, INITIAL_VERSION);
       assertDatabaseVersion(jobPersistence, INITIAL_VERSION);
+      ConfigRepository configRepository = new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot));
+      Map<String, StandardSourceDefinition> sourceDefinitionsBeforeMigration = configRepository.listStandardSources().stream()
+          .collect(Collectors.toMap(c -> c.getSourceDefinitionId().toString(), c -> c));
+      assertTrue(sourceDefinitionsBeforeMigration.containsKey("d2147be5-fa36-4936-977e-f031affa5895"));
 
       runMigration(jobPersistence, configRoot);
 
@@ -137,6 +141,8 @@ public class RunMigrationTest {
         .stream()
         .collect(Collectors.toMap(c -> c.getSourceDefinitionId().toString(), c -> c));
     assertTrue(sourceDefinitions.size() >= 59);
+    //the definition is not present in latest seeds so it should be deleted
+    assertFalse(sourceDefinitions.containsKey("d2147be5-fa36-4936-977e-f031affa5895"));
     final StandardSourceDefinition mysqlDefinition = sourceDefinitions.get("435bb9a5-7887-4809-aa58-28c27df0d7ad");
     assertEquals("0.2.0", mysqlDefinition.getDockerImageTag());
     assertEquals("MySQL", mysqlDefinition.getName());
