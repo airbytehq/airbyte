@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 from abc import ABC
@@ -50,9 +52,7 @@ class ConversationExport(HttpStream, ABC):
     @staticmethod
     def _validate_ms_timestamp(milliseconds: int) -> int:
         if not type(milliseconds) == int or not len(str(milliseconds)) == 13:
-            raise ValueError(
-                f"Not a millisecond-precision timestamp: {milliseconds}"
-            )
+            raise ValueError(f"Not a millisecond-precision timestamp: {milliseconds}")
         return milliseconds
 
     @staticmethod
@@ -60,9 +60,7 @@ class ConversationExport(HttpStream, ABC):
         """
         Converts a millisecond-precision timestamp to a datetime object.
         """
-        return datetime.fromtimestamp(
-            ConversationExport._validate_ms_timestamp(milliseconds) / 1000
-        )
+        return datetime.fromtimestamp(ConversationExport._validate_ms_timestamp(milliseconds) / 1000)
 
     @staticmethod
     def datetime_to_ms_timestamp(dt: datetime) -> int:
@@ -74,9 +72,7 @@ class ConversationExport(HttpStream, ABC):
     @staticmethod
     def add_days_to_ms_timestamp(days: int, milliseconds: int) -> int:
         return ConversationExport.datetime_to_ms_timestamp(
-            ConversationExport.ms_timestamp_to_datetime(
-                ConversationExport._validate_ms_timestamp(milliseconds)
-            ) + timedelta(days=days)
+            ConversationExport.ms_timestamp_to_datetime(ConversationExport._validate_ms_timestamp(milliseconds)) + timedelta(days=days)
         )
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -84,8 +80,7 @@ class ConversationExport(HttpStream, ABC):
 
     def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         self.logger.info(
-            f"Sending request with updated_after={stream_slice['updated_after']} and "
-            f"updated_before={stream_slice['updated_before']}"
+            f"Sending request with updated_after={stream_slice['updated_after']} and " f"updated_before={stream_slice['updated_before']}"
         )
         return stream_slice
 
@@ -111,27 +106,16 @@ class ConversationExport(HttpStream, ABC):
         # If stream_state contains the cursor field and the value of the cursor
         # field is higher than start_timestamp, then start at the cursor field
         # value. Otherwise, start at start_timestamp.
-        updated_after = max(
-            stream_state.get(ConversationExport.cursor_field, 0), self.start_timestamp
-        )
+        updated_after = max(stream_state.get(ConversationExport.cursor_field, 0), self.start_timestamp)
         while updated_after < self.end_timestamp:
             updated_before = min(
-                ConversationExport.add_days_to_ms_timestamp(
-                    days=self.batch_size,
-                    milliseconds=updated_after
-                ),
-                self.end_timestamp
+                ConversationExport.add_days_to_ms_timestamp(days=self.batch_size, milliseconds=updated_after), self.end_timestamp
             )
-            slices.append({
-                'updated_after': updated_after,
-                'updated_before': updated_before
-            })
+            slices.append({"updated_after": updated_after, "updated_before": updated_before})
             updated_after = updated_before
         return slices
 
-    def path(
-        self, **kwargs
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return "conversation_export"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
@@ -141,8 +125,7 @@ class ConversationExport(HttpStream, ABC):
         if current_stream_state is not None and ConversationExport.cursor_field in current_stream_state:
             return {
                 ConversationExport.cursor_field: max(
-                    current_stream_state[ConversationExport.cursor_field],
-                    latest_record[ConversationExport.cursor_field]
+                    current_stream_state[ConversationExport.cursor_field], latest_record[ConversationExport.cursor_field]
                 )
             }
         else:
@@ -150,7 +133,6 @@ class ConversationExport(HttpStream, ABC):
 
 
 class SourceDixa(AbstractSource):
-
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
         Try loading one day's worth of data.
@@ -166,11 +148,9 @@ class SourceDixa(AbstractSource):
                 headers=headers,
                 params={
                     "updated_after": start_timestamp,
-                    "updated_before": ConversationExport.add_days_to_ms_timestamp(
-                        days=1, milliseconds=start_timestamp
-                    )
+                    "updated_before": ConversationExport.add_days_to_ms_timestamp(days=1, milliseconds=start_timestamp),
                 },
-                auth=("bearer", config["api_token"])
+                auth=("bearer", config["api_token"]),
             )
             response.raise_for_status()
             return True, None
@@ -184,6 +164,6 @@ class SourceDixa(AbstractSource):
                 authenticator=auth,
                 start_date=datetime.strptime(config["start_date"], "%Y-%m-%d"),
                 batch_size=int(config["batch_size"]),
-                logger=AirbyteLogger()
+                logger=AirbyteLogger(),
             )
         ]
