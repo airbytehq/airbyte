@@ -666,10 +666,11 @@ public abstract class DestinationAcceptanceTest {
   }
 
   @Test
-  void testCustomDbtTransformations() throws Exception {
+  public void testCustomDbtTransformations() throws Exception {
     if (!normalizationFromSpec() || !dbtFromSpec()) {
-      // we require normalization implementation for this destination, because we make sure to install required dbt dependency in the normalization
-      // docker image in order to run this test successfully (we don't actually rely on normalization running anything here though)
+      // we require normalization implementation for this destination, because we make sure to install
+      // required dbt dependency in the normalization docker image in order to run this test successfully
+      // (we don't actually rely on normalization running anything here though)
       return;
     }
 
@@ -733,8 +734,9 @@ public abstract class DestinationAcceptanceTest {
   @Test
   void testCustomDbtTransformationsFailure() throws Exception {
     if (!normalizationFromSpec() || !dbtFromSpec()) {
-      // we require normalization implementation for this destination, because we make sure to install required dbt dependency in the normalization
-      // docker image in order to run this test successfully (we don't actually rely on normalization running anything here though)
+      // we require normalization implementation for this destination, because we make sure to install
+      // required dbt dependency in the normalization docker image in order to run this test successfully
+      // (we don't actually rely on normalization running anything here though)
       return;
     }
 

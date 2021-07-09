@@ -169,7 +169,6 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private void grantCorrectPermissions() {
     executeQuery("GRANT ALTER, CREATE, INSERT, SELECT, DROP ON *.* TO " + db.getUsername() + "@'%';");
-    executeQuery("GRANT CREATE VIEW ON *.* TO " + db.getUsername() + "@'%';");
   }
 
   private void executeQuery(String query) {
@@ -198,8 +197,11 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   @Test
-  void testCustomDbtTransformations() throws Exception {
+  public void testCustomDbtTransformations() throws Exception {
+    // We need to create view for testing custom dbt transformations
+    executeQuery("GRANT CREATE VIEW ON *.* TO " + db.getUsername() + "@'%';");
     // overrides test with a no-op until https://github.com/dbt-labs/jaffle_shop/pull/8 is merged
+    // super.testCustomDbtTransformations();
   }
 
   @Override
