@@ -104,7 +104,7 @@
 - sourceDefinitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
   name: Mailchimp
   dockerRepository: airbyte/source-mailchimp
-  dockerImageTag: 0.2.4
+  dockerImageTag: 0.2.5
   documentationUrl: https://hub.docker.com/r/airbyte/source-mailchimp
   icon: mailchimp.svg
 - sourceDefinitionId: 39f092a6-8c87-4f6f-a8d9-5cef45b7dbe1
@@ -250,7 +250,7 @@
 - sourceDefinitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
   name: Instagram
   dockerRepository: airbyte/source-instagram
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://hub.docker.com/r/airbyte/source-instagram
 - sourceDefinitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
   name: Gitlab
@@ -348,3 +348,23 @@
   dockerRepository: airbyte/source-okta
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/okta
+- sourceDefinitionId: badc5925-0485-42be-8caa-b34096cb71b5
+  name: Survey Monkey
+  dockerRepository: airbyte/source-surveymonkey
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/surveymonkey
+- sourceDefinitionId: 77225a51-cd15-4a13-af02-65816bd0ecf4
+  name: Square
+  dockerRepository: airbyte/source-square
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/square
+- sourceDefinitionId: 325e0640-e7b3-4e24-b823-3361008f603f
+  name: Zendesk Sunshine
+  dockerRepository: airbyte/source-zendesk-sunshine
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/zendesk-sunshine
+- sourceDefinitionId: d913b0f2-cc51-4e55-a44c-8ba1697b9239
+  name: Paypal Transaction
+  dockerRepository: airbyte/source-paypal-transaction
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/paypal-transaction
