@@ -9,7 +9,8 @@
     "properties": {
       "api_key": {
         "type": "string",
-        "description": "api Key"
+        "description": "api Key",
+        "airbyte_secret": true
       },
       "start_date": {
         "type": "string",
