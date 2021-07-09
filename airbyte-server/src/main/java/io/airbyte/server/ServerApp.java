@@ -60,8 +60,10 @@ import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.eclipse.jetty.server.Server;
@@ -76,6 +78,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ContainerResponseFilter;
+
 public class ServerApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
@@ -89,13 +94,19 @@ public class ServerApp {
   private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
   private final Configs configs;
+  private final Set<ContainerRequestFilter> requestFilters;
+  private final Set<ContainerResponseFilter> responseFilters;
 
   public ServerApp(final ConfigRepository configRepository,
                    final JobPersistence jobPersistence,
-                   final Configs configs) {
+                   final Configs configs,
+                   final Set<ContainerRequestFilter> requestFilters,
+                   final Set<ContainerResponseFilter> responseFilters) {
     this.configRepository = configRepository;
     this.jobPersistence = jobPersistence;
     this.configs = configs;
+    this.requestFilters = requestFilters;
+    this.responseFilters = responseFilters;
   }
 
   public void start() throws Exception {
@@ -123,9 +134,9 @@ public class ServerApp {
 
     ResourceConfig rc =
         new ResourceConfig()
-            // todo (cgardens) - the CORs settings are wide open. will need to revisit when we add auth.
-            // cors
-            .register(new CorsFilter())
+            // add filters
+            .registerInstances(requestFilters)
+            .registerInstances(responseFilters)
             // request logging
             .register(new RequestLogger(mdc))
             // api
@@ -183,7 +194,8 @@ public class ServerApp {
     }
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void runServer(final Set<ContainerRequestFilter> requestFilters,
+                               final Set<ContainerResponseFilter> responseFilters) throws Exception {
     final Configs configs = new EnvConfigs();
 
     MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, LogClientSingleton.getServerLogsRoot(configs).toString());
@@ -199,16 +211,16 @@ public class ServerApp {
     setCustomerIdIfNotSet(configRepository);
 
     TrackingClientSingleton.initialize(
-        configs.getTrackingStrategy(),
-        configs.getAirbyteRole(),
-        configs.getAirbyteVersion(),
-        configRepository);
+            configs.getTrackingStrategy(),
+            configs.getAirbyteRole(),
+            configs.getAirbyteVersion(),
+            configRepository);
 
     LOGGER.info("Creating Scheduler persistence...");
     final Database database = Databases.createPostgresDatabaseWithRetry(
-        configs.getDatabaseUser(),
-        configs.getDatabasePassword(),
-        configs.getDatabaseUrl());
+            configs.getDatabaseUser(),
+            configs.getDatabasePassword(),
+            configs.getDatabaseUrl());
     final JobPersistence jobPersistence = new DefaultJobPersistence(database);
 
     final String airbyteVersion = configs.getAirbyteVersion();
@@ -221,7 +233,7 @@ public class ServerApp {
     if (airbyteDatabaseVersion.isPresent() && isDatabaseVersionBehindAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
       boolean isKubernetes = configs.getWorkerEnvironment() == WorkerEnvironment.KUBERNETES;
       boolean versionSupportsAutoMigrate =
-          new AirbyteVersion(airbyteDatabaseVersion.get()).patchVersionCompareTo(KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION) >= 0;
+              new AirbyteVersion(airbyteDatabaseVersion.get()).patchVersionCompareTo(KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION) >= 0;
       if (!isKubernetes || versionSupportsAutoMigrate) {
         runAutomaticMigration(configRepository, jobPersistence, airbyteVersion, airbyteDatabaseVersion.get());
         // After migration, upgrade the DB version
@@ -233,11 +245,15 @@ public class ServerApp {
 
     if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
       LOGGER.info("Starting server...");
-      new ServerApp(configRepository, jobPersistence, configs).start();
+      new ServerApp(configRepository, jobPersistence, configs, requestFilters, responseFilters).start();
     } else {
       LOGGER.info("Start serving version mismatch errors. Automatic migration either failed or didn't run");
       new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.get(), PORT).start();
     }
+  }
+
+  public static void main(String[] args) throws Exception {
+    runServer(Collections.emptySet(), Set.of(new CorsFilter()));
   }
 
   /**
