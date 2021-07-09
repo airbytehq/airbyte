@@ -46,7 +46,10 @@ Configure `kubectl` to connect to your cluster by using `kubectl use-context my-
 Both `dev` and `stable` versions of Airbyte include a stand-alone `Minio` deployment. Airbyte publishes logs to this `Minio` deployment by default.
 This means Airbyte comes as a **self-contained Kubernetes deployment - no other configuration is required**.
 
-Airbyte currently supports logging to `Minio` or `S3`. The following instructions are for users wishing to log to their own `Minio` layer or `S3` bucket.
+Airbyte currently supports logging to `Minio`, `S3` or `GCS`. The following instructions are for users wishing to log to their own `Minio` layer, `S3` bucket
+or `GCS` bucket.
+
+The provided credentials require both read and write permissions. The logger attempts to create the log bucket if it does not exist.
 
 #### Configuring Custom Minio Log Location
 Replace the following variables in the `.env` file in the `kube/overlays/stable` directory:
@@ -80,9 +83,39 @@ S3_MINIO_ENDPOINT=
 S3_PATH_STYLE_ACCESS=
 ```
 
-The provided credentials require both S3 read/write permissions. The logger attempts to create the bucket if it does not exist. See [here](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html)
-for instructions on creating an S3 bucket and [here](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys)
-for instructions to create AWS credentials.
+See [here](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) for instructions on creating an S3 bucket and
+[here](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) for instructions on creating AWS credentials.
+
+#### Configuring Custom GCS Log Location
+Create the GCP service account with read/write permission to the GCS log bucket.
+
+1) Base64 encode the GCP json secret.
+```
+# The output of this command will be a Base64 string.
+$ cat gcp.json | base64
+```
+2) Populate the gcs-log-creds secrets with the Base64-encoded credential. This is as simple as taking the encoded credential from the previous step
+and adding it to the `secret-gcs-log-creds,yaml` file.
+```
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gcs-log-creds
+  namespace: default
+data:
+  gcp.json: <base64-encoded-string>
+```
+
+3) Replace the following variables in the `.env` file in the `kube/overlays/stable` directory:
+```
+# The GCS bucket to write logs in.
+GCP_STORAGE_BUCKET=
+# The path the GCS creds are written to. Unless you know what you are doing, use the below default value.
+GOOGLE_APPLICATION_CREDENTIALS=/secrets/gcs-log-creds/gcp.json
+```
+
+See [here](https://cloud.google.com/storage/docs/creating-buckets) for instruction on creating a GCS bucket and
+[here](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#iam-service-account-keys-create-console) for instruction on creating GCP credentials.
 
 ### Launch Airbyte
 
@@ -197,10 +230,11 @@ kubectl exec -it airbyte-scheduler-6b5747df5c-bj4fx cat /tmp/workspace/8/0/logs.
 ```
 
 ### Persistent storage on GKE regional cluster
-To manage persistent storage on GKE regional cluster you need to enable [CSI driver](https://cloud.google.com/kubernetes-engine/docs/how-to/persistent-volumes/gce-pd-csi-driver)\
-When enabled you need to change storage class on [Volume config](../../kube/resources/volume-configs.yaml) and [Volume workspace](../../kube/resources/volume-workspace.yaml) \
-Add `storageClassName: standard-rwo` in volume spec \
-exemple for volume config:
+Running Airbyte on GKE regional cluster requires enabling persistent regional storage. To do so, enable [CSI driver](https://cloud.google.com/kubernetes-engine/docs/how-to/persistent-volumes/gce-pd-csi-driver)
+on GKE. After enabling, add `storageClassName: standard-rwo` to the [volume-configs](../../kube/resources/volume-configs.yaml) and [volume-workspace](../../kube/resources/volume-workspace.yaml)
+yamls.
+
+`volume-configs.yaml` example:
 ```yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
