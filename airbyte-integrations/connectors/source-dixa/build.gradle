@@ -1,12 +1,17 @@
 plugins {
     id 'airbyte-python'
     id 'airbyte-docker'
-    id 'airbyte-source-acceptance-test'
+    // TODO acceptance tests are disabled in CI pending a Dixa Sandbox: https://github.com/airbytehq/airbyte/issues/4667
+//    id 'airbyte-source-acceptance-test'
 }
 
 airbytePython {
     moduleDirectory 'source_dixa'
 }
+
+// TODO acceptance tests are disabled in CI pending a Dixa Sandbox: https://github.com/airbytehq/airbyte/issues/4667
+// no-op integration test task
+task("integrationTest")
 
 dependencies {
     implementation files(project(':airbyte-integrations:bases:source-acceptance-test').airbyteDocker.outputs)

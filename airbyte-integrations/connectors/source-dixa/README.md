@@ -1,5 +1,10 @@
 # Dixa Source
 
+### DISCLAIMER
+<!-- TODO acceptance tests are disabled in CI pending a Dixa Sandbox: https://github.com/airbytehq/airbyte/issues/4667 --> 
+This source is currently not running CI pending the creation of a sandbox account, tracked [here](https://github.com/airbytehq/airbyte/issues/4667).
+### END DISCLAIMER 
+
 This is the repository for the Dixa source connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/dixa).
 
