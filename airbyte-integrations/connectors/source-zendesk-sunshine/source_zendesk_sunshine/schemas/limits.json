@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string"
+    },
+    "limit": {
+      "type": "integer"
+    },
+    "count": {
+      "type": "integer"
+    }
+  }
+}
