@@ -1,8 +1,5 @@
 # Airbyte Terraform
 
-## Demo instance
-TODO
-
 ## Connector Development Infrastructure
 We use Terraform to manage any persistent infrastructure used for developing or testing connectors.
 
@@ -22,14 +19,6 @@ Coming soon.
 **Azure**
 
 Coming soon. 
-
-**Oracle**
-
-Coming soon. 
-
-**Baba Cloud**
-
-Coming soon.
 
 #### Iteration Cycle
 To run terraform commands use the TF wrapper: 
