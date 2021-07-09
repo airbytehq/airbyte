@@ -59,7 +59,7 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   public static final String CONFIG_DATASET_LOCATION = "dataset_location";
   public static final String CONFIG_CREDS = "credentials_json";
 
-  private String quote = "'";
+  private String quote = "";
   private JsonNode dbConfig;
 
   public BigQuerySource() {
