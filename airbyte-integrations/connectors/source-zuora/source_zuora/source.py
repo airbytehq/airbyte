@@ -32,18 +32,21 @@ from airbyte_cdk.sources.streams import Stream
 
 from .zuora_auth import ZuoraAuthenticator
 from .zuora_client import ZoqlExportClient
+from .zuora_errors  import (
+    ZOQLQueryFailed
+)
 
 
 class IncrementalZuoraStream(Stream, ABC):
 
     # Define general primary key
     primary_key = "id"
-    # Define cursor filed
-    # cursor_field = "createddate"
+    # Define default cursor field
+    cursor_field = "updateddate"
+    alt_cursor_field = "createddate"
 
     def __init__(self, api: ZoqlExportClient):
         self.api = api
-        self.cursor = self.api._zuora_object_cursor(self.name)
 
     # setting limit of the date-slice for the data query job
     @property
@@ -59,42 +62,27 @@ class IncrementalZuoraStream(Stream, ABC):
         schema["properties"] = self.api._zuora_object_to_json_schema(self.name)
         return schema
 
-    @property
-    def cursor_field(self):
-        return self.cursor
-
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
+    def _get_stream_state(self, stream_state: Mapping[str, Any] = None):
+        """ 
+        Get the state of the stream for the default cursor_field = updateddate,
+        If the stream doesn't have 'updateddate', then we use 'createddate'.
+        If stream state == None, than we use start_date by default.
+        """
+        return stream_state.get(self.cursor_field, stream_state.get(self.alt_cursor_field)) if stream_state else self.api.start_date
+
     def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         # if stream_state is missing, we will use the start-date from config for a full refresh
-        stream_state = stream_state.get(self.cursor_field) if stream_state else self.api.start_date
-        yield from self.api._get_data_with_date_slice("select", self.name, self.cursor_field, stream_state, self.limit_days)
-
-
-# Dynamically Generate stream classes
-class GenerateStreams:
-    """
-    Use the list of Zuora Objects to produce the stream classes of the format:
-    :: Account(IncrementaZuoraStream), Orders(IncrementaZuoraStream), ..., etc.
-    """
-
-    def create_stream_class_from_object_name(zuora_objects: List) -> List:
-        # Filter non usefull Zuora Objects, link-tables or history-tables, etc
-        filter_zuora_objects = ["aquatasklog", "savedquery"]
-
-        # Define the bases
-        cls_base = (IncrementalZuoraStream,)
-        cls_props = {}
-
-        # Filter objects
-        zuora_objects = [obj for obj in zuora_objects if obj not in filter_zuora_objects]
-        # Build the streams
-        streams = []
-        for obj in zuora_objects:
-            # List of zuora objects >> stream classes
-            streams.append(type(obj, cls_base, cls_props))
-        return streams
+        stream_state = self._get_stream_state(stream_state)
+        try:
+            self.logger.info(f"Reading with cursor: '{self.cursor_field}'")
+            yield from self.api._get_data_with_date_slice("select", self.name, self.cursor_field, stream_state, self.limit_days)
+        except ZOQLQueryFailed:
+            self.logger.warn(f"Failed reading records with: '{self.cursor_field}''. Trying '{self.alt_cursor_field}'")
+            self.cursor_field = self.alt_cursor_field
+            yield from self.api._get_data_with_date_slice("select", self.name, self.cursor_field, stream_state, self.limit_days)
 
 
 # Basic Connections Check
@@ -103,7 +91,6 @@ class SourceZuora(AbstractSource):
         """
         Testing connection availability for the connector by granting the token.
         """
-
         auth = ZuoraAuthenticator(config["is_sandbox"]).generateToken(config["client_id"], config["client_secret"])
         print(auth)
         if auth.get("status") == 200:
@@ -116,6 +103,25 @@ class SourceZuora(AbstractSource):
         Mapping a input config of the user input configuration as defined in the connector spec.
         Defining streams to run.
         """
+        # List the Zuora Objects that should be filtered from data operations
+        # These objects are not going to be synced
+        not_sync_objects = ["aquatasklog", "savedquery"]
+
+        def create_stream_class_from_object_name(zuora_objects: List, not_sync_objects: List) -> List:
+            """ 
+            The function to produce the stream classes from the list of zuora objects
+            """
+            # Define the bases
+            cls_base = (IncrementalZuoraStream,)
+            cls_props = {}
+            # Filter the object due to the do_not_include_objects list
+            zuora_objects = [obj for obj in zuora_objects if obj not in not_sync_objects]
+            # Build the streams
+            streams = []
+            for obj in zuora_objects:
+                # List of zuora objects >> stream classes
+                streams.append(type(obj, cls_base, cls_props))
+            return streams
 
         auth = ZuoraAuthenticator(config["is_sandbox"]).generateToken(config["client_id"], config["client_secret"])
         args = {
@@ -126,15 +132,15 @@ class SourceZuora(AbstractSource):
             "client_secret": config["client_secret"],
             "is_sandbox": config["is_sandbox"],
         }
-        # Making Zuora API Client
+        # Making instance of Zuora API Client
         zuora_client = ZoqlExportClient(**args)
 
         # Get the list of available objects from Zuora
-        # zuora_objects = ["account","refund","invoicehistory"]
+        # zuora_objects = ["account","invoicehistory","refund"]
         zuora_objects = zuora_client._zuora_list_objects()
-
+        print(zuora_objects)
         # created the class for each object
-        streams = GenerateStreams.create_stream_class_from_object_name(zuora_objects)
+        streams = create_stream_class_from_object_name(zuora_objects, not_sync_objects)
 
-        # Return the list of stream classes with calling Zuora API Client
+        # Return the list of stream classes with Zuora API Client as input
         return [ streams[c](zuora_client) for c in range(len(streams)) ]

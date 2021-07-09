@@ -33,7 +33,11 @@ import requests
 from airbyte_cdk import AirbyteLogger
 
 from .zuora_auth import ZuoraAuthenticator
-
+from .zuora_errors import (
+    EndDateError,
+    ZOQLQueryFailed,
+    ZOQLQueryCanceledOrAborted
+)
 
 class ZoqlExportClient:
 
@@ -65,7 +69,7 @@ class ZoqlExportClient:
             return "https://rest.zuora.com"
 
     # MAKE try/except request with handling errors
-    def _make_request(self, method: str = "GET", url: str = None, data: Dict = None):
+    def _make_request(self, method: str = "GET", url: str = None, data: Dict = None) -> requests.Response:
         retry = 0
         while retry <= self.retry_max:
             try:
@@ -105,15 +109,15 @@ class ZoqlExportClient:
         return submit_job
 
     # CHECK: the submited data_query_job status
-    def _check_dq_job_status(self, dq_job_id: str, status: str = None) -> requests.Response:
+    def _check_dq_job_status(self, dq_job_id: str, status: str = None) -> Dict:
         while status != "completed":
-            dq_job_check = self._make_request(url=f"{self.url_base}/query/jobs/{dq_job_id}")
-            dq_job_check = dq_job_check.json()
+            response = self._make_request(url=f"{self.url_base}/query/jobs/{dq_job_id}")
+            dq_job_check = response.json()
             status = dq_job_check["data"]["queryStatus"]
-            # self.logger.debug(status)
-            if status in ["failed", "canceled", "aborted"]:
-                self.logger.fatal(f'{dq_job_check["data"]["errorMessage"]}, QUERY: {dq_job_check["data"]["query"]}')
-                return iter(())
+            if status in ["failed"]:
+                raise ZOQLQueryFailed(response)
+            elif status in ["canceled", "aborted"]:
+                raise ZOQLQueryCanceledOrAborted(response)
         return dq_job_check
 
     # GET: data_query_job result
@@ -126,7 +130,7 @@ class ZoqlExportClient:
     # Warpper function for `Query > Submit > Check > Get`
     def _get_data(self, q_type: str = "select", obj: str = None, date_field: str = None, start_date: str = None, end_date: str = None) -> Iterable:
         query = self._make_dq_query(q_type, obj, date_field, start_date, end_date)
-        self.logger.debug(f"{query}")
+        # self.logger.debug(f"{query}")
         submit = self._submit_dq_job(query)
         check = self._check_dq_job_status(submit)
         get = self._get_data_from_dq_job(check)
@@ -141,7 +145,7 @@ class ZoqlExportClient:
         e = pendulum.parse(pendulum.now().to_datetime_string()) if end_date is None else pendulum.parse(end_date)
         # check end_date bigger than start_date
         if s >= e:
-            return self.logger.error("'End Date' should be bigger than 'Start Date'!")
+            raise EndDateError
         else:
             # Get n of date-slices
             n = self._get_n_slices(s, e, window_days)
@@ -161,7 +165,7 @@ class ZoqlExportClient:
                     n -= 1
             else:
                 # For 1 date-slice
-                yield from self._get_data(q_type, obj, date_field, slice_start, slice_end)
+                yield from self._get_data(q_type, obj, date_field, slice_start, slice_end)    
 
     # Check the end-date before assign next date-slice
     @staticmethod
@@ -219,12 +223,12 @@ class ZoqlExportClient:
         return casted_schema_types
 
     # Method to retrieve the Zuora Data Types and Fields
-    def _get_object_list(self) -> requests.Response:
+    def _get_object_list(self) -> List:
         object_list = list(self._get_data(q_type="show_tables"))
         return object_list
 
     # Method to retrieve the Zuora Data Types and Fields
-    def _get_object_data_types(self, obj: str) -> requests.Response:
+    def _get_object_data_types(self, obj: str) -> List:
         object_data_types = list(self._get_data(q_type="describe", obj=obj))
         return object_data_types
 
@@ -239,21 +243,6 @@ class ZoqlExportClient:
         # Cast the Zuora Field Types to JsonSchema Types
         json_schema = self._cast_schema_types(json_schema)
         return json_schema
-
-    # Get the cursor_field information
-    def _zuora_object_cursor(self, obj: str) -> str:
-        # Get Schema information for the object
-        raw_data_types = self._zuora_object_to_json_schema(obj)
-
-        self.logger.info(f"Retrieving 'cursor_field' for {obj}")
-        # Parse and return the cursor field from the schema,
-        # if "updateddate" is not available, use the "createddate" instead
-        cursor_field = "updateddate"
-        fields_list = [field for field in raw_data_types]
-        if not "updateddate" in fields_list:
-            cursor_field = "createddate"
-        print(cursor_field)
-        return cursor_field
 
     # Convert Zuora Fields data types to JSONSchema
     def _zuora_list_objects(self) -> List:
