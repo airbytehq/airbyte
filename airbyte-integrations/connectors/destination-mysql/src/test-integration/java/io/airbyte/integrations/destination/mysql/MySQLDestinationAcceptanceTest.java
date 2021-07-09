@@ -63,6 +63,11 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
+  protected boolean supportsNormalization() {
+    return true;
+  }
+
+  @Override
   protected JsonNode getConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
