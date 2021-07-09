@@ -66,6 +66,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ContainerResponseFilter;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -77,9 +79,6 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.ContainerResponseFilter;
 
 public class ServerApp {
 
@@ -195,7 +194,8 @@ public class ServerApp {
   }
 
   public static void runServer(final Set<ContainerRequestFilter> requestFilters,
-                               final Set<ContainerResponseFilter> responseFilters) throws Exception {
+                               final Set<ContainerResponseFilter> responseFilters)
+      throws Exception {
     final Configs configs = new EnvConfigs();
 
     MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, LogClientSingleton.getServerLogsRoot(configs).toString());
@@ -211,16 +211,16 @@ public class ServerApp {
     setCustomerIdIfNotSet(configRepository);
 
     TrackingClientSingleton.initialize(
-            configs.getTrackingStrategy(),
-            configs.getAirbyteRole(),
-            configs.getAirbyteVersion(),
-            configRepository);
+        configs.getTrackingStrategy(),
+        configs.getAirbyteRole(),
+        configs.getAirbyteVersion(),
+        configRepository);
 
     LOGGER.info("Creating Scheduler persistence...");
     final Database database = Databases.createPostgresDatabaseWithRetry(
-            configs.getDatabaseUser(),
-            configs.getDatabasePassword(),
-            configs.getDatabaseUrl());
+        configs.getDatabaseUser(),
+        configs.getDatabasePassword(),
+        configs.getDatabaseUrl());
     final JobPersistence jobPersistence = new DefaultJobPersistence(database);
 
     final String airbyteVersion = configs.getAirbyteVersion();
@@ -233,7 +233,7 @@ public class ServerApp {
     if (airbyteDatabaseVersion.isPresent() && isDatabaseVersionBehindAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
       boolean isKubernetes = configs.getWorkerEnvironment() == WorkerEnvironment.KUBERNETES;
       boolean versionSupportsAutoMigrate =
-              new AirbyteVersion(airbyteDatabaseVersion.get()).patchVersionCompareTo(KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION) >= 0;
+          new AirbyteVersion(airbyteDatabaseVersion.get()).patchVersionCompareTo(KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION) >= 0;
       if (!isKubernetes || versionSupportsAutoMigrate) {
         runAutomaticMigration(configRepository, jobPersistence, airbyteVersion, airbyteDatabaseVersion.get());
         // After migration, upgrade the DB version
