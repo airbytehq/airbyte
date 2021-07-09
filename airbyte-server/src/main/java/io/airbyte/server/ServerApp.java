@@ -223,11 +223,12 @@ public class ServerApp {
         configRepository);
 
     LOGGER.info("Creating Scheduler persistence...");
-    final Database database = Databases.createPostgresDatabaseWithRetry(
+    final Database jobDatabase = Databases.createPostgresDatabaseWithRetry(
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
-        configs.getDatabaseUrl());
-    final JobPersistence jobPersistence = new DefaultJobPersistence(database);
+        configs.getDatabaseUrl(),
+        Databases.IS_JOB_DATABASE_READY);
+    final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
 
     final String airbyteVersion = configs.getAirbyteVersion();
     if (jobPersistence.getVersion().isEmpty()) {

@@ -191,9 +191,6 @@ public class SchedulerApp {
 
     final Configs configs = new EnvConfigs();
 
-    final Path configRoot = configs.getConfigRoot();
-    LOGGER.info("configRoot = " + configRoot);
-
     MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, LogClientSingleton.getSchedulerLogsRoot(configs).toString());
 
     final Path workspaceRoot = configs.getWorkspaceRoot();
@@ -202,15 +199,16 @@ public class SchedulerApp {
     final String temporalHost = configs.getTemporalHost();
     LOGGER.info("temporalHost = " + temporalHost);
 
-    LOGGER.info("Creating DB connection pool...");
-    final Database database = Databases.createPostgresDatabaseWithRetry(
+    LOGGER.info("Creating Job DB connection pool...");
+    final Database jobDatabase = Databases.createPostgresDatabaseWithRetry(
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
-        configs.getDatabaseUrl());
+        configs.getDatabaseUrl(),
+        Databases.IS_JOB_DATABASE_READY);
 
     final ProcessFactory processFactory = getProcessBuilderFactory(configs);
 
-    final JobPersistence jobPersistence = new DefaultJobPersistence(database);
+    final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
     final ConfigPersistence configPersistence = ConfigPersistenceFactory.createAndInitialize(configs);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence);
     final JobCleaner jobCleaner = new JobCleaner(

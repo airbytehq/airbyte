@@ -24,12 +24,16 @@
 
 package io.airbyte.db;
 
+import static org.jooq.impl.DSL.asterisk;
+import static org.jooq.impl.DSL.count;
+
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import java.util.Optional;
+import java.util.function.Function;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
@@ -39,11 +43,31 @@ public class Databases {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Databases.class);
 
+  public static final Function<Database, Boolean> IS_JOB_DATABASE_READY = database -> {
+    try {
+      database.query(ctx -> ctx.select(count(asterisk())).from("jobs"));
+      return true;
+    } catch (Exception e) {
+      return false;
+    }
+  };
+  public static final Function<Database, Boolean> IS_CONFIG_DATABASE_READY = database -> {
+    try {
+      database.query(ctx -> ctx.select(count(asterisk())).from("airbyte_configs"));
+      return true;
+    } catch (Exception e) {
+      return false;
+    }
+  };
+
   public static Database createPostgresDatabase(String username, String password, String jdbcConnectionString) {
     return createDatabase(username, password, jdbcConnectionString, "org.postgresql.Driver", SQLDialect.POSTGRES);
   }
 
-  public static Database createPostgresDatabaseWithRetry(String username, String password, String jdbcConnectionString) {
+  public static Database createPostgresDatabaseWithRetry(String username,
+                                                         String password,
+                                                         String jdbcConnectionString,
+                                                         Function<Database, Boolean> isDbReady) {
     Database database = null;
 
     while (database == null) {
@@ -51,8 +75,7 @@ public class Databases {
 
       try {
         database = createPostgresDatabase(username, password, jdbcConnectionString);
-        Optional<String> uuid = ServerUuid.get(database);
-        if (uuid.isEmpty()) {
+        if (!isDbReady.apply(database)) {
           throw new Exception("Server UUID not available yet!");
         }
       } catch (Exception e) {

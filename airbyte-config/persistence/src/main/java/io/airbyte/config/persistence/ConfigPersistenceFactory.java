@@ -54,7 +54,8 @@ public class ConfigPersistenceFactory {
     Database database = Databases.createPostgresDatabaseWithRetry(
         configs.getConfigDatabaseUser(),
         configs.getConfigDatabasePassword(),
-        configs.getConfigDatabaseUrl());
+        configs.getConfigDatabaseUrl(),
+        Databases.IS_CONFIG_DATABASE_READY);
     DatabaseConfigPersistence dbConfigPersistence = new DatabaseConfigPersistence(database);
     dbConfigPersistence.initialize(fsConfigPersistence);
 
