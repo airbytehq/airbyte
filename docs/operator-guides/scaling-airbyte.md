@@ -16,7 +16,7 @@ either hourly or daily, resulting in at most 100 concurrent jobs.
 
 ### What To Scale
 [Workers](../understanding-airbyte/jobs.md) do all the heavy lifting within Airbyte. A worker is responsible for executing an Airbyte operations (e.g. Discover, Read, Sync etc),
-and is created each time Airbyte need to do work. Thus, every job has a corresponding worker executing its work.
+and is created on demand whenever these operations are requested. Thus, every job has a corresponding worker executing its work.
 
 How a worker executes work depends on the Airbyte deployment. In the Docker deployment, an Airbyte worker spins up at least one docker container. In the Kubernetes
 deployment, an Airbyte worker create at laest one Kubernetes pod. The created resource - Docker container or Kubernetes pod - does all the actual work.
