@@ -41,4 +41,4 @@ However disk space might be an issue for the following reasons:
 2) Although Airyte connector images aren't massive, they aren't exactly small either. The typical connector image is ~300MB. An Airbyte deployment with
 multiple connectors can easily use up to 10GBs of disk space.
 
-Because of these, we recommend allocating a minimum of 30GBs of disk space per node. Since storage is one of the cheaper resources, better to be safe than sorry!
+Because of this, we recommend allocating a minimum of 30GBs of disk space per node. Since storage is on the cheaper side, we'd recommend you being safe rather than sorry, so err on the side of overprovisioning.
