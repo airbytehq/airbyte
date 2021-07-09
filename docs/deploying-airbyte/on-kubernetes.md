@@ -89,7 +89,7 @@ See [here](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-o
 #### Configuring Custom GCS Log Location
 Create the GCP service account with read/write permission to the GCS log bucket.
 
-1) Base64 encode the gcp json secret.
+1) Base64 encode the GCP json secret.
 ```
 # The output of this command will be a Base64 string.
 $ cat gcp.json | base64
