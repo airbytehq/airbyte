@@ -15,7 +15,7 @@ As a reference point, the typical Airbyte user has 5 - 20 connectors and 10 - 10
 either hourly or daily, resulting in at most 100 concurrent jobs.
 
 ### What To Scale
-[Workers](../understanding-airbyte/jobs.md) do all the heavy lifting within Airbyte. A worker is responsible for executing an Airbyte operations (e.g. Discover, Read, Sync etc),
+[Workers](../understanding-airbyte/jobs.md) do all the heavy lifting within Airbyte. A worker is responsible for executing Airbyte operations (e.g. Discover, Read, Sync etc),
 and is created on demand whenever these operations are requested. Thus, every job has a corresponding worker executing its work.
 
 How a worker executes work depends on the Airbyte deployment. In the Docker deployment, an Airbyte worker spins up at least one docker container. In the Kubernetes
