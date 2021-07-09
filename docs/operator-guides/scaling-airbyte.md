@@ -1,6 +1,6 @@
 ## Scaling Airbyte
 
-As depicted in [High-Level View](../understanding-airbyte/high-level-view.md), Airbyte is made up of several components under the hood:
+As depicted in our [High-Level View](../understanding-airbyte/high-level-view.md), Airbyte is made up of several components under the hood:
 1) Scheduler
 2) Server
 3) Temporal
@@ -42,4 +42,3 @@ However disk space might be an issue for the following reasons:
 multiple connectors can easily use up to 10GBs of disk space.
 
 Because of these, we recommend allocating a minimum of 30GBs of disk space per node. Since storage is one of the cheaper resources, better to be safe than sorry!
-
