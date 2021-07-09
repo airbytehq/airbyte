@@ -224,41 +224,25 @@ class ZoqlExportClient:
 
     # Convert Zuora Fields data types to JSONSchema
     def _zuora_object_to_json_schema(self, obj: str) -> Dict:
-        self.logger.info(f"Dynamicaly building schema for {obj}")
+        self.logger.info(f"Getting schema information for {obj}")
         raw_data_types = self._get_object_data_types(obj)
         json_schema = []
         # Get the raw field names and their types
         for field in range(len(raw_data_types)):
             json_schema.append({"field": raw_data_types[field]["Column"], "type": raw_data_types[field]["Type"]})
-
-        # cast Zuora Field Types to JSONSchema Types
+        # Cast the Zuora Field Types to JsonSchema Types
         json_schema = self._cast_schema_types(json_schema)
-
-        # Parse and return the cursor field from the schema,
-        # if "updateddate" is not available, use the "createddate" instead
-        cursor_field = "updateddate"
-        fields_list = [field for field in json_schema]
-        if not "updateddate" in fields_list:
-            cursor_field = "createddate"
-        
         return json_schema
-        # return {"json_schema": json_schema, "cursor_field": cursor_field}
 
     def _zuora_object_cursor(self, obj: str) -> str:
-        self.logger.info(f"Getting cursor_field for {obj}")
-        raw_data_types = self._get_object_data_types(obj)
-        json_schema = []
-        # Get the raw field names and their types
-        for field in range(len(raw_data_types)):
-            json_schema.append({"field": raw_data_types[field]["Column"], "type": raw_data_types[field]["Type"]})
+        # Get Schema information for the object
+        raw_data_types = self._zuora_object_to_json_schema(obj)
 
+        self.logger.info(f"Retrieving 'cursor_field' for {obj}")
         # Parse and return the cursor field from the schema,
         # if "updateddate" is not available, use the "createddate" instead
-        # cast Zuora Field Types to JSONSchema Types
-        json_schema = self._cast_schema_types(json_schema)
-
         cursor_field = "updateddate"
-        fields_list = [field for field in json_schema]
+        fields_list = [field for field in raw_data_types]
         if not "updateddate" in fields_list:
             cursor_field = "createddate"
         print(cursor_field)
