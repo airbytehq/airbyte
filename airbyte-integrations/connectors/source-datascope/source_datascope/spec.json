@@ -25,6 +25,7 @@
       "schema_type": {
         "type": "string",
         "description": "Please select type of schema 'fixed' or 'dynamic'",
+        "enum": ["fixed", "dynamic"],
         "examples": ["fixed or dynamic"]
       }
     }
