@@ -163,31 +163,37 @@ class ZoqlExportClient:
                 # For 1 date-slice
                 yield from self._get_data(q_type, obj, date_field, slice_start, slice_end)
 
+    # Check the end-date before assign next date-slice
     @staticmethod
     def _check_end_date(slice_end_date, global_end_date: str) -> str:
         return global_end_date.to_datetime_string() if pendulum.parse(slice_end_date) > global_end_date else slice_end_date
 
+    # Get n of date-slices needed to fetch the data
     @staticmethod
     def _get_n_slices(start_date: datetime, end_date: datetime, window_days: int) -> int:
         # case where we have 1 sec difference between start and end dates would produce 0 slices, so return 1 instead
         d = pendulum.period(start_date, end_date).in_days()
         return 1 if ceil(d / window_days) <= 0 else ceil(d / window_days)
 
+    # Creates the next-date-slice
     @staticmethod
     def _next_slice_end_date(end_date: str, window_days: int) -> str:
         # potentially could be replaced with next_page_token
         format = "YYYY-MM-DD HH:mm:ss Z"
         return pendulum.from_format(end_date, format).add(days=window_days).to_datetime_string()
 
+    # Get/Set the timezone information from the date_field
     @staticmethod
     def _get_tz(start_date: datetime) -> str:
         return " +00:00" if start_date.tzname() == "UTC" else f" {start_date.tzname()}"
 
+    # Compares strings for datatypes casting
     @staticmethod
     def _check_data_type(_str, _list):
         # Returns True if the Type is in the List of Types, else - False
         return any(_str in s for s in _list)
 
+    # Convert Zuora DataTypes to JsonSchema Types
     def _cast_schema_types(self, _schema: List) -> Dict:
         casted_schema_types = {}
 
@@ -234,6 +240,7 @@ class ZoqlExportClient:
         json_schema = self._cast_schema_types(json_schema)
         return json_schema
 
+    # Get the cursor_field information
     def _zuora_object_cursor(self, obj: str) -> str:
         # Get Schema information for the object
         raw_data_types = self._zuora_object_to_json_schema(obj)
