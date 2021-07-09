@@ -56,7 +56,7 @@ class ZuoraAuthenticator:
                 "header": {
                     "Authorization": f"Bearer {session.json().get('access_token')}",
                     "Content-Type": "application/json",
-                    "X-Zuora-WSDL-Version": "107",
+                    # "X-Zuora-WSDL-Version": "107",
                 },
             }
         except requests.exceptions.HTTPError as e:

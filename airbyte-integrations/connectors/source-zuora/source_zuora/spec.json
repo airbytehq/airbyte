@@ -2,7 +2,7 @@
   "documentationUrl": "https://docsurl.com",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Zuora Spec",
+    "title": "Zuora Connector Configuration",
     "type": "object",
     "required": ["start_date","client_id","client_secret"],
     "additionalProperties": false,
@@ -19,7 +19,7 @@
       },
       "client_id": {
         "type": "string",
-        "description": "Client id",
+        "description": "Client ID",
         "airbyte_secret": true
       },
       "client_secret": {
@@ -29,7 +29,7 @@
       },
       "is_sandbox": {
         "type": "boolean",
-        "description": "Should we connect to sandbox env or not?",
+        "description": "Defines whether use the SANDBOX or PRODUCTION environment.",
         "default": true
       }
     }

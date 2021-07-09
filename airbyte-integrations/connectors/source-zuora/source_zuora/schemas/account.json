@@ -26,8 +26,7 @@
             "type": [
                 "null",
                 "string"
-            ],
-            "format": "date-time"
+            ]
         },
         "name": {
             "type": [
@@ -111,8 +110,7 @@
             "type": [
                 "null",
                 "string"
-            ],
-            "format": "date-time"
+            ]
         },
         "unappliedcreditmemoamount": {
             "type": [
@@ -153,10 +151,7 @@
         "invoicedeliveryprefsprint": {
             "type": [
                 "null",
-                [
-                    "null",
-                    "boolean"
-                ]
+                "boolean"
             ]
         },
         "sequencesetid": {
@@ -216,7 +211,7 @@
         "billcycleday": {
             "type": [
                 "null",
-                "integer"
+                "string"
             ]
         },
         "billtoid": {
@@ -327,5 +322,6 @@
                 "boolean"
             ]
         }
-    }
+    },
+    "additionalProperties": true
 }
