@@ -1,0 +1,100 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Blob Source Spec",
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["dataset_name", "provider", "format", "path"],
+    "properties": {
+      "dataset_name": {
+        "type": "string",
+        "description": "Name of the final table (should include only letters, numbers, dash and underscores. Note that this may be altered according to destination.)"
+      },
+      "provider": {
+        "type": "object",
+        "description": "Storage Provider or Location of the file(s) to be replicated.",
+        "default": "Public Web",
+        "oneOf": [
+          {
+            "title": "S3: Amazon Web Services",
+            "required": ["storage", "bucket"],
+            "properties": {
+              "storage": {
+                "type": "string",
+                "enum": ["S3"],
+                "default": "S3"
+              },
+              "bucket": {
+                "type": "string",
+                "description": "Name of the S3 bucket where the file(s) exist."
+              },
+              "aws_access_key_id": {
+                "type": "string",
+                "description": "In order to access private Buckets stored on AWS S3, this connector would need credentials with the proper permissions. If accessing publicly available data, this field is not necessary."
+              },
+              "aws_secret_access_key": {
+                "type": "string",
+                "description": "In order to access private Buckets stored on AWS S3, this connector would need credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
+                "airbyte_secret": true
+              },
+              "path_prefix": {
+                "type": "string",
+                "description": "By providing a path-like prefix (e.g. \"myFolder/thisTable/\") to the desired blobs, we can optimise finding these in S3. This is recommended if your bucket contains many folders/files."
+              }
+            }
+          }
+        ]
+      },
+      "format": {
+        "type": "object",
+        "description": "File Format of the file to be replicated (Warning: some format may be experimental, please refer to docs).",
+        "default": "csv",
+        "oneOf": [
+          {
+            "title": "csv",
+            "description": "see details <a href=\"https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html\" target=\"_blank\">here</a>",
+            "required": ["filetype"],
+            "properties": {
+              "filetype": {
+                "type": "string",
+                "enum": ["csv"],
+                "default": "csv"
+              },
+              "sep": {
+                "type": "string",
+                "description": "leave blank to auto-detect"
+              },
+              "quotechar": {
+                "type": "string",
+                "description": "leave blank to default to <strong>\"</strong> (double quote)"
+              },
+              "escapechar": {
+                "type": "string",
+                "description": "leave blank to default to <strong>None</strong> (null)"
+              },
+              "encoding": {
+                "type": "string",
+                "description": "leave blank to default to <strong>UTF-8</strong> (see <a href=\"https://docs.python.org/3/library/codecs.html#standard-encodings\" target=\"_blank\">list of python encodings</a>)."
+              },
+              "additional_reader_options": {
+                "type": "string",
+                "description": "Add a valid JSON string here to provide additional options to the csv reader (see details <a href=\"https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html\" target=\"_blank\">here</a>)",
+                "examples": ["{\"quoting\": 1, \"comment\": \"#\"}"]
+              }
+            }
+          }
+        ]
+      },
+      "path": {
+        "type": "string",
+        "description": "TODO: explain how this works, including glob pattern"
+      },
+      "schema" : {
+        "type": "string",
+        "description": "TODO: explain how this works. Must use double-quotes!!! (<a href=\"https://json-schema.org/understanding-json-schema/reference/type.html\" target=\"_blank\">JSON Schema</a>)",
+        "examples": ["{\"column_1\": \"number\", \"column_2\": \"string\", \"column_3\": \"array\", \"column_4\": \"object\", \"column_5\": \"boolean\"}"]
+      }
+    }
+  }
+}
