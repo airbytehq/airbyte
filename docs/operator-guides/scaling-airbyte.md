@@ -35,8 +35,7 @@ and read the minimal amount of logs required. Disk space is no longer a large co
 
 However disk space might be an issue for the following reasons:
 
-1) Long-running syncs can produce a fair amount of logs from the Docker agent and Airbyte on Docker deployments. Some work has been done to minimise
-   accidental logging so this should no longer be an acute problem. However, this is not guaranteed
+1) Long-running syncs can produce a fair amount of logs from the Docker agent and Airbyte on Docker deployments. Some work has been done to minimize accidental logging, so this should no longer be an acute problem, but is still an open issue.
    
 2) Although Airyte connector images aren't massive, they aren't exactly small either. The typical connector image is ~300MB. An Airbyte deployment with
 multiple connectors can easily use up to 10GBs of disk space.
