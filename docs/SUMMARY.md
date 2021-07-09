@@ -95,6 +95,7 @@
     * [Tempo](integrations/sources/tempo.md)
     * [Twilio](integrations/sources/twilio.md)
     * [Zendesk Chat](integrations/sources/zendesk-chat.md)
+    * [Zendesk Sunshine](integrations/sources/zendesk-sunshine.md)
     * [Zendesk Support](integrations/sources/zendesk-support.md)
     * [Zendesk Talk](integrations/sources/zendesk-talk.md)
     * [Zoom](integrations/sources/zoom.md)
