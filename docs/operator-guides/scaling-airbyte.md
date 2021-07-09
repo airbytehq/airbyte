@@ -33,7 +33,7 @@ There are two resources to be aware of:
 Airbyte used to use an on-disk queue resulting in significant disk space usage, especially for long-running syncs. Today Airbyte uses backpressure to try
 and read the minimal amount of logs required. Disk space is no longer a large concern as it was before.
 
-However disk space might be an issue for the following reasons:
+However, disk space might become an issue for the following reasons:
 
 1) Long-running syncs can produce a fair amount of logs from the Docker agent and Airbyte on Docker deployments. Some work has been done to minimize accidental logging, so this should no longer be an acute problem, but is still an open issue.
    
