@@ -14,7 +14,9 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.bigquery.TempBigQueryJoolDatabaseImpl;
 import io.airbyte.integrations.standardtest.source.SourceComprehensiveTest;
+import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.AfterAll;
@@ -79,7 +81,15 @@ public class BigQuerySourceComprehensiveTest extends SourceComprehensiveTest {
 
   @Override
   protected void initTests() {
-
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("numeric")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .createTablePatternSql("CREATE TABLE %1$s(%2$s NUMERIC(29), %3$s %4$s)")
+            .fullSourceDataType("numeric(10)")
+            .addInsertValues("null", "-128", "127")
+            .addExpectedValues(null, "-128", "127")
+            .build());
   }
 
   @Override
