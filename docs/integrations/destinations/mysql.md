@@ -60,6 +60,7 @@ You should now have all the requirements needed to configure MySQL as a destinat
 
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
+| 0.1.7 | 2021-07-09 | [#4531](https://github.com/airbytehq/airbyte/pull/4531) | Switch normalization flag on so users can use normalization. |
 | 0.1.6 | 2021-07-03 | [#4531](https://github.com/airbytehq/airbyte/pull/4531) | Added normalization for MySQL. |
 | 0.1.5 | 2021-07-03 | [#3973](https://github.com/airbytehq/airbyte/pull/3973) | Added `AIRBYTE_ENTRYPOINT` for kubernetes support. |
 | 0.1.4 | 2021-07-03 | [#3290](https://github.com/airbytehq/airbyte/pull/3290) | Switched to get states from destination instead of source. |
