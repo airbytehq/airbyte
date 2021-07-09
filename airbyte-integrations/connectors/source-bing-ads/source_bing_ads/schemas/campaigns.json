@@ -8,10 +8,7 @@
     "name": {
       "type": ["null", "string"]
     },
-    "years_of_service": {
-      "type": ["null", "integer"]
-    },
-    "start_date": {
+    "signup_date": {
       "type": ["null", "string"],
       "format": "date-time"
     }

@@ -23,81 +23,133 @@
 #
 
 
-from abc import ABC
+import logging
+from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from source_bing_ads.client import Client
 
+logging.basicConfig(level=logging.INFO)
+logging.getLogger("suds.client").setLevel(logging.DEBUG)
+logging.getLogger("suds.transport.http").setLevel(logging.DEBUG)
+
 
 class BingAdsStream(Stream, ABC):
-    def __init__(self, config: Mapping[str, Any]) -> None:
-        self.client = Client(**config)
+    limit: int = 1000
+    primary_key = "Id"
+
+    def __init__(self, client: Client, config: Mapping[str, Any]) -> None:
+        self.client = client
         self.config = config
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response, **kwargs: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
         return None
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {}
-
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield {}
+        if response is not None and hasattr(response, self.data_field):
+            yield from self.client.recursive_asdict(response)[self.data_field]
+
+        yield from []
+
+    @abstractmethod
+    def send_request(self, **kwargs) -> Mapping[str, Any]:
+        """
+        This method should be overridden by subclasses to send proper SOAP request
+        """
+        pass
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        stream_state = stream_state or {}
+        pagination_complete = False
+        next_page_token = None
+
+        while not pagination_complete:
+            params = self.request_params(
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+            )
+            response = self.send_request(**params)
+
+            next_page_token = self.next_page_token(response, page_token=next_page_token)
+            if not next_page_token:
+                pagination_complete = True
+
+            for record in self.parse_response(response):
+                yield record
+
+        yield from []
+
+
+class Campaigns(BingAdsStream):
+    data_field = "Campaign"
+
+    def send_request(self, **kwargs) -> Mapping[str, Any]:
+        return self.client.get_service("CampaignManagement").GetCampaignsByAccountId(**kwargs)
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        return {"AccountId": self.config["account_id"]}
 
 
 class Accounts(BingAdsStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "customer_id"
+    data_field = "AdvertiserAccount"
 
     def send_request(self, **kwargs) -> Mapping[str, Any]:
-        return self.client.session.GetAccount(AccountId=self.config["account_id"])
+        return self.client.get_service().SearchAccounts(**kwargs)
 
+    def next_page_token(self, response: requests.Response, page_token: Optional[int]) -> Optional[Mapping[str, Any]]:
+        if response is not None and hasattr(response, self.data_field):
+            return None if self.limit > len(response[self.data_field]) else page_token + 1
+        else:
+            return None
 
-"""
-class IncrementalBingAdsStream(BingAdsStream, ABC):
-    state_checkpoint_interval = None
-
-    @property
-    def cursor_field(self) -> str:
-        return []
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {}
-
-
-class Employees(IncrementalBingAdsStream):
-    # TODO: Fill in the cursor_field. Required.
-    cursor_field = "start_date"
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "employee_id"
-
-    def path(self, **kwargs) -> str:
-        return "employees"
-
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        raise NotImplementedError("Implement stream slices or delete this method!")
-"""
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        predicates = {
+            "Predicate": [
+                {
+                    "Field": "UserId",
+                    "Operator": "Equals",
+                    "Value": self.config["user_id"],
+                },
+            ]
+        }
+        paging = self.client.set_elements_to_none(self.client.get_service().factory.create("ns5:Paging"))
+        paging.Index = next_page_token or 0
+        paging.Size = self.limit
+        return {"PageInfo": paging, "Predicates": predicates}
 
 
 class SourceBingAds(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             client = Client(**config)
-            client.get_service("CustomerManagementService").GetAccount(AccountId=config["account_id"])
+            client.get_service().GetAccount(AccountId=config["account_id"])
         except Exception as error:
             return False, error
 
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [Accounts(**config)]
+        client = Client(**config)
+        return [Campaigns(client, config), Accounts(client, config)]
