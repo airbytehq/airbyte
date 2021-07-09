@@ -110,7 +110,6 @@ class DatascopeIncrementalStream(DatascopeStream, ABC):
         # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
         if current_stream_state is not None and 'updated_at' in current_stream_state:
             current_parsed_date = datetime.strptime(current_stream_state['updated_at'], '%Y-%m-%dT%H:%M:%S%z')
-            # latest_record_date = datetime.strptime(current_stream_state['updated_at'], '%Y-%m-%dT%H:%M:%S%z')
             last_date = latest_record['updated_at'].split('.')[0] + '+0000'
             if self.schema_type == 'dynamic':
                 latest_record_date = datetime.strptime(last_date, '%d/%m/%Y %H:%M%z')

@@ -23,8 +23,8 @@
       },
       "schema_type": {
         "type": "string",
-        "description": "Fixed or Dynamic",
-        "examples": ["Fixed or Dynamic"]
+        "description": "Please select type of schema 'fixed' or 'dynamic'",
+        "examples": ["fixed or dynamic"]
       }
     }
   }
