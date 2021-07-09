@@ -4,11 +4,13 @@ Airbyte uses different objects to store internal state and metadata. This data i
 - Using the default Postgres database that Airbyte spins-up as part of the Docker service described in the `docker-compose.yml` file: `airbyte/db`.
 - Through a dedicated custom Postgres instance (the `airbyte/db` is in this case unused, and can therefore be removed or de-activated from the `docker-compose.yml` file).
 
-The various entities persisted in this internal database can be categorized as:
+The various entities are persisted in two internal databases:
 
-1. Jobs Database: Data about executions of Airbyte Jobs and various runtime metadata.
-2. Temporal Database: Data about the internal orchestrator used by Airbyte, Temporal.io (Tasks, Workflow data, Events, and visibility data).
-3. Connection Configuration Database: Connectors, Sync Connections and various Airbyte configuration objects.
+- Jobs database
+  - Data about executions of Airbyte Jobs and various runtime metadata.
+  - Data about the internal orchestrator used by Airbyte, Temporal.io (Tasks, Workflow data, Events, and visibility data).
+- Config database
+  - Connectors, Sync Connections and various Airbyte configuration objects.
 
 Note that no actual data from the source (or destination) connectors ever transits or is retained in this internal database.
 
@@ -24,17 +26,33 @@ docker run --rm --name airbyte-postgres -e POSTGRES_PASSWORD=password -p 3000:54
 In order to configure Airbyte services with this new database, we need to edit the following environment variables declared in the `.env` file (used by the docker-compose command afterward):
 
 ```bash
+# Variables for the job database
 DATABASE_USER=postgres
 DATABASE_PASSWORD=password
 DATABASE_HOST=host.docker.internal # refers to localhost of host
 DATABASE_PORT=3000
 DATABASE_DB=postgres
+
+# Set to 1 to use a database for config storage
+USE_CONFIG_DATABASE=1
+
+# Variables for the config database
+# By default, the Config Database is the same as the Job Database.
+# Uncomment the following variables if a different Config Database is needed.
+# CONFIG_DATABASE_USER=postgres
+# CONFIG_DATABASE_PASSWORD=password
+# CONFIG_DATABASE_HOST=host.docker.internal
+# CONFIG_DATABASE_PORT=3000
+# CONFIG_DATABASE_DB=airbyte_config
 ```
 
 Additionally, you must redefine the JDBC URL constructed in the environment variable `DATABASE_URL` to include the correct host, port, and database. If you need to provide extra arguments to the JDBC driver (for example, to handle SSL) you should add it here as well:
 
 ```bash
 DATABASE_URL=jdbc:postgresql://host.docker.internal:3000/postgres?ssl=true&sslmode=require
+
+# Uncomment the following variable to set a different config database.
+# CONFIG_DATABASE_URL=jdbc:postgresql://host.docker.internal:3000/airbyte_config?ssl=true&sslmode=require
 ```
 
 ## Initializing the database
@@ -45,11 +63,11 @@ This step is only required when you setup Airbyte with a custom database for the
 
 If you provide an empty database to Airbyte and start Airbyte up for the first time, the server and scheduler services won't be able to start because there is no data in the database yet.
 
-We need to make sure that the proper tables have been created by running the init SQL script that you can find [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-db/src/main/resources/schema.sql).
+We need to make sure that the proper tables have been created by running the init SQL script that you can find [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-db/src/main/resources/schema.sql) for the job database and [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-db/src/main/resources/config_schema.sql) for the config database.
 
 You can replace:
-- "airbyte" with your actual "DATABASE_DB" value
-- "docker" with your actual "DATABASE_USER" value
+- "airbyte" with your actual "DATABASE_DB" (or "CONFIG_DATABASE_DB") value
+- "docker" with your actual "DATABASE_USER" (or "CONFIG_DATABASE_USER") value
 then run the SQL script to populate the database manually.
 
 Now, when you run `docker-compose up`, the Airbyte server and scheduler should connect to the configured database successfully.
@@ -60,7 +78,7 @@ When updating Airbyte as described in [the upgrade process docs](upgrading-airby
 
 Those migration scripts work primarily with an archive file to be updated. Once the archive is ready, the scripts assume that they are being applied on top of an empty database afterward, but with tables already created with the correct schema. They will re-populate and re-import whatever was saved in the upgraded archive back into the database.
 
-Thus, if you deploy Airbyte using an external database, you might need to flush and perform updates to the table schemas by deleting them and re-initializing them as described previously (using the latest `schema.sql` script). This step is implicitly done on the default Docker Postgres database when running `docker-compose down -v` or when deleting Docker volumes).
+Thus, if you deploy Airbyte using an external database, you might need to flush and perform updates to the table schemas by deleting them and re-initializing them as described previously (using the latest `schema.sql` and `config_schema.sql` script). This step is implicitly done on the default Docker Postgres database when running `docker-compose down -v` or when deleting Docker volumes).
 
 ## Accessing the default database located in docker airbyte-db
 In extraordinary circumstances while using the default `airbyte-db` Postgres database, if a developer wants to access the data that tracks jobs, they can do so with the following instructions.

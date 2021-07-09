@@ -48,7 +48,10 @@ public enum DatabaseSchema {
   JOBS("Jobs.yaml"),
 
   // AirbyteMetadata
-  AIRBYTE_METADATA("AirbyteMetadata.yaml");
+  AIRBYTE_METADATA("AirbyteMetadata.yaml"),
+
+  // AirbyteConfig
+  AIRBYTE_CONFIGS("AirbyteConfigs.yaml");
 
   static final Path KNOWN_SCHEMAS_ROOT = JsonSchemas.prepareSchemas("tables", DatabaseSchema.class);
 
