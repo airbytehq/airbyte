@@ -19,7 +19,7 @@ and is created on demand whenever these operations are requested. Thus, every jo
 How a worker executes work depends on the Airbyte deployment. In the Docker deployment, an Airbyte worker spins up at least one Docker container. In the Kubernetes
 deployment, an Airbyte worker will create at least one Kubernetes pod. The created resource (Docker container or Kubernetes pod) does all the actual work.
 
-Thus, scaling Airbyte is a matter of ensuring the Docker container/Kubernetes pod have sufficient resources to execute its work.
+Thus, scaling Airbyte is a matter of ensuring that the Docker container or Kubernetes Pod running the jobs has sufficient resources to execute its work.
 
 Jobs-wise, we are mainly concerned with Sync jobs when thinking about scale. Sync jobs sync data from sources to destinations and are the majority of jobs run. Sync jobs use two workers.
 One worker reads from the source; the other worker writes to the destination.
