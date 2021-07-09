@@ -59,6 +59,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
   private static final Table<Record> AIRBYTE_CONFIGS = table("airbyte_configs");
   private static final Field<String> CONFIG_ID = field("config_id", String.class);
+  // This field is actually an Enum column in the database definition. When it is used in a WHERE
+  // clause, wrap operand values with {@code inline} method so that jooQ can prepare the value correctly.
   private static final Field<String> CONFIG_TYPE = field("config_type", String.class);
   private static final Field<JSONB> CONFIG_BLOB = field("config_blob", JSONB.class);
   private static final Field<Timestamp> CREATED_AT = field("created_at", Timestamp.class);
@@ -153,7 +155,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(UPDATED_AT, timestamp)
             .where(CONFIG_TYPE.eq(inline(configType.name())), CONFIG_ID.eq(configId))
             .execute();
-        LOGGER.info("{} config {} has been updated (updated record count: {})", configType, configId, updateCount);
+        if (updateCount != 0 && updateCount != 1) {
+          LOGGER.warn("{} config {} has been updated; updated record count: {}", configType, configId, updateCount);
+        }
 
         return null;
       }
@@ -166,9 +170,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           .set(UPDATED_AT, timestamp)
           .execute();
       if (insertionCount != 1) {
-        throw new IllegalStateException("Inserted record count is not 1");
+        LOGGER.warn("{} config {} has been inserted; insertion record count: {}", configType, configId, insertionCount);
       }
-      LOGGER.info("New {} config {} has been inserted", configType, configId);
 
       return null;
     });
