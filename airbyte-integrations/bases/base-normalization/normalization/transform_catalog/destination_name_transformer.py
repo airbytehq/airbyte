@@ -182,9 +182,9 @@ class DestinationNameTransformer:
         elif self.destination_type.value == DestinationType.SNOWFLAKE.value:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.upper()
+        # TODO: explain this
         elif self.destination_type.value == DestinationType.MYSQL.value:
-            if not is_quoted and not self.needs_quotes(input_name):
-                result = input_name.lower()
+            result = input_name.lower()
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result

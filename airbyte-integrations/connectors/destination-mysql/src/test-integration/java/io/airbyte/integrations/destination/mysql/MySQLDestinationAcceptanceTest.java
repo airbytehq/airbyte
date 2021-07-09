@@ -31,7 +31,10 @@ import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.JSONFormat;
@@ -45,7 +48,7 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
   private MySQLContainer<?> db;
-  private ExtendedNameTransformer namingResolver = new MySQLNameTransformer();
+  private final ExtendedNameTransformer namingResolver = new MySQLNameTransformer();
 
   @Override
   protected String getImageName() {
@@ -129,6 +132,25 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
+  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception {
+    String tableName = namingResolver.getIdentifier(streamName);
+    String schema = namingResolver.getIdentifier(namespace);
+    return retrieveRecordsFromTable(tableName, schema);
+  }
+
+  @Override
+  protected List<String> resolveIdentifier(String identifier) {
+    final List<String> result = new ArrayList<>();
+    final String resolved = namingResolver.getIdentifier(identifier);
+    result.add(identifier);
+    result.add(resolved);
+    if (!resolved.startsWith("\"")) {
+      result.add(resolved.toLowerCase());
+    }
+    return result;
+  }
+
+  @Override
   protected void setup(TestDestinationEnv testEnv) {
     db = new MySQLContainer<>("mysql:8.0");
     db.start();
@@ -146,7 +168,8 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   private void grantCorrectPermissions() {
-    executeQuery("GRANT CREATE, INSERT, SELECT, DROP ON *.* TO " + db.getUsername() + "@'%';");
+    executeQuery("GRANT ALTER, CREATE, INSERT, SELECT, DROP ON *.* TO " + db.getUsername() + "@'%';");
+    executeQuery("GRANT CREATE VIEW ON *.* TO " + db.getUsername() + "@'%';");
   }
 
   private void executeQuery(String query) {

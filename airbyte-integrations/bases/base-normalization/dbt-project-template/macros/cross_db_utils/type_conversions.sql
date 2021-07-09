@@ -34,6 +34,11 @@
     cast({{ field }} as boolean)
 {%- endmacro %}
 
+-- cast(lower({{ field }})='true' as unsigned)
+{% macro mysql__cast_to_boolean(field) -%}
+    IF(lower({{ field }})='true', true, false)
+{%- endmacro %}
+
 {# -- Redshift does not support converting string directly to boolean, it must go through int first #}
 {% macro redshift__cast_to_boolean(field) -%}
     cast(decode({{ field }}, 'true', '1', 'false', '0')::integer as boolean)

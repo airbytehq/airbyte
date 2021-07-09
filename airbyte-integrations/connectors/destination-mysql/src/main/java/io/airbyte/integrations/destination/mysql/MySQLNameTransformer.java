@@ -37,21 +37,22 @@ public class MySQLNameTransformer extends ExtendedNameTransformer {
   public static final int TRUNCATE_RESERVED_SIZE = 8;
   public static final int TRUNCATION_MAX_NAME_LENGTH = MAX_MYSQL_NAME_LENGTH - TRUNCATE_DBT_RESERVED_SIZE - TRUNCATE_RESERVED_SIZE;
 
+  // TODO: explain lower case.
   @Override
   public String getIdentifier(String name) {
-    String identifier = super.getIdentifier(name);
+    String identifier = super.getIdentifier(name).toLowerCase();
     return truncateName(identifier, TRUNCATION_MAX_NAME_LENGTH);
   }
 
   @Override
   public String getTmpTableName(String streamName) {
-    String tmpTableName = super.getTmpTableName(streamName);
+    String tmpTableName = super.getTmpTableName(streamName).toLowerCase();
     return truncateName(tmpTableName, TRUNCATION_MAX_NAME_LENGTH);
   }
 
   @Override
   public String getRawTableName(String streamName) {
-    String rawTableName = super.getRawTableName(streamName);
+    String rawTableName = super.getRawTableName(streamName).toLowerCase();
     return truncateName(rawTableName, TRUNCATION_MAX_NAME_LENGTH);
   }
 
