@@ -41,6 +41,7 @@ from pendulum.datetime import DateTime
 
 class TypeformStream(HttpStream, ABC):
     url_base = "https://api.typeform.com"
+    # maximum number of entities in API response per single page
     limit: int = 200
     date_format: str = "YYYY-MM-DDTHH:mm:ss[Z]"
 
@@ -80,7 +81,7 @@ class TrimForms(TypeformStream):
     def next_page_token(self, response: requests.Response) -> Optional[int]:
         page = self.get_current_page_token(response.url)
         # stop pagination if current page equals to total pages
-        return None if response.json()["page_count"] <= page else page + 1
+        return None if not page or response.json()["page_count"] <= page else page + 1
 
     def get_current_page_token(self, url: str) -> Optional[int]:
         """
