@@ -50,6 +50,7 @@ To start syncing Mailchimp data with Airbyte, you'll need two things:
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.2.5   | 2021-07-08 | [4621](https://github.com/airbytehq/airbyte/pull/4621) | Mailchimp fix url-base |
 | 0.2.4   | 2021-06-09 | [4285](https://github.com/airbytehq/airbyte/pull/4285) | Use datacenter URL parameter from apikey |
 | 0.2.3   | 2021-06-08 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE_ENTRYPOINT for Kubernetes support  |
 | 0.2.2   | 2021-06-08 | [3415](https://github.com/airbytehq/airbyte/pull/3415) | Get Members activities |

@@ -77,6 +77,8 @@
 
  Oracle DB   [![source-oracle](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-oracle%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-oracle) 
 
+ Paypal Transaction   [![paypal-transaction](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-paypal-transaction%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-paypal-transaction)
+
  Plaid   [![source-plaid](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-plaid%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-plaid) 
 
  Postgres   [![source-postgres](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-postgres%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-postgres) 
