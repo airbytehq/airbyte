@@ -98,7 +98,7 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   @Override
   protected List<TableInfo<CommonField<StandardSQLTypeName>>> discoverInternal(BigQueryDatabase database) {
     String projectId = dbConfig.get(CONFIG_PROJECT_ID).asText();
-    String datasetId = dbConfig.get(CONFIG_DATASET_ID).asText();
+    String datasetId = getConfigDatasetId(database);
     List<Table> tables = (isDatasetConfigured(database) ? database.getDatasetTables(projectId, getConfigDatasetId(database)) : database.getProjectTables(projectId));
     List<TableInfo<CommonField<StandardSQLTypeName>>> result = new ArrayList<>();
     tables.stream().map(table -> TableInfo.<CommonField<StandardSQLTypeName>>builder()
