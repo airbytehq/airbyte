@@ -41,7 +41,6 @@ from airbyte_cdk.sources.streams.http.auth import NoAuth
 # Basic full refresh stream
 class DatascopeStream(HttpStream, ABC):
 
-    # TODO: Fill in the url base. Required.
     url_base = "https://mydatascope.com/api/external/"
 
 
