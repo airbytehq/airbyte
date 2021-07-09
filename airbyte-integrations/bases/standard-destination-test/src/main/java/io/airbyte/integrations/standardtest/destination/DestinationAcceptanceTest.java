@@ -1013,6 +1013,7 @@ public abstract class DestinationAcceptanceTest {
     }
   }
 
+  // Allows subclasses to implement custom comparison asserts
   protected void assertSameValue(JsonNode expectedValue, JsonNode actualValue) {
     assertEquals(expectedValue, actualValue);
   }
