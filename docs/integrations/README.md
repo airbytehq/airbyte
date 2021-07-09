@@ -19,6 +19,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[AWS CloudTrail](./sources/aws-cloudtrail.md)| Beta |
 |[Braintree](./sources/braintree.md)| Alpha |
 |[ClickHouse](./sources/clickhouse.md)| Beta |
+|[CockroachDB](./sources/cockroachdb.md)| Beta |
 |[Db2](./sources/db2.md)| Beta |
 |[Drift](./sources/drift.md)| Beta |
 |[Exchange Rates API](./sources/exchangeratesapi.md)| Certified |
@@ -52,11 +53,11 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[MySQL](./sources/mysql.md)| Certified |
 |[Okta](./sources/okta.md)| Beta |
 |[Oracle DB](./sources/oracle.md)| Certified |
+|[PayPal Transaction](./sources/paypal-transaction.md)| Beta |
 |[Plaid](./sources/plaid.md)| Alpha |
 |[PokéAPI](./sources/pokeapi.md)| Beta |
 |[Postgres](./sources/postgres.md)| Certified |
 |[PostHog](./sources/posthog.md)| Beta |
-|[CockroachDb](./sources/cockroachdb.md)| Beta |
 |[Quickbooks](./sources/quickbooks.md)| Beta |
 |[Recharge](./sources/recharge.md)| Beta |
 |[Recurly](./sources/recurly.md)| Beta |
@@ -67,6 +68,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Slack](./sources/slack.md)| Beta |
 |[Smartsheets](./sources/smartsheets.md)| Beta |
 |[Snowflake](./sources/snowflake.md)| Beta |
+|[Square](./sources/square.md)| Beta |
 |[Stripe](./sources/stripe.md)| Certified |
 |[SurveyMonkey](./sources/surveymonkey.md)| Beta |
 |[Tempo](./sources/tempo.md)| Beta |
