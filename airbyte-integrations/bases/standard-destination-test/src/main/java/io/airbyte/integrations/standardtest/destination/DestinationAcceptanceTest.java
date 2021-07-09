@@ -419,7 +419,16 @@ public abstract class DestinationAcceptanceTest {
 
   @Test
   public void specNormalizationValueShouldBeCorrect() throws Exception {
-    assertEquals(normalizationFromSpec(), supportsNormalization());
+    final boolean normalizationFromSpec = normalizationFromSpec();
+    assertEquals(normalizationFromSpec, supportsNormalization());
+    boolean normalizationRunnerFactorySupportsDestinationImage;
+    try {
+      NormalizationRunnerFactory.create(getImageName(), processFactory);
+      normalizationRunnerFactorySupportsDestinationImage = true;
+    } catch (IllegalStateException e) {
+      normalizationRunnerFactorySupportsDestinationImage = false;
+    }
+    assertEquals(normalizationFromSpec, normalizationRunnerFactorySupportsDestinationImage);
   }
 
   @Test
