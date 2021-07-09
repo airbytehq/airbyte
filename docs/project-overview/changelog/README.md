@@ -1,8 +1,31 @@
 # Changelog
 
-## 07/01/2021 Summary
+## 07/09/2021 Summary
 
-Hey @channel, here's this week's changelog announcements for Airbyte!
+New Source: PayPal Transaction
+New Source: Square
+New Source: SurveyMonkey
+New Source: CockroachDB
+New Source: Airbyte-Native GitHub
+New Source: Airbyte-Native GitLab
+New Source: Airbyte-Native Twilio
+
+✨ S3 destination: Now supports anyOf, oneOf and allOf schema fields.
+✨ Instagram source: Migrated to the CDK and has improved error handling.
+✨ Shopify source: Add support for draft orders.
+✨ K8s Deployments: Now support logging to GCS.
+🐛 GitHub source: Fixed issue with locked breaking normalization of the pull_request stream.
+🐛 Okta source: Fix endless loop when syncing data from logs stream.
+🐛 PostgreSQL source: Fixed decimal handling with CDC.
+🐛 Fixed random silent source failures.
+📚 New document on how the CDK handles schemas.
+🏗️ Python CDK: Now allows setting of network adapter args on outgoing HTTP requests.
+
+View the full release highlights here: [Platform](./platform.md), [Connectors](./connectors.md)
+
+As usual, thank you to our awesome community contributors this week: gunu, P.VAD, Rodrigo Parra, Mario Molina, Antonio Grass, sabifranjo, Jaime Farres, shadabshaukat, Rodrigo Menezes, dkelwa, Jonathan Duval, and Augustin Lafanechère.
+
+## 07/01/2021 Summary
 
 * New Destination: Google PubSub
 * New Source: AWS CloudTrail
