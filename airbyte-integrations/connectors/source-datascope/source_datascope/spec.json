@@ -9,7 +9,7 @@
     "properties": {
       "api_key": {
         "type": "string",
-        "description": "api Key",
+        "description": "Sign in on your DataScope account and copy it from Integrations (https://mydatascope.com/webhooks) on section 'API Key'",
         "airbyte_secret": true
       },
       "start_date": {
