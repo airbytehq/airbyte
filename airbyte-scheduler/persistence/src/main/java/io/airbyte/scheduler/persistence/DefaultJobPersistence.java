@@ -31,6 +31,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.text.Names;
 import io.airbyte.commons.text.Sqls;
 import io.airbyte.commons.version.AirbyteVersion;
@@ -82,10 +83,10 @@ import org.slf4j.LoggerFactory;
 
 public class DefaultJobPersistence implements JobPersistence {
 
-  // not final because job history test case manipulates these.
-  public static int JOB_HISTORY_MINIMUM_AGE_IN_DAYS = 15;
-  public static int JOB_HISTORY_MINIMUM_RECENCY = 5;
-  public static int JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS = 10;
+  // not static because job history test case manipulates these.
+  private final int JOB_HISTORY_MINIMUM_AGE_IN_DAYS;
+  private final int JOB_HISTORY_MINIMUM_RECENCY;
+  private final int JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJobPersistence.class);
   private static final Set<String> SYSTEM_SCHEMA = Set
@@ -124,13 +125,19 @@ public class DefaultJobPersistence implements JobPersistence {
   private final Supplier<Instant> timeSupplier;
 
   @VisibleForTesting
-  DefaultJobPersistence(Database database, Supplier<Instant> timeSupplier) {
+  DefaultJobPersistence(Database database, Supplier<Instant> timeSupplier,
+      int minimumAgeInDays,
+      int excessiveNumberOfJobs,
+      int minimumRecencyCount) {
     this.database = new ExceptionWrappingDatabase(database);
     this.timeSupplier = timeSupplier;
+    JOB_HISTORY_MINIMUM_AGE_IN_DAYS = minimumAgeInDays;
+    JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS = excessiveNumberOfJobs;
+    JOB_HISTORY_MINIMUM_RECENCY = minimumRecencyCount;
   }
 
   public DefaultJobPersistence(Database database) {
-    this(database, Instant::now);
+    this(database, Instant::now, 30, 500, 10);
   }
 
   @Override
@@ -512,45 +519,23 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public void purgeJobHistory(LocalDateTime asOfDate) throws IOException {
-    final String JOB_HISTORY_PURGE_SQL = "delete from jobs where jobs.id in ("
-        + "select jobs.id  \n"
-        + "from jobs \n"
-        + "left join (\n"
-        + "   select scope, count(jobs.id) as jobCount from jobs group by scope\n"
-        + ") counts on jobs.scope = counts.scope \n"
-        + "where \n"
-        + "  -- job must be at least MINIMUM_AGE_IN_DAYS old or connection has more than EXCESSIVE_NUMBER_OF_JOBS \n"
-        + "  (jobs.created_at < (TO_TIMESTAMP(?, 'YYYY-MM-DD') - interval '" + (JOB_HISTORY_MINIMUM_AGE_IN_DAYS - 1)
-        + "' day) or counts.jobCount >  ?) \n"
-        + "and jobs.id not in (\n"
-        + "  -- cannot be the most recent job with saved state \n"
-        + "   select job_id as latest_job_id_with_state from (\n"
-        + "   select jobs.scope, \n"
-        + "   jobs.id as job_id, jobs.config_type, jobs.created_at, jobs.status, \n"
-        + "   bool_or(attempts.\"output\" -> 'sync' -> 'state' -> 'state' is not null) as outputStateExists,\n"
-        + "   row_number() OVER (PARTITION BY scope ORDER BY jobs.created_at desc, jobs.id desc) as stateRecency\n"
-        + "   from jobs left join attempts on jobs.id = attempts.job_id \n"
-        + "   group by scope, jobs.id\n"
-        + "   having bool_or(attempts.\"output\" -> 'sync' -> 'state' -> 'state' is not null) = true\n"
-        + "   order by scope, jobs.created_at desc, jobs.id desc\n"
-        + "   ) jobs_with_state where stateRecency=1\n "
-        + ") and jobs.id not in (\n"
-        + "  -- cannot be one of the last MINIMUM_RECENCY jobs for that connection/scope\n"
-        + "    select id from (\n"
-        + "        select jobs.scope, jobs.id, jobs.created_at,\n"
-        + "        row_number() OVER (PARTITION BY scope ORDER BY jobs.created_at desc, jobs.id desc) as recency\n"
-        + "        from jobs\n"
-        + "        group by scope, jobs.id\n"
-        + "        order by scope, jobs.created_at desc, jobs.id desc\n"
-        + "    ) jobs_by_recency \n"
-        + "    where recency <= ?\n"
-        + "))";
+  public void purgeJobHistory() {
+    purgeJobHistory(LocalDateTime.now());
+  }
 
-    final Integer rows = database.query(ctx -> ctx.execute(JOB_HISTORY_PURGE_SQL,
-        asOfDate.format(DateTimeFormatter.ofPattern("YYYY-MM-dd")),
-        JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS,
-        JOB_HISTORY_MINIMUM_RECENCY));
+  @VisibleForTesting
+  public void purgeJobHistory(LocalDateTime asOfDate) {
+    try {
+      String JOB_HISTORY_PURGE_SQL = MoreResources.readResource("job_history_purge.sql");
+      // interval '?' days cannot use a ? bind, so we're using %d instead.
+      String sql = String.format(JOB_HISTORY_PURGE_SQL, (JOB_HISTORY_MINIMUM_AGE_IN_DAYS - 1));
+      final Integer rows = database.query(ctx -> ctx.execute(sql,
+          asOfDate.format(DateTimeFormatter.ofPattern("YYYY-MM-dd")),
+          JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS,
+          JOB_HISTORY_MINIMUM_RECENCY));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private List<String> listAllTables(final String schema) throws IOException {

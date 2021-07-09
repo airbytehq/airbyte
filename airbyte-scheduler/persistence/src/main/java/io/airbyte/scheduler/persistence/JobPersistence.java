@@ -190,6 +190,6 @@ public interface JobPersistence {
    *
    * @throws IOException
    */
-  void purgeJobHistory(LocalDateTime asOfDate) throws IOException;
+  void purgeJobHistory();
 
 }

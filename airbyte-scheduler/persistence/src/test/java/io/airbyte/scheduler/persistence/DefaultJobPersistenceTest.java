@@ -168,7 +168,7 @@ class DefaultJobPersistenceTest {
     timeSupplier = mock(Supplier.class);
     when(timeSupplier.get()).thenReturn(NOW);
 
-    jobPersistence = new DefaultJobPersistence(database, timeSupplier);
+    jobPersistence = new DefaultJobPersistence(database, timeSupplier, 30, 500, 10);
   }
 
   @AfterEach
@@ -1124,9 +1124,7 @@ class DefaultJobPersistenceTest {
       final String DECOY_SCOPE = UUID.randomUUID().toString();
 
       // Reconfigure constants to test various combinations of tuning knobs and make sure all work.
-      DefaultJobPersistence.JOB_HISTORY_MINIMUM_AGE_IN_DAYS = ageCutoff;
-      DefaultJobPersistence.JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS = tooManyJobs;
-      DefaultJobPersistence.JOB_HISTORY_MINIMUM_RECENCY = recencyCutoff;
+      DefaultJobPersistence jobPersistence = new DefaultJobPersistence(database, timeSupplier, ageCutoff, tooManyJobs, recencyCutoff);
 
       LocalDateTime fakeNow = LocalDateTime.of(2021, 6, 20, 0, 0);
 
@@ -1154,7 +1152,7 @@ class DefaultJobPersistenceTest {
           goalOfTestScenario + " - missing saved state on job that was supposed to have it.");
 
       // Execute the job history purge and check what jobs are left.
-      jobPersistence.purgeJobHistory(fakeNow);
+      ((DefaultJobPersistence)jobPersistence).purgeJobHistory(fakeNow);
       List<Job> afterPurge = jobPersistence.listJobs(ConfigType.SYNC, CURRENT_SCOPE, 9999, 0);
 
       // Test - contains expected number of jobs and no more than that
