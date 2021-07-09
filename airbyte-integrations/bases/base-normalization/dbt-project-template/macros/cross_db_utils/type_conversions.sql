@@ -34,7 +34,7 @@
     cast({{ field }} as boolean)
 {%- endmacro %}
 
-{# -- MySQL does not support cast function converting string directly to boolean (alias to tiniyint(1), https://dev.mysql.com/doc/refman/8.0/en/cast-functions.html#function_cast #}
+{# -- MySQL does not support cast function converting string directly to boolean (an alias of tinyint(1), https://dev.mysql.com/doc/refman/8.0/en/cast-functions.html#function_cast #}
 {% macro mysql__cast_to_boolean(field) -%}
     IF(lower({{ field }}) = 'true', true, false)
 {%- endmacro %}
