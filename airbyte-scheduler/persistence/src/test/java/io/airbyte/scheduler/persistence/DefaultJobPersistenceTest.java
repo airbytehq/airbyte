@@ -1007,7 +1007,14 @@ class DefaultJobPersistenceTest {
       assertEquals(JobStatus.CANCELLED, updated.getStatus());
     }
 
-    private Job persistJobForTesting(String scope, JobConfig jobConfig, JobStatus status, LocalDateTime runDate) throws IOException, SQLException {
+  }
+
+  @Nested
+  @DisplayName("When purging job history")
+  class PurgeJobHistory {
+
+    private Job persistJobForJobHistoryTesting(String scope, JobConfig jobConfig, JobStatus status, LocalDateTime runDate)
+        throws IOException, SQLException {
       String when = runDate.toString();
       Optional<Long> id = database.query(
           ctx -> ctx.fetch(
@@ -1026,7 +1033,7 @@ class DefaultJobPersistenceTest {
       return jobPersistence.getJob(id.get());
     }
 
-    private int persistAttemptForJobHistoryTesting(Job job, String logPath, LocalDateTime runDate, boolean shouldHaveState)
+    private void persistAttemptForJobHistoryTesting(Job job, String logPath, LocalDateTime runDate, boolean shouldHaveState)
         throws IOException, SQLException {
       String attemptOutputWithState = "{\n"
           + "  \"sync\": {\n"
@@ -1052,7 +1059,6 @@ class DefaultJobPersistenceTest {
           .findFirst()
           .map(r -> r.get("attempt_number", Integer.class))
           .orElseThrow(() -> new RuntimeException("This should not happen")));
-      return attemptNumber;
     }
 
     /**
@@ -1135,8 +1141,8 @@ class DefaultJobPersistenceTest {
       List<Job> allJobs = new ArrayList<>();
       List<Job> decoyJobs = new ArrayList<>();
       for (int i = 0; i < numJobs; i++) {
-        allJobs.add(persistJobForTesting(CURRENT_SCOPE, SYNC_JOB_CONFIG, JobStatus.FAILED, fakeNow.minusDays(i)));
-        decoyJobs.add(persistJobForTesting(DECOY_SCOPE, SYNC_JOB_CONFIG, JobStatus.FAILED, fakeNow.minusDays(i)));
+        allJobs.add(persistJobForJobHistoryTesting(CURRENT_SCOPE, SYNC_JOB_CONFIG, JobStatus.FAILED, fakeNow.minusDays(i)));
+        decoyJobs.add(persistJobForJobHistoryTesting(DECOY_SCOPE, SYNC_JOB_CONFIG, JobStatus.FAILED, fakeNow.minusDays(i)));
       }
 
       // At least one job should have state. Find the desired job and add state to it.
@@ -1152,7 +1158,7 @@ class DefaultJobPersistenceTest {
           goalOfTestScenario + " - missing saved state on job that was supposed to have it.");
 
       // Execute the job history purge and check what jobs are left.
-      ((DefaultJobPersistence)jobPersistence).purgeJobHistory(fakeNow);
+      ((DefaultJobPersistence) jobPersistence).purgeJobHistory(fakeNow);
       List<Job> afterPurge = jobPersistence.listJobs(ConfigType.SYNC, CURRENT_SCOPE, 9999, 0);
 
       // Test - contains expected number of jobs and no more than that

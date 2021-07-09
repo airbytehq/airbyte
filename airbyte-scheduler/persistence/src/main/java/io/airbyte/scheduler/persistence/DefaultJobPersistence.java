@@ -125,10 +125,11 @@ public class DefaultJobPersistence implements JobPersistence {
   private final Supplier<Instant> timeSupplier;
 
   @VisibleForTesting
-  DefaultJobPersistence(Database database, Supplier<Instant> timeSupplier,
-      int minimumAgeInDays,
-      int excessiveNumberOfJobs,
-      int minimumRecencyCount) {
+  DefaultJobPersistence(Database database,
+                        Supplier<Instant> timeSupplier,
+                        int minimumAgeInDays,
+                        int excessiveNumberOfJobs,
+                        int minimumRecencyCount) {
     this.database = new ExceptionWrappingDatabase(database);
     this.timeSupplier = timeSupplier;
     JOB_HISTORY_MINIMUM_AGE_IN_DAYS = minimumAgeInDays;
