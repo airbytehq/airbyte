@@ -9,7 +9,7 @@
       "type": "string"
     },
     "alternate_emails": {
-      "type": "array"
+      "type": ["null", "array"]
     },
     "city": {
       "type": "string"
@@ -36,13 +36,13 @@
       "type": "string"
     },
     "list_ids": {
-      "type": "array"
+      "type": ["null", "array"]
     },
     "created_at": {
-      "type": "array"
+      "type": "string"
     },
     "updated_at": {
-      "type": "array"
+      "type": "string"
     },
     "_metadata": {
       "type": "object",

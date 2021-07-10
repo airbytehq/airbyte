@@ -356,35 +356,6 @@
     },
     {
       "stream": {
-        "name": "blocks",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "created": {
-              "type": "integer"
-            },
-            "email": {
-              "type": "string"
-            },
-            "reason": {
-              "type": "string"
-            },
-            "status": {
-              "type": "string"
-            }
-          }
-        },
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["created"]
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["created"],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
         "name": "bounces",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
@@ -400,32 +371,6 @@
               "type": "string"
             },
             "status": {
-              "type": "string"
-            }
-          }
-        },
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["created"]
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["created"],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "invalid_emails",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "created": {
-              "type": "integer"
-            },
-            "email": {
-              "type": "string"
-            },
-            "reason": {
               "type": "string"
             }
           }
