@@ -32,7 +32,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 class SendgridStream(HttpStream, ABC):
     url_base = "https://api.sendgrid.com/v3/"
-    primary_key = "email"
+    primary_key = "id"
     limit = 50
     data_field = None
 
@@ -190,6 +190,8 @@ class Templates(SendgridStreamMetadataPagination):
 
 
 class GlobalSuppressions(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
+    primary_key = "email"
+
     def path(self, **kwargs) -> str:
         return "suppression/unsubscribes"
 
@@ -205,20 +207,28 @@ class SuppressionGroupMembers(SendgridStreamOffsetPagination):
 
 
 class Blocks(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
+    primary_key = "email"
+
     def path(self, **kwargs) -> str:
         return "suppression/blocks"
 
 
 class Bounces(SendgridStream, SendgridStreamIncrementalMixin):
+    primary_key = "email"
+
     def path(self, **kwargs) -> str:
         return "suppression/bounces"
 
 
 class InvalidEmails(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
+    primary_key = "email"
+
     def path(self, **kwargs) -> str:
         return "suppression/invalid_emails"
 
 
 class SpamReports(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
+    primary_key = "email"
+
     def path(self, **kwargs) -> str:
         return "suppression/spam_reports"

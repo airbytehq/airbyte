@@ -13,7 +13,8 @@
       },
       "start_time": {
         "type": "integer",
-        "description": "Start time in timestamp integer format, example: 1558359837"
+        "description": "Start time in timestamp integer format. Any data before this timestamp will not be replicated.",
+        "examples": [1558359837]
       }
     }
   }
