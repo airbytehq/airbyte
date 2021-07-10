@@ -10,6 +10,11 @@
       "apikey": {
         "type": "string",
         "description": "API Key, use <a href=\"https://app.sendgrid.com/settings/api_keys/\">admin</a> to generate this key."
+      },
+      "start_time": {
+        "type": "integer",
+        "description": "Start time in timestamp integer format. Any data before this timestamp will not be replicated.",
+        "examples": [1558359837]
       }
     }
   }
