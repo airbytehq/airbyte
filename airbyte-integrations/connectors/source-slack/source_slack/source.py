@@ -142,7 +142,7 @@ def chunk_date_range(start_date: DateTime, interval=pendulum.duration(days=1)) -
 
 class IncrementalMessageStream(SlackStream, ABC):
     data_field = "messages"
-    cursor_field = "float_ts"
+    cursor_field = "ts"
     primary_key = ["channel_id", "ts"]
 
     def __init__(self, default_start_date: DateTime, **kwargs):
