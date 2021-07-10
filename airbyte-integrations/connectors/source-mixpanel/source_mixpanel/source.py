@@ -521,6 +521,8 @@ class Export(MixpanelStream):
     Raw Export API Rate Limit (https://data.mixpanel.com/api/2.0/export/) : A maximum of 100 concurrent queries, 3 queries per second and 60 queries per hour.
     """
 
+    url_base = "https://mixpanel.com/api/2.0/"
+
     data_field = None
     primary_key = "time"
     # cursor_field = 'time'
