@@ -39,10 +39,10 @@
       "type": "array"
     },
     "created_at": {
-      "type": "array"
+      "type": "integer"
     },
     "updated_at": {
-      "type": "array"
+      "type": "integer"
     },
     "_metadata": {
       "type": "object",
