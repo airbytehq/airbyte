@@ -32,7 +32,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 class SendgridStream(HttpStream, ABC):
     url_base = "https://api.sendgrid.com/v3/"
-    primary_key = "id"
+    primary_key = "email"
     limit = 50
     data_field = None
 
