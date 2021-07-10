@@ -6,7 +6,8 @@ import styled from "styled-components";
 import type { DestinationSyncMode } from "core/domain/catalog";
 import { SyncSchemaStream } from "core/domain/catalog";
 
-import { Cell, Header, LightCell } from "components/SimpleTableComponents";
+import { CheckBox, LabeledRadioButton } from "components";
+import { Header, LightCell } from "components/SimpleTableComponents";
 import CatalogTree from "./CatalogTree";
 import Search from "./Search";
 import SectionTitle from "./SectionTitle";
@@ -18,7 +19,7 @@ const TreeViewContainer = styled.div`
   margin-bottom: 29px;
   border-radius: 4px;
   max-height: 600px;
-  overflow-y: auto;
+  overflow-y: overlay;
 `;
 
 const SchemaHeader = styled(Header)`
@@ -29,6 +30,26 @@ const SchemaHeader = styled(Header)`
 const SchemaTitle = styled(SectionTitle)`
   display: inline-block;
   margin: 0 11px 13px 0;
+`;
+
+const SelectAll = styled.div`
+  margin: 0 9px 0 30px;
+`;
+
+const NamespaceTitleCell = styled(LightCell)`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+`;
+
+const SearchContent = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+`;
+
+const RadioButtonControl = styled(LabeledRadioButton)`
+  margin: 0 0 0 5px;
 `;
 
 type SchemaViewProps = {
@@ -95,31 +116,38 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
         </SchemaTitle>
         {additionalControl}
       </div>
+      <SearchContent>
+        <Search onSearch={setSearchString} />
+        <RadioButtonControl label={<FormattedMessage id="form.all" />} />
+        <RadioButtonControl label={<FormattedMessage id="form.selected" />} />
+        <RadioButtonControl
+          label={<FormattedMessage id="form.notSelected" />}
+        />
+      </SearchContent>
       <SchemaHeader>
-        <Cell flex={2}>
-          <Search
-            onCheckAll={onCheckAll}
-            onSearch={setSearchString}
-            hasSelectedItem={hasSelectedItem}
-          />
-        </Cell>
+        <NamespaceTitleCell flex={1.5}>
+          <SelectAll>
+            <CheckBox onChange={onCheckAll} checked={hasSelectedItem} />
+          </SelectAll>
+          <FormattedMessage id="form.sourceNamespace" />
+        </NamespaceTitleCell>
         <LightCell>
-          <FormattedMessage id="form.namespace" />
+          <FormattedMessage id="form.sourceStreamName" />
         </LightCell>
         <LightCell>
-          <FormattedMessage id="form.dataType" />
+          <FormattedMessage id="form.destinationNamespace" />
         </LightCell>
         <LightCell>
-          <FormattedMessage id="form.cleanedName" />
+          <FormattedMessage id="form.destinationStreamName" />
+        </LightCell>
+        <LightCell flex={1.5}>
+          <FormattedMessage id="form.syncMode" />
         </LightCell>
         <LightCell>
           <FormattedMessage id="form.primaryKey" />
         </LightCell>
         <LightCell>
           <FormattedMessage id="form.cursorField" />
-        </LightCell>
-        <LightCell flex={1.5}>
-          <FormattedMessage id="form.syncSettings" />
         </LightCell>
       </SchemaHeader>
       <TreeViewContainer>

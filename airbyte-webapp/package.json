@@ -7,6 +7,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "format": "prettier --write 'src/**/*.{ts,tsx}'",
+    "storybook": "start-storybook -p 9009 -s public --quiet",
     "lint": "eslint --ext js,ts,tsx src"
   },
   "dependencies": {
@@ -19,6 +20,7 @@
     "@papercups-io/chat-widget": "^1.1.5",
     "@papercups-io/storytime": "^1.0.6",
     "@rest-hooks/legacy": "^2.0.5",
+    "@storybook/react": "^6.3.2",
     "dayjs": "^1.8.35",
     "flat": "^5.0.2",
     "formik": "2.1.5",
@@ -78,6 +80,7 @@
     "lint-staged": "^10.0.8",
     "prettier": "^2.2.1",
     "react-scripts": "4.0.2",
+    "storybook-addon-styled-component-theme": "^2.0.0",
     "typescript": "4.1.5"
   },
   "husky": {
