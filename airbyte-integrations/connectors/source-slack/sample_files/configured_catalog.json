@@ -27,7 +27,7 @@
               "type": ["null", "string"]
             },
             "float_ts": {
-              "type": ["null", "string"]
+              "type": ["null", "number"]
             },
             "team": {
               "type": ["null", "string"]
