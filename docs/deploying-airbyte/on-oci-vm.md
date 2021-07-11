@@ -74,7 +74,7 @@ ssh opc@bastion-host-public-ip -i <private-key-file.key> -L 8000:oci-private-ins
 
 ## Access Airbyte
 
-Open URL in Browser :  https://localhost:8000/
+Open URL in Browser :  http://localhost:8000/
 
 ![](../.gitbook/assets/OCIScreen4.png)
 
