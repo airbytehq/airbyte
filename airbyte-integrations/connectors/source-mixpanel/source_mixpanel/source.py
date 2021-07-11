@@ -24,10 +24,11 @@
 
 
 import base64
+import json
 import time
 from abc import ABC
-from datetime import date, timedelta
-from pprint import pprint
+from datetime import date, datetime, timedelta
+# from pprint import pprint
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import parse_qs, urlparse
 
@@ -45,7 +46,7 @@ class MixpanelStream(HttpStream, ABC):
     date_window_size = 30  # days
 
     # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
-    rate_limit = 400  # 400 queries per hour == 1 req in 9 secs
+    rate_limit = 400  # 400 queries per hour (1 req in 9 secs)
 
     def __init__(
         self,
@@ -85,8 +86,8 @@ class MixpanelStream(HttpStream, ABC):
             # add 1 additional day because date range is inclusive
             start_date = end_date + timedelta(days=1)
 
-        print(f"==== date_slices len: {len(date_slices)} \n")
-        pprint(date_slices)
+        # print(f"==== date_slices len: {len(date_slices)} \n")
+        # pprint(date_slices)
         return date_slices
 
     def request_headers(
@@ -94,23 +95,14 @@ class MixpanelStream(HttpStream, ABC):
     ) -> Mapping[str, Any]:
         return {"Accept": "application/json"}
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {}
-
-    def _send_request(self, request: requests.PreparedRequest) -> requests.Response:
-        # wait for 9 seconds before
-        time.sleep(3600 / self.rate_limit)
+    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
         try:
-            return super()._send_request(request)
+            return super()._send_request(request, request_kwargs)
         except requests.exceptions.HTTPError as e:
             error_message = e.response.text
             if error_message:
                 self.logger.error(f"Stream {self.name}: {e.response.status_code} {e.response.reason} - {error_message}")
-                exit(1)
-            else:
-                raise e
+            raise e
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
@@ -121,10 +113,13 @@ class MixpanelStream(HttpStream, ABC):
         elif isinstance(json_response, dict):
             data = [json_response]
 
-        print(f"Total data: {len(data)}")
+        # print(f"Total data: {len(data)}")
 
         for record in data:
             yield record
+
+        # wait for 9 seconds according to API limit
+        time.sleep(3600 / self.rate_limit)
 
 
 class IncrementalMixpanelStream(MixpanelStream, ABC):
@@ -132,8 +127,8 @@ class IncrementalMixpanelStream(MixpanelStream, ABC):
         # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
         # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
         current_stream_state = current_stream_state or {}
-        current_stream_state_date = current_stream_state.get("date", str(self.start_date))
-        latest_record_date = latest_record.get(self.cursor_field, str(self.start_date))
+        current_stream_state_date: str = current_stream_state.get("date", str(self.start_date))
+        latest_record_date: str = latest_record.get(self.cursor_field, str(self.start_date))
         return {"date": max(current_stream_state_date, latest_record_date)}
 
 
@@ -220,7 +215,7 @@ class Funnels(IncrementalMixpanelStream):
     def funnel_slices(self, sync_mode) -> List[dict]:
         funnel_slices = FunnelsList(authenticator=self.authenticator).read_records(sync_mode=sync_mode)
         funnel_slices = list(funnel_slices)  # [{'funnel_id': <funnel_id1>, 'name': <name1>}, {...}]
-        print(f"==== funnel_slices: {funnel_slices} \n")
+        # print(f"==== funnel_slices: {funnel_slices} \n")
 
         # save all funnels in dict(<funnel_id1>:<name1>, ...)
         self.funnels = dict((funnel["funnel_id"], funnel["name"]) for funnel in funnel_slices)
@@ -230,7 +225,7 @@ class Funnels(IncrementalMixpanelStream):
     def stream_slices(
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        print(f"==== stream_state: {stream_state}")
+        # print(f"==== stream_state: {stream_state}")
         # One stream slice is a combination of all funnel_slices and stream_slices
         stream_slices = []
         funnel_slices = self.funnel_slices(sync_mode)
@@ -239,8 +234,8 @@ class Funnels(IncrementalMixpanelStream):
             for date_slice in date_slices:
                 stream_slices.append({**funnel_slice, **date_slice})
 
-        print(f"==== stream_slices len: {len(stream_slices)} \n")
-        pprint(stream_slices)
+        # print(f"==== stream_slices len: {len(stream_slices)} \n")
+        # pprint(stream_slices)
         return stream_slices
 
 
@@ -377,7 +372,7 @@ class CohortMembers(Engage):
         for cohort in cohorts:
             stream_slices.append({"id": cohort["id"]})
 
-        print(f"==== stream_slices: {stream_slices} \n")
+        # print(f"==== stream_slices: {stream_slices} \n")
 
         return stream_slices
 
@@ -521,11 +516,11 @@ class Export(MixpanelStream):
     Raw Export API Rate Limit (https://data.mixpanel.com/api/2.0/export/) : A maximum of 100 concurrent queries, 3 queries per second and 60 queries per hour.
     """
 
-    url_base = "https://mixpanel.com/api/2.0/"
+    url_base = "https://data.mixpanel.com/api/2.0/"
 
-    data_field = None
-    primary_key = "time"
-    # cursor_field = 'time'
+    primary_key = "distinct_id"
+    cursor_field = "time"
+    rate_limit = 60  # queries per hour (1 query per minute)
 
     def path(self, **kwargs) -> str:
         return "export"
@@ -541,7 +536,58 @@ class Export(MixpanelStream):
     def stream_slices(
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        return self.date_slices(sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+        stream_slices = self.date_slices(sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+
+        # reset rate_limit if we expect less requests (1 req per stream) than it is allowed by API rate_limit
+        if len(stream_slices) < self.rate_limit:
+            self.rate_limit = 3600  # queries per hour (1 query per sec)
+
+        return stream_slices
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """Export API return response.text in JSONL format but each line is a valid JSON object
+        Raw item example:
+            {
+                "event": "Viewed E-commerce Page",
+                "properties": {
+                    "time": 1623860880,
+                    "distinct_id": "1d694fd9-31a5-4b99-9eef-ae63112063ed",
+                    "$browser": "Chrome",
+                    "$browser_version": "91.0.4472.101",
+                    "$current_url": "https://unblockdata.com/solutions/e-commerce/",
+                    "$insert_id": "c5eed127-c747-59c8-a5ed-d766f48e39a4",
+                    "$mp_api_endpoint": "api.mixpanel.com",
+                    "mp_lib": "Segment: analytics-wordpress",
+                    "mp_processing_time_ms": 1623886083321,
+                    "noninteraction": true
+                }
+            }
+        """
+
+        for item in response.text.splitlines():
+            record = json.loads(item)
+            # transform record into flat dict structure
+            item = record["properties"]
+            item["event"] = record["event"]
+            item["time"] = datetime.fromtimestamp(item["time"]).isoformat()  # convert timestamp to datetime string
+            yield item
+
+        # wait for 60 seconds according to API limit
+        time.sleep(3600 / self.rate_limit)
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
+        # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
+        # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
+        current_stream_state = current_stream_state or {}
+        current_stream_state_date: str = current_stream_state.get("date", str(self.start_date))  # i.e '2021-06-24'
+
+        latest_record_date: str = latest_record.get(self.cursor_field, str(self.start_date))  # i.e '2021-06-16T19:28:00'
+        # Remove time part from state because API accept 'from_date' param in date format only ('YYYY-MM-DD')
+        # It also means that sync returns duplicated entries for the date from the state (date range is inclusive)
+        latest_record_date = str(datetime.fromisoformat(latest_record_date).date())  # i.e '2021-06-24'
+
+        # compare date sting.
+        return {"date": max(current_stream_state_date, latest_record_date)}
 
 
 class TokenAuthenticatorBase64(TokenAuthenticator):
@@ -611,4 +657,5 @@ class SourceMixpanel(AbstractSource):
             CohortMembers(authenticator=auth, **config),
             Annotations(authenticator=auth, **config),
             Revenue(authenticator=auth, **config),
+            Export(authenticator=auth, **config),
         ]
