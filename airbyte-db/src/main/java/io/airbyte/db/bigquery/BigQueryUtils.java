@@ -50,7 +50,8 @@ public class BigQueryUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUtils.class);
 
-  public static final String BIG_QUERY_DATE_FORMAT = "YYYY-MM-DD";
+  public static final String BIG_QUERY_DATE_FORMAT = "yyyy-MM-dd";
+  public static final String BIG_QUERY_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
 
   public static JsonNode rowToJson(FieldValueList rowValues, FieldList fieldList) {
     ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
@@ -74,18 +75,20 @@ public class BigQueryUtils {
           case BIGNUMERIC -> node.put(fieldName, nullIfInvalid(fieldValue::getNumericValue));
           case STRING -> node.put(fieldName, fieldValue.getStringValue());
           case BYTES -> node.put(fieldName, fieldValue.getBytesValue());
-          case TIMESTAMP, DATE, TIME, DATETIME -> node
-              .put(fieldName, toISO8601String(fieldValue.getTimestampValue()));
+          case DATE -> node.put(fieldName, toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATE_FORMAT)));
+          case DATETIME -> node.put(fieldName, toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATETIME_FORMAT)));
+          case TIMESTAMP -> node.put(fieldName, toISO8601String(fieldValue.getTimestampValue()/1000));
+          case TIME -> node.put(fieldName, fieldValue.getStringValue());
           default -> node.put(fieldName, fieldValue.getStringValue());
         }
     }
   }
 
-  public static Date getDateValue(FieldValue fieldValue) {
+  public static Date getDateValue(FieldValue fieldValue, String dateFormat) {
     Date parsedValue = null;
     String value = fieldValue.getStringValue();
     try {
-      parsedValue = new SimpleDateFormat(BIG_QUERY_DATE_FORMAT).parse(value);
+      parsedValue = new SimpleDateFormat(dateFormat).parse(value);
     } catch (ParseException e) {
       LOGGER.error("Fail to parse date value : " + value + ". Null is returned.");
     }

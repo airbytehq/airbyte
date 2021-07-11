@@ -27,6 +27,7 @@ package io.airbyte.db.bigquery;
 import static java.util.Objects.isNull;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
@@ -54,6 +55,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.threeten.bp.Duration;
 
 public class BigQueryDatabase extends SqlDatabase {
 
@@ -72,6 +74,12 @@ public class BigQueryDatabase extends SqlDatabase {
       bigQuery = bigQueryBuilder
           .setProjectId(projectId)
           .setCredentials(!isNull(credentials) ? credentials : ServiceAccountCredentials.getApplicationDefault())
+          .setRetrySettings(RetrySettings
+              .newBuilder()
+              .setMaxAttempts(10)
+              .setRetryDelayMultiplier(1.5)
+              .setTotalTimeout(Duration.ofMinutes(60))
+              .build())
           .build()
           .getService();
     } catch (IOException e) {
