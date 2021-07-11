@@ -4,20 +4,42 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Bing Ads Spec",
     "type": "object",
-    "required": ["TODO"],
+    "required": ["refresh_token", "developer_token", "client_secret", "client_id", "customer_id", "user_id", "account_ids"],
     "additionalProperties": false,
     "properties": {
-      "access_token": {
-        "type": "string",
-        "description": ""
-      },
       "refresh_token": {
         "type": "string",
-        "description": ""
+        "description": "",
+        "airbyte_secret": true
       },
       "developer_token": {
         "type": "string",
+        "description": "",
+        "airbyte_secret": true
+      },
+      "client_secret": {
+        "type": "string",
+        "description": "",
+        "airbyte_secret": true
+      },
+      "client_id": {
+        "type": "string",
         "description": ""
+      },
+      "customer_id": {
+        "type": "string",
+        "description": ""
+      },
+      "user_id": {
+        "type": "string",
+        "description": ""
+      },
+      "account_ids": {
+        "type": "array",
+        "description": "List of accounts from which data will be fetched",
+        "items": {
+          "type": "string"
+        }
       }
     }
   }

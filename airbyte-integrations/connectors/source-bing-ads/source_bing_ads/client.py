@@ -22,9 +22,9 @@
 # SOFTWARE.
 #
 
-from typing import Any, Mapping
+from typing import Any, Iterator, Mapping, Optional
 
-from bingads.authorization import AuthorizationData, OAuthWebAuthCodeGrant
+from bingads.authorization import AuthorizationData, OAuthWebAuthCodeGrant, OAuthTokens
 from bingads.service_client import ServiceClient
 from suds import sudsobject
 
@@ -33,28 +33,48 @@ class Client:
     api_version: int = 13
 
     def __init__(
-        self, developer_token: str, account_id: str, customer_id: str, client_secret: str, client_id: str, refresh_token: str, user_id: str
+        self, developer_token: str, account_ids: Iterator[str], customer_id: str, client_secret: str, client_id: str, refresh_token: str, user_id: str
     ) -> None:
+
+        if not account_ids:
+            raise Exception('At least one id in account_ids is required.')
+
+        self.authorization_data: Mapping[str, AuthorizationData] = {}
         self.authentication = OAuthWebAuthCodeGrant(
             client_id,
             client_secret,
             "",
         )
 
-        self.authentication.request_oauth_tokens_by_refresh_token(refresh_token)
+        self.refresh_token = refresh_token
+        self.account_ids = account_ids
+        self.oauth: OAuthTokens = self.get_access_token()
 
-        self.authorization_data = AuthorizationData(
-            account_id=account_id,
-            customer_id=customer_id,
-            developer_token=developer_token,
-            authentication=self.authentication,
-        )
+        for account_id in account_ids:
+            self.authorization_data[account_id] = AuthorizationData(
+                account_id=account_id,
+                customer_id=customer_id,
+                developer_token=developer_token,
+                authentication=self.authentication,
+            )
 
-    def get_service(self, serivce_name: str = "CustomerManagementService") -> ServiceClient:
+    def get_access_token(self) -> OAuthTokens:
+        return self.authentication.request_oauth_tokens_by_refresh_token(self.refresh_token)
+
+    def request(self, service: str, account_id: str, method: str) -> Mapping[str, Any]:
+        if self.oauth.access_token_expired:
+            self.oauth = self.get_access_token()
+
+        # TODO: make API request
+
+    def get_service(self, account_id: Optional[str] = None, service_name: str = "CustomerManagementService") -> ServiceClient:
+        # use first account_id by default for requests that don't require exact account id
+        account_id = account_id or self.account_ids[0]
+
         return ServiceClient(
-            service=serivce_name,
+            service=service_name,
             version=self.api_version,
-            authorization_data=self.authorization_data,
+            authorization_data=self.authorization_data[account_id],
             environment="production",
         )
 

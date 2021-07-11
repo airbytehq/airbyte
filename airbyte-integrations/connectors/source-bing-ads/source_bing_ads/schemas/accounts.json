@@ -2,15 +2,53 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "id": {
+    "Id": {
       "type": ["null", "string"]
     },
-    "name": {
+    "AccountMode": {
       "type": ["null", "string"]
     },
-    "signup_date": {
-      "type": ["null", "string"],
-      "format": "date-time"
+    "BackUpPaymentInstrumentId": {
+      "type": ["null", "number"]
+    },
+    "BillingThresholdAmount": {
+      "type": ["null", "number"]
+    },
+    "BillToCustomerId": {
+      "type": ["null", "number"]
+    },
+    "LastModifiedByUserId": {
+      "type": ["null", "number"]
+    },
+    "LastModifiedTime": {
+      "type": ["null", "string"]
+    },
+    "Name": {
+      "type": ["null", "string"]
+    },
+    "Number": {
+      "type": ["null", "string"]
+    },
+    "ParentCustomerId": {
+      "type": ["null", "number"]
+    },
+    "PauseReason": {
+      "type": ["null", "string"]
+    },
+    "PaymentMethodId": {
+      "type": ["null", "number"]
+    },
+    "PrimaryUserId": {
+      "type": ["null", "number"]
+    },
+    "SalesHouseCustomerId": {
+      "type": ["null", "number"]
+    },
+    "SoldToPaymentInstrumentId": {
+      "type": ["null", "number"]
+    },
+    "TimeStamp": {
+      "type": ["null", "string"]
     }
   }
 }

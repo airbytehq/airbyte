@@ -92,42 +92,12 @@ class BingAdsStream(Stream, ABC):
         yield from []
 
 
-class Campaigns(BingAdsStream):
-    data_field: str = "Campaign"
-    service_name: str = "CampaignManagement"
-    additional_fields = " ".join(
-        [
-            "AdScheduleUseSearcherTimeZone",
-            "BidStrategyId",
-            "CpvCpmBiddingScheme",
-            "DynamicDescriptionSetting",
-            "DynamicFeedSetting",
-            "MaxConversionValueBiddingScheme",
-            "MultimediaAdsBidAdjustment",
-            "TargetImpressionShareBiddingScheme",
-            "TargetSetting",
-            "VerifiedTrackingSetting",
-        ]
-    )
-
-    def send_request(self, **kwargs) -> Mapping[str, Any]:
-        return self.client.get_service(self.service_name).GetCampaignsByAccountId(**kwargs)
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        return {"AccountId": self.config["account_id"], "ReturnAdditionalFields": self.additional_fields}
-
-
 class Accounts(BingAdsStream):
     data_field: str = "AdvertiserAccount"
     service_name: str = "CustomerManagementService"
 
     def send_request(self, **kwargs) -> Mapping[str, Any]:
-        return self.client.get_service(self.service_name).SearchAccounts(**kwargs)
+        return self.client.get_service(service_name=self.service_name).SearchAccounts(**kwargs)
 
     def next_page_token(self, response: sudsobject.Object, current_page_token: Optional[int]) -> Optional[Mapping[str, Any]]:
         current_page_token = current_page_token or 0
@@ -158,11 +128,47 @@ class Accounts(BingAdsStream):
         return {"PageInfo": paging, "Predicates": predicates, "ReturnAdditionalFields": "TaxCertificate AccountMode"}
 
 
+class Campaigns(BingAdsStream):
+    data_field: str = "Campaign"
+    service_name: str = "CampaignManagement"
+    additional_fields = " ".join(
+        [
+            "AdScheduleUseSearcherTimeZone",
+            "BidStrategyId",
+            "CpvCpmBiddingScheme",
+            "DynamicDescriptionSetting",
+            "DynamicFeedSetting",
+            "MaxConversionValueBiddingScheme",
+            "MultimediaAdsBidAdjustment",
+            "TargetImpressionShareBiddingScheme",
+            "TargetSetting",
+            "VerifiedTrackingSetting",
+        ]
+    )
+
+    def send_request(self, **kwargs) -> Mapping[str, Any]:
+        return self.client.get_service(kwargs['AccountId'], self.service_name).GetCampaignsByAccountId(**kwargs)
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        return {"AccountId": stream_slice['account_id'], "ReturnAdditionalFields": self.additional_fields}
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        for account_id in self.config['account_ids']:
+            yield {"account_id": account_id}
+
+
 class SourceBingAds(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             client = Client(**config)
-            client.get_service().GetAccount(AccountId=config["account_id"])
+            client.get_service().GetAccount(AccountId=config["account_ids"][0])
         except Exception as error:
             return False, error
 
