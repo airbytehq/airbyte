@@ -28,12 +28,8 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.s3.parquet.JsonFieldNameUpdater;
-import io.airbyte.integrations.destination.s3.parquet.JsonToAvroSchemaConverter;
+import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetWriter;
 import java.io.IOException;
 import java.net.URI;
@@ -68,9 +64,7 @@ public class S3ParquetDestinationAcceptanceTest extends S3DestinationAcceptanceT
                                            String namespace,
                                            JsonNode streamSchema)
       throws IOException, URISyntaxException {
-    JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
-    schemaConverter.getAvroSchema(streamSchema, streamName, namespace, true);
-    JsonFieldNameUpdater nameUpdater = new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
+    JsonFieldNameUpdater nameUpdater = AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema);
 
     List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);
     List<JsonNode> jsonRecords = new LinkedList<>();
@@ -80,44 +74,22 @@ public class S3ParquetDestinationAcceptanceTest extends S3DestinationAcceptanceT
       URI uri = new URI(String.format("s3a://%s/%s", object.getBucketName(), object.getKey()));
       var path = new org.apache.hadoop.fs.Path(uri);
       Configuration hadoopConfig = S3ParquetWriter.getHadoopConfig(config);
-      ParquetReader<GenericData.Record> parquetReader = ParquetReader.<GenericData.Record>builder(new AvroReadSupport<>(), path)
-          .withConf(hadoopConfig)
-          .build();
 
-      ObjectReader jsonReader = MAPPER.reader();
-      GenericData.Record record;
-      while ((record = parquetReader.read()) != null) {
-        byte[] jsonBytes = converter.convertToJson(record);
-        JsonNode jsonRecord = jsonReader.readTree(jsonBytes);
-        jsonRecord = nameUpdater.getJsonWithOriginalFieldNames(jsonRecord);
-        jsonRecords.add(pruneAirbyteJson(jsonRecord));
+      try (ParquetReader<GenericData.Record> parquetReader = ParquetReader.<GenericData.Record>builder(new AvroReadSupport<>(), path)
+          .withConf(hadoopConfig)
+          .build()) {
+        ObjectReader jsonReader = MAPPER.reader();
+        GenericData.Record record;
+        while ((record = parquetReader.read()) != null) {
+          byte[] jsonBytes = converter.convertToJson(record);
+          JsonNode jsonRecord = jsonReader.readTree(jsonBytes);
+          jsonRecord = nameUpdater.getJsonWithOriginalFieldNames(jsonRecord);
+          jsonRecords.add(AvroRecordHelper.pruneAirbyteJson(jsonRecord));
+        }
       }
     }
 
     return jsonRecords;
-  }
-
-  /**
-   * Convert an Airbyte JsonNode from Parquet to a plain one.
-   * <li>Remove the airbyte id and emission timestamp fields.</li>
-   * <li>Remove null fields that must exist in Parquet but does not in original Json.</li> This
-   * function mutates the input Json.
-   */
-  private static JsonNode pruneAirbyteJson(JsonNode input) {
-    ObjectNode output = (ObjectNode) input;
-
-    // Remove Airbyte columns.
-    output.remove(JavaBaseConstants.COLUMN_NAME_AB_ID);
-    output.remove(JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
-
-    // Fields with null values does not exist in the original Json but only in Parquet.
-    for (String field : MoreIterators.toList(output.fieldNames())) {
-      if (output.get(field) == null || output.get(field).isNull()) {
-        output.remove(field);
-      }
-    }
-
-    return output;
   }
 
 }

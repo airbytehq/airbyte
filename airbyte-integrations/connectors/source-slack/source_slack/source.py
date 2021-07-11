@@ -34,12 +34,14 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from pendulum import DateTime
+from pendulum import DateTime, Period
 from slack_sdk import WebClient
 
 
 class SlackStream(HttpStream, ABC):
     url_base = "https://slack.com/api/"
+    primary_key = "id"
+    page_size = 100
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         # Slack uses a cursor-based pagination strategy.
@@ -47,7 +49,7 @@ class SlackStream(HttpStream, ABC):
         json_response = response.json()
         next_cursor = json_response.get("response_metadata", {}).get("next_cursor")
         if next_cursor:
-            return {"cursor": json_response.get("response_metadata", {}).get("next_cursor")}
+            return {"cursor": next_cursor}
 
     def request_params(
         self,
@@ -55,7 +57,7 @@ class SlackStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = {"limit": 100}
+        params = {"limit": self.page_size}
         if next_page_token:
             params.update(**next_page_token)
         return params
@@ -66,10 +68,9 @@ class SlackStream(HttpStream, ABC):
         stream_state: Mapping[str, Any] = None,
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
+    ) -> Iterable[MutableMapping]:
         json_response = response.json()
-        for record in json_response.get(self.data_field, []):
-            yield record
+        yield from json_response.get(self.data_field, [])
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         # This method is called if we run into the rate limit. Slack puts the retry time in the `Retry-After` response header so we
@@ -91,9 +92,9 @@ class Channels(SlackStream):
         return "conversations.list"
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        p = super().request_params(**kwargs)
-        p["types"] = "public_channel"
-        return p
+        params = super().request_params(**kwargs)
+        params["types"] = "public_channel"
+        return params
 
 
 class ChannelMembers(SlackStream):
@@ -126,28 +127,26 @@ class Users(SlackStream):
 
 
 # Incremental Streams
-def chunk_date_range(start_date: DateTime, interval=1) -> Iterable[Mapping[str, any]]:
+def chunk_date_range(start_date: DateTime, interval=pendulum.duration(days=1)) -> Iterable[Period]:
     """
-    Returns a list of the beginning and ending timetsamps of each day between the start date and now.
-    The return value is a list of dicts {'oldest': float, 'latest': float} which can be used directly with the Slack API
+    Yields a list of the beginning and ending timestamps of each day between the start date and now.
+    The return value is a pendulum.period
     """
-    intervals = []
     now = pendulum.now()
     # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
     while start_date <= now:
-        end = start_date.add(days=interval)
-        intervals.append({"oldest": start_date.timestamp(), "latest": end.timestamp()})
-        start_date = start_date.add(days=1)
-
-    return intervals
+        end_date = start_date + interval
+        yield pendulum.period(start_date, end_date)
+        start_date = end_date
 
 
 class IncrementalMessageStream(SlackStream, ABC):
     data_field = "messages"
-    cursor_field = "ts"
+    cursor_field = "float_ts"
+    primary_key = ["channel_id", "ts"]
 
     def __init__(self, default_start_date: DateTime, **kwargs):
-        self._default_start_date = default_start_date
+        self._start_ts = default_start_date.timestamp()
         super().__init__(**kwargs)
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
@@ -155,9 +154,18 @@ class IncrementalMessageStream(SlackStream, ABC):
         params.update(**stream_slice)
         return params
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        for record in super().parse_response(response, **kwargs):
+            record[self.primary_key[0]] = stream_slice.get("channel", "")
+            record[self.cursor_field] = float(record[self.primary_key[1]])
+            yield record
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
-        current_stream_state["ts"] = max(float(latest_record["ts"]), current_stream_state.get("ts", 0))
+        current_stream_state[self.cursor_field] = max(
+            latest_record[self.cursor_field], current_stream_state.get(self.cursor_field, self._start_ts)
+        )
+
         return current_stream_state
 
 
@@ -167,8 +175,9 @@ class ChannelMessages(IncrementalMessageStream):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
-        start_date = pendulum.from_timestamp(stream_state.get("start_ts", self._default_start_date.timestamp()))
-        return chunk_date_range(start_date)
+        start_date = pendulum.from_timestamp(stream_state.get(self.cursor_field, self._start_ts))
+        for period in chunk_date_range(start_date):
+            yield {"oldest": period.start.timestamp(), "latest": period.end.timestamp()}
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         # Channel is provided when reading threads
@@ -210,21 +219,21 @@ class Threads(IncrementalMessageStream):
 
         stream_state = stream_state or {}
         channels_stream = Channels(authenticator=self.authenticator)
-        if "start_ts" in stream_state:
+        if self.cursor_field in stream_state:
             # Since new messages can be posted to threads continuously after the parent message has been posted, we get messages from the latest date
             # found in the state minus 7 days to pick up any new messages in threads.
             # If there is state always use lookback
-            messages_start_date = pendulum.from_timestamp(stream_state.get("start_ts")).subtract(**self.messages_lookback_window)
+            messages_start_date = pendulum.from_timestamp(stream_state[self.cursor_field]) - self.messages_lookback_window
         else:
             # If there is no state i.e: this is the first sync then there is no use for lookback, just get messages from the default start date
-            messages_start_date = self._default_start_date
+            messages_start_date = pendulum.from_timestamp(self._start_ts)
         messages_stream = ChannelMessages(authenticator=self.authenticator, default_start_date=messages_start_date)
-
-        for message_chunk in messages_stream.stream_slices(stream_state={"start_ts": messages_start_date.timestamp()}):
+        for message_chunk in messages_stream.stream_slices(stream_state={self.cursor_field: messages_start_date.timestamp()}):
+            self.logger.info(f"Syncing replies {message_chunk}")
             for channel in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
                 message_chunk["channel"] = channel["id"]
                 for message in messages_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=message_chunk):
-                    yield {"channel": channel["id"], "ts": message["ts"]}
+                    yield {"channel": channel["id"], self.cursor_field: message[self.primary_key]}
 
 
 class JoinChannelsStream(HttpStream):
@@ -235,6 +244,7 @@ class JoinChannelsStream(HttpStream):
 
     url_base = "https://slack.com/api/"
     http_method = "POST"
+    primary_key = "id"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         return [{"message": f"Successfully joined channel: {stream_slice['channel_name']}"}]
@@ -265,8 +275,8 @@ class SourceSlack(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(config["api_token"])
-        default_start_date = pendulum.now().subtract(days=14)  # TODO make this configurable
-        threads_lookback_window = {"days": 7}  # TODO make this configurable
+        default_start_date = pendulum.parse(config["start_date"])
+        threads_lookback_window = pendulum.Duration(days=config["lookback_window"])
 
         streams = [
             Channels(authenticator=authenticator),
@@ -277,12 +287,12 @@ class SourceSlack(AbstractSource):
         ]
 
         # To sync data from channels, the bot backed by this token needs to join all those channels. This operation is idempotent.
-        # TODO make joining configurable. Also make joining archived and private channels configurable
-        logger = AirbyteLogger()
-        logger.info("joining Slack channels")
-        join_channels_stream = JoinChannelsStream(authenticator=authenticator)
-        for stream_slice in join_channels_stream.stream_slices():
-            for message in join_channels_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
-                logger.info(message["message"])
+        if config["join_channels"]:
+            logger = AirbyteLogger()
+            logger.info("joining Slack channels")
+            join_channels_stream = JoinChannelsStream(authenticator=authenticator)
+            for stream_slice in join_channels_stream.stream_slices():
+                for message in join_channels_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+                    logger.info(message["message"])
 
         return streams

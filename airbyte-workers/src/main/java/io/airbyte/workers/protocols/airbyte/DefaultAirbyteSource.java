@@ -33,6 +33,7 @@ import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.nio.file.Path;
@@ -97,6 +98,12 @@ public class DefaultAirbyteSource implements AirbyteSource {
   @Override
   public boolean isFinished() {
     Preconditions.checkState(sourceProcess != null);
+    // As this check is done on every message read, it is important for this operation to be efficient.
+    // Short circuit early to avoid checking the underlying process.
+    var isEmpty = !messageIterator.hasNext();
+    if (!isEmpty) {
+      return false;
+    }
 
     return !sourceProcess.isAlive() && !messageIterator.hasNext();
   }
@@ -123,9 +130,8 @@ public class DefaultAirbyteSource implements AirbyteSource {
         FORCED_SHUTDOWN_DURATION);
 
     if (sourceProcess.isAlive() || sourceProcess.exitValue() != 0) {
-      LOGGER.warn(
-          "Source process might not have shut down correctly. source process alive: {}, source process exit value: {}. This warning is normal if the job was cancelled.",
-          sourceProcess.isAlive(), sourceProcess.exitValue());
+      String message = sourceProcess.isAlive() ? "Source has not terminated " : "Source process exit with code " + sourceProcess.exitValue();
+      throw new WorkerException(message + ". This warning is normal if the job was cancelled.");
     }
   }
 
