@@ -57,18 +57,14 @@ class IntercomStream(HttpStream, ABC):
     ) -> Mapping[str, Any]:
         return {"Accept": "application/json"}
 
-    def _send_request(self, request: requests.PreparedRequest) -> requests.Response:
-        # wait for 3,6 seconds before
-        time.sleep(3600 / self.rate_limit)
+    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
         try:
-            return super()._send_request(request)
+            return super()._send_request(request, request_kwargs)
         except requests.exceptions.HTTPError as e:
             error_message = e.response.text
             if error_message:
                 self.logger.error(f"Stream {self.name}: {e.response.status_code} {e.response.reason} - {error_message}")
-                exit(1)
-            else:
-                raise e
+            raise e
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         data = response.json()
@@ -82,6 +78,9 @@ class IntercomStream(HttpStream, ABC):
 
         for record in data:
             yield record
+
+        # wait for 3,6 seconds according to API limit
+        time.sleep(3600 / self.rate_limit)
 
 
 class IncrementalIntercomStream(IntercomStream, ABC):
