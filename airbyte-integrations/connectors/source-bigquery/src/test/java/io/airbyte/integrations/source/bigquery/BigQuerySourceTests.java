@@ -22,34 +22,30 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db;
+package io.airbyte.integrations.source.bigquery;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import java.util.stream.Stream;
+import io.airbyte.db.Database;
+import org.junit.jupiter.api.Test;
 
-public abstract class SqlDatabase implements AutoCloseable {
+public class BigQuerySourceTests {
 
-  private JsonNode sourceConfig;
-  private JsonNode databaseConfig;
+  private JsonNode config;
+  private Database database;
 
-  public abstract void execute(String sql) throws Exception;
-
-  public abstract Stream<JsonNode> query(String sql, String... params) throws Exception;
-
-  public JsonNode getSourceConfig() {
-    return sourceConfig;
-  }
-
-  public void setSourceConfig(JsonNode sourceConfig) {
-    this.sourceConfig = sourceConfig;
-  }
-
-  public JsonNode getDatabaseConfig() {
-    return databaseConfig;
-  }
-
-  public void setDatabaseConfig(JsonNode databaseConfig) {
-    this.databaseConfig = databaseConfig;
+  @Test
+  public void testSettingTimezones() throws Exception {
+    // TODO init your container. Ex: "new
+    // org.testcontainers.containers.MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();"
+    // TODO start the container. Ex: "container.start();"
+    // TODO prepare DB config. Ex: "config = getConfig(container, dbName,
+    // "serverTimezone=Europe/London");"
+    // TODO create DB, grant all privileges, etc.
+    // TODO check connection status. Ex: "AirbyteConnectionStatus check = new
+    // ScaffoldJavaJdbcGenericSource().check(config);"
+    // TODO assert connection status. Ex: "assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED,
+    // check.getStatus());"
+    // TODO cleanup used resources and close used container. Ex: "container.close();"
   }
 
 }
