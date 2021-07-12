@@ -67,6 +67,8 @@ public interface Configs {
 
   String getKubeNamespace();
 
+  String getMaxWorkers();
+
   // Resources
   String getCpuRequest();
 
