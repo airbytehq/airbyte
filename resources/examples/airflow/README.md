@@ -19,6 +19,9 @@ As the script has automatically set up a Postgres container for you, just enter 
 
 ![](./assets/postgres_setup.png)
 
+Head over to http://localhost:8088 to get to the Superset UI. Enter `admin` as your username and `admin` as your password. Then head to the `Data` section in the top bar and navigate to `Databases`. Click `+DATABASE` and enter the following config:
+
+![](./assets/superset_database_setup.png)
 
 ## Cleaning Up
 Run `down.sh` to clean up the containers. Or run `docker-compose down -v` here and in the root directory, your call.
