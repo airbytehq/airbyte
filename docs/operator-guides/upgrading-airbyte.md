@@ -30,9 +30,9 @@ If you are running [Airbyte on Kubernetes](../deploying-airbyte/on-kubernetes.md
    docker-compose up
    ```
 
-## Upgrading on K8s (0.27.1-alpha and above)
+## Upgrading on K8s (0.27.0-alpha and above)
 
-If you are upgrading from (i.e. your current version of Airbyte is) Airbyte version **0.27.1-alpha or above** on Kubernetes :
+If you are upgrading from (i.e. your current version of Airbyte is) Airbyte version **0.27.0-alpha or above** on Kubernetes :
 
 1. In a terminal, on the host where Airbyte is running, turn off Airbyte.
 
@@ -55,7 +55,7 @@ If you are upgrading from (i.e. your current version of Airbyte is) Airbyte vers
    Run `kubectl port-forward svc/airbyte-webapp-svc 8000:80` to allow access to the UI/API.
 
 ## Upgrading on K8s (0.26.4-alpha and below)
-If you are upgrading from  (i.e. your current version of Airbyte is) Airbyte version **before 0.27.1-alpha** on Kubernetes we **do not** support automatic migration. Please follow the following steps to upgrade your Airbyte Kubernetes deployment.
+If you are upgrading from  (i.e. your current version of Airbyte is) Airbyte version **before 0.27.0-alpha** on Kubernetes we **do not** support automatic migration. Please follow the following steps to upgrade your Airbyte Kubernetes deployment.
 
 1. Switching over to your browser, navigate to the Admin page in the UI. Then go to the Configuration Tab. Click Export. This will download a compressed back-up archive \(gzipped tarball\) of all of your Airbyte configuration data and sync history locally.
 

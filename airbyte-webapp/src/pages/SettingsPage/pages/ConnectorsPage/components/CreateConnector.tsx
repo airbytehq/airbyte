@@ -7,7 +7,7 @@ import CreateConnectorModal from "./CreateConnectorModal";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import config from "config";
 import useRouter from "components/hooks/useRouterHook";
-import { Routes } from "../../routes";
+import { Routes } from "pages/routes";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 
 type IProps = {
