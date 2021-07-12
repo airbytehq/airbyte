@@ -23,5 +23,10 @@ Head over to http://localhost:8088 to get to the Superset UI. Enter `admin` as y
 
 ![](./assets/superset_database_setup.png)
 
+```
+docker exec airbyte-destination psql -U postgres -c "ALTER TABLE stargazers ADD COLUMN starred_ts timestamp;"
+docker exec airbyte-destination psql -U postgres -c "UPDATE stargazers SET starred_ts = starred_at::timestamptz;"
+```
+
 ## Cleaning Up
 Run `down.sh` to clean up the containers. Or run `docker-compose down -v` here and in the root directory, your call.
