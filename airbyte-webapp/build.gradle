@@ -14,6 +14,7 @@ npm_run_build {
     inputs.file 'package.json'
     inputs.file 'package-lock.json'
 
+    // todo (cgardens) - the plugin seems to ignore this value when the copy command is run. ideally the output would be place in build/app.
     outputs.dir project.buildDir
 }
 
@@ -29,3 +30,10 @@ task test(type: NpmTask) {
 assemble.dependsOn npm_run_build
 build.finalizedBy test
 
+task copyDocs(type: Copy) {
+    from "${System.getProperty("user.dir")}/docs/integrations/getting-started"
+    into "${buildDir}/docs/getting-started/"
+}
+
+copyDocs.dependsOn npm_run_build
+assemble.dependsOn copyDocs
