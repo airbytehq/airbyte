@@ -52,6 +52,8 @@ public class JobSubmitter implements Runnable {
   private final JobPersistence persistence;
   private final TemporalWorkerRunFactory temporalWorkerRunFactory;
   private final JobTracker jobTracker;
+
+  // See attemptJobSubmit() to understand the need for this Concurrent Set.
   private final Set<Long> runningJobs = Sets.newConcurrentHashSet();
 
   public JobSubmitter(final ExecutorService threadPool,
@@ -80,10 +82,21 @@ public class JobSubmitter implements Runnable {
   }
 
   /**
+   * Since job submission and job execution happen in two separate thread pools, and job execution is
+   * what removes a job from the execution queue, it is possible for a job to be submitted multiple
+   * times.
    *
+   * This synchronised block guarantees only a single thread can utilise the concurrent set to decide
+   * whether a job should be submitted. This job id is added here, and removed in the finish block of
+   * {@link #submitJob(Job)}.
+   *
+   * Since {@link JobPersistence#getNextJob()} returns the next queued job, this can cause
+   * Head-of-line blocking. However, this suggest the Worker Pool needs more workers and is inevitable
+   * when dealing with pending jobs.
+   *
+   * See https://github.com/airbytehq/airbyte/issues/4378 for more info.
    */
-  @VisibleForTesting
-  synchronized protected Consumer<Job> attemptJobSubmit() {
+  synchronized private Consumer<Job> attemptJobSubmit() {
     return job -> {
       if (!runningJobs.contains(job.getId())) {
         runningJobs.add(job.getId());
