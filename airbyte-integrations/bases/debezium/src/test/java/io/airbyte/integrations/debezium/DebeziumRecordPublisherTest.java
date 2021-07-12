@@ -22,11 +22,12 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.postgres;
+package io.airbyte.integrations.debezium;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.collect.ImmutableList;
+import io.airbyte.integrations.debezium.internals.DebeziumRecordPublisher;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.SyncMode;
