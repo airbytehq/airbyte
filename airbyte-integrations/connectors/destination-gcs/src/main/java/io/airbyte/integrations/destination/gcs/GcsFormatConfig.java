@@ -22,55 +22,36 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.jdbc.copy.gcs;
+package io.airbyte.integrations.destination.s3;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-public class GcsConfig {
+public interface GcsFormatConfig {
 
-  private final String bucketName;
-  private final String bucketPath;
-  private final String accessKeyId;
-  private final String secretAccessKey;
-  private final String region;
+  GcsFormat getFormat();
 
-  public GcsConfig(String bucketName, String bucketPath, String accessKeyId, String secretAccessKey, String region) {
-    this.bucketName = bucketName;
-    this.bucketPath = bucketPath;
-    this.accessKeyId = accessKeyId;
-    this.secretAccessKey = secretAccessKey;
-    this.region = region;
+  static String withDefault(JsonNode config, String property, String defaultValue) {
+    JsonNode value = config.get(property);
+    if (value == null || value.isNull()) {
+      return defaultValue;
+    }
+    return value.asText();
   }
 
-  public String getBucketName() {
-    return bucketName;
+  static int withDefault(JsonNode config, String property, int defaultValue) {
+    JsonNode value = config.get(property);
+    if (value == null || value.isNull()) {
+      return defaultValue;
+    }
+    return value.asInt();
   }
 
-  public String getbucketPath() {
-    return bucketPath;
+  static boolean withDefault(JsonNode config, String property, boolean defaultValue) {
+    JsonNode value = config.get(property);
+    if (value == null || value.isNull()) {
+      return defaultValue;
+    }
+    return value.asBoolean();
   }
-
-  public String getAccessKeyId() {
-    return accessKeyId;
-  }
-
-  public String getSecretAccessKey() {
-    return secretAccessKey;
-  }
-
-  public String getRegion() {
-    return region;
-  }
-
-   public static GcsConfig getGcsConfig(JsonNode config) {
-
-    return new GcsConfig(
-        config.get("gcs_bucket_name").asText(),
-        config.get("gcs_bucket_path").asText(),
-        config.get("access_key_id").asText(),
-        config.get("secret_access_key").asText(),
-        config.get("gcs_bucket_region").asText()
-      );
-  }
-
+  
 }
