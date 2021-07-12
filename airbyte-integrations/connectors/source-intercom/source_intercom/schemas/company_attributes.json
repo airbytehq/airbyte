@@ -56,7 +56,7 @@
       "type": ["null", "boolean"]
     },
     "updated_at": {
-      "type": ["null", "integer"],
+      "type": ["null", "string"],
       "format": "date-time"
     }
   }

@@ -77,6 +77,9 @@ class IntercomStream(HttpStream, ABC):
             data = [data]
 
         for record in data:
+            updated_at = record.get("updated_at", 0)
+            if updated_at:
+                record["updated_at"] = datetime.fromtimestamp(record["updated_at"]).isoformat()  # convert timestamp to datetime string
             yield record
 
         # wait for 3,6 seconds according to API limit
@@ -88,8 +91,8 @@ class IncrementalIntercomStream(IntercomStream, ABC):
         # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
         # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
         current_stream_state = current_stream_state or {}
-        current_stream_state_date = current_stream_state.get("updated_at", self.start_date.timestamp())
-        latest_record_date = latest_record.get(self.cursor_field, self.start_date.timestamp())
+        current_stream_state_date = current_stream_state.get("updated_at", str(self.start_date))
+        latest_record_date = latest_record.get(self.cursor_field, str(self.start_date))
         return {"updated_at": max(current_stream_state_date, latest_record_date)}
 
 
@@ -269,6 +272,10 @@ class Teams(IntercomStream):
 
 
 class SourceIntercom(AbstractSource):
+    """
+    Source Intercom fetch data from messaging platform
+    """
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
         See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232

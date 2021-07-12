@@ -767,7 +767,7 @@
     "updated_at": {
       "type": [
         "null",
-        "integer"
+        "string"
       ],
       "format": "date-time"
     },
