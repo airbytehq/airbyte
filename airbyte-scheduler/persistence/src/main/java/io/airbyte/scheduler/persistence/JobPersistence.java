@@ -188,4 +188,11 @@ public interface JobPersistence {
    */
   void importDatabase(String airbyteVersion, Map<DatabaseSchema, Stream<JsonNode>> data) throws IOException;
 
+  /**
+   * Purges job history while ensuring that the latest saved-state information is maintained.
+   *
+   * @throws IOException
+   */
+  void purgeJobHistory();
+
 }

@@ -10,10 +10,33 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on.
 
-## 7/06/2021
-2 new sources:
-* [**Airbyte-native Gitlab**](https://docs.airbyte.io/integrations/sources/gitlab)
+## 7/08/2021
+7 new sources:
+* [**PayPal Transaction**](https://docs.airbyte.io/integrations/sources/paypal-transaction)
+* [**Square**](https://docs.airbyte.io/integrations/sources/square)
+* [**SurveyMonkey**](https://docs.airbyte.io/integrations/sources/surveymonkey)
+* [**CockroachDB**](https://docs.airbyte.io/integrations/sources/cockroachdb)  
+* [**Airbyte-native GitLab**](https://docs.airbyte.io/integrations/sources/gitlab)
 * [**Airbyte-native GitHub**](https://docs.airbyte.io/integrations/sources/github)
+* [**Airbyte-native Twilio**](https://docs.airbyte.io/integrations/sources/twilio)
+
+New Features:
+* **S3** destination: Now supports `anyOf`, `oneOf` and `allOf` schema fields.
+* **Instagram** source: Migrated to the CDK and has improved error handling.
+* **Snowflake** source: Now has comprehensive data type tests.
+* **Shopify** source: Change the default stream cursor field to `update_at` where possible.
+* **Shopify** source: Add support for draft orders.  
+* **MySQL** destination: Now supports normalization.
+  
+Connector Development:
+* **Python CDK**: Now allows setting of network adapter args on outgoing HTTP requests.
+* Abstract classes for non-JDBC relational database sources.
+
+Bugfixes:
+* **GitHub** source: Fixed issue with `locked` breaking normalization of the pull_request stream.
+* **PostgreSQL** source: Fixed decimal handling with CDC.
+* **Okta** source: Fix endless loop when syncing data from logs stream.
+
 
 ## 7/01/2021
 
