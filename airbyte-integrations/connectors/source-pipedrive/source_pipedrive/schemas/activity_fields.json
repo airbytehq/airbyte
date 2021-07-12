@@ -1,0 +1,313 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "http://example.com/example.json",
+    "type": "object",
+    "title": "The root schema",
+    "description": "The root schema comprises the entire JSON document.",
+    "default": {},
+    "examples": [
+        {
+            "id": 1,
+            "key": "title",
+            "name": "Title",
+            "order_nr": 2,
+            "field_type": "varchar",
+            "add_time": "2019-02-04 13:58:03",
+            "update_time": "2019-02-04 13:58:03",
+            "last_updated_by_user_id": 1,
+            "active_flag": true,
+            "edit_flag": false,
+            "index_visible_flag": true,
+            "details_visible_flag": true,
+            "add_visible_flag": true,
+            "important_flag": false,
+            "bulk_edit_allowed": true,
+            "searchable_flag": false,
+            "filtering_allowed": true,
+            "sortable_flag": true,
+            "options": [
+                {
+                    "id": 190,
+                    "label": "Private person"
+                }
+            ],
+            "mandatory_flag": true
+        }
+    ],
+    "required": [
+        "id",
+        "key",
+        "name",
+        "order_nr",
+        "field_type",
+        "add_time",
+        "update_time",
+        "last_updated_by_user_id",
+        "active_flag",
+        "edit_flag",
+        "index_visible_flag",
+        "details_visible_flag",
+        "add_visible_flag",
+        "important_flag",
+        "bulk_edit_allowed",
+        "searchable_flag",
+        "filtering_allowed",
+        "sortable_flag",
+        "options",
+        "mandatory_flag"
+    ],
+    "properties": {
+        "id": {
+            "$id": "#/properties/id",
+            "type": "integer",
+            "title": "The id schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": 0,
+            "examples": [
+                1
+            ]
+        },
+        "key": {
+            "$id": "#/properties/key",
+            "type": "string",
+            "title": "The key schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "title"
+            ]
+        },
+        "name": {
+            "$id": "#/properties/name",
+            "type": "string",
+            "title": "The name schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "Title"
+            ]
+        },
+        "order_nr": {
+            "$id": "#/properties/order_nr",
+            "type": "integer",
+            "title": "The order_nr schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": 0,
+            "examples": [
+                2
+            ]
+        },
+        "field_type": {
+            "$id": "#/properties/field_type",
+            "type": "string",
+            "title": "The field_type schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "varchar"
+            ]
+        },
+        "add_time": {
+            "$id": "#/properties/add_time",
+            "type": "string",
+            "title": "The add_time schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "2019-02-04 13:58:03"
+            ]
+        },
+        "update_time": {
+            "$id": "#/properties/update_time",
+            "type": "string",
+            "title": "The update_time schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+                "2019-02-04 13:58:03"
+            ]
+        },
+        "last_updated_by_user_id": {
+            "$id": "#/properties/last_updated_by_user_id",
+            "type": "integer",
+            "title": "The last_updated_by_user_id schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": 0,
+            "examples": [
+                1
+            ]
+        },
+        "active_flag": {
+            "$id": "#/properties/active_flag",
+            "type": "boolean",
+            "title": "The active_flag schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": false,
+            "examples": [
+                true
+            ]
+        },
+        "edit_flag": {
+            "$id": "#/properties/edit_flag",
+            "type": "boolean",
+            "title": "The edit_flag schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": false,
+            "examples": [
+                false
+            ]
+        },
+        "index_visible_flag": {
+            "$id": "#/properties/index_visible_flag",
+            "type": "boolean",
+            "title": "The index_visible_flag schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": false,
+            "examples": [
+                true
+            ]
+        },
+        "details_visible_flag": {
+            "$id": "#/properties/details_visible_flag",
+            "type": "boolean",
+            "title": "The details_visible_flag schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": false,
+            "examples": [
+                true
+            ]
+        },
+        "add_visible_flag": {
+            "$id": "#/properties/add_visible_flag",
+            "type": "boolean",
+            "title": "The add_visible_flag schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": false,
+            "examples": [
+                true
+            ]
+        },
+        "important_flag": {
+            "$id": "#/properties/important_flag",
+            "type": "boolean",
+            "title": "The important_flag schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": false,
+            "examples": [
+                false
+            ]
+        },
+        "bulk_edit_allowed": {
+            "$id": "#/properties/bulk_edit_allowed",
+            "type": "boolean",
+            "title": "The bulk_edit_allowed schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": false,
+            "examples": [
+                true
+            ]
+        },
+        "searchable_flag": {
+            "$id": "#/properties/searchable_flag",
+            "type": "boolean",
+            "title": "The searchable_flag schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": false,
+            "examples": [
+                false
+            ]
+        },
+        "filtering_allowed": {
+            "$id": "#/properties/filtering_allowed",
+            "type": "boolean",
+            "title": "The filtering_allowed schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": false,
+            "examples": [
+                true
+            ]
+        },
+        "sortable_flag": {
+            "$id": "#/properties/sortable_flag",
+            "type": "boolean",
+            "title": "The sortable_flag schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": false,
+            "examples": [
+                true
+            ]
+        },
+        "options": {
+            "$id": "#/properties/options",
+            "type": "array",
+            "title": "The options schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": [],
+            "examples": [
+                [
+                    {
+                        "id": 190,
+                        "label": "Private person"
+                    }
+                ]
+            ],
+            "additionalItems": true,
+            "items": {
+                "$id": "#/properties/options/items",
+                "anyOf": [
+                    {
+                        "$id": "#/properties/options/items/anyOf/0",
+                        "type": "object",
+                        "title": "The first anyOf schema",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": {},
+                        "examples": [
+                            {
+                                "id": 190,
+                                "label": "Private person"
+                            }
+                        ],
+                        "required": [
+                            "id",
+                            "label"
+                        ],
+                        "properties": {
+                            "id": {
+                                "$id": "#/properties/options/items/anyOf/0/properties/id",
+                                "type": "integer",
+                                "title": "The id schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 0,
+                                "examples": [
+                                    190
+                                ]
+                            },
+                            "label": {
+                                "$id": "#/properties/options/items/anyOf/0/properties/label",
+                                "type": "string",
+                                "title": "The label schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": "",
+                                "examples": [
+                                    "Private person"
+                                ]
+                            }
+                        },
+                        "additionalProperties": true
+                    }
+                ]
+            }
+        },
+        "mandatory_flag": {
+            "$id": "#/properties/mandatory_flag",
+            "type": "boolean",
+            "title": "The mandatory_flag schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": false,
+            "examples": [
+                true
+            ]
+        }
+    },
+    "additionalProperties": true
+}

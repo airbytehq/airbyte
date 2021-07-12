@@ -1,5 +1,20 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "value"
+  "deals": {
+    "update_time": "2021-06-01 10:10:10"
+  },
+  "activities": {
+    "update_time": "2021-06-01 10:10:10"
+  },
+  "persons": {
+    "update_time": "2021-06-01 10:10:10"
+  },
+  "pipelines": {
+    "update_time": "2021-06-01 10:10:10"
+  },
+  "stages": {
+    "update_time": "2021-06-01 10:10:10"
+  },
+  "users": {
+    "update_time": "2021-06-01 10:10:10"
   }
 }

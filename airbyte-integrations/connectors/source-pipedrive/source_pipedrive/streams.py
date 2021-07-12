@@ -141,32 +141,68 @@ class IncrementalPipedriveStream(PaginatedPipedriveStream, ABC):
 
 
 class Deals(IncrementalPipedriveStream):
+    """
+    API docs: https://developers.pipedrive.com/docs/api/v1/Deals#getDeals,
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """
+
     path_param = "deal"
 
 
 class Leads(PaginatedPipedriveStream):
-    pass
+    """https://developers.pipedrive.com/docs/api/v1/Leads#getLeads"""
 
 
 class Activities(IncrementalPipedriveStream):
+    """
+    API docs: https://developers.pipedrive.com/docs/api/v1/Activities#getActivities,
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """
+
     path_param = "activity"
 
 
 class ActivityFields(PipedriveStream):
-    pass
+    """https://developers.pipedrive.com/docs/api/v1/ActivityFields#getActivityFields"""
 
 
 class Persons(IncrementalPipedriveStream):
+    """
+    API docs: https://developers.pipedrive.com/docs/api/v1/Persons#getPersons,
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """
+
     path_param = "activity"
 
 
 class Pipelines(IncrementalPipedriveStream):
+    """
+    API docs: https://developers.pipedrive.com/docs/api/v1/Pipelines#getPipelines,
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """
+
     path_param = "pipeline"
 
 
 class Stages(IncrementalPipedriveStream):
+    """
+    API docs: https://developers.pipedrive.com/docs/api/v1/Stages#getStages,
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """
+
     path_param = "stage"
 
 
 class Users(IncrementalPipedriveStream):
+    """
+    API docs: https://developers.pipedrive.com/docs/api/v1/Users#getUsers,
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """
+
     path_param = "user"
+    cursor_field = "modified"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        record_gen = super().parse_response(response=response, **kwargs)
+        for records in record_gen:
+            yield from records
