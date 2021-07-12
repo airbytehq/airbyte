@@ -49,13 +49,29 @@ def test_validate_ms_timestamp_with_invalid_input_length():
 
 def test_ms_timestamp_to_datetime():
     assert ConversationExport.ms_timestamp_to_datetime(1625312980123) == datetime(
-        year=2021, month=7, day=3, hour=13, minute=49, second=40, microsecond=123000
+        year=2021,
+        month=7,
+        day=3,
+        hour=11,
+        minute=49,
+        second=40,
+        microsecond=123000,
+        tzinfo=timezone.utc
     )
 
 
 def test_datetime_to_ms_timestamp():
     assert (
-        ConversationExport.datetime_to_ms_timestamp(datetime(year=2021, month=7, day=3, hour=13, minute=49, second=40, microsecond=123000))
+        ConversationExport.datetime_to_ms_timestamp(datetime(
+            year=2021,
+            month=7,
+            day=3,
+            hour=11,
+            minute=49,
+            second=40,
+            microsecond=123000,
+            tzinfo=timezone.utc)
+        )
         == 1625312980123
     )
 

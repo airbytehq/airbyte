@@ -24,7 +24,7 @@
 
 
 from abc import ABC
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
@@ -60,7 +60,9 @@ class ConversationExport(HttpStream, ABC):
         """
         Converts a millisecond-precision timestamp to a datetime object.
         """
-        return datetime.fromtimestamp(ConversationExport._validate_ms_timestamp(milliseconds) / 1000)
+        return datetime.fromtimestamp(
+            ConversationExport._validate_ms_timestamp(milliseconds) / 1000, tz=timezone.utc
+        )
 
     @staticmethod
     def datetime_to_ms_timestamp(dt: datetime) -> int:
