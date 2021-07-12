@@ -28,6 +28,7 @@ import json
 import time
 from abc import ABC
 from datetime import date, datetime, timedelta
+
 # from pprint import pprint
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import parse_qs, urlparse
@@ -71,7 +72,13 @@ class MixpanelStream(HttpStream, ABC):
         date_slices = []
 
         # use the latest date between self.start_date and stream_state
-        start_date = max(self.start_date, date.fromisoformat(stream_state["date"]) if stream_state else self.start_date)
+        start_date = self.start_date
+        if stream_state:
+            # Remove time part from state because API accept 'from_date' param in date format only ('YYYY-MM-DD')
+            # It also means that sync returns duplicated entries for the date from the state (date range is inclusive)
+            stream_state_date = datetime.fromisoformat(stream_state["date"]).date()
+            start_date = max(start_date, stream_state_date)
+
         # use the lowest date between start_date and self.end_date, otherwise API fails if start_date is in future
         start_date = min(start_date, self.end_date)
 
@@ -88,6 +95,10 @@ class MixpanelStream(HttpStream, ABC):
 
         # print(f"==== date_slices len: {len(date_slices)} \n")
         # pprint(date_slices)
+        # reset rate_limit if we expect less requests (1 req per stream) than it is allowed by API rate_limit
+        if len(date_slices) < self.rate_limit:
+            self.rate_limit = 3600  # queries per hour (1 query per sec)
+
         return date_slices
 
     def request_headers(
@@ -130,6 +141,41 @@ class IncrementalMixpanelStream(MixpanelStream, ABC):
         current_stream_state_date: str = current_stream_state.get("date", str(self.start_date))
         latest_record_date: str = latest_record.get(self.cursor_field, str(self.start_date))
         return {"date": max(current_stream_state_date, latest_record_date)}
+
+
+class Cohorts(MixpanelStream):
+    """Returns all of the cohorts in a given project.
+    API Docs: https://developer.mixpanel.com/reference/cohorts
+    Endpoint: https://mixpanel.com/api/2.0/cohorts/list
+
+    [{
+        "count": 150
+        "is_visible": 1
+        "description": "This cohort is visible, has an id = 1000, and currently has 150 users."
+        "created": "2019-03-19 23:49:51"
+        "project_id": 1
+        "id": 1000
+        "name": "Cohort One"
+    },
+    {
+        "count": 25
+        "is_visible": 0
+        "description": "This cohort isn't visible, has an id = 2000, and currently has 25 users."
+        "created": "2019-04-02 23:22:01"
+        "project_id": 1
+        "id": 2000
+        "name": "Cohort Two"
+    }
+    ]
+
+    """
+
+    data_field = None
+    primary_key = "id"
+    cursor_field = "created"
+
+    def path(self, **kwargs) -> str:
+        return "cohorts/list"
 
 
 class FunnelsList(MixpanelStream):
@@ -236,42 +282,9 @@ class Funnels(IncrementalMixpanelStream):
 
         # print(f"==== stream_slices len: {len(stream_slices)} \n")
         # pprint(stream_slices)
+        if len(stream_slices) < self.rate_limit:
+            self.rate_limit = 3600  # queries per hour (1 query per sec)
         return stream_slices
-
-
-class Cohorts(MixpanelStream):
-    """Returns all of the cohorts in a given project.
-    API Docs: https://developer.mixpanel.com/reference/cohorts
-    Endpoint: https://mixpanel.com/api/2.0/cohorts/list
-
-    [{
-        "count": 150
-        "is_visible": 1
-        "description": "This cohort is visible, has an id = 1000, and currently has 150 users."
-        "created": "2019-03-19 23:49:51"
-        "project_id": 1
-        "id": 1000
-        "name": "Cohort One"
-    },
-    {
-        "count": 25
-        "is_visible": 0
-        "description": "This cohort isn't visible, has an id = 2000, and currently has 25 users."
-        "created": "2019-04-02 23:22:01"
-        "project_id": 1
-        "id": 2000
-        "name": "Cohort Two"
-    }
-    ]
-
-    """
-
-    data_field = None
-    primary_key = "id"
-    cursor_field = "created"
-
-    def path(self, **kwargs) -> str:
-        return "cohorts/list"
 
 
 class Engage(MixpanelStream):
@@ -449,7 +462,7 @@ class Revenue(IncrementalMixpanelStream):
         {
             'computed_at': '2021-07-03T12:43:48.889421+00:00',
             'results': {
-                '$overall': {       <-- should be skipped?
+                '$overall': {       <-- should be skipped
                     'amount': 0.0,
                     'count': 124,
                     'paid_count': 0
@@ -473,7 +486,8 @@ class Revenue(IncrementalMixpanelStream):
         """
         records = response.json().get(self.data_field, {})
         for date_entry in records:
-            yield {"date": date_entry, **records[date_entry]}
+            if date_entry != "$overall":
+                yield {"date": date_entry, **records[date_entry]}
 
 
 class Export(MixpanelStream):
@@ -536,13 +550,7 @@ class Export(MixpanelStream):
     def stream_slices(
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        stream_slices = self.date_slices(sync_mode, cursor_field=cursor_field, stream_state=stream_state)
-
-        # reset rate_limit if we expect less requests (1 req per stream) than it is allowed by API rate_limit
-        if len(stream_slices) < self.rate_limit:
-            self.rate_limit = 3600  # queries per hour (1 query per sec)
-
-        return stream_slices
+        return self.date_slices(sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """Export API return response.text in JSONL format but each line is a valid JSON object
@@ -565,12 +573,13 @@ class Export(MixpanelStream):
         """
 
         for item in response.text.splitlines():
-            record = json.loads(item)
-            # transform record into flat dict structure
-            item = record["properties"]
-            item["event"] = record["event"]
-            item["time"] = datetime.fromtimestamp(item["time"]).isoformat()  # convert timestamp to datetime string
-            yield item
+            if item:
+                record = json.loads(item)
+                # transform record into flat dict structure
+                item = record["properties"]
+                item["event"] = record["event"]
+                item["time"] = datetime.fromtimestamp(item["time"]).isoformat()  # convert timestamp to datetime string
+                yield item
 
         # wait for 60 seconds according to API limit
         time.sleep(3600 / self.rate_limit)
@@ -579,15 +588,9 @@ class Export(MixpanelStream):
         # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
         # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
         current_stream_state = current_stream_state or {}
-        current_stream_state_date: str = current_stream_state.get("date", str(self.start_date))  # i.e '2021-06-24'
-
+        stream_state_date: str = current_stream_state.get("date", str(self.start_date))  # i.e '2021-06-24'
         latest_record_date: str = latest_record.get(self.cursor_field, str(self.start_date))  # i.e '2021-06-16T19:28:00'
-        # Remove time part from state because API accept 'from_date' param in date format only ('YYYY-MM-DD')
-        # It also means that sync returns duplicated entries for the date from the state (date range is inclusive)
-        latest_record_date = str(datetime.fromisoformat(latest_record_date).date())  # i.e '2021-06-24'
-
-        # compare date sting.
-        return {"date": max(current_stream_state_date, latest_record_date)}
+        return {"date": max(stream_state_date, latest_record_date)}
 
 
 class TokenAuthenticatorBase64(TokenAuthenticator):
