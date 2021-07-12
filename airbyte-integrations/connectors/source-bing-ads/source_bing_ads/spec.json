@@ -4,7 +4,15 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Bing Ads Spec",
     "type": "object",
-    "required": ["refresh_token", "developer_token", "client_secret", "client_id", "customer_id", "user_id", "account_ids"],
+    "required": [
+      "refresh_token",
+      "developer_token",
+      "client_secret",
+      "client_id",
+      "customer_id",
+      "user_id",
+      "account_ids"
+    ],
     "additionalProperties": false,
     "properties": {
       "refresh_token": {

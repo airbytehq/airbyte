@@ -47,14 +47,10 @@ class BingAdsStream(Stream, ABC):
         self.client = client
         self.config = config
 
-    def next_page_token(
-        self, response: sudsobject.Object, **kwargs: Mapping[str, Any]
-    ) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: sudsobject.Object, **kwargs: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
         return None
 
-    def parse_response(
-        self, response: sudsobject.Object, **kwargs
-    ) -> Iterable[Mapping]:
+    def parse_response(self, response: sudsobject.Object, **kwargs) -> Iterable[Mapping]:
         if response is not None and hasattr(response, self.data_field):
             yield from self.client.asdict(response)[self.data_field]
 
@@ -86,9 +82,7 @@ class BingAdsStream(Stream, ABC):
             )
             response = self.send_request(**params)
 
-            next_page_token = self.next_page_token(
-                response, current_page_token=next_page_token
-            )
+            next_page_token = self.next_page_token(response, current_page_token=next_page_token)
             if not next_page_token:
                 pagination_complete = True
 
@@ -104,24 +98,12 @@ class Accounts(BingAdsStream):
     operation_name: str = "SearchAccounts"
 
     def send_request(self, **kwargs) -> Mapping[str, Any]:
-        return self.client.request(
-            service_name=self.service_name,
-            account_id=None,
-            operation_name=self.operation_name,
-            params=kwargs
-        )
+        return self.client.request(service_name=self.service_name, account_id=None, operation_name=self.operation_name, params=kwargs)
 
-
-    def next_page_token(
-        self, response: sudsobject.Object, current_page_token: Optional[int]
-    ) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: sudsobject.Object, current_page_token: Optional[int]) -> Optional[Mapping[str, Any]]:
         current_page_token = current_page_token or 0
         if response is not None and hasattr(response, self.data_field):
-            return (
-                None
-                if self.limit > len(response[self.data_field])
-                else current_page_token + 1
-            )
+            return None if self.limit > len(response[self.data_field]) else current_page_token + 1
         else:
             return None
 
@@ -173,10 +155,7 @@ class Campaigns(BingAdsStream):
 
     def send_request(self, **kwargs) -> Mapping[str, Any]:
         return self.client.request(
-            service_name=self.service_name,
-            account_id=kwargs["AccountId"],
-            operation_name=self.operation_name,
-            params=kwargs
+            service_name=self.service_name, account_id=kwargs["AccountId"], operation_name=self.operation_name, params=kwargs
         )
 
     def request_params(
@@ -201,9 +180,7 @@ class Campaigns(BingAdsStream):
 
 
 class SourceBingAds(AbstractSource):
-    def check_connection(
-        self, logger: AirbyteLogger, config: Mapping[str, Any]
-    ) -> Tuple[bool, Any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             client = Client(**config)
             client.get_service().GetAccount(AccountId=config["account_ids"][0])

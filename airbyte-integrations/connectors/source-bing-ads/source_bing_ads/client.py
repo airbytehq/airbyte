@@ -25,14 +25,14 @@
 from datetime import datetime, timedelta
 from typing import Any, Iterator, Mapping, Optional
 
-from bingads.authorization import AuthorizationData, OAuthWebAuthCodeGrant, OAuthTokens
+from bingads.authorization import AuthorizationData, OAuthTokens, OAuthWebAuthCodeGrant
 from bingads.service_client import ServiceClient
 from suds import sudsobject
 
 
 class Client:
     api_version: int = 13
-    refresh_token_safe_delta = 10 # in seconds
+    refresh_token_safe_delta = 10  # in seconds
 
     def __init__(
         self,
@@ -72,9 +72,7 @@ class Client:
         self.authorization_data[None] = self.authorization_data[account_ids[0]]
 
     def _get_access_token(self) -> OAuthTokens:
-        return self.authentication.request_oauth_tokens_by_refresh_token(
-            self.refresh_token
-        )
+        return self.authentication.request_oauth_tokens_by_refresh_token(self.refresh_token)
 
     def is_token_expiring(self) -> bool:
         time_diff: timedelta = datetime.utcnow() - self.oauth.access_token_received_datetime

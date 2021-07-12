@@ -25,9 +25,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
-]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "bingads==13.0.*"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
