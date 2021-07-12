@@ -174,22 +174,29 @@ public class ServerApp {
     server.join();
   }
 
-  private static void setCustomerIdIfNotSet(final ConfigRepository configRepository) {
-    final StandardWorkspace workspace;
-    try {
-      workspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true);
+  private static void setCustomerIdIfNotSet(final ConfigRepository configRepository) throws InterruptedException {
+    StandardWorkspace workspace = null;
 
-      if (workspace.getCustomerId() == null) {
-        final UUID customerId = UUID.randomUUID();
-        LOGGER.info("customerId not set for workspace. Setting it to " + customerId);
-        workspace.setCustomerId(customerId);
+    // retry until the workspace is available / waits for file config initialization
+    while (workspace == null) {
+      try {
+        workspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true);
 
-        configRepository.writeStandardWorkspace(workspace);
+        if (workspace.getCustomerId() == null) {
+          final UUID customerId = UUID.randomUUID();
+          LOGGER.info("customerId not set for workspace. Setting it to " + customerId);
+          workspace.setCustomerId(customerId);
+
+          configRepository.writeStandardWorkspace(workspace);
+        } else {
+          LOGGER.info("customerId already set for workspace: " + workspace.getCustomerId());
+        }
+      } catch (ConfigNotFoundException e) {
+        LOGGER.error("Could not find workspace with id: " + PersistenceConstants.DEFAULT_WORKSPACE_ID, e);
+        Thread.sleep(1000);
+      } catch (JsonValidationException | IOException e) {
+        throw new RuntimeException(e);
       }
-    } catch (ConfigNotFoundException e) {
-      throw new RuntimeException("could not find workspace with id: " + PersistenceConstants.DEFAULT_WORKSPACE_ID, e);
-    } catch (JsonValidationException | IOException e) {
-      throw new RuntimeException(e);
     }
   }
 
