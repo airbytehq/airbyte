@@ -112,7 +112,6 @@ class SourceZuora(AbstractSource):
         Testing connection availability for the connector by granting the token.
         """
         auth = ZuoraAuthenticator(config["is_sandbox"]).generateToken(config["client_id"], config["client_secret"])
-        print(auth)
         if auth.get("status") == 200:
             return True, None
         else:
@@ -150,7 +149,8 @@ class SourceZuora(AbstractSource):
         # Making instance of Zuora API Client
         zuora_client = ZoqlExportClient(**args)
         # Get the list of available objects from Zuora
-        zuora_objects = zuora_client._zuora_list_objects()
+        zuora_objects = ["account", "subscription", "invoicehistory"]
+        # zuora_objects = zuora_client._zuora_list_objects()
         # created the class for each object
         streams = create_stream_class_from_object_name(zuora_objects)
         # Return the list of stream classes with Zuora API Client as input

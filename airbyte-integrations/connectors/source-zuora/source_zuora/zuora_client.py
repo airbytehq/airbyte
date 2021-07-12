@@ -217,17 +217,17 @@ class ZoqlExportClient:
             field_type = _schema[field].get("type")
 
             # Casting Zuora ZOQL Data Types into JsonSchema types
-            if self._check_data_type(field_type, ["decimal(22,9)", "integer", "int", "timestamp"]):
-                field_type = ["null", "number"]
+            if self._check_data_type(field_type, ["decimal(22,9)", "integer", "int", "bigint", "timestamp"]):
+                field_type = ["number", "null"]
             elif self._check_data_type(field_type, ["date", "datetime", "timestamp with time zone", "picklist", "text", "varchar"]):
-                field_type = ["null", "string"]
+                field_type = ["string", "null"]
             elif self._check_data_type(field_type, ["zoql", "binary", "json", "xml", "blob"]):
-                field_type = ["null", "object"]
+                field_type = ["object", "null"]
             elif self._check_data_type(field_type, ["boolean"]):
-                field_type = ["null", "boolean"]
+                field_type = ["boolean", "null"]
             else:
                 # if there is something else we don't cover, cast it as string
-                field_type = ["null", "string"]
+                field_type = ["string", "null"]
 
             casted_schema_types.update(**{field_name: {"type": field_type}})
 
