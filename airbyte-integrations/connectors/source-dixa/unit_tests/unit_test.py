@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -48,35 +49,19 @@ def test_validate_ms_timestamp_with_invalid_input_length():
 
 def test_ms_timestamp_to_datetime():
     assert ConversationExport.ms_timestamp_to_datetime(1625312980123) == datetime(
-        year=2021,
-        month=7,
-        day=3,
-        hour=13,
-        minute=49,
-        second=40,
-        microsecond=123000
+        year=2021, month=7, day=3, hour=13, minute=49, second=40, microsecond=123000
     )
 
 
 def test_datetime_to_ms_timestamp():
-    assert ConversationExport.datetime_to_ms_timestamp(
-        datetime(
-            year=2021,
-            month=7,
-            day=3,
-            hour=13,
-            minute=49,
-            second=40,
-            microsecond=123000
-        )
-    ) == 1625312980123
+    assert (
+        ConversationExport.datetime_to_ms_timestamp(datetime(year=2021, month=7, day=3, hour=13, minute=49, second=40, microsecond=123000))
+        == 1625312980123
+    )
 
 
 def test_add_days_to_ms_timestamp():
-    assert ConversationExport.add_days_to_ms_timestamp(
-        days=1,
-        milliseconds=1625312980123
-    ) == 1625399380123
+    assert ConversationExport.add_days_to_ms_timestamp(days=1, milliseconds=1625312980123) == 1625399380123
 
 
 def test_stream_slices_without_state(conversation_export):
@@ -112,15 +97,8 @@ def test_stream_slices_without_state_large_batch():
 
 def test_stream_slices_with_state(conversation_export):
     conversation_export.end_timestamp = 1625263200001  # 2021-07-03 00:00:00 + 1 ms
-    expected_slices = [
-        {
-            'updated_after': 1625220000000,  # 2021-07-01 12:00:00
-            'updated_before': 1625263200001
-        }
-    ]
-    actual_slices = conversation_export.stream_slices(
-        stream_state={'updated_at': 1625220000000}  # # 2021-07-02 12:00:00
-    )
+    expected_slices = [{"updated_after": 1625220000000, "updated_before": 1625263200001}]  # 2021-07-01 12:00:00
+    actual_slices = conversation_export.stream_slices(stream_state={"updated_at": 1625220000000})  # # 2021-07-02 12:00:00
     assert actual_slices == expected_slices
 
 
@@ -153,13 +131,11 @@ def test_get_updated_state_without_state(conversation_export):
 
 def test_get_updated_state_with_bigger_state(conversation_export):
     assert conversation_export.get_updated_state(
-        current_stream_state={'updated_at': 1625263200000},
-        latest_record={'updated_at': 1625220000000}
-    ) == {'updated_at': 1625263200000}
+        current_stream_state={"updated_at": 1625263200000}, latest_record={"updated_at": 1625220000000}
+    ) == {"updated_at": 1625263200000}
 
 
 def test_get_updated_state_with_smaller_state(conversation_export):
     assert conversation_export.get_updated_state(
-        current_stream_state={'updated_at': 1625220000000},
-        latest_record={'updated_at': 1625263200000}
-    ) == {'updated_at': 1625263200000}
+        current_stream_state={"updated_at": 1625220000000}, latest_record={"updated_at": 1625263200000}
+    ) == {"updated_at": 1625263200000}

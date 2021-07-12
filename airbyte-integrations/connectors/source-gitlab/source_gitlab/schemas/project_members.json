@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": ["null", "integer"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "username": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "avatar_url": {
+      "type": ["null", "string"]
+    },
+    "web_url": {
+      "type": ["null", "string"]
+    },
+    "access_level": {
+      "type": ["null", "integer"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

@@ -27,7 +27,7 @@ package io.airbyte.scheduler.app;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.concurrency.LifecycledCallable;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.config.helpers.LogHelpers;
+import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.app.worker_run.WorkerRun;
 import io.airbyte.scheduler.models.Job;
@@ -91,11 +91,11 @@ public class JobSubmitter implements Runnable {
     threadPool.submit(new LifecycledCallable.Builder<>(workerRun)
         .setOnStart(() -> {
           // TODO(Issue-4204): This should save the fully qualified job path.
-          final Path logFilePath = workerRun.getJobRoot().resolve(LogHelpers.LOG_FILENAME);
+          final Path logFilePath = workerRun.getJobRoot().resolve(LogClientSingleton.LOG_FILENAME);
           final long persistedAttemptId = persistence.createAttempt(job.getId(), logFilePath);
           assertSameIds(attemptNumber, persistedAttemptId);
 
-          LogHelpers.setJobMdc(workerRun.getJobRoot());
+          LogClientSingleton.setJobMdc(workerRun.getJobRoot());
         })
         .setOnSuccess(output -> {
           if (output.getOutput().isPresent()) {
