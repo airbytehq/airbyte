@@ -22,6 +22,7 @@
 
 import time
 from abc import ABC
+from urllib.parse import parse_qsl, urlparse
 from datetime import date, timedelta, datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
@@ -39,6 +40,9 @@ class IntercomStream(HttpStream, ABC):
     # https://developers.intercom.com/intercom-api-reference/reference#rate-limiting
     rate_limit = 1000  # 1000 queries per hour == 1 req in 3,6 secs
 
+    primary_key = "id"
+    data_fields = ["data"]
+
     def __init__(
             self,
             authenticator: HttpAuthenticator,
@@ -50,7 +54,16 @@ class IntercomStream(HttpStream, ABC):
         super().__init__(authenticator=authenticator)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
+        """
+        Abstract method of HttpStream - should be overwritten.
+        Returning None means there are no more pages to read in response.
+        """
+
+        next_page = response.links.get("next", None)
+        if next_page:
+            return dict(parse_qsl(urlparse(next_page.get("url")).query))
+        else:
+            return None
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -66,7 +79,7 @@ class IntercomStream(HttpStream, ABC):
                 self.logger.error(f"Stream {self.name}: {e.response.status_code} {e.response.reason} - {error_message}")
             raise e
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def get_data(self, response: requests.Response, **kwargs) -> List:
         data = response.json()
         for data_field in self.data_fields:
             if data_field is not None:
@@ -76,10 +89,12 @@ class IntercomStream(HttpStream, ABC):
         elif isinstance(data, dict):
             data = [data]
 
+        return data
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        data = self.get_data(response, **kwargs)
+
         for record in data:
-            updated_at = record.get("updated_at", 0)
-            if updated_at:
-                record["updated_at"] = datetime.fromtimestamp(record["updated_at"]).isoformat()  # convert timestamp to datetime string
             yield record
 
         # wait for 3,6 seconds according to API limit
@@ -87,20 +102,35 @@ class IntercomStream(HttpStream, ABC):
 
 
 class IncrementalIntercomStream(IntercomStream, ABC):
+    cursor_field = "updated_at"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        data = self.get_data(response, **kwargs)
+
+        for record in data:
+            updated_at = record.get(self.cursor_field, None)
+            if updated_at:
+                record[self.cursor_field] = datetime.fromtimestamp(record[self.cursor_field]).isoformat()  # convert timestamp to datetime string
+
+            yield record
+
+        # wait for 3,6 seconds according to API limit
+        time.sleep(3600 / self.rate_limit)
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
         # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
         # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
         current_stream_state = current_stream_state or {}
-        current_stream_state_date = current_stream_state.get("updated_at", str(self.start_date))
-        latest_record_date = latest_record.get(self.cursor_field, str(self.start_date))
-        return {"updated_at": max(current_stream_state_date, latest_record_date)}
+        current_stream_state_date = current_stream_state.get(self.cursor_field, self.start_date)
+        latest_record_date = latest_record.get(self.cursor_field, self.start_date)
+        return {self.cursor_field: max(current_stream_state_date, latest_record_date)}
 
 
 class StreamMixin:
     stream = None
 
     def stream_slices(self, sync_mode, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        for item in self.stream(authenticator=self.authenticator).read_records(sync_mode=sync_mode):
+        for item in self.stream(authenticator=self.authenticator, start_date=self.start_date).read_records(sync_mode=sync_mode):
             yield {"id": item["id"]}
 
         yield from []
@@ -112,7 +142,6 @@ class Admins(IntercomStream):
     Endpoint: https://api.intercom.io/admins
     """
 
-    primary_key = "id"
     data_fields = ["admins"]
 
     def path(
@@ -127,10 +156,6 @@ class Companies(IncrementalIntercomStream):
     Endpoint: https://api.intercom.io/companies
     """
 
-    primary_key = "id"
-    data_fields = ["data"]
-    cursor_field = "updated_at"
-
     def path(self, **kwargs) -> str:
         return "companies"
 
@@ -141,9 +166,6 @@ class CompanySegments(StreamMixin, IncrementalIntercomStream):
     Endpoint: https://api.intercom.io/companies/<id>/segments
     """
 
-    primary_key = "id"
-    data_fields = ["data"]
-    cursor_field = "updated_at"
     stream = Companies
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -156,9 +178,7 @@ class Conversations(IncrementalIntercomStream):
     Endpoint: https://api.intercom.io/conversations
     """
 
-    primary_key = "id"
     data_fields = ["conversations"]
-    cursor_field = "updated_at"
 
     def path(self, **kwargs) -> str:
         return "conversations"
@@ -170,9 +190,7 @@ class ConversationParts(StreamMixin, IncrementalIntercomStream):
     Endpoint: https://api.intercom.io/conversations/<id>
     """
 
-    primary_key = "id"
     data_fields = ["conversation_parts", "conversation_parts"]
-    cursor_field = "updated_at"
     stream = Conversations
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -185,9 +203,7 @@ class Segments(IncrementalIntercomStream):
     Endpoint: https://api.intercom.io/segments
     """
 
-    primary_key = "id"
     data_fields = ["segments"]
-    cursor_field = "updated_at"
 
     def path(self, **kwargs) -> str:
         return "segments"
@@ -199,17 +215,12 @@ class Contacts(IncrementalIntercomStream):
     Endpoint: https://api.intercom.io/contacts
     """
 
-    primary_key = "id"
-    data_fields = ["data"]
-    cursor_field = "updated_at"
-
     def path(self, **kwargs) -> str:
         return "contacts"
 
 
 class DataAttributes(IntercomStream):
     primary_key = "name"
-    data_fields = ["data"]
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -248,7 +259,6 @@ class Tags(IntercomStream):
     """
 
     primary_key = "name"
-    data_fields = ["data"]
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -273,7 +283,7 @@ class Teams(IntercomStream):
 
 class SourceIntercom(AbstractSource):
     """
-    Source Intercom fetch data from messaging platform
+    Source Intercom fetch data from messaging platform.
     """
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -312,13 +322,13 @@ class SourceIntercom(AbstractSource):
 
         auth = TokenAuthenticator(token=config["access_token"])
         return [Admins(authenticator=auth, **config),
+                Companies(authenticator=auth, **config),
+                CompanySegments(authenticator=auth, **config),
                 Conversations(authenticator=auth, **config),
                 ConversationParts(authenticator=auth, **config),
-                CompanySegments(authenticator=auth, **config),
-                CompanyAttributes(authenticator=auth, **config),
-                ContactAttributes(authenticator=auth, **config),
                 Segments(authenticator=auth, **config),
                 Contacts(authenticator=auth, **config),
-                Companies(authenticator=auth, **config),
+                CompanyAttributes(authenticator=auth, **config),
+                ContactAttributes(authenticator=auth, **config),
                 Tags(authenticator=auth, **config),
                 Teams(authenticator=auth, **config)]
