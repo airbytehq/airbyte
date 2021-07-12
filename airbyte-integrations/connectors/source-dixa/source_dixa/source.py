@@ -60,9 +60,7 @@ class ConversationExport(HttpStream, ABC):
         """
         Converts a millisecond-precision timestamp to a datetime object.
         """
-        return datetime.fromtimestamp(
-            ConversationExport._validate_ms_timestamp(milliseconds) / 1000, tz=timezone.utc
-        )
+        return datetime.fromtimestamp(ConversationExport._validate_ms_timestamp(milliseconds) / 1000, tz=timezone.utc)
 
     @staticmethod
     def datetime_to_ms_timestamp(dt: datetime) -> int:
