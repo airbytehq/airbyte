@@ -69,6 +69,7 @@ From your local workstation
 
 ssh opc@bastion-host-public-ip -i <private-key-file.key> -L 2200:oci-private-instance-ip:22
 ssh opc@localhost -i <private-key-file.key> -p 2200
+```
 
 ### Airbyte GUI Local Port Forward to Airbyte VM
 
