@@ -25,6 +25,8 @@
 package io.airbyte.integrations.base;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -76,8 +78,10 @@ class IntegrationRunnerTest {
   private static final Long EMITTED_AT = Instant.now().toEpochMilli();
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
 
-  private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(new AirbyteStream().withName(STREAM_NAME)));
-  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
+  private static final AirbyteCatalog CATALOG = new AirbyteCatalog()
+      .withStreams(Lists.newArrayList(new AirbyteStream().withName(STREAM_NAME)));
+  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers
+      .toDefaultConfiguredCatalog(CATALOG);
   private static final JsonNode STATE = Jsons.jsonNode(ImmutableMap.of("checkpoint", "05/08/1945"));
 
   private IntegrationCliParser cliParser;
@@ -98,14 +102,16 @@ class IntegrationRunnerTest {
     Path configDir = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
 
     configPath = IOs.writeFile(configDir, CONFIG_FILE_NAME, CONFIG_STRING);
-    configuredCatalogPath = IOs.writeFile(configDir, CONFIGURED_CATALOG_FILE_NAME, Jsons.serialize(CONFIGURED_CATALOG));
+    configuredCatalogPath = IOs
+        .writeFile(configDir, CONFIGURED_CATALOG_FILE_NAME, Jsons.serialize(CONFIGURED_CATALOG));
     statePath = IOs.writeFile(configDir, STATE_FILE_NAME, Jsons.serialize(STATE));
   }
 
   @Test
   void testSpecSource() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.spec();
-    final ConnectorSpecification output = new ConnectorSpecification().withDocumentationUrl(new URI("https://docs.airbyte.io/"));
+    final ConnectorSpecification output = new ConnectorSpecification()
+        .withDocumentationUrl(new URI("https://docs.airbyte.io/"));
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(source.spec()).thenReturn(output);
@@ -119,7 +125,8 @@ class IntegrationRunnerTest {
   @Test
   void testSpecDestination() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.spec();
-    final ConnectorSpecification output = new ConnectorSpecification().withDocumentationUrl(new URI("https://docs.airbyte.io/"));
+    final ConnectorSpecification output = new ConnectorSpecification()
+        .withDocumentationUrl(new URI("https://docs.airbyte.io/"));
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(destination.spec()).thenReturn(output);
@@ -138,10 +145,19 @@ class IntegrationRunnerTest {
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(source.check(CONFIG)).thenReturn(output);
 
-    new IntegrationRunner(cliParser, stdoutConsumer, null, source).run(ARGS);
+    final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
+    when(source.spec()).thenReturn(expectedConnSpec);
+    when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
+    ConfigAgainstSpecValidator configValidatorMock = mock(ConfigAgainstSpecValidator.class);
+
+    new IntegrationRunner(cliParser, stdoutConsumer, null, source,
+        configValidatorMock)
+            .run(ARGS);
 
     verify(source).check(CONFIG);
-    verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
+    verify(configValidatorMock).validate(any(), any(), anyString());
+    verify(stdoutConsumer)
+        .accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
   }
 
   @Test
@@ -152,10 +168,17 @@ class IntegrationRunnerTest {
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(destination.check(CONFIG)).thenReturn(output);
 
-    new IntegrationRunner(cliParser, stdoutConsumer, destination, null).run(ARGS);
+    final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
+    when(destination.spec()).thenReturn(expectedConnSpec);
+    when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
+    ConfigAgainstSpecValidator configValidatorMock = mock(ConfigAgainstSpecValidator.class);
+
+    new IntegrationRunner(cliParser, stdoutConsumer, destination, null, configValidatorMock)
+        .run(ARGS);
 
     verify(destination).check(CONFIG);
     verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
+    verify(configValidatorMock).validate(any(), any(), anyString());
   }
 
   @Test
@@ -166,30 +189,46 @@ class IntegrationRunnerTest {
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(source.discover(CONFIG)).thenReturn(output);
 
-    new IntegrationRunner(cliParser, stdoutConsumer, null, source).run(ARGS);
+    final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
+    when(source.spec()).thenReturn(expectedConnSpec);
+    when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
+    ConfigAgainstSpecValidator configValidatorMock = mock(ConfigAgainstSpecValidator.class);
+
+    new IntegrationRunner(cliParser, stdoutConsumer, null, source, configValidatorMock).run(ARGS);
 
     verify(source).discover(CONFIG);
     verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CATALOG).withCatalog(output));
+    verify(configValidatorMock).validate(any(), any(), anyString());
   }
 
   @Test
   void testRead() throws Exception {
-    final IntegrationConfig intConfig = IntegrationConfig.read(configPath, configuredCatalogPath, statePath);
+    final IntegrationConfig intConfig = IntegrationConfig.read(configPath, configuredCatalogPath,
+        statePath);
     final AirbyteMessage message1 = new AirbyteMessage()
         .withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(ImmutableMap.of("names", "byron"))));
+        .withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(ImmutableMap.of("names",
+            "byron"))));
     final AirbyteMessage message2 = new AirbyteMessage()
         .withType(Type.RECORD).withRecord(new AirbyteRecordMessage()
             .withData(Jsons.jsonNode(ImmutableMap.of("names", "reginald"))));
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
-    when(source.read(CONFIG, CONFIGURED_CATALOG, STATE)).thenReturn(AutoCloseableIterators.fromIterator(MoreIterators.of(message1, message2)));
+    when(source.read(CONFIG, CONFIGURED_CATALOG,
+        STATE))
+            .thenReturn(AutoCloseableIterators.fromIterator(MoreIterators.of(message1, message2)));
 
-    new IntegrationRunner(cliParser, stdoutConsumer, null, source).run(ARGS);
+    final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
+    when(source.spec()).thenReturn(expectedConnSpec);
+    when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
+    ConfigAgainstSpecValidator configValidatorMock = mock(ConfigAgainstSpecValidator.class);
+
+    new IntegrationRunner(cliParser, stdoutConsumer, null, source, configValidatorMock).run(ARGS);
 
     verify(source).read(CONFIG, CONFIGURED_CATALOG, STATE);
     verify(stdoutConsumer).accept(message1);
     verify(stdoutConsumer).accept(message2);
+    verify(configValidatorMock).validate(any(), any(), anyString());
   }
 
   @Test
@@ -197,12 +236,20 @@ class IntegrationRunnerTest {
     final IntegrationConfig intConfig = IntegrationConfig.write(configPath, configuredCatalogPath);
     final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
-    when(destination.getConsumer(CONFIG, CONFIGURED_CATALOG, stdoutConsumer)).thenReturn(airbyteMessageConsumerMock);
+    when(destination.getConsumer(CONFIG, CONFIGURED_CATALOG,
+        stdoutConsumer)).thenReturn(airbyteMessageConsumerMock);
 
-    final IntegrationRunner runner = spy(new IntegrationRunner(cliParser, stdoutConsumer, destination, null));
+    final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
+    when(destination.spec()).thenReturn(expectedConnSpec);
+    when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
+    ConfigAgainstSpecValidator configValidatorMock = mock(ConfigAgainstSpecValidator.class);
+
+    final IntegrationRunner runner = spy(new IntegrationRunner(cliParser, stdoutConsumer,
+        destination, null, configValidatorMock));
     runner.run(ARGS);
 
     verify(destination).getConsumer(CONFIG, CONFIGURED_CATALOG, stdoutConsumer);
+    verify(configValidatorMock).validate(any(), any(), anyString());
   }
 
   @Test
@@ -251,12 +298,14 @@ class IntegrationRunnerTest {
             .withData(Jsons.deserialize("{ \"color\": \"yellow\" }"))
             .withStream(STREAM_NAME)
             .withEmittedAt(EMITTED_AT));
-    System.setIn(new ByteArrayInputStream((Jsons.serialize(singerMessage1) + "\n" + Jsons.serialize(singerMessage2)).getBytes()));
+    System.setIn(new ByteArrayInputStream(
+        (Jsons.serialize(singerMessage1) + "\n" + Jsons.serialize(singerMessage2)).getBytes()));
 
     final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
     doThrow(new IOException("error")).when(airbyteMessageConsumerMock).accept(singerMessage1);
 
-    assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock));
+    assertThrows(IOException.class,
+        () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock));
 
     InOrder inOrder = inOrder(airbyteMessageConsumerMock);
     inOrder.verify(airbyteMessageConsumerMock).accept(singerMessage1);
