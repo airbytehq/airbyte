@@ -26,7 +26,6 @@ package io.airbyte.config.persistence;
 
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.inline;
 import static org.jooq.impl.DSL.select;
 import static org.jooq.impl.DSL.table;
 
@@ -59,8 +58,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
   private static final Table<Record> AIRBYTE_CONFIGS = table("airbyte_configs");
   private static final Field<String> CONFIG_ID = field("config_id", String.class);
-  // This field is actually an Enum column in the database definition. When it is used in a WHERE
-  // clause, wrap operand values with {@code inline} method so that jooQ can prepare the value correctly.
   private static final Field<String> CONFIG_TYPE = field("config_type", String.class);
   private static final Field<JSONB> CONFIG_BLOB = field("config_blob", JSONB.class);
   private static final Field<Timestamp> CREATED_AT = field("created_at", Timestamp.class);
@@ -72,20 +69,35 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     this.database = new ExceptionWrappingDatabase(database);
   }
 
+  public void initialize(String schema) throws IOException {
+    database.transaction(ctx -> {
+      boolean hasAirConfigsTable = ctx.fetchExists(select()
+          .from("information_schema.tables")
+          .where("table_name = 'airbyte_configs'"));
+      if (hasAirConfigsTable) {
+        return null;
+      }
+      LOGGER.info("Config database has not been initialized; creating tables...");
+      LOGGER.info("Config database schema: {}", schema);
+      ctx.execute(schema);
+      return null;
+    });
+  }
+
   /**
    * Initialize the {@code airbyte_configs} table with configs from the file system config
    * persistence. Only do so table if the table is empty. Otherwise, we assume that it has been
    * initialized.
    */
-  public void initialize(ConfigPersistence seedConfigPersistence) throws IOException {
+  public void loadData(ConfigPersistence seedConfigPersistence) throws IOException {
     database.transaction(ctx -> {
-      boolean isInitialized = ctx.fetchExists(AIRBYTE_CONFIGS);
+      boolean isInitialized = ctx.fetchExists(select().from(AIRBYTE_CONFIGS));
       if (isInitialized) {
-        LOGGER.info("Config database is not empty, and initialization is skipped");
+        LOGGER.info("Config database is not empty; data loading is skipped");
         return null;
       }
 
-      LOGGER.info("Initializing config database with configs from the file system...");
+      LOGGER.info("Loading data to config database from the file system...");
       Map<ConfigSchema, Stream<JsonNode>> seedConfigs;
       try {
         seedConfigs = seedConfigPersistence.dumpConfigs()
@@ -99,14 +111,14 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         Object config = Jsons.object(node, configType.getClassName());
         ctx.insertInto(AIRBYTE_CONFIGS)
             .set(CONFIG_ID, configType.getId(config))
-            .set(CONFIG_TYPE, inline(configType.name()))
+            .set(CONFIG_TYPE, configType.name())
             .set(CONFIG_BLOB, JSONB.valueOf(Jsons.serialize(node)))
             .set(CREATED_AT, timestamp)
             .set(UPDATED_AT, timestamp)
             .execute();
       }));
 
-      LOGGER.info("Config database initialization completed");
+      LOGGER.info("Config database data loading completed");
       return null;
     });
   }
@@ -116,7 +128,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       throws ConfigNotFoundException, JsonValidationException, IOException {
     Result<Record> result = database.query(ctx -> ctx.select(asterisk())
         .from(AIRBYTE_CONFIGS)
-        .where(CONFIG_TYPE.eq(inline(configType.name())), CONFIG_ID.eq(configId))
+        .where(CONFIG_TYPE.eq(configType.name()), CONFIG_ID.eq(configId))
         .fetch());
 
     if (result.isEmpty()) {
@@ -132,7 +144,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   public <T> List<T> listConfigs(ConfigSchema configType, Class<T> clazz) throws IOException {
     Result<Record> results = database.query(ctx -> ctx.select(asterisk())
         .from(AIRBYTE_CONFIGS)
-        .where(CONFIG_TYPE.eq(inline(configType.name())))
+        .where(CONFIG_TYPE.eq(configType.name()))
         .orderBy(CONFIG_TYPE, CONFIG_ID)
         .fetch());
     return results.stream()
@@ -145,7 +157,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     database.transaction(ctx -> {
       boolean isExistingConfig = ctx.fetchExists(select()
           .from(AIRBYTE_CONFIGS)
-          .where(CONFIG_TYPE.eq(inline(configType.name())), CONFIG_ID.eq(configId)));
+          .where(CONFIG_TYPE.eq(configType.name()), CONFIG_ID.eq(configId)));
 
       Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(System.currentTimeMillis()));
 
@@ -153,7 +165,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         int updateCount = ctx.update(AIRBYTE_CONFIGS)
             .set(CONFIG_BLOB, JSONB.valueOf(Jsons.serialize(config)))
             .set(UPDATED_AT, timestamp)
-            .where(CONFIG_TYPE.eq(inline(configType.name())), CONFIG_ID.eq(configId))
+            .where(CONFIG_TYPE.eq(configType.name()), CONFIG_ID.eq(configId))
             .execute();
         if (updateCount != 0 && updateCount != 1) {
           LOGGER.warn("{} config {} has been updated; updated record count: {}", configType, configId, updateCount);
@@ -164,7 +176,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
       int insertionCount = ctx.insertInto(AIRBYTE_CONFIGS)
           .set(CONFIG_ID, configId)
-          .set(CONFIG_TYPE, inline(configType.name()))
+          .set(CONFIG_TYPE, configType.name())
           .set(CONFIG_BLOB, JSONB.valueOf(Jsons.serialize(config)))
           .set(CREATED_AT, timestamp)
           .set(UPDATED_AT, timestamp)
@@ -189,7 +201,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       ctx.truncate(AIRBYTE_CONFIGS).restartIdentity().execute();
       configs.forEach((configType, value) -> value.forEach(config -> ctx.insertInto(AIRBYTE_CONFIGS)
           .set(CONFIG_ID, configType.getId(config))
-          .set(CONFIG_TYPE, inline(configType.name()))
+          .set(CONFIG_TYPE, configType.name())
           .set(CONFIG_BLOB, JSONB.valueOf(Jsons.serialize(config)))
           .set(CREATED_AT, timestamp)
           .set(UPDATED_AT, timestamp)

@@ -209,7 +209,7 @@ public class ServerApp {
     MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, LogClientSingleton.getServerLogsRoot(configs).toString());
 
     LOGGER.info("Creating config repository...");
-    final ConfigPersistence configPersistence = ConfigPersistenceFactory.createAndInitialize(configs);
+    final ConfigPersistence configPersistence = ConfigPersistenceFactory.create(configs, true);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence);
 
     // hack: upon installation we need to assign a random customerId so that when

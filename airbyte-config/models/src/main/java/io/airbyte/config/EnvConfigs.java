@@ -49,10 +49,12 @@ public class EnvConfigs implements Configs {
   public static final String CONFIG_ROOT = "CONFIG_ROOT";
   public static final String DOCKER_NETWORK = "DOCKER_NETWORK";
   public static final String TRACKING_STRATEGY = "TRACKING_STRATEGY";
+  public static final String DATABASE_DB = "DATABASE_DB";
   public static final String DATABASE_USER = "DATABASE_USER";
   public static final String DATABASE_PASSWORD = "DATABASE_PASSWORD";
   public static final String DATABASE_URL = "DATABASE_URL";
   public static final String USE_CONFIG_DATABASE = "USE_CONFIG_DATABASE";
+  public static final String CONFIG_DATABASE_DB = "CONFIG_DATABASE_DB";
   public static final String CONFIG_DATABASE_USER = "CONFIG_DATABASE_USER";
   public static final String CONFIG_DATABASE_PASSWORD = "CONFIG_DATABASE_PASSWORD";
   public static final String CONFIG_DATABASE_URL = "CONFIG_DATABASE_URL";
@@ -117,6 +119,11 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public String getDatabaseDb() {
+    return getEnvOrDefault(DATABASE_DB, "airbyte");
+  }
+
+  @Override
   public String getDatabaseUser() {
     return getEnsureEnv(DATABASE_USER);
   }
@@ -133,22 +140,25 @@ public class EnvConfigs implements Configs {
 
   @Override
   public boolean useConfigDatabase() {
-    LOGGER.info("Use config database value: {}", getEnv.apply(USE_CONFIG_DATABASE));
     return getEnvOrDefault(USE_CONFIG_DATABASE, false,
         s -> s.equals("1") || s.equalsIgnoreCase("true"));
   }
 
   @Override
+  public String getConfigDatabaseDb() {
+    // Default to reuse the job database
+    return getEnvOrDefault(CONFIG_DATABASE_DB, getDatabaseDb());
+  }
+
+  @Override
   public String getConfigDatabaseUser() {
     // Default to reuse the job database
-    LOGGER.info("Default database user: {}", getDatabaseUser());
     return getEnvOrDefault(CONFIG_DATABASE_USER, getDatabaseUser());
   }
 
   @Override
   public String getConfigDatabasePassword() {
     // Default to reuse the job database
-    LOGGER.info("Default database password: {}", getDatabasePassword());
     return getEnvOrDefault(CONFIG_DATABASE_PASSWORD, getDatabasePassword());
   }
 

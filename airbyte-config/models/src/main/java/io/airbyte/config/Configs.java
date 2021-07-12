@@ -41,6 +41,8 @@ public interface Configs {
 
   Path getLocalRoot();
 
+  String getDatabaseDb();
+
   String getDatabaseUser();
 
   String getDatabasePassword();
@@ -48,6 +50,8 @@ public interface Configs {
   String getDatabaseUrl();
 
   boolean useConfigDatabase();
+
+  String getConfigDatabaseDb();
 
   String getConfigDatabaseUser();
 

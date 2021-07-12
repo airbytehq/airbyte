@@ -24,8 +24,7 @@
 
 package io.airbyte.db;
 
-import static org.jooq.impl.DSL.asterisk;
-import static org.jooq.impl.DSL.count;
+import static org.jooq.impl.DSL.select;
 
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
@@ -43,18 +42,26 @@ public class Databases {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Databases.class);
 
+  // The Job Database is initialized by SQL script, which writes a server UUID at the end.
+  // So this database is ready when the server UUID record is present.
   public static final Function<Database, Boolean> IS_JOB_DATABASE_READY = database -> {
     try {
-      database.query(ctx -> ctx.select(count(asterisk())).from("jobs"));
-      return true;
+      Optional<String> uuid = ServerUuid.get(database);
+      return uuid.isPresent();
     } catch (Exception e) {
       return false;
     }
   };
-  public static final Function<Database, Boolean> IS_CONFIG_DATABASE_READY = database -> {
+  public static final Function<Database, Boolean> IS_CONFIG_DATABASE_CONNECTED = database -> {
     try {
-      database.query(ctx -> ctx.select(count(asterisk())).from("airbyte_configs"));
-      return true;
+      return database.query(ctx -> ctx.fetchExists(select().from("information_schema.tables")));
+    } catch (Exception e) {
+      return false;
+    }
+  };
+  public static final Function<Database, Boolean> IS_CONFIG_DATABASE_LOADED_WITH_DATA = database -> {
+    try {
+      return database.query(ctx -> ctx.fetchExists(select().from("airbyte_configs")));
     } catch (Exception e) {
       return false;
     }
@@ -76,7 +83,9 @@ public class Databases {
       try {
         database = createPostgresDatabase(username, password, jdbcConnectionString);
         if (!isDbReady.apply(database)) {
-          throw new Exception("Server UUID not available yet!");
+          LOGGER.info("Database is not ready yet");
+          database = null;
+          Exceptions.toRuntime(() -> Thread.sleep(5000));
         }
       } catch (Exception e) {
         // Ignore the exception because this likely means that the database server is still initializing.
