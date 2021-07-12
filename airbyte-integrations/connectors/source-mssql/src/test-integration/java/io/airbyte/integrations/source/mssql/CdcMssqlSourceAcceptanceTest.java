@@ -41,12 +41,8 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import org.jooq.Record;
-import org.jooq.Result;
 import org.testcontainers.containers.MSSQLServerContainer;
 
 public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
@@ -198,21 +194,6 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
           Thread.sleep(10000); // 10 seconds
         }
       }
-    }
-  }
-
-  private Boolean isSqlServerAgentRunning() {
-    try {
-      return database.query(ctx -> {
-        Result<Record> result =
-            ctx.fetch("EXEC xp_servicecontrol N'QueryState', N'SQLServerAGENT';");
-        Optional<Record> first = result.stream().findFirst();
-
-        // this seems brittle
-        return first.isPresent() && first.get().get("Current Service State").toString().equals("Running.");
-      });
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
     }
   }
 
