@@ -19,6 +19,7 @@ Select the Subnet > Security List > Add Ingress Rules
 
 
 ## Login to the Instance/VM with the SSH key and 'opc' user
+```
 chmod 600 private-key-file
 
 ssh -i private-key-file opc@oci-private-instance-ip -p 2200
