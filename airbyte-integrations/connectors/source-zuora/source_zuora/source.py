@@ -123,19 +123,14 @@ class SourceZuora(AbstractSource):
         Mapping a input config of the user input configuration as defined in the connector spec.
         Defining streams to run.
         """
-        # List the Zuora Objects that should be filtered out from sync operations
-        # These objects are not going to be synced
-        except_objects = []
 
-        def create_stream_class_from_object_name(zuora_objects: List, except_objects: List) -> List:
+        def create_stream_class_from_object_name(zuora_objects: List) -> List:
             """
             The function to produce the dynamic stream classes from the list of zuora objects names
             """
             # Define the bases
             cls_base = (IncrementalZuoraStream,)
             cls_props = {}
-            # Filter the object due to the do_not_include_objects list
-            zuora_objects = [obj for obj in zuora_objects if obj not in except_objects]
             # Build the streams
             streams = []
             for obj in zuora_objects:
@@ -157,6 +152,6 @@ class SourceZuora(AbstractSource):
         # Get the list of available objects from Zuora
         zuora_objects = zuora_client._zuora_list_objects()
         # created the class for each object
-        streams = create_stream_class_from_object_name(zuora_objects, except_objects)
+        streams = create_stream_class_from_object_name(zuora_objects)
         # Return the list of stream classes with Zuora API Client as input
         return [streams[c](zuora_client) for c in range(len(streams))]
