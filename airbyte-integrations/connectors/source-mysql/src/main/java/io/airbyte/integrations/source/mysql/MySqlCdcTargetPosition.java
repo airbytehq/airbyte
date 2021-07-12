@@ -30,6 +30,7 @@ import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.SnapshotMetadata;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +53,11 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition {
       return fileName.equals(cdcTargetPosition.fileName) && cdcTargetPosition.position.equals(position);
     }
     return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(fileName, position);
   }
 
   @Override
