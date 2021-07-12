@@ -24,6 +24,7 @@
 
 
 import tempfile
+import time
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
@@ -67,6 +68,19 @@ class GithubStream(HttpStream, ABC):
             self._page += 1
             return {"page": self._page}
 
+    def should_retry(self, response: requests.Response) -> bool:
+        # We don't call `super()` here because we have custom error handling and GitHub API sometimes returns strange
+        # errors. So in `read_records()` we have custom error handling which don't require to call `super()` here.
+        return response.headers.get("X-RateLimit-Remaining") == "0"
+
+    def backoff_time(self, response: requests.Response) -> Optional[int]:
+        # This method is called if we run into the rate limit. GitHub limits requests to 5000 per hour and provides
+        # `X-RateLimit-Reset` header which contains time when this hour will be finished and limits will be reset so
+        # we again could have 5000 per another hour.
+        reset_time = int(response.headers.get("X-RateLimit-Reset", time.time() + 60))
+        time_now = int(time.time())
+        return reset_time - time_now
+
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         try:
             yield from super().read_records(**kwargs)
@@ -75,11 +89,34 @@ class GithubStream(HttpStream, ABC):
 
             # This whole try/except situation in `read_records()` isn't good but right now in `self._send_request()`
             # function we have `response.raise_for_status()` so we don't have much choice on how to handle errors.
-            # We added this try/except code because for private repositories `Teams` stream is not available and we get
-            # "404 Client Error: Not Found for url: https://api.github.com/orgs/sherifnada/teams?per_page=100" error.
-            # Blocked on https://github.com/airbytehq/airbyte/issues/3514.
-            if "/teams?" in error_msg:
-                error_msg = f"Syncing Team stream isn't available for repository {self.repository}"
+            # Bocked on https://github.com/airbytehq/airbyte/issues/3514.
+            if "403 Client Error" in error_msg:
+                error_msg = (
+                    f"Syncing `{self.__class__.__name__}` stream isn't available for repository "
+                    f"`{self.repository}` and your `access_token`, seems like you don't have permissions for "
+                    f"this stream."
+                )
+            elif "404 Client Error" in error_msg and "/teams?" in error_msg:
+                # For private repositories `Teams` stream is not available and we get "404 Client Error: Not Found for
+                # url: https://api.github.com/orgs/sherifnada/teams?per_page=100" error.
+                error_msg = f"Syncing `Team` stream isn't available for repository `{self.repository}`."
+            elif "502 Server Error" in error_msg:
+                # Sometimes we may receive "502 Server Error: Bad Gateway for url:" errors. Normal behaviour in to just
+                # repeat request later, but not with GitHub API because we may create an infinite loop. For large
+                # streams (like `comments`) we are providing following parameters: `since`, `sort` and `direction`.
+                # 502 error can occur when you specify very distant start_date in the past. For example, if you try to
+                # do request to the following url:
+                # https://api.github.com/repos/apache/superset/issues/comments?per_page=100&page=1&since=2015-01-01T00:00:00Z&sort=updated&direction=desc
+                # you will be getting `502 Server Error` in 95% of responses. This is because `since` value is very
+                # distant in the past and apparently GitHub can't handle it. So since we handle streams synchronously
+                # we may stuck in this loop for a long time (hours). That's why it's better to skip stream and show
+                # message to user explaining what went wrong. Also explanation will be added to documentation for
+                # GitHub connector.
+                error_msg = (
+                    f"Syncing `{self.__class__.__name__}` stream isn't available right now. We got 502 error "
+                    f"code from GitHub API meaning that GitHub has some issues while processing request. "
+                    f"You may try again later or specify more recent `start_date` parameter."
+                )
 
             self.logger.warn(error_msg)
 
@@ -282,6 +319,11 @@ class Events(SemiIncrementalGithubStream):
         "org",
     )
 
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        link = response.headers.get("Link")
+        if 'rel="next"' in link:
+            return super().next_page_token(response=response)
+
 
 class PullRequests(SemiIncrementalGithubStream):
     fields_to_minimize = (
@@ -372,6 +414,7 @@ class Projects(SemiIncrementalGithubStream):
 
 
 class IssueEvents(SemiIncrementalGithubStream):
+    cursor_field = "created_at"
     fields_to_minimize = (
         "actor",
         "issue",
