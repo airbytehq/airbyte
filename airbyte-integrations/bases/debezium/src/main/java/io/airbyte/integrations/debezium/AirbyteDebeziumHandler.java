@@ -43,12 +43,17 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class acts as the bridge between Airbyte DB connectors and debezium. If a DB connector wants
+ * to use debezium for CDC, it should use this class
+ */
 public class AirbyteDebeziumHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteDebeziumHandler.class);
@@ -80,13 +85,13 @@ public class AirbyteDebeziumHandler {
     this.queue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
   }
 
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(CdcSavedInfo cdcSavedInfo,
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(CdcSavedInfoFetcher cdcSavedInfoFetcher,
                                                                              CdcStateHandler cdcStateHandler,
-                                                                             CdcConnectorMetadata cdcConnectorMetadata,
+                                                                             CdcMetadataInjector cdcMetadataInjector,
                                                                              Instant emittedAt) {
     LOGGER.info("using CDC: {}", true);
-    final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfo.getSavedOffset());
-    final AirbyteSchemaHistoryStorage schemaHistoryManager = schemaHistoryManager(cdcSavedInfo);
+    final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset());
+    final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager = schemaHistoryManager(cdcSavedInfoFetcher);
     final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(connectorProperties, config, catalog, offsetManager,
         schemaHistoryManager);
     publisher.start(queue);
@@ -102,15 +107,16 @@ public class AirbyteDebeziumHandler {
     final AutoCloseableIterator<AirbyteMessage> messageIterator = AutoCloseableIterators
         .transform(
             eventIterator,
-            (event) -> DebeziumEventUtils.toAirbyteMessage(event, cdcConnectorMetadata, emittedAt));
+            (event) -> DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, emittedAt));
 
     // our goal is to get the state at the time this supplier is called (i.e. after all message records
     // have been produced)
     final Supplier<AirbyteMessage> stateMessageSupplier = () -> {
       Map<String, String> offset = offsetManager.read();
-      String dbHistory = trackSchemaHistory ? schemaHistoryManager.read() : null;
+      String dbHistory = trackSchemaHistory ? schemaHistoryManager
+          .orElseThrow(() -> new RuntimeException("Schema History Tracking is true but manager is not initialised")).read() : null;
 
-      return cdcStateHandler.state(offset, dbHistory);
+      return cdcStateHandler.saveState(offset, dbHistory);
     };
 
     // wrap the supplier in an iterator so that we can concat it to the message iterator.
@@ -125,13 +131,13 @@ public class AirbyteDebeziumHandler {
     return Collections.singletonList(messageIteratorWithStateDecorator);
   }
 
-  private AirbyteSchemaHistoryStorage schemaHistoryManager(CdcSavedInfo cdcSavedInfo) {
+  private Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager(CdcSavedInfoFetcher cdcSavedInfoFetcher) {
     if (trackSchemaHistory) {
       FilteredFileDatabaseHistory.setDatabaseName(config.get("database").asText());
-      return AirbyteSchemaHistoryStorage.initializeDBHistory(cdcSavedInfo.getSavedSchemaHistory());
+      return Optional.of(AirbyteSchemaHistoryStorage.initializeDBHistory(cdcSavedInfoFetcher.getSavedSchemaHistory()));
     }
 
-    return null;
+    return Optional.empty();
   }
 
 }

@@ -33,6 +33,7 @@ import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.format.Json;
 import io.debezium.engine.spi.OffsetCommitPolicy;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
@@ -46,6 +47,10 @@ import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The purpose of this class is to intiliaze and spawn the debezium engine with the right properties
+ * to fetch records
+ */
 public class DebeziumRecordPublisher implements AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumRecordPublisher.class);
@@ -54,7 +59,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
 
   private final JsonNode config;
   private final AirbyteFileOffsetBackingStore offsetManager;
-  private final AirbyteSchemaHistoryStorage schemaHistoryManager;
+  private final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager;
 
   private final AtomicBoolean hasClosed;
   private final AtomicBoolean isClosing;
@@ -67,7 +72,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
                                  JsonNode config,
                                  ConfiguredAirbyteCatalog catalog,
                                  AirbyteFileOffsetBackingStore offsetManager,
-                                 AirbyteSchemaHistoryStorage schemaHistoryManager) {
+                                 Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
     this.properties = properties;
     this.config = config;
     this.catalog = catalog;
@@ -151,7 +156,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     props.setProperty("offset.storage.file.filename", offsetManager.getOffsetFilePath().toString());
     props.setProperty("offset.flush.interval.ms", "1000"); // todo: make this longer
 
-    if (schemaHistoryManager != null) {
+    if (schemaHistoryManager.isPresent()) {
       // https://debezium.io/documentation/reference/1.4/operations/debezium-server.html#debezium-source-database-history-file-filename
       // https://debezium.io/documentation/reference/development/engine.html#_in_the_code
       // As mentioned in the documents above, debezium connector for MySQL needs to track the schema
@@ -159,7 +164,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
       // We have implemented our own implementation to filter out the schema information from other
       // databases that the connector is not syncing
       props.setProperty("database.history", "io.airbyte.integrations.debezium.internals.FilteredFileDatabaseHistory");
-      props.setProperty("database.history.file.filename", schemaHistoryManager.getPath().toString());
+      props.setProperty("database.history.file.filename", schemaHistoryManager.get().getPath().toString());
     }
 
     // https://debezium.io/documentation/reference/configuration/avro.html

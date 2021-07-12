@@ -30,7 +30,7 @@ import com.fasterxml.jackson.databind.JsonNode;
  * This interface is used to fetch the saved info required for debezium to run incrementally. Each
  * connector saves offset and schema history in different manner
  */
-public interface CdcSavedInfo {
+public interface CdcSavedInfoFetcher {
 
   JsonNode getSavedOffset();
 

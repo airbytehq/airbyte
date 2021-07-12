@@ -34,6 +34,6 @@ import java.util.Map;
 @FunctionalInterface
 public interface CdcStateHandler {
 
-  AirbyteMessage state(Map<String, String> offset, String dbHistory);
+  AirbyteMessage saveState(Map<String, String> offset, String dbHistory);
 
 }
