@@ -48,8 +48,8 @@ const CustomSelect = styled(Select)<{
       background: ${({ theme }) => theme.primaryColor12};
     }
 
-    & .react-select__indicator-separator {
-      opacity: 0;
+    & .react-select__multi-value {
+      background: rgba(255, 255, 255, 0);
     }
   }
 `;
@@ -73,6 +73,9 @@ const DropDown: React.FC<DropdownProps> = (props) => {
       Menu,
       Option,
       SingleValue,
+      IndicatorSeparator: () => null,
+      ClearIndicator: () => null,
+      MultiValueRemove: () => null,
     }),
     [propsComponents]
   );
@@ -85,8 +88,11 @@ const DropDown: React.FC<DropdownProps> = (props) => {
       menuPortalTarget={document.body}
       placeholder={"..."}
       {...props}
+      menuShouldBlockScroll
       value={props.options?.find((op) => equal(op.value, props.value))}
       components={components}
+      closeMenuOnSelect={!props.isMulti}
+      hideSelectedOptions={false}
     />
   );
 };

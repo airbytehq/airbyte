@@ -1,5 +1,5 @@
 import React from "react";
-import { components, MenuProps, OptionTypeBase } from "react-select";
+import { components, MenuProps } from "react-select";
 import styled from "styled-components";
 import { theme } from "theme";
 import { IDataItem } from "./Option";
@@ -35,25 +35,18 @@ const MenuList = styled(components.Menu)`
     margin: 0;
     min-width: 260px;
     border-radius: 4px;
-    background: ${({ theme }) => theme.whiteClor};
+    background: ${({ theme }) => theme.whiteColor};
     box-shadow: 0 8px 10px 0 rgba(11, 10, 26, 0.04),
       0 3px 14px 0 rgba(11, 10, 26, 0.08), 0 5px 5px 0 rgba(11, 10, 26, 0.12);
 
     & .react-select__option {
-      cursor: pointer;
-      color: ${theme.textColor};
-      border: none;
-      padding: 10px 16px;
-      font-size: 14px;
-      line-height: 19px;
+      padding: 0;
+      margin: 0;
+      background: ${({ theme }) => theme.whiteColor};
 
+      &.react-select__option--is-selected,
       &.react-select__option--is-focused {
-        background: ${theme.greyColor20};
-      }
-
-      &.react-select__option--is-selected {
-        background: ${theme.primaryColor12};
-        color: ${theme.primaryColor};
+        background: rgba(255, 255, 255, 0);
       }
     }
   }
