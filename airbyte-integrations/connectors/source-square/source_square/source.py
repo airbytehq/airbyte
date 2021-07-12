@@ -95,7 +95,7 @@ class SquareStream(HttpStream, ABC):
             square_exception = parse_square_error_response(e)
             if square_exception:
                 self.logger.error(str(square_exception))
-            raise type(e)(f"{square_exception}, {e}").with_traceback(sys.exc_info()[2])
+            raise e
 
 
 # Some streams require next_page_token in request query parameters (TeamMemberWages, Customers)
