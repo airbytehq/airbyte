@@ -192,6 +192,9 @@
             "ts": {
               "type": ["null", "string"]
             },
+            "float_ts": {
+              "type": ["null", "number"]
+            },
             "type": {
               "type": ["null", "string"]
             },
