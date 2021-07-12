@@ -30,6 +30,12 @@ If you are running [Airbyte on Kubernetes](../deploying-airbyte/on-kubernetes.md
    docker-compose up
    ```
 
+{% hint style="info" %}
+If you did not start Airbyte from the root of the Airbyte monorepo, you will need to still need to manually remove these now orphaned Airbyte configurations. You can do this with `docker volume rm $(docker volume ls -q | grep airbyte)`.
+{% endhint %}
+
+docker volume rm $(docker volume ls -q | grep airbyte)
+
 ## Upgrading on K8s (0.27.0-alpha and above)
 
 If you are upgrading from (i.e. your current version of Airbyte is) Airbyte version **0.27.0-alpha or above** on Kubernetes :
