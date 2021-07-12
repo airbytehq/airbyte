@@ -46,7 +46,7 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
   }
 
   @Override
-  public AirbyteMessage state(Map<String, String> offset, String dbHistory) {
+  public AirbyteMessage saveState(Map<String, String> offset, String dbHistory) {
     final JsonNode asJson = Jsons.jsonNode(offset);
     LOGGER.info("debezium state: {}", asJson);
     CdcState cdcState = new CdcState().withState(asJson);

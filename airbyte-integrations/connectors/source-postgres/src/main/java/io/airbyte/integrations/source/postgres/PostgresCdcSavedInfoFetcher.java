@@ -25,14 +25,15 @@
 package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.debezium.CdcSavedInfo;
+import io.airbyte.integrations.debezium.CdcSavedInfoFetcher;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
+import java.util.Optional;
 
-public class PostgresCdcSavedInfo implements CdcSavedInfo {
+public class PostgresCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
 
   private final JsonNode savedOffset;
 
-  public PostgresCdcSavedInfo(CdcState savedState) {
+  public PostgresCdcSavedInfoFetcher(CdcState savedState) {
     final boolean savedStatePresent = savedState != null && savedState.getState() != null;
     this.savedOffset = savedStatePresent ? savedState.getState() : null;
   }
@@ -43,8 +44,8 @@ public class PostgresCdcSavedInfo implements CdcSavedInfo {
   }
 
   @Override
-  public JsonNode getSavedSchemaHistory() {
-    return null;
+  public Optional<JsonNode> getSavedSchemaHistory() {
+    return Optional.empty();
   }
 
 }

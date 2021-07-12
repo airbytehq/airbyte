@@ -31,6 +31,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.SnapshotMetadata;
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +52,11 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
       return cdcTargetPosition.targetLsn.compareTo(targetLsn) == 0;
     }
     return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(targetLsn.asLong());
   }
 
   static PostgresCdcTargetPosition targetPosition(JdbcDatabase database) {

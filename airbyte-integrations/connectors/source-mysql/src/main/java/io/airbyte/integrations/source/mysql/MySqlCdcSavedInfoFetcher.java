@@ -30,6 +30,7 @@ import static io.airbyte.integrations.source.mysql.MySqlSource.MYSQL_DB_HISTORY;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.debezium.CdcSavedInfoFetcher;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
+import java.util.Optional;
 
 public class MySqlCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
 
@@ -48,8 +49,8 @@ public class MySqlCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
   }
 
   @Override
-  public JsonNode getSavedSchemaHistory() {
-    return savedSchemaHistory;
+  public Optional<JsonNode> getSavedSchemaHistory() {
+    return Optional.of(savedSchemaHistory);
   }
 
 }
