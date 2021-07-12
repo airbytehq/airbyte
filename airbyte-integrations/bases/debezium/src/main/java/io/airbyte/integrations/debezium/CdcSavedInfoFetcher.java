@@ -25,6 +25,7 @@
 package io.airbyte.integrations.debezium;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import java.util.Optional;
 
 /**
  * This interface is used to fetch the saved info required for debezium to run incrementally. Each
@@ -34,6 +35,6 @@ public interface CdcSavedInfoFetcher {
 
   JsonNode getSavedOffset();
 
-  JsonNode getSavedSchemaHistory();
+  Optional<JsonNode> getSavedSchemaHistory();
 
 }
