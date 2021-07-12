@@ -85,6 +85,6 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.2   | 2021-07-13 | [](https://github.com/airbytehq/airbyte/pull/) | Fix bugs |
+| 0.1.2   | 2021-07-13 | [4708](https://github.com/airbytehq/airbyte/pull/4708) | Fix bug with IssueEvents stream and add handling for rate limiting |
 | 0.1.1   | 2021-07-07 | [4590](https://github.com/airbytehq/airbyte/pull/4590) | Fix schema in the `pull_request` stream |
 | 0.1.0   | 2021-07-06 | [4174](https://github.com/airbytehq/airbyte/pull/4174) | New Source: GitHub |
