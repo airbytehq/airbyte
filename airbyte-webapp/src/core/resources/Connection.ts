@@ -9,39 +9,18 @@ import {
 
 import { SyncSchema } from "core/domain/catalog";
 import { CommonRequestError } from "core/request/CommonRequestError";
-import { Operation } from "core/domain/connection/operation";
 import { Source } from "./Source";
 import { Destination } from "./Destination";
 
 import BaseResource from "./BaseResource";
-import { ConnectionNamespaceDefinition } from "../domain/connection";
+import {
+  ConnectionNamespaceDefinition,
+  Connection,
+  ScheduleProperties,
+  Operation,
+} from "core/domain/connection";
 
-export type ScheduleProperties = {
-  units: number;
-  timeUnit: string;
-};
-
-export interface Connection {
-  connectionId: string;
-  name: string;
-  prefix: string;
-  sourceId: string;
-  destinationId: string;
-  status: string;
-  schedule: ScheduleProperties | null;
-  syncCatalog: SyncSchema;
-  latestSyncJobCreatedAt?: number | null;
-  namespaceDefinition: ConnectionNamespaceDefinition;
-  namespaceFormat: string;
-  isSyncing?: boolean;
-  latestSyncJobStatus: string | null;
-  operationIds: string[];
-
-  // WebBackend connection specific fields
-  source: Source;
-  destination: Destination;
-  operations: Operation[];
-}
+export type { Connection, ScheduleProperties };
 
 export default class ConnectionResource
   extends BaseResource
@@ -83,10 +62,8 @@ export default class ConnectionResource
   ): ReadShape<SchemaDetail<Connection>> {
     return {
       ...super.detailShape(),
-      getFetchKey: (params: {
-        connectionId: string;
-        withRefreshedCatalog?: boolean;
-      }) => "POST /web_backend/get" + JSON.stringify(params),
+      getFetchKey: (params: { connectionId: string }) =>
+        "POST /web_backend/get" + JSON.stringify(params),
       fetch: async (
         params: Readonly<Record<string, unknown>>
       ): Promise<Connection> =>
