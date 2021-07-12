@@ -24,6 +24,8 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -33,50 +35,36 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
-import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.commons.util.CompositeIterator;
-import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.db.PgLsn;
-import io.airbyte.db.PostgresUtils;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.StateManager;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.SyncMode;
-import io.debezium.engine.ChangeEvent;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PostgresSource extends AbstractJdbcSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
+  public static final String CDC_LSN = "_ab_cdc_lsn";
 
   static final String DRIVER_CLASS = "org.postgresql.Driver";
 
@@ -193,28 +181,6 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     return super.read(config, catalog, state);
   }
 
-  private static PgLsn getLsn(JdbcDatabase database) {
-    try {
-      return PostgresUtils.getLsn(database);
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private AirbyteFileOffsetBackingStore initializeState(StateManager stateManager) {
-    final Path cdcWorkingDir;
-    try {
-      cdcWorkingDir = Files.createTempDirectory(Path.of("/tmp"), "cdc");
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-    final Path cdcOffsetFilePath = cdcWorkingDir.resolve("offset.dat");
-
-    final AirbyteFileOffsetBackingStore offsetManager = new AirbyteFileOffsetBackingStore(cdcOffsetFilePath);
-    offsetManager.persist(stateManager.getCdcStateManager().getCdcState());
-    return offsetManager;
-  }
-
   @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JdbcDatabase database,
                                                                              ConfiguredAirbyteCatalog catalog,
@@ -229,51 +195,13 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
      * have a check here as well to make sure that if no table is in INCREMENTAL mode then skip this
      * part
      */
-    if (isCdc(database.getSourceConfig())) {
-      // State works differently in CDC than it does in convention incremental. The state is written to an
-      // offset file that debezium reads from. Then once all records are replicated, we read back that
-      // offset file (which will have been updated by debezium) and set it in the state. There is no
-      // incremental updating of the state structs in the CDC impl.
-      final AirbyteFileOffsetBackingStore offsetManager = initializeState(stateManager);
+    JsonNode sourceConfig = database.getSourceConfig();
+    if (isCdc(sourceConfig)) {
+      final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig, PostgresCdcTargetPosition.targetPosition(database),
+          PostgresCdcProperties.getDebeziumProperties(sourceConfig), catalog, false);
+      return handler.getIncrementalIterators(new PostgresCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
+          new PostgresCdcStateHandler(stateManager), new PostgresCdcConnectorMetadataInjector(), emittedAt);
 
-      final PgLsn targetLsn = getLsn(database);
-      LOGGER.info("identified target lsn: " + targetLsn);
-
-      final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
-
-      final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(database.getSourceConfig(), catalog, offsetManager);
-      publisher.start(queue);
-
-      // handle state machine around pub/sub logic.
-      final AutoCloseableIterator<ChangeEvent<String, String>> eventIterator = new DebeziumRecordIterator(
-          queue,
-          targetLsn,
-          publisher::hasClosed,
-          publisher::close);
-
-      // convert to airbyte message.
-      final AutoCloseableIterator<AirbyteMessage> messageIterator = AutoCloseableIterators.transform(
-          eventIterator,
-          (event) -> DebeziumEventUtils.toAirbyteMessage(event, emittedAt));
-
-      // our goal is to get the state at the time this supplier is called (i.e. after all message records
-      // have been produced)
-      final Supplier<AirbyteMessage> stateMessageSupplier = () -> {
-        stateManager.getCdcStateManager().setCdcState(offsetManager.read());
-        final AirbyteStateMessage stateMessage = stateManager.emit();
-        return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
-      };
-
-      // wrap the supplier in an iterator so that we can concat it to the message iterator.
-      final Iterator<AirbyteMessage> stateMessageIterator = MoreIterators.singletonIteratorFromSupplier(stateMessageSupplier);
-
-      // this structure guarantees that the debezium engine will be closed, before we attempt to emit the
-      // state file. we want this so that we have a guarantee that the debezium offset file (which we use
-      // to produce the state file) is up-to-date.
-      final CompositeIterator<AirbyteMessage> messageIteratorWithStateDecorator = AutoCloseableIterators
-          .concatWithEagerClose(messageIterator, AutoCloseableIterators.fromIterator(stateMessageIterator));
-
-      return Collections.singletonList(messageIteratorWithStateDecorator);
     } else {
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     }
