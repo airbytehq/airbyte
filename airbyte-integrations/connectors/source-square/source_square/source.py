@@ -23,6 +23,7 @@
 #
 
 import json
+import sys
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -94,7 +95,7 @@ class SquareStream(HttpStream, ABC):
             square_exception = parse_square_error_response(e)
             if square_exception:
                 self.logger.error(str(square_exception))
-            raise e
+            raise type(e)(f"{square_exception}, {e}").with_traceback(sys.exc_info()[2])
 
 
 # Some streams require next_page_token in request query parameters (TeamMemberWages, Customers)
@@ -305,6 +306,14 @@ class TeamMemberWages(SquareStreamPageParam):
 
         params_payload["limit"] = self.items_per_page_limit
         return params_payload
+
+    # This stream is tricky because once in a while it returns 404 error 'Not Found for url'.
+    # Thus the retry strategy was implemented.
+    def should_retry(self, response: requests.Response) -> bool:
+        return response.status_code == 404 or super().should_retry(response)
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        return 3
 
 
 class Customers(SquareStreamPageParam):
