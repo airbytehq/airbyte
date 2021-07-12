@@ -45,7 +45,6 @@ class AirbyteSpec(object):
 
 
 class Connector(ABC):
-
     # can be overridden to change an input config
     def configure(self, config: Mapping[str, Any], temp_dir: str) -> Mapping[str, Any]:
         """
