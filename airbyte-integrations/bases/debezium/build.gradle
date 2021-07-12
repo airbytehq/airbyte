@@ -12,6 +12,7 @@ dependencies {
     implementation 'io.debezium:debezium-embedded:1.4.2.Final'
     implementation 'io.debezium:debezium-connector-mysql:1.4.2.Final'
     implementation 'io.debezium:debezium-connector-postgres:1.4.2.Final'
+    implementation 'io.debezium:debezium-connector-sqlserver:1.4.2.Final'
 
     testFixturesImplementation project(':airbyte-db')
     testFixturesImplementation project(':airbyte-integrations:bases:base-java')

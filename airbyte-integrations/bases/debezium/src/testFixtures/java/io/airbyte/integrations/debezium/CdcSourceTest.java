@@ -59,6 +59,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -78,9 +80,8 @@ public abstract class CdcSourceTest {
   protected static final String COL_ID = "id";
   protected static final String COL_MAKE_ID = "make_id";
   protected static final String COL_MODEL = "model";
-  protected static final String DB_NAME = MODELS_SCHEMA;
 
-  private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
+  protected static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
           MODELS_STREAM_NAME,
           MODELS_SCHEMA,
@@ -124,6 +125,24 @@ public abstract class CdcSourceTest {
     }
   }
 
+  public String columnClause(Map<String, String> columnsWithDataType, Optional<String> primaryKey) {
+    StringBuilder columnClause = new StringBuilder();
+    int i = 0;
+    for (Map.Entry<String, String> column : columnsWithDataType.entrySet()) {
+      columnClause.append(column.getKey());
+      columnClause.append(" ");
+      columnClause.append(column.getValue());
+      if (i < (columnsWithDataType.size() - 1)) {
+        columnClause.append(",");
+        columnClause.append(" ");
+      }
+      i++;
+    }
+    primaryKey.ifPresent(s -> columnClause.append(", PRIMARY KEY (").append(s).append(")"));
+
+    return columnClause.toString();
+  }
+
   public void createTable(String schemaName, String tableName, String columnClause) {
     executeQuery(createTableQuery(schemaName, tableName, columnClause));
   }
@@ -143,7 +162,7 @@ public abstract class CdcSourceTest {
   private void createAndPopulateActualTable() {
     createSchema(MODELS_SCHEMA);
     createTable(MODELS_SCHEMA, MODELS_STREAM_NAME,
-        String.format("%s INTEGER, %s INTEGER, %s VARCHAR(200), PRIMARY KEY (%s)", COL_ID, COL_MAKE_ID, COL_MODEL, COL_ID));
+        columnClause(ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)"), Optional.of(COL_ID)));
     for (JsonNode recordJson : MODEL_RECORDS) {
       writeModelRecord(recordJson);
     }
@@ -156,9 +175,8 @@ public abstract class CdcSourceTest {
   private void createAndPopulateRandomTable() {
     createSchema(MODELS_SCHEMA + "_random");
     createTable(MODELS_SCHEMA + "_random", MODELS_STREAM_NAME + "_random",
-        String.format("%s INTEGER, %s INTEGER, %s VARCHAR(200), PRIMARY KEY (%s)", COL_ID + "_random",
-            COL_MAKE_ID + "_random",
-            COL_MODEL + "_random", COL_ID + "_random"));
+        columnClause(ImmutableMap.of(COL_ID + "_random", "INTEGER", COL_MAKE_ID + "_random", "INTEGER", COL_MODEL + "_random", "VARCHAR(200)"),
+            Optional.of(COL_ID + "_random")));
     final List<JsonNode> MODEL_RECORDS_RANDOM = ImmutableList.of(
         Jsons
             .jsonNode(ImmutableMap
@@ -448,7 +466,7 @@ public abstract class CdcSourceTest {
         Jsons.jsonNode(ImmutableMap.of(COL_ID, 160, COL_MAKE_ID, 2, COL_MODEL, "E 350-2")));
 
     createTable(MODELS_SCHEMA, MODELS_STREAM_NAME + "_2",
-        String.format("%s INTEGER, %s INTEGER, %s VARCHAR(200), PRIMARY KEY (%s)", COL_ID, COL_MAKE_ID, COL_MODEL, COL_ID));
+        columnClause(ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)"), Optional.of(COL_ID)));
 
     for (JsonNode recordJson : MODEL_RECORDS_2) {
       writeRecords(recordJson, MODELS_SCHEMA, MODELS_STREAM_NAME + "_2", COL_ID,
@@ -571,7 +589,8 @@ public abstract class CdcSourceTest {
   protected AirbyteCatalog expectedCatalogForDiscover() {
     final AirbyteCatalog expectedCatalog = Jsons.clone(CATALOG);
 
-    createTable(MODELS_SCHEMA, MODELS_STREAM_NAME + "_2", String.format("%s INTEGER, %s INTEGER, %s VARCHAR(200)", COL_ID, COL_MAKE_ID, COL_MODEL));
+    createTable(MODELS_SCHEMA, MODELS_STREAM_NAME + "_2",
+        columnClause(ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)"), Optional.empty()));
 
     List<AirbyteStream> streams = expectedCatalog.getStreams();
     // stream with PK
@@ -588,7 +607,19 @@ public abstract class CdcSourceTest {
     streamWithoutPK.setSupportedSyncModes(List.of(SyncMode.FULL_REFRESH));
     addCdcMetadataColumns(streamWithoutPK);
 
+    AirbyteStream randomStream = CatalogHelpers.createAirbyteStream(
+        MODELS_STREAM_NAME + "_random",
+        MODELS_SCHEMA + "_random",
+        Field.of(COL_ID + "_random", JsonSchemaPrimitive.NUMBER),
+        Field.of(COL_MAKE_ID + "_random", JsonSchemaPrimitive.NUMBER),
+        Field.of(COL_MODEL + "_random", JsonSchemaPrimitive.STRING))
+        .withSourceDefinedCursor(true)
+        .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+        .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID + "_random")));
+    addCdcMetadataColumns(randomStream);
+
     streams.add(streamWithoutPK);
+    streams.add(randomStream);
     expectedCatalog.withStreams(streams);
     return expectedCatalog;
   }
