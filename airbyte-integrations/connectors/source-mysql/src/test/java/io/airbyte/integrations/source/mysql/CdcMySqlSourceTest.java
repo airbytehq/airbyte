@@ -69,6 +69,7 @@ import org.testcontainers.containers.MySQLContainer;
 
 public class CdcMySqlSourceTest extends CdcSourceTest {
 
+  private static final String DB_NAME = MODELS_SCHEMA;
   private MySQLContainer<?> container;
   private Database database;
   private MySqlSource source;

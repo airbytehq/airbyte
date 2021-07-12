@@ -118,11 +118,9 @@ public class TestDataHolder {
     /**
      * Set custom the create table script pattern. Use it if you source uses untypical table creation
      * sql. Default patter described {@link #DEFAULT_CREATE_TABLE_SQL} Note! The patter should contain
-     * four String place holders for the:
-     * - namespace.table name (as one placeholder together)
-     * - id column name
-     * - test column name
-     * - test column data type
+     * four String place holders for the: - namespace.table name (as one placeholder together) - id
+     * column name - test column name - test column data type
+     *
      * @param createTablePatternSql creation table sql pattern
      * @return builder
      */

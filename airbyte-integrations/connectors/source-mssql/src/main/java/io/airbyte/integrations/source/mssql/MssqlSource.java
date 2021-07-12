@@ -24,52 +24,40 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import static io.airbyte.integrations.source.mssql.AirbyteFileOffsetBackingStore.initializeState;
-import static io.airbyte.integrations.source.mssql.AirbyteSchemaHistoryStorage.initializeDBHistory;
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
-import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.commons.util.CompositeIterator;
-import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.JdbcStateManager;
-import io.airbyte.integrations.source.jdbc.models.CdcState;
+import io.airbyte.integrations.source.relationaldb.StateManager;
+import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
-import io.debezium.connector.sqlserver.Lsn;
-import io.debezium.engine.ChangeEvent;
 import java.io.File;
-import java.io.IOException;
+import java.sql.JDBCType;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,6 +68,7 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
   static final String DRIVER_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
   public static final String MSSQL_CDC_OFFSET = "mssql_cdc_offset";
   public static final String MSSQL_DB_HISTORY = "mssql_db_history";
+  public static final String CDC_LSN = "_ab_cdc_lsn";
 
   public MssqlSource() {
     super(DRIVER_CLASS, new MssqlJdbcStreamingQueryConfiguration());
@@ -166,14 +155,15 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
               config.get("database").asText()));
         }
 
-        if ( ! (queryResponse.get(0).get("is_cdc_enabled").asBoolean())) {
+        if (!(queryResponse.get(0).get("is_cdc_enabled").asBoolean())) {
           throw new RuntimeException(String.format(
               "Detected that CDC is not enabled for database '%s'. Please check the documentation on how to enable CDC on MS SQL Server.",
               config.get("database").asText()));
         }
       });
 
-      // check that we can query cdc schema and check we have at least 1 table with cdc enabled that this user can see
+      // check that we can query cdc schema and check we have at least 1 table with cdc enabled that this
+      // user can see
       checkOperations.add(database -> {
         List<JsonNode> queryResponse = database.query(connection -> {
           final String sql = "SELECT * FROM cdc.change_tables";
@@ -199,7 +189,7 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
             return ps;
           }, JdbcUtils::rowToJson).collect(toList());
 
-          if ( ! (queryResponse.get(0).get("status_desc").toString().contains("Running"))) {
+          if (!(queryResponse.get(0).get("status_desc").toString().contains("Running"))) {
             throw new RuntimeException(String.format(
                 "The SQL Server Agent is not running. Current state: '%s'. Please check the documentation on ensuring SQL Server Agent is running.",
                 queryResponse.get(0).get("status_desc").toString()));
@@ -245,101 +235,22 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JsonNode config,
-                                                                             JdbcDatabase database,
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JdbcDatabase database,
                                                                              ConfiguredAirbyteCatalog catalog,
-                                                                             Map<String, TableInfoInternal> tableNameToTable,
-                                                                             JdbcStateManager stateManager,
+                                                                             Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+                                                                             StateManager stateManager,
                                                                              Instant emittedAt) {
-    if (isCdc(config) && shouldUseCDC(catalog)) {
+    JsonNode sourceConfig = database.getSourceConfig();
+    if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       LOGGER.info("using CDC: {}", true);
-      // TODO: Figure out how to set the isCDC of stateManager to true. Its always false
-      // State works differently in CDC than it does in convention incremental. The state is written to an
-      // offset file that debezium reads from. Then once all records are replicated, we read back that
-      // offset file (which will have been updated by debezium) and set it in the state. There is no
-      // incremental updating of the state structs in the CDC impl.
-      final AirbyteFileOffsetBackingStore offsetManager = initializeState(stateManager);
-      AirbyteSchemaHistoryStorage schemaHistoryManager = initializeDBHistory(stateManager);
-      FilteredFileDatabaseHistory.setDatabaseName(config.get("database").asText());
-
-      final Lsn targetLsn = getLsn(database);
-      LOGGER.info("identified target lsn: " + targetLsn);
-
-      /**
-       * We use 100,000 as capacity. We've used default * 10 queue size and batch size of debezium :
-       * {@link io.debezium.config.CommonConnectorConfig#DEFAULT_MAX_BATCH_SIZE} is 2048 (so 20,480)
-       * {@link io.debezium.config.CommonConnectorConfig#DEFAULT_MAX_QUEUE_SIZE} is 8192 (so 81,920)
-       */
-      final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(100000);
-      final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(config, catalog, offsetManager, schemaHistoryManager);
-      publisher.start(queue);
-
-      // handle state machine around pub/sub logic.
-      final AutoCloseableIterator<ChangeEvent<String, String>> eventIterator = new DebeziumRecordIterator(
-          queue,
-          targetLsn,
-          publisher::hasClosed,
-          publisher::close);
-
-      // convert to airbyte message.
-      final AutoCloseableIterator<AirbyteMessage> messageIterator = AutoCloseableIterators
-          .transform(
-              eventIterator,
-              (event) -> DebeziumEventUtils.toAirbyteMessage(event, emittedAt));
-
-      // our goal is to get the state at the time this supplier is called (i.e. after all message records
-      // have been produced)
-      final Supplier<AirbyteMessage> stateMessageSupplier = () -> {
-        Map<String, String> offset = offsetManager.readMap();
-        String dbHistory = schemaHistoryManager.read();
-
-        Map<String, Object> state = new HashMap<>();
-        state.put(MSSQL_CDC_OFFSET, offset);
-        state.put(MSSQL_DB_HISTORY, dbHistory);
-
-        final JsonNode asJson = Jsons.jsonNode(state);
-
-        LOGGER.info("debezium state: {}", asJson);
-
-        CdcState cdcState = new CdcState().withState(asJson);
-        stateManager.getCdcStateManager().setCdcState(cdcState);
-        final AirbyteStateMessage stateMessage = stateManager.emit();
-        return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
-
-      };
-
-      // wrap the supplier in an iterator so that we can concat it to the message iterator.
-      final Iterator<AirbyteMessage> stateMessageIterator = MoreIterators.singletonIteratorFromSupplier(stateMessageSupplier);
-
-      // this structure guarantees that the debezium engine will be closed, before we attempt to emit the
-      // state file. we want this so that we have a guarantee that the debezium offset file (which we use
-      // to produce the state file) is up-to-date.
-      final CompositeIterator<AirbyteMessage> messageIteratorWithStateDecorator = AutoCloseableIterators
-          .concatWithEagerClose(messageIterator, AutoCloseableIterators.fromIterator(stateMessageIterator));
-
-      return Collections.singletonList(messageIteratorWithStateDecorator);
+      AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig, MssqlCdcTargetPosition.getTargetPostion(database),
+          MssqlCdcProperties.getDebeziumProperties(), catalog, true);
+      return handler.getIncrementalIterators(new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
+          new MssqlCdcStateHandler(stateManager), new MssqlCdcConnectorMetadataInjector(), emittedAt);
     } else {
       LOGGER.info("using CDC: {}", false);
-      return super.getIncrementalIterators(config, database, catalog, tableNameToTable, stateManager, emittedAt);
+      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     }
-  }
-
-  private static Lsn getLsn(JdbcDatabase database) {
-    try {
-      final List<JsonNode> jsonNodes = database
-          .bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(
-              "SELECT sys.fn_cdc_get_max_lsn() AS max_lsn;"), JdbcUtils::rowToJson);
-
-      Preconditions.checkState(jsonNodes.size() == 1);
-      if (jsonNodes.get(0).get("max_lsn") != null) {
-        return Lsn.valueOf(jsonNodes.get(0).get("max_lsn").binaryValue());
-      } else {
-        throw new RuntimeException("Max LSN is null, see docs"); // todo: make this error way better
-      }
-    } catch (SQLException | IOException e) {
-      throw new RuntimeException(e);
-    }
-
   }
 
   private static boolean isCdc(JsonNode config) {
@@ -379,7 +290,8 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
     ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
 
     final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
-    properties.set(CDC_LSN, numberType);
+    final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
+    properties.set(CDC_LSN, stringType);
     properties.set(CDC_UPDATED_AT, numberType);
     properties.set(CDC_DELETED_AT, numberType);
 

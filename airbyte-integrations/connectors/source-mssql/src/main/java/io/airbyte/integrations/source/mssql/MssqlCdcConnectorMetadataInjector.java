@@ -22,35 +22,25 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.mysql;
+package io.airbyte.integrations.source.mssql;
 
-import static io.airbyte.integrations.source.mysql.MySqlSource.MYSQL_CDC_OFFSET;
-import static io.airbyte.integrations.source.mysql.MySqlSource.MYSQL_DB_HISTORY;
+import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_LSN;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.debezium.CdcSavedInfoFetcher;
-import io.airbyte.integrations.source.relationaldb.models.CdcState;
-import java.util.Optional;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.integrations.debezium.CdcMetadataInjector;
 
-public class MySqlCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
+public class MssqlCdcConnectorMetadataInjector implements CdcMetadataInjector {
 
-  private final JsonNode savedOffset;
-  private final JsonNode savedSchemaHistory;
-
-  protected MySqlCdcSavedInfoFetcher(CdcState savedState) {
-    final boolean savedStatePresent = savedState != null && savedState.getState() != null;
-    this.savedOffset = savedStatePresent ? savedState.getState().get(MYSQL_CDC_OFFSET) : null;
-    this.savedSchemaHistory = savedStatePresent ? savedState.getState().get(MYSQL_DB_HISTORY) : null;
+  @Override
+  public void addMetaData(ObjectNode event, JsonNode source) {
+    String commitLsn = source.get("commit_lsn").asText();
+    event.put(CDC_LSN, commitLsn);
   }
 
   @Override
-  public JsonNode getSavedOffset() {
-    return savedOffset;
-  }
-
-  @Override
-  public Optional<JsonNode> getSavedSchemaHistory() {
-    return Optional.ofNullable(savedSchemaHistory);
+  public String namespace(JsonNode source) {
+    return source.get("schema").asText();
   }
 
 }

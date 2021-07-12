@@ -170,12 +170,13 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     executeQuery(String.format("INSERT INTO %s.%s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');",
         SCHEMA_NAME, STREAM_NAME2));
 
-    // sometimes seeing an error that we can't enable cdc on a table while sql server agent is still spinning up
+    // sometimes seeing an error that we can't enable cdc on a table while sql server agent is still
+    // spinning up
     // solving with a simple while retry loop
     boolean failingToStart = true;
     int retryNum = 0;
     int maxRetries = 10;
-    while(failingToStart) {
+    while (failingToStart) {
       try {
         // enabling CDC on each table
         String[] tables = {STREAM_NAME, STREAM_NAME2};
@@ -189,12 +190,11 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
               SCHEMA_NAME, table, CDC_ROLE_NAME));
         }
         failingToStart = false;
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         if (retryNum >= maxRetries) {
           throw e;
         } else {
-          retryNum ++;
+          retryNum++;
           Thread.sleep(10000); // 10 seconds
         }
       }

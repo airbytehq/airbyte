@@ -134,8 +134,7 @@ public class AirbyteDebeziumHandler {
   private Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager(CdcSavedInfoFetcher cdcSavedInfoFetcher) {
     if (trackSchemaHistory) {
       FilteredFileDatabaseHistory.setDatabaseName(config.get("database").asText());
-      return Optional.of(AirbyteSchemaHistoryStorage.initializeDBHistory(cdcSavedInfoFetcher.getSavedSchemaHistory()
-          .orElseThrow(() -> new RuntimeException("Schema History Tracking is true but cdcSavedInfoFetcher returns null"))));
+      return Optional.of(AirbyteSchemaHistoryStorage.initializeDBHistory(cdcSavedInfoFetcher.getSavedSchemaHistory()));
     }
 
     return Optional.empty();
