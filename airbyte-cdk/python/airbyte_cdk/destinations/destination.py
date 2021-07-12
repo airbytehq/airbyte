@@ -36,8 +36,12 @@ class Destination(Connector, ABC):
     logger = AirbyteLogger()
 
     @abstractmethod
-    def write(self, config: Mapping[str, any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]) -> Iterable[
-        AirbyteMessage]:
+    def write(
+            self,
+            config: Mapping[str, any],
+            configured_catalog: ConfiguredAirbyteCatalog,
+            input_messages: Iterable[AirbyteMessage]
+    ) -> Iterable[AirbyteMessage]:
         """Implement to define how the connector writes data to the destination"""
 
     def _run_spec(self) -> AirbyteMessage:
@@ -55,7 +59,6 @@ class Destination(Connector, ABC):
                 yield AirbyteMessage.parse_raw(line)
             except Exception:
                 self.logger.info(f"ignoring input which can't be serialized as Airbyte Message: {line}")
-        yield from []  # always yield in case nothing was input
 
     def _run_write(self, config_path: str, configured_catalog_path: str, input_stream: io.TextIOWrapper) -> Iterable[AirbyteMessage]:
         config = self.read_config(config_path=config_path)
@@ -70,8 +73,7 @@ class Destination(Connector, ABC):
         :param args: commandline arguments
         :return:
         """
-        print("ArGS yo")
-        print(args)
+
         parent_parser = argparse.ArgumentParser(add_help=False)
         main_parser = argparse.ArgumentParser()
         subparsers = main_parser.add_subparsers(title="commands", dest="command")
@@ -90,21 +92,24 @@ class Destination(Connector, ABC):
         write_required.add_argument("--config", type=str, required=True, help="path to the JSON configuration file")
         write_required.add_argument("--catalog", type=str, required=True, help="path to the configured catalog JSON file")
 
-        return main_parser.parse_args(args)
+        parsed_args = main_parser.parse_args(args)
+        cmd = parsed_args.command
+        if not cmd:
+            raise Exception("No command entered. ")
+        elif cmd not in ["spec", "check", "write"]:
+            raise Exception(f"Unknown command entered: {cmd}")
+
+        return parsed_args
 
     def run_cmd(self, parsed_args: argparse.Namespace) -> Iterable[AirbyteMessage]:
         cmd = parsed_args.command
-        print("CMD IS ")
-        print("cmd")
+
         if cmd == 'spec':
             yield self._run_spec()
         elif cmd == 'check':
             yield self._run_check(config_path=parsed_args.config)
         elif cmd == 'write':
-
             yield from self._run_write(config_path=parsed_args.config, configured_catalog_path=parsed_args.catalog)
-        elif cmd is None:
-            raise Exception(f"No command entered. ")
         else:
             raise Exception(f"Unrecognized command: {cmd}")
 
