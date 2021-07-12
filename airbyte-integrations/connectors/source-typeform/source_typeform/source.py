@@ -54,7 +54,7 @@ class TypeformStream(HttpStream, ABC):
         if kwargs.get("page_size"):
             self.limit = kwargs.get("page_size")
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response) -> Optional[Any]:
         return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -74,11 +74,11 @@ class TrimForms(TypeformStream):
         self,
         stream_state: Mapping[str, Any] = None,
         stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        next_page_token: Optional[Any] = None,
     ) -> str:
         return "/forms"
 
-    def next_page_token(self, response: requests.Response) -> Optional[int]:
+    def next_page_token(self, response: requests.Response) -> Optional[Any]:
         page = self.get_current_page_token(response.url)
         # stop pagination if current page equals to total pages
         return None if not page or response.json()["page_count"] <= page else page + 1
@@ -95,7 +95,7 @@ class TrimForms(TypeformStream):
         self,
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        next_page_token: Optional[Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"page_size": self.limit}
         params["page"] = next_page_token or 1
@@ -122,7 +122,7 @@ class Forms(StreamMixin, TypeformStream):
         self,
         stream_state: Mapping[str, Any] = None,
         stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        next_page_token: Optional[Any] = None,
     ) -> str:
         return f"/forms/{stream_slice['form_id']}"
 
@@ -148,7 +148,7 @@ class IncrementalTypeformStream(TypeformStream, ABC):
     ) -> Mapping[str, Any]:
         pass
 
-    def next_page_token(self, response: requests.Response) -> Optional[str]:
+    def next_page_token(self, response: requests.Response) -> Optional[Any]:
         items = response.json()["items"]
         if items and len(items) == self.limit:
             return items[-1][self.token_field]
@@ -194,7 +194,7 @@ class Responses(StreamMixin, IncrementalTypeformStream):
         self,
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        next_page_token: Optional[Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"page_size": self.limit}
         stream_state = stream_state or {}
@@ -208,7 +208,7 @@ class Responses(StreamMixin, IncrementalTypeformStream):
                 params["since"] = pendulum.from_timestamp(since).format(self.date_format)
         else:
             # use response token for pagination after first request
-            # this approach allow to avoid data duplication whithin single sync
+            # this approach allow to avoid data duplication within single sync
             params["after"] = next_page_token
 
         return params
