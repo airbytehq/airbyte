@@ -41,6 +41,7 @@ from .streams import (  # EventsSessions,
     InsightsPath,
     InsightsSessions,
     Persons,
+    PingMe,
     Trends,
 )
 
@@ -50,7 +51,7 @@ class SourcePosthog(AbstractSource):
         try:
             _ = pendulum.parse(config["start_date"], strict=True)
             authenticator = TokenAuthenticator(token=config["api_key"])
-            stream = Cohorts(authenticator=authenticator)
+            stream = PingMe(authenticator=authenticator)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             _ = next(records)
             return True, None
