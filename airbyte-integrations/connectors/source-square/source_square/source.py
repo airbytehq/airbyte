@@ -363,17 +363,11 @@ class Orders(SquareStreamPageJson):
                 "No locations found. Orders cannot be extracted without locations. "
                 "Check https://developer.squareup.com/explorer/square/locations-api/list-locations"
             )
-            return [None]
+            yield from []
 
         separated_locations = separate_items_by_count(location_ids, self.locations_per_requets)
         for location in separated_locations:
             yield {"location_ids": location}
-
-    def read_records(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        if not stream_slice:
-            yield from []
-
-        yield from super().read_records(stream_slice=stream_slice, **kwargs)
 
 
 class SourceSquare(AbstractSource):
