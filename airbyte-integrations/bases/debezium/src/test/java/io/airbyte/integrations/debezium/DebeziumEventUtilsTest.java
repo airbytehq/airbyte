@@ -46,14 +46,14 @@ class DebeziumEventUtilsTest {
   public void testConvertChangeEvent() throws IOException {
     final String stream = "names";
     final Instant emittedAt = Instant.now();
-    final CdcConnectorMetadata cdcConnectorMetadata = new DummyConnectorMetadata();
+    final CdcMetadataInjector cdcMetadataInjector = new DummyMetadataInjector();
     ChangeEvent<String, String> insertChangeEvent = mockChangeEvent("insert_change_event.json");
     ChangeEvent<String, String> updateChangeEvent = mockChangeEvent("update_change_event.json");
     ChangeEvent<String, String> deleteChangeEvent = mockChangeEvent("delete_change_event.json");
 
-    final AirbyteMessage actualInsert = DebeziumEventUtils.toAirbyteMessage(insertChangeEvent, cdcConnectorMetadata, emittedAt);
-    final AirbyteMessage actualUpdate = DebeziumEventUtils.toAirbyteMessage(updateChangeEvent, cdcConnectorMetadata, emittedAt);
-    final AirbyteMessage actualDelete = DebeziumEventUtils.toAirbyteMessage(deleteChangeEvent, cdcConnectorMetadata, emittedAt);
+    final AirbyteMessage actualInsert = DebeziumEventUtils.toAirbyteMessage(insertChangeEvent, cdcMetadataInjector, emittedAt);
+    final AirbyteMessage actualUpdate = DebeziumEventUtils.toAirbyteMessage(updateChangeEvent, cdcMetadataInjector, emittedAt);
+    final AirbyteMessage actualDelete = DebeziumEventUtils.toAirbyteMessage(deleteChangeEvent, cdcMetadataInjector, emittedAt);
 
     final AirbyteMessage expectedInsert = createAirbyteMessage(stream, emittedAt, "insert_message.json");
     final AirbyteMessage expectedUpdate = createAirbyteMessage(stream, emittedAt, "update_message.json");
@@ -90,7 +90,7 @@ class DebeziumEventUtilsTest {
     assertEquals(Jsons.deserialize(Jsons.serialize(expected)), Jsons.deserialize(Jsons.serialize(actual)));
   }
 
-  public static class DummyConnectorMetadata implements CdcConnectorMetadata {
+  public static class DummyMetadataInjector implements CdcMetadataInjector {
 
     @Override
     public void addMetaData(ObjectNode event, JsonNode source) {

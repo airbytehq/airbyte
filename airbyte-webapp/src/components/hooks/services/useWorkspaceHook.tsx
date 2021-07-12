@@ -78,6 +78,7 @@ const useWorkspace = (): {
         workspaceId: config.ui.workspaceId,
         initialSetupComplete: workspace.initialSetupComplete,
         displaySetupWizard: workspace.displaySetupWizard,
+        notifications: workspace.notifications,
         ...data,
       }
     );

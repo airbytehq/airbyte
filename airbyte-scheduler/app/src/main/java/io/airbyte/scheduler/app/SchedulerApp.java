@@ -153,6 +153,7 @@ public class SchedulerApp {
         () -> {
           MDC.setContextMap(mdc);
           jobCleaner.run();
+          jobPersistence.purgeJobHistory();
         },
         CLEANING_DELAY.toSeconds(),
         CLEANING_DELAY.toSeconds(),
