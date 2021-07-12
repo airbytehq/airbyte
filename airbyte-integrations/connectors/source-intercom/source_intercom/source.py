@@ -178,7 +178,7 @@ class ConversationParts(StreamMixin, IncrementalIntercomStream):
 
 
 class Segments(IncrementalIntercomStream):
-    """Return list of all conversations.
+    """Return list of all segments.
     API Docs: https://developers.intercom.com/intercom-api-reference/reference#list-segments
     Endpoint: https://api.intercom.io/segments
     """
