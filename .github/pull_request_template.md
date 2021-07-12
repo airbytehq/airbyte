@@ -17,18 +17,19 @@ Expand the checklist which is relevant for this PR.
 
 - [ ] Issue acceptance criteria met
 - [ ] PR name follows [PR naming conventions](https://docs.airbyte.io/contributing-to-airbyte/updating-documentation#issues-and-pull-requests)
-- [ ] Secrets are annotated with `airbyte_secret` in output spec
+- [ ] Secrets are annotated with `airbyte_secret` in the connector's spec
+- [ ] Credentials added to Github CI if needed and not already present. [instructions for injecting secrets into CI](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector#using-credentials-in-ci). 
 - [ ] Unit & integration tests added as appropriate (and are passing)
     * Community members: please provide proof of this succeeding locally e.g: screenshot or copy-paste acceptance test output. To run acceptance tests for a Python connector, follow instructions in the README. For java connectors run `./gradlew :airbyte-integrations:connectors:<name>:integrationTest`.
 - [ ] `/test connector=connectors/<name>` command as documented [here](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector#updating-an-existing-connector) is passing. 
     * Community members can skip this, Airbyters will run this for you. 
 - [ ] Code reviews completed
-- [ ] Credentials added to Github CI if needed and not already present. [instructions for injecting secrets into CI](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector#using-credentials-in-ci). 
 - [ ] Documentation updated 
     - [ ] `README.md`
     - [ ] `docs/SUMMARY.md` if it's a new connector
-    - [ ] Reference docs in the `docs/integrations/` directory.
+    - [ ] Created or updated reference docs in `docs/integrations/<source or destination>/<name>`.
     - [ ] Changelog in the appropriate page in `docs/integrations/...`. See changelog [example](https://docs.airbyte.io/integrations/sources/stripe#changelog)
+    - [ ] `docs/integrations/README.md` contains a reference to the new connector
     - [ ] Build status added to [build page](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/builds.md)
 - [ ] Build is successful
 - [ ] Connector version bumped like described [here](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector#updating-a-connector)

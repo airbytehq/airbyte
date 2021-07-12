@@ -151,9 +151,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       }
 
       final ReplicationStatus outputStatus;
+      // First check if the process was cancelled. Cancellation takes precedence over failures.
       if (cancelled.get()) {
         outputStatus = ReplicationStatus.CANCELLED;
-      } else if (hasFailed.get()) {
+      }
+      // if the process was not cancelled but still failed, then it's an actual failure
+      else if (hasFailed.get()) {
         outputStatus = ReplicationStatus.FAILED;
       } else {
         outputStatus = ReplicationStatus.COMPLETED;
@@ -205,6 +208,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
+      var recordsRead = 0;
       try {
         while (!cancelled.get() && !source.isFinished()) {
           final Optional<AirbyteMessage> messageOptional = source.attemptRead();
@@ -213,6 +217,11 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
             sourceMessageTracker.accept(message);
             destination.accept(message);
+            recordsRead += 1;
+
+            if (recordsRead % 1000 == 0) {
+              LOGGER.info("Records read: {}", recordsRead);
+            }
           }
         }
         destination.notifyEndOfStream();

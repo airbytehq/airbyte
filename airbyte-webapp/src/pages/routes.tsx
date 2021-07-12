@@ -14,7 +14,6 @@ import DestinationPage from "./DestinationPage";
 import PreferencesPage from "./PreferencesPage";
 import OnboardingPage from "./OnboardingPage";
 import ConnectionPage from "./ConnectionPage";
-import AdminPage from "./AdminPage";
 import SettingsPage from "./SettingsPage";
 import LoadingPage from "components/LoadingPage";
 import MainView from "components/MainView";
@@ -39,8 +38,11 @@ export enum Routes {
   ConnectionNew = "/new-connection",
   SourceNew = "/new-source",
   DestinationNew = "/new-destination",
-  Admin = "/admin",
   Settings = "/settings",
+  Configuration = "/configuration",
+  Notifications = "/notifications",
+  Metrics = "/metrics",
+  Account = "/account",
   Root = "/",
 }
 
@@ -78,11 +80,20 @@ const getPageName = (pathname: string) => {
   if (pathname.match(itemSourcePageRegex)) {
     return "Source Item Page";
   }
-  if (pathname === Routes.Admin) {
-    return "Admin Page";
+  if (pathname === `${Routes.Settings}${Routes.Source}`) {
+    return "Settings Sources Connectors Page";
   }
-  if (pathname === Routes.Settings) {
-    return "Settings Page";
+  if (pathname === `${Routes.Settings}${Routes.Destination}`) {
+    return "Settings Destinations Connectors Page";
+  }
+  if (pathname === `${Routes.Settings}${Routes.Configuration}`) {
+    return "Settings Configuration Page";
+  }
+  if (pathname === `${Routes.Settings}${Routes.Notifications}`) {
+    return "Settings Notifications Page";
+  }
+  if (pathname === `${Routes.Settings}${Routes.Metrics}`) {
+    return "Settings Metrics Page";
   }
   if (pathname === Routes.Connections) {
     return "Connections Page";
@@ -109,9 +120,6 @@ const MainViewRoutes = () => {
           </Route>
           <Route path={Routes.Source}>
             <SourcesPage />
-          </Route>
-          <Route path={Routes.Admin}>
-            <AdminPage />
           </Route>
           <Route path={Routes.Connections}>
             <ConnectionPage />

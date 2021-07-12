@@ -61,6 +61,7 @@ import io.airbyte.workers.DbtTransformationRunner;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
 import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.normalization.NormalizationRunner;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
@@ -418,7 +419,16 @@ public abstract class DestinationAcceptanceTest {
 
   @Test
   public void specNormalizationValueShouldBeCorrect() throws Exception {
-    assertEquals(normalizationFromSpec(), supportsNormalization());
+    final boolean normalizationFromSpec = normalizationFromSpec();
+    assertEquals(normalizationFromSpec, supportsNormalization());
+    boolean normalizationRunnerFactorySupportsDestinationImage;
+    try {
+      NormalizationRunnerFactory.create(getImageName(), processFactory);
+      normalizationRunnerFactorySupportsDestinationImage = true;
+    } catch (IllegalStateException e) {
+      normalizationRunnerFactorySupportsDestinationImage = false;
+    }
+    assertEquals(normalizationFromSpec, normalizationRunnerFactorySupportsDestinationImage);
   }
 
   @Test
@@ -665,11 +675,11 @@ public abstract class DestinationAcceptanceTest {
   }
 
   @Test
-  void testCustomDbtTransformations() throws Exception {
+  public void testCustomDbtTransformations() throws Exception {
     if (!normalizationFromSpec() || !dbtFromSpec()) {
-      // TODO : Fix this, this test should not be restricted to destinations that support normalization
-      // to do so, we need to inject extra packages for dbt to run with dbt community adapters depending
-      // on the destination
+      // we require normalization implementation for this destination, because we make sure to install
+      // required dbt dependency in the normalization docker image in order to run this test successfully
+      // (we don't actually rely on normalization running anything here though)
       return;
     }
 
@@ -683,7 +693,7 @@ public abstract class DestinationAcceptanceTest {
     final OperatorDbt dbtConfig = new OperatorDbt()
         .withGitRepoUrl("https://github.com/fishtown-analytics/jaffle_shop.git")
         .withGitRepoBranch("main")
-        .withDockerImage("fishtownanalytics/dbt:0.19.1");
+        .withDockerImage("airbyte/normalization:dev");
     //
     // jaffle_shop is a fictional ecommerce store maintained by fishtownanalytics/dbt.
     //
@@ -694,12 +704,12 @@ public abstract class DestinationAcceptanceTest {
     //
     // 1. First, it tests if connection to the destination works.
     dbtConfig.withDbtArguments("debug");
-    if (!runner.run(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+    if (!runner.run(JOB_ID, JOB_ATTEMPT, transformationRoot, config, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, dbtConfig)) {
       throw new WorkerException("dbt debug Failed.");
     }
     // 2. Install any dependencies packages, if any
     dbtConfig.withDbtArguments("deps");
-    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, dbtConfig)) {
       throw new WorkerException("dbt deps Failed.");
     }
     // 3. It contains seeds that includes some (fake) raw data from a fictional app as CSVs data sets.
@@ -707,24 +717,24 @@ public abstract class DestinationAcceptanceTest {
     // Note that a typical dbt project does not require this step since dbt assumes your raw data is
     // already in your warehouse.
     dbtConfig.withDbtArguments("seed");
-    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, dbtConfig)) {
       throw new WorkerException("dbt seed Failed.");
     }
     // 4. Run the models:
     // Note: If this steps fails, it might mean that you need to make small changes to the SQL in the
     // models folder to adjust for the flavor of SQL of your target database.
     dbtConfig.withDbtArguments("run");
-    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, dbtConfig)) {
       throw new WorkerException("dbt run Failed.");
     }
     // 5. Test the output of the models and tables have been properly populated:
     dbtConfig.withDbtArguments("test");
-    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, dbtConfig)) {
       throw new WorkerException("dbt test Failed.");
     }
     // 6. Generate dbt documentation for the project:
     dbtConfig.withDbtArguments("docs generate");
-    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, dbtConfig)) {
       throw new WorkerException("dbt docs generate Failed.");
     }
     runner.close();
@@ -732,13 +742,10 @@ public abstract class DestinationAcceptanceTest {
 
   @Test
   void testCustomDbtTransformationsFailure() throws Exception {
-    if (!normalizationFromSpec()) {
-      // TODO : Fix this, this test should not be restricted to destinations that support normalization
-      // to do so, we need to inject extra packages for dbt to run with dbt community adapters depending
-      // on the destination
-      return;
-    }
-    if (!dbtFromSpec()) {
+    if (!normalizationFromSpec() || !dbtFromSpec()) {
+      // we require normalization implementation for this destination, because we make sure to install
+      // required dbt dependency in the normalization docker image in order to run this test successfully
+      // (we don't actually rely on normalization running anything here though)
       return;
     }
 
@@ -754,12 +761,12 @@ public abstract class DestinationAcceptanceTest {
         .withGitRepoBranch("master")
         .withDockerImage("fishtownanalytics/dbt:0.19.1")
         .withDbtArguments("debug");
-    if (!runner.run(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+    if (!runner.run(JOB_ID, JOB_ATTEMPT, transformationRoot, config, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, dbtConfig)) {
       throw new WorkerException("dbt debug Failed.");
     }
 
     dbtConfig.withDbtArguments("test");
-    assertFalse(runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig),
+    assertFalse(runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS, dbtConfig),
         "dbt test should fail, as we haven't run dbt run on this project yet");
   }
 
@@ -933,7 +940,7 @@ public abstract class DestinationAcceptanceTest {
     runner.start();
     final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
     if (!runner.normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot, destinationConfig.getDestinationConnectionConfiguration(),
-        destinationConfig.getCatalog())) {
+        destinationConfig.getCatalog(), WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS)) {
       throw new WorkerException("Normalization Failed.");
     }
     runner.close();
@@ -1001,9 +1008,14 @@ public abstract class DestinationAcceptanceTest {
         }
         LOGGER.info("For {} Expected {} vs Actual {}", key, expectedValue, actualValue);
         assertTrue(actualData.has(key));
-        assertEquals(expectedValue, actualValue);
+        assertSameValue(expectedValue, actualValue);
       }
     }
+  }
+
+  // Allows subclasses to implement custom comparison asserts
+  protected void assertSameValue(JsonNode expectedValue, JsonNode actualValue) {
+    assertEquals(expectedValue, actualValue);
   }
 
   protected List<AirbyteRecordMessage> retrieveNormalizedRecords(AirbyteCatalog catalog, String defaultSchema) throws Exception {

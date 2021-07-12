@@ -30,6 +30,7 @@ import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.config.Notification;
+import io.airbyte.config.Notification.NotificationType;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
@@ -103,7 +104,14 @@ public class JobNotifier {
         try {
           final Builder<String, Object> notificationMetadata = ImmutableMap.builder();
           notificationMetadata.put("connection_id", connectionId);
-          notificationMetadata.put("notification_type", notification.getNotificationType());
+          if (notification.getNotificationType().equals(NotificationType.SLACK) &&
+              notification.getSlackConfiguration().getWebhook().contains("hooks.slack.com")) {
+            // flag as slack if the webhook URL is also pointing to slack
+            notificationMetadata.put("notification_type", NotificationType.SLACK);
+          } else {
+            // Slack Notification type could be "hacked" and re-used for custom webhooks
+            notificationMetadata.put("notification_type", "N/A");
+          }
           trackingClient.track(FAILURE_NOTIFICATION, MoreMaps.merge(jobMetadata, sourceMetadata, destinationMetadata, notificationMetadata.build()));
           if (!notificationClient.notifyJobFailure(sourceConnector, destinationConnector, jobDescription, logUrl)) {
             LOGGER.warn("Failed to successfully notify: {}", notification);
