@@ -24,7 +24,7 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Tuple
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
@@ -32,41 +32,42 @@ from airbyte_cdk.sources.streams import Stream
 
 from .zuora_auth import ZuoraAuthenticator
 from .zuora_client import ZoqlExportClient
-from .zuora_errors  import (
-    ZOQLQueryFailed
-)
+from .zuora_errors import ZOQLQueryCannotProcessObject, ZOQLQueryFieldCannotResolve
 
 
-class IncrementalZuoraStream(Stream, ABC):
-
+# Main class for Zuora Stream with overriden CDK methods
+class ZuoraStream(Stream, ABC):
     # Define general primary key
     primary_key = "id"
-    # Define default cursor field
-    cursor_field = "updateddate"
-    alt_cursor_field = "createddate"
 
     def __init__(self, api: ZoqlExportClient):
         self.api = api
 
-    # setting limit of the date-slice for the data query job
-    @property
-    def limit_days(self) -> int:
-        return self.api.window_in_days
+    def get_cursor_from_schema(self, schema: Dict) -> str:
+        """
+        Get the cursor_field from the stream's schema,
+        If the stream doesn't support 'updateddate', then we use 'createddate'.
+        """
+        return self.alt_cursor_field if self.cursor_field not in schema.keys() else self.cursor_field
 
-    # setting checkpoint interval to the limit of date-slice
-    state_checkpoint_interval = limit_days  # FIXME: This should be done once the date-slice yield the records
-
-    # Override Stream.get_json_schema to define dynamic schema
     def get_json_schema(self):
+        """
+        Get the stream's schema from Zuora Object's Data types,
+        """
         schema = {}
         schema["properties"] = self.api._zuora_object_to_json_schema(self.name)
         return schema
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
+    def as_airbyte_stream(self):
+        """
+        Override this method to set the default_cursor_field to the stream schema.
+        """
+        stream = super().as_airbyte_stream()
+        stream.default_cursor_field = [self.get_cursor_from_schema(stream.json_schema["properties"])]
+        return stream
 
-    def _get_stream_state(self, stream_state: Mapping[str, Any] = None):
-        """ 
+    def _get_stream_state(self, stream_state: Mapping[str, Any] = None) -> Mapping[str, Any]:
+        """
         Get the state of the stream for the default cursor_field = updateddate,
         If the stream doesn't have 'updateddate', then we use 'createddate'.
         If stream state == None, than we use start_date by default.
@@ -77,12 +78,31 @@ class IncrementalZuoraStream(Stream, ABC):
         # if stream_state is missing, we will use the start-date from config for a full refresh
         stream_state = self._get_stream_state(stream_state)
         try:
-            self.logger.info(f"Reading with cursor: '{self.cursor_field}'")
-            yield from self.api._get_data_with_date_slice("select", self.name, self.cursor_field, stream_state, self.limit_days)
-        except ZOQLQueryFailed:
-            self.logger.warn(f"Failed reading records with: '{self.cursor_field}''. Trying '{self.alt_cursor_field}'")
+            yield from self.api._get_data_with_date_slice("select", self.name, self.cursor_field, stream_state, self.window_in_days)
+        except ZOQLQueryFieldCannotResolve:
             self.cursor_field = self.alt_cursor_field
-            yield from self.api._get_data_with_date_slice("select", self.name, self.cursor_field, stream_state, self.limit_days)
+            yield from self.api._get_data_with_date_slice("select", self.name, self.cursor_field, stream_state, self.window_in_days)
+        except ZOQLQueryCannotProcessObject:
+            pass
+
+
+# Incremental-refresh for Zuora Stream handels both full-refresh and incremental-refresh
+class IncrementalZuoraStream(ZuoraStream):
+
+    # Define default cursor field
+    cursor_field = "updateddate"
+    alt_cursor_field = "createddate"
+
+    # setting limit of the date-slice for the data query job
+    @property
+    def window_in_days(self) -> int:
+        return self.api.window_in_days
+
+    # setting checkpoint interval to the limit of date-slice
+    state_checkpoint_interval = window_in_days  # FIXME: This should be done once the date-slice yield the records
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
 
 # Basic Connections Check
@@ -103,19 +123,19 @@ class SourceZuora(AbstractSource):
         Mapping a input config of the user input configuration as defined in the connector spec.
         Defining streams to run.
         """
-        # List the Zuora Objects that should be filtered from data operations
+        # List the Zuora Objects that should be filtered out from sync operations
         # These objects are not going to be synced
-        not_sync_objects = ["aquatasklog", "savedquery"]
+        except_objects = []
 
-        def create_stream_class_from_object_name(zuora_objects: List, not_sync_objects: List) -> List:
-            """ 
-            The function to produce the stream classes from the list of zuora objects
+        def create_stream_class_from_object_name(zuora_objects: List, except_objects: List) -> List:
+            """
+            The function to produce the dynamic stream classes from the list of zuora objects names
             """
             # Define the bases
             cls_base = (IncrementalZuoraStream,)
             cls_props = {}
             # Filter the object due to the do_not_include_objects list
-            zuora_objects = [obj for obj in zuora_objects if obj not in not_sync_objects]
+            zuora_objects = [obj for obj in zuora_objects if obj not in except_objects]
             # Build the streams
             streams = []
             for obj in zuora_objects:
@@ -134,13 +154,9 @@ class SourceZuora(AbstractSource):
         }
         # Making instance of Zuora API Client
         zuora_client = ZoqlExportClient(**args)
-
         # Get the list of available objects from Zuora
-        # zuora_objects = ["account","invoicehistory","refund"]
         zuora_objects = zuora_client._zuora_list_objects()
-        print(zuora_objects)
         # created the class for each object
-        streams = create_stream_class_from_object_name(zuora_objects, not_sync_objects)
-
+        streams = create_stream_class_from_object_name(zuora_objects, except_objects)
         # Return the list of stream classes with Zuora API Client as input
-        return [ streams[c](zuora_client) for c in range(len(streams)) ]
+        return [streams[c](zuora_client) for c in range(len(streams))]

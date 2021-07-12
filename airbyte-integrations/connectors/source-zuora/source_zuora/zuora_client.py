@@ -33,20 +33,14 @@ import requests
 from airbyte_cdk import AirbyteLogger
 
 from .zuora_auth import ZuoraAuthenticator
-from .zuora_errors import (
-    EndDateError,
-    ZOQLQueryFailed,
-    ZOQLQueryCanceledOrAborted
-)
+from .zuora_errors import EndDateError, ZOQLQueryCannotProcessObject, ZOQLQueryFailed, ZOQLQueryFieldCannotResolve, ZOQLQueryNotValid
+
 
 class ZoqlExportClient:
 
     """
-    # TODO: Create @backoff strategy for failed query: {Query failed: cannot resolve the field 'updateddate'},
-            on the step of _check_dq_job_status()
     # TODO: Add the description about the ZOQL EXPORT + Links
     # TODO: Add description to class methods
-    
     """
 
     logger = AirbyteLogger()
@@ -68,7 +62,7 @@ class ZoqlExportClient:
         else:
             return "https://rest.zuora.com"
 
-    # MAKE try/except request with handling errors
+    # MAKE try/except request warper with handling errors
     def _make_request(self, method: str = "GET", url: str = None, data: Dict = None) -> requests.Response:
         retry = 0
         while retry <= self.retry_max:
@@ -85,19 +79,23 @@ class ZoqlExportClient:
                     raise Exception(e)
 
     # MAKE QUERY: for data_query_job
-    def _make_dq_query(self, q_type: str = "select", obj: str = None, date_field: str  = None, start_date: str = None, end_date: str = None) -> Dict:
+    def _make_dq_query(
+        self, q_type: str = "select", obj: str = None, date_field: str = None, start_date: str = None, end_date: str = None
+    ) -> Dict:
         # POTENTIALLY COULD BE REPLACED WITH request_parameters()
         valid_types = ["select", "describe", "show_tables"]
-        base_query = {"compression": "NONE","output": {"target": "S3"},"outputFormat": "JSON", "query": ""}
+        base_query = {"compression": "NONE", "output": {"target": "S3"}, "outputFormat": "JSON", "query": ""}
 
         if q_type not in valid_types:
-            return self.logger.error(f"Query Type is not valid, Type used: {q_type}, please use one of the following types: {valid_types}")
-        elif q_type is "select":
+            raise ZOQLQueryNotValid(q_type, valid_types)
+        elif q_type == "select":
             end_date = pendulum.now().to_datetime_string() if end_date is None else end_date
-            base_query["query"] = f"select * from {obj} where {date_field} >= TIMESTAMP '{start_date}' and {date_field} <= TIMESTAMP '{end_date}'"
-        elif q_type is "describe":
+            base_query[
+                "query"
+            ] = f"select * from {obj} where {date_field} >= TIMESTAMP '{start_date}' and {date_field} <= TIMESTAMP '{end_date}'"
+        elif q_type == "describe":
             base_query["query"] = f"DESCRIBE {obj}"
-        elif q_type is "show_tables":
+        elif q_type == "show_tables":
             base_query["query"] = "SHOW TABLES"
         return base_query
 
@@ -110,14 +108,23 @@ class ZoqlExportClient:
 
     # CHECK: the submited data_query_job status
     def _check_dq_job_status(self, dq_job_id: str, status: str = None) -> Dict:
-        while status != "completed":
+        success = "completed"
+        # Define the error status
+        errors = ["failed", "canceled", "aborted"]
+        # Define specific error msg when the cursor_field cannot be resolved
+        cursor_error = "Column 'updateddate' cannot be resolved"
+        obj_read_error = "failed to process object"
+
+        while status != success:
             response = self._make_request(url=f"{self.url_base}/query/jobs/{dq_job_id}")
             dq_job_check = response.json()
             status = dq_job_check["data"]["queryStatus"]
-            if status in ["failed"]:
+            if status in errors and cursor_error in dq_job_check["data"]["errorMessage"]:
+                raise ZOQLQueryFieldCannotResolve
+            elif status in errors and obj_read_error in dq_job_check["data"]["errorMessage"]:
+                raise ZOQLQueryCannotProcessObject
+            elif status in errors:
                 raise ZOQLQueryFailed(response)
-            elif status in ["canceled", "aborted"]:
-                raise ZOQLQueryCanceledOrAborted(response)
         return dq_job_check
 
     # GET: data_query_job result
@@ -128,7 +135,9 @@ class ZoqlExportClient:
         return data or []
 
     # Warpper function for `Query > Submit > Check > Get`
-    def _get_data(self, q_type: str = "select", obj: str = None, date_field: str = None, start_date: str = None, end_date: str = None) -> Iterable:
+    def _get_data(
+        self, q_type: str = "select", obj: str = None, date_field: str = None, start_date: str = None, end_date: str = None
+    ) -> Iterable:
         query = self._make_dq_query(q_type, obj, date_field, start_date, end_date)
         # self.logger.debug(f"{query}")
         submit = self._submit_dq_job(query)
@@ -137,7 +146,9 @@ class ZoqlExportClient:
         yield from get
 
     # Warper for _get_data using date-slices as pages
-    def _get_data_with_date_slice(self, q_type: str, obj: str, date_field: str, start_date: str, window_days: int, end_date: str = None) -> Iterable:
+    def _get_data_with_date_slice(
+        self, q_type: str, obj: str, date_field: str, start_date: str, window_days: int, end_date: str = None
+    ) -> Iterable:
         # Parsing input dates
         s = pendulum.parse(start_date)
         tz = self._get_tz(s)
@@ -165,7 +176,7 @@ class ZoqlExportClient:
                     n -= 1
             else:
                 # For 1 date-slice
-                yield from self._get_data(q_type, obj, date_field, slice_start, slice_end)    
+                yield from self._get_data(q_type, obj, date_field, slice_start, slice_end)
 
     # Check the end-date before assign next date-slice
     @staticmethod
@@ -222,20 +233,10 @@ class ZoqlExportClient:
 
         return casted_schema_types
 
-    # Method to retrieve the Zuora Data Types and Fields
-    def _get_object_list(self) -> List:
-        object_list = list(self._get_data(q_type="show_tables"))
-        return object_list
-
-    # Method to retrieve the Zuora Data Types and Fields
-    def _get_object_data_types(self, obj: str) -> List:
-        object_data_types = list(self._get_data(q_type="describe", obj=obj))
-        return object_data_types
-
     # Convert Zuora Fields data types to JSONSchema
     def _zuora_object_to_json_schema(self, obj: str) -> Dict:
         self.logger.info(f"Getting schema information for {obj}")
-        raw_data_types = self._get_object_data_types(obj)
+        raw_data_types = list(self._get_data(q_type="describe", obj=obj))
         json_schema = []
         # Get the raw field names and their types
         for field in range(len(raw_data_types)):
@@ -247,7 +248,7 @@ class ZoqlExportClient:
     # Convert Zuora Fields data types to JSONSchema
     def _zuora_list_objects(self) -> List:
         self.logger.info("Retrieving the list of available Objects from Zuora")
-        raw_data_types = self._get_object_list()
+        raw_data_types = list(self._get_data(q_type="show_tables"))
         object_list = []
         # Get the raw field names and their types
         for field in range(len(raw_data_types)):
