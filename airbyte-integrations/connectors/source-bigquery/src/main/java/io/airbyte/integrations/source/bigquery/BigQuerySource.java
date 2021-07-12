@@ -41,14 +41,11 @@ import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
-
-import java.sql.JDBCType;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.*;
 
 public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeName, BigQueryDatabase> implements Source {
 
@@ -62,16 +59,15 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   private String quote = "";
   private JsonNode dbConfig;
 
-  public BigQuerySource() {
-  }
+  public BigQuerySource() {}
 
   @Override
   public JsonNode toDatabaseConfig(JsonNode config) {
     return Jsons.jsonNode(ImmutableMap.builder()
-            .put(CONFIG_PROJECT_ID, config.get(CONFIG_PROJECT_ID).asText())
-            .put(CONFIG_CREDS, config.get(CONFIG_CREDS).asText())
-            .put(CONFIG_DATASET_ID, config.get(CONFIG_DATASET_ID).asText())
-            .build());
+        .put(CONFIG_PROJECT_ID, config.get(CONFIG_PROJECT_ID).asText())
+        .put(CONFIG_CREDS, config.get(CONFIG_CREDS).asText())
+        .put(CONFIG_DATASET_ID, config.get(CONFIG_DATASET_ID).asText())
+        .build());
   }
 
   @Override
@@ -99,15 +95,16 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   protected List<TableInfo<CommonField<StandardSQLTypeName>>> discoverInternal(BigQueryDatabase database) {
     String projectId = dbConfig.get(CONFIG_PROJECT_ID).asText();
     String datasetId = getConfigDatasetId(database);
-    List<Table> tables = (isDatasetConfigured(database) ? database.getDatasetTables(projectId, getConfigDatasetId(database)) : database.getProjectTables(projectId));
+    List<Table> tables =
+        (isDatasetConfigured(database) ? database.getDatasetTables(projectId, getConfigDatasetId(database)) : database.getProjectTables(projectId));
     List<TableInfo<CommonField<StandardSQLTypeName>>> result = new ArrayList<>();
     tables.stream().map(table -> TableInfo.<CommonField<StandardSQLTypeName>>builder()
         .nameSpace(datasetId)
         .name(table.getTableId().getTable())
         .fields(Objects.requireNonNull(table.getDefinition().getSchema()).getFields().stream()
             .map(f -> {
-                StandardSQLTypeName standardType = f.getType().getStandardType();
-                return new CommonField<>(f.getName(), standardType);
+              StandardSQLTypeName standardType = f.getType().getStandardType();
+              return new CommonField<>(f.getName(), standardType);
             })
             .collect(Collectors.toList()))
         .build())
@@ -126,7 +123,13 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   }
 
   @Override
-  public AutoCloseableIterator<JsonNode> queryTableIncremental(BigQueryDatabase database, List<String> columnNames, String schemaName, String tableName, String cursorField, StandardSQLTypeName cursorFieldType, String cursor) {
+  public AutoCloseableIterator<JsonNode> queryTableIncremental(BigQueryDatabase database,
+                                                               List<String> columnNames,
+                                                               String schemaName,
+                                                               String tableName,
+                                                               String cursorField,
+                                                               StandardSQLTypeName cursorFieldType,
+                                                               String cursor) {
     return queryTableWithParams(database, String.format("SELECT %s FROM %s WHERE %s >= @cursor",
         enquoteIdentifierList(columnNames),
         getFullTableName(schemaName, tableName),
@@ -159,4 +162,5 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", BigQuerySource.class);
   }
+
 }

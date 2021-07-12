@@ -65,8 +65,7 @@ public class BigQueryUtils {
       String fieldName = field.getName();
       if (fieldValue.isNull()) {
         node.put(fieldName, (String) null);
-      }
-      else
+      } else
         switch (fieldType.getStandardType()) {
           case BOOL -> node.put(fieldName, fieldValue.getBooleanValue());
           case INT64 -> node.put(fieldName, fieldValue.getLongValue());
@@ -77,7 +76,7 @@ public class BigQueryUtils {
           case BYTES -> node.put(fieldName, fieldValue.getBytesValue());
           case DATE -> node.put(fieldName, toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATE_FORMAT)));
           case DATETIME -> node.put(fieldName, toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATETIME_FORMAT)));
-          case TIMESTAMP -> node.put(fieldName, toISO8601String(fieldValue.getTimestampValue()/1000));
+          case TIMESTAMP -> node.put(fieldName, toISO8601String(fieldValue.getTimestampValue() / 1000));
           case TIME -> node.put(fieldName, fieldValue.getStringValue());
           default -> node.put(fieldName, fieldValue.getStringValue());
         }
