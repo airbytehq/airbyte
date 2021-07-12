@@ -22,10 +22,8 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.mysql;
+package io.airbyte.integrations.debezium.internals;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.debezium.config.Configuration;
 import io.debezium.relational.history.AbstractDatabaseHistory;
 import io.debezium.relational.history.DatabaseHistoryException;
@@ -49,8 +47,7 @@ import java.util.function.Consumer;
  * created this class. In the method {@link #storeRecord(HistoryRecord)}, we introduced a check to
  * make sure only those records are being saved whose database name matches the database Airbyte is
  * syncing. We tell debezium to use this class by passing it as property in debezium engine. Look
- * for "database.history" property in
- * {@link DebeziumRecordPublisher#getDebeziumProperties(JsonNode, ConfiguredAirbyteCatalog, AirbyteFileOffsetBackingStore)}
+ * for "database.history" property in {@link DebeziumRecordPublisher#getDebeziumProperties()}
  * Ideally {@link FilteredFileDatabaseHistory} should have extended
  * {@link io.debezium.relational.history.FileDatabaseHistory} and overridden the
  * {@link #storeRecord(HistoryRecord)} method but {@link FilteredFileDatabaseHistory} is a final
@@ -73,7 +70,7 @@ public class FilteredFileDatabaseHistory extends AbstractDatabaseHistory {
    *
    * @param databaseName Name of the database that the connector is syncing
    */
-  static void setDatabaseName(String databaseName) {
+  public static void setDatabaseName(String databaseName) {
     if (FilteredFileDatabaseHistory.databaseName == null) {
       FilteredFileDatabaseHistory.databaseName = databaseName;
     } else if (!FilteredFileDatabaseHistory.databaseName.equals(databaseName)) {
