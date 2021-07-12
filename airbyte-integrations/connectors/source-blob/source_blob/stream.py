@@ -22,14 +22,17 @@
 
 
 from abc import ABC, abstractmethod
+from datetime import datetime
 import json
+import concurrent
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 from traceback import format_exc
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from fnmatch import fnmatch
 from smart_open.s3 import _list_bucket
 from jsonschema import Draft4Validator, SchemaError
-from .blobfile import BlobFileS3
+from .blobfile import BlobFile, BlobFileS3
+from .filereader import FileReaderCsv
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources.streams import Stream
@@ -43,6 +46,13 @@ class BlobStream(Stream, ABC):
     """
     TODO docstring
     """
+
+    # TODO: is there a better place to persist this mapping?
+    format_filereader_map = {
+        'csv': FileReaderCsv,
+        # 'parquet': FileReaderParquet,
+        # etc.
+    }
 
     def __init__(self, dataset_name: str, provider: dict, format: dict, path: str, schema: str = None):
         self.dataset_name = dataset_name
@@ -64,16 +74,20 @@ class BlobStream(Stream, ABC):
                 error_msg = f"Schema is not a valid JSON schema {repr(err)}\n{schema}\n{format_exc()}"
                 self.logger.error(error_msg)
                 raise ConfigurationError(error_msg) from err
-            # TODO: we could still have an 'invalid' schema after this, handle that
+            # TODO: we could still have an 'invalid' schema after this, should we handle that explicitly?
 
     @property
     @abstractmethod
-    def reader_class(self) -> str:
+    def blobfile_class(self) -> str:
         """TODO docstring"""
 
     @property
     def name(self) -> str:
         return self.dataset_name
+
+    @property
+    def filereader_class(self) -> str:
+        return self.format_filereader_map[self._format.get("filetype")]
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -98,7 +112,7 @@ class BlobStream(Stream, ABC):
         if self._schema:
             return self._schema
         else:
-            pass
+            raise NotImplementedError()
             # TODO: Build in ability to determine schema automatically based on all files for this stream
             # could this look different in incremental v.s. non-incremental?
 
@@ -108,6 +122,24 @@ class BlobStream(Stream, ABC):
             if fnmatch(blob, self._path):
                 yield blob
 
+    def time_ordered_blobfile_iterator(self) -> Iterator[Tuple[datetime, BlobFile]]:
+        """TODO docstring"""
+
+        def get_blobfile_with_lastmod(blob) -> Tuple[datetime, BlobFile]:
+            bf = self.blobfile_class(blob, self._provider)
+            return (bf.last_modified, bf)
+
+        blobfiles = []  # list of tuples (datetime, BlobFile) which we'll use to sort
+        # use concurrent future threads to parallelise grabbing last_modified from all the files
+        # TODO: don't hardcode max_workers like this
+        with concurrent.futures.ThreadPoolExecutor(max_workers=64) as executor:
+            futures = {executor.submit(get_blobfile_with_lastmod, blob): blob for blob in self.pattern_matched_blobs_iterator()}
+            for future in concurrent.futures.as_completed(futures):
+                blobfiles.append(future.result())  # this will failfast on any errors
+
+        for last_mod, blobfile in sorted(blobfiles):
+            yield (last_mod, blobfile)
+
     def read_records(self,
                      sync_mode: SyncMode,
                      cursor_field: List[str],
@@ -115,10 +147,14 @@ class BlobStream(Stream, ABC):
                      stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         """
         TODO docstring
-        This enacts a full_refresh style read_records regardless of sync_mode 
+        This enacts a full_refresh style read_records regardless of sync_mode
         """
-        # TODO: with concurrent futures :
-        pass
+        # TODO: this could be optimised via concurrent reads, however we'd lose chronology and need to deal with knock-ons of that
+        # TODO: this is very basic first pass, optimise
+        file_reader = self.filereader_class(self._format, self.get_json_schema())
+        for last_mod, blobfile in self.time_ordered_blobfile_iterator():
+            with blobfile.open(file_reader.is_binary) as f:
+
 
 
 class IncrementalBlobStream(BlobStream, ABC):
@@ -165,7 +201,7 @@ class IncrementalBlobStreamS3(IncrementalBlobStream):
     """TODO docstring"""
 
     @property
-    def reader_class(self) -> str:
+    def blobfile_class(self) -> str:
         return BlobFileS3
 
     @staticmethod
