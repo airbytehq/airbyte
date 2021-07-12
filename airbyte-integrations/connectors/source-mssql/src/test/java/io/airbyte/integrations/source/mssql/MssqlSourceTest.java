@@ -125,7 +125,7 @@ class MssqlSourceTest {
         .build());
   }
 
-  private static Database getDatabase(JsonNode config) {
+  public static Database getDatabase(JsonNode config) {
     // todo (cgardens) - rework this abstraction so that we do not have to pass a null into the
     // constructor. at least explicitly handle it, even if the impl doesn't change.
     return Databases.createDatabase(
