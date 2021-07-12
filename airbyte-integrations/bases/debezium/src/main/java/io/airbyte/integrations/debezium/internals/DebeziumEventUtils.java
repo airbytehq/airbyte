@@ -22,16 +22,12 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.mysql;
-
-import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CDC_DELETED_AT;
-import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CDC_LOG_FILE;
-import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CDC_LOG_POS;
-import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CDC_UPDATED_AT;
+package io.airbyte.integrations.debezium.internals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.debezium.engine.ChangeEvent;
@@ -39,14 +35,17 @@ import java.time.Instant;
 
 public class DebeziumEventUtils {
 
-  public static AirbyteMessage toAirbyteMessage(ChangeEvent<String, String> event, Instant emittedAt) {
+  public static final String CDC_UPDATED_AT = "_ab_cdc_updated_at";
+  public static final String CDC_DELETED_AT = "_ab_cdc_deleted_at";
+
+  public static AirbyteMessage toAirbyteMessage(ChangeEvent<String, String> event, CdcMetadataInjector cdcMetadataInjector, Instant emittedAt) {
     final JsonNode debeziumRecord = Jsons.deserialize(event.value());
     final JsonNode before = debeziumRecord.get("before");
     final JsonNode after = debeziumRecord.get("after");
     final JsonNode source = debeziumRecord.get("source");
 
-    final JsonNode data = formatDebeziumData(before, after, source);
-    final String schemaName = source.get("db").asText();
+    final JsonNode data = formatDebeziumData(before, after, source, cdcMetadataInjector);
+    final String schemaName = cdcMetadataInjector.namespace(source);
     final String streamName = source.get("table").asText();
 
     final AirbyteRecordMessage airbyteRecordMessage = new AirbyteRecordMessage()
@@ -61,19 +60,18 @@ public class DebeziumEventUtils {
   }
 
   // warning mutates input args.
-  private static JsonNode formatDebeziumData(JsonNode before, JsonNode after, JsonNode source) {
+  private static JsonNode formatDebeziumData(JsonNode before, JsonNode after, JsonNode source, CdcMetadataInjector cdcMetadataInjector) {
     final ObjectNode base = (ObjectNode) (after.isNull() ? before : after);
 
     long transactionMillis = source.get("ts_ms").asLong();
 
     base.put(CDC_UPDATED_AT, transactionMillis);
-    base.put(CDC_LOG_FILE, source.get("file").asText());
-    base.put(CDC_LOG_POS, source.get("pos").asLong());
+    cdcMetadataInjector.addMetaData(base, source);
 
     if (after.isNull()) {
       base.put(CDC_DELETED_AT, transactionMillis);
     } else {
-      base.put("_ab_cdc_deleted_at", (Long) null);
+      base.put(CDC_DELETED_AT, (Long) null);
     }
 
     return base;
