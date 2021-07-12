@@ -71,13 +71,13 @@ public abstract class CdcSourceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CdcSourceTest.class);
 
-  private static final String MODELS_SCHEMA = "models_schema";
-  private static final String MODELS_STREAM_NAME = "models";
+  protected static final String MODELS_SCHEMA = "models_schema";
+  protected static final String MODELS_STREAM_NAME = "models";
   private static final Set<String> STREAM_NAMES = Sets
       .newHashSet(MODELS_STREAM_NAME);
-  private static final String COL_ID = "id";
-  private static final String COL_MAKE_ID = "make_id";
-  private static final String COL_MODEL = "model";
+  protected static final String COL_ID = "id";
+  protected static final String COL_MAKE_ID = "make_id";
+  protected static final String COL_MODEL = "model";
   protected static final String DB_NAME = MODELS_SCHEMA;
 
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
@@ -89,7 +89,7 @@ public abstract class CdcSourceTest {
           Field.of(COL_MODEL, JsonSchemaPrimitive.STRING))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID)))));
-  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers
+  protected static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers
       .toDefaultConfiguredCatalog(CATALOG);
 
   // set all streams to incremental.
@@ -105,7 +105,7 @@ public abstract class CdcSourceTest {
       Jsons.jsonNode(ImmutableMap.of(COL_ID, 15, COL_MAKE_ID, 2, COL_MODEL, "A 220")),
       Jsons.jsonNode(ImmutableMap.of(COL_ID, 16, COL_MAKE_ID, 2, COL_MODEL, "E 350")));
 
-  protected void setup() {
+  protected void setup() throws SQLException {
     createAndPopulateTables();
   }
 
@@ -155,8 +155,7 @@ public abstract class CdcSourceTest {
    */
   private void createAndPopulateRandomTable() {
     createSchema(MODELS_SCHEMA + "_random");
-    createTable(MODELS_SCHEMA + "_random",
-        MODELS_STREAM_NAME + "_random",
+    createTable(MODELS_SCHEMA + "_random", MODELS_STREAM_NAME + "_random",
         String.format("%s INTEGER, %s INTEGER, %s VARCHAR(200), PRIMARY KEY (%s)", COL_ID + "_random",
             COL_MAKE_ID + "_random",
             COL_MODEL + "_random", COL_ID + "_random"));
@@ -284,13 +283,13 @@ public abstract class CdcSourceTest {
   @Test
   @DisplayName("On the first sync, produce returns records that exist in the database.")
   void testExistingData() throws Exception {
+    CdcTargetPosition targetPosition = cdcLatestTargetPosition();
     final AutoCloseableIterator<AirbyteMessage> read = getSource().read(getConfig(), CONFIGURED_CATALOG, null);
     final List<AirbyteMessage> actualRecords = AutoCloseableIterators.toListAndClose(read);
 
     final Set<AirbyteRecordMessage> recordMessages = extractRecordMessages(actualRecords);
     final List<AirbyteStateMessage> stateMessages = extractStateMessages(actualRecords);
 
-    CdcTargetPosition targetPosition = cdcLatestTargetPosition();
     assertNotNull(targetPosition);
     recordMessages.forEach(record -> {
       assertEquals(extractPosition(record.getData()), targetPosition);
@@ -559,6 +558,17 @@ public abstract class CdcSourceTest {
 
   @Test
   void testDiscover() throws Exception {
+    final AirbyteCatalog expectedCatalog = expectedCatalogForDiscover();
+    final AirbyteCatalog actualCatalog = getSource().discover(getConfig());
+
+    assertEquals(
+        expectedCatalog.getStreams().stream().sorted(Comparator.comparing(AirbyteStream::getName))
+            .collect(Collectors.toList()),
+        actualCatalog.getStreams().stream().sorted(Comparator.comparing(AirbyteStream::getName))
+            .collect(Collectors.toList()));
+  }
+
+  protected AirbyteCatalog expectedCatalogForDiscover() {
     final AirbyteCatalog expectedCatalog = Jsons.clone(CATALOG);
 
     createTable(MODELS_SCHEMA, MODELS_STREAM_NAME + "_2", String.format("%s INTEGER, %s INTEGER, %s VARCHAR(200)", COL_ID, COL_MAKE_ID, COL_MODEL));
@@ -580,14 +590,7 @@ public abstract class CdcSourceTest {
 
     streams.add(streamWithoutPK);
     expectedCatalog.withStreams(streams);
-
-    final AirbyteCatalog actualCatalog = getSource().discover(getConfig());
-
-    assertEquals(
-        expectedCatalog.getStreams().stream().sorted(Comparator.comparing(AirbyteStream::getName))
-            .collect(Collectors.toList()),
-        actualCatalog.getStreams().stream().sorted(Comparator.comparing(AirbyteStream::getName))
-            .collect(Collectors.toList()));
+    return expectedCatalog;
   }
 
   protected abstract CdcTargetPosition cdcLatestTargetPosition();
