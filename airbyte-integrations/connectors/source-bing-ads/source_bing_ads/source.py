@@ -47,10 +47,14 @@ class BingAdsStream(Stream, ABC):
         self.client = client
         self.config = config
 
-    def next_page_token(self, response: sudsobject.Object, **kwargs: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
+    def next_page_token(
+        self, response: sudsobject.Object, **kwargs: Mapping[str, Any]
+    ) -> Optional[Mapping[str, Any]]:
         return None
 
-    def parse_response(self, response: sudsobject.Object, **kwargs) -> Iterable[Mapping]:
+    def parse_response(
+        self, response: sudsobject.Object, **kwargs
+    ) -> Iterable[Mapping]:
         if response is not None and hasattr(response, self.data_field):
             yield from self.client.asdict(response)[self.data_field]
 
@@ -82,7 +86,9 @@ class BingAdsStream(Stream, ABC):
             )
             response = self.send_request(**params)
 
-            next_page_token = self.next_page_token(response, current_page_token=next_page_token)
+            next_page_token = self.next_page_token(
+                response, current_page_token=next_page_token
+            )
             if not next_page_token:
                 pagination_complete = True
 
@@ -95,14 +101,27 @@ class BingAdsStream(Stream, ABC):
 class Accounts(BingAdsStream):
     data_field: str = "AdvertiserAccount"
     service_name: str = "CustomerManagementService"
+    operation_name: str = "SearchAccounts"
 
     def send_request(self, **kwargs) -> Mapping[str, Any]:
-        return self.client.get_service(service_name=self.service_name).SearchAccounts(**kwargs)
+        return self.client.request(
+            service_name=self.service_name,
+            account_id=None,
+            operation_name=self.operation_name,
+            params=kwargs
+        )
 
-    def next_page_token(self, response: sudsobject.Object, current_page_token: Optional[int]) -> Optional[Mapping[str, Any]]:
+
+    def next_page_token(
+        self, response: sudsobject.Object, current_page_token: Optional[int]
+    ) -> Optional[Mapping[str, Any]]:
         current_page_token = current_page_token or 0
         if response is not None and hasattr(response, self.data_field):
-            return None if self.limit > len(response[self.data_field]) else current_page_token + 1
+            return (
+                None
+                if self.limit > len(response[self.data_field])
+                else current_page_token + 1
+            )
         else:
             return None
 
@@ -125,12 +144,18 @@ class Accounts(BingAdsStream):
         paging = self.client.get_service().factory.create("ns5:Paging")
         paging.Index = next_page_token or 0
         paging.Size = self.limit
-        return {"PageInfo": paging, "Predicates": predicates, "ReturnAdditionalFields": "TaxCertificate AccountMode"}
+        return {
+            "PageInfo": paging,
+            "Predicates": predicates,
+            "ReturnAdditionalFields": "TaxCertificate AccountMode",
+        }
 
 
 class Campaigns(BingAdsStream):
     data_field: str = "Campaign"
     service_name: str = "CampaignManagement"
+    operation_name: str = "GetCampaignsByAccountId"
+
     additional_fields = " ".join(
         [
             "AdScheduleUseSearcherTimeZone",
@@ -147,7 +172,12 @@ class Campaigns(BingAdsStream):
     )
 
     def send_request(self, **kwargs) -> Mapping[str, Any]:
-        return self.client.get_service(kwargs['AccountId'], self.service_name).GetCampaignsByAccountId(**kwargs)
+        return self.client.request(
+            service_name=self.service_name,
+            account_id=kwargs["AccountId"],
+            operation_name=self.operation_name,
+            params=kwargs
+        )
 
     def request_params(
         self,
@@ -155,17 +185,25 @@ class Campaigns(BingAdsStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        return {"AccountId": stream_slice['account_id'], "ReturnAdditionalFields": self.additional_fields}
+        return {
+            "AccountId": stream_slice["account_id"],
+            "ReturnAdditionalFields": self.additional_fields,
+        }
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        for account_id in self.config['account_ids']:
+        for account_id in self.config["account_ids"]:
             yield {"account_id": account_id}
 
 
 class SourceBingAds(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(
+        self, logger: AirbyteLogger, config: Mapping[str, Any]
+    ) -> Tuple[bool, Any]:
         try:
             client = Client(**config)
             client.get_service().GetAccount(AccountId=config["account_ids"][0])
