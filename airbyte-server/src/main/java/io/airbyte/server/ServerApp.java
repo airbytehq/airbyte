@@ -240,6 +240,10 @@ public class ServerApp {
     }
   }
 
+  /**
+   * Ideally when automatic migration runs, we should make sure that we acquire a lock on database and
+   * no other operation is allowed
+   */
   private static void runAutomaticMigration(ConfigRepository configRepository,
                                             JobPersistence jobPersistence,
                                             String airbyteVersion,
