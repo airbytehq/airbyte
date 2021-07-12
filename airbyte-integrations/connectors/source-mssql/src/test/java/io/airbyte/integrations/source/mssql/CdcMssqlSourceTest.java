@@ -126,6 +126,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
 
   private void grantCorrectPermissions() {
     executeQuery(String.format("USE %s;\n" + "GRANT SELECT ON SCHEMA :: [%s] TO %s", dbName, MODELS_SCHEMA, TEST_USER_NAME));
+    executeQuery(String.format("USE %s;\n" + "GRANT SELECT ON SCHEMA :: [%s] TO %s", dbName, MODELS_SCHEMA + "_random", TEST_USER_NAME));
     executeQuery(String.format("USE %s;\n" + "GRANT SELECT ON SCHEMA :: [%s] TO %s", dbName, "cdc", TEST_USER_NAME));
     executeQuery(String.format("EXEC sp_addrolemember N'%s', N'%s';", CDC_ROLE_NAME, TEST_USER_NAME));
   }
@@ -232,6 +233,12 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
 
   @Override
   protected CdcTargetPosition cdcLatestTargetPosition() {
+    try {
+      // Sleeping because sometimes the db is not yet completely ready and the lsn is not found
+      Thread.sleep(5000);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
     JdbcDatabase jdbcDatabase = Databases.createStreamingJdbcDatabase(
         config.get("username").asText(),
         config.get("password").asText(),

@@ -33,14 +33,9 @@ import io.airbyte.integrations.standardtest.source.SourceComprehensiveTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MSSQLServerContainer;
 
 public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
-
-  // temp
-  private static final Logger LOGGER = LoggerFactory.getLogger(CdcMssqlSourceComprehensiveTest.class);
 
   private MSSQLServerContainer<?> container;
   private JsonNode config;
@@ -176,8 +171,8 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("real")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("null", "power(1e1, 38)*-3.4", "power(1e1, -38)*-1.18", "power(1e1, -38)*1.18", "power(1e1, 38)*3.4")
-            .addExpectedValues(null, String.valueOf(Math.pow(10, 38)*-3.4), String.valueOf(Math.pow(10, -38)*-1.18),
-                                     String.valueOf(Math.pow(10, -38)*1.18), String.valueOf(Math.pow(10, 38)*3.4))
+            .addExpectedValues(null, String.valueOf(Math.pow(10, 38) * -3.4), String.valueOf(Math.pow(10, -38) * -1.18),
+                String.valueOf(Math.pow(10, -38) * 1.18), String.valueOf(Math.pow(10, 38) * 3.4))
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -187,8 +182,8 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .fullSourceDataType("float(24)")
             .addInsertValues("null", "power(1e1, 38)*-3.4", "power(1e1, -38)*-1.18", "power(1e1, -38)*1.18", "power(1e1, 38)*3.4")
-            .addExpectedValues(null, String.valueOf(Math.pow(10, 38)*-3.4), String.valueOf(Math.pow(10, -38)*-1.18),
-                                     String.valueOf(Math.pow(10, -38)*1.18), String.valueOf(Math.pow(10, 38)*3.4))
+            .addExpectedValues(null, String.valueOf(Math.pow(10, 38) * -3.4), String.valueOf(Math.pow(10, -38) * -1.18),
+                String.valueOf(Math.pow(10, -38) * 1.18), String.valueOf(Math.pow(10, 38) * 3.4))
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -198,9 +193,9 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .fullSourceDataType("float(53)")
             .addInsertValues("null", "power(1e1, 308)*-1.79", "power(1e1, -308)*-2.23",
-                                     "power(1e1, -308)*2.23", "power(1e1, 308)*1.79")
-            .addExpectedValues(null, String.valueOf(Math.pow(10, 308)*-1.79), String.valueOf(Math.pow(10, -308)*-2.23),
-                                     String.valueOf(Math.pow(10, -308)*2.23), String.valueOf(Math.pow(10, 308)*1.79))
+                "power(1e1, -308)*2.23", "power(1e1, 308)*1.79")
+            .addExpectedValues(null, String.valueOf(Math.pow(10, 308) * -1.79), String.valueOf(Math.pow(10, -308) * -2.23),
+                String.valueOf(Math.pow(10, -308) * 2.23), String.valueOf(Math.pow(10, 308) * 1.79))
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -210,8 +205,7 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .fullSourceDataType("DECIMAL(5,2)")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("999", "5.1", "0", "null")
-            // TODO: BUG - debezium converts this to bytes so returns values like "AYY8"
-            // .addExpectedValues("999", "5.1", "0", null)
+            .addExpectedValues("999.00", "5.10", "0.00", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -220,8 +214,7 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("numeric")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("'99999'", "null")
-            // TODO: BUG - debezium converts this to bytes so returns values like "AYY8"
-            // .addExpectedValues("99999", null)
+            .addExpectedValues("99999", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -230,8 +223,7 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("money")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("null", "'9990000.99'")
-            // TODO: BUG - debezium converts this to bytes so returns values like "F0KBLaw="
-            // .addExpectedValues(null, "9990000.99")
+            .addExpectedValues(null, "9990000.9900")
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -240,8 +232,7 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("smallmoney")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("null", "'-214748.3648'", "214748.3647")
-            // TODO: BUG - debezium converts this to bytes so returns values like "F0KBLaw="
-            // .addExpectedValues(null, "-214748.3648", "214748.3647")
+            .addExpectedValues(null, "-214748.3648", "214748.3647")
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 

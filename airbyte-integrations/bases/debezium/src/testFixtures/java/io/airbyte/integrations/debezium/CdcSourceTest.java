@@ -81,7 +81,7 @@ public abstract class CdcSourceTest {
   protected static final String COL_MAKE_ID = "make_id";
   protected static final String COL_MODEL = "model";
 
-  private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
+  protected static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
           MODELS_STREAM_NAME,
           MODELS_SCHEMA,
@@ -607,7 +607,19 @@ public abstract class CdcSourceTest {
     streamWithoutPK.setSupportedSyncModes(List.of(SyncMode.FULL_REFRESH));
     addCdcMetadataColumns(streamWithoutPK);
 
+    AirbyteStream randomStream = CatalogHelpers.createAirbyteStream(
+        MODELS_STREAM_NAME + "_random",
+        MODELS_SCHEMA + "_random",
+        Field.of(COL_ID + "_random", JsonSchemaPrimitive.NUMBER),
+        Field.of(COL_MAKE_ID + "_random", JsonSchemaPrimitive.NUMBER),
+        Field.of(COL_MODEL + "_random", JsonSchemaPrimitive.STRING))
+        .withSourceDefinedCursor(true)
+        .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+        .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID + "_random")));
+    addCdcMetadataColumns(randomStream);
+
     streams.add(streamWithoutPK);
+    streams.add(randomStream);
     expectedCatalog.withStreams(streams);
     return expectedCatalog;
   }
