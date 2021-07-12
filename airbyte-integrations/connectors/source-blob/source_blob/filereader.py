@@ -29,7 +29,7 @@ from os import read
 from typing import Iterator
 
 from airbyte_cdk.logger import AirbyteLogger
-import pandas as pd
+import pyarrow as pa
 
 
 class FileReader(ABC):
@@ -47,13 +47,6 @@ class FileReader(ABC):
     def is_binary(self):
         """TODO docstring"""
 
-    @property
-    @abstractmethod
-    def reader_options(self):
-        """TODO docstring
-        These should be defined in the spec.json per format 
-        """
-
     @abstractmethod
     def stream_dataframes(self, file, skip_data=False) -> Iterator:
         """load and return the appropriate pandas dataframe.
@@ -62,6 +55,22 @@ class FileReader(ABC):
         :param skip_data: limit reading data
         :return: a generator of dataframes loaded from file
         """
+
+    @staticmethod
+    def pyarrow_type_to_json_type(typ, reverse=False):
+        """Convert PyArrow types to Airbyte Types (or the other way around if reverse=True)
+        TODO: Docstring
+        """
+        typ = str(typ).lower()
+        # this is a map of airbyte types to pyarrow types. The first list element of the pyarrow types should be the one to use where required.
+        map = {  
+            "boolean": ["bool"],
+            "integer": ["int64", "int32"], 
+            "int": "integer",
+            "float": "number",
+            "double": 1
+        }
+        # these types are just stubs as we'll do a .startswith check
 
 
 class FileReaderCsv(FileReader):
@@ -73,8 +82,39 @@ class FileReaderCsv(FileReader):
         return False
 
     @property
-    def reader_options(self):
-        # init reader_options with system defaults
+    def read_options(self):
+        return pa.csv.ReadOptions(
+            block_size=10000,
+            encoding=self._format.get("encoding", default='utf8')
+        )
+
+    @property
+    def parse_options(self):
+        return pa.csv.ParseOptions(
+            delimiter=self._format.get("delimiter", default=','),
+            quote_char=self._format.get("quote_char", default='"'),
+            double_quote=self._format.get("double_quote", default=True),
+            escape_char=self._format.get("escape_char", default=False),
+            newlines_in_values=self._format.get("newlines_in_values", default=False)
+        )
+
+    @property
+    def convert_options(self):
+        check_utf8 = True if self._format.get("encoding", default='utf8').lower().replace("-", "") == 'utf8' else False
+        return pa.csv.ConvertOptions(
+            check_utf8=check_utf8,
+            column_types=self._schema,
+            **json.loads(self._format.get("additional_reader_options"))
+        )
+
+
+    def stream_dataframes(self, file) -> Iterator:
+        # set variable defaults
+
+        # init reader option dicts with airbyte defaults
+        read_options = 
+        headers = True
+        if self._format.get("headers") is None
         reader_options = {'chunksize': 10000}  # TODO: make this configurable so user can attempt to optimise?
         # deal with specific user defined options
         options = ['sep', 'quotechar', 'escapechar', 'encoding']
@@ -82,14 +122,4 @@ class FileReaderCsv(FileReader):
         # now parse and unpack any additional_reader_options
         if self._format.get("additional_reader_options") is not None:
             # TODO: clear error if the json.loads fails on the additional reader options provided
-            reader_options = {**reader_options, **json.loads(self._format.get("additional_reader_options"))}
-
-        return reader_options
-
-    def stream_dataframes(self, file) -> Iterator:
-        read_opts = deepcopy(self.reader_options)
-        if skip_data:
-            read_opts["nrows"] = 0
-            read_opts["index_col"] = 0
-
-        yield from pd.read_csv(file, **read_opts)
+            reader_options = {**reader_options, **}

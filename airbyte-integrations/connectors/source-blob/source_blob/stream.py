@@ -25,6 +25,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 import json
 import concurrent
+from logging import Logger
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 from traceback import format_exc
 from airbyte_cdk.models.airbyte_protocol import SyncMode
@@ -74,6 +75,7 @@ class BlobStream(Stream, ABC):
                 error_msg = f"Schema is not a valid JSON schema {repr(err)}\n{schema}\n{format_exc()}"
                 self.logger.error(error_msg)
                 raise ConfigurationError(error_msg) from err
+            self.logger.info(f"Schema: {self._schema}")
             # TODO: we could still have an 'invalid' schema after this, should we handle that explicitly?
 
     @property
@@ -154,6 +156,7 @@ class BlobStream(Stream, ABC):
         file_reader = self.filereader_class(self._format, self.get_json_schema())
         for last_mod, blobfile in self.time_ordered_blobfile_iterator():
             with blobfile.open(file_reader.is_binary) as f:
+                pass
 
 
 

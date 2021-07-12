@@ -53,7 +53,7 @@
         "oneOf": [
           {
             "title": "csv",
-            "description": "see details <a href=\"https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html\" target=\"_blank\">here</a>",
+            "description": "see details <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.read_csv.html#pyarrow-csv-read-csv\" target=\"_blank\">here</a>",
             "required": ["filetype"],
             "properties": {
               "filetype": {
@@ -61,17 +61,27 @@
                 "enum": ["csv"],
                 "default": "csv"
               },
-              "sep": {
+              "delimiter": {
                 "type": "string",
-                "description": "leave blank to auto-detect"
+                "description": "leave blank to default to , (comma)"
               },
-              "quotechar": {
+              "quote_char": {
                 "type": "string",
                 "description": "leave blank to default to <strong>\"</strong> (double quote)"
               },
-              "escapechar": {
+              "double_quote": {
+                "type": "boolean",
+                "description": "Whether two quotes in a quoted CSV value denote a single quote in the data. Leave blank to default to True",
+                "default": true
+              },
+              "escape_char": {
                 "type": "string",
-                "description": "leave blank to default to <strong>None</strong> (null)"
+                "description": "The character used for escaping special characters. Leave blank to disallow escape character"
+              },
+              "newlines_in_values": {
+                "type": "boolean",
+                "description": "Whether newline characters are allowed in CSV values. Leave blank to default to False",
+                "default": false
               },
               "encoding": {
                 "type": "string",
@@ -79,8 +89,8 @@
               },
               "additional_reader_options": {
                 "type": "string",
-                "description": "Add a valid JSON string here to provide additional options to the csv reader (see details <a href=\"https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html\" target=\"_blank\">here</a>)",
-                "examples": ["{\"quoting\": 1, \"comment\": \"#\"}"]
+                "description": "Add a valid JSON string here to provide additional options to the csv reader (see details <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.ConvertOptions.html#pyarrow.csv.ConvertOptions\" target=\"_blank\">here</a>)",
+                "examples": ["{\"timestamp_parsers\": [\"%m/%d/%Y %H:%M\", \"%Y/%m/%d %H:%M\"], \"strings_can_be_null\": true, \"null_values\": [\"NA\", \"NULL\"]}"]
               }
             }
           }
