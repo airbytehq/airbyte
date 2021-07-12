@@ -22,13 +22,10 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.mysql;
+package io.airbyte.integrations.debezium.internals;
 
-import static io.airbyte.integrations.source.mysql.MySqlSource.MYSQL_DB_HISTORY;
-
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.source.relationaldb.StateManager;
-import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.debezium.document.Document;
 import io.debezium.document.DocumentReader;
 import io.debezium.document.DocumentWriter;
@@ -41,15 +38,16 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Optional;
 import java.util.function.Consumer;
 import org.apache.commons.io.FileUtils;
 
 /**
- * The purpose of this class is : to , 1. Read the contents of the file {@link #path} at the end of
- * the sync so that it can be saved in state for future syncs. Check {@link #read()} 2. Write the
- * saved content back to the file {@link #path} at the beginning of the sync so that debezium can
- * function smoothly. Check {@link #persist(CdcState)}. To understand more about file, please refer
- * {@link FilteredFileDatabaseHistory}
+ * The purpose of this class is : to , 1. Read the contents of the file {@link #path} which contains
+ * the schema history at the end of the sync so that it can be saved in state for future syncs.
+ * Check {@link #read()} 2. Write the saved content back to the file {@link #path} at the beginning
+ * of the sync so that debezium can function smoothly. Check {@link #persist(Optional<JsonNode>)}.
+ * To understand more about file, please refer {@link FilteredFileDatabaseHistory}
  */
 public class AirbyteSchemaHistoryStorage {
 
@@ -67,7 +65,7 @@ public class AirbyteSchemaHistoryStorage {
   }
 
   /**
-   * This implementation is is kind of similar to
+   * This implementation is kind of similar to
    * {@link io.debezium.relational.history.FileDatabaseHistory#recoverRecords(Consumer)}
    */
   public String read() {
@@ -88,7 +86,7 @@ public class AirbyteSchemaHistoryStorage {
   }
 
   /**
-   * This implementation is is kind of similar to
+   * This implementation is kind of similar to
    * {@link io.debezium.relational.history.FileDatabaseHistory#start()}
    */
   private void makeSureFileExists() {
@@ -111,9 +109,11 @@ public class AirbyteSchemaHistoryStorage {
     }
   }
 
-  public void persist(CdcState cdcState) {
-    String fileAsString = cdcState != null && cdcState.getState() != null ? Jsons
-        .object(cdcState.getState().get(MYSQL_DB_HISTORY), String.class) : null;
+  public void persist(Optional<JsonNode> schemaHistory) {
+    if (schemaHistory.isEmpty()) {
+      return;
+    }
+    String fileAsString = Jsons.object(schemaHistory.get(), String.class);
 
     if (fileAsString == null || fileAsString.isEmpty()) {
       return;
@@ -152,7 +152,7 @@ public class AirbyteSchemaHistoryStorage {
     }
   }
 
-  static AirbyteSchemaHistoryStorage initializeDBHistory(StateManager stateManager) {
+  public static AirbyteSchemaHistoryStorage initializeDBHistory(Optional<JsonNode> schemaHistory) {
     final Path dbHistoryWorkingDir;
     try {
       dbHistoryWorkingDir = Files.createTempDirectory(Path.of("/tmp"), "cdc-db-history");
@@ -162,7 +162,7 @@ public class AirbyteSchemaHistoryStorage {
     final Path dbHistoryFilePath = dbHistoryWorkingDir.resolve("dbhistory.dat");
 
     final AirbyteSchemaHistoryStorage schemaHistoryManager = new AirbyteSchemaHistoryStorage(dbHistoryFilePath);
-    schemaHistoryManager.persist(stateManager.getCdcStateManager().getCdcState());
+    schemaHistoryManager.persist(schemaHistory);
     return schemaHistoryManager;
   }
 
