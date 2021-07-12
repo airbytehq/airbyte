@@ -19,7 +19,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 from source_dixa.source import ConversationExport
@@ -28,7 +28,7 @@ from source_dixa.source import ConversationExport
 @pytest.fixture
 def conversation_export():
     return ConversationExport(
-        start_date=datetime(year=2021, month=7, day=1, hour=12), batch_size=1, logger=None
+        start_date=datetime(year=2021, month=7, day=1, hour=12, tzinfo=timezone.utc), batch_size=1, logger=None
     )
 
 
@@ -80,15 +80,15 @@ def test_add_days_to_ms_timestamp():
 
 
 def test_stream_slices_without_state(conversation_export):
-    conversation_export.end_timestamp = 1625263200001  # 2021-07-03 00:00:00 + 1 ms
+    conversation_export.end_timestamp = 1625270400001  # 2021-07-03 00:00:00 + 1 ms
     expected_slices = [
         {
-            'updated_after': 1625133600000,  # 2021-07-01 12:00:00
-            'updated_before': 1625220000000  # 2021-07-02 12:00:00
+            'updated_after': 1625140800000,  # 2021-07-01 12:00:00
+            'updated_before': 1625227200000  # 2021-07-02 12:00:00
         },
         {
-            'updated_after': 1625220000000,
-            'updated_before': 1625263200001
+            'updated_after': 1625227200000,
+            'updated_before': 1625270400001
         }
     ]
     actual_slices = conversation_export.stream_slices()
@@ -97,13 +97,13 @@ def test_stream_slices_without_state(conversation_export):
 
 def test_stream_slices_without_state_large_batch():
     conversation_export = ConversationExport(
-        start_date=datetime(year=2021, month=7, day=1, hour=12), batch_size=31, logger=None
+        start_date=datetime(year=2021, month=7, day=1, hour=12, tzinfo=timezone.utc), batch_size=31, logger=None
     )
-    conversation_export.end_timestamp = 1625263200001  # 2021-07-03 00:00:00 + 1 ms
+    conversation_export.end_timestamp = 1625270400001  # 2021-07-03 00:00:00 + 1 ms
     expected_slices = [
         {
-            'updated_after': 1625133600000,  # 2021-07-01 12:00:00
-            'updated_before': 1625263200001
+            'updated_after': 1625140800000,  # 2021-07-01 12:00:00
+            'updated_before': 1625270400001
         }
     ]
     actual_slices = conversation_export.stream_slices()
@@ -129,13 +129,13 @@ def test_stream_slices_with_start_timestamp_larger_than_state():
     Test that if start_timestamp is larger than state, then start at start_timestamp.
     """
     conversation_export = ConversationExport(
-        start_date=datetime(year=2021, month=12, day=1), batch_size=31,
+        start_date=datetime(year=2021, month=12, day=1, tzinfo=timezone.utc), batch_size=31,
         logger=None
     )
     conversation_export.end_timestamp = 1638360000001  # 2021-12-01 12:00:00 + 1 ms
     expected_slices = [
         {
-            'updated_after': 1638313200000,  # 2021-07-01 12:00:00
+            'updated_after': 1638316800000,  # 2021-07-01 12:00:00
             'updated_before': 1638360000001
         }
     ]
@@ -148,7 +148,7 @@ def test_stream_slices_with_start_timestamp_larger_than_state():
 def test_get_updated_state_without_state(conversation_export):
     assert conversation_export.get_updated_state(
         current_stream_state=None, latest_record={'updated_at': 1625263200000}
-    ) == {'updated_at': 1625133600000}
+    ) == {'updated_at': 1625140800000}
 
 
 def test_get_updated_state_with_bigger_state(conversation_export):
