@@ -29,9 +29,9 @@ import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_LOG_POS;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.integrations.debezium.CdcConnectorMetadata;
+import io.airbyte.integrations.debezium.CdcMetadataInjector;
 
-public class MySqlCdcConnectorMetadata implements CdcConnectorMetadata {
+public class MySqlCdcConnectorMetadataInjector implements CdcMetadataInjector {
 
   @Override
   public void addMetaData(ObjectNode event, JsonNode source) {

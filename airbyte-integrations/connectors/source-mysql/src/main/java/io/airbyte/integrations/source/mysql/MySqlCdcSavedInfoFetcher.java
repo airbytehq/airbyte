@@ -28,15 +28,15 @@ import static io.airbyte.integrations.source.mysql.MySqlSource.MYSQL_CDC_OFFSET;
 import static io.airbyte.integrations.source.mysql.MySqlSource.MYSQL_DB_HISTORY;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.debezium.CdcSavedInfo;
+import io.airbyte.integrations.debezium.CdcSavedInfoFetcher;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
 
-public class MySqlCdcSavedInfo implements CdcSavedInfo {
+public class MySqlCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
 
   private final JsonNode savedOffset;
   private final JsonNode savedSchemaHistory;
 
-  protected MySqlCdcSavedInfo(CdcState savedState) {
+  protected MySqlCdcSavedInfoFetcher(CdcState savedState) {
     final boolean savedStatePresent = savedState != null && savedState.getState() != null;
     this.savedOffset = savedStatePresent ? savedState.getState().get(MYSQL_CDC_OFFSET) : null;
     this.savedSchemaHistory = savedStatePresent ? savedState.getState().get(MYSQL_DB_HISTORY) : null;

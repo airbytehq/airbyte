@@ -226,8 +226,8 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
           new AirbyteDebeziumHandler(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), MySqlCdcProperties.getDebeziumProperties(),
               catalog, true);
 
-      return handler.getIncrementalIterators(new MySqlCdcSavedInfo(stateManager.getCdcStateManager().getCdcState()),
-          new MySqlCdcStateHandler(stateManager), new MySqlCdcConnectorMetadata(), emittedAt);
+      return handler.getIncrementalIterators(new MySqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
+          new MySqlCdcStateHandler(stateManager), new MySqlCdcConnectorMetadataInjector(), emittedAt);
     } else {
       LOGGER.info("using CDC: {}", false);
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager,
