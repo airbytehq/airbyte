@@ -77,7 +77,7 @@ ssh opc@localhost -i <private-key-file.key> -p 2200
 ```
 ssh opc@bastion-host-public-ip -i <private-key-file.key> -L 8000:oci-private-instance-ip:8000
 ```
-```
+
 
 ## Access Airbyte
 
