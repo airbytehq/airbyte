@@ -50,7 +50,7 @@ public class MySqlCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
 
   @Override
   public Optional<JsonNode> getSavedSchemaHistory() {
-    return Optional.of(savedSchemaHistory);
+    return Optional.ofNullable(savedSchemaHistory);
   }
 
 }
