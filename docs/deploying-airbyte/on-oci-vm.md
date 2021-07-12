@@ -22,6 +22,7 @@ Select the Subnet > Security List > Add Ingress Rules
 chmod 600 private-key-file
 
 ssh -i private-key-file opc@oci-private-instance-ip -p 2200
+```
 
 ## Install Airbyte Prerequisites on OCI VM
 
