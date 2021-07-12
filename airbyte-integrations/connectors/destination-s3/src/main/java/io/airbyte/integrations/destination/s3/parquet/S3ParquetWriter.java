@@ -94,8 +94,12 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
     Configuration hadoopConfig = new Configuration();
     hadoopConfig.set(Constants.ACCESS_KEY, config.getAccessKeyId());
     hadoopConfig.set(Constants.SECRET_KEY, config.getSecretAccessKey());
-    hadoopConfig
-        .set(Constants.ENDPOINT, String.format("s3.%s.amazonaws.com", config.getBucketRegion()));
+    if (config.getEndpoint().isEmpty()) {
+      hadoopConfig.set(Constants.ENDPOINT, String.format("s3.%s.amazonaws.com", config.getBucketRegion()));
+    } else {
+      hadoopConfig.set(Constants.ENDPOINT, config.getEndpoint());
+      hadoopConfig.set(Constants.PATH_STYLE_ACCESS, "true");
+    }
     hadoopConfig.set(Constants.AWS_CREDENTIALS_PROVIDER,
         "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider");
     return hadoopConfig;
