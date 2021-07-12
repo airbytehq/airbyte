@@ -56,6 +56,7 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.SyncMode;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -74,7 +75,7 @@ public class CdcMySqlSourceTest extends CdcSourceTest {
   private JsonNode config;
 
   @BeforeEach
-  public void setup() {
+  public void setup() throws SQLException {
     init();
     revokeAllPermissions();
     grantCorrectPermissions();

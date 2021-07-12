@@ -62,7 +62,6 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
 
-  public static final String CDC_LSN = "_ab_cdc_lsn";
   private static final String JDBC_COLUMN_DATABASE_NAME = "TABLE_CAT";
   private static final String JDBC_COLUMN_SCHEMA_NAME = "TABLE_SCHEM";
   private static final String JDBC_COLUMN_TABLE_NAME = "TABLE_NAME";
