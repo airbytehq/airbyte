@@ -15,9 +15,9 @@
       },
       "replication_start_date": {
         "title": "Replication Start Date",
-        "description": "UTC date and time in the format 2017-01-25 00:00:00. Any data before this date will not be replicated.",
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$",
-        "examples": ["2017-01-25 00:00:00"],
+        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "examples": ["2017-01-25T00:00:00Z"],
         "type": "string"
       }
     }

@@ -25,6 +25,7 @@
 from abc import ABC
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
+import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 
@@ -71,8 +72,8 @@ class PaginatedPipedriveStream(PipedriveStream):
                 If there are no more pages in the result, return None.
         """
         pagination_data = response.json().get("additional_data", {}).get("pagination", {})
-        if pagination_data.get("more_items_in_collection"):
-            start = pagination_data.get("start", 0) + self.limit
+        if pagination_data.get("more_items_in_collection") and pagination_data.get("start") is not None:
+            start = pagination_data.get("start") + self.limit
             return {"start": start}
 
     def request_params(
@@ -87,7 +88,7 @@ class PaginatedPipedriveStream(PipedriveStream):
 class IncrementalPipedriveStream(PaginatedPipedriveStream, ABC):
     cursor_field = "update_time"
 
-    def __init__(self, replication_start_date: str = None, **kwargs):
+    def __init__(self, replication_start_date: pendulum.datetime, **kwargs):
         super().__init__(**kwargs)
         self._replication_start_date = replication_start_date
 
@@ -109,11 +110,13 @@ class IncrementalPipedriveStream(PaginatedPipedriveStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        replication_start_date = max(stream_state.get(self.cursor_field, self._replication_start_date), self._replication_start_date)
+        replication_start_date = self._replication_start_date
+        if stream_state.get(self.cursor_field):
+            replication_start_date = max(pendulum.parse(stream_state[self.cursor_field]), replication_start_date)
         params.update(
             {
                 "items": self.path_param,
-                "since_timestamp": replication_start_date,
+                "since_timestamp": replication_start_date.strftime("%Y-%m-%d %H:%M:%S"),
             }
         )
         return params
