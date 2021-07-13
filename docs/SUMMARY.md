@@ -95,6 +95,7 @@
     * [SurveyMonkey](integrations/sources/surveymonkey.md)
     * [Tempo](integrations/sources/tempo.md)
     * [Twilio](integrations/sources/twilio.md)
+    * [Typeform](integrations/sources/typeform.md)
     * [Zendesk Chat](integrations/sources/zendesk-chat.md)
     * [Zendesk Sunshine](integrations/sources/zendesk-sunshine.md)
     * [Zendesk Support](integrations/sources/zendesk-support.md)
