@@ -27,6 +27,7 @@ from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Tuple
 
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import AirbyteStream
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
@@ -50,7 +51,7 @@ class ZuoraStream(Stream, ABC):
         """
         return self.alt_cursor_field if self.cursor_field not in schema.keys() else self.cursor_field
 
-    def get_json_schema(self):
+    def get_json_schema(self) -> Mapping[str, Any]:
         """
         Get the stream's schema from Zuora Object's Data types,
         """
@@ -58,7 +59,7 @@ class ZuoraStream(Stream, ABC):
         schema["properties"] = self.api._zuora_object_to_json_schema(self.name)
         return schema
 
-    def as_airbyte_stream(self):
+    def as_airbyte_stream(self)-> AirbyteStream:
         """
         Override this method to set the default_cursor_field to the stream schema.
         """
@@ -99,7 +100,7 @@ class IncrementalZuoraStream(ZuoraStream):
         return self.api.window_in_days
 
     # setting checkpoint interval to the limit of date-slice
-    state_checkpoint_interval = window_in_days  # FIXME: This should be done once the date-slice yield the records
+    state_checkpoint_interval = window_in_days
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
@@ -137,17 +138,25 @@ class SourceZuora(AbstractSource):
                 streams.append(type(obj, cls_base, cls_props))
             return streams
 
-        auth = ZuoraAuthenticator(config["is_sandbox"]).generateToken(config["client_id"], config["client_secret"])
+        # Make instance of ZuoraAuthenticator to get header with token, url_base
+        auth_client = ZuoraAuthenticator(config["is_sandbox"])
+        authenticator = auth_client.generateToken(config["client_id"], config["client_secret"]).get("header")
+        url_base = auth_client.endpoint
+
+        # Make set of arguments for the ZoqlExportClient
         args = {
-            "authenticator": auth.get("header"),
+            "authenticator": authenticator,
+            "url_base": url_base,
             "start_date": config["start_date"],
             "window_in_days": config["window_in_days"],
             "client_id": config["client_id"],
             "client_secret": config["client_secret"],
             "is_sandbox": config["is_sandbox"],
         }
+
         # Making instance of Zuora API Client
         zuora_client = ZoqlExportClient(**args)
+
         # Get the list of available objects from Zuora
         zuora_objects = ["account", "subscription", "invoicehistory"]
         # zuora_objects = zuora_client._zuora_list_objects()

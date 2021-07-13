@@ -45,22 +45,15 @@ class ZoqlExportClient:
 
     logger = AirbyteLogger()
 
-    def __init__(self, authenticator: Dict, start_date: str, window_in_days: int, client_id: str, client_secret: str, is_sandbox: bool):
+    def __init__(self, authenticator: Dict, url_base: str, start_date: str, window_in_days: int, client_id: str, client_secret: str, is_sandbox: bool):
         self.authenticator = authenticator
+        self.url_base = url_base
         self.start_date = start_date
         self.window_in_days = window_in_days
         self.client_id = client_id
         self.client_secret = client_secret
         self.is_sandbox = is_sandbox
         self.retry_max = 3
-
-    # Define base url from is_sandbox arg.
-    @property
-    def url_base(self) -> str:
-        if self.is_sandbox:
-            return "https://rest.apisandbox.zuora.com"
-        else:
-            return "https://rest.zuora.com"
 
     # MAKE try/except request warper with handling errors
     def _make_request(self, method: str = "GET", url: str = None, data: Dict = None) -> requests.Response:
