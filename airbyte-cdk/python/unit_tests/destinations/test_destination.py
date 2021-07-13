@@ -129,8 +129,8 @@ class TestRun:
 
         spec_message = next(iter(destination.run_cmd(parsed_args)))
 
-        # Mypy doesn't understand magicmock so it thinks spec doesn't have call_count attr
-        assert destination.spec.assert_called_once()  # type: ignore
+        # Mypy doesn't understand magicmock so it thinks spec doesn't have assert_called_once attr
+        destination.spec.assert_called_once()  # type: ignore
 
         # verify the output of spec was returned
         assert _wrapped(expected_spec) == spec_message
@@ -155,7 +155,7 @@ class TestRun:
         returned_check_result = next(iter(destination.run_cmd(parsed_args)))
         # verify method call with the correct params
         # Affirm to Mypy that this is indeed a method on this mock
-        assert destination.check.assert_called_once()  # type: ignore
+        destination.check.assert_called_once()  # type: ignore
         # Affirm to Mypy that this is indeed a method on this mock
         destination.check.assert_called_with(logger=ANY, config=dummy_config)  # type: ignore
 
@@ -202,7 +202,7 @@ class TestRun:
         returned_write_result = list(destination.run_cmd(parsed_args))
         # verify method call with the correct params
         # Affirm to Mypy that call_count is indeed a method on this mock
-        assert destination.write.assert_called_once()  # type: ignore
+        destination.write.assert_called_once()  # type: ignore
         # Affirm to Mypy that call_count is indeed a method on this mock
         destination.write.assert_called_with(  # type: ignore
             config=dummy_config,
