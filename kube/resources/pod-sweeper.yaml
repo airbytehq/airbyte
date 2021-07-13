@@ -59,6 +59,7 @@ spec:
       labels:
         airbyte: pod-sweeper
     spec:
+      serviceAccountName: airbyte-admin
       containers:
         - name: airbyte-pod-sweeper
           image: bitnami/kubectl
