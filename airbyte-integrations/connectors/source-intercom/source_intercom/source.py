@@ -27,6 +27,7 @@ from datetime import date, timedelta, datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -60,26 +61,35 @@ class IntercomStream(HttpStream, ABC):
         """
 
         next_page = response.links.get("next", None)
+
         if next_page:
             return dict(parse_qsl(urlparse(next_page.get("url")).query))
         else:
             return None
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         return {"Accept": "application/json"}
 
-    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
+    def _send_request(
+            self,
+            request: requests.PreparedRequest,
+            request_kwargs: Mapping[str, Any]
+    ) -> requests.Response:
         try:
             return super()._send_request(request, request_kwargs)
         except requests.exceptions.HTTPError as e:
             error_message = e.response.text
             if error_message:
-                self.logger.error(f"Stream {self.name}: {e.response.status_code} {e.response.reason} - {error_message}")
+                self.logger.error(f"Stream {self.name}: {e.response.status_code} "
+                                  f"{e.response.reason} - {error_message}")
             raise e
 
-    def get_data(self, response: requests.Response, **kwargs) -> List:
+    def get_data(self, response: requests.Response) -> List:
         data = response.json()
         for data_field in self.data_fields:
             if data_field is not None:
@@ -91,8 +101,15 @@ class IntercomStream(HttpStream, ABC):
 
         return data
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        data = self.get_data(response, **kwargs)
+    def parse_response(
+            self,
+            response: requests.Response,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+
+        data = self.get_data(response)
 
         for record in data:
             yield record
@@ -104,33 +121,91 @@ class IntercomStream(HttpStream, ABC):
 class IncrementalIntercomStream(IntercomStream, ABC):
     cursor_field = "updated_at"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        data = self.get_data(response, **kwargs)
+    def filter_by_state(
+            self,
+            stream_state: Mapping[str, Any] = None,
+            records: Mapping[str, Any] = None
+    ) -> Iterable:
+
+        if stream_state:
+            for record in records:
+                if record[self.cursor_field] >= stream_state.get(self.cursor_field):
+                    yield record
+        else:
+            yield from records
+
+    def parse_response(
+            self,
+            response: requests.Response,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+
+        data = self.get_data(response)
 
         for record in data:
             updated_at = record.get(self.cursor_field, None)
+
             if updated_at:
-                record[self.cursor_field] = datetime.fromtimestamp(record[self.cursor_field]).isoformat()  # convert timestamp to datetime string
+                record[self.cursor_field] = datetime.fromtimestamp(
+                    record[self.cursor_field]
+                ).isoformat()  # convert timestamp to datetime string
 
             yield record
 
         # wait for 3,6 seconds according to API limit
         time.sleep(3600 / self.rate_limit)
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
-        # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
-        # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
+    def get_updated_state(
+            self,
+            current_stream_state: MutableMapping[str, Any],
+            latest_record: Mapping[str, Any]
+    ) -> Mapping[str, any]:
+        """
+        This method is called once for each record returned from the API to
+        compare the cursor field value in that record with the current state
+        we then return an updated state object. If this is the first time we
+        run a sync or no state was passed, current_stream_state will be None.
+        """
+
         current_stream_state = current_stream_state or {}
-        current_stream_state_date = current_stream_state.get(self.cursor_field, self.start_date)
-        latest_record_date = latest_record.get(self.cursor_field, self.start_date)
+
+        current_stream_state_date = current_stream_state.get(
+            self.cursor_field, str(self.start_date)
+        )
+        latest_record_date = latest_record.get(
+            self.cursor_field, str(self.start_date)
+        )
+
         return {self.cursor_field: max(current_stream_state_date, latest_record_date)}
+
+    def read_records(
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """
+        Endpoint does not provide query filtering params, but they provide us
+        updated_at field in most cases, so we used that as incremental filtering
+        during the slicing.
+        """
+
+        records = super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
+
+        yield from self.filter_by_state(stream_state=stream_state, records=records)
 
 
 class StreamMixin:
     stream = None
 
     def stream_slices(self, sync_mode, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        for item in self.stream(authenticator=self.authenticator, start_date=self.start_date).read_records(sync_mode=sync_mode):
+        for item in self.stream(
+                authenticator=self.authenticator,
+                start_date=self.start_date
+        ).read_records(sync_mode=sync_mode):
             yield {"id": item["id"]}
 
         yield from []
@@ -145,7 +220,10 @@ class Admins(IntercomStream):
     data_fields = ["admins"]
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "admins"
 
@@ -156,7 +234,12 @@ class Companies(IncrementalIntercomStream):
     Endpoint: https://api.intercom.io/companies
     """
 
-    def path(self, **kwargs) -> str:
+    def path(
+            self,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> str:
         return "companies"
 
 
@@ -168,7 +251,12 @@ class CompanySegments(StreamMixin, IncrementalIntercomStream):
 
     stream = Companies
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(
+            self,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> str:
         return f"/companies/{stream_slice['id']}/segments"
 
 
@@ -180,7 +268,12 @@ class Conversations(IncrementalIntercomStream):
 
     data_fields = ["conversations"]
 
-    def path(self, **kwargs) -> str:
+    def path(
+            self,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> str:
         return "conversations"
 
 
@@ -193,7 +286,12 @@ class ConversationParts(StreamMixin, IncrementalIntercomStream):
     data_fields = ["conversation_parts", "conversation_parts"]
     stream = Conversations
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(
+            self,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> str:
         return f"/conversations/{stream_slice['id']}"
 
 
@@ -205,7 +303,12 @@ class Segments(IncrementalIntercomStream):
 
     data_fields = ["segments"]
 
-    def path(self, **kwargs) -> str:
+    def path(
+            self,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> str:
         return "segments"
 
 
@@ -215,7 +318,12 @@ class Contacts(IncrementalIntercomStream):
     Endpoint: https://api.intercom.io/contacts
     """
 
-    def path(self, **kwargs) -> str:
+    def path(
+            self,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> str:
         return "contacts"
 
 
@@ -223,7 +331,10 @@ class DataAttributes(IntercomStream):
     primary_key = "name"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "data_attributes"
 
@@ -235,7 +346,10 @@ class CompanyAttributes(DataAttributes):
     """
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {"model": "company"}
 
@@ -247,7 +361,10 @@ class ContactAttributes(DataAttributes):
     """
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {"model": "contact"}
 
@@ -261,7 +378,10 @@ class Tags(IntercomStream):
     primary_key = "name"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "tags"
 
@@ -276,7 +396,10 @@ class Teams(IntercomStream):
     data_fields = ["teams"]
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "teams"
 
@@ -287,14 +410,6 @@ class SourceIntercom(AbstractSource):
     """
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
-        for an example.
-
-        :param config:  the user-input config object conforming to the connector's spec.json
-        :param logger:  logger object
-        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
-        """
         authenticator = TokenAuthenticator(token=config["access_token"])
         try:
             url = f"{IntercomStream.url_base}/tags"
@@ -307,10 +422,6 @@ class SourceIntercom(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
-
         now = date.today()
 
         start_date = config.get("start_date")
