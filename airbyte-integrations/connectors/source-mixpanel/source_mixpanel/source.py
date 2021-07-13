@@ -42,6 +42,11 @@ from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, TokenAuthen
 
 
 class MixpanelStream(HttpStream, ABC):
+    """
+    Formatted API Rate Limit  (https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-API-Endpoints):
+      A maximum of 5 concurrent queries
+      400 queries per hour.
+    """
 
     url_base = "https://mixpanel.com/api/2.0/"
     date_window_size = 30  # days
@@ -64,42 +69,8 @@ class MixpanelStream(HttpStream, ABC):
         super().__init__(authenticator=authenticator)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """Define abstract method"""
         return None
-
-    def date_slices(
-        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        date_slices = []
-
-        # use the latest date between self.start_date and stream_state
-        start_date = self.start_date
-        if stream_state:
-            # Remove time part from state because API accept 'from_date' param in date format only ('YYYY-MM-DD')
-            # It also means that sync returns duplicated entries for the date from the state (date range is inclusive)
-            stream_state_date = datetime.fromisoformat(stream_state["date"]).date()
-            start_date = max(start_date, stream_state_date)
-
-        # use the lowest date between start_date and self.end_date, otherwise API fails if start_date is in future
-        start_date = min(start_date, self.end_date)
-
-        while start_date <= self.end_date:
-            end_date = start_date + timedelta(days=self.date_window_size - 1)  # -1 is needed because dates are inclusive
-            date_slices.append(
-                {
-                    "start_date": str(start_date),
-                    "end_date": str(min(end_date, self.end_date)),
-                }
-            )
-            # add 1 additional day because date range is inclusive
-            start_date = end_date + timedelta(days=1)
-
-        # print(f"==== date_slices len: {len(date_slices)} \n")
-        # pprint(date_slices)
-        # reset rate_limit if we expect less requests (1 req per stream) than it is allowed by API rate_limit
-        if len(date_slices) < self.rate_limit:
-            self.rate_limit = 3600  # queries per hour (1 query per sec)
-
-        return date_slices
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -135,12 +106,10 @@ class MixpanelStream(HttpStream, ABC):
 
 class IncrementalMixpanelStream(MixpanelStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
-        # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
-        # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
         current_stream_state = current_stream_state or {}
-        current_stream_state_date: str = current_stream_state.get("date", str(self.start_date))
+        current_stream_state: str = current_stream_state.get("date", str(self.start_date))
         latest_record_date: str = latest_record.get(self.cursor_field, str(self.start_date))
-        return {"date": max(current_stream_state_date, latest_record_date)}
+        return {"date": max(current_stream_state, latest_record_date)}
 
 
 class Cohorts(MixpanelStream):
@@ -191,7 +160,53 @@ class FunnelsList(MixpanelStream):
         return "funnels/list"
 
 
-class Funnels(IncrementalMixpanelStream):
+class DateSlicesMixin:
+    def stream_slices(
+        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        date_slices = []
+
+        # use the latest date between self.start_date and stream_state
+        start_date = self.start_date
+        if stream_state:
+            # Remove time part from state because API accept 'from_date' param in date format only ('YYYY-MM-DD')
+            # It also means that sync returns duplicated entries for the date from the state (date range is inclusive)
+            stream_state_date = datetime.fromisoformat(stream_state["date"]).date()
+            start_date = max(start_date, stream_state_date)
+
+        # use the lowest date between start_date and self.end_date, otherwise API fails if start_date is in future
+        start_date = min(start_date, self.end_date)
+
+        while start_date <= self.end_date:
+            end_date = start_date + timedelta(days=self.date_window_size - 1)  # -1 is needed because dates are inclusive
+            date_slices.append(
+                {
+                    "start_date": str(start_date),
+                    "end_date": str(min(end_date, self.end_date)),
+                }
+            )
+            # add 1 additional day because date range is inclusive
+            start_date = end_date + timedelta(days=1)
+
+        # print(f"==== date_slices len: {len(date_slices)} \n")
+        # pprint(date_slices)
+
+        # reset rate_limit if we expect less requests (1 req per stream) than it is allowed by API rate_limit
+        if len(date_slices) < self.rate_limit:
+            self.rate_limit = 3600  # queries per hour (1 query per sec)
+
+        return date_slices
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {
+            "from_date": stream_slice["start_date"],
+            "to_date": stream_slice["end_date"],
+        }
+
+
+class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
     """List the funnels for a given date range.
     API Docs: https://developer.mixpanel.com/reference/funnels#funnels-query
     Endpoint: https://mixpanel.com/api/2.0/funnels
@@ -205,15 +220,97 @@ class Funnels(IncrementalMixpanelStream):
     def path(self, **kwargs) -> str:
         return "funnels"
 
+    def funnel_slices(self, sync_mode) -> List[dict]:
+        funnel_slices = FunnelsList(authenticator=self.authenticator).read_records(sync_mode=sync_mode)
+        funnel_slices = list(funnel_slices)  # [{'funnel_id': <funnel_id1>, 'name': <name1>}, {...}]
+        # print(f"==== funnel_slices: {funnel_slices} \n")
+
+        # save all funnels in dict(<funnel_id1>:<name1>, ...)
+        self.funnels = dict((funnel["funnel_id"], funnel["name"]) for funnel in funnel_slices)
+
+        return funnel_slices
+
+    def stream_slices__(
+        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        # print(f"==== stream_state: {stream_state}")
+        # One stream slice is a combination of all funnel_slices and stream_slices
+        stream_slices = []
+        funnel_slices = self.funnel_slices(sync_mode)
+        date_slices = self.date_slices(sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+        for funnel_slice in funnel_slices:
+            for date_slice in date_slices:
+                stream_slices.append({**funnel_slice, **date_slice})
+
+        # print(f"==== stream_slices len: {len(stream_slices)} \n")
+        # pprint(stream_slices)
+        if len(stream_slices) < self.rate_limit:
+            self.rate_limit = 3600  # queries per hour (1 query per sec)
+        return stream_slices
+
+    def stream_slices(
+        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Mapping[str, Any]]]]:
+        """Return stream slices which a combination of all funnel_ids and its related date ranges, like:
+        stream_slices = [
+            {   'funnel_id': funnel_id1_int,
+                'funnel_name': 'funnel_name1',
+                'start_date': 'start_date_1'
+                'end_date': 'end_date_1'
+            },
+            {   'funnel_id': 'funnel_id1_int',
+                'funnel_name': 'funnel_name1',
+                'start_date': 'start_date_2'
+                'end_date': 'end_date_2'
+            }
+            ...
+            {   'funnel_id': 'funnel_idX_int',
+                'funnel_name': 'funnel_nameX',
+                'start_date': 'start_date_1'
+                'end_date': 'end_date_1'
+            }
+            ...
+        ]
+
+        # NOTE: funnel_id format:
+        #    - int in funnel_slice
+        #    - str in stream_state
+        """
+        stream_state = stream_state or {}
+        # print(f"==== stream_state: {stream_state}")
+        # One stream slice is a combination of all funnel_slices and date_slices
+        stream_slices = []
+        funnel_slices = self.funnel_slices(sync_mode)
+        # date_slices = self.date_slices(sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+        for funnel_slice in funnel_slices:
+            # get single funnel state
+            funnel_id = str(funnel_slice["funnel_id"])
+            funnel_state = stream_state.get(funnel_id)
+            date_slices = super().stream_slices(sync_mode, cursor_field=cursor_field, stream_state=funnel_state)
+            for date_slice in date_slices:
+                stream_slices.append({**funnel_slice, **date_slice})
+
+        # print(f"==== stream_slices len: {len(stream_slices)} \n")
+        # pprint(stream_slices)
+
+        # reset rate_limit if we expect less requests (1 req per stream) than it is allowed by API rate_limit
+        if len(stream_slices) < self.rate_limit:
+            self.rate_limit = 3600  # queries per hour (1 query per sec)
+        return stream_slices
+
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        return {
-            "funnel_id": stream_slice["funnel_id"],
-            "unit": "day",
-            "from_date": stream_slice["start_date"],
-            "to_date": stream_slice["end_date"],
-        }
+        # NOTE: funnel_id format:
+        #    - int in stream_slice
+        #    - str in stream_state
+        funnel_id = str(stream_slice["funnel_id"])
+        funnel_state = stream_state.get(funnel_id)
+
+        params = super().request_params(funnel_state, stream_slice, next_page_token)
+        params["funnel_id"] = stream_slice["funnel_id"]
+        params["unit"] = "day"
+        return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -248,6 +345,7 @@ class Funnels(IncrementalMixpanelStream):
         params = parse_qs(query)
         funnel_id = int(params["funnel_id"][0])
 
+        # read and transform records
         records = response.json().get(self.data_field, {})
         for date_entry in records:
             # for each record add funnel_id, name
@@ -258,33 +356,31 @@ class Funnels(IncrementalMixpanelStream):
                 **records[date_entry],
             }
 
-    def funnel_slices(self, sync_mode) -> List[dict]:
-        funnel_slices = FunnelsList(authenticator=self.authenticator).read_records(sync_mode=sync_mode)
-        funnel_slices = list(funnel_slices)  # [{'funnel_id': <funnel_id1>, 'name': <name1>}, {...}]
-        # print(f"==== funnel_slices: {funnel_slices} \n")
+    def get_updated_state(
+        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
+    ) -> Mapping[str, Mapping[str, str]]:
+        """Update existing stream state for particular funnel_id
+        stream_state = {
+            'funnel_id1_str' = {'date': 'datetime_string1'},
+            'funnel_id2_str' = {'date': 'datetime_string2'},
+             ...
+            'funnel_idX_str' = {'date': 'datetime_stringX'},
+        }
+        NOTE: funnel_id1 format:
+            - int in latest_record
+            - str in current_stream_state
+        """
+        funnel_id: str = str(latest_record["funnel_id"])
 
-        # save all funnels in dict(<funnel_id1>:<name1>, ...)
-        self.funnels = dict((funnel["funnel_id"], funnel["name"]) for funnel in funnel_slices)
+        latest_record_date: str = latest_record.get(self.cursor_field, str(self.start_date))
+        stream_state_date: str = str(self.start_date)
+        if current_stream_state and funnel_id in current_stream_state:
+            stream_state_date = current_stream_state[funnel_id]["date"]
 
-        return funnel_slices
+        # update existing stream state
+        current_stream_state[funnel_id] = {"date": max(latest_record_date, stream_state_date)}
 
-    def stream_slices(
-        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        # print(f"==== stream_state: {stream_state}")
-        # One stream slice is a combination of all funnel_slices and stream_slices
-        stream_slices = []
-        funnel_slices = self.funnel_slices(sync_mode)
-        date_slices = self.date_slices(sync_mode, cursor_field=cursor_field, stream_state=stream_state)
-        for funnel_slice in funnel_slices:
-            for date_slice in date_slices:
-                stream_slices.append({**funnel_slice, **date_slice})
-
-        # print(f"==== stream_slices len: {len(stream_slices)} \n")
-        # pprint(stream_slices)
-        if len(stream_slices) < self.rate_limit:
-            self.rate_limit = 3600  # queries per hour (1 query per sec)
-        return stream_slices
+        return current_stream_state
 
 
 class Engage(MixpanelStream):
@@ -390,7 +486,7 @@ class CohortMembers(Engage):
         return stream_slices
 
 
-class Annotations(MixpanelStream):
+class Annotations(DateSlicesMixin, MixpanelStream):
     """List the annotations for a given date range.
     API Docs: https://developer.mixpanel.com/reference/annotations
     Endpoint: https://mixpanel.com/api/2.0/annotations
@@ -416,21 +512,8 @@ class Annotations(MixpanelStream):
     def path(self, **kwargs) -> str:
         return "annotations"
 
-    def stream_slices(
-        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        return self.date_slices(sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {
-            "from_date": stream_slice["start_date"],
-            "to_date": stream_slice["end_date"],
-        }
-
-
-class Revenue(IncrementalMixpanelStream):
+class Revenue(DateSlicesMixin, IncrementalMixpanelStream):
     """Get data Revenue.
     API Docs: no docs! build based on singer source
     Endpoint: https://mixpanel.com/api/2.0/engage/revenue
@@ -442,19 +525,6 @@ class Revenue(IncrementalMixpanelStream):
 
     def path(self, **kwargs) -> str:
         return "engage/revenue"
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {
-            "from_date": stream_slice["start_date"],
-            "to_date": stream_slice["end_date"],
-        }
-
-    def stream_slices(
-        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        return self.date_slices(sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -490,67 +560,26 @@ class Revenue(IncrementalMixpanelStream):
                 yield {"date": date_entry, **records[date_entry]}
 
 
-class Export(MixpanelStream):
+class Export(DateSlicesMixin, IncrementalMixpanelStream):
     """Export event data as it is received and stored within Mixpanel, complete with all event properties
      (including distinct_id) and the exact timestamp the event was fired.
 
     API Docs: https://developer.mixpanel.com/reference/export
     Endpoint: https://data.mixpanel.com/api/2.0/export
 
-
-    url = "https://data.mixpanel.com/api/2.0/export"
-
-    querystring = {"from_date":"2021-01-01","to_date":"2021-07-01"}
-
-    headers = {
-        "Accept": "application/json",
-        "Authorization": "Basic ZGVhNTE4ZDQ0YmYzNWE0ZjBmZDBlMmFhM2QxMTVhNjE6"
-    }
-
-    response = requests.request("GET", url, headers=headers, params=querystring)
-
-    print(response.text)
-
-
-     Your plan does not support raw data export. Visit mixpanel.com/pricing to upgrade.
-
-    [
-    {
-        "event":"Viewed report"
-        "properties": {
-            "time": 1518393599
-            "distinct_id": "test-email@mixpanel.com"
-            "$browser": "Chrome"
-            "report_name": "Funnels"
-        }
-    }
-    ]
-
-
-    Raw Export API Rate Limit (https://data.mixpanel.com/api/2.0/export/) : A maximum of 100 concurrent queries, 3 queries per second and 60 queries per hour.
+    Raw Export API Rate Limit (https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-API-Endpoints):
+     A maximum of 100 concurrent queries,
+     3 queries per second and 60 queries per hour.
     """
 
-    url_base = "https://data.mixpanel.com/api/2.0/"
-
-    primary_key = "distinct_id"
+    primary_key = None
     cursor_field = "time"
     rate_limit = 60  # queries per hour (1 query per minute)
 
+    url_base = "https://data.mixpanel.com/api/2.0/"
+
     def path(self, **kwargs) -> str:
         return "export"
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {
-            "from_date": stream_slice["start_date"],
-            "to_date": stream_slice["end_date"],
-        }
-
-    def stream_slices(
-        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        return self.date_slices(sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """Export API return response.text in JSONL format but each line is a valid JSON object
@@ -583,14 +612,6 @@ class Export(MixpanelStream):
 
         # wait for 60 seconds according to API limit
         time.sleep(3600 / self.rate_limit)
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
-        # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
-        # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
-        current_stream_state = current_stream_state or {}
-        stream_state_date: str = current_stream_state.get("date", str(self.start_date))  # i.e '2021-06-24'
-        latest_record_date: str = latest_record.get(self.cursor_field, str(self.start_date))  # i.e '2021-06-16T19:28:00'
-        return {"date": max(stream_state_date, latest_record_date)}
 
 
 class TokenAuthenticatorBase64(TokenAuthenticator):
