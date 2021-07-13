@@ -33,7 +33,7 @@ echo "$CONNECTORS" | while read -r connector; do
   curl \
     -i \
     -X POST \
-    -H "Accept: application/vnd.github.v3+json" \  # this accept header is recommended by github docs
+    -H "Accept: application/vnd.github.v3+json" \
     -H "Authorization: Bearer $GITHUB_TOKEN" \
     "$REPO_API/actions/workflows/$WORKFLOW_ID/dispatches" \
     -d "{\"ref\":\"master\", \"inputs\": { \"connector\": \"$connector\"} }"
