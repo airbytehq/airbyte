@@ -10,6 +10,7 @@ shadowJar {
     exclude 'META-INF/*.RSA'
     exclude 'META-INF/*.SF'
     exclude 'META-INF/*.DSA'
+    // Not stubbing this out adds 'all' to the end of the jar's name.
     classifier = ''
 }
 
