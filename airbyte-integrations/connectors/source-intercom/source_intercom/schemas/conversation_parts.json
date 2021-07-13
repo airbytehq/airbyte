@@ -11,18 +11,12 @@
             "additionalProperties": false,
             "properties": {
               "type": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               }
             },
             "id": {
-                "type": [
-                  "null",
-                  "string"
-                ]
-              }
+              "type": ["null", "string"]
+            }
           }
         },
         {
@@ -39,46 +33,25 @@
             "additionalProperties": false,
             "properties": {
               "type": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               },
               "name": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               },
               "url": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               },
               "content_type": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               },
               "filesize": {
-                "type": [
-                  "null",
-                  "integer"
-                ]
+                "type": ["null", "integer"]
               },
               "height": {
-                "type": [
-                  "null",
-                  "integer"
-                ]
+                "type": ["null", "integer"]
               },
               "width": {
-                "type": [
-                  "null",
-                  "integer"
-                ]
+                "type": ["null", "integer"]
               }
             }
           }
@@ -89,120 +62,66 @@
       ]
     },
     "author": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": ["null", "object"],
       "additionalProperties": false,
       "properties": {
         "id": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "type": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "name": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "email": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       }
     },
     "body": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "conversation_id": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "conversation_created_at": {
-      "type": [
-        "null",
-        "integer"
-      ],
+      "type": ["null", "integer"],
       "format": "date-time"
     },
     "conversation_updated_at": {
-      "type": [
-        "null",
-        "integer"
-      ],
+      "type": ["null", "integer"],
       "format": "date-time"
     },
     "conversation_total_parts": {
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "created_at": {
-      "type": [
-        "null",
-        "integer"
-      ],
+      "type": ["null", "integer"],
       "format": "date-time"
     },
     "external_id": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "id": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "notified_at": {
-      "type": [
-        "null",
-        "integer"
-      ],
+      "type": ["null", "integer"],
       "format": "date-time"
     },
     "part_type": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "type": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "updated_at": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "redacted": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     }
   }
 }

@@ -41,10 +41,7 @@
     "tags": {
       "anyOf": [
         {
-          "type": [
-        "null",
-        "object"
-      ],
+          "type": ["null", "object"],
           "items": {
             "type": ["null", "object"],
             "additionalProperties": false,
@@ -64,10 +61,7 @@
     "segments": {
       "anyOf": [
         {
-          "type": [
-        "null",
-        "object"
-      ],
+          "type": ["null", "object"],
           "items": {
             "type": ["null", "object"],
             "additionalProperties": false,
