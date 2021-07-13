@@ -25,7 +25,7 @@ import argparse
 import io
 import sys
 from abc import abstractmethod, ABC
-from typing import List, Mapping, Iterable
+from typing import List, Mapping, Iterable, Any
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.connector import Connector
@@ -38,7 +38,7 @@ class Destination(Connector, ABC):
     @abstractmethod
     def write(
             self,
-            config: Mapping[str, any],
+            config: Mapping[str, Any],
             configured_catalog: ConfiguredAirbyteCatalog,
             input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
@@ -65,7 +65,7 @@ class Destination(Connector, ABC):
         catalog = ConfiguredAirbyteCatalog.parse_file(configured_catalog_path)
         input_messages = self._parse_input_stream(input_stream)
         self.logger.info("Begin writing to the destination...")
-        yield from self.write(config, catalog, input_messages)
+        yield from self.write(config=config, configured_catalog=catalog, input_messages=input_messages)
         self.logger.info("Writing complete.")
 
     def parse_args(self, args: List[str]) -> argparse.Namespace:
@@ -97,19 +97,22 @@ class Destination(Connector, ABC):
         if not cmd:
             raise Exception("No command entered. ")
         elif cmd not in ["spec", "check", "write"]:
+            # This is technically dead code since parse_args() would fail if this was the case
+            # But it's non-obvious enough to warrant placing it here anyways
             raise Exception(f"Unknown command entered: {cmd}")
 
         return parsed_args
 
     def run_cmd(self, parsed_args: argparse.Namespace) -> Iterable[AirbyteMessage]:
         cmd = parsed_args.command
-
         if cmd == 'spec':
             yield self._run_spec()
         elif cmd == 'check':
             yield self._run_check(config_path=parsed_args.config)
         elif cmd == 'write':
-            yield from self._run_write(config_path=parsed_args.config, configured_catalog_path=parsed_args.catalog)
+            # Wrap in UTF-8 to override any other input encodings
+            wrapped_stdin = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8')
+            yield from self._run_write(config_path=parsed_args.config, configured_catalog_path=parsed_args.catalog, input_stream=wrapped_stdin)
         else:
             raise Exception(f"Unrecognized command: {cmd}")
 

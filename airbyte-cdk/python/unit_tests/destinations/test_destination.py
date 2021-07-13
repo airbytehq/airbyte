@@ -1,19 +1,23 @@
 import argparse
-from typing import Any, Mapping, List, Union, Dict
+import io
+import json
+from os import PathLike
+from typing import Any, Mapping, List, Union, Dict, Iterable, Iterator
+from unittest.mock import ANY
 
 import pytest
 
-from airbyte_cdk import AirbyteSpec
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStateMessage, AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, Type, \
-    ConnectorSpecification
+    ConnectorSpecification, Status, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, AirbyteStream, SyncMode, DestinationSyncMode
 
 
 @pytest.fixture
 def destination(mocker) -> Destination:
     # Wipe the internal list of abstract methods to allow instantiating the abstract class without implementing its abstract methods
     mocker.patch('airbyte_cdk.destinations.Destination.__abstractmethods__', set())
-    return Destination()
+    # Mypy yells at us because we're init'ing an abstract class
+    return Destination()  # type: ignore
 
 
 class TestArgParsing:
@@ -63,6 +67,12 @@ def _spec(schema: Dict[str, Any]) -> ConnectorSpecification:
     return ConnectorSpecification(connectionSpecification=schema)
 
 
+def write_file(path: PathLike, content: Union[str, Mapping]):
+    content = json.dumps(content) if isinstance(content, Mapping) else content
+    with open(path, 'w') as f:
+        f.write(content)
+
+
 def _wrapped(
         msg: Union[AirbyteRecordMessage, AirbyteStateMessage, AirbyteCatalog, ConnectorSpecification, AirbyteConnectionStatus]
 ) -> AirbyteMessage:
@@ -73,21 +83,152 @@ def _wrapped(
     elif isinstance(msg, AirbyteCatalog):
         return AirbyteMessage(type=Type.CATALOG, catalog=msg)
     elif isinstance(msg, AirbyteConnectionStatus):
-        return AirbyteMessage(type=Type.CONNECTION_STATUS, )
+        return AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=msg)
     elif isinstance(msg, ConnectorSpecification):
         return AirbyteMessage(type=Type.SPEC, spec=msg)
     else:
         raise Exception(f"Invalid Airbyte Message: {msg}")
 
 
+class OrderedIterableMatcher(Iterable):
+    """
+    A class whose purpose is to verify equality of one iterable object against another
+    in an ordered fashion
+    """
+
+    def attempt_consume(self, iterator):
+        try:
+            return next(iterator)
+        except StopIteration:
+            return None
+
+    def __iter__(self):
+        return iter(self.iterable)
+
+    def __init__(self, iterable: Iterable):
+        self.iterable = iterable
+
+    def __eq__(self, other):
+        if not isinstance(other, Iterable):
+            return False
+
+        other_iter = other if isinstance(other, Iterator) else iter(other)
+        self_iter = self if isinstance(self, Iterator) else iter(self)
+        self_next = other_next = 'not none'
+        while self_next is not None and other_next is not None:
+            other_next = self.attempt_consume(other_iter)
+            self_next = self.attempt_consume(self_iter)
+            if self_next != other_next:
+                return False
+
+        return True
+
+
 class TestRun:
     def test_run_spec(self, mocker, destination: Destination):
         args = {'command': 'spec'}
         parsed_args = argparse.Namespace(**args)
-        destination.run_cmd(parsed_args)
 
-        mocker.patch.object(destination, 'spec', return_value=ConnectorSpecification(connectionSpecification={'json_schema': {'prop': 'value'}}))
+        expected_spec = ConnectorSpecification(connectionSpecification={'json_schema': {'prop': 'value'}})
+        mocker.patch.object(
+            destination,
+            'spec',
+            return_value=expected_spec,
+            autospec=True
+        )
 
-        # verify spec was called
+        spec_message = next(iter(destination.run_cmd(parsed_args)))
+
+        # Mypy doesn't understand magicmock so it thinks spec doesn't have call_count attr
+        assert destination.spec.call_count == 1  # type: ignore
 
         # verify the output of spec was returned
+        assert _wrapped(expected_spec) == spec_message
+
+    def test_run_check(self, mocker, destination: Destination, tmp_path):
+        file_path = tmp_path / 'config.json'
+        dummy_config = {'user': 'sherif'}
+        write_file(file_path, dummy_config)
+        args = {'command': 'check', 'config': file_path}
+
+        parsed_args = argparse.Namespace(**args)
+        destination.run_cmd(parsed_args)
+
+        expected_check_result = AirbyteConnectionStatus(status=Status.SUCCEEDED)
+        mocker.patch.object(
+            destination,
+            'check',
+            return_value=expected_check_result,
+            autospec=True
+        )
+
+        returned_check_result = next(iter(destination.run_cmd(parsed_args)))
+        # verify method call with the correct params
+        # Affirm to Mypy that this is indeed a method on this mock
+        assert destination.check.call_count == 1  # type: ignore
+        # Affirm to Mypy that this is indeed a method on this mock
+        destination.check.assert_called_with(logger=ANY, config=dummy_config)  # type: ignore
+
+        # verify output was correct
+        assert _wrapped(expected_check_result) == returned_check_result
+
+    def test_run_write(self, mocker, destination: Destination, tmp_path, monkeypatch):
+        config_path, dummy_config = tmp_path / 'config.json', {'user': 'sherif'}
+        write_file(config_path, dummy_config)
+
+        dummy_catalog = ConfiguredAirbyteCatalog(streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name='mystream',
+                    json_schema={'type': 'object'}
+                ),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.overwrite
+            )
+        ])
+        catalog_path = tmp_path / 'catalog.json'
+        write_file(catalog_path, dummy_catalog.json(exclude_unset=True))
+
+        args = {'command': 'write', 'config': config_path, 'catalog': catalog_path}
+        parsed_args = argparse.Namespace(**args)
+
+        destination.run_cmd(parsed_args)
+
+        expected_write_result = [_wrapped(_state({'k1': 'v1'})), _wrapped(_state({'k2': 'v2'}))]
+        mocker.patch.object(
+            destination,
+            'write',
+            return_value=(x for x in expected_write_result),  # convert the list to generator to mimic real usage
+            autospec=True
+        )
+        # mock input is a record followed by some state messages
+        mocked_input: List[AirbyteMessage] = [_wrapped(_record('s1', {'k1': 'v1'})), *expected_write_result]
+        mocked_stdin_string = "\n".join([record.json(exclude_unset=True) for record in mocked_input])
+        mocked_stdin_string += "\n add this non-serializable string to verify the destination does not break on malformed input"
+        mocked_stdin = io.TextIOWrapper(io.BytesIO(bytes(mocked_stdin_string, 'utf-8')))
+
+        monkeypatch.setattr('sys.stdin', mocked_stdin)
+
+        returned_write_result = list(destination.run_cmd(parsed_args))
+        # verify method call with the correct params
+        # Affirm to Mypy that call_count is indeed a method on this mock
+        assert destination.write.call_count == 1  # type: ignore
+        # Affirm to Mypy that call_count is indeed a method on this mock
+        destination.write.assert_called_with(  # type: ignore
+            config=dummy_config,
+            configured_catalog=dummy_catalog,
+            # Stdin is internally consumed as a generator so we use a custom matcher
+            # that iterates over two iterables to check equality
+            input_messages=OrderedIterableMatcher(mocked_input)
+        )
+
+        # verify output was correct
+        assert expected_write_result == list(returned_write_result)
+
+    @pytest.mark.parametrize(
+        'args',
+        [{}, {'command': "fake"}]
+    )
+    def test_run_cmd_with_incorrect_args_fails(self, args, destination: Destination):
+        with pytest.raises(Exception):
+            list(destination.run_cmd(parsed_args=argparse.Namespace(**args)))
