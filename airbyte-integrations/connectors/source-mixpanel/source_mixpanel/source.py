@@ -798,14 +798,14 @@ class SourceMixpanel(AbstractSource):
 
         start_date = config.get("start_date")
         if start_date and isinstance(start_date, str):
-            start_date = date.fromisoformat(config["start_date"])
+            start_date = datetime.fromisoformat(config["start_date"]).date()
         year_ago = now - timedelta(days=365)
         # start_date can't be older than 1 year ago
         config["start_date"] = start_date if start_date and start_date >= year_ago else year_ago  # set to 1 year ago by default
 
         end_date = config.get("end_date")
         if end_date and isinstance(end_date, str):
-            end_date = date.fromisoformat(end_date)
+            end_date = datetime.fromisoformat(end_date).date()
         config["end_date"] = end_date or now  # set to now by default
 
         AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
