@@ -1671,6 +1671,13 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
+  "exception" : {
+    "exceptionStack" : [ "exceptionStack", "exceptionStack" ],
+    "rootCauseExceptionStack" : [ "rootCauseExceptionStack", "rootCauseExceptionStack" ],
+    "rootCauseExceptionClassName" : "rootCauseExceptionClassName",
+    "exceptionClassName" : "exceptionClassName",
+    "message" : "message"
+  },
   "destinationDefinitionRead" : {
     "documentationUrl" : "https://openapi-generator.tech",
     "dockerImageTag" : "dockerImageTag",
@@ -1702,9 +1709,6 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     Successful operation
         <a href="#DestinationDefinitionReadWithJobInfo">DestinationDefinitionReadWithJobInfo</a>
-    <h4 class="field-label">422</h4>
-    Input failed validation
-        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="getDestinationDefinition"/>
@@ -1914,6 +1918,13 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
+  "exception" : {
+    "exceptionStack" : [ "exceptionStack", "exceptionStack" ],
+    "rootCauseExceptionStack" : [ "rootCauseExceptionStack", "rootCauseExceptionStack" ],
+    "rootCauseExceptionClassName" : "rootCauseExceptionClassName",
+    "exceptionClassName" : "exceptionClassName",
+    "message" : "message"
+  },
   "destinationDefinitionRead" : {
     "documentationUrl" : "https://openapi-generator.tech",
     "dockerImageTag" : "dockerImageTag",
@@ -1948,9 +1959,6 @@ font-style: italic;
     <h4 class="field-label">404</h4>
     Object with given id was not found.
         <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
-    <h4 class="field-label">422</h4>
-    Input failed validation
-        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="DestinationDefinitionSpecification">DestinationDefinitionSpecification</a></h1>
@@ -3727,6 +3735,13 @@ font-style: italic;
     "icon" : "icon",
     "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   },
+  "exception" : {
+    "exceptionStack" : [ "exceptionStack", "exceptionStack" ],
+    "rootCauseExceptionStack" : [ "rootCauseExceptionStack", "rootCauseExceptionStack" ],
+    "rootCauseExceptionClassName" : "rootCauseExceptionClassName",
+    "exceptionClassName" : "exceptionClassName",
+    "message" : "message"
+  },
   "jobInfo" : {
     "createdAt" : 0,
     "configId" : "configId",
@@ -3750,9 +3765,6 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     Successful operation
         <a href="#SourceDefinitionReadWithJobInfo">SourceDefinitionReadWithJobInfo</a>
-    <h4 class="field-label">422</h4>
-    Input failed validation
-        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="getSourceDefinition"/>
@@ -3970,6 +3982,13 @@ font-style: italic;
     "icon" : "icon",
     "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   },
+  "exception" : {
+    "exceptionStack" : [ "exceptionStack", "exceptionStack" ],
+    "rootCauseExceptionStack" : [ "rootCauseExceptionStack", "rootCauseExceptionStack" ],
+    "rootCauseExceptionClassName" : "rootCauseExceptionClassName",
+    "exceptionClassName" : "exceptionClassName",
+    "message" : "message"
+  },
   "jobInfo" : {
     "createdAt" : 0,
     "configId" : "configId",
@@ -3996,9 +4015,6 @@ font-style: italic;
     <h4 class="field-label">404</h4>
     Object with given id was not found.
         <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
-    <h4 class="field-label">422</h4>
-    Input failed validation
-        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="SourceDefinitionSpecification">SourceDefinitionSpecification</a></h1>
@@ -5001,8 +5017,8 @@ font-style: italic;
     Successful operation
         <a href="#WorkspaceRead">WorkspaceRead</a>
     <h4 class="field-label">422</h4>
-    
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="deleteWorkspace"/>
@@ -5710,6 +5726,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">destinationDefinitionRead </div><div class="param-desc"><span class="param-type"><a href="#DestinationDefinitionRead">DestinationDefinitionRead</a></span>  </div>
 <div class="param">jobInfo </div><div class="param-desc"><span class="param-type"><a href="#SynchronousJobRead">SynchronousJobRead</a></span>  </div>
+<div class="param">exception (optional)</div><div class="param-desc"><span class="param-type"><a href="#KnownExceptionInfo">KnownExceptionInfo</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -6141,6 +6158,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">sourceDefinitionRead </div><div class="param-desc"><span class="param-type"><a href="#SourceDefinitionRead">SourceDefinitionRead</a></span>  </div>
 <div class="param">jobInfo </div><div class="param-desc"><span class="param-type"><a href="#SynchronousJobRead">SynchronousJobRead</a></span>  </div>
+<div class="param">exception (optional)</div><div class="param-desc"><span class="param-type"><a href="#KnownExceptionInfo">KnownExceptionInfo</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

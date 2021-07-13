@@ -76,7 +76,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/WorkspaceRead"
         "422":
-          $ref: "#/components/responses/ExceptionOccurred"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/workspaces/delete:
     post:
       tags:
@@ -219,8 +219,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SourceDefinitionReadWithJobInfo"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
   /v1/source_definitions/update:
     post:
       tags:
@@ -241,8 +239,6 @@ paths:
                 $ref: "#/components/schemas/SourceDefinitionReadWithJobInfo"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
   /v1/source_definitions/list:
     post:
       tags:
@@ -513,8 +509,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DestinationDefinitionReadWithJobInfo"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
   /v1/destination_definitions/update:
     post:
       tags:
@@ -536,8 +530,6 @@ paths:
                 $ref: "#/components/schemas/DestinationDefinitionReadWithJobInfo"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
   /v1/destination_definitions/list:
     post:
       tags:
@@ -1623,6 +1615,8 @@ components:
           $ref: "#/components/schemas/SourceDefinitionRead"
         jobInfo:
           $ref: "#/components/schemas/SynchronousJobRead"
+        exception:
+          $ref: "#/components/schemas/KnownExceptionInfo"
     SourceDefinitionRead:
       type: object
       required:
@@ -1831,6 +1825,8 @@ components:
           $ref: "#/components/schemas/DestinationDefinitionRead"
         jobInfo:
           $ref: "#/components/schemas/SynchronousJobRead"
+        exception:
+          $ref: "#/components/schemas/KnownExceptionInfo"
     DestinationDefinitionRead:
       type: object
       required:
