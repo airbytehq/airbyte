@@ -1830,7 +1830,7 @@ components:
         destinationDefinitionRead:
           $ref: "#/components/schemas/DestinationDefinitionRead"
         jobInfo:
-          $ref: "#/components/schemas/SynchronousJobRead"      
+          $ref: "#/components/schemas/SynchronousJobRead"
     DestinationDefinitionRead:
       type: object
       required:
