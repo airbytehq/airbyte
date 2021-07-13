@@ -31,7 +31,7 @@ from source_mixpanel.source import Annotations
 def test_date_slices():
 
     now = date.today()
-
+    # Test with start_date now range
     stream_slices = Annotations(authenticator=NoAuth(), start_date=now, end_date=now, date_window_size=1).stream_slices(sync_mode="any")
     assert 1 == len(stream_slices)
 
@@ -50,6 +50,13 @@ def test_date_slices():
     ).stream_slices(sync_mode="any")
     assert 1 == len(stream_slices)
 
+    # test with attribution_window
+    stream_slices = Annotations(
+        authenticator=NoAuth(), start_date=now - timedelta(days=2), end_date=now, date_window_size=1, attribution_window=5
+    ).stream_slices(sync_mode="any")
+    assert 8 == len(stream_slices)
+
+    # Test with start_date end_date range
     stream_slices = Annotations(
         authenticator=NoAuth(), start_date=date.fromisoformat("2021-07-01"), end_date=date.fromisoformat("2021-07-01"), date_window_size=1
     ).stream_slices(sync_mode="any")

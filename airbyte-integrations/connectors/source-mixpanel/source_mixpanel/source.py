@@ -28,6 +28,7 @@ import json
 import time
 from abc import ABC
 from datetime import date, datetime, timedelta
+import pendulum
 
 # from pprint import pprint
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -60,11 +61,13 @@ class MixpanelStream(HttpStream, ABC):
         start_date: Union[date, str] = None,
         end_date: Union[date, str] = None,
         date_window_size: int = 30,  # in days
+        attribution_window: int = 0,  # in days
         **kwargs,
     ):
         self.start_date = start_date
         self.end_date = end_date
         self.date_window_size = date_window_size
+        self.attribution_window = attribution_window
 
         super().__init__(authenticator=authenticator)
 
@@ -141,7 +144,6 @@ class Cohorts(MixpanelStream):
 
     data_field = None
     primary_key = "id"
-    cursor_field = "created"
 
     def path(self, **kwargs) -> str:
         return "cohorts/list"
@@ -176,6 +178,9 @@ class DateSlicesMixin:
 
         # use the lowest date between start_date and self.end_date, otherwise API fails if start_date is in future
         start_date = min(start_date, self.end_date)
+
+        # move start_date back <attribution_window> days to sync data since that time as well
+        start_date = start_date - timedelta(days=self.attribution_window)
 
         while start_date <= self.end_date:
             end_date = start_date + timedelta(days=self.date_window_size - 1)  # -1 is needed because dates are inclusive
@@ -496,7 +501,7 @@ class Annotations(DateSlicesMixin, MixpanelStream):
         "annotations": [{
                 "id": 640999
                 "project_id": 2117889
-                "date": "2021-06-16 00:00:00" <-- PLEASE READ NOTE
+                "date": "2021-06-16 00:00:00" <-- PLEASE READ A NOTE
                 "description": "Looks good"
             }, {...}
         ]
@@ -657,7 +662,8 @@ class SourceMixpanel(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
 
-        now = date.today()
+        tzone = pendulum.timezone(config.get('project_timezone'))
+        now = datetime.now(tzone).date()
 
         start_date = config.get("start_date")
         if start_date and isinstance(start_date, str):

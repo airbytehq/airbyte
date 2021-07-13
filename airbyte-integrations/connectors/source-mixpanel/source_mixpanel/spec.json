@@ -5,7 +5,7 @@
     "title": "Source Mixpanel Spec",
     "type": "object",
     "required": ["api_secret"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "api_secret": {
         "type": "string",
