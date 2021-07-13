@@ -10,6 +10,7 @@ shadowJar {
     exclude 'META-INF/*.RSA'
     exclude 'META-INF/*.SF'
     exclude 'META-INF/*.DSA'
+    classifier = ''
 }
 
 publishing {
