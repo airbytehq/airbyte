@@ -662,7 +662,7 @@ class SourceMixpanel(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
 
-        tzone = pendulum.timezone(config.get("project_timezone"))
+        tzone = pendulum.timezone(config.get("project_timezone", "US/Pacific"))
         now = datetime.now(tzone).date()
 
         start_date = config.get("start_date")
