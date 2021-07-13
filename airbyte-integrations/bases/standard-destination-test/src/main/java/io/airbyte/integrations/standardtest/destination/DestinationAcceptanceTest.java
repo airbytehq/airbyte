@@ -372,8 +372,10 @@ public abstract class DestinationAcceptanceTest {
                     .put("id", 1)
                     .put("currency", "USD")
                     .put("date", "2020-03-31T00:00:00Z")
-                    .put("HKD", 10.0)
-                    .put("NZD", 700.0)
+                    // TODO(sherifnada) hack: write decimals with sigfigs because Snowflake stores 10.1 as "10" which
+                    // fails destination tests
+                    .put("HKD", 10.1)
+                    .put("NZD", 700.1)
                     .build()))),
         new AirbyteMessage()
             .withType(Type.STATE)
@@ -405,8 +407,10 @@ public abstract class DestinationAcceptanceTest {
                     .put("id", 1)
                     .put("currency", "USD\u2028")
                     .put("date", "2020-03-\n31T00:00:00Z\r")
-                    .put("HKD", 10.0)
-                    .put("NZD", 700.0)
+                    // TODO(sherifnada) hack: write decimals with sigfigs because Snowflake stores 10.1 as "10" which
+                    // fails destination tests
+                    .put("HKD", 10.1)
+                    .put("NZD", 700.1)
                     .build()))),
         new AirbyteMessage()
             .withType(Type.STATE)
@@ -470,8 +474,10 @@ public abstract class DestinationAcceptanceTest {
                     .put("id", 1)
                     .put("currency", "USD")
                     .put("date", "2020-03-31T00:00:00Z")
-                    .put("HKD", 10.0)
-                    .put("NZD", 700.0)
+                    // TODO(sherifnada) hack: write decimals with sigfigs because Snowflake stores 10.1 as "10" which
+                    // fails destination tests
+                    .put("HKD", 10.1)
+                    .put("NZD", 700.1)
                     .build()))),
         new AirbyteMessage()
             .withType(Type.STATE)
