@@ -372,7 +372,8 @@ public abstract class DestinationAcceptanceTest {
                     .put("id", 1)
                     .put("currency", "USD")
                     .put("date", "2020-03-31T00:00:00Z")
-                    // TODO(sherifnada) hack: write decimals with sigfigs because Snowflake stores 10.0 as "10" which fails destination tests
+                    // TODO(sherifnada) hack: write decimals with sigfigs because Snowflake stores 10.0 as "10" which
+                    // fails destination tests
                     .put("HKD", 10.1)
                     .put("NZD", 700.1)
                     .build()))),
