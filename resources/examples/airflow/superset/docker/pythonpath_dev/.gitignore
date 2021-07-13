@@ -16,7 +16,7 @@
 #
 
 # Ignore everything
-*
+.gitignore
 # DON'T ignore the .gitignore
 !.gitignore
 !superset_config.py
