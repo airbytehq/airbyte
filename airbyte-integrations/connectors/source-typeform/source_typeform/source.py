@@ -68,7 +68,6 @@ class TrimForms(TypeformStream):
     """
 
     primary_key = "id"
-    limit: int = 200
 
     def path(
         self,
@@ -102,7 +101,7 @@ class TrimForms(TypeformStream):
         return params
 
 
-class StreamMixin:
+class TrimFormsMixin:
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for item in TrimForms(**self.config).read_records(sync_mode=SyncMode.full_refresh):
             yield {"form_id": item["id"]}
@@ -110,7 +109,7 @@ class StreamMixin:
         yield from []
 
 
-class Forms(StreamMixin, TypeformStream):
+class Forms(TrimFormsMixin, TypeformStream):
     """
     This stream is responsible for detailed information about Form.
     API doc: https://developer.typeform.com/create/reference/retrieve-form/
@@ -155,9 +154,9 @@ class IncrementalTypeformStream(TypeformStream, ABC):
         return None
 
 
-class Responses(StreamMixin, IncrementalTypeformStream):
+class Responses(TrimFormsMixin, IncrementalTypeformStream):
     """
-    This stream is responsible for fetching responses for particulat form_id.
+    This stream is responsible for fetching responses for particular form_id.
     API doc: https://developer.typeform.com/responses/reference/retrieve-responses/
     """
 

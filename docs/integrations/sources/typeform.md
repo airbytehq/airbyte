@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Square Connector can be used to sync your [Typeform](https://developer.typeform.com/get-started/) data
+The Typeform Connector can be used to sync your [Typeform](https://developer.typeform.com/get-started/) data
 
 Useful links:
 - [Token generation](https://developer.typeform.com/get-started/personal-access-token/)
@@ -35,8 +35,8 @@ This Source is capable of syncing the following Streams:
 
 ### Requirements
 
-* token - The Typeform API key token 
-* start_date - to fetch responses stream data from this date 
+* token - The Typeform API key token
+* start_date - Date to start fetching Responses stream data from.
 
 ### Setup guide
 
@@ -52,7 +52,7 @@ To get the API token for your application follow this [steps](https://developer.
 
 ## Performance considerations
 
-Typeform API page size limit per source:  
+Typeform API page size limit per source:
 
 - Forms - 200
 - Responses - 1000
