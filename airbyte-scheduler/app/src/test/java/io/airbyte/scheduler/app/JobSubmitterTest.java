@@ -58,10 +58,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
+import org.mockito.Mockito;
 import org.slf4j.MDC;
 
 public class JobSubmitterTest {
@@ -224,6 +228,70 @@ public class JobSubmitterTest {
         mdcMap.get());
 
     assertTrue(MDC.getCopyOfContextMap().isEmpty());
+  }
+
+  @Nested
+  class OnlyOneJobIdRunning {
+
+    @Test
+    public void testMultipleSubmissionShouldFail() throws Exception {
+      var jobDone = new AtomicReference<>(false);
+      when(workerRun.call()).thenAnswer((a) -> {
+        Thread.sleep(5000);
+        jobDone.set(true);
+        return SUCCESS_OUTPUT;
+      });
+
+      var simulatedJobSubmitterPool = Executors.newFixedThreadPool(10);
+      var submitCounter = new AtomicInteger(0);
+      while (!jobDone.get()) {
+        // This sleep mimics our SchedulerApp loop.
+        Thread.sleep(1000);
+        simulatedJobSubmitterPool.submit(() -> {
+          if (!jobDone.get()) {
+            jobSubmitter.run();
+            submitCounter.incrementAndGet();
+          }
+        });
+      }
+
+      simulatedJobSubmitterPool.shutdownNow();
+      verify(persistence, Mockito.times(submitCounter.get())).getNextJob();
+      verify(jobSubmitter, Mockito.times(1)).submitJob(Mockito.any());
+    }
+
+    @Test
+    public void testFailureShouldUnlockId() throws Exception {
+      when(workerRun.call()).thenReturn(SUCCESS_OUTPUT);
+
+      jobSubmitter.run();
+
+      // This sleep mimics our SchedulerApp loop.
+      Thread.sleep(1000);
+
+      // If the id was not removed, the second call would not trigger submitJob().
+      jobSubmitter.run();
+
+      verify(persistence, Mockito.times(2)).getNextJob();
+      verify(jobSubmitter, Mockito.times(2)).submitJob(Mockito.any());
+    }
+
+    @Test
+    public void testSuccessShouldUnlockId() throws Exception {
+      when(workerRun.call()).thenThrow(new RuntimeException());
+
+      jobSubmitter.run();
+
+      // This sleep mimics our SchedulerApp loop.
+      Thread.sleep(1000);
+
+      // If the id was not removed, the second call would not trigger submitJob().
+      jobSubmitter.run();
+
+      verify(persistence, Mockito.times(2)).getNextJob();
+      verify(jobSubmitter, Mockito.times(2)).submitJob(Mockito.any());
+    }
+
   }
 
 }
