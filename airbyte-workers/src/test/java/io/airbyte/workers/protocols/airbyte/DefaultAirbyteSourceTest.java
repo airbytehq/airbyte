@@ -147,4 +147,14 @@ class DefaultAirbyteSourceTest {
     verify(process).exitValue();
   }
 
+  @Test
+  public void testNonzeroExitCodeThrows() throws Exception {
+    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
+    tap.start(SOURCE_CONFIG, jobRoot);
+
+    when(process.exitValue()).thenReturn(1);
+
+    Assertions.assertThrows(WorkerException.class, tap::close);
+  }
+
 }

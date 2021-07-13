@@ -1,12 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faLifeRing,
-  faBook,
-  faCog,
-  faTools,
-} from "@fortawesome/free-solid-svg-icons";
+import { faLifeRing, faBook, faCog } from "@fortawesome/free-solid-svg-icons";
 import { faSlack } from "@fortawesome/free-brands-svg-icons";
 import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
@@ -94,7 +89,7 @@ const HelpIcon = styled(FontAwesomeIcon)`
   line-height: 21px;
 `;
 
-const AdminIcon = styled(FontAwesomeIcon)`
+const SettingsIcon = styled(FontAwesomeIcon)`
   font-size: 16px;
   line-height: 15px;
 `;
@@ -148,11 +143,17 @@ const SideBar: React.FC = () => {
             </MenuItem>
           </li>
           <li>
-            <MenuItem to={Routes.Admin} activeClassName="active">
+            <MenuItem
+              to={`${Routes.Settings}${Routes.Account}`}
+              activeClassName="active"
+              isActive={(_, location) =>
+                location.pathname.startsWith(Routes.Settings)
+              }
+            >
               {hasNewVersions ? <Notification /> : null}
-              <AdminIcon icon={faTools} />
+              <SettingsIcon icon={faCog} />
               <Text>
-                <FormattedMessage id="sidebar.admin" />
+                <FormattedMessage id="sidebar.settings" />
               </Text>
             </MenuItem>
           </li>
@@ -183,14 +184,6 @@ const SideBar: React.FC = () => {
               <FormattedMessage id="sidebar.docs" />
             </Text>
           </MenuLinkItem>
-        </li>
-        <li>
-          <MenuItem to={Routes.Settings} activeClassName="active">
-            <AdminIcon icon={faCog} />
-            <Text>
-              <FormattedMessage id="sidebar.settings" />
-            </Text>
-          </MenuItem>
         </li>
         {config.version ? (
           <li>

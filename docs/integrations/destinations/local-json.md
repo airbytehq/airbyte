@@ -61,4 +61,4 @@ You can also copy the output file to your host machine, the following command wi
 docker cp airbyte-scheduler:/tmp/airbyte_local/{destination_path}/{filename}.jsonl .
 ```
 
-Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have to use similar step as above or refer to this [link](../tutorials/locating-files-local-destination.md) for an alternative approach.
+Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have to use similar step as above or refer to this [link](../../operator-guides/locating-files-local-destination.md) for an alternative approach.
