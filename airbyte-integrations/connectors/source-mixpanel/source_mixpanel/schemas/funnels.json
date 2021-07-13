@@ -1,0 +1,128 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "funnel_id": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "date": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "datetime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "steps": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": ["null", "object"],
+            "additionalProperties": false,
+            "properties": {
+              "count": {
+                "type": ["null", "integer"]
+              },
+              "avg_time": {
+                "type": ["null", "number"],
+                "multipleOf": 1e-20
+              },
+              "goal": {
+                "type": ["null", "string"]
+              },
+              "overall_conv_ratio": {
+                "type": ["null", "number"],
+                "multipleOf": 1e-20
+              },
+              "step_conv_ratio": {
+                "type": ["null", "number"],
+                "multipleOf": 1e-20
+              },
+              "event": {
+                "type": ["null", "string"]
+              },
+              "step_label": {
+                "type": ["null", "string"]
+              },
+              "time_buckets_from_start": {
+                "type": ["null", "object"],
+                "additionalProperties": false,
+                "properties": {
+                  "lower": {
+                    "type": ["null", "integer"]
+                  },
+                  "higher": {
+                    "type": ["null", "integer"]
+                  },
+                  "buckets": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "integer"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              },
+              "time_buckets_from_prev": {
+                "type": ["null", "object"],
+                "additionalProperties": false,
+                "properties": {
+                  "lower": {
+                    "type": ["null", "integer"]
+                  },
+                  "higher": {
+                    "type": ["null", "integer"]
+                  },
+                  "buckets": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "integer"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "analysis": {
+      "type": ["null", "object"],
+      "additionalProperties": false,
+      "properties": {
+        "completion": {
+          "type": ["null", "integer"]
+        },
+        "starting_amount": {
+          "type": ["null", "integer"]
+        },
+        "steps": {
+          "type": ["null", "integer"]
+        },
+        "worst": {
+          "type": ["null", "integer"]
+        }
+      }
+    }
+  }
+}

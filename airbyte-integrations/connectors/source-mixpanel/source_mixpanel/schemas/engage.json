@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "distinct_id": {
+      "type": ["null", "string"]
+    }
+  }
+}
