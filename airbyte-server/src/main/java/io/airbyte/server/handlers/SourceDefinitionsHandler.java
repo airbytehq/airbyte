@@ -166,7 +166,7 @@ public class SourceDefinitionsHandler {
     }
 
     // When an error occurs, your source isn't echoed back to you, indicating it failed to save.
-    return buildSourceDefinitionReadWithJobInfo(validationException != null ? null :sourceDefinition,
+    return buildSourceDefinitionReadWithJobInfo(validationException != null ? null : sourceDefinition,
         JobConverter.getSynchronousJobRead(response), validationException);
   }
 

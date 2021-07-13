@@ -173,7 +173,7 @@ public class DestinationDefinitionsHandler {
     }
 
     // When an error occurs, your destination isn't echoed back to you, indicating it failed to save.
-    return buildDestinationDefinitionReadWithJobInfo(validationException != null ? null: destinationDefinition,
+    return buildDestinationDefinitionReadWithJobInfo(validationException != null ? null : destinationDefinition,
         JobConverter.getSynchronousJobRead(response), validationException);
   }
 
