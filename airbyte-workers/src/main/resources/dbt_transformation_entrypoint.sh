@@ -4,7 +4,7 @@ set -e
 CWD=$(pwd)
 if [[ -f "${CWD}/git_repo/dbt_project.yml" ]]; then
   # Find profile name used in the custom dbt project:
-  PROFILE_NAME=$(grep -e "profile:" < "${CWD}/git_repo/dbt_project.yml" | sed -E "s/profile: *['\"](.*)['\"]/\1/")
+  PROFILE_NAME=$(grep -e "profile:" < "${CWD}/git_repo/dbt_project.yml" | sed -E "s/profile: *['\"]?([^'\"]*)['\"]?/\1/")
   if [[ -n "${PROFILE_NAME}" ]]; then
     mv "${CWD}/profiles.yml" "${CWD}/profiles.txt"
     # Refer to the appropriate profile name in the profiles.yml file
