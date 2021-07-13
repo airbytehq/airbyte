@@ -28,19 +28,17 @@ import json
 import time
 from abc import ABC
 from datetime import date, datetime, timedelta
-
-from pprint import pprint
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import parse_qs, urlparse
 
 import pendulum
 import requests
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, TokenAuthenticator
-from airbyte_cdk.models import SyncMode
 
 
 class MixpanelStream(HttpStream, ABC):
@@ -98,8 +96,6 @@ class MixpanelStream(HttpStream, ABC):
             data = json_response
         elif isinstance(json_response, dict):
             data = [json_response]
-
-        # print(f"Total data: {len(data)}")
 
         for record in data:
             yield record
@@ -194,9 +190,6 @@ class DateSlicesMixin:
             # add 1 additional day because date range is inclusive
             start_date = end_date + timedelta(days=1)
 
-        # print(f"==== date_slices len: {len(date_slices)} \n")
-        # pprint(date_slices)
-
         # reset rate_limit if we expect less requests (1 req per stream) than it is allowed by API rate_limit
         if len(date_slices) < self.rate_limit:
             self.rate_limit = 3600  # queries per hour (1 query per sec)
@@ -229,7 +222,6 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
     def funnel_slices(self, sync_mode) -> List[dict]:
         funnel_slices = FunnelsList(authenticator=self.authenticator).read_records(sync_mode=sync_mode)
         funnel_slices = list(funnel_slices)  # [{'funnel_id': <funnel_id1>, 'name': <name1>}, {...}]
-        # print(f"==== funnel_slices: {funnel_slices} \n")
 
         # save all funnels in dict(<funnel_id1>:<name1>, ...)
         self.funnels = dict((funnel["funnel_id"], funnel["name"]) for funnel in funnel_slices)
@@ -265,7 +257,7 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
         #    - str in stream_state
         """
         stream_state = stream_state or {}
-        # print(f"==== stream_state: {stream_state}")
+
         # One stream slice is a combination of all funnel_slices and date_slices
         stream_slices = []
         funnel_slices = self.funnel_slices(sync_mode)
@@ -277,9 +269,6 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
             date_slices = super().stream_slices(sync_mode, cursor_field=cursor_field, stream_state=funnel_state)
             for date_slice in date_slices:
                 stream_slices.append({**funnel_slice, **date_slice})
-
-        # print(f"==== stream_slices len: {len(stream_slices)} \n")
-        # pprint(stream_slices)
 
         # reset rate_limit if we expect less requests (1 req per stream) than it is allowed by API rate_limit
         if len(stream_slices) < self.rate_limit:
@@ -373,6 +362,7 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
 
 class EngageSchema(MixpanelStream):
     """Engage helper stream for dynamic schema extraction"""
+
     primary_key = None
     data_field = "results"
 
@@ -457,47 +447,48 @@ class Engage(MixpanelStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
-            {
-                "page": 0
-                "page_size": 1000
-                "session_id": "1234567890-EXAMPL"
-                "status": "ok"
-                "total": 1
-                "results": [{
-                    "$distinct_id": "9d35cd7f-3f06-4549-91bf-198ee58bb58a"
-                    "$properties":{
-                        "$browser":"Chrome"
-                        "$browser_version":"83.0.4103.116"
-                        "$city":"Leeds"
-                        "$country_code":"GB"
-                        "$region":"Leeds"
-                        "$timezone":"Europe/London"
-                        "unblocked":"true"
-                        "$email":"nadine@asw.com"
-                        "$first_name":"Nadine"
-                        "$last_name":"Burzler"
-                        "$name":"Nadine Burzler"
-                        "id":"632540fa-d1af-4535-bc52-e331955d363e"
-                        "$last_seen":"2020-06-28T12:12:31"
-                        }
-                    },{
-                    ...
+        {
+            "page": 0
+            "page_size": 1000
+            "session_id": "1234567890-EXAMPL"
+            "status": "ok"
+            "total": 1
+            "results": [{
+                "$distinct_id": "9d35cd7f-3f06-4549-91bf-198ee58bb58a"
+                "$properties":{
+                    "$browser":"Chrome"
+                    "$browser_version":"83.0.4103.116"
+                    "$city":"Leeds"
+                    "$country_code":"GB"
+                    "$region":"Leeds"
+                    "$timezone":"Europe/London"
+                    "unblocked":"true"
+                    "$email":"nadine@asw.com"
+                    "$first_name":"Nadine"
+                    "$last_name":"Burzler"
+                    "$name":"Nadine Burzler"
+                    "id":"632540fa-d1af-4535-bc52-e331955d363e"
+                    "$last_seen":"2020-06-28T12:12:31"
                     }
-                ]
+                },{
+                ...
+                }
+            ]
 
-            }
+        }
         """
         records = response.json().get(self.data_field, {})
         for record in records:
-            item = {'distinct_id': record['$distinct_id']}
-            for property_name in record['$properties']:
+            item = {"distinct_id": record["$distinct_id"]}
+            properties = record["$properties"]
+            for property_name in properties:
                 this_property_name = property_name
-                if property_name.startswith('$'):
+                if property_name.startswith("$"):
                     # Transform properties name for compatibility with singer schema:
                     # from API: '$browser'
                     # to stream: 'mp_reserved_browser'
-                    this_property_name = property_name.replace('$', 'mp_reserved_')
-                item[this_property_name] = record['$properties'][property_name]
+                    this_property_name = property_name.replace("$", "mp_reserved_")
+                item[this_property_name] = properties[property_name]
             yield item
 
     def get_json_schema(self) -> Mapping[str, Any]:
@@ -509,45 +500,25 @@ class Engage(MixpanelStream):
         """
         schema = super().get_json_schema()
         types = {
-            'boolean': {
-                'type': ['null', 'boolean']
-            },
-            'number': {
-                'type': ['null', 'number'],
-                'multipleOf': 1e-20
-            },
-            'datetime': {
-                'type': ['null', 'string'],
-                'format': 'date-time'
-            },
-            'object': {
-                'type': ['null', 'object'],
-                'additionalProperties': True
-            },
-            'list': {
-                'type': ['null', 'array'],
-                'required': False,
-                'items': {}
-            },
-            'string': {
-                'type': ['null', 'string']
-            }
+            "boolean": {"type": ["null", "boolean"]},
+            "number": {"type": ["null", "number"], "multipleOf": 1e-20},
+            "datetime": {"type": ["null", "string"], "format": "date-time"},
+            "object": {"type": ["null", "object"], "additionalProperties": True},
+            "list": {"type": ["null", "array"], "required": False, "items": {}},
+            "string": {"type": ["null", "string"]},
         }
 
         # read existing Engage schema from API
         schema_properties = EngageSchema(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
         for property_entry in schema_properties:
-            property_name: str = property_entry['name']
-            property_type: str = property_entry['type']
-            if property_name.startswith('$'):
+            property_name: str = property_entry["name"]
+            property_type: str = property_entry["type"]
+            if property_name.startswith("$"):
                 # Transform properties name for compatibility with singer schema:
                 # from API: '$browser'
                 # to stream: 'mp_reserved_browser'
-                property_name = property_name.replace('$', 'mp_reserved_')
-            schema['properties'][property_name] = types.get(property_type, {'type': ['null', 'string']})
-
-        print('schema')
-        pprint(schema)
+                property_name = property_name.replace("$", "mp_reserved_")
+            schema["properties"][property_name] = types.get(property_type, {"type": ["null", "string"]})
 
         return schema
 
@@ -571,8 +542,6 @@ class CohortMembers(Engage):
         cohorts = Cohorts(authenticator=self.authenticator).read_records(sync_mode=sync_mode)
         for cohort in cohorts:
             stream_slices.append({"id": cohort["id"]})
-
-        # print(f"==== stream_slices: {stream_slices} \n")
 
         return stream_slices
 
@@ -653,6 +622,7 @@ class Revenue(DateSlicesMixin, IncrementalMixpanelStream):
 
 class ExportSchema(MixpanelStream):
     """Export helper stream for dynamic schema extraction"""
+
     primary_key = None
     data_field = None
 
@@ -733,21 +703,22 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
             }
         """
 
-        for item in response.text.splitlines():
-            record = json.loads(item)
+        for record_line in response.text.splitlines():
+            record = json.loads(record_line)
             # transform record into flat dict structure
-            item = record["properties"]
-            item["event"] = record["event"]
-            item["time"] = datetime.fromtimestamp(item["time"]).isoformat()  # convert timestamp to datetime string
-            for property_name in record['properties']:
+            item = {"event": record["event"]}
+            properties = record["properties"]
+            for property_name in properties:
                 this_property_name = property_name
-                if property_name.startswith('$'):
+                if property_name.startswith("$"):
                     # Transform properties name for compatibility with singer schema:
                     # from API: '$browser'
                     # to stream: 'mp_reserved_browser'
-                    this_property_name = property_name.replace('$', 'mp_reserved_')
-                item[this_property_name] = record['$properties'][property_name]
+                    this_property_name = property_name.replace("$", "mp_reserved_")
+                item[this_property_name] = properties[property_name]
 
+            # convert timestamp to datetime string
+            item["time"] = datetime.fromtimestamp(item["time"]).isoformat()
             yield item
 
         # wait for 60 seconds according to API limit
@@ -767,18 +738,15 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
         schema_properties = ExportSchema(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
         for property_entry in schema_properties:
             property_name: str = property_entry
-            if property_name.startswith('$'):
+            if property_name.startswith("$"):
                 # Transform properties name for compatibility with singer schema:
                 # from API: '$browser'
                 # to stream: 'mp_reserved_browser'
-                property_name = property_name.replace('$', 'mp_reserved_')
+                property_name = property_name.replace("$", "mp_reserved_")
             # Schema does not provide exact property type
             # string ONLY for event properties (no other datatypes)
             # Reference: https://help.mixpanel.com/hc/en-us/articles/360001355266-Event-Properties#field-size-character-limits-for-event-properties
-            schema['properties'][property_name] = {'type': ['null', 'string']}
-
-        print('EXPORT schema')
-        pprint(schema)
+            schema["properties"][property_name] = {"type": ["null", "string"]}
 
         return schema
 
@@ -825,7 +793,6 @@ class SourceMixpanel(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-
         tzone = pendulum.timezone(config.get("project_timezone", "US/Pacific"))
         now = datetime.now(tzone).date()
 
