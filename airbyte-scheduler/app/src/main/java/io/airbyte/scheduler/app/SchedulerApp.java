@@ -84,7 +84,7 @@ public class SchedulerApp {
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerApp.class);
 
   private static final long GRACEFUL_SHUTDOWN_SECONDS = 30;
-  private static final int MAX_WORKERS = 4;
+  private static final int MAX_WORKERS = Integer.parseInt(new EnvConfigs().getMaxWorkers());
   private static final Duration SCHEDULING_DELAY = Duration.ofSeconds(5);
   private static final Duration CLEANING_DELAY = Duration.ofHours(2);
   private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder().setNameFormat("worker-%d").build();
