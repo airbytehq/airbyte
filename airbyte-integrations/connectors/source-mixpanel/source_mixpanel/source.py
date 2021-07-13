@@ -61,12 +61,14 @@ class MixpanelStream(HttpStream, ABC):
         end_date: Union[date, str] = None,
         date_window_size: int = 30,  # in days
         attribution_window: int = 0,  # in days
+        select_properties_by_default: bool = True,
         **kwargs,
     ):
         self.start_date = start_date
         self.end_date = end_date
         self.date_window_size = date_window_size
         self.attribution_window = attribution_window
+        self.additional_properties = select_properties_by_default
 
         super().__init__(authenticator=authenticator)
 
@@ -499,6 +501,12 @@ class Engage(MixpanelStream):
         Override as needed.
         """
         schema = super().get_json_schema()
+
+        # Set whether to allow additional properties for engage and export endpoints
+        # Event and Engage properties are dynamic and depend on the properties provided on upload,
+        #   when the Event or Engage (user/person) was created.
+        schema['additionalProperties'] = self.additional_properties
+
         types = {
             "boolean": {"type": ["null", "boolean"]},
             "number": {"type": ["null", "number"], "multipleOf": 1e-20},
@@ -733,6 +741,11 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
         """
 
         schema = super().get_json_schema()
+
+        # Set whether to allow additional properties for engage and export endpoints
+        # Event and Engage properties are dynamic and depend on the properties provided on upload,
+        #   when the Event or Engage (user/person) was created.
+        schema['additionalProperties'] = self.additional_properties
 
         # read existing Export schema from API
         schema_properties = ExportSchema(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
