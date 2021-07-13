@@ -85,15 +85,14 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
     });
 
     checkList.add(database -> {
-          if (isDatasetConfigured(database)) {
-            database.query(String.format("select 1 from %s where 1=0",
-                getFullTableName(getConfigDatasetId(database), "INFORMATION_SCHEMA.TABLES")));
-            LOGGER.info("The source passed the Dataset query test!");
-          } else {
-            LOGGER.info("The Dataset query test is skipped due to not configured datasetId!");
-          }
-        }
-          );
+      if (isDatasetConfigured(database)) {
+        database.query(String.format("select 1 from %s where 1=0",
+            getFullTableName(getConfigDatasetId(database), "INFORMATION_SCHEMA.TABLES")));
+        LOGGER.info("The source passed the Dataset query test!");
+      } else {
+        LOGGER.info("The Dataset query test is skipped due to not configured datasetId!");
+      }
+    });
 
     return checkList;
   }
