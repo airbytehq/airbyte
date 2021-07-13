@@ -12,8 +12,8 @@ from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStateMessage, Airbyt
     ConnectorSpecification, Status, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, AirbyteStream, SyncMode, DestinationSyncMode
 
 
-@pytest.fixture
-def destination(mocker) -> Destination:
+@pytest.fixture(name="destination")
+def destination_fixture(mocker) -> Destination:
     # Wipe the internal list of abstract methods to allow instantiating the abstract class without implementing its abstract methods
     mocker.patch('airbyte_cdk.destinations.Destination.__abstractmethods__', set())
     # Mypy yells at us because we're init'ing an abstract class
@@ -188,7 +188,7 @@ class TestRun:
         mocker.patch.object(
             destination,
             'write',
-            return_value=iter(x for x in expected_write_result),  # convert the list to generator to mimic real usage
+            return_value=iter(expected_write_result),  # convert to iterator to mimic real usage
             autospec=True
         )
         # mock input is a record followed by some state messages
@@ -213,7 +213,7 @@ class TestRun:
         )
 
         # verify output was correct
-        assert expected_write_result == list(returned_write_result)
+        assert expected_write_result == returned_write_result
 
     @pytest.mark.parametrize(
         'args',
