@@ -35,8 +35,8 @@ from source_pipedrive.streams import Activities, ActivityFields, Deals, Leads, P
 class SourcePipedrive(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
-            stream_kwargs = {"api_token": config["api_token"], "replication_start_date": config["replication_start_date"]}
-            deals_gen = Deals(**stream_kwargs).read_records(sync_mode=SyncMode.full_refresh)
+            deals = Deals(api_token=config["api_token"], replication_start_date=config["replication_start_date"])
+            deals_gen = deals.read_records(sync_mode=SyncMode.full_refresh)
             next(deals_gen)
             return True, None
         except Exception as error:

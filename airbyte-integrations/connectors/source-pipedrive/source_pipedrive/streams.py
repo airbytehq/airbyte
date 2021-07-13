@@ -22,7 +22,7 @@
 # SOFTWARE.
 #
 
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
@@ -40,12 +40,7 @@ class PipedriveStream(HttpStream, ABC):
         super().__init__(**kwargs)
         self._api_token = api_token
 
-    def path(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> str:
+    def path(self, **kwargs) -> str:
         class_name = self.__class__.__name__
         return f"{class_name[0].lower()}{class_name[1:]}"
 
@@ -71,7 +66,8 @@ class PaginatedPipedriveStream(PipedriveStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
         :param response: the most recent response from the API
-        :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
+        :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query
+                the next page in the response.
                 If there are no more pages in the result, return None.
         """
         pagination_data = response.json().get("additional_data", {}).get("pagination", {})
@@ -106,15 +102,14 @@ class IncrementalPipedriveStream(PaginatedPipedriveStream, ABC):
         return {self.cursor_field: latest_benchmark}
 
     @property
-    @abstractmethod
     def path_param(self):
-        pass
+        return self.name[:-1]
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        replication_start_date = stream_state.get(self.cursor_field) or self._replication_start_date
+        replication_start_date = max(stream_state.get(self.cursor_field, self._replication_start_date), self._replication_start_date)
         params.update(
             {
                 "items": self.path_param,
@@ -131,12 +126,7 @@ class IncrementalPipedriveStream(PaginatedPipedriveStream, ABC):
         for record in records:
             yield record.get(self.data_field)
 
-    def path(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return "recents"
 
 
@@ -145,8 +135,6 @@ class Deals(IncrementalPipedriveStream):
     API docs: https://developers.pipedrive.com/docs/api/v1/Deals#getDeals,
     retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
     """
-
-    path_param = "deal"
 
 
 class Leads(PaginatedPipedriveStream):
@@ -172,16 +160,12 @@ class Persons(IncrementalPipedriveStream):
     retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
     """
 
-    path_param = "activity"
-
 
 class Pipelines(IncrementalPipedriveStream):
     """
     API docs: https://developers.pipedrive.com/docs/api/v1/Pipelines#getPipelines,
     retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
     """
-
-    path_param = "pipeline"
 
 
 class Stages(IncrementalPipedriveStream):
@@ -190,8 +174,6 @@ class Stages(IncrementalPipedriveStream):
     retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
     """
 
-    path_param = "stage"
-
 
 class Users(IncrementalPipedriveStream):
     """
@@ -199,7 +181,6 @@ class Users(IncrementalPipedriveStream):
     retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
     """
 
-    path_param = "user"
     cursor_field = "modified"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
