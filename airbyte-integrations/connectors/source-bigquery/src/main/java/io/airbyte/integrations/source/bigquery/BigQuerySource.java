@@ -59,8 +59,6 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   private String quote = "";
   private JsonNode dbConfig;
 
-  public BigQuerySource() {}
-
   @Override
   public JsonNode toDatabaseConfig(JsonNode config) {
     return Jsons.jsonNode(ImmutableMap.builder()
@@ -130,7 +128,7 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
                                                                String cursorField,
                                                                StandardSQLTypeName cursorFieldType,
                                                                String cursor) {
-    return queryTableWithParams(database, String.format("SELECT %s FROM %s WHERE %s >= @cursor",
+    return queryTableWithParams(database, String.format("SELECT %s FROM %s WHERE %s > ?",
         enquoteIdentifierList(columnNames),
         getFullTableName(schemaName, tableName),
         cursorField),

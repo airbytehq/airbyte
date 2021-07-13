@@ -256,6 +256,15 @@ public class BigQuerySourceComprehensiveTest extends SourceComprehensiveTest {
 
     addDataTypeTestData(
         TestDataHolder.builder()
+            .sourceType("timestamp")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .createTablePatternSql(CREATE_SQL_PATTERN)
+            .addInsertValues("timestamp('2021-10-20 11:22:33')", "null")
+            .addExpectedValues("2021-10-20T11:22:33Z", null)
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
             .sourceType("geography")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .createTablePatternSql(CREATE_SQL_PATTERN)
