@@ -1,5 +1,28 @@
 plugins {
     id 'application'
+    id 'maven-publish'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
+}
+
+shadowJar {
+    zip64 true
+    mergeServiceFiles()
+    exclude 'META-INF/*.RSA'
+    exclude 'META-INF/*.SF'
+    exclude 'META-INF/*.DSA'
+    // Not stubbing this out adds 'all' to the end of the jar's name.
+    classifier = ''
+}
+
+publishing {
+    publications {
+        shadow(MavenPublication) { publication ->
+            project.shadow.component(publication)
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
 }
 
 dependencies {
@@ -52,8 +75,10 @@ task copySeed(type: Copy, dependsOn: [project(':airbyte-config:init').processRes
 //project.tasks.copySeed.mustRunAfter(project(':airbyte-config:init').tasks.processResources)
 assemble.dependsOn(project.tasks.copySeed)
 
+mainClassName = 'io.airbyte.server.ServerApp'
+
 application {
-    mainClass = 'io.airbyte.server.ServerApp'
+    mainClass = mainClassName
 }
 
 Properties env = new Properties()
