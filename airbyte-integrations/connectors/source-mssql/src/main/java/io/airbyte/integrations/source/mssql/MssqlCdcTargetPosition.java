@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
 public class MssqlCdcTargetPosition implements CdcTargetPosition {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlCdcTargetPosition.class);
-  private final Lsn targetLsn;
+  public final Lsn targetLsn;
 
   public MssqlCdcTargetPosition(Lsn targetLsn) {
     this.targetLsn = targetLsn;
@@ -84,17 +84,19 @@ public class MssqlCdcTargetPosition implements CdcTargetPosition {
     return targetLsn.hashCode();
   }
 
-  public static MssqlCdcTargetPosition getTargetPostion(JdbcDatabase database) {
+  public static MssqlCdcTargetPosition getTargetPosition(JdbcDatabase database, String dbName) {
     try {
       final List<JsonNode> jsonNodes = database
-          .bufferedResultSetQuery(conn -> conn.createStatement().executeQuery("SELECT sys.fn_cdc_get_max_lsn() AS max_lsn;"), JdbcUtils::rowToJson);
+          .bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(
+              "USE " + dbName + "; SELECT sys.fn_cdc_get_max_lsn() AS max_lsn;"), JdbcUtils::rowToJson);
       Preconditions.checkState(jsonNodes.size() == 1);
       if (jsonNodes.get(0).get("max_lsn") != null) {
         Lsn maxLsn = Lsn.valueOf(jsonNodes.get(0).get("max_lsn").binaryValue());
         LOGGER.info("identified target lsn: " + maxLsn);
         return new MssqlCdcTargetPosition(maxLsn);
       } else {
-        throw new RuntimeException("Max LSN is null, see docs"); // todo: make this error way better
+        throw new RuntimeException("SQL returned max LSN as null, this might be because the SQL Server Agent is not running. " +
+            "Please enable the Agent and try again (https://docs.microsoft.com/en-us/sql/ssms/agent/start-stop-or-pause-the-sql-server-agent-service?view=sql-server-ver15)");
       }
     } catch (SQLException | IOException e) {
       throw new RuntimeException(e);
