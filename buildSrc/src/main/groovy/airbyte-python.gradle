@@ -16,7 +16,6 @@ class AirbytePythonPlugin implements Plugin<Project> {
         project.plugins.apply 'ru.vyarus.use-python'
 
         project.python {
-            pythonBinary = 'python'
             envPath = venvDirectoryName
             minPythonVersion = '3.7'
             scope = 'VIRTUALENV'
@@ -26,7 +25,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
             pip 'mypy:0.812'
             pip 'isort:5.6.4'
             pip 'pytest:6.1.2'
-            pip 'pip:21.1'
+            pip 'pip:21.1.3'
         }
 
         project.task('isortFormat', type: PythonTask) {

@@ -24,7 +24,6 @@
 
 package io.airbyte.server.errors;
 
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -39,9 +38,9 @@ public class KnownExceptionMapper implements ExceptionMapper<KnownException> {
 
   @Override
   public Response toResponse(KnownException e) {
-    LOGGER.info("Known exception", e);
+    LOGGER.info("Known exception", e.getKnownExceptionInfo());
     return Response.status(e.getHttpCode())
-        .entity(Jsons.serialize(ImmutableMap.of("message", e.getMessage())))
+        .entity(Jsons.serialize(e.getKnownExceptionInfo()))
         .type("application/json")
         .build();
   }

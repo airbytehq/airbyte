@@ -10,7 +10,7 @@ For the JDBC based sources the Code Generator maybe used to create a module's sk
 
 ```bash
 $ cd airbyte-integrations/connector-templates/generator # start from repo root
-$ npm install
-$ npm run generate
-In menu choose the "Java JDBC Source"
+$ ./generate.sh
 ```
+
+In menu choose the `"Java JDBC Source"`

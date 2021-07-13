@@ -24,7 +24,67 @@
 
 package io.airbyte.server.apis;
 
-import io.airbyte.api.model.*;
+import io.airbyte.api.model.CheckConnectionRead;
+import io.airbyte.api.model.CheckOperationRead;
+import io.airbyte.api.model.ConnectionCreate;
+import io.airbyte.api.model.ConnectionIdRequestBody;
+import io.airbyte.api.model.ConnectionRead;
+import io.airbyte.api.model.ConnectionReadList;
+import io.airbyte.api.model.ConnectionState;
+import io.airbyte.api.model.ConnectionUpdate;
+import io.airbyte.api.model.DestinationCoreConfig;
+import io.airbyte.api.model.DestinationCreate;
+import io.airbyte.api.model.DestinationDefinitionCreate;
+import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.model.DestinationDefinitionRead;
+import io.airbyte.api.model.DestinationDefinitionReadList;
+import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
+import io.airbyte.api.model.DestinationDefinitionUpdate;
+import io.airbyte.api.model.DestinationIdRequestBody;
+import io.airbyte.api.model.DestinationRead;
+import io.airbyte.api.model.DestinationReadList;
+import io.airbyte.api.model.DestinationRecreate;
+import io.airbyte.api.model.DestinationUpdate;
+import io.airbyte.api.model.HealthCheckRead;
+import io.airbyte.api.model.ImportRead;
+import io.airbyte.api.model.JobIdRequestBody;
+import io.airbyte.api.model.JobInfoRead;
+import io.airbyte.api.model.JobListRequestBody;
+import io.airbyte.api.model.JobReadList;
+import io.airbyte.api.model.LogsRequestBody;
+import io.airbyte.api.model.Notification;
+import io.airbyte.api.model.NotificationRead;
+import io.airbyte.api.model.OperationCreate;
+import io.airbyte.api.model.OperationCreateOrUpdate;
+import io.airbyte.api.model.OperationIdRequestBody;
+import io.airbyte.api.model.OperationRead;
+import io.airbyte.api.model.OperationReadList;
+import io.airbyte.api.model.OperationUpdate;
+import io.airbyte.api.model.SlugRequestBody;
+import io.airbyte.api.model.SourceCoreConfig;
+import io.airbyte.api.model.SourceCreate;
+import io.airbyte.api.model.SourceDefinitionCreate;
+import io.airbyte.api.model.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.SourceDefinitionRead;
+import io.airbyte.api.model.SourceDefinitionReadList;
+import io.airbyte.api.model.SourceDefinitionSpecificationRead;
+import io.airbyte.api.model.SourceDefinitionUpdate;
+import io.airbyte.api.model.SourceDiscoverSchemaRead;
+import io.airbyte.api.model.SourceIdRequestBody;
+import io.airbyte.api.model.SourceRead;
+import io.airbyte.api.model.SourceReadList;
+import io.airbyte.api.model.SourceRecreate;
+import io.airbyte.api.model.SourceUpdate;
+import io.airbyte.api.model.WebBackendConnectionCreate;
+import io.airbyte.api.model.WebBackendConnectionRead;
+import io.airbyte.api.model.WebBackendConnectionReadList;
+import io.airbyte.api.model.WebBackendConnectionRequestBody;
+import io.airbyte.api.model.WebBackendConnectionUpdate;
+import io.airbyte.api.model.WorkspaceCreate;
+import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.api.model.WorkspaceRead;
+import io.airbyte.api.model.WorkspaceReadList;
+import io.airbyte.api.model.WorkspaceUpdate;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -34,7 +94,8 @@ import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.SpecFetcher;
-import io.airbyte.server.errors.KnownException;
+import io.airbyte.server.errors.BadObjectSchemaKnownException;
+import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.handlers.ArchiveHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
@@ -57,7 +118,6 @@ import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.File;
 import java.io.IOException;
 import javax.validation.Valid;
-import org.eclipse.jetty.http.HttpStatus;
 
 @javax.ws.rs.Path("/v1")
 public class ConfigurationApi implements io.airbyte.api.V1Api {
@@ -125,6 +185,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   // WORKSPACE
+
+  @Override
+  public WorkspaceReadList listWorkspaces() {
+    return execute(workspacesHandler::listWorkspaces);
+  }
 
   @Override
   public WorkspaceRead createWorkspace(@Valid WorkspaceCreate workspaceCreate) {
@@ -491,12 +556,10 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     try {
       return call.call();
     } catch (ConfigNotFoundException e) {
-      throw new KnownException(
-          HttpStatus.UNPROCESSABLE_ENTITY_422,
-          String.format("Could not find configuration for %s: %s.", e.getType().toString(), e.getConfigId()), e);
+      throw new IdNotFoundKnownException(String.format("Could not find configuration for %s: %s.", e.getType().toString(), e.getConfigId()),
+          e.getConfigId(), e);
     } catch (JsonValidationException e) {
-      throw new KnownException(
-          HttpStatus.UNPROCESSABLE_ENTITY_422,
+      throw new BadObjectSchemaKnownException(
           String.format("The provided configuration does not fulfill the specification. Errors: %s", e.getMessage()), e);
     } catch (IOException e) {
       throw new RuntimeException(e);

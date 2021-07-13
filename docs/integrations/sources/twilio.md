@@ -2,74 +2,69 @@
 
 ## Overview
 
-The Twilio source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
-
-This source can sync data for the [Twilio API](https://www.twilio.com/docs/usage/api).
-
-This Source Connector is based on a [Singer Tap](https://github.com/transferwise/pipelinewise-tap-twilio).
+The Twilio connector can be used to sync your Twilio data. 
+It supports full refresh sync for all streams and incremental sync for the Alerts, Calls, Conferences, Message Media, Messages, Recordings and Usage Records streams.
 
 ### Output schema
 
-This Source is capable of syncing the following core Streams:
+Several output streams are available from this source:
 
 * [Accounts](https://www.twilio.com/docs/usage/api/account#read-multiple-account-resources)
 * [Addresses](https://www.twilio.com/docs/usage/api/address#read-multiple-address-resources)
-* [Dependent phone numbers](https://www.twilio.com/docs/usage/api/address?code-sample=code-list-dependent-pns-subresources&code-language=curl&code-sdk-version=json#instance-subresources)
+* [Alerts](https://www.twilio.com/docs/usage/monitor-alert#read-multiple-alert-resources) \(Incremental\)
 * [Applications](https://www.twilio.com/docs/usage/api/applications#read-multiple-application-resources)
-* [Available phone number countries](https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-resource#read-a-list-of-countries)
-* [Available phone numbers local](https://www.twilio.com/docs/phone-numbers/api/availablephonenumberlocal-resource#read-multiple-availablephonenumberlocal-resources)
-* [Available phone numbers mobile](https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-mobile-resource#read-multiple-availablephonenumbermobile-resources)
-* [Available phone numbers toll free](https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-tollfree-resource#read-multiple-availablephonenumbertollfree-resources)
-* [Incoming phone numbers](https://www.twilio.com/docs/phone-numbers/api/incomingphonenumber-resource#read-multiple-incomingphonenumber-resources)
+* [Available Phone Number Countries](https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-resource#read-a-list-of-countries) \(Incremental\)
+* [Available Phone Numbers Local](https://www.twilio.com/docs/phone-numbers/api/availablephonenumberlocal-resource#read-multiple-availablephonenumberlocal-resources) \(Incremental\)
+* [Available Phone Numbers Mobile](https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-mobile-resource#read-multiple-availablephonenumbermobile-resources) \(Incremental\)
+* [Available Phone Numbers Toll Free](https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-tollfree-resource#read-multiple-availablephonenumbertollfree-resources) \(Incremental\)
+* [Calls](https://www.twilio.com/docs/voice/api/call-resource#create-a-call-resource) \(Incremental\)
+* [Conference Participants](https://www.twilio.com/docs/voice/api/conference-participant-resource#read-multiple-participant-resources) \(Incremental\)
+* [Conferences](https://www.twilio.com/docs/voice/api/conference-resource#read-multiple-conference-resources) \(Incremental\)
+* [Dependent Phone Numbers](https://www.twilio.com/docs/usage/api/address?code-sample=code-list-dependent-pns-subresources&code-language=curl&code-sdk-version=json#instance-subresources) \(Incremental\)
+* [Incoming Phone Numbers](https://www.twilio.com/docs/phone-numbers/api/incomingphonenumber-resource#read-multiple-incomingphonenumber-resources) \(Incremental\)
 * [Keys](https://www.twilio.com/docs/usage/api/keys#read-a-key-resource)
-* [Calls](https://www.twilio.com/docs/sms/api/message-resource#read-multiple-message-resources)
-* [Conferences](https://www.twilio.com/docs/voice/api/conference-resource#read-multiple-conference-resources)
-* [Conference participants](https://www.twilio.com/docs/voice/api/conference-participant-resource#read-multiple-participant-resources)
-* [Outgoing caller IDs](https://www.twilio.com/docs/voice/api/outgoing-caller-ids#outgoingcallerids-list-resource)
-* [Recordings](https://www.twilio.com/docs/voice/api/recording#read-multiple-recording-resources)
-* [Transcriptions](https://www.twilio.com/docs/voice/api/recording-transcription?code-sample=code-read-list-all-transcriptions&code-language=curl&code-sdk-version=json#read-multiple-transcription-resources)
+* [Message Media](https://www.twilio.com/docs/sms/api/media-resource#read-multiple-media-resources) \(Incremental\)
+* [Messages](https://www.twilio.com/docs/sms/api/message-resource#read-multiple-message-resources) \(Incremental\)
+* [Outgoing Caller Ids](https://www.twilio.com/docs/voice/api/outgoing-caller-ids#outgoingcallerids-list-resource)
 * [Queues](https://www.twilio.com/docs/voice/api/queue-resource#read-multiple-queue-resources)
-* [Message media](https://www.twilio.com/docs/sms/api/media-resource#read-multiple-media-resources)
-* [Messages](https://www.twilio.com/docs/sms/api/message-resource#read-multiple-message-resources)
-
-  \(stream data can only be received for the last 400 days\)
-
-* [Usage records](https://www.twilio.com/docs/usage/api/usage-record#read-multiple-usagerecord-resources)
-* [Usage triggers](https://www.twilio.com/docs/usage/api/usage-trigger#read-multiple-usagetrigger-resources)
-* [Alerts](https://www.twilio.com/docs/usage/monitor-alert#read-multiple-alert-resources)
-
-### Data type mapping
-
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| `string` | `string` |  |
-| `number` | `number` |  |
-| `array` | `array` |  |
-| `object` | `object` |  |
+* [Recordings](https://www.twilio.com/docs/voice/api/recording#read-multiple-recording-resources) \(Incremental\)
+* [Transcriptions](https://www.twilio.com/docs/voice/api/recording-transcription?code-sample=code-read-list-all-transcriptions&code-language=curl&code-sdk-version=json#read-multiple-transcription-resources)
+* [Usage Records](https://www.twilio.com/docs/usage/api/usage-record#read-multiple-usagerecord-resources) \(Incremental\)
+* [Usage Triggers](https://www.twilio.com/docs/usage/api/usage-trigger#read-multiple-usagetrigger-resources)
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental - Append Sync | Yes |  |
-| Namespaces | No |  |
+| Feature | Supported? |
+| :--- | :--- |
+| Full Refresh Sync | Yes |
+| Incremental Sync | Yes |
+| Replicate Incremental Deletes | No |
+| SSL connection | Yes |
+| Namespaces | No |
 
 ### Performance considerations
 
-The Twilio connector should not run into Twilio API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Twilio connector will gracefully handle rate limits. For more information, see [the Twilio docs for rate limitations](https://support.twilio.com/hc/en-us/articles/360044308153-Twilio-API-response-Error-429-Too-Many-Requests-).
+
+Get in touch with [Twilio Sales](https://twilio.com/help/sales) to talk to them about your use case and request an increased concurrency limit.
 
 ## Getting started
 
 ### Requirements
 
-* Twilio Account ID 
-* Twilio access token 
-* API User Email for Twilio Account
+* Twilio Account
+* Twilio Account SID and Auth Token to authenticate API requests.
 
 ### Setup guide
 
-Generate a API access token using the [Twilio documentation](https://support.twilio.com/hc/en-us/articles/223136027-Auth-Tokens-and-How-to-Change-Them)
+Twilio HTTP requests to the REST API are protected with HTTP Basic authentication. In short, you will use your Twilio Account SID as the username and your Auth Token as the password for HTTP Basic authentication.
 
-We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
+You can find your Account SID and Auth Token on your [dashboard](https://www.twilio.com/user/account).
 
+See [docs](https://www.twilio.com/docs/iam/api) for more details.
+
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.1.0   | 2021-07-02 | [4070](https://github.com/airbytehq/airbyte/pull/4070) | Native Twilio connector implemented |

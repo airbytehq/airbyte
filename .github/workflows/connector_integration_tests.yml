@@ -1,0 +1,19 @@
+name: Connector Integration Tests
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 5pm UTC is 10am PDT.
+    - cron: '0 17 * * *'
+
+jobs:
+  launch_integration_tests:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Launch Integration Tests
+        run: ./tools/bin/ci_integration_workflow_launcher.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.SLASH_COMMAND_PAT }}

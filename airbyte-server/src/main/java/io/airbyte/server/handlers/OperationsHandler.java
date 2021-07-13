@@ -50,6 +50,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -169,14 +170,12 @@ public class OperationsHandler {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final List<OperationRead> operationReads = Lists.newArrayList();
     final StandardSync standardSync = configRepository.getStandardSync(connectionIdRequestBody.getConnectionId());
-    for (StandardSyncOperation standardSyncOperation : configRepository.listStandardSyncOperations()) {
+    for (UUID operationId : standardSync.getOperationIds()) {
+      final StandardSyncOperation standardSyncOperation = configRepository.getStandardSyncOperation(operationId);
       if (standardSyncOperation.getTombstone() != null && standardSyncOperation.getTombstone()) {
         continue;
       }
-      if (!standardSync.getOperationIds().contains(standardSyncOperation.getOperationId())) {
-        continue;
-      }
-      operationReads.add(buildOperationRead(standardSyncOperation.getOperationId()));
+      operationReads.add(buildOperationRead(standardSyncOperation));
     }
     return new OperationReadList().operations(operationReads);
   }
@@ -198,10 +197,10 @@ public class OperationsHandler {
     deleteOperationsForConnection(standardSync, deleteOperationIds);
   }
 
-  public void deleteOperationsForConnection(StandardSync standardSync, List<UUID> deleteOperationIds)
+  public void deleteOperationsForConnection(final StandardSync standardSync, final List<UUID> deleteOperationIds)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final List<StandardSync> allStandardSyncs = configRepository.listStandardSyncs();
-    final List<UUID> operationIds = standardSync.getOperationIds();
+    final List<UUID> operationIds = new ArrayList<>(standardSync.getOperationIds());
     for (UUID operationId : deleteOperationIds) {
       operationIds.remove(operationId);
       boolean sharedOperation = false;

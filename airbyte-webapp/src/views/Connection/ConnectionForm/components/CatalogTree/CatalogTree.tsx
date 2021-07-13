@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { Field, setIn } from "formik";
+import { Field, setIn, FastFieldProps } from "formik";
 
 import {
   AirbyteStream,
@@ -7,7 +7,6 @@ import {
   DestinationSyncMode,
   SyncSchemaStream,
 } from "core/domain/catalog";
-import { FastFieldProps } from "formik/dist/FastField";
 import { CatalogSection } from "./CatalogSection";
 
 type IProps = {
@@ -41,7 +40,10 @@ const CatalogTree: React.FC<IProps> = ({
   return (
     <>
       {streams.map((streamNode) => (
-        <Field name={`schema.streams[${streamNode.id}].config`}>
+        <Field
+          key={`schema.streams[${streamNode.id}].config`}
+          name={`schema.streams[${streamNode.id}].config`}
+        >
           {({ form }: FastFieldProps) => (
             <CatalogSection
               key={`schema.streams[${streamNode.id}].config`}

@@ -37,3 +37,17 @@ redirects:
   tutorials/transformations-with-dbt: ./tutorials/transformation-and-normalization/transformations-with-dbt.md
   contributing-to-airbyte/cdk-tutorial-alpha: ./contributing-to-airbyte/python/README.md
   integrations/connector-health: ./integrations.md
+  tutorials: ./operator-guides.md
+  tutorials/browsing-output-logs.md: ./operator-guides/browsing-output-logs.md
+  tutorials/locating-files-local-destination.md: ./operator-guides/locating-files-local-destination.md
+  tutorials/using-the-airflow-airbyte-operator.md: ./operator-guides/using-the-airflow-airbyte-operator.md
+  tutorials/transformation-and-normalization: ./operator-guides/transformation-and-normalization.md
+  tutorials/transformation-and-normalization/transformations-with-sql: ./operator-guides/transformation-and-normalization/transformations-with-sql.md
+  tutorials/transformation-and-normalization/transformations-with-dbt: ./operator-guides/transformation-and-normalization/transformations-with-dbt.md
+  tutorials/tutorials: ./contributing-to-airbyte/building-new-connector/tutorials.md
+  tutorials/tutorials/beginners-guide-to-catalog: ./contributing-to-airbyte/building-new-connector/tutorials/beginners-guide-to-catalog.md
+  tutorials/tutorials/build-a-connector-the-hard-way: ./contributing-to-airbyte/building-new-connector/tutorials/build-a-connector-the-hard-way.md
+  tutorials/tutorials/adding-incremental-sync: ./contributing-to-airbyte/building-new-connector/tutorials/adding-incremental-sync.md
+  tutorials/tutorials/building-a-python-source: ./contributing-to-airbyte/building-new-connector/tutorials/building-a-python-source.md
+  upgrading-airbyte: ./operator-guides/upgrading-airbyte.md
+  tutorials/upgrading-airbyte: ./operator-guides/upgrading-airbyte.md

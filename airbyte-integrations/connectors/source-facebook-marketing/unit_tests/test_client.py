@@ -23,13 +23,17 @@
 #
 
 import json
+from datetime import datetime
 
 import pendulum
 import pytest
-from airbyte_cdk.models import AirbyteStream
-from facebook_business import FacebookSession
+from airbyte_cdk.models import SyncMode
+from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.exceptions import FacebookRequestError
-from source_facebook_marketing.client import Client
+from source_facebook_marketing.api import API
+from source_facebook_marketing.streams import AdCreatives, Campaigns
+
+FB_API_VERSION = FacebookAdsApi.API_VERSION
 
 
 @pytest.fixture(scope="session", name="account_id")
@@ -44,19 +48,26 @@ def some_config_fixture(account_id):
 
 @pytest.fixture(autouse=True)
 def mock_default_sleep_interval(mocker):
-    mocker.patch("source_facebook_marketing.client.common.DEFAULT_SLEEP_INTERVAL", return_value=pendulum.Interval(seconds=5))
+    mocker.patch("source_facebook_marketing.common.DEFAULT_SLEEP_INTERVAL", return_value=pendulum.duration(seconds=5))
 
 
-@pytest.fixture(name="client")
-def client_fixture(some_config, requests_mock, fb_account_response):
-    client = Client(**some_config)
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + "/v10.0/me/adaccounts", [fb_account_response])
-    return client
+@pytest.fixture(name="api")
+def api_fixture(some_config, requests_mock, fb_account_response):
+    api = API(account_id=some_config["account_id"], access_token=some_config["access_token"])
+
+    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/adaccounts", [fb_account_response])
+    return api
 
 
 @pytest.fixture(name="fb_call_rate_response")
 def fb_call_rate_response_fixture():
-    error = {"message": "(#32) Page request limit reached", "type": "OAuthException", "code": 32, "fbtrace_id": "Fz54k3GZrio"}
+    error = {
+        "message": "(#80000) There have been too many calls from this ad-account. Wait a bit and try again. For more info, please refer to https://developers.facebook.com/docs/graph-api/overview/rate-limiting.",
+        "type": "OAuthException",
+        "code": 80000,
+        "error_subcode": 2446079,
+        "fbtrace_id": "this_is_fake_response",
+    }
 
     headers = {"x-app-usage": json.dumps({"call_count": 28, "total_time": 25, "total_cputime": 25})}
 
@@ -86,7 +97,7 @@ def fb_account_response_fixture(account_id):
 
 
 class TestBackoff:
-    def test_limit_reached(self, requests_mock, client, fb_call_rate_response, account_id):
+    def test_limit_reached(self, requests_mock, api, fb_call_rate_response, account_id):
         """Error once, check that we retry and not fail"""
         campaign_responses = [
             fb_call_rate_response,
@@ -96,15 +107,18 @@ class TestBackoff:
             },
         ]
 
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/v10.0/act_{account_id}/campaigns", campaign_responses)
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + "/v10.0/1/", [{"status_code": 200}])
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + "/v10.0/2/", [{"status_code": 200}])
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/campaigns", campaign_responses)
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/1/", [{"status_code": 200}])
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/2/", [{"status_code": 200}])
 
-        records = list(client.read_stream(AirbyteStream(name="campaigns", json_schema={})))
+        stream = Campaigns(api=api, start_date=datetime.now(), include_deleted=False)
+        try:
+            records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
+            assert records
+        except FacebookRequestError:
+            pytest.fail("Call rate error has not being handled")
 
-        assert records
-
-    def test_batch_limit_reached(self, requests_mock, client, fb_call_rate_response, account_id):
+    def test_batch_limit_reached(self, requests_mock, api, fb_call_rate_response, account_id):
         """Error once, check that we retry and not fail"""
         responses = [
             fb_call_rate_response,
@@ -131,26 +145,21 @@ class TestBackoff:
             fb_call_rate_response,
             {
                 "json": [
-                    {
-                        "body": json.dumps({"name": "creative 1"}),
-                        "code": 200,
-                    },
-                    {
-                        "body": json.dumps({"name": "creative 2"}),
-                        "code": 200,
-                    },
+                    {"body": json.dumps({"name": "creative 1"}), "code": 200, "headers": {}},
+                    {"body": json.dumps({"name": "creative 2"}), "code": 200, "headers": {}},
                 ]
             },
         ]
 
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/v10.0/act_{account_id}/adcreatives", responses)
-        requests_mock.register_uri("POST", FacebookSession.GRAPH + "/v10.0/", batch_responses)
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/adcreatives", responses)
+        requests_mock.register_uri("POST", FacebookSession.GRAPH + f"/{FB_API_VERSION}/", batch_responses)
 
-        records = list(client.read_stream(AirbyteStream(name="adcreatives", json_schema={})))
+        stream = AdCreatives(api=api, include_deleted=False)
+        records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
 
         assert records == [{"name": "creative 1"}, {"name": "creative 2"}]
 
-    def test_server_error(self, requests_mock, client, account_id):
+    def test_server_error(self, requests_mock, api, account_id):
         """Error once, check that we retry and not fail"""
         responses = [
             {"json": {"error": {}}, "status_code": 500},
@@ -160,7 +169,8 @@ class TestBackoff:
             },
         ]
 
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/v10.0/act_{account_id}/campaigns", responses)
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/campaigns", responses)
 
         with pytest.raises(FacebookRequestError):
-            list(client.read_stream(AirbyteStream(name="campaigns", json_schema={})))
+            stream = Campaigns(api=api, start_date=datetime.now(), include_deleted=False)
+            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))

@@ -209,7 +209,7 @@ class DestinationDefinitionsHandlerTest {
 
     @Test
     @DisplayName("should return the latest list")
-    void testCorrect() throws IOException, InterruptedException {
+    void testCorrect() throws InterruptedException {
       final StandardDestinationDefinition destinationDefinition = generateDestination();
       when(githubStore.getLatestDestinations()).thenReturn(Collections.singletonList(destinationDefinition));
 
@@ -222,8 +222,7 @@ class DestinationDefinitionsHandlerTest {
 
     @Test
     @DisplayName("returns empty collection if cannot find latest definitions")
-    void testHttpTimeout() throws IOException, InterruptedException {
-      when(githubStore.getLatestDestinations()).thenThrow(new IOException());
+    void testHttpTimeout() {
       assertEquals(0, destinationHandler.listLatestDestinationDefinitions().getDestinationDefinitions().size());
     }
 

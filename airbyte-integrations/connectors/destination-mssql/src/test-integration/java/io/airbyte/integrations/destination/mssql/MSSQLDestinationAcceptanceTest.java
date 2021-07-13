@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.JavaBaseConstants;
@@ -37,7 +38,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
 import org.junit.jupiter.api.AfterAll;
@@ -56,6 +56,11 @@ public class MSSQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
   @Override
   protected String getImageName() {
     return "airbyte/destination-mssql:dev";
+  }
+
+  @Override
+  protected boolean supportsDBT() {
+    return true;
   }
 
   private JsonNode getConfig(MSSQLServerContainer<?> db) {
@@ -95,11 +100,6 @@ public class MSSQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
         .stream()
         .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
-  }
-
-  @Override
-  protected boolean implementsBasicNormalization() {
-    return false;
   }
 
   @Override
@@ -166,7 +166,7 @@ public class MSSQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
   @Override
   protected void setup(TestDestinationEnv testEnv) throws SQLException {
     configWithoutDbName = getConfig(db);
-    final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
+    final String dbName = Strings.addRandomSuffix("db", "_", 10);
 
     final Database database = getDatabase(configWithoutDbName);
     database.query(ctx -> {

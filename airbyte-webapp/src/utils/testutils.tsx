@@ -5,7 +5,7 @@ import { History, createMemoryHistory } from "history";
 import { Router } from "react-router-dom";
 import { IntlProvider } from "react-intl";
 
-import en from "../locales/en.json";
+import en from "locales/en.json";
 
 export type RenderOptions = {
   // optionally pass in a history object to control routes in the test

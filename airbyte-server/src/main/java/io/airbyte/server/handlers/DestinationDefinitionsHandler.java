@@ -37,19 +37,23 @@ import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.converters.SpecFetcher;
-import io.airbyte.server.errors.KnownException;
+import io.airbyte.server.errors.BadObjectSchemaKnownException;
+import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DestinationDefinitionsHandler {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(DestinationDefinitionsHandler.class);
 
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
@@ -87,7 +91,7 @@ public class DestinationDefinitionsHandler {
           .documentationUrl(new URI(standardDestinationDefinition.getDocumentationUrl()))
           .icon(loadIcon(standardDestinationDefinition.getIcon()));
     } catch (URISyntaxException | NullPointerException e) {
-      throw new KnownException(500, "Unable to process retrieved latest destination definitions list", e);
+      throw new InternalServerKnownException("Unable to process retrieved latest destination definitions list", e);
     }
   }
 
@@ -99,7 +103,7 @@ public class DestinationDefinitionsHandler {
           .destinationDefinitionRead(buildDestinationDefinitionRead(standardDestinationDefinition))
           .jobInfo(jobInfo);
     } catch (NullPointerException e) {
-      throw new KnownException(500, "Unable to process retrieved latest destination definitions list", e);
+      throw new InternalServerKnownException("Unable to process retrieved latest destination definitions list", e);
     }
   }
 
@@ -121,10 +125,8 @@ public class DestinationDefinitionsHandler {
   private List<StandardDestinationDefinition> getLatestDestinations() {
     try {
       return githubStore.getLatestDestinations();
-    } catch (IOException e) {
-      return Collections.emptyList();
     } catch (InterruptedException e) {
-      throw new KnownException(500, "Request to retrieve latest destination definitions failed", e);
+      throw new InternalServerKnownException("Request to retrieve latest destination definitions failed", e);
     }
   }
 
@@ -146,7 +148,7 @@ public class DestinationDefinitionsHandler {
       Preconditions.checkState(response.isSuccess(), "Get Spec job failed.");
       Preconditions.checkNotNull(response.getOutput(), "Get Spec job return null spec");
     } catch (NullPointerException e) {
-      throw new KnownException(422, String.format("Encountered an issue while validating input docker image from %s:%s - %s",
+      throw new BadObjectSchemaKnownException(String.format("Encountered an issue while validating input docker image from %s:%s - %s",
           destinationDefinitionCreate.getDockerRepository(), destinationDefinitionCreate.getDockerImageTag(), e.toString() + " " + e.getMessage()),
           e);
     }
@@ -180,7 +182,7 @@ public class DestinationDefinitionsHandler {
       Preconditions.checkState(response.isSuccess(), "Get Spec job failed.");
       Preconditions.checkNotNull(response.getOutput(), "Get Spec job return null spec");
     } catch (NullPointerException e) {
-      throw new KnownException(422, String.format("Encountered an issue while validating input docker image from %s:%s - %s",
+      throw new BadObjectSchemaKnownException(String.format("Encountered an issue while validating input docker image from %s:%s - %s",
           currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag(), e.toString() + " " + e.getMessage()), e);
     }
 

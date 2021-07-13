@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public class S3DestinationConfig {
 
+  private final String endpoint;
   private final String bucketName;
   private final String bucketPath;
   private final String bucketRegion;
@@ -36,12 +37,14 @@ public class S3DestinationConfig {
   private final S3FormatConfig formatConfig;
 
   public S3DestinationConfig(
+                             String endpoint,
                              String bucketName,
                              String bucketPath,
                              String bucketRegion,
                              String accessKeyId,
                              String secretAccessKey,
                              S3FormatConfig formatConfig) {
+    this.endpoint = endpoint;
     this.bucketName = bucketName;
     this.bucketPath = bucketPath;
     this.bucketRegion = bucketRegion;
@@ -52,12 +55,17 @@ public class S3DestinationConfig {
 
   public static S3DestinationConfig getS3DestinationConfig(JsonNode config) {
     return new S3DestinationConfig(
+        config.get("s3_endpoint") == null ? "" : config.get("s3_endpoint").asText(),
         config.get("s3_bucket_name").asText(),
         config.get("s3_bucket_path").asText(),
         config.get("s3_bucket_region").asText(),
         config.get("access_key_id").asText(),
         config.get("secret_access_key").asText(),
         S3FormatConfigs.getS3FormatConfig(config));
+  }
+
+  public String getEndpoint() {
+    return endpoint;
   }
 
   public String getBucketName() {

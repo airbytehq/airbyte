@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -35,7 +36,6 @@ import java.io.IOException;
 import java.util.UUID;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 import org.testcontainers.utility.MountableFile;
 
 public class PostgreSQLContainerHelper {
@@ -53,7 +53,7 @@ public class PostgreSQLContainerHelper {
   }
 
   public static JsonNode createDatabaseWithRandomNameAndGetPostgresConfig(PostgreSQLContainer<?> psqlDb) {
-    final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
+    final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
     return createDatabaseAndGetPostgresConfig(psqlDb, dbName);
   }
 

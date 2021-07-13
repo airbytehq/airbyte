@@ -30,6 +30,7 @@ from typing import Iterable, List, Mapping, Optional
 
 import docker
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
+from docker.errors import ContainerError
 from pydantic import ValidationError
 
 
@@ -39,7 +40,9 @@ class ConnectorRunner:
         try:
             self._image = self._client.images.get(image_name)
         except docker.errors.ImageNotFound:
+            print("Pulling docker image", image_name)
             self._image = self._client.images.pull(image_name)
+            print("Pulling completed")
         self._runs = 0
         self._volume_base = volume
 
@@ -107,10 +110,17 @@ class ConnectorRunner:
     def run(self, cmd, config=None, state=None, catalog=None, **kwargs) -> Iterable[AirbyteMessage]:
         self._runs += 1
         volumes = self._prepare_volumes(config, state, catalog)
-        logs = self._client.containers.run(
-            image=self._image, command=cmd, working_dir="/data", volumes=volumes, network="host", stdout=True, stderr=True, **kwargs
-        )
         logging.info("Docker run: \n%s\ninput: %s\noutput: %s", cmd, self.input_folder, self.output_folder)
+        try:
+            logs = self._client.containers.run(
+                image=self._image, command=cmd, working_dir="/data", volumes=volumes, network="host", stdout=True, stderr=True, **kwargs
+            )
+        except ContainerError as err:
+            # beautify error from container
+            patched_error = ContainerError(
+                container=err.container, exit_status=err.exit_status, command=err.command, image=err.image, stderr=err.stderr.decode()
+            )
+            raise patched_error from None  # get rid of any previous exception stack
 
         with open(str(self.output_folder / "raw"), "wb+") as f:
             f.write(logs)
@@ -120,3 +130,12 @@ class ConnectorRunner:
                 yield AirbyteMessage.parse_raw(line)
             except ValidationError as exc:
                 logging.warning("Unable to parse connector's output %s", exc)
+
+    @property
+    def env_variables(self):
+        env_vars = self._image.attrs["Config"]["Env"]
+        return {env.split("=", 1)[0]: env.split("=", 1)[1] for env in env_vars}
+
+    @property
+    def entry_point(self):
+        return self._image.attrs["Config"]["Entrypoint"]

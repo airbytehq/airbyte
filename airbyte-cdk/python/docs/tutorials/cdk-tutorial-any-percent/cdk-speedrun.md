@@ -12,8 +12,7 @@ This is a blazing fast guide to building an HTTP source connector. Think of it a
 
 ```bash
 $ cd airbyte-integrations/connector-templates/generator # start from repo root
-$ npm install
-$ npm run generate
+$ ./generate.sh
 ```
 
 Select the `Python HTTP API Source` and name it `python-http-example`.

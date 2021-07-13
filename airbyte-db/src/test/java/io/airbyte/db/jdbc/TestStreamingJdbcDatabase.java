@@ -38,6 +38,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -47,7 +48,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -79,7 +79,7 @@ public class TestStreamingJdbcDatabase {
   void setup() throws Exception {
     jdbcStreamingQueryConfiguration = mock(JdbcStreamingQueryConfiguration.class);
 
-    final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
+    final String dbName = Strings.addRandomSuffix("db", "_", 10);
 
     final JsonNode config = getConfig(PSQL_DB, dbName);
 

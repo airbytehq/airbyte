@@ -37,13 +37,13 @@ import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.converters.SpecFetcher;
-import io.airbyte.server.errors.KnownException;
+import io.airbyte.server.errors.BadObjectSchemaKnownException;
+import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -88,7 +88,7 @@ public class SourceDefinitionsHandler {
           .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()))
           .icon(loadIcon(standardSourceDefinition.getIcon()));
     } catch (URISyntaxException | NullPointerException e) {
-      throw new KnownException(500, "Unable to process retrieved latest source definitions list", e);
+      throw new InternalServerKnownException("Unable to process retrieved latest source definitions list", e);
     }
   }
 
@@ -100,7 +100,7 @@ public class SourceDefinitionsHandler {
           .sourceDefinitionRead(buildSourceDefinitionRead(standardSourceDefinition))
           .jobInfo(jobInfo);
     } catch (NullPointerException e) {
-      throw new KnownException(500, "Unable to process retrieved latest source definitions list", e);
+      throw new InternalServerKnownException("Unable to process retrieved latest source definitions list", e);
     }
   }
 
@@ -116,16 +116,14 @@ public class SourceDefinitionsHandler {
   }
 
   public SourceDefinitionReadList listLatestSourceDefinitions() {
-    return toSourceDefinitionReadList(getLatestDestinations());
+    return toSourceDefinitionReadList(getLatestSources());
   }
 
-  private List<StandardSourceDefinition> getLatestDestinations() {
+  private List<StandardSourceDefinition> getLatestSources() {
     try {
       return githubStore.getLatestSources();
-    } catch (IOException e) {
-      return Collections.emptyList();
     } catch (InterruptedException e) {
-      throw new KnownException(500, "Request to retrieve latest destination definitions failed", e);
+      throw new InternalServerKnownException("Request to retrieve latest destination definitions failed", e);
     }
   }
 
@@ -146,7 +144,7 @@ public class SourceDefinitionsHandler {
       Preconditions.checkState(response.isSuccess(), "Get Spec job failed.");
       Preconditions.checkNotNull(response.getOutput(), "Get Spec job returned null spec");
     } catch (NullPointerException npe) {
-      throw new KnownException(422, String.format("Encountered an issue while validating input docker image from %s:%s - %s",
+      throw new BadObjectSchemaKnownException(String.format("Encountered an issue while validating input docker image from %s:%s - %s",
           sourceDefinitionCreate.getDockerRepository(), sourceDefinitionCreate.getDockerImageTag(), npe.toString() + " " + npe.getMessage()), npe);
     }
 
@@ -177,7 +175,7 @@ public class SourceDefinitionsHandler {
       Preconditions.checkState(response.isSuccess(), "Get Spec job failed.");
       Preconditions.checkNotNull(response.getOutput(), "Get Spec job return null spec");
     } catch (NullPointerException e) {
-      throw new KnownException(422, String.format("Encountered an issue while validating input docker image from %s:%s - %s",
+      throw new BadObjectSchemaKnownException(String.format("Encountered an issue while validating input docker image from %s:%s - %s",
           currentSourceDefinition.getDockerRepository(), currentSourceDefinition.getDockerImageTag(), e.toString() + " " + e.getMessage()), e);
     }
 

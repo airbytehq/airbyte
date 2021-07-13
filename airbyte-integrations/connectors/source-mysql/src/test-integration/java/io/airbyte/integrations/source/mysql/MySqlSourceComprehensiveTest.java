@@ -87,6 +87,11 @@ public class MySqlSourceComprehensiveTest extends SourceComprehensiveTest {
   }
 
   @Override
+  protected String getNameSpace() {
+    return container.getDatabaseName();
+  }
+
+  @Override
   protected void initTests() {
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -184,9 +189,18 @@ public class MySqlSourceComprehensiveTest extends SourceComprehensiveTest {
         TestDataHolder.builder()
             .sourceType("decimal")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .fullSourceDataType("decimal(5,2)")
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .fullSourceDataType("decimal(10,4)")
+            .addInsertValues("0.188", "null")
+            .addExpectedValues("0.188", null)
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("decimal")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .fullSourceDataType("decimal(19,2)")
+            .addInsertValues("1700000.00")
+            .addInsertValues("1700000.00")
             .build());
 
     addDataTypeTestData(

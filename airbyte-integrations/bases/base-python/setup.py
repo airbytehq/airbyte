@@ -35,7 +35,7 @@ setuptools.setup(
     package_data={"": ["models/yaml/*.yaml"]},
     install_requires=[
         "PyYAML==5.4",
-        "pydantic==1.6.2",
+        "pydantic==1.6.*",
         "airbyte-protocol",
         "jsonschema==2.6.0",
         "requests",

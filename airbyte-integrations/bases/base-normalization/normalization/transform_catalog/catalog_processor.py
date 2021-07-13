@@ -78,9 +78,6 @@ class CatalogProcessor:
             tables_registry=tables_registry,
         )
         for stream_processor in stream_processors:
-            # Check properties
-            if not stream_processor.properties:
-                raise EOFError("Invalid Catalog: Unexpected empty properties in catalog")
             stream_processor.collect_table_names()
         for conflict in tables_registry.resolve_names():
             print(
@@ -88,7 +85,9 @@ class CatalogProcessor:
                 f"from '{'.'.join(conflict.json_path)}' into {conflict.table_name_resolved}"
             )
         for stream_processor in stream_processors:
-            raw_table_name = self.name_transformer.normalize_table_name(f"_airbyte_raw_{stream_processor.stream_name}", truncate=False)
+            # MySQL table names need to be manually truncated, because it does not do it automatically
+            truncate = self.destination_type == DestinationType.MYSQL
+            raw_table_name = self.name_transformer.normalize_table_name(f"_airbyte_raw_{stream_processor.stream_name}", truncate=truncate)
             add_table_to_sources(schema_to_source_tables, stream_processor.schema, raw_table_name)
 
             nested_processors = stream_processor.process()
@@ -121,7 +120,9 @@ class CatalogProcessor:
             schema_name = name_transformer.normalize_schema_name(schema, truncate=False)
             raw_schema_name = name_transformer.normalize_schema_name(f"_airbyte_{schema}", truncate=False)
             stream_name = get_field(stream_config, "name", f"Invalid Stream: 'name' is not defined in stream: {str(stream_config)}")
-            raw_table_name = name_transformer.normalize_table_name(f"_airbyte_raw_{stream_name}", truncate=False)
+            # MySQL table names need to be manually truncated, because it does not do it automatically
+            truncate = destination_type == DestinationType.MYSQL
+            raw_table_name = name_transformer.normalize_table_name(f"_airbyte_raw_{stream_name}", truncate=truncate)
 
             source_sync_mode = get_source_sync_mode(configured_stream, stream_name)
             destination_sync_mode = get_destination_sync_mode(configured_stream, stream_name)
@@ -142,10 +143,6 @@ class CatalogProcessor:
             properties = get_field(get_field(stream_config, "json_schema", message), "properties", message)
 
             from_table = "source('{}', '{}')".format(schema_name, raw_table_name)
-
-            # Check properties
-            if not properties:
-                raise EOFError("Invalid Catalog: Unexpected empty properties in catalog")
 
             stream_processor = StreamProcessor.create(
                 stream_name=stream_name,

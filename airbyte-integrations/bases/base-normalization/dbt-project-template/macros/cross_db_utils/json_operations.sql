@@ -2,8 +2,9 @@
     Adapter Macros for the following functions:
     - Bigquery: JSON_EXTRACT(json_string_expr, json_path_format) -> https://cloud.google.com/bigquery/docs/reference/standard-sql/json_functions
     - Snowflake: JSON_EXTRACT_PATH_TEXT( <column_identifier> , '<path_name>' ) -> https://docs.snowflake.com/en/sql-reference/functions/json_extract_path_text.html
-    - Redshift: json_extract_path_text('json_string', 'path_elem' [,'path_elem'[, …] ] [, null_if_invalid ] ) -> https://docs.aws.amazon.com/redshift/latest/dg/JSON_EXTRACT_PATH_TEXT.html
+    - Redshift: json_extract_path_text('json_string', 'path_elem' [,'path_elem'[, ...] ] [, null_if_invalid ] ) -> https://docs.aws.amazon.com/redshift/latest/dg/JSON_EXTRACT_PATH_TEXT.html
     - Postgres: json_extract_path_text(<from_json>, 'path' [, 'path' [, ...}}) -> https://www.postgresql.org/docs/12/functions-json.html
+    - MySQL: JSON_EXTRACT(json_doc, 'path' [, 'path'] ...) -> https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html
 #}
 
 {# format_json_path --------------------------------------------------     #}
@@ -21,6 +22,11 @@
 
 {% macro postgres__format_json_path(json_path_list) -%}
  {{ "'" ~ json_path_list|join("','") ~ "'" }}
+{%- endmacro %}
+
+{% macro mysql__format_json_path(json_path_list) -%}
+  {# -- '$."x"."y"."z"' #}
+  {{ "'$.\"" ~ json_path_list|join(".") ~ "\"'" }}
 {%- endmacro %}
 
 {% macro redshift__format_json_path(json_path_list) -%}
@@ -49,6 +55,10 @@
     jsonb_extract_path({{ json_column }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
+{% macro mysql__json_extract(json_column, json_path_list) -%}
+    json_extract({{ json_column }}, {{ format_json_path(json_path_list) }})
+{%- endmacro %}
+
 {% macro redshift__json_extract(json_column, json_path_list) -%}
     case when json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) != '' then json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) end
 {%- endmacro %}
@@ -75,6 +85,10 @@
     jsonb_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
+{% macro mysql__json_extract_scalar(json_column, json_path_list) -%}
+    json_value({{ json_column }}, {{ format_json_path(json_path_list) }})
+{%- endmacro %}
+
 {% macro redshift__json_extract_scalar(json_column, json_path_list) -%}
     case when json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) != '' then json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) end
 {%- endmacro %}
@@ -99,6 +113,10 @@
 
 {% macro postgres__json_extract_array(json_column, json_path_list) -%}
     jsonb_extract_path({{ json_column }}, {{ format_json_path(json_path_list) }})
+{%- endmacro %}
+
+{% macro mysql__json_extract_array(json_column, json_path_list) -%}
+    json_extract({{ json_column }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro redshift__json_extract_array(json_column, json_path_list) -%}

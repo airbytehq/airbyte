@@ -414,3 +414,16 @@ List of available streams.
 * OperatingHoursFeed
 * ExternalDataSource
 
+
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.2.4   | 2021-07-06 | [4539](https://github.com/airbytehq/airbyte/pull/4539) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
+| 0.2.3   | 2021-06-11 | [3708](https://github.com/airbytehq/airbyte/pull/3708) | Remove sensitive fields from logs |
+| 0.2.2   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE_ENTRYPOINT for Kubernetes support |
+| 0.2.1   | 2021-04-03 | [2726](https://github.com/airbytehq/airbyte/pull/2726) | Fix base connector versioning |
+| 0.2.0   | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238) | Protocol allows future/unknown properties |
+| 0.1.6   | 2021-01-21 | [1654](https://github.com/airbytehq/airbyte/pull/1654) | Adopt connector best practices |
+| 0.1.5   | 2021-01-06 | [1511](https://github.com/airbytehq/airbyte/pull/1511) | Support incremental sync |
+| 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file |

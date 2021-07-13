@@ -25,9 +25,9 @@
 package io.airbyte.integrations.destination.s3.csv;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
-import java.util.Locale;
 
 public class S3CsvFormatConfig implements S3FormatConfig {
 
@@ -46,7 +46,7 @@ public class S3CsvFormatConfig implements S3FormatConfig {
     @JsonCreator
     public static Flattening fromValue(String value) {
       for (Flattening f : Flattening.values()) {
-        if (f.value.toLowerCase(Locale.ROOT).equals(value.toLowerCase())) {
+        if (f.value.equalsIgnoreCase(value)) {
           return f;
         }
       }
@@ -61,8 +61,8 @@ public class S3CsvFormatConfig implements S3FormatConfig {
 
   private final Flattening flattening;
 
-  public S3CsvFormatConfig(Flattening flattening) {
-    this.flattening = flattening;
+  public S3CsvFormatConfig(JsonNode formatConfig) {
+    this.flattening = Flattening.fromValue(formatConfig.get("flattening").asText());
   }
 
   @Override
@@ -72,6 +72,13 @@ public class S3CsvFormatConfig implements S3FormatConfig {
 
   public Flattening getFlattening() {
     return flattening;
+  }
+
+  @Override
+  public String toString() {
+    return "S3CsvFormatConfig{" +
+        "flattening=" + flattening +
+        '}';
   }
 
 }

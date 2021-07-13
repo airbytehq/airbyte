@@ -35,6 +35,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
@@ -56,7 +57,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -113,7 +113,7 @@ class PostgresSourceSSLTest {
 
   @BeforeEach
   void setup() throws Exception {
-    dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
+    dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
     final String initScriptName = "init_" + dbName.concat(".sql");
     final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");

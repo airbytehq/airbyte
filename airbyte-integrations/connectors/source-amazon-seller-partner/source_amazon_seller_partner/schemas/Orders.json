@@ -8,6 +8,10 @@
     "title": "Orders",
     "description": "All orders that were updated after a specified date",
     "properties": {
+      "seller_id": {
+        "type": "string",
+        "title": "seller_id"
+      },
       "AmazonOrderId": {
         "type": ["null", "string"]
       },

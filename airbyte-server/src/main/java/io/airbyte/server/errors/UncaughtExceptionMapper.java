@@ -24,7 +24,7 @@
 
 package io.airbyte.server.errors;
 
-import com.google.common.collect.ImmutableMap;
+import io.airbyte.api.model.KnownExceptionInfo;
 import io.airbyte.commons.json.Jsons;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -40,8 +40,9 @@ public class UncaughtExceptionMapper implements ExceptionMapper<Throwable> {
   @Override
   public Response toResponse(Throwable e) {
     LOGGER.error("Uncaught exception", e);
+    KnownExceptionInfo exceptionInfo = KnownException.infoFromThrowableWithMessage(e, "Internal Server Error: " + e.getMessage());
     return Response.status(500)
-        .entity(Jsons.serialize(ImmutableMap.of("message", "internal server error")))
+        .entity(Jsons.serialize(exceptionInfo))
         .type("application/json")
         .build();
   }

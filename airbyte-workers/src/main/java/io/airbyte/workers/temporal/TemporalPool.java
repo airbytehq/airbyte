@@ -24,21 +24,15 @@
 
 package io.airbyte.workers.temporal;
 
-import static java.util.stream.Collectors.toSet;
-
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.SyncWorkflow.DbtTransformationActivityImpl;
 import io.airbyte.workers.temporal.SyncWorkflow.NormalizationActivityImpl;
 import io.airbyte.workers.temporal.SyncWorkflow.ReplicationActivityImpl;
-import io.temporal.api.namespace.v1.NamespaceInfo;
-import io.temporal.api.workflowservice.v1.DescribeNamespaceResponse;
-import io.temporal.api.workflowservice.v1.ListNamespacesRequest;
 import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
 import java.nio.file.Path;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +52,6 @@ public class TemporalPool implements Runnable {
 
   @Override
   public void run() {
-    waitForTemporalServerAndLog();
 
     final WorkerFactory factory = WorkerFactory.newInstance(WorkflowClient.newInstance(temporalService));
 
@@ -82,47 +75,6 @@ public class TemporalPool implements Runnable {
         new DbtTransformationActivityImpl(processFactory, workspaceRoot));
 
     factory.start();
-  }
-
-  protected void waitForTemporalServerAndLog() {
-    LOGGER.info("Waiting for temporal server...");
-
-    boolean temporalStatus = false;
-
-    while (!temporalStatus) {
-      LOGGER.warn("Waiting for default namespace to be initialized in temporal...");
-      wait(2);
-
-      try {
-        temporalStatus = getNamespaces(temporalService).contains("default");
-      } catch (Exception e) {
-        // Ignore the exception because this likely means that the Temporal service is still initializing.
-        LOGGER.warn("Ignoring exception while trying to request Temporal namespaces:", e);
-      }
-    }
-
-    // sometimes it takes a few additional seconds for workflow queue listening to be available
-    wait(5);
-
-    LOGGER.info("Found temporal default namespace!");
-  }
-
-  private static void wait(int seconds) {
-    try {
-      Thread.sleep(seconds * 1000);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  protected static Set<String> getNamespaces(WorkflowServiceStubs temporalService) {
-    return temporalService.blockingStub()
-        .listNamespaces(ListNamespacesRequest.newBuilder().build())
-        .getNamespacesList()
-        .stream()
-        .map(DescribeNamespaceResponse::getNamespaceInfo)
-        .map(NamespaceInfo::getName)
-        .collect(toSet());
   }
 
 }
