@@ -24,13 +24,12 @@
 
 import time
 from abc import ABC
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import parse_qsl, urlparse
 
 import requests
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
