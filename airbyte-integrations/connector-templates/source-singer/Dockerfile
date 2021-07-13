@@ -1,7 +1,7 @@
 FROM python:3.7-slim
 
 # Bash is installed for more convenient debugging.
-RUN apt-get update && apt-get install -y bash && apt-get install gcc && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y bash && apt-get install -y gcc && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /airbyte/integration_code
 COPY source_{{snakeCase name}}_singer ./source_{{snakeCase name}}_singer

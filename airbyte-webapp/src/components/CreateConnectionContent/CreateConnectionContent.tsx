@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React, { Suspense, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
@@ -20,7 +20,6 @@ import useConnection, {
   ValuesProps,
 } from "components/hooks/services/useConnectionHook";
 import { useDiscoverSchema } from "components/hooks/services/useSchemaHook";
-import { useDestinationDefinitionSpecificationLoad } from "components/hooks/services/useDestinationHook";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 
@@ -52,16 +51,11 @@ const CreateConnectionContent: React.FC<IProps> = ({
   additionBottomControls,
 }) => {
   const { createConnection } = useConnection();
-  const {
-    schema,
-    isLoading,
-    schemaErrorStatus,
-    onDiscoverSchema,
-  } = useDiscoverSchema(source?.sourceId);
 
   const sourceDefinition = useResource(SourceDefinitionResource.detailShape(), {
     sourceDefinitionId: source.sourceDefinitionId,
   });
+
   const destinationDefinition = useResource(
     DestinationDefinitionResource.detailShape(),
     {
@@ -70,12 +64,22 @@ const CreateConnectionContent: React.FC<IProps> = ({
   );
 
   const {
-    isLoading: loadingDestination,
-  } = useDestinationDefinitionSpecificationLoad(
-    destination?.destinationDefinitionId
+    schema,
+    isLoading,
+    schemaErrorStatus,
+    onDiscoverSchema,
+  } = useDiscoverSchema(source?.sourceId);
+
+  const connection = useMemo(
+    () => ({
+      syncCatalog: schema,
+      destination,
+      source,
+    }),
+    [schema, destination, source]
   );
 
-  if (isLoading || loadingDestination) {
+  if (isLoading) {
     return (
       <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
         <LoadingSchema />
@@ -126,26 +130,20 @@ const CreateConnectionContent: React.FC<IProps> = ({
     });
   };
 
-  const renderRefreshSchemaButton = () => {
-    return (
-      <Button onClick={onDiscoverSchema} type="button">
-        <TryArrow icon={faRedoAlt} />
-        <FormattedMessage id="connection.refreshSchema" />
-      </Button>
-    );
-  };
-
   return (
     <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
       <Suspense fallback={<LoadingSchema />}>
         <ConnectionForm
+          connection={connection}
           additionBottomControls={additionBottomControls}
           onDropDownSelect={onSelectFrequency}
-          additionalSchemaControl={renderRefreshSchemaButton()}
+          additionalSchemaControl={
+            <Button onClick={onDiscoverSchema} type="button">
+              <TryArrow icon={faRedoAlt} />
+              <FormattedMessage id="connection.refreshSchema" />
+            </Button>
+          }
           onSubmit={onSubmitConnectionStep}
-          syncCatalog={schema}
-          source={source}
-          destination={destination}
           sourceIcon={sourceDefinition?.icon}
           destinationIcon={destinationDefinition?.icon}
         />

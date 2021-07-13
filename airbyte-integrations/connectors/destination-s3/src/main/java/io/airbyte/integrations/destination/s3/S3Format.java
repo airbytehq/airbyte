@@ -26,7 +26,9 @@ package io.airbyte.integrations.destination.s3;
 
 public enum S3Format {
 
+  AVRO("avro"),
   CSV("csv"),
+  JSONL("jsonl"),
   PARQUET("parquet");
 
   private final String fileExtension;

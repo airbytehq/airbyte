@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.OperatorDbt;
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.normalization.NormalizationRunner;
 import io.airbyte.workers.process.ProcessFactory;
 import java.nio.file.Path;
@@ -70,14 +71,16 @@ public class DbtTransformationRunner implements AutoCloseable {
    * Once the workspace folder/files is setup to run, we invoke the custom transformation command as
    * provided by the user to execute whatever extra transformation has been implemented.
    */
-  public boolean run(String jobId, int attempt, Path jobRoot, JsonNode config, OperatorDbt dbtConfig) throws Exception {
-    if (!normalizationRunner.configureDbt(jobId, attempt, jobRoot, config, dbtConfig)) {
+  public boolean run(String jobId, int attempt, Path jobRoot, JsonNode config, ResourceRequirements resourceRequirements, OperatorDbt dbtConfig)
+      throws Exception {
+    if (!normalizationRunner.configureDbt(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig)) {
       return false;
     }
-    return transform(jobId, attempt, jobRoot, config, dbtConfig);
+    return transform(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig);
   }
 
-  public boolean transform(String jobId, int attempt, Path jobRoot, JsonNode config, OperatorDbt dbtConfig) throws Exception {
+  public boolean transform(String jobId, int attempt, Path jobRoot, JsonNode config, ResourceRequirements resourceRequirements, OperatorDbt dbtConfig)
+      throws Exception {
     try {
       final Map<String, String> files = ImmutableMap.of(DBT_ENTRYPOINT_SH, MoreResources.readResource("dbt_transformation_entrypoint.sh"));
       final List<String> dbtArguments = new ArrayList<>();
@@ -86,7 +89,8 @@ public class DbtTransformationRunner implements AutoCloseable {
         throw new WorkerException("Dbt Arguments are required");
       }
       Collections.addAll(dbtArguments, Commandline.translateCommandline(dbtConfig.getDbtArguments()));
-      process = processFactory.create(jobId, attempt, jobRoot, dbtConfig.getDockerImage(), false, files, "/bin/bash", dbtArguments);
+      process =
+          processFactory.create(jobId, attempt, jobRoot, dbtConfig.getDockerImage(), false, files, "/bin/bash", resourceRequirements, dbtArguments);
 
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);

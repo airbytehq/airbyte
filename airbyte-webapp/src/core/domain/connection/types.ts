@@ -8,3 +8,9 @@ type ConnectionSpecification = {
 };
 
 export type { ConnectionConfiguration, ConnectionSpecification };
+
+export enum ConnectionNamespaceDefinition {
+  Source = "source",
+  Destination = "destination",
+  CustomFormat = "customformat",
+}

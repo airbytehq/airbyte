@@ -217,7 +217,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
         <SyncSettingsCell
           value={`${config.syncMode}.${config.destinationSyncMode}`}
           data={availableSyncModes}
-          onSelect={onSelectSyncMode}
+          onChange={onSelectSyncMode}
         />
       </TreeRowWrapper>
       {isRowExpanded && hasChildren && (

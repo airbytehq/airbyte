@@ -27,9 +27,11 @@ package io.airbyte.integrations.destination.s3.writer;
 import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
+import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
+import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
+import io.airbyte.integrations.destination.s3.avro.S3AvroWriter;
 import io.airbyte.integrations.destination.s3.csv.S3CsvWriter;
-import io.airbyte.integrations.destination.s3.parquet.JsonFieldNameUpdater;
-import io.airbyte.integrations.destination.s3.parquet.JsonToAvroSchemaConverter;
+import io.airbyte.integrations.destination.s3.jsonl.S3JsonlWriter;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetWriter;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -49,10 +51,8 @@ public class ProductionWriterFactory implements S3WriterFactory {
                          Timestamp uploadTimestamp)
       throws Exception {
     S3Format format = config.getFormatConfig().getFormat();
-    if (format == S3Format.CSV) {
-      return new S3CsvWriter(config, s3Client, configuredStream, uploadTimestamp);
-    }
-    if (format == S3Format.PARQUET) {
+
+    if (format == S3Format.AVRO || format == S3Format.PARQUET) {
       AirbyteStream stream = configuredStream.getStream();
       JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
       Schema avroSchema = schemaConverter.getAvroSchema(stream.getJsonSchema(), stream.getName(), stream.getNamespace(), true);
@@ -63,7 +63,19 @@ public class ProductionWriterFactory implements S3WriterFactory {
         LOGGER.info("The following field names will be standardized: {}", nameUpdater);
       }
 
-      return new S3ParquetWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, nameUpdater);
+      if (format == S3Format.AVRO) {
+        return new S3AvroWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, nameUpdater);
+      } else {
+        return new S3ParquetWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, nameUpdater);
+      }
+    }
+
+    if (format == S3Format.CSV) {
+      return new S3CsvWriter(config, s3Client, configuredStream, uploadTimestamp);
+    }
+
+    if (format == S3Format.JSONL) {
+      return new S3JsonlWriter(config, s3Client, configuredStream, uploadTimestamp);
     }
 
     throw new RuntimeException("Unexpected S3 destination format: " + format);

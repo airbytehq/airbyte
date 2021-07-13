@@ -13,7 +13,7 @@ import { useServiceForm } from "./serviceFormContext";
 import { FormSection } from "./components/FormSection";
 import ShowLoadingMessage from "./components/ShowLoadingMessage";
 import EditControls from "./components/EditControls";
-import BottomBlock from "./components/BottomBlock";
+import CreateControls from "./components/CreateControls";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -86,7 +86,7 @@ const FormRoot: React.FC<{
           successMessage={successMessage}
         />
       ) : (
-        <BottomBlock
+        <CreateControls
           isSubmitting={isSubmitting}
           errorMessage={errorMessage}
           isLoadSchema={isLoadingSchema}

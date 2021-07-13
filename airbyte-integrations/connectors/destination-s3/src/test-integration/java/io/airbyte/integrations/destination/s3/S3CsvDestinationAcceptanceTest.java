@@ -114,13 +114,14 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
 
     for (S3ObjectSummary objectSummary : objectSummaries) {
       S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
-      Reader in = new InputStreamReader(object.getObjectContent(), StandardCharsets.UTF_8);
-      Iterable<CSVRecord> records = CSVFormat.DEFAULT
-          .withQuoteMode(QuoteMode.NON_NUMERIC)
-          .withFirstRecordAsHeader()
-          .parse(in);
-      StreamSupport.stream(records.spliterator(), false)
-          .forEach(r -> jsonRecords.add(getJsonNode(r.toMap(), fieldTypes)));
+      try (Reader in = new InputStreamReader(object.getObjectContent(), StandardCharsets.UTF_8)) {
+        Iterable<CSVRecord> records = CSVFormat.DEFAULT
+            .withQuoteMode(QuoteMode.NON_NUMERIC)
+            .withFirstRecordAsHeader()
+            .parse(in);
+        StreamSupport.stream(records.spliterator(), false)
+            .forEach(r -> jsonRecords.add(getJsonNode(r.toMap(), fieldTypes)));
+      }
     }
 
     return jsonRecords;

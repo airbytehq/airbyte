@@ -29,13 +29,14 @@ import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 class NoFlatteningSheetGeneratorTest {
 
-  private final ObjectMapper mapper = new ObjectMapper();
+  private final ObjectMapper mapper = MoreMappers.initMapper();
   private final NoFlatteningSheetGenerator sheetGenerator = new NoFlatteningSheetGenerator();
 
   @Test

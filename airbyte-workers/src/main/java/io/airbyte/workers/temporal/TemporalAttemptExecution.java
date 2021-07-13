@@ -29,6 +29,7 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerUtils;
@@ -42,7 +43,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,8 +63,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
   private final Path jobRoot;
   private final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier;
   private final Supplier<INPUT> inputSupplier;
-  private final String jobId;
-  private final BiConsumer<Path, String> mdcSetter;
+  private final Consumer<Path> mdcSetter;
   private final CheckedConsumer<Path, IOException> jobRootDirCreator;
   private final CancellationHandler cancellationHandler;
   private final Supplier<String> workflowIdProvider;
@@ -78,7 +78,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
         jobRunConfig,
         workerSupplier,
         inputSupplier,
-        WorkerUtils::setJobMdc,
+        LogClientSingleton::setJobMdc,
         Files::createDirectories,
         cancellationHandler,
         () -> Activity.getExecutionContext().getInfo().getWorkflowId());
@@ -89,14 +89,13 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
                            JobRunConfig jobRunConfig,
                            CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
                            Supplier<INPUT> inputSupplier,
-                           BiConsumer<Path, String> mdcSetter,
+                           Consumer<Path> mdcSetter,
                            CheckedConsumer<Path, IOException> jobRootDirCreator,
                            CancellationHandler cancellationHandler,
                            Supplier<String> workflowIdProvider) {
     this.jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
     this.workerSupplier = workerSupplier;
     this.inputSupplier = inputSupplier;
-    this.jobId = jobRunConfig.getJobId();
     this.mdcSetter = mdcSetter;
     this.jobRootDirCreator = jobRootDirCreator;
     this.cancellationHandler = cancellationHandler;
@@ -106,7 +105,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
   @Override
   public OUTPUT get() {
     try {
-      mdcSetter.accept(jobRoot, jobId);
+      mdcSetter.accept(jobRoot);
 
       LOGGER.info("Executing worker wrapper. Airbyte version: {}", new EnvConfigs().getAirbyteVersionOrWarning());
       jobRootDirCreator.accept(jobRoot);
@@ -141,7 +140,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
 
   private Thread getWorkerThread(Worker<INPUT, OUTPUT> worker, CompletableFuture<OUTPUT> outputFuture) {
     return new Thread(() -> {
-      mdcSetter.accept(jobRoot, jobId);
+      mdcSetter.accept(jobRoot);
 
       try {
         final OUTPUT output = worker.run(inputSupplier.get(), jobRoot);
@@ -168,7 +167,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
     var cancelled = new AtomicBoolean(false);
     return () -> {
       try {
-        mdcSetter.accept(jobRoot, jobId);
+        mdcSetter.accept(jobRoot);
 
         final Runnable onCancellationCallback = () -> {
           if (cancelled.get()) {

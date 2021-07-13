@@ -35,13 +35,7 @@ REPORT_MAPPING = {"ad_group_ad_report": "ad_group_ad"}
 class GoogleAds:
     DEFAULT_PAGE_SIZE = 1000
 
-    def __init__(self, developer_token: str, refresh_token: str, client_id: str, client_secret: str, customer_id: str, **kwargs):
-        credentials = {
-            "developer_token": developer_token,
-            "refresh_token": refresh_token,
-            "client_id": client_id,
-            "client_secret": client_secret,
-        }
+    def __init__(self, credentials: Mapping[str, Any], customer_id: str):
         self.client = GoogleAdsClient.load_from_dict(credentials)
         self.customer_id = customer_id
         self.ga_service = self.client.get_service("GoogleAdsService")

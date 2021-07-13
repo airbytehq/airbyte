@@ -173,7 +173,7 @@ const TransformationForm: React.FC<TransformationProps> = ({
         <SmallButton
           onClick={() => formik.handleSubmit()}
           type="button"
-          data-test-id="done-button"
+          data-testid="done-button"
           isLoading={formik.isSubmitting}
           disabled={!formik.dirty || equal(transformation, formik.values)}
         >

@@ -14,6 +14,7 @@ import { Source } from "./Source";
 import { Destination } from "./Destination";
 
 import BaseResource from "./BaseResource";
+import { ConnectionNamespaceDefinition } from "../domain/connection";
 
 export type ScheduleProperties = {
   units: number;
@@ -29,13 +30,17 @@ export interface Connection {
   status: string;
   schedule: ScheduleProperties | null;
   syncCatalog: SyncSchema;
-  source: Source;
-  destination: Destination;
-  operations: Operation[];
   latestSyncJobCreatedAt?: number | null;
+  namespaceDefinition: ConnectionNamespaceDefinition;
+  namespaceFormat: string;
   isSyncing?: boolean;
   latestSyncJobStatus: string | null;
   operationIds: string[];
+
+  // WebBackend connection specific fields
+  source: Source;
+  destination: Destination;
+  operations: Operation[];
 }
 
 export default class ConnectionResource
@@ -48,6 +53,9 @@ export default class ConnectionResource
   readonly destinationId: string = "";
   readonly status: string = "";
   readonly message: string = "";
+  readonly namespaceFormat: string = "";
+  readonly namespaceDefinition: ConnectionNamespaceDefinition =
+    ConnectionNamespaceDefinition.Source;
   readonly schedule: ScheduleProperties | null = null;
   readonly operations: Operation[] = [];
   readonly source: Source = {} as Source;

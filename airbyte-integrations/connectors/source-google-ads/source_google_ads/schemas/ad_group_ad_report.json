@@ -165,11 +165,6 @@
       "type": ["null", "string"],
       "title": "ad_group_ad.ad.legacy_responsive_display_ad.business_name"
     },
-    "ad_group_ad.ad.call_only_ad.phone_number": {
-      "description": "CallOnlyPhoneNumber",
-      "type": ["null", "string"],
-      "title": "ad_group_ad.ad.call_only_ad.phone_number"
-    },
     "ad_group_ad.ad.legacy_responsive_display_ad.call_to_action_text": {
       "description": "CallToActionText",
       "type": ["null", "string"],

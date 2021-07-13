@@ -35,6 +35,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.OperatorDbtInput;
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
@@ -142,7 +143,7 @@ class SyncWorkflowTest {
 
     verifyReplication(replicationActivity, syncInput);
     verifyNormalize(normalizationActivity, normalizationInput);
-    verifyDbtTransform(dbtTransformationActivity, operatorDbtInput);
+    verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(), operatorDbtInput);
   }
 
   @Test
@@ -249,10 +250,13 @@ class SyncWorkflowTest {
         normalizationInput);
   }
 
-  private static void verifyDbtTransform(DbtTransformationActivity dbtTransformationActivity, OperatorDbtInput operatorDbtInput) {
+  private static void verifyDbtTransform(DbtTransformationActivity dbtTransformationActivity,
+                                         ResourceRequirements resourceRequirements,
+                                         OperatorDbtInput operatorDbtInput) {
     verify(dbtTransformationActivity).run(
         JOB_RUN_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
+        resourceRequirements,
         operatorDbtInput);
   }
 

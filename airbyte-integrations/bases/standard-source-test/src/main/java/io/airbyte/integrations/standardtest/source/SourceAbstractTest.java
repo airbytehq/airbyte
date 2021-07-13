@@ -24,13 +24,16 @@
 
 package io.airbyte.integrations.standardtest.source;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.State;
+import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -44,6 +47,7 @@ import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.protocols.airbyte.AirbyteSource;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
+import io.airbyte.workers.test_helpers.EntrypointEnvChecker;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -58,7 +62,7 @@ public abstract class SourceAbstractTest {
   protected Path localRoot;
   private ProcessFactory processFactory;
 
-  private static final long JOB_ID = 0L;
+  private static final String JOB_ID = String.valueOf(0L);
   private static final int JOB_ATTEMPT = 0;
 
   /**
@@ -133,13 +137,25 @@ public abstract class SourceAbstractTest {
         .run(new StandardDiscoverCatalogInput().withConnectionConfiguration(getConfig()), jobRoot);
   }
 
+  protected void checkEntrypointEnvVariable() throws Exception {
+    final String entrypoint = EntrypointEnvChecker.getEntrypointEnvVariable(
+        processFactory,
+        String.valueOf(JOB_ID),
+        JOB_ATTEMPT,
+        jobRoot,
+        getImageName());
+
+    assertNotNull(entrypoint);
+    assertFalse(entrypoint.isBlank());
+  }
+
   protected List<AirbyteMessage> runRead(ConfiguredAirbyteCatalog configuredCatalog) throws Exception {
     return runRead(configuredCatalog, null);
   }
 
   // todo (cgardens) - assume no state since we are all full refresh right now.
   protected List<AirbyteMessage> runRead(ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
-    final StandardTapConfig sourceConfig = new StandardTapConfig()
+    final WorkerSourceConfig sourceConfig = new WorkerSourceConfig()
         .withSourceConnectionConfiguration(getConfig())
         .withState(state == null ? null : new State().withState(state))
         .withCatalog(catalog);

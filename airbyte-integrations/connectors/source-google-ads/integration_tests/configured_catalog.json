@@ -3,25 +3,7 @@
     {
       "stream": {
         "name": "ad_group_ad_report",
-        "json_schema": {
-          "type": "object",
-          "title": "Ad Group Ad Report",
-          "description": "An ad group ad.",
-          "properties": {
-            "ad_group_ad.ad.legacy_responsive_display_ad.accent_color": {
-              "type": ["null", "string"]
-            },
-            "customer.currency_code": {
-              "type": ["null", "string"]
-            },
-            "customer.descriptive_name": {
-              "type": ["null", "string"]
-            },
-            "segments.date": {
-              "type": ["null", "string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["segments.date"]

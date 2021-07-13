@@ -6,7 +6,7 @@ Airbyte is actually an ELT tool, and you have the freedom to use it as an EL-onl
 
 We do provide normalization \(if option is still on\) so that data analysts / scientists / any users of the data can use it without much effort.
 
-We also intend to integrate deeply with DBT to make it easier for your team to continue relying you on them, if this was what you were doing.
+We also intend to integrate deeply with dbt to make it easier for your team to continue relying you on them, if this was what you were doing.
 
 ## **How does Airbyte handle replication when a data source changes its schema?**
 

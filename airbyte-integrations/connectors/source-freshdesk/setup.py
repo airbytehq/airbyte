@@ -30,7 +30,7 @@ MAIN_REQUIREMENTS = [
     "base-python",
     "backoff==1.10.0",
     "requests==2.25.1",
-    "pendulum==1.2.0",
+    "pendulum==2.1.2",
 ]
 
 TEST_REQUIREMENTS = [

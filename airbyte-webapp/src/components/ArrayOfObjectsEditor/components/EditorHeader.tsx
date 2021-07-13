@@ -38,7 +38,7 @@ const EditorHeader: React.FC<EditorHeaderProps> = ({
         secondary
         type="button"
         onClick={onAddItem}
-        data-test-id="addItemButton"
+        data-testid="addItemButton"
       >
         {addButtonText || <FormattedMessage id="form.addItems" />}
       </Button>

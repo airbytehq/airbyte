@@ -33,7 +33,10 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
 
             outputs.upToDateWhen { false }
 
-            dependsOn project.airbyteDocker
+            if(project.hasProperty('airbyteDocker')) {
+                dependsOn project.airbyteDocker
+            }
+
             mustRunAfter project.test
         }
 

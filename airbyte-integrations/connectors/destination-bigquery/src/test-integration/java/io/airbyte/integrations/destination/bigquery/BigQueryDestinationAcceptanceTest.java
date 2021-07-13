@@ -171,7 +171,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
     if (fieldValue.getValue() != null) {
       return switch (field.getType().getStandardType()) {
         case FLOAT64, NUMERIC -> fieldValue.getDoubleValue();
-        case INT64 -> fieldValue.getLongValue();
+        case INT64 -> fieldValue.getNumericValue().intValue();
         case STRING -> fieldValue.getStringValue();
         case BOOL -> fieldValue.getBooleanValue();
         default -> fieldValue.getValue();

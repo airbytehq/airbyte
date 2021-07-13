@@ -178,7 +178,7 @@ read(Config, AirbyteCatalog, State) -> Stream<AirbyteMessage>
 
 ### Destination
 
-* A source is implemented as a Docker container. The container must adhere to the following interface.
+A destination is implemented as a Docker container. The container must adhere to the following interface.
 
 **How the container will be called:**
 
@@ -209,7 +209,7 @@ For the sake of brevity, we will not re-describe `spec` and `check`. They are ex
   2. `catalog` - An `AirbyteCatalog`. This `catalog` should be a subset of the `catalog` returned by the `discover` command. Any `AirbyteRecordMessages`s that the destination receives that do _not_ match the structure described in the `catalog` will fail.
   3. `message stream` - \(this stream is consumed on stdin--it is not passed as an arg\). It will receive a stream of JSON-serialized `AirbyteMesssage`.
 * Output:
-  1. none.
+  1. `AirbyteMessage`s of type `AirbyteStateMessage`. The destination connector should only output state messages if they were previously received as input on stdin. Outputting a state message indicates that all records which came before it have been successfully written to the destination.
 * The destination should read in the `AirbyteMessages` and write any that are of type `AirbyteRecordMessage` to the underlying data store.
 * The destination should fail if any of the messages it receives do not match the structure described in the `catalog`.
 
