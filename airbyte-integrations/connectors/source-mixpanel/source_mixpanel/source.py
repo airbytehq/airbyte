@@ -505,7 +505,7 @@ class Engage(MixpanelStream):
         # Set whether to allow additional properties for engage and export endpoints
         # Event and Engage properties are dynamic and depend on the properties provided on upload,
         #   when the Event or Engage (user/person) was created.
-        schema['additionalProperties'] = self.additional_properties
+        schema["additionalProperties"] = self.additional_properties
 
         types = {
             "boolean": {"type": ["null", "boolean"]},
@@ -745,7 +745,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
         # Set whether to allow additional properties for engage and export endpoints
         # Event and Engage properties are dynamic and depend on the properties provided on upload,
         #   when the Event or Engage (user/person) was created.
-        schema['additionalProperties'] = self.additional_properties
+        schema["additionalProperties"] = self.additional_properties
 
         # read existing Export schema from API
         schema_properties = ExportSchema(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
