@@ -27,6 +27,8 @@ import sys
 from abc import abstractmethod, ABC
 from typing import List, Mapping, Iterable, Any
 
+from pydantic import ValidationError
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.connector import Connector
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, AirbyteMessage, Type
@@ -57,7 +59,7 @@ class Destination(Connector, ABC):
         for line in input_stream:
             try:
                 yield AirbyteMessage.parse_raw(line)
-            except Exception:
+            except ValidationError:
                 self.logger.info(f"ignoring input which can't be serialized as Airbyte Message: {line}")
 
     def _run_write(self, config_path: str, configured_catalog_path: str, input_stream: io.TextIOWrapper) -> Iterable[AirbyteMessage]:

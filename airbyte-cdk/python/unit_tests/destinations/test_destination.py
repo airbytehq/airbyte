@@ -112,17 +112,7 @@ class OrderedIterableMatcher(Iterable):
         if not isinstance(other, Iterable):
             return False
 
-        other_iter = other if isinstance(other, Iterator) else iter(other)
-        self_iter = self if isinstance(self, Iterator) else iter(self)
-        self_next = other_next = 'not none'
-        while self_next is not None and other_next is not None:
-            other_next = self.attempt_consume(other_iter)
-            self_next = self.attempt_consume(self_iter)
-            if self_next != other_next:
-                return False
-
-        return True
-
+        return list(self) == list(other)
 
 class TestRun:
     def test_run_spec(self, mocker, destination: Destination):
@@ -140,7 +130,7 @@ class TestRun:
         spec_message = next(iter(destination.run_cmd(parsed_args)))
 
         # Mypy doesn't understand magicmock so it thinks spec doesn't have call_count attr
-        assert destination.spec.call_count == 1  # type: ignore
+        assert destination.spec.assert_called_once()  # type: ignore
 
         # verify the output of spec was returned
         assert _wrapped(expected_spec) == spec_message
@@ -165,7 +155,7 @@ class TestRun:
         returned_check_result = next(iter(destination.run_cmd(parsed_args)))
         # verify method call with the correct params
         # Affirm to Mypy that this is indeed a method on this mock
-        assert destination.check.call_count == 1  # type: ignore
+        assert destination.check.assert_called_once()  # type: ignore
         # Affirm to Mypy that this is indeed a method on this mock
         destination.check.assert_called_with(logger=ANY, config=dummy_config)  # type: ignore
 
@@ -198,7 +188,7 @@ class TestRun:
         mocker.patch.object(
             destination,
             'write',
-            return_value=(x for x in expected_write_result),  # convert the list to generator to mimic real usage
+            return_value=iter(x for x in expected_write_result),  # convert the list to generator to mimic real usage
             autospec=True
         )
         # mock input is a record followed by some state messages
@@ -212,7 +202,7 @@ class TestRun:
         returned_write_result = list(destination.run_cmd(parsed_args))
         # verify method call with the correct params
         # Affirm to Mypy that call_count is indeed a method on this mock
-        assert destination.write.call_count == 1  # type: ignore
+        assert destination.write.assert_called_once()  # type: ignore
         # Affirm to Mypy that call_count is indeed a method on this mock
         destination.write.assert_called_with(  # type: ignore
             config=dummy_config,
