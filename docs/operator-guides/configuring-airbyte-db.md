@@ -33,9 +33,6 @@ DATABASE_HOST=host.docker.internal # refers to localhost of host
 DATABASE_PORT=3000
 DATABASE_DB=postgres
 
-# Set to 1 to use a database for config storage
-USE_CONFIG_DATABASE=1
-
 # Variables for the config database
 # By default, the Config Database is the same as the Job Database.
 # Uncomment the following variables if a different Config Database is needed.
@@ -63,7 +60,7 @@ This step is only required when you setup Airbyte with a custom database for the
 
 If you provide an empty database to Airbyte and start Airbyte up for the first time, the server and scheduler services won't be able to start because there is no data in the database yet.
 
-We need to make sure that the proper tables have been created by running the init SQL script that you can find [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-db/src/main/resources/schema.sql) for the job database and [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-db/src/main/resources/config_schema.sql) for the config database.
+For the Job Database, you need to make sure that the proper tables have been created by running the init SQL script [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-db/src/main/resources/schema.sql). For the Config Database, tables will be created automatically. But you should make sure that the database exists and the user have full access to it.
 
 You can replace:
 - "airbyte" with your actual "DATABASE_DB" (or "CONFIG_DATABASE_DB") value
@@ -78,7 +75,7 @@ When updating Airbyte as described in [the upgrade process docs](upgrading-airby
 
 Those migration scripts work primarily with an archive file to be updated. Once the archive is ready, the scripts assume that they are being applied on top of an empty database afterward, but with tables already created with the correct schema. They will re-populate and re-import whatever was saved in the upgraded archive back into the database.
 
-Thus, if you deploy Airbyte using an external database, you might need to flush and perform updates to the table schemas by deleting them and re-initializing them as described previously (using the latest `schema.sql` and `config_schema.sql` script). This step is implicitly done on the default Docker Postgres database when running `docker-compose down -v` or when deleting Docker volumes).
+Thus, if you deploy Airbyte using an external database, you might need to flush and perform updates to the table schemas by deleting them and re-initializing them as described previously (using the latest `schema.sql`). This step is implicitly done on the default Docker Postgres database when running `docker-compose down -v` or when deleting Docker volumes).
 
 ## Accessing the default database located in docker airbyte-db
 In extraordinary circumstances while using the default `airbyte-db` Postgres database, if a developer wants to access the data that tracks jobs, they can do so with the following instructions.
