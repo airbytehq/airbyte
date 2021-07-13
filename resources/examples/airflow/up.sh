@@ -19,3 +19,4 @@ echo "Access Airflow at http://localhost:8085 to kick off your Airbyte sync DAG.
 echo "Attempting to remove previous Superset installation."
 docker-compose -f superset/docker-compose-superset.yaml down -v
 docker-compose -f superset/docker-compose-superset.yaml up -d
+echo "Access Superset at http://localhost:8088 to set up your dashboards."
