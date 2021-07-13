@@ -76,7 +76,26 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
 
   @Override
   public List<CheckedConsumer<BigQueryDatabase, Exception>> getCheckOperations(JsonNode config) {
-    return Collections.emptyList();
+    List<CheckedConsumer<BigQueryDatabase, Exception>> checkList = new ArrayList<>();
+    checkList.add(database -> {
+      if (database.query("select 1").count() < 1)
+        throw new Exception("Unable to execute any query on the source!");
+      else
+        LOGGER.info("The source passed the basic query test!");
+    });
+
+    checkList.add(database -> {
+          if (isDatasetConfigured(database)) {
+            database.query(String.format("select 1 from %s where 1=0",
+                getFullTableName(getConfigDatasetId(database), "INFORMATION_SCHEMA.TABLES")));
+            LOGGER.info("The source passed the Dataset query test!");
+          } else {
+            LOGGER.info("The Dataset query test is skipped due to not configured datasetId!");
+          }
+        }
+          );
+
+    return checkList;
   }
 
   @Override

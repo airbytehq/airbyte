@@ -96,6 +96,10 @@ public class BigQueryDatabase extends SqlDatabase {
     LOGGER.info("BigQuery successfully finished execution SQL: " + sql);
   }
 
+  public Stream<JsonNode> query(String sql) throws Exception {
+    return query(sql, Collections.emptyList());
+  }
+
   public Stream<JsonNode> query(String sql, QueryParameterValue... params) throws Exception {
     return query(sql, (params == null ? Collections.emptyList() : Arrays.asList(params)));
   }
