@@ -33,9 +33,11 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.validation.json.JsonSchemaValidator;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +56,8 @@ public class IntegrationRunner {
   private final Integration integration;
   private final Destination destination;
   private final Source source;
-  private ConfigAgainstSpecValidator configAgainstSpecValidator;
+  // private ConfigAgainstSpecValidator configAgainstSpecValidator;
+  private static JsonSchemaValidator validator;
 
   public IntegrationRunner(Destination destination) {
     this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, destination, null);
@@ -77,7 +80,7 @@ public class IntegrationRunner {
     this.integration = source != null ? source : destination;
     this.source = source;
     this.destination = destination;
-    this.configAgainstSpecValidator = new ConfigAgainstSpecValidator();
+    validator = new JsonSchemaValidator();
   }
 
   @VisibleForTesting
@@ -85,10 +88,10 @@ public class IntegrationRunner {
                     Consumer<AirbyteMessage> outputRecordCollector,
                     Destination destination,
                     Source source,
-                    ConfigAgainstSpecValidator configAgainstSpecValidator) {
+                    JsonSchemaValidator jsonSchemaValidator) {
 
     this(cliParser, outputRecordCollector, destination, source);
-    this.configAgainstSpecValidator = configAgainstSpecValidator;
+    this.validator = jsonSchemaValidator;
   }
 
   public void run(String[] args) throws Exception {
@@ -105,16 +108,14 @@ public class IntegrationRunner {
           .accept(new AirbyteMessage().withType(Type.SPEC).withSpec(integration.spec()));
       case CHECK -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
-        configAgainstSpecValidator
-            .validate(config, integration.spec().getConnectionSpecification(), "CHECK");
+        validateConfig(integration.spec().getConnectionSpecification(), config, "CHECK");
         outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS)
             .withConnectionStatus(integration.check(config)));
       }
       // source only
       case DISCOVER -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
-        configAgainstSpecValidator
-            .validate(config, integration.spec().getConnectionSpecification(), "DISCOVER");
+        validateConfig(integration.spec().getConnectionSpecification(), config, "DISCOVER");
         outputRecordCollector.accept(
             new AirbyteMessage().withType(Type.CATALOG).withCatalog(source.discover(config)));
       }
@@ -123,8 +124,7 @@ public class IntegrationRunner {
       case READ -> {
 
         final JsonNode config = parseConfig(parsed.getConfigPath());
-        configAgainstSpecValidator
-            .validate(config, integration.spec().getConnectionSpecification(), "READ");
+        validateConfig(integration.spec().getConnectionSpecification(), config, "READ");
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(),
             ConfiguredAirbyteCatalog.class);
         final Optional<JsonNode> stateOptional = parsed.getStatePath()
@@ -138,8 +138,7 @@ public class IntegrationRunner {
       // destination only
       case WRITE -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
-        configAgainstSpecValidator
-            .validate(config, integration.spec().getConnectionSpecification(), "WRITE");
+        validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(),
             ConfiguredAirbyteCatalog.class);
         final AirbyteMessageConsumer consumer = destination
@@ -170,6 +169,14 @@ public class IntegrationRunner {
           LOGGER.error(inputString);
         }
       }
+    }
+  }
+
+  private static void validateConfig(JsonNode schemaJson, JsonNode objectJson, String operationType) throws Exception {
+    final Set<String> validationResult = validator.validate(schemaJson, objectJson);
+    if (!validationResult.isEmpty()) {
+      throw new Exception(String.format("Verification error(s) occurred for %s. Errors: %s ",
+          operationType, validationResult.toString()));
     }
   }
 

@@ -26,7 +26,6 @@ package io.airbyte.integrations.base;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -52,6 +51,7 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.validation.json.JsonSchemaValidator;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
@@ -140,7 +140,8 @@ class IntegrationRunnerTest {
   @Test
   void testCheckSource() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.check(configPath);
-    final AirbyteConnectionStatus output = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("it failed");
+    final AirbyteConnectionStatus output = new AirbyteConnectionStatus().withStatus(Status.FAILED)
+        .withMessage("it failed");
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(source.check(CONFIG)).thenReturn(output);
@@ -148,22 +149,22 @@ class IntegrationRunnerTest {
     final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
     when(source.spec()).thenReturn(expectedConnSpec);
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
-    ConfigAgainstSpecValidator configValidatorMock = mock(ConfigAgainstSpecValidator.class);
-
+    JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
     new IntegrationRunner(cliParser, stdoutConsumer, null, source,
-        configValidatorMock)
+        jsonSchemaValidator)
             .run(ARGS);
 
     verify(source).check(CONFIG);
-    verify(configValidatorMock).validate(any(), any(), anyString());
     verify(stdoutConsumer)
         .accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
+    verify(jsonSchemaValidator).validate(any(), any());
   }
 
   @Test
   void testCheckDestination() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.check(configPath);
-    final AirbyteConnectionStatus output = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("it failed");
+    final AirbyteConnectionStatus output = new AirbyteConnectionStatus().withStatus(Status.FAILED)
+        .withMessage("it failed");
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(destination.check(CONFIG)).thenReturn(output);
@@ -171,20 +172,23 @@ class IntegrationRunnerTest {
     final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
     when(destination.spec()).thenReturn(expectedConnSpec);
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
-    ConfigAgainstSpecValidator configValidatorMock = mock(ConfigAgainstSpecValidator.class);
 
-    new IntegrationRunner(cliParser, stdoutConsumer, destination, null, configValidatorMock)
+    JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+
+    new IntegrationRunner(cliParser, stdoutConsumer, destination, null, jsonSchemaValidator)
         .run(ARGS);
 
     verify(destination).check(CONFIG);
-    verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
-    verify(configValidatorMock).validate(any(), any(), anyString());
+    verify(stdoutConsumer)
+        .accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
+    verify(jsonSchemaValidator).validate(any(), any());
   }
 
   @Test
   void testDiscover() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.discover(configPath);
-    final AirbyteCatalog output = new AirbyteCatalog().withStreams(Lists.newArrayList(new AirbyteStream().withName("oceans")));
+    final AirbyteCatalog output = new AirbyteCatalog()
+        .withStreams(Lists.newArrayList(new AirbyteStream().withName("oceans")));
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(source.discover(CONFIG)).thenReturn(output);
@@ -192,13 +196,13 @@ class IntegrationRunnerTest {
     final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
     when(source.spec()).thenReturn(expectedConnSpec);
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
-    ConfigAgainstSpecValidator configValidatorMock = mock(ConfigAgainstSpecValidator.class);
 
-    new IntegrationRunner(cliParser, stdoutConsumer, null, source, configValidatorMock).run(ARGS);
+    JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS);
 
     verify(source).discover(CONFIG);
     verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CATALOG).withCatalog(output));
-    verify(configValidatorMock).validate(any(), any(), anyString());
+    verify(jsonSchemaValidator).validate(any(), any());
   }
 
   @Test
@@ -221,14 +225,14 @@ class IntegrationRunnerTest {
     final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
     when(source.spec()).thenReturn(expectedConnSpec);
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
-    ConfigAgainstSpecValidator configValidatorMock = mock(ConfigAgainstSpecValidator.class);
 
-    new IntegrationRunner(cliParser, stdoutConsumer, null, source, configValidatorMock).run(ARGS);
+    JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS);
 
     verify(source).read(CONFIG, CONFIGURED_CATALOG, STATE);
     verify(stdoutConsumer).accept(message1);
     verify(stdoutConsumer).accept(message2);
-    verify(configValidatorMock).validate(any(), any(), anyString());
+    verify(jsonSchemaValidator).validate(any(), any());
   }
 
   @Test
@@ -242,14 +246,15 @@ class IntegrationRunnerTest {
     final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
     when(destination.spec()).thenReturn(expectedConnSpec);
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
-    ConfigAgainstSpecValidator configValidatorMock = mock(ConfigAgainstSpecValidator.class);
+
+    JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
 
     final IntegrationRunner runner = spy(new IntegrationRunner(cliParser, stdoutConsumer,
-        destination, null, configValidatorMock));
+        destination, null, jsonSchemaValidator));
     runner.run(ARGS);
 
     verify(destination).getConsumer(CONFIG, CONFIGURED_CATALOG, stdoutConsumer);
-    verify(configValidatorMock).validate(any(), any(), anyString());
+    verify(jsonSchemaValidator).validate(any(), any());
   }
 
   @Test
