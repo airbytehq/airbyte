@@ -58,7 +58,7 @@ class Destination(Connector, ABC):
             try:
                 yield AirbyteMessage.parse_raw(line)
             except Exception:
-                self.logger.info(f"ignoring input which can't be serialized as Airbyte Message: {line}")
+                self.logger.info(f"ignoring input which can't be deserialized as Airbyte Message: {line}")
 
     def _run_write(self, config_path: str, configured_catalog_path: str, input_stream: io.TextIOWrapper) -> Iterable[AirbyteMessage]:
         config = self.read_config(config_path=config_path)
