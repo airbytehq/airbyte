@@ -233,8 +233,12 @@ public class JobSubmitterTest {
   @Nested
   class OnlyOneJobIdRunning {
 
+    /**
+     * See {@link JobSubmitter#attemptJobSubmit()} to understand why we need to test that only one job
+     * id can be successfully submited at once.
+     */
     @Test
-    public void testMultipleSubmissionShouldFail() throws Exception {
+    public void testOnlyOneJobCanBeSubmittedAtOnce() throws Exception {
       var jobDone = new AtomicReference<>(false);
       when(workerRun.call()).thenAnswer((a) -> {
         Thread.sleep(5000);
@@ -242,6 +246,7 @@ public class JobSubmitterTest {
         return SUCCESS_OUTPUT;
       });
 
+      // Simulate the same job being submitted over and over again.
       var simulatedJobSubmitterPool = Executors.newFixedThreadPool(10);
       var submitCounter = new AtomicInteger(0);
       while (!jobDone.get()) {
@@ -257,11 +262,12 @@ public class JobSubmitterTest {
 
       simulatedJobSubmitterPool.shutdownNow();
       verify(persistence, Mockito.times(submitCounter.get())).getNextJob();
+      // Assert that the job is actually only submitted once.
       verify(jobSubmitter, Mockito.times(1)).submitJob(Mockito.any());
     }
 
     @Test
-    public void testFailureShouldUnlockId() throws Exception {
+    public void testSuccessShouldUnlockId() throws Exception {
       when(workerRun.call()).thenReturn(SUCCESS_OUTPUT);
 
       jobSubmitter.run();
@@ -277,7 +283,7 @@ public class JobSubmitterTest {
     }
 
     @Test
-    public void testSuccessShouldUnlockId() throws Exception {
+    public void testFailureShouldUnlockId() throws Exception {
       when(workerRun.call()).thenThrow(new RuntimeException());
 
       jobSubmitter.run();
