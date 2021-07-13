@@ -34,6 +34,9 @@ export const theme = {
   greyColor0: "#F7F7FA",
 
   whiteColor: "#FFFFFF",
+  beigeColor: "#FEF9F4",
+  darkGreyColor: "#8B8BA0",
+  redColor: "#FF6A4D",
 
   regularFont: "Inter, Arial, sans-serif",
   highlightFont: "Montserrat, Arial, sans-serif",
