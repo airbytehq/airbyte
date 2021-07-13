@@ -72,7 +72,7 @@ class ZOQLQueryError(Error):
             self.response = response.json()
             self.error_msg = self.response["data"]["errorMessage"]
             self.query = self.response["data"]["query"]
-            super().__init__(self.logger.warn(f"{self.error_msg}, QUERY: {self.query}"))
+            super().__init__(self.logger.error(f"{self.error_msg}, QUERY: {self.query}"))
         # Exit with non-zero status
         sys.exit(1)
 
@@ -89,7 +89,7 @@ class ZOQLQueryFieldCannotResolve(Error):
 
     def __init__(self, message: str = "Cursor 'UpdatedDate' is not available. Switching cursor to: 'CreatedDate'"):
         self.message = message
-        super().__init__(self.logger.warn(self.message))
+        super().__init__(self.logger.info(self.message))
 
 
 class ZOQLQueryCannotProcessObject(Error):
