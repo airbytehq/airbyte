@@ -2,13 +2,9 @@ import { useFetcher, useResource } from "rest-hooks";
 import config from "config";
 import { useMemo } from "react";
 
-import SourceDefinitionResource, {
-  SourceDefinition,
-} from "core/resources/SourceDefinition";
-import DestinationDefinitionResource, {
-  DestinationDefinition,
-} from "core/resources/DestinationDefinition";
-import { isConnectorDeprecated } from "core/domain/connector";
+import SourceDefinitionResource from "core/resources/SourceDefinition";
+import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+import { Connector } from "core/domain/connector";
 
 type ConnectorService = {
   hasNewVersions: boolean;
@@ -19,15 +15,6 @@ type ConnectorService = {
   updateAllSourceVersions: () => void;
   updateAllDestinationVersions: () => void;
 };
-
-function hasLatestVersion(
-  connector: SourceDefinition | DestinationDefinition
-): boolean {
-  return (
-    !isConnectorDeprecated(connector) &&
-    connector.latestDockerImageTag !== connector.dockerImageTag
-  );
-}
 
 const useConnector = (): ConnectorService => {
   const { sourceDefinitions } = useResource(
@@ -51,27 +38,19 @@ const useConnector = (): ConnectorService => {
     DestinationDefinitionResource.updateShape()
   );
 
-  const hasNewSourceVersion = useMemo(
-    () => sourceDefinitions.some(hasLatestVersion),
-    [sourceDefinitions]
-  );
-
-  const hasNewDestinationVersion = useMemo(
-    () => destinationDefinitions.some(hasLatestVersion),
-    [destinationDefinitions]
-  );
-
-  const hasNewVersions = hasNewSourceVersion || hasNewDestinationVersion;
-
   const newSourceDefinitions = useMemo(
-    () => sourceDefinitions.filter(hasLatestVersion),
+    () => sourceDefinitions.filter(Connector.hasNewerVersion),
     [sourceDefinitions]
   );
 
   const newDestinationDefinitions = useMemo(
-    () => destinationDefinitions.filter(hasLatestVersion),
+    () => destinationDefinitions.filter(Connector.hasNewerVersion),
     [destinationDefinitions]
   );
+
+  const hasNewSourceVersion = newSourceDefinitions.length > 0;
+  const hasNewDestinationVersion = newDestinationDefinitions.length > 0;
+  const hasNewVersions = hasNewSourceVersion || hasNewDestinationVersion;
 
   const updateAllSourceVersions = async () => {
     await Promise.all(
