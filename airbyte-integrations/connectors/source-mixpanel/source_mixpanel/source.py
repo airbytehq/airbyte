@@ -28,12 +28,12 @@ import json
 import time
 from abc import ABC
 from datetime import date, datetime, timedelta
-import pendulum
 
 # from pprint import pprint
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import parse_qs, urlparse
 
+import pendulum
 import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
@@ -662,7 +662,7 @@ class SourceMixpanel(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
 
-        tzone = pendulum.timezone(config.get('project_timezone'))
+        tzone = pendulum.timezone(config.get("project_timezone"))
         now = datetime.now(tzone).date()
 
         start_date = config.get("start_date")
