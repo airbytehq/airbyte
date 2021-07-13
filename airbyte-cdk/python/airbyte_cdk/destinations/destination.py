@@ -21,17 +21,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+
 import argparse
 import io
 import sys
-from abc import abstractmethod, ABC
-from typing import List, Mapping, Iterable, Any
-
-from pydantic import ValidationError
+from abc import ABC, abstractmethod
+from typing import Any, Iterable, List, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.connector import Connector
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, AirbyteMessage, Type
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
+from pydantic import ValidationError
 
 
 class Destination(Connector, ABC):
@@ -39,10 +39,7 @@ class Destination(Connector, ABC):
 
     @abstractmethod
     def write(
-            self,
-            config: Mapping[str, Any],
-            configured_catalog: ConfiguredAirbyteCatalog,
-            input_messages: Iterable[AirbyteMessage]
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
         """Implement to define how the connector writes data to the destination"""
 
@@ -107,14 +104,16 @@ class Destination(Connector, ABC):
 
     def run_cmd(self, parsed_args: argparse.Namespace) -> Iterable[AirbyteMessage]:
         cmd = parsed_args.command
-        if cmd == 'spec':
+        if cmd == "spec":
             yield self._run_spec()
-        elif cmd == 'check':
+        elif cmd == "check":
             yield self._run_check(config_path=parsed_args.config)
-        elif cmd == 'write':
+        elif cmd == "write":
             # Wrap in UTF-8 to override any other input encodings
-            wrapped_stdin = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8')
-            yield from self._run_write(config_path=parsed_args.config, configured_catalog_path=parsed_args.catalog, input_stream=wrapped_stdin)
+            wrapped_stdin = io.TextIOWrapper(sys.stdin.buffer, encoding="utf-8")
+            yield from self._run_write(
+                config_path=parsed_args.config, configured_catalog_path=parsed_args.catalog, input_stream=wrapped_stdin
+            )
         else:
             raise Exception(f"Unrecognized command: {cmd}")
 
