@@ -31,6 +31,7 @@ CONNECTORS=$(./gradlew integrationTest --dry-run | grep 'integrationTest SKIPPED
 echo "$CONNECTORS" | while read -r connector ; do
   echo "Issuing request for connector $connector..."
   curl \
+    -i \
     -X POST \
     --header "Authorization: Bearer $GITHUB_TOKEN" \
     "$REPO_API/actions/workflows/$WORKFLOW_ID/dispatches" \
