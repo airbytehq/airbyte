@@ -4,8 +4,10 @@ import { Redirect, Route, Switch } from "react-router-dom";
 
 import LoadingPage from "components/LoadingPage";
 import FormContent from "./components/FormContent";
+import News from "./components/News";
 import { LoginPage } from "./LoginPage";
 import { SignupPage } from "./SignupPage";
+import { ResetPasswordPage } from "./ResetPasswordPage";
 import useRouter from "components/hooks/useRouterHook";
 
 const Content = styled.div`
@@ -25,6 +27,10 @@ const Part = styled.div`
 
 const NewsPart = styled(Part)`
   background: ${({ theme }) => theme.beigeColor};
+  padding: 36px 97px 39px 64px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 `;
 
 // TODO: fix route paths
@@ -44,13 +50,17 @@ const Auth: React.FC = () => {
               <Route path={"/signup"}>
                 <SignupPage />
               </Route>
-              <Route path={"/reset-password"}>RESET</Route>
+              <Route path={"/reset-password"}>
+                <ResetPasswordPage />
+              </Route>
               <Redirect to={"/login"} />
             </Switch>
           </Suspense>
         </FormContent>
       </Part>
-      <NewsPart />
+      <NewsPart>
+        <News />
+      </NewsPart>
     </Content>
   );
 };

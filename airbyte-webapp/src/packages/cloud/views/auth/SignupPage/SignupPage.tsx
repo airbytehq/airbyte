@@ -4,7 +4,6 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Field, FieldProps, Formik } from "formik";
 import styled from "styled-components";
 
-import Title from "../components/Title";
 import {
   BottomBlock,
   FieldItem,
@@ -14,15 +13,8 @@ import {
 import LabeledInput from "components/LabeledInput";
 import { Button } from "components/base/Button";
 import LabeledToggle from "components/LabeledToggle";
+import { H1, H4 } from "../../../components/Titles";
 
-const Subtitle = styled.h2`
-  color: ${({ theme }) => theme.textColor};
-  font-style: normal;
-  font-weight: normal;
-  font-size: 16px;
-  line-height: 28px;
-  margin: 0;
-`;
 const MarginBlock = styled.div`
   margin-bottom: 15px;
 `;
@@ -40,8 +32,10 @@ const SignupPage: React.FC = () => {
 
   return (
     <div>
-      <Title>Activate your free beta access</Title>
-      <Subtitle>No credit card required. Free until official launch.</Subtitle>
+      <H1 bold danger>
+        Activate your free beta access
+      </H1>
+      <H4>No credit card required. Free until official launch.</H4>
 
       <Formik
         initialValues={{
