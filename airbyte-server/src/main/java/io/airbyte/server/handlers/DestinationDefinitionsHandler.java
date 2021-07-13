@@ -172,7 +172,9 @@ public class DestinationDefinitionsHandler {
           e);
     }
 
-    return buildDestinationDefinitionReadWithJobInfo(destinationDefinition, JobConverter.getSynchronousJobRead(response), validationException);
+    // When an error occurs, your destination isn't echoed back to you, indicating it failed to save.
+    return buildDestinationDefinitionReadWithJobInfo(validationException != null ? null: destinationDefinition,
+        JobConverter.getSynchronousJobRead(response), validationException);
   }
 
   public DestinationDefinitionReadWithJobInfo updateDestinationDefinition(DestinationDefinitionUpdate destinationDefinitionUpdate)
@@ -209,7 +211,9 @@ public class DestinationDefinitionsHandler {
               currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag(), e.toString() + " " + e.getMessage()), e);
     }
 
-    return buildDestinationDefinitionReadWithJobInfo(newDestination, JobConverter.getSynchronousJobRead(response), validationException);
+    // When an error occurs, your destination isn't echoed back to you, indicating it failed to save.
+    return buildDestinationDefinitionReadWithJobInfo(validationException != null ? null : newDestination,
+        JobConverter.getSynchronousJobRead(response), validationException);
   }
 
   public static String loadIcon(String name) {

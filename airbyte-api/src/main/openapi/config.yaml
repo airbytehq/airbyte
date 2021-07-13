@@ -1608,7 +1608,6 @@ components:
     SourceDefinitionReadWithJobInfo:
       type: object
       required:
-        - sourceDefinitionRead
         - jobInfo
       properties:
         sourceDefinitionRead:
@@ -1818,7 +1817,6 @@ components:
     DestinationDefinitionReadWithJobInfo:
       type: object
       required:
-        - destinationDefinitionRead
         - jobInfo
       properties:
         destinationDefinitionRead:

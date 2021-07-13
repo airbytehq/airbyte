@@ -165,7 +165,9 @@ public class SourceDefinitionsHandler {
           npe);
     }
 
-    return buildSourceDefinitionReadWithJobInfo(sourceDefinition, JobConverter.getSynchronousJobRead(response), validationException);
+    // When an error occurs, your source isn't echoed back to you, indicating it failed to save.
+    return buildSourceDefinitionReadWithJobInfo(validationException != null ? null :sourceDefinition,
+        JobConverter.getSynchronousJobRead(response), validationException);
   }
 
   public SourceDefinitionReadWithJobInfo updateSourceDefinition(SourceDefinitionUpdate sourceDefinitionUpdate)
@@ -201,7 +203,9 @@ public class SourceDefinitionsHandler {
               currentSourceDefinition.getDockerRepository(), currentSourceDefinition.getDockerImageTag(), e.toString() + " " + e.getMessage()), e);
     }
 
-    return buildSourceDefinitionReadWithJobInfo(newSource, JobConverter.getSynchronousJobRead(response), validationException);
+    // When an error occurs, your source isn't echoed back to you, indicating it failed to save.
+    return buildSourceDefinitionReadWithJobInfo(validationException != null ? null : newSource,
+        JobConverter.getSynchronousJobRead(response), validationException);
   }
 
   public static String loadIcon(String name) {
