@@ -212,8 +212,6 @@ class TestRun:
         args = {"command": "write", "config": config_path, "catalog": catalog_path}
         parsed_args = argparse.Namespace(**args)
 
-        destination.run_cmd(parsed_args)
-
         expected_write_result = [_wrapped(_state({"k1": "v1"})), _wrapped(_state({"k2": "v2"}))]
         mocker.patch.object(
             destination, "write", return_value=iter(expected_write_result), autospec=True  # convert to iterator to mimic real usage
