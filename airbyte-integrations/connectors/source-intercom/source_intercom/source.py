@@ -86,8 +86,7 @@ class IntercomStream(HttpStream, ABC):
     def get_data(self, response: requests.Response) -> List:
         data = response.json()
         for data_field in self.data_fields:
-            if data_field is not None:
-                data = data.get(data_field, [])
+            data = data.get(data_field, [])
         if isinstance(data, list):
             data = data
         elif isinstance(data, dict):
@@ -115,14 +114,15 @@ class IntercomStream(HttpStream, ABC):
 class IncrementalIntercomStream(IntercomStream, ABC):
     cursor_field = "updated_at"
 
-    def filter_by_state(self, stream_state: Mapping[str, Any] = None, records: Mapping[str, Any] = None) -> Iterable:
+    def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> Iterable:
+        """
+        Endpoint does not provide query filtering params, but they provide us
+        updated_at field in most cases, so we used that as incremental filtering
+        during the slicing.
+        """
 
-        if stream_state:
-            for record in records:
-                if record[self.cursor_field] >= stream_state.get(self.cursor_field):
-                    yield record
-        else:
-            yield from records
+        if not stream_state or record[self.cursor_field] >= stream_state.get(self.cursor_field):
+            yield record
 
     def parse_response(
         self,
@@ -135,14 +135,14 @@ class IncrementalIntercomStream(IntercomStream, ABC):
         data = self.get_data(response)
 
         for record in data:
-            updated_at = record.get(self.cursor_field, None)
+            updated_at = record.get(self.cursor_field)
 
             if updated_at:
                 record[self.cursor_field] = datetime.fromtimestamp(
                     record[self.cursor_field]
                 ).isoformat()  # convert timestamp to datetime string
 
-            yield record
+            yield from self.filter_by_state(stream_state=stream_state, record=record)
 
         # wait for 3,6 seconds according to API limit
         time.sleep(3600 / self.rate_limit)
@@ -157,34 +157,17 @@ class IncrementalIntercomStream(IntercomStream, ABC):
 
         current_stream_state = current_stream_state or {}
 
-        current_stream_state_date = current_stream_state.get(self.cursor_field, str(self.start_date))
-        latest_record_date = latest_record.get(self.cursor_field, str(self.start_date))
+        current_stream_state_date = current_stream_state.get(self.cursor_field, self.start_date)
+        latest_record_date = latest_record.get(self.cursor_field, self.start_date)
 
         return {self.cursor_field: max(current_stream_state_date, latest_record_date)}
 
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        """
-        Endpoint does not provide query filtering params, but they provide us
-        updated_at field in most cases, so we used that as incremental filtering
-        during the slicing.
-        """
-
-        records = super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
-
-        yield from self.filter_by_state(stream_state=stream_state, records=records)
-
 
 class StreamMixin:
-    stream = None
+    slicing_stream: Optional[IntercomStream] = None
 
     def stream_slices(self, sync_mode, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        for item in self.stream(authenticator=self.authenticator, start_date=self.start_date).read_records(sync_mode=sync_mode):
+        for item in self.slicing_stream(authenticator=self.authenticator, start_date=self.start_date).read_records(sync_mode=sync_mode):
             yield {"id": item["id"]}
 
         yield from []
@@ -222,7 +205,7 @@ class CompanySegments(StreamMixin, IncrementalIntercomStream):
     Endpoint: https://api.intercom.io/companies/<id>/segments
     """
 
-    stream = Companies
+    slicing_stream = Companies
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -251,7 +234,7 @@ class ConversationParts(StreamMixin, IncrementalIntercomStream):
     """
 
     data_fields = ["conversation_parts", "conversation_parts"]
-    stream = Conversations
+    slicing_stream = Conversations
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -364,13 +347,6 @@ class SourceIntercom(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        now = date.today()
-
-        start_date = config.get("start_date")
-        if start_date and isinstance(start_date, str):
-            start_date = datetime.strptime(config["start_date"], "%Y-%m-%dT%H:%M:%S%z")
-        config["start_date"] = start_date or now - timedelta(days=365)  # set to 1 year ago by default
-
         AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}")
 
         auth = TokenAuthenticator(token=config["access_token"])
