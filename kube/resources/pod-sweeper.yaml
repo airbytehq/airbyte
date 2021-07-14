@@ -23,10 +23,6 @@ data:
       # Longer time window for pods in error (to debug)
       NON_SUCCESS_DATE_STR=`date -d 'now - 24 hours' --utc -Ins`
       NON_SUCCESS_DATE=`date -d $NON_SUCCESS_DATE_STR +%s`
-      echo "SUCCESS_DATE_STR: $SUCCESS_DATE_STR"
-      echo "SUCCESS_DATE: $SUCCESS_DATE"
-      echo "NON_SUCCESS_DATE_STR: $NON_SUCCESS_DATE_STR"
-      echo "NON_SUCCESS_DATE: $NON_SUCCESS_DATE"
       (
           IFS=$'\n'
           for POD in `get_worker_pods`; do
@@ -35,8 +31,6 @@ data:
               POD_STATUS=`echo $POD | cut -d " " -f 2`
               POD_DATE_STR=`echo $POD | cut -d " " -f 3`
               POD_DATE=`date -d $POD_DATE_STR '+%s'`
-              echo "POD_DATE_STR: $POD_DATE_STR"
-              echo "POD_DATE: $POD_DATE"
               if [ "$POD_STATUS" = "Succeeded" ]; then
                 if [ "$POD_DATE" -lt "$SUCCESS_DATE" ]; then
                   delete_worker_pod "$POD_NAME" "$POD_STATUS" "$POD_DATE_STR"
