@@ -84,7 +84,7 @@
       "type": ["string", "null"]
     },
     "last_refresh": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "refreshing": {
