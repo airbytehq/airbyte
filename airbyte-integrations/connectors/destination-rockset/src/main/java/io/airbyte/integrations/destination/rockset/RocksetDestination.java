@@ -32,6 +32,7 @@ import com.rockset.client.ApiException;
 import com.rockset.client.RocksetClient;
 import com.rockset.jdbc.RocksetDriver;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
@@ -49,7 +50,7 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RocksetDestination extends AbstractJdbcDestination implements Destination {
+public class RocksetDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RocksetDestination.class);
 
@@ -57,12 +58,6 @@ public class RocksetDestination extends AbstractJdbcDestination implements Desti
   private static final String API_KEY_ID = "api_key";
 
   private static final String APISERVER_URL = "api.rs2.usw2.rockset.com";
-
-  public static final String DRIVER_CLASS = "org.rockset.Driver";
-
-  public RocksetDestination() {
-    super(DRIVER_CLASS, new RocksetSQLNameTransformer(), new DefaultSqlOperations());
-  }
 
   public static void main(String[] args) throws Exception {
     new IntegrationRunner(new RocksetDestination()).run(args);
@@ -100,10 +95,11 @@ public class RocksetDestination extends AbstractJdbcDestination implements Desti
   }
 
   @Override
-  public JsonNode toJdbcConfig(JsonNode config) {
-    String jdbcUrl = "jdbc:rockset://api.rs2.usw2.rockset.com";
-    ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("jdbc_url", jdbcUrl);
-    return Jsons.jsonNode(configBuilder.build());
+  public AirbyteMessageConsumer getConsumer(
+      JsonNode config,
+      ConfiguredAirbyteCatalog catalog,
+      Consumer<AirbyteMessage> outputRecordCollector) throws Exception {
+    // TODO
+    return null;
   }
 }
