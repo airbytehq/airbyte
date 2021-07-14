@@ -9,6 +9,7 @@ import com.rockset.client.model.CreateCollectionResponse;
 import com.rockset.client.model.CreateWorkspaceRequest;
 import com.rockset.client.model.CreateWorkspaceResponse;
 
+import com.rockset.client.model.ErrorModel;
 import com.rockset.client.model.GetCollectionResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +35,7 @@ public class RocksetUtils {
       client.createWorkspace(request);
       LOGGER.info(String.format("Created workspace %s", workspace));
     } catch (ApiException e) {
-      if (e.getCode() == 400) {
+      if (e.getCode() == 400 && e.getErrorModel().getType() == ErrorModel.TypeEnum.ALREADYEXISTS) {
         LOGGER.info(String.format("Workspace %s already exists", workspace));
         return;
       }
@@ -50,7 +51,7 @@ public class RocksetUtils {
       client.createCollection(workspace, request);
       LOGGER.info(String.format("Created collection %s.%s", workspace, cname));
     } catch (ApiException e) {
-      if (e.getCode() == 400) {
+      if (e.getCode() == 400 && e.getErrorModel().getType() == ErrorModel.TypeEnum.ALREADYEXISTS) {
         LOGGER.info(String.format("Collection %s.%s already exists", workspace, cname));
         return;
       }

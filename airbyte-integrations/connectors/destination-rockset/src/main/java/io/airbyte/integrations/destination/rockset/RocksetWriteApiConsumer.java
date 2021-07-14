@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 import static io.airbyte.integrations.destination.rockset.RocksetUtils.APISERVER_URL;
 import static io.airbyte.integrations.destination.rockset.RocksetUtils.API_KEY_ID;
+import static io.airbyte.integrations.destination.rockset.RocksetUtils.WORKSPACE_ID;
 
 public class RocksetWriteApiConsumer implements AirbyteMessageConsumer {
 
@@ -37,8 +38,7 @@ public class RocksetWriteApiConsumer implements AirbyteMessageConsumer {
                                  ConfiguredAirbyteCatalog catalog,
                                  Consumer<AirbyteMessage> outputRecordCollector) {
     this.apiKey = config.get(API_KEY_ID).asText();
-//    this.workspace = config.get(API_KEY_ID).asText();
-    this.workspace = "sam-manual-ws";
+    this.workspace = config.get(WORKSPACE_ID).asText();
 
     this.catalog = catalog;
     this.outputRecordCollector = outputRecordCollector;
@@ -48,11 +48,9 @@ public class RocksetWriteApiConsumer implements AirbyteMessageConsumer {
   public void start() throws Exception {
     this.client = new RocksetClient(apiKey, APISERVER_URL);
 
-    LOGGER.info("creating workspace: " + workspace);
     RocksetUtils.createWorkspaceIfNotExists(client, workspace);
     List<String> collectionNames = catalog.getStreams().stream()
         .map(s -> s.getStream().getName()).collect(Collectors.toList());
-    LOGGER.info("CNAMES: " + collectionNames);
     for (String cname : collectionNames) {
       RocksetUtils.createCollectionIfNotExists(client, workspace, cname);
       RocksetUtils.waitUntilCollectionReady(client, workspace, cname);
