@@ -93,20 +93,6 @@ public class SourceDefinitionsHandler {
     }
   }
 
-  @VisibleForTesting
-  static SourceDefinitionReadWithJobInfo buildSourceDefinitionReadWithJobInfo(StandardSourceDefinition standardSourceDefinition,
-                                                                              SynchronousJobRead jobInfo,
-                                                                              KnownException knownException) {
-    try {
-      return new SourceDefinitionReadWithJobInfo()
-          .exception(knownException == null ? null : knownException.getKnownExceptionInfo())
-          .sourceDefinitionRead(buildSourceDefinitionRead(standardSourceDefinition))
-          .jobInfo(jobInfo);
-    } catch (NullPointerException e) {
-      throw new InternalServerKnownException("Unable to process retrieved latest source definitions list", e);
-    }
-  }
-
   public SourceDefinitionReadList listSourceDefinitions() throws IOException, JsonValidationException {
     return toSourceDefinitionReadList(configRepository.listStandardSources());
   }
@@ -166,8 +152,10 @@ public class SourceDefinitionsHandler {
     }
 
     // When an error occurs, your source isn't echoed back to you, indicating it failed to save.
-    return buildSourceDefinitionReadWithJobInfo(validationException != null ? null : sourceDefinition,
-        JobConverter.getSynchronousJobRead(response), validationException);
+    return new SourceDefinitionReadWithJobInfo()
+        .exception(validationException == null ? null : validationException.getKnownExceptionInfo())
+        .sourceDefinitionRead(validationException != null ? null : buildSourceDefinitionRead(sourceDefinition))
+        .jobInfo(JobConverter.getSynchronousJobRead(response));
   }
 
   public SourceDefinitionReadWithJobInfo updateSourceDefinition(SourceDefinitionUpdate sourceDefinitionUpdate)
@@ -204,8 +192,10 @@ public class SourceDefinitionsHandler {
     }
 
     // When an error occurs, your source isn't echoed back to you, indicating it failed to save.
-    return buildSourceDefinitionReadWithJobInfo(validationException != null ? null : newSource,
-        JobConverter.getSynchronousJobRead(response), validationException);
+    return new SourceDefinitionReadWithJobInfo()
+        .exception(validationException == null ? null : validationException.getKnownExceptionInfo())
+        .sourceDefinitionRead(validationException != null ? null : buildSourceDefinitionRead(newSource))
+        .jobInfo(JobConverter.getSynchronousJobRead(response));
   }
 
   public static String loadIcon(String name) {

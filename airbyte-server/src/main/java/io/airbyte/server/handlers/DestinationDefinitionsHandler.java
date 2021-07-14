@@ -96,20 +96,6 @@ public class DestinationDefinitionsHandler {
     }
   }
 
-  @VisibleForTesting
-  static DestinationDefinitionReadWithJobInfo buildDestinationDefinitionReadWithJobInfo(StandardDestinationDefinition standardDestinationDefinition,
-                                                                                        SynchronousJobRead jobInfo,
-                                                                                        KnownException knownException) {
-    try {
-      return new DestinationDefinitionReadWithJobInfo()
-          .exception(knownException == null ? null : knownException.getKnownExceptionInfo())
-          .destinationDefinitionRead(buildDestinationDefinitionRead(standardDestinationDefinition))
-          .jobInfo(jobInfo);
-    } catch (NullPointerException e) {
-      throw new InternalServerKnownException("Unable to process retrieved latest destination definitions list", e);
-    }
-  }
-
   public DestinationDefinitionReadList listDestinationDefinitions() throws IOException, JsonValidationException {
     return toDestinationDefinitionReadList(configRepository.listStandardDestinationDefinitions());
   }
@@ -173,8 +159,10 @@ public class DestinationDefinitionsHandler {
     }
 
     // When an error occurs, your destination isn't echoed back to you, indicating it failed to save.
-    return buildDestinationDefinitionReadWithJobInfo(validationException != null ? null : destinationDefinition,
-        JobConverter.getSynchronousJobRead(response), validationException);
+    return new DestinationDefinitionReadWithJobInfo()
+        .exception(validationException == null ? null : validationException.getKnownExceptionInfo())
+        .destinationDefinitionRead(validationException != null ? null : buildDestinationDefinitionRead(destinationDefinition))
+        .jobInfo(JobConverter.getSynchronousJobRead(response));
   }
 
   public DestinationDefinitionReadWithJobInfo updateDestinationDefinition(DestinationDefinitionUpdate destinationDefinitionUpdate)
@@ -212,8 +200,10 @@ public class DestinationDefinitionsHandler {
     }
 
     // When an error occurs, your destination isn't echoed back to you, indicating it failed to save.
-    return buildDestinationDefinitionReadWithJobInfo(validationException != null ? null : newDestination,
-        JobConverter.getSynchronousJobRead(response), validationException);
+    return new DestinationDefinitionReadWithJobInfo()
+        .exception(validationException == null ? null : validationException.getKnownExceptionInfo())
+        .destinationDefinitionRead(validationException != null ? null : buildDestinationDefinitionRead(newDestination))
+        .jobInfo(JobConverter.getSynchronousJobRead(response));
   }
 
   public static String loadIcon(String name) {

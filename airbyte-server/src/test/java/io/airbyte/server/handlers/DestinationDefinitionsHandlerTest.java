@@ -151,7 +151,7 @@ class DestinationDefinitionsHandlerTest {
     final StandardDestinationDefinition destination = generateDestination();
     when(uuidSupplier.get()).thenReturn(destination.getDestinationDefinitionId());
     when(specFetcher.executeWithResponse(destination.getDockerRepository() + ":" + destination.getDockerImageTag()))
-        .thenReturn((SynchronousResponse<ConnectorSpecification>) jobResponse);
+        .thenReturn(jobResponse);
     when(jobResponse.getOutput()).thenReturn(CONNECTION_SPECIFICATION);
     when(jobResponse.isSuccess()).thenReturn(true);
 
@@ -185,12 +185,11 @@ class DestinationDefinitionsHandlerTest {
     final DestinationDefinitionRead currentDestination = destinationHandler
         .getDestinationDefinition(new DestinationDefinitionIdRequestBody().destinationDefinitionId(destination.getDestinationDefinitionId()));
     final String currentTag = currentDestination.getDockerImageTag();
-    final String dockerRepository = currentDestination.getDockerRepository();
     final String newDockerImageTag = "averydifferenttag";
     assertNotEquals(newDockerImageTag, currentTag);
 
     when(specFetcher.executeWithResponse(destination.getDockerRepository() + ":" + newDockerImageTag))
-        .thenReturn((SynchronousResponse<ConnectorSpecification>) jobResponse);
+        .thenReturn(jobResponse);
     when(jobResponse.getOutput()).thenReturn(CONNECTION_SPECIFICATION);
     when(jobResponse.isSuccess()).thenReturn(true);
 
