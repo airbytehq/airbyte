@@ -97,3 +97,9 @@ You can no longer create "Legacy" API Keys, but if you already have one, you can
 
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
 
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.1.8   | 2021-07-14 | [4683](https://github.com/airbytehq/airbyte/pull/4683) | Add float_ts primary key |
+| 0.1.7   | 2021-06-25 | [3978](https://github.com/airbytehq/airbyte/pull/3978) | Release Slack CDK Connector |
