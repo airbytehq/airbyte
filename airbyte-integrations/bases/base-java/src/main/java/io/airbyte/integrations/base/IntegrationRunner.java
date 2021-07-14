@@ -71,8 +71,7 @@ public class IntegrationRunner {
                     Consumer<AirbyteMessage> outputRecordCollector,
                     Destination destination,
                     Source source) {
-    Preconditions.checkState(destination != null ^ source != null,
-        "can only pass in a destination or a source");
+    Preconditions.checkState(destination != null ^ source != null, "can only pass in a destination or a source");
     this.cliParser = cliParser;
     this.outputRecordCollector = outputRecordCollector;
     // integration iface covers the commands that are the same for both source and destination.
@@ -102,8 +101,7 @@ public class IntegrationRunner {
 
     switch (parsed.getCommand()) {
       // common
-      case SPEC -> outputRecordCollector
-          .accept(new AirbyteMessage().withType(Type.SPEC).withSpec(integration.spec()));
+      case SPEC -> outputRecordCollector.accept(new AirbyteMessage().withType(Type.SPEC).withSpec(integration.spec()));
       case CHECK -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
         validateConfig(integration.spec().getConnectionSpecification(), config, "CHECK");
