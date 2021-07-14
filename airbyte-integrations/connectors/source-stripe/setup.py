@@ -29,7 +29,6 @@ MAIN_REQUIREMENTS = ["airbyte-cdk", "stripe"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
-    "source-acceptance-test",
 ]
 
 setup(
