@@ -50,14 +50,11 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static io.airbyte.integrations.destination.rockset.RocksetUtils.WORKSPACE_ID;
+
 public class RocksetDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RocksetDestination.class);
-
-  public static final String WORKSPACE_ID = "workspace";
-  public static final String API_KEY_ID = "api_key";
-
-  public static final String APISERVER_URL = "api.rs2.usw2.rockset.com";
 
   public static void main(String[] args) throws Exception {
     new IntegrationRunner(new RocksetDestination()).run(args);
@@ -67,30 +64,11 @@ public class RocksetDestination extends BaseConnector implements Destination {
   public AirbyteConnectionStatus check(JsonNode config) {
     try {
       String workspace = config.get(WORKSPACE_ID).asText();
-      String apiKey = config.get(API_KEY_ID).asText();
-      createWorkspaceIfNotExists(apiKey, workspace);
+      RocksetUtils.createWorkspaceIfNotExists(RocksetUtils.clientFromConfig(config), workspace);
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
       LOGGER.info("Check failed.", e);
       return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage() != null ? e.getMessage() : e.toString());
-    }
-  }
-
-  private void createWorkspaceIfNotExists(String apiKey, String workspace) throws Exception {
-    RocksetClient client = new RocksetClient(apiKey, APISERVER_URL);
-    CreateWorkspaceRequest request = new CreateWorkspaceRequest()
-      .name(workspace);
-
-    try {
-      CreateWorkspaceResponse response = client.createWorkspace(request);
-      LOGGER.info(String.format("Created workspace %s", workspace));
-    } catch (ApiException e) {
-      if (e.getCode() == 400) {
-        LOGGER.info(String.format("Workspace %s already exists", workspace));
-        return;
-      }
-
-      throw e;
     }
   }
 
