@@ -31,9 +31,9 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.s3.GcsDestinationConfig;
-import io.airbyte.integrations.destination.s3.GcsFormat;
+import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.writer.BaseGcsWriter;
-import io.airbyte.integrations.destination.s3.writer.GcsWriter;
+import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -55,7 +55,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
-public class GcsParquetWriter extends BaseGcsWriter implements GcsWriter {
+public class GcsParquetWriter extends BaseGcsWriter implements S3Writer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GcsParquetWriter.class);
   private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -77,7 +77,7 @@ public class GcsParquetWriter extends BaseGcsWriter implements GcsWriter {
     this.schema = schema;
     this.nameUpdater = nameUpdater;
 
-    String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, GcsFormat.PARQUET);
+    String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.PARQUET);
     String objectKey = String.join("/", outputPrefix, outputFilename);
 
     // LOGGER.info("Storage path for stream '{}': {}/{}", stream.getName(), config.getBucketName(), objectKey);
@@ -88,7 +88,7 @@ public class GcsParquetWriter extends BaseGcsWriter implements GcsWriter {
 
     // LOGGER.info("Full Gcs path for stream '{}': {}", stream.getName(), path.toString());
 
-    GcsParquetFormatConfig formatConfig = (GcsParquetFormatConfig) config.getFormatConfig();
+    S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
     Configuration hadoopConfig = getHadoopConfig(config);
     this.parquetWriter = AvroParquetWriter.<GenericData.Record>builder(HadoopOutputFile.fromPath(path, hadoopConfig))
         .withSchema(schema)

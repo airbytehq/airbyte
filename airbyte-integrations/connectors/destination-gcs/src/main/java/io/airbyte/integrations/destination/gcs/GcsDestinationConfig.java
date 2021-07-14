@@ -33,7 +33,7 @@ public class GcsDestinationConfig {
   private final String bucketRegion;
   private final String accessKeyId;
   private final String secretAccessKey;
-  private final GcsFormatConfig formatConfig;
+  private final S3FormatConfig formatConfig;
 
   public GcsDestinationConfig(
                              String bucketName,
@@ -41,7 +41,7 @@ public class GcsDestinationConfig {
                              String bucketRegion,
                              String accessKeyId,
                              String secretAccessKey,
-                             GcsFormatConfig formatConfig) {
+                             S3FormatConfig formatConfig) {
     this.bucketName = bucketName;
     this.bucketPath = bucketPath;
     this.bucketRegion = bucketRegion;
@@ -57,7 +57,7 @@ public class GcsDestinationConfig {
         config.get("gcs_bucket_region").asText(),
         config.get("access_key_id").asText(),
         config.get("secret_access_key").asText(),
-        GcsFormatConfigs.getGcsFormatConfig(config));
+        S3FormatConfigs.getS3FormatConfig(config));
   }
 
   public String getBucketName() {
@@ -80,7 +80,7 @@ public class GcsDestinationConfig {
     return secretAccessKey;
   }
   
-  public GcsFormatConfig getFormatConfig() {
+  public S3FormatConfig getFormatConfig() {
     return formatConfig;
   }
 

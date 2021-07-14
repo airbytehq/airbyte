@@ -30,9 +30,9 @@ import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import io.airbyte.integrations.destination.s3.GcsDestinationConfig;
-import io.airbyte.integrations.destination.s3.GcsDestinationConstants;
-import io.airbyte.integrations.destination.s3.GcsFormat;
-import io.airbyte.integrations.destination.s3.util.GcsOutputPathHelper;
+import io.airbyte.integrations.destination.s3.S3DestinationConstants;
+import io.airbyte.integrations.destination.s3.S3Format;
+import io.airbyte.integrations.destination.s3.util.S3OutputPathHelper;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -52,7 +52,7 @@ import java.io.IOException;
  * <li>Create shared instance variables.</li>
  * <li>Create the bucket and prepare the bucket path.</li>
  */
-public abstract class BaseGcsWriter implements GcsWriter {
+public abstract class BaseGcsWriter implements S3Writer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseGcsWriter.class);
 
@@ -69,7 +69,7 @@ public abstract class BaseGcsWriter implements GcsWriter {
     this.s3Client = s3Client;
     this.stream = configuredStream.getStream();
     this.syncMode = configuredStream.getDestinationSyncMode();
-    this.outputPrefix = GcsOutputPathHelper.getOutputPrefix(config.getBucketPath(), stream);
+    this.outputPrefix = S3OutputPathHelper.getOutputPrefix(config.getBucketPath(), stream);
   }
 
   /**
@@ -135,8 +135,8 @@ public abstract class BaseGcsWriter implements GcsWriter {
   }
 
   // Filename: <upload-date>_<upload-millis>_0.<format-extension>
-  public static String getOutputFilename(Timestamp timestamp, GcsFormat format) {
-    DateFormat formatter = new SimpleDateFormat(GcsDestinationConstants.YYYY_MM_DD_FORMAT_STRING);
+  public static String getOutputFilename(Timestamp timestamp, S3Format format) {
+    DateFormat formatter = new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
     return String.format(
         "%s_%d_0.%s",

@@ -28,10 +28,10 @@ import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.integrations.destination.s3.GcsDestinationConfig;
-import io.airbyte.integrations.destination.s3.GcsFormat;
-import io.airbyte.integrations.destination.s3.util.GcsStreamTransferManagerHelper;
+import io.airbyte.integrations.destination.s3.S3Format;
+import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
 import io.airbyte.integrations.destination.s3.writer.BaseGcsWriter;
-import io.airbyte.integrations.destination.s3.writer.GcsWriter;
+import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.IOException;
@@ -45,7 +45,7 @@ import org.apache.commons.csv.QuoteMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GcsCsvWriter extends BaseGcsWriter implements GcsWriter {
+public class GcsCsvWriter extends BaseGcsWriter implements S3Writer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GcsCsvWriter.class);
 
@@ -61,16 +61,16 @@ public class GcsCsvWriter extends BaseGcsWriter implements GcsWriter {
       throws IOException {
     super(config, s3Client, configuredStream);
 
-    GcsCsvFormatConfig formatConfig = (GcsCsvFormatConfig) config.getFormatConfig();
+    S3CsvFormatConfig formatConfig = (S3CsvFormatConfig) config.getFormatConfig();
     this.csvSheetGenerator = CsvSheetGenerator.Factory.create(configuredStream.getStream().getJsonSchema(), formatConfig);
 
-    String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, GcsFormat.CSV);
+    String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.CSV);
     String objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
         objectKey);
 
-    this.uploadManager = GcsStreamTransferManagerHelper.getDefault(config.getBucketName(), objectKey, s3Client);
+    this.uploadManager = S3StreamTransferManagerHelper.getDefault(config.getBucketName(), objectKey, s3Client);
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
     this.csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8),

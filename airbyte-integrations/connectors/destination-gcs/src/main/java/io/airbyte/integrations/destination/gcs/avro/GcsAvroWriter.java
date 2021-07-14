@@ -28,10 +28,10 @@ import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.integrations.destination.s3.GcsDestinationConfig;
-import io.airbyte.integrations.destination.s3.GcsFormat;
-import io.airbyte.integrations.destination.s3.util.GcsStreamTransferManagerHelper;
+import io.airbyte.integrations.destination.s3.S3Format;
+import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
 import io.airbyte.integrations.destination.s3.writer.BaseGcsWriter;
-import io.airbyte.integrations.destination.s3.writer.GcsWriter;
+import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.IOException;
@@ -45,7 +45,7 @@ import org.apache.avro.generic.GenericDatumWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GcsAvroWriter extends BaseGcsWriter implements GcsWriter {
+public class GcsAvroWriter extends BaseGcsWriter implements S3Writer {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(GcsAvroWriter.class);
 
@@ -63,18 +63,18 @@ public class GcsAvroWriter extends BaseGcsWriter implements GcsWriter {
       throws IOException {
     super(config, s3Client, configuredStream);
 
-    String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, GcsFormat.AVRO);
+    String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.AVRO);
     String objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
         objectKey);
 
     this.avroRecordFactory = new AvroRecordFactory(schema, nameUpdater);
-    this.uploadManager = GcsStreamTransferManagerHelper.getDefault(config.getBucketName(), objectKey, s3Client);
+    this.uploadManager = S3StreamTransferManagerHelper.getDefault(config.getBucketName(), objectKey, s3Client);
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
 
-    GcsAvroFormatConfig formatConfig = (GcsAvroFormatConfig) config.getFormatConfig();
+    S3AvroFormatConfig formatConfig = (S3AvroFormatConfig) config.getFormatConfig();
     // The DataFileWriter always uses binary encoding.
     // If json encoding is needed in the future, use the GenericDatumWriter directly.
     this.dataFileWriter = new DataFileWriter<>(new GenericDatumWriter<Record>())

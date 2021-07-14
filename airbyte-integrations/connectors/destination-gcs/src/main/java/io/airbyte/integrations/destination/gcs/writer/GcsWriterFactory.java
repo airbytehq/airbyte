@@ -34,7 +34,7 @@ import java.sql.Timestamp;
  */
 public interface GcsWriterFactory {
 
-  GcsWriter create(GcsDestinationConfig config,
+  S3Writer create(GcsDestinationConfig config,
                   AmazonS3 s3Client,
                   ConfiguredAirbyteStream configuredStream,
                   Timestamp uploadTimestamp)

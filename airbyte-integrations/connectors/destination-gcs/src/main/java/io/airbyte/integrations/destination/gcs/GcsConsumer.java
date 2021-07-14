@@ -33,7 +33,7 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.integrations.destination.s3.writer.GcsWriter;
+import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.integrations.destination.s3.writer.GcsWriterFactory;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -54,7 +54,7 @@ public class GcsConsumer extends FailureTrackingAirbyteMessageConsumer {
   private final ConfiguredAirbyteCatalog configuredCatalog;
   private final GcsWriterFactory writerFactory;
   private final Consumer<AirbyteMessage> outputRecordCollector;
-  private final Map<AirbyteStreamNameNamespacePair, GcsWriter> streamNameAndNamespaceToWriters;
+  private final Map<AirbyteStreamNameNamespacePair, S3Writer> streamNameAndNamespaceToWriters;
 
   private AirbyteMessage lastStateMessage = null;
 
@@ -83,7 +83,7 @@ public class GcsConsumer extends FailureTrackingAirbyteMessageConsumer {
     Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
     for (ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
-      GcsWriter writer = writerFactory
+      S3Writer writer = writerFactory
           .create(gcsDestinationConfig, s3Client, configuredStream, uploadTimestamp);
       writer.initialize();
 
@@ -120,7 +120,7 @@ public class GcsConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   @Override
   protected void close(boolean hasFailed) throws Exception {
-    for (GcsWriter handler : streamNameAndNamespaceToWriters.values()) {
+    for (S3Writer handler : streamNameAndNamespaceToWriters.values()) {
       handler.close(hasFailed);
     }
     // Gcs stream uploader is all or nothing if a failure happens in the destination.

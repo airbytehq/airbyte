@@ -26,7 +26,7 @@ package io.airbyte.integrations.destination.s3.writer;
 
 import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.integrations.destination.s3.GcsDestinationConfig;
-import io.airbyte.integrations.destination.s3.GcsFormat;
+import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.csv.GcsCsvWriter;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
@@ -43,16 +43,16 @@ public class ProductionWriterFactory implements GcsWriterFactory {
   protected static final Logger LOGGER = LoggerFactory.getLogger(ProductionWriterFactory.class);
 
   @Override
-  public GcsWriter create(GcsDestinationConfig config,
+  public S3Writer create(GcsDestinationConfig config,
                          AmazonS3 s3Client,
                          ConfiguredAirbyteStream configuredStream,
                          Timestamp uploadTimestamp)
       throws Exception {
-        GcsFormat format = config.getFormatConfig().getFormat();
-    if (format == GcsFormat.CSV) {
+        S3Format format = config.getFormatConfig().getFormat();
+    if (format == S3Format.CSV) {
       return new GcsCsvWriter(config, s3Client, configuredStream, uploadTimestamp);
     }
-    if (format == GcsFormat.PARQUET) {
+    if (format == S3Format.PARQUET) {
       AirbyteStream stream = configuredStream.getStream();
 
       JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
