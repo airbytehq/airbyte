@@ -54,10 +54,10 @@ public class RocksetDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RocksetDestination.class);
 
-  private static final String WORKSPACE_ID = "workspace";
-  private static final String API_KEY_ID = "api_key";
+  public static final String WORKSPACE_ID = "workspace";
+  public static final String API_KEY_ID = "api_key";
 
-  private static final String APISERVER_URL = "api.rs2.usw2.rockset.com";
+  public static final String APISERVER_URL = "api.rs2.usw2.rockset.com";
 
   public static void main(String[] args) throws Exception {
     new IntegrationRunner(new RocksetDestination()).run(args);
