@@ -723,7 +723,9 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
                     # from API: '$browser'
                     # to stream: 'mp_reserved_browser'
                     this_property_name = property_name.replace("$", "mp_reserved_")
-                item[this_property_name] = properties[property_name]
+                # Convert all values to string (this is default property type)
+                # because API does not provide properties type information
+                item[this_property_name] = str(properties[property_name])
 
             # convert timestamp to datetime string
             item["time"] = datetime.fromtimestamp(item["time"]).isoformat()
