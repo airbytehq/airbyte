@@ -50,8 +50,8 @@ import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.converters.CatalogConverter;
-import io.airbyte.server.helpers.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
@@ -165,8 +165,9 @@ public class ConnectionsHandler {
 
   private void trackNewConnection(final StandardSync standardSync) {
     try {
+      final UUID workspaceId = workspaceHelper.getWorkspaceForConnectionId(standardSync.getConnectionId());
       final Builder<String, Object> metadataBuilder = generateMetadata(standardSync);
-      TrackingClientSingleton.get().track("New Connection - Backend", metadataBuilder.build());
+      TrackingClientSingleton.get().track(workspaceId, "New Connection - Backend", metadataBuilder.build());
     } catch (Exception e) {
       LOGGER.error("failed while reporting usage.", e);
     }

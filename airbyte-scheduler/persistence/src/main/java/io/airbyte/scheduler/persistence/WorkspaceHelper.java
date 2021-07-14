@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.server.helpers;
+package io.airbyte.scheduler.persistence;
 
 import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
@@ -37,7 +37,6 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.models.Job;
-import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.Objects;
@@ -45,6 +44,9 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+// todo (cgardens) - this class is in an unintuitive module. it is weird that you need to import
+// scheduler:persistence in order to get workspace ids for configs (e.g. source). Our options are to
+// split this helper by database or put it in a new module.
 public class WorkspaceHelper {
 
   private final LoadingCache<UUID, UUID> sourceToWorkspaceCache;

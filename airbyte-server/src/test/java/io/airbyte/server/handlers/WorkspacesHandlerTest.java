@@ -48,7 +48,6 @@ import io.airbyte.config.SlackNotificationConfiguration;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.server.converters.NotificationConverter;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -83,10 +82,8 @@ class WorkspacesHandlerTest {
   }
 
   private StandardWorkspace generateWorkspace() {
-    final UUID workspaceId = PersistenceConstants.DEFAULT_WORKSPACE_ID;
-
     return new StandardWorkspace()
-        .withWorkspaceId(workspaceId)
+        .withWorkspaceId(UUID.randomUUID())
         .withCustomerId(UUID.randomUUID())
         .withEmail("test@airbyte.io")
         .withName("test workspace")
