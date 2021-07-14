@@ -5,7 +5,7 @@
       "type": "integer"
     },
     "name": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "filters": {
       "type": ["object", "null"],
@@ -19,13 +19,13 @@
                 "type": "string"
               },
               "math": {
-                "type": "string"
+                "type": ["string", "null"]
               },
               "name": {
-                "type": "string"
+                "type": ["string", "null"]
               },
               "type": {
-                "type": "string"
+                "type": ["string", "null"]
               },
               "order": {
                 "type": ["integer", "null"]
@@ -52,7 +52,7 @@
           }
         },
         "insight": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "session": {
           "type": ["string", "null"]
@@ -66,7 +66,7 @@
       }
     },
     "filters_hash": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "order": {
       "type": ["string", "null"]
@@ -94,7 +94,7 @@
       "type": ["string", "null"]
     },
     "created_at": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "saved": {
@@ -107,16 +107,16 @@
           "type": "integer"
         },
         "uuid": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "distinct_id": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "first_name": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "email": {
-          "type": "string"
+          "type": ["string", "null"]
         }
       }
     }
