@@ -728,7 +728,9 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
                 item[this_property_name] = str(properties[property_name])
 
             # convert timestamp to datetime string
-            item["time"] = datetime.fromtimestamp(item["time"]).isoformat()
+            if item.get("time") and item["time"].isdigit():
+                item["time"] = datetime.fromtimestamp(int(item["time"])).isoformat()
+
             yield item
 
         # wait for 60 seconds according to API limit

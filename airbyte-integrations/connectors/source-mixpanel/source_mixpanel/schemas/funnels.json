@@ -23,12 +23,16 @@
           "type": "array",
           "items": {
             "type": ["null", "object"],
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
               "count": {
                 "type": ["null", "integer"]
               },
               "avg_time": {
+                "type": ["null", "number"],
+                "multipleOf": 1e-20
+              },
+              "avg_time_from_start": {
                 "type": ["null", "number"],
                 "multipleOf": 1e-20
               },
@@ -46,8 +50,23 @@
               "event": {
                 "type": ["null", "string"]
               },
+              "session_event": {
+                "type": ["null", "string"]
+              },
               "step_label": {
                 "type": ["null", "string"]
+              },
+              "selector": {
+                "type": ["null", "string"]
+              },
+              "selector_params": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "step_label": {
+                      "type": ["null", "string"]
+                  }
+                }
               },
               "time_buckets_from_start": {
                 "type": ["null", "object"],
