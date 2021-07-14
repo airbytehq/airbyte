@@ -8,8 +8,8 @@ on:
 jobs:
   ## Gradle Build (Connectors Base)
   # In case of self-hosted EC2 errors, remove this block.
-  start-build-runner:
-    name: Start Build EC2 Runner
+  start-connectors-build-runner:
+    name: "Connectors Base: Start Build EC2 Runner"
     runs-on: ubuntu-latest
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
@@ -31,11 +31,11 @@ jobs:
           ec2-instance-type: c5.2xlarge
           subnet-id: subnet-0469a9e68a379c1d3
           security-group-id: sg-0793f3c9413f21970
-  build:
+  build-connector:
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
-    needs: start-build-runner # required to start the main job when the runner is ready
-    runs-on: ${{ needs.start-build-runner.outputs.label }} # run the job on the newly created runner
-    name: Build Airbyte
+    needs: start-connectors-build-runner # required to start the main job when the runner is ready
+    runs-on: ${{ needs.start-connectors-build-runner.outputs.label }} # run the job on the newly created runner
+    name: "Connectors Base: Build"
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
@@ -122,10 +122,10 @@ jobs:
           SLACK_TITLE: "Build Success"
           SLACK_FOOTER: ""
   # In case of self-hosted EC2 errors, remove this block.
-  stop-build-runner:
-    name: Stop Build EC2 Runner
+  stop-connectors-build-runner:
+    name: "Connectors Base: Stop Build EC2 Runner"
     needs:
-      - start-build-runner # required to get output from the start-runner job
+      - start-connectors-build-runner # required to get output from the start-runner job
       - build # required to wait when the main job is done
     runs-on: ubuntu-latest
     if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
@@ -141,13 +141,13 @@ jobs:
         with:
           mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
-          label: ${{ needs.start-build-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start-build-runner.outputs.ec2-instance-id }}
+          label: ${{ needs.start-connectors-build-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-connectors-build-runner.outputs.ec2-instance-id }}
 
   ## Gradle Build (Platform)
   # In case of self-hosted EC2 errors, remove this block.
-  start-build-platform-runner:
-    name: Start Build (Platform) EC2 Runner
+  start-platform-build-runner:
+    name: "Platform: Start Build EC2 Runner"
     runs-on: ubuntu-latest
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
@@ -169,11 +169,11 @@ jobs:
           ec2-instance-type: c5.2xlarge
           subnet-id: subnet-0469a9e68a379c1d3
           security-group-id: sg-0793f3c9413f21970
-  build-platform:
+  platform-build:
     # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
     needs: start-build-runner # required to start the main job when the runner is ready
-    runs-on: ${{ needs.start-build-runner.outputs.label }} # run the job on the newly created runner
-    name: Build (Platform) Airbyte
+    runs-on: ${{ needs.start-platform-build-runner.outputs.label }} # run the job on the newly created runner
+    name: "Platform: Build"
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
@@ -291,10 +291,10 @@ jobs:
           SLACK_TITLE: "Build Success"
           SLACK_FOOTER: ""
   # In case of self-hosted EC2 errors, remove this block.
-  stop-build-platform-runner:
-    name: Stop Build (Platform) EC2 Runner
+  stop-platform-build-runner:
+    name: "Platform: Stop Build EC2 Runner"
     needs:
-      - start-build-runner # required to get output from the start-runner job
+      - start-platform-build-runner # required to get output from the start-runner job
       - build # required to wait when the main job is done
     runs-on: ubuntu-latest
     if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
@@ -310,8 +310,8 @@ jobs:
         with:
           mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
-          label: ${{ needs.start-build-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start-build-runner.outputs.ec2-instance-id }}
+          label: ${{ needs.start-platform-build-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-platform-build-runner.outputs.ec2-instance-id }}
 
   ## Frontend Test
   ## Gradle Build
