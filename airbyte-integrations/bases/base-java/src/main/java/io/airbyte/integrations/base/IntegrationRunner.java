@@ -107,8 +107,7 @@ public class IntegrationRunner {
       case CHECK -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
         validateConfig(integration.spec().getConnectionSpecification(), config, "CHECK");
-        outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS)
-            .withConnectionStatus(integration.check(config)));
+        outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(integration.check(config)));
       }
       // source only
       case DISCOVER -> {
@@ -119,13 +118,11 @@ public class IntegrationRunner {
       // todo (cgardens) - it is incongruous that that read and write return airbyte message (the
       // envelope) while the other commands return what goes inside it.
       case READ -> {
-
         final JsonNode config = parseConfig(parsed.getConfigPath());
         validateConfig(integration.spec().getConnectionSpecification(), config, "READ");
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
         final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
-        final AutoCloseableIterator<AirbyteMessage> messageIterator = source
-            .read(config, catalog, stateOptional.orElse(null));
+        final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null));
         try (messageIterator) {
           messageIterator.forEachRemaining(outputRecordCollector::accept);
         }

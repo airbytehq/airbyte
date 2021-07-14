@@ -78,10 +78,8 @@ class IntegrationRunnerTest {
   private static final Long EMITTED_AT = Instant.now().toEpochMilli();
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
 
-  private static final AirbyteCatalog CATALOG = new AirbyteCatalog()
-      .withStreams(Lists.newArrayList(new AirbyteStream().withName(STREAM_NAME)));
-  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers
-      .toDefaultConfiguredCatalog(CATALOG);
+  private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(new AirbyteStream().withName(STREAM_NAME)));
+  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final JsonNode STATE = Jsons.jsonNode(ImmutableMap.of("checkpoint", "05/08/1945"));
 
   private IntegrationCliParser cliParser;
@@ -109,8 +107,7 @@ class IntegrationRunnerTest {
   @Test
   void testSpecSource() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.spec();
-    final ConnectorSpecification output = new ConnectorSpecification()
-        .withDocumentationUrl(new URI("https://docs.airbyte.io/"));
+    final ConnectorSpecification output = new ConnectorSpecification().withDocumentationUrl(new URI("https://docs.airbyte.io/"));
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(source.spec()).thenReturn(output);
@@ -124,8 +121,7 @@ class IntegrationRunnerTest {
   @Test
   void testSpecDestination() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.spec();
-    final ConnectorSpecification output = new ConnectorSpecification()
-        .withDocumentationUrl(new URI("https://docs.airbyte.io/"));
+    final ConnectorSpecification output = new ConnectorSpecification().withDocumentationUrl(new URI("https://docs.airbyte.io/"));
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(destination.spec()).thenReturn(output);
@@ -236,8 +232,7 @@ class IntegrationRunnerTest {
 
     JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
 
-    final IntegrationRunner runner = spy(new IntegrationRunner(cliParser, stdoutConsumer,
-        destination, null, jsonSchemaValidator));
+    final IntegrationRunner runner = spy(new IntegrationRunner(cliParser, stdoutConsumer, destination, null, jsonSchemaValidator));
     runner.run(ARGS);
 
     verify(destination).getConsumer(CONFIG, CONFIGURED_CATALOG, stdoutConsumer);
@@ -290,14 +285,12 @@ class IntegrationRunnerTest {
             .withData(Jsons.deserialize("{ \"color\": \"yellow\" }"))
             .withStream(STREAM_NAME)
             .withEmittedAt(EMITTED_AT));
-    System.setIn(new ByteArrayInputStream(
-        (Jsons.serialize(singerMessage1) + "\n" + Jsons.serialize(singerMessage2)).getBytes()));
+    System.setIn(new ByteArrayInputStream((Jsons.serialize(singerMessage1) + "\n" + Jsons.serialize(singerMessage2)).getBytes()));
 
     final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
     doThrow(new IOException("error")).when(airbyteMessageConsumerMock).accept(singerMessage1);
 
-    assertThrows(IOException.class,
-        () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock));
+    assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock));
 
     InOrder inOrder = inOrder(airbyteMessageConsumerMock);
     inOrder.verify(airbyteMessageConsumerMock).accept(singerMessage1);
