@@ -15,6 +15,10 @@ type PopoutProps = DropdownProps & {
   onChange: any;
 };
 
+const selectStyles = {
+  control: (provided: any) => ({ ...provided, minWidth: 240, marginTop: 8 }),
+};
+
 const Popout: React.FC<PopoutProps> = ({
   onChange,
   targetComponent,
@@ -39,13 +43,18 @@ const Popout: React.FC<PopoutProps> = ({
       <DropDown
         autoFocus
         backspaceRemovesValue={false}
-        components={{ IndicatorSeparator: null }}
+        components={{
+          IndicatorSeparator: null,
+          DropdownIndicator: null,
+        }}
         controlShouldRenderValue={false}
         hideSelectedOptions={false}
         isClearable={false}
         menuIsOpen
         onChange={onSelectChange}
         options={props.options}
+        placeholder={null}
+        styles={selectStyles}
         tabSelectsValue={false}
         value={value}
       />

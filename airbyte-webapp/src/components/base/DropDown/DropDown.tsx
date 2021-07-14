@@ -1,12 +1,12 @@
 import React from "react";
 import styled from "styled-components";
-// import { useIntl } from "react-intl";
 import Select, { Props } from "react-select";
 
 import DropdownIndicator from "./components/DropdownIndicator";
 import Menu from "./components/Menu";
 import SingleValue from "./components/SingleValue";
 import Option from "./components/Option";
+
 import { equal } from "utils/objects";
 
 type DropdownProps = Props<any> & {
@@ -55,20 +55,9 @@ const CustomSelect = styled(Select)<{
 `;
 
 const DropDown: React.FC<DropdownProps> = (props) => {
-  // const formatMessage = useIntl().formatMessage;
-
-  // const containerClassName = [
-  //   className,
-  //   props.containerClassName,
-  //   withButton ? "withButton" : null,
-  // ]
-  //   .filter(Boolean)
-  //   .join(" ");
-
   const propsComponents = props.components;
   const components = React.useMemo(
     () => ({
-      ...(propsComponents ?? {}),
       DropdownIndicator,
       Menu,
       Option,
@@ -76,6 +65,7 @@ const DropDown: React.FC<DropdownProps> = (props) => {
       IndicatorSeparator: () => null,
       ClearIndicator: () => null,
       MultiValueRemove: () => null,
+      ...(propsComponents ?? {}),
     }),
     [propsComponents]
   );
@@ -86,7 +76,7 @@ const DropDown: React.FC<DropdownProps> = (props) => {
       className="react-select-container"
       classNamePrefix="react-select"
       menuPortalTarget={document.body}
-      placeholder={"..."}
+      placeholder="..."
       {...props}
       menuShouldBlockScroll
       value={props.options?.find((op) => equal(op.value, props.value))}

@@ -5,7 +5,7 @@ import { theme } from "theme";
 
 import { naturalComparatorBy } from "utils/objects";
 import Text from "./Text";
-import CheckBox from "../../CheckBox";
+import CheckBox from "components/base/CheckBox";
 
 export type IProps = {
   data: { disabled: boolean; index: number; fullText?: boolean } & IDataItem;

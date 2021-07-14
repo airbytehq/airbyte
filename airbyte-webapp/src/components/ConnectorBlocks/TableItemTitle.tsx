@@ -63,7 +63,7 @@ const TableItemTitle: React.FC<IProps> = ({
         </H5>
         <Popout
           onChange={onSelect}
-          targetComponent={({ onOpen }) => (
+          targetComponent={({ onOpen }: any) => (
             <Button onClick={onOpen}>
               <FormattedMessage id={`tables.${type}Add`} />
             </Button>
