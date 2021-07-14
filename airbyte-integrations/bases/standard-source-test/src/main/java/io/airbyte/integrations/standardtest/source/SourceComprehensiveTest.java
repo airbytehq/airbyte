@@ -39,6 +39,7 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -199,6 +200,34 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
     test.setNameSpace(getNameSpace());
     test.setIdColumnName(getIdColumnName());
     test.setTestColumnName(getTestColumnName());
+  }
+
+  private String formatCollection(Collection<String> collection) {
+    return collection.stream().map(s -> "`" + s + "`").collect(Collectors.joining(", "));
+  }
+
+  /**
+   * Builds a table with all registered test cases with values using Markdown syntax (can be used in
+   * the github).
+   *
+   * @return formatted list of test cases
+   */
+  public String getMarkdownTestTable() {
+    StringBuilder table = new StringBuilder()
+        .append("|**Data Type**|**Insert values**|**Expected values**|**Comment**|**Common test result**|\n")
+        .append("|----|----|----|----|----|\n");
+
+    testDataHolders.forEach(test -> table.append(String.format("| %s | %s | %s | %s | %s |\n",
+        test.getSourceType(),
+        formatCollection(test.getValues()),
+        formatCollection(test.getExpectedValues()),
+        "",
+        "Ok")));
+    return table.toString();
+  }
+
+  protected void printMarkdownTestTable() {
+    LOGGER.info(getMarkdownTestTable());
   }
 
 }
