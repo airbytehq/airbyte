@@ -46,7 +46,7 @@ Please see [this issue](https://github.com/airbytehq/airbyte/issues/4270) for de
 
 1. MSSQL Server `Azure SQL Database`, `Azure Synapse Analytics`, `Azure SQL Managed Instance`, `SQL Server 2019`, `SQL Server 2017`, `SQL Server 2016`, `SQL Server 2014`, `SQL Server 2012`, `PDW 2008R2 AU34`.
 2. Create a dedicated read-only Airbyte user with access to all tables needed for replication
-3. If you want to use CDC, please see [the relevant section below](mssql.md#Change-Data-Capture-:-CDC) for further setup requirements
+3. If you want to use CDC, please see [the relevant section below](mssql.md#change-data-capture-cdc) for further setup requirements
 
 ### Setup guide
 
@@ -67,7 +67,7 @@ Your database user should now be ready for use with Airbyte.
 We use [SQL Server's change data capture feature](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-2017)
 to capture row-level `INSERT`, `UPDATE` and `DELETE` operations that occur on cdc-enabled tables.
 
-Some extra setup requiring at least *db_owner* permissions on the database(s) you intend to sync from will be required (detailed [below](mssql.md#Setting-up-CDC-for-MSSQL)).
+Some extra setup requiring at least *db_owner* permissions on the database(s) you intend to sync from will be required (detailed [below](mssql.md#setting-up-cdc-for-mssql)).
 
 Please read the [CDC docs](../../understanding-airbyte/cdc.md) for an overview of how Airbyte approaches CDC.
 
@@ -83,7 +83,7 @@ Please read the [CDC docs](../../understanding-airbyte/cdc.md) for an overview o
 * Make sure to read our [CDC docs](../../understanding-airbyte/cdc.md) to see limitations that impact all databases using CDC replication.
 * There are some critical issues regarding certain datatypes. Please find detailed info in [this Github issue](https://github.com/airbytehq/airbyte/issues/4542).
 * CDC is only available for SQL Server 2016 Service Pack 1 (SP1) and later.
-* *db_owner* (or higher) permissions are required to perform the [neccessary setup](mssql.md#Setting-up-CDC-for-MSSQL) for CDC.
+* *db_owner* (or higher) permissions are required to perform the [neccessary setup](mssql.md#setting-up-cdc-for-mssql) for CDC.
 * You must enable [snapshot isolation mode](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql/snapshot-isolation-in-sql-server) on the database(s) you want to sync. This is used for retrieving an initial snapshot without locking tables.
 * On Linux, CDC is not supported on versions earlier than SQL Server 2017 CU18 (SQL Server 2019 is supported).
 * Change data capture cannot be enabled on tables with a clustered columnstore index. (It can be enabled on tables with a *non-clustered* columnstore index).
@@ -115,14 +115,14 @@ MS SQL Server provides some built-in stored procedures to enable CDC.
   EXEC sys.sp_cdc_enable_table
   @source_schema = N'{schema name}',
   @source_name   = N'{table name}', 
-  @role_name     = N'{role name}',  [*]
-  @filegroup_name = N'{fiilegroup name}', [**]
-  @supports_net_changes = 0 [***]
+  @role_name     = N'{role name}',  [1]
+  @filegroup_name = N'{fiilegroup name}', [2]
+  @supports_net_changes = 0 [3]
   GO
 ```
-  - [*] Specifies a role which will gain `SELECT` permission on the captured columns of the source table. We suggest putting a value here so you can use this role in the next step but you can also set the value of @role_name to `NULL` to allow only *sysadmin* and *db_owner* to have access. Be sure that the credentials used to connect to the source in Airbyte align with this role so that Airbyte can access the cdc tables.
-  - [**] Specifies the filegroup where SQL Server places the change table. We recommend creating a separate filegroup for CDC but you can leave this parameter out to use the default filegroup.
-  - [***] If 0, only the support functions to query for all changes are generated. If 1, the functions that are needed to query for net changes are also generated. If supports_net_changes is set to 1, index_name must be specified, or the source table must have a defined primary key.
+  - [1] Specifies a role which will gain `SELECT` permission on the captured columns of the source table. We suggest putting a value here so you can use this role in the next step but you can also set the value of @role_name to `NULL` to allow only *sysadmin* and *db_owner* to have access. Be sure that the credentials used to connect to the source in Airbyte align with this role so that Airbyte can access the cdc tables.
+  - [2] Specifies the filegroup where SQL Server places the change table. We recommend creating a separate filegroup for CDC but you can leave this parameter out to use the default filegroup.
+  - [3] If 0, only the support functions to query for all changes are generated. If 1, the functions that are needed to query for net changes are also generated. If supports_net_changes is set to 1, index_name must be specified, or the source table must have a defined primary key.
 
 - (For more details on parameters, see the [Microsoft doc page](https://docs.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sys-sp-cdc-enable-table-transact-sql?view=sql-server-ver15) for this stored procedure).
 
