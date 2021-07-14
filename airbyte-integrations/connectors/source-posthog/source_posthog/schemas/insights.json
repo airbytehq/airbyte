@@ -75,7 +75,7 @@
       "type": "boolean"
     },
     "dashboard": {
-      "type": "string"
+      "type": ["string", "integer", "null"]
     },
     "layouts": {
       "type": ["object", "null"]
@@ -91,7 +91,7 @@
       "type": "boolean"
     },
     "result": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "created_at": {
       "type": "string",
@@ -101,7 +101,7 @@
       "type": "boolean"
     },
     "created_by": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "id": {
           "type": "integer"
