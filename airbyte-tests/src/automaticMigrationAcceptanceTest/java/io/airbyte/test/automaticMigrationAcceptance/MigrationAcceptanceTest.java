@@ -348,6 +348,11 @@ public class MigrationAcceptanceTest {
     env.put("API_URL", "http://localhost:7001/api/v1/");
     env.put("TEMPORAL_HOST", "airbyte-temporal:7233");
     env.put("INTERNAL_API_HOST", "airbyte-server:7001");
+    env.put("S3_LOG_BUCKET", "");
+    env.put("S3_LOG_BUCKET_REGION", "");
+    env.put("AWS_ACCESS_KEY_ID", "");
+    env.put("AWS_SECRET_ACCESS_KEY", "");
+    env.put("GCP_STORAGE_BUCKET", "");
     return env;
   }
 
