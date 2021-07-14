@@ -1,6 +1,6 @@
 import { MutateShape, ReadShape, Resource, SchemaDetail } from "rest-hooks";
+import { sourceDefinitionService } from "core/domain/connector/SourceDefinitionService";
 import BaseResource from "./BaseResource";
-import { sourceDefinitionService } from "../domain/connector/SourceDefinitionService";
 
 export interface SourceDefinition {
   sourceDefinitionId: string;

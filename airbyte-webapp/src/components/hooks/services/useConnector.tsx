@@ -48,10 +48,6 @@ const useConnector = (): ConnectorService => {
     [destinationDefinitions]
   );
 
-  const hasNewSourceVersion = newSourceDefinitions.length > 0;
-  const hasNewDestinationVersion = newDestinationDefinitions.length > 0;
-  const hasNewVersions = hasNewSourceVersion || hasNewDestinationVersion;
-
   const updateAllSourceVersions = async () => {
     await Promise.all(
       newSourceDefinitions?.map((item) =>
@@ -79,6 +75,10 @@ const useConnector = (): ConnectorService => {
       )
     );
   };
+
+  const hasNewSourceVersion = newSourceDefinitions.length > 0;
+  const hasNewDestinationVersion = newDestinationDefinitions.length > 0;
+  const hasNewVersions = hasNewSourceVersion || hasNewDestinationVersion;
 
   return {
     hasNewVersions,

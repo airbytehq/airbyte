@@ -6,8 +6,8 @@ class SourceDefinitionService extends AirbyteRequestService {
     return "source_definitions";
   }
 
-  public update(body: SourceDefinition): Promise<any> {
-    return this.fetch(`${this.url}/update`, body);
+  public update(body: SourceDefinition): Promise<SourceDefinition> {
+    return this.fetch(`${this.url}/update`, body) as any;
   }
 }
 
