@@ -15,6 +15,8 @@ We split Build Platform and Build Connectors Base from each other for a few reas
 2. We want to the iteration cycles of people working on connectors or the platform faster _and_ independent. e.g. Before this change someone working on a Platform feature needs to run formatting on the entire codebase (including connectors). This led to a lot of cosmetic build failures that obfuscated actually problems. Ideally a failure on the connectors side should not block progress on the platform side.
 3. The lifecycles are different. One can safely release the Platform even if parts of Connectors Base is failing (and vice versa).
 
+Future Work: The next step here is to figure out how to more formally split connectors and platform. Right now we exploit behavior in `settings.gradle` to separate them. This is not a best practice. Ultimately, we want these two builds to be totally separate. We do not know what that will look like yet.
+
 ## Cheatsheet
 Here is a cheatsheet for common gradle commands.
 
@@ -67,15 +69,22 @@ SUB_BUILD=PLATFORM ./gradlew composeBuild
 ```
 
 #### Running Tests
-The Platform has 2 different levels of tests: Unit Tests and Acceptance Tests.
+The Platform has 3 different levels of tests: Unit Tests, Acceptance Tests, Frontend Acceptance Tests.
 
 ##### Unit Tests
 Unit Tests can be run using the `:test` task on any submodule. These test class-level behavior. They should avoid using external resources (e.g. calling staging services or pulling resources from the internet). We do allow these tests to spin up local resources (usually in docker containers). For example, we use test containers frequently to spin up test postgres databases.
 
 ##### Acceptance Tests
 We split Acceptance Tests into 2 different test suites:
-* Platform Acceptance Tests: These tests are a coarse test to sanity check that each major feature in the platform. They are run with the following command: `SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests`. These tests expect to find a local version of Airbyte running. For testing the docker version start Airbyte locally. For an example, see the [script](https://github.com/airbytehq/airbyte/blob/master/tools/bin/acceptance_test.sh) that is used by the CI. For Kubernetes, see the [script](https://github.com/airbytehq/airbyte/blob/master/tools/bin/acceptance_test_kube.sh) that is use by the CI.
+* Platform Acceptance Tests: These tests are a coarse test to sanity check that each major feature in the platform. They are run with the following command: `SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests`. These tests expect to find a local version of Airbyte running. For testing the docker version start Airbyte locally. For an example, see the [script](https://github.com/airbytehq/airbyte/blob/master/tools/bin/acceptance_test.sh) that is used by the CI. For Kubernetes, see the [script](https://github.com/airbytehq/airbyte/blob/master/tools/bin/acceptance_test_kube.sh) that is used by the CI.
 * Migration Acceptance Tests: These tests make sure the end-to-end process of migrating from one version of Airbyte to the next works. These tests are run with the following command: `SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan`. These tests do not expect there to be a separate instance of Airbyte running.
+
+These tests currently all live in `airbyte-tests`
+
+##### Frontend Acceptance Tests
+These are acceptance tests for the frontend. They are run with `SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-e2e-testing:e2etest`. Like the Platform Acceptance Tests, they expect Airbyte to be running locally. See the [script](https://github.com/airbytehq/airbyte/blob/master/tools/bin/e2e_test.sh) that is used by the CI.
+
+These tests currently all live in `airbyte-e2e-testing`.
 
 ##### Future Work
 Our story around "integration testing" or "E2E testing" is a little ambiguous. Our Platform Acceptance Test Suite is getting somewhat unwieldy. It was meant to just be some coarse sanity checks, but over time we have found more need to test interactions between systems more granular. Whether we start supporting a separate class of tests (e.g. integration tests) or figure out how allow for more granular tests in the existing Acceptance Test framework is TBD.
