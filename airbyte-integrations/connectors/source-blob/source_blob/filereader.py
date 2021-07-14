@@ -25,7 +25,7 @@
 from abc import ABC, abstractmethod
 from copy import deepcopy
 import json
-from os import read
+from os import read, uname
 from typing import Iterator
 
 from airbyte_cdk.logger import AirbyteLogger
@@ -57,20 +57,26 @@ class FileReader(ABC):
         """
 
     @staticmethod
-    def pyarrow_type_to_json_type(typ, reverse=False):
-        """Convert PyArrow types to Airbyte Types (or the other way around if reverse=True)
+    def json_type_to_pyarrow_type(typ, reverse=False):
+        """Convert Airbyte Type to PyArrow types to (or the other way around if reverse=True)
         TODO: Docstring
         """
-        typ = str(typ).lower()
+        str_typ = str(typ)
         # this is a map of airbyte types to pyarrow types. The first list element of the pyarrow types should be the one to use where required.
-        map = {  
-            "boolean": ["bool"],
-            "integer": ["int64", "int32"], 
-            "int": "integer",
-            "float": "number",
-            "double": 1
+        map = {
+            "boolean": ("bool_(", ),
+            "integer": ("int64(", "int8(", "int16(", "int32(", "uint8(", "uint16(", "uint32(", "uint64("),
+            "number": ("float64(", "float16(", "float32(", "decimal128(", "decimal256("),
+            "string": ("large_string(", )
         }
-        # these types are just stubs as we'll do a .startswith check
+        if not reverse:
+            raise NotImplementedError()
+        
+        else:
+            for json_type, pyarrow_types in map.items():
+                if any([str(pa_type).startswith(str_typ) for pa_type in pyarrow_types]):
+                    return json_type
+            return "string"  # default type if unspecified in map
 
 
 class FileReaderCsv(FileReader):
@@ -108,18 +114,18 @@ class FileReaderCsv(FileReader):
         )
 
 
-    def stream_dataframes(self, file) -> Iterator:
-        # set variable defaults
+    # def stream_dataframes(self, file) -> Iterator:
+    #     # set variable defaults
 
-        # init reader option dicts with airbyte defaults
-        read_options = 
-        headers = True
-        if self._format.get("headers") is None
-        reader_options = {'chunksize': 10000}  # TODO: make this configurable so user can attempt to optimise?
-        # deal with specific user defined options
-        options = ['sep', 'quotechar', 'escapechar', 'encoding']
-        reader_options = {opt: self._format.get(opt) for opt in options if self._format.get(opt) is not None}
-        # now parse and unpack any additional_reader_options
-        if self._format.get("additional_reader_options") is not None:
-            # TODO: clear error if the json.loads fails on the additional reader options provided
-            reader_options = {**reader_options, **}
+    #     # init reader option dicts with airbyte defaults
+    #     read_options = 
+    #     headers = True
+    #     if self._format.get("headers") is None
+    #     reader_options = {'chunksize': 10000}  # TODO: make this configurable so user can attempt to optimise?
+    #     # deal with specific user defined options
+    #     options = ['sep', 'quotechar', 'escapechar', 'encoding']
+    #     reader_options = {opt: self._format.get(opt) for opt in options if self._format.get(opt) is not None}
+    #     # now parse and unpack any additional_reader_options
+    #     if self._format.get("additional_reader_options") is not None:
+    #         # TODO: clear error if the json.loads fails on the additional reader options provided
+    #         reader_options = {**reader_options, **}
