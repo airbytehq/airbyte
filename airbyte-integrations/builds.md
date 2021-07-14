@@ -13,7 +13,9 @@
 
  AWS CloudTrail   [![source-aws-cloudtrail](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-aws-cloudtrail%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-aws-cloudtrail)
 
- Braintree   [![source-braintree-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-braintree-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-braintree-singer) 
+ Braintree   [![source-braintree-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-braintree-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-braintree-singer)
+
+ Dixa   [![source-dixa](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-dixa%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-dixa)
 
  Drift   [![source-drift](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-drift%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-drift) 
 
@@ -112,6 +114,8 @@
  Tempo   [![source-tempo](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-tempo%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-tempo) 
 
  Twilio   [![source-twilio](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-twilio%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-twilio) 
+
+ Typeform   [![source-typeform](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-typeform%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-typeform)
 
  Zendesk Chat   [![source-zendesk-chat](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-zendesk-chat%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-zendesk-chat) 
 
