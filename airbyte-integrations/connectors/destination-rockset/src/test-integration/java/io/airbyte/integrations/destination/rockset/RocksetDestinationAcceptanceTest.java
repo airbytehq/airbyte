@@ -68,6 +68,11 @@ public class RocksetDestinationAcceptanceTest extends DestinationAcceptanceTest 
     // TODO Implement this method to retrieve records which written to the destination by the connector.
     // Records returned from this method will be compared against records provided to the connector
     // to verify they were written correctly
+    LOGGER.info("IN RETRIEVE RECORDS");
+    LOGGER.info("testEnv:" + testEnv);
+    LOGGER.info("testEnv:" + streamName);
+    LOGGER.info("testEnv:" + namespace);
+    LOGGER.info("testEnv:" + streamSchema);
     return null;
   }
 
