@@ -64,7 +64,10 @@ public class IntegrationRunner {
   }
 
   @VisibleForTesting
-  IntegrationRunner(IntegrationCliParser cliParser, Consumer<AirbyteMessage> outputRecordCollector, Destination destination, Source source) {
+  IntegrationRunner(IntegrationCliParser cliParser,
+                    Consumer<AirbyteMessage> outputRecordCollector,
+                    Destination destination,
+                    Source source) {
     Preconditions.checkState(destination != null ^ source != null, "can only pass in a destination or a source");
     this.cliParser = cliParser;
     this.outputRecordCollector = outputRecordCollector;
@@ -97,6 +100,7 @@ public class IntegrationRunner {
       // todo (cgardens) - it is incongruous that that read and write return airbyte message (the
       // envelope) while the other commands return what goes inside it.
       case READ -> {
+
         final JsonNode config = parseConfig(parsed.getConfigPath());
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
         final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);

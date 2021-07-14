@@ -42,11 +42,16 @@ from normalization.transform_config.transform import TransformConfig
 class DbtIntegrationTest(object):
     def __init__(self):
         self.target_schema = "test_normalization"
-        self.container_name = "test_normalization_db_" + self.random_string(3)
+        self.container_prefix = f"test_normalization_db_{self.random_string(3)}"
+        self.db_names = ["postgres", "mysql"]
 
     @staticmethod
     def random_string(length: int) -> str:
         return "".join(random.choice(string.ascii_lowercase) for i in range(length))
+
+    def setup_db(self):
+        self.setup_postgres_db()
+        self.setup_mysql_db()
 
     def setup_postgres_db(self):
         print("Starting localhost postgres container for tests")
@@ -64,7 +69,7 @@ class DbtIntegrationTest(object):
             "run",
             "--rm",
             "--name",
-            f"{self.container_name}",
+            f"{self.container_prefix}_postgres",
             "-e",
             f"POSTGRES_USER={config['username']}",
             "-e",
@@ -81,6 +86,42 @@ class DbtIntegrationTest(object):
         with open("../secrets/postgres.json", "w") as fh:
             fh.write(json.dumps(config))
 
+    def setup_mysql_db(self):
+        print("Starting localhost mysql container for tests")
+        port = self.find_free_port()
+        config = {
+            "type": "mysql",
+            "host": "localhost",
+            "port": port,
+            "database": self.target_schema,
+            "username": "root",
+            "password": "",
+        }
+        commands = [
+            "docker",
+            "run",
+            "--rm",
+            "--name",
+            f"{self.container_prefix}_mysql",
+            "-e",
+            "MYSQL_ALLOW_EMPTY_PASSWORD=yes",
+            "-e",
+            "MYSQL_INITDB_SKIP_TZINFO=yes",
+            "-e",
+            f"MYSQL_DATABASE={config['database']}",
+            "-p",
+            f"{config['port']}:3306",
+            "-d",
+            "mysql",
+        ]
+        print("Executing: ", " ".join(commands))
+        subprocess.call(commands)
+
+        if not os.path.exists("../secrets"):
+            os.makedirs("../secrets")
+        with open("../secrets/mysql.json", "w") as fh:
+            fh.write(json.dumps(config))
+
     @staticmethod
     def find_free_port():
         """
@@ -92,12 +133,13 @@ class DbtIntegrationTest(object):
         s.close()
         return addr[1]
 
-    def tear_down_postgres_db(self):
-        print("Stopping localhost postgres container for tests")
-        try:
-            subprocess.call(["docker", "kill", f"{self.container_name}"])
-        except Exception as e:
-            print(f"WARN: Exception while shutting down postgres db: {e}")
+    def tear_down_db(self):
+        for db_name in self.db_names:
+            print(f"Stopping localhost {db_name} container for tests")
+            try:
+                subprocess.call(["docker", "kill", f"{self.container_prefix}_{db_name}"])
+            except Exception as e:
+                print(f"WARN: Exception while shutting down {db_name}: {e}")
 
     @staticmethod
     def change_current_test_dir(request):

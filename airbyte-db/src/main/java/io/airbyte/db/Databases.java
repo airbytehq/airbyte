@@ -89,6 +89,18 @@ public class Databases {
     return new Database(connectionPool, dialect);
   }
 
+  public static Database createDatabase(final String username,
+                                        final String password,
+                                        final String jdbcConnectionString,
+                                        final String driverClassName,
+                                        final SQLDialect dialect,
+                                        final String connectionProperties) {
+    final BasicDataSource connectionPool =
+        createBasicDataSource(username, password, jdbcConnectionString, driverClassName, Optional.ofNullable(connectionProperties));
+
+    return new Database(connectionPool, dialect);
+  }
+
   public static JdbcDatabase createJdbcDatabase(final String username,
                                                 final String password,
                                                 final String jdbcConnectionString,

@@ -204,7 +204,11 @@ public class MigrationAcceptanceTest {
         foundMysqlSourceDefinition = true;
       } else if (sourceDefinitionRead.getSourceDefinitionId().toString()
           .equals("decd338e-5647-4c0b-adf4-da0e75f5a750")) {
-        assertTrue(sourceDefinitionRead.getDockerImageTag().compareTo("0.3.4") >= 0);
+        String[] tagBrokenAsArray = sourceDefinitionRead.getDockerImageTag().replace(".", ",").split(",");
+        assertEquals(3, tagBrokenAsArray.length);
+        assertTrue(Integer.parseInt(tagBrokenAsArray[0]) >= 0);
+        assertTrue(Integer.parseInt(tagBrokenAsArray[1]) >= 3);
+        assertTrue(Integer.parseInt(tagBrokenAsArray[2]) >= 4);
         assertTrue(sourceDefinitionRead.getName().contains("Postgres"));
         foundPostgresSourceDefinition = true;
       }
@@ -235,7 +239,11 @@ public class MigrationAcceptanceTest {
           foundLocalCSVDestinationDefinition = true;
         }
         case "424892c4-daac-4491-b35d-c6688ba547ba" -> {
-          assertTrue(destinationDefinitionRead.getDockerImageTag().compareTo("0.3.9") >= 0);
+          String[] tagBrokenAsArray = destinationDefinitionRead.getDockerImageTag().replace(".", ",").split(",");
+          assertEquals(3, tagBrokenAsArray.length);
+          assertTrue(Integer.parseInt(tagBrokenAsArray[0]) >= 0);
+          assertTrue(Integer.parseInt(tagBrokenAsArray[1]) >= 3);
+          assertTrue(Integer.parseInt(tagBrokenAsArray[2]) >= 9);
           assertTrue(destinationDefinitionRead.getName().contains("Snowflake"));
           foundSnowflakeDestinationDefintion = true;
         }
@@ -340,6 +348,11 @@ public class MigrationAcceptanceTest {
     env.put("API_URL", "http://localhost:7001/api/v1/");
     env.put("TEMPORAL_HOST", "airbyte-temporal:7233");
     env.put("INTERNAL_API_HOST", "airbyte-server:7001");
+    env.put("S3_LOG_BUCKET", "");
+    env.put("S3_LOG_BUCKET_REGION", "");
+    env.put("AWS_ACCESS_KEY_ID", "");
+    env.put("AWS_SECRET_ACCESS_KEY", "");
+    env.put("GCP_STORAGE_BUCKET", "");
     return env;
   }
 
