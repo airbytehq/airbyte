@@ -99,7 +99,6 @@ public class RocksetDestination extends BaseConnector implements Destination {
       JsonNode config,
       ConfiguredAirbyteCatalog catalog,
       Consumer<AirbyteMessage> outputRecordCollector) throws Exception {
-    // TODO
-    return null;
+    return new RocksetWriteApiConsumer(config, catalog, outputRecordCollector);
   }
 }
