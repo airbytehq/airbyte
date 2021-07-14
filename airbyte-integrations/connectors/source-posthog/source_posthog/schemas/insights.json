@@ -33,7 +33,7 @@
               "properties": {
                 "type": "array",
                 "items": {
-                  "type": "string"
+                  "type": ["string", "null"]
                 }
               },
               "math_property": {
@@ -48,7 +48,7 @@
         "filters": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": ["string", "null"]
           }
         },
         "insight": {
