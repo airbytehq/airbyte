@@ -22,22 +22,33 @@
 # SOFTWARE.
 #
 
-
-import tempfile
 import time
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from pathlib import Path
 from urllib import parse
 
 import requests
+import vcr
+from vcr.cassette import Cassette
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from requests.exceptions import HTTPError
 
-cache_file = tempfile.NamedTemporaryFile()
+
+def request_cache() -> Cassette:
+    """
+    Builds VCR instance.
+    It deletes file everytime we create it, normally should be called only once.
+    We can't use NamedTemporaryFile here because yaml serializer doesn't work well with empty files.
+    """
+    filename = Path("request_cache.yml")
+    filename.unlink(missing_ok=True)
+    return vcr.use_cassette(str(filename), record_mode="new_episodes", serializer="yaml")
 
 
 class GithubStream(HttpStream, ABC):
+    cache = request_cache()
     url_base = "https://api.github.com/"
 
     primary_key = "id"
@@ -359,19 +370,13 @@ class PullRequests(SemiIncrementalGithubStream):
         super().__init__(**kwargs)
         self._first_read = True
 
-    # TODO Fix vcr error:
-    #   UnicodeDecodeError: 'utf-8' codec can't decode byte 0x72 in position 1: invalid start byteDoes this HTTP
-    #   interaction contain binary data? If so, use a different serializer (like the yaml serializer) for this request?
-    # def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-    #     with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json"):
-    #         yield from super().read_records(**kwargs)
-
     def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         """
         Decide if this a first read or not by the presence of the state object
         """
         self._first_read = not bool(stream_state)
-        yield from super().read_records(stream_state=stream_state, **kwargs)
+        with self.cache:
+            yield from super().read_records(stream_state=stream_state, **kwargs)
 
     def path(self, **kwargs) -> str:
         return f"repos/{self.repository}/pulls"
@@ -381,8 +386,8 @@ class PullRequests(SemiIncrementalGithubStream):
 
         for nested in ("head", "base"):
             entry = record.get(nested, {})
-            entry["user_id"] = record.get("head", {}).pop("user", {}).get("id")
-            entry["repo_id"] = record.get("head", {}).pop("repo", {}).get("id")
+            entry["user_id"] = (record.get("head", {}).pop("user", {}) or {}).get("id")
+            entry["repo_id"] = (record.get("head", {}).pop("repo", {}) or {}).get("id")
 
         return record
 
