@@ -23,10 +23,10 @@
 #
 
 
-from typing import Any, List, Mapping, Tuple
+from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple
 
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
@@ -43,7 +43,8 @@ from .streams import (
     IssueMilestones,
     Issues,
     Projects,
-    PullRequests,
+    PullRequestsAsc,
+    PullRequestsDesc,
     Releases,
     Reviews,
     Stargazers,
@@ -52,6 +53,17 @@ from .streams import (
 
 
 class SourceGithub(AbstractSource):
+    def __init__(self):
+        self._first_run_for_pull_requests_stream = True
+
+    def read(
+        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
+    ) -> Iterator[AirbyteMessage]:
+        if "pull_requests" in state and state["pull_requests"].get(config["repository"]) is not None:
+            self._first_run_for_pull_requests_stream = False
+
+        yield from super().read(logger=logger, config=config, catalog=catalog, state=state)
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             authenticator = TokenAuthenticator(token=config["access_token"], auth_method="token")
@@ -65,6 +77,11 @@ class SourceGithub(AbstractSource):
         authenticator = TokenAuthenticator(token=config["access_token"], auth_method="token")
         full_refresh_args = {"authenticator": authenticator, "repository": config["repository"]}
         incremental_args = {"authenticator": authenticator, "repository": config["repository"], "start_date": config["start_date"]}
+
+        pull_requests_class = PullRequestsAsc if self._first_run_for_pull_requests_stream is True else PullRequestsDesc
+        pull_requests_stream = pull_requests_class(**incremental_args)
+        pull_requests_stream.name = "pull_requests"
+
         return [
             Assignees(**full_refresh_args),
             Reviews(**full_refresh_args),
@@ -74,7 +91,7 @@ class SourceGithub(AbstractSource):
             Releases(**incremental_args),
             Events(**incremental_args),
             Comments(**incremental_args),
-            PullRequests(**incremental_args),
+            pull_requests_stream,
             CommitComments(**incremental_args),
             IssueMilestones(**incremental_args),
             Commits(**incremental_args),

@@ -26,10 +26,9 @@
 import tempfile
 import time
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
-import vcr
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from requests.exceptions import HTTPError
@@ -63,20 +62,29 @@ class GithubStream(HttpStream, ABC):
         return f"repos/{self.repository}/{self.name}"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        response_data = response.json()
-        if response_data and len(response_data) == self.page_size:
-            self._page += 1
-            return {"page": self._page}
+        link = response.headers.get("Link")
+        if link and 'rel="next"' in link:
+            response_data = response.json()
+            if response_data and len(response_data) == self.page_size:
+                self._page += 1
+                return {"page": self._page}
 
     def should_retry(self, response: requests.Response) -> bool:
         # We don't call `super()` here because we have custom error handling and GitHub API sometimes returns strange
         # errors. So in `read_records()` we have custom error handling which don't require to call `super()` here.
-        return response.headers.get("X-RateLimit-Remaining") == "0"
+        return response.headers.get("X-RateLimit-Remaining") == "0" or response.status_code in (
+            500,
+            502,
+        )
 
-    def backoff_time(self, response: requests.Response) -> Optional[int]:
+    def backoff_time(self, response: requests.Response) -> Optional[Union[int, float]]:
         # This method is called if we run into the rate limit. GitHub limits requests to 5000 per hour and provides
         # `X-RateLimit-Reset` header which contains time when this hour will be finished and limits will be reset so
         # we again could have 5000 per another hour.
+
+        if response.status_code == 502:
+            return 0.5
+
         reset_time = int(response.headers.get("X-RateLimit-Reset", time.time() + 60))
         time_now = int(time.time())
         return reset_time - time_now
@@ -90,33 +98,16 @@ class GithubStream(HttpStream, ABC):
             # This whole try/except situation in `read_records()` isn't good but right now in `self._send_request()`
             # function we have `response.raise_for_status()` so we don't have much choice on how to handle errors.
             # Bocked on https://github.com/airbytehq/airbyte/issues/3514.
-            if "403 Client Error" in error_msg:
+            if e.response.status_code == 403:
                 error_msg = (
                     f"Syncing `{self.__class__.__name__}` stream isn't available for repository "
                     f"`{self.repository}` and your `access_token`, seems like you don't have permissions for "
                     f"this stream."
                 )
-            elif "404 Client Error" in error_msg and "/teams?" in error_msg:
+            elif e.response.status_code == 404 and "/teams?" in error_msg:
                 # For private repositories `Teams` stream is not available and we get "404 Client Error: Not Found for
                 # url: https://api.github.com/orgs/sherifnada/teams?per_page=100" error.
                 error_msg = f"Syncing `Team` stream isn't available for repository `{self.repository}`."
-            elif "502 Server Error" in error_msg:
-                # Sometimes we may receive "502 Server Error: Bad Gateway for url:" errors. Normal behaviour in to just
-                # repeat request later, but not with GitHub API because we may create an infinite loop. For large
-                # streams (like `comments`) we are providing following parameters: `since`, `sort` and `direction`.
-                # 502 error can occur when you specify very distant start_date in the past. For example, if you try to
-                # do request to the following url:
-                # https://api.github.com/repos/apache/superset/issues/comments?per_page=100&page=1&since=2015-01-01T00:00:00Z&sort=updated&direction=desc
-                # you will be getting `502 Server Error` in 95% of responses. This is because `since` value is very
-                # distant in the past and apparently GitHub can't handle it. So since we handle streams synchronously
-                # we may stuck in this loop for a long time (hours). That's why it's better to skip stream and show
-                # message to user explaining what went wrong. Also explanation will be added to documentation for
-                # GitHub connector.
-                error_msg = (
-                    f"Syncing `{self.__class__.__name__}` stream isn't available right now. We got 502 error "
-                    f"code from GitHub API meaning that GitHub has some issues while processing request. "
-                    f"You may try again later or specify more recent `start_date` parameter."
-                )
 
             self.logger.warn(error_msg)
 
@@ -205,7 +196,8 @@ class SemiIncrementalGithubStream(GithubStream):
     # we should break processing records if possible. If `sort` is set to `updated` and `direction` is set to `desc`
     # this means that latest records will be at the beginning of the response and after we processed those latest
     # records we can just stop and not process other record. This will increase speed of each incremental stream
-    # which supports those 2 request parameters.
+    # which supports those 2 request parameters. Currently only `IssueMilestones` and `PullRequests` streams are
+    # supporting this.
     is_sorted_descending = False
 
     def __init__(self, start_date: str, **kwargs):
@@ -260,10 +252,16 @@ class IncrementalGithubStream(SemiIncrementalGithubStream):
 
 
 class Assignees(GithubStream):
-    pass
+    """
+    API docs: https://docs.github.com/en/rest/reference/issues#list-assignees
+    """
 
 
 class Reviews(GithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request
+    """
+
     fields_to_minimize = ("user",)
 
     def path(
@@ -273,21 +271,31 @@ class Reviews(GithubStream):
         return f"repos/{self.repository}/pulls/{pull_request_number}/reviews"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        pull_requests_stream = PullRequests(authenticator=self.authenticator, repository=self.repository, start_date="")
+        pull_requests_stream = PullRequestsAsc(authenticator=self.authenticator, repository=self.repository, start_date="")
         for pull_request in pull_requests_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"pull_request_number": pull_request["number"]}
 
 
 class Collaborators(GithubStream):
-    pass
+    """
+    API docs: https://docs.github.com/en/rest/reference/repos#list-repository-collaborators
+    """
 
 
 class IssueLabels(GithubStream):
+    """
+    API docs: https://docs.github.com/en/free-pro-team@latest/rest/reference/issues#list-labels-for-a-repository
+    """
+
     def path(self, **kwargs) -> str:
         return f"repos/{self.repository}/labels"
 
 
 class Teams(GithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/teams#list-teams
+    """
+
     def path(self, **kwargs) -> str:
         owner, _ = self.repository.split("/")
         return f"orgs/{owner}/teams"
@@ -297,6 +305,10 @@ class Teams(GithubStream):
 
 
 class Releases(SemiIncrementalGithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/repos#list-releases
+    """
+
     cursor_field = "created_at"
     fields_to_minimize = ("author",)
 
@@ -312,6 +324,10 @@ class Releases(SemiIncrementalGithubStream):
 
 
 class Events(SemiIncrementalGithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/activity#list-repository-events
+    """
+
     cursor_field = "created_at"
     fields_to_minimize = (
         "actor",
@@ -319,13 +335,14 @@ class Events(SemiIncrementalGithubStream):
         "org",
     )
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        link = response.headers.get("Link")
-        if 'rel="next"' in link:
-            return super().next_page_token(response=response)
 
+class PullRequestsBase(SemiIncrementalGithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/pulls#list-pull-requests
+    """
 
-class PullRequests(SemiIncrementalGithubStream):
+    name = "pull_requests"
+    page_size = 50
     fields_to_minimize = (
         "user",
         "milestone",
@@ -335,15 +352,13 @@ class PullRequests(SemiIncrementalGithubStream):
         "requested_reviewers",
         "requested_teams",
     )
-    stream_base_params = {
-        "state": "all",
-        "sort": "updated",
-        "direction": "desc",
-    }
 
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json"):
-            yield from super().read_records(**kwargs)
+    # TODO Fix vcr error:
+    #   UnicodeDecodeError: 'utf-8' codec can't decode byte 0x72 in position 1: invalid start byteDoes this HTTP
+    #   interaction contain binary data? If so, use a different serializer (like the yaml serializer) for this request?
+    # def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+    #     with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json"):
+    #         yield from super().read_records(**kwargs)
 
     def path(self, **kwargs) -> str:
         return f"repos/{self.repository}/pulls"
@@ -366,7 +381,38 @@ class PullRequests(SemiIncrementalGithubStream):
         return record
 
 
+class PullRequestsAsc(PullRequestsBase):
+    """
+    API docs: https://docs.github.com/en/rest/reference/pulls#list-pull-requests
+    This class is used when this is the first sync (we don't have state yet).
+    """
+
+    state_checkpoint_interval = PullRequestsBase.page_size
+    stream_base_params = {
+        "state": "all",
+        "sort": "updated",
+    }
+
+
+class PullRequestsDesc(PullRequestsBase):
+    """
+    API docs: https://docs.github.com/en/rest/reference/pulls#list-pull-requests
+    This class is used when this is not the first sync (we already have state).
+    """
+
+    is_sorted_descending = True
+    stream_base_params = {
+        "state": "all",
+        "sort": "updated",
+        "direction": "desc",
+    }
+
+
 class CommitComments(SemiIncrementalGithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/repos#list-commit-comments-for-a-repository
+    """
+
     fields_to_minimize = ("user",)
 
     def path(self, **kwargs) -> str:
@@ -374,6 +420,11 @@ class CommitComments(SemiIncrementalGithubStream):
 
 
 class IssueMilestones(SemiIncrementalGithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/issues#list-milestones
+    """
+
+    state_checkpoint_interval = SemiIncrementalGithubStream.page_size
     is_sorted_descending = True
     fields_to_minimize = ("creator",)
     stream_base_params = {
@@ -387,6 +438,10 @@ class IssueMilestones(SemiIncrementalGithubStream):
 
 
 class Stargazers(SemiIncrementalGithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/activity#list-stargazers
+    """
+
     primary_key = "user_id"
     cursor_field = "starred_at"
     fields_to_minimize = ("user",)
@@ -400,6 +455,10 @@ class Stargazers(SemiIncrementalGithubStream):
 
 
 class Projects(SemiIncrementalGithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/projects#list-repository-projects
+    """
+
     fields_to_minimize = ("creator",)
     stream_base_params = {
         "state": "all",
@@ -414,6 +473,10 @@ class Projects(SemiIncrementalGithubStream):
 
 
 class IssueEvents(SemiIncrementalGithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/issues#list-issue-events-for-a-repository
+    """
+
     cursor_field = "created_at"
     fields_to_minimize = (
         "actor",
@@ -428,17 +491,23 @@ class IssueEvents(SemiIncrementalGithubStream):
 
 
 class Comments(IncrementalGithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository
+    """
+
     fields_to_minimize = ("user",)
-    stream_base_params = {
-        "sort": "updated",
-        "direction": "desc",
-    }
+    page_size = 30  # `comments` is a large stream so it's better to set smaller page size.
+    state_checkpoint_interval = page_size
 
     def path(self, **kwargs) -> str:
         return f"repos/{self.repository}/issues/comments"
 
 
 class Commits(IncrementalGithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository
+    """
+
     primary_key = "sha"
     cursor_field = "created_at"
     fields_to_minimize = (
@@ -459,6 +528,12 @@ class Commits(IncrementalGithubStream):
 
 
 class Issues(IncrementalGithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/issues#list-repository-issues
+    """
+
+    page_size = 50  # `issues` is a large stream so it's better to set smaller page size.
+    state_checkpoint_interval = page_size
     fields_to_minimize = (
         "user",
         "assignee",
@@ -469,5 +544,5 @@ class Issues(IncrementalGithubStream):
     stream_base_params = {
         "state": "all",
         "sort": "updated",
-        "direction": "desc",
+        "direction": "asc",
     }
