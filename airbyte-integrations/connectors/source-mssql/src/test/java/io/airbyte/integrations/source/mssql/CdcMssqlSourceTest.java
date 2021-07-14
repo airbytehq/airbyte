@@ -302,6 +302,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   //todo: check we fail as expected under certain conditions
   @Test
   void testGetTargetPosition() throws InterruptedException {
+    Thread.sleep(10*1000); // Sleeping because sometimes the db is not yet completely ready and the lsn is not found
     // check that getTargetPosition returns higher Lsn after inserting new row
     Lsn firstLsn = MssqlCdcTargetPosition.getTargetPosition(testJdbcDatabase, dbName).targetLsn;
     executeQuery(String.format("USE %s; INSERT INTO %s.%s (%s, %s, %s) VALUES (%s, %s, '%s');",
