@@ -49,8 +49,6 @@ public interface Configs {
 
   String getDatabaseUrl();
 
-  boolean useConfigDatabase();
-
   String getConfigDatabaseDb();
 
   String getConfigDatabaseUser();

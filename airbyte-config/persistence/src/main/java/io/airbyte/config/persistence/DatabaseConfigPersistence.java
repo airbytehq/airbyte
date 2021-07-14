@@ -24,10 +24,14 @@
 
 package io.airbyte.config.persistence;
 
+import static io.airbyte.config.persistence.AirbyteConfigsTable.AIRBYTE_CONFIGS;
+import static io.airbyte.config.persistence.AirbyteConfigsTable.CONFIG_BLOB;
+import static io.airbyte.config.persistence.AirbyteConfigsTable.CONFIG_ID;
+import static io.airbyte.config.persistence.AirbyteConfigsTable.CONFIG_TYPE;
+import static io.airbyte.config.persistence.AirbyteConfigsTable.CREATED_AT;
+import static io.airbyte.config.persistence.AirbyteConfigsTable.UPDATED_AT;
 import static org.jooq.impl.DSL.asterisk;
-import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.select;
-import static org.jooq.impl.DSL.table;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
@@ -44,24 +48,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Result;
-import org.jooq.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DatabaseConfigPersistence implements ConfigPersistence {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseConfigPersistence.class);
-
-  private static final Table<Record> AIRBYTE_CONFIGS = table("airbyte_configs");
-  private static final Field<String> CONFIG_ID = field("config_id", String.class);
-  private static final Field<String> CONFIG_TYPE = field("config_type", String.class);
-  private static final Field<JSONB> CONFIG_BLOB = field("config_blob", JSONB.class);
-  private static final Field<Timestamp> CREATED_AT = field("created_at", Timestamp.class);
-  private static final Field<Timestamp> UPDATED_AT = field("updated_at", Timestamp.class);
 
   private final ExceptionWrappingDatabase database;
 
@@ -93,11 +88,11 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     database.transaction(ctx -> {
       boolean isInitialized = ctx.fetchExists(select().from(AIRBYTE_CONFIGS));
       if (isInitialized) {
-        LOGGER.info("Config database is not empty; data loading is skipped");
+        LOGGER.info("Config database is not empty; config seeding and replication are skipped");
         return null;
       }
 
-      LOGGER.info("Loading data to config database from the file system...");
+      LOGGER.info("Loading data to config database...");
       Map<ConfigSchema, Stream<JsonNode>> seedConfigs;
       try {
         seedConfigs = seedConfigPersistence.dumpConfigs()

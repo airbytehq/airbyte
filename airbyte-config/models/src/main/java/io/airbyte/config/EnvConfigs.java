@@ -139,12 +139,6 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public boolean useConfigDatabase() {
-    return getEnvOrDefault(USE_CONFIG_DATABASE, false,
-        s -> s.equals("1") || s.equalsIgnoreCase("true"));
-  }
-
-  @Override
   public String getConfigDatabaseDb() {
     // Default to reuse the job database
     return getEnvOrDefault(CONFIG_DATABASE_DB, getDatabaseDb());

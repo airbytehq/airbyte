@@ -24,6 +24,8 @@
 
 package io.airbyte.config.persistence;
 
+import static io.airbyte.config.persistence.AirbyteConfigsTable.AIRBYTE_CONFIGS_TABLE_SCHEMA;
+
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.Configs;
 import io.airbyte.db.Database;
@@ -37,40 +39,57 @@ import org.slf4j.LoggerFactory;
 public class ConfigPersistenceFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigPersistenceFactory.class);
-  private static final String SCHEMA_TEMPLATE_FILE = "config_database_schema.sql";
+
 
   /**
-   * When USE_CONFIG_DATABASE is truthy, create the database config persistence, and initialize it
-   * with data from the file system config persistence. Otherwise, just return the file system config
-   * persistence.
-   *
-   * @param setupDatabase - initialize the database and load data
+   * Create a config persistence based on the configs.
+   * <p/>
+   * If config root is defined, create a database config persistence and copy the configs
+   * from the file-based config persistence. Otherwise, seed the database from the yaml files.
+   * @param setupDatabase initialize the database and load data; this is necessary because
+   *                      this method has multiple callers, and we want to setup the database only once
+   *                      to prevent race conditions.
    */
   public static ConfigPersistence create(Configs configs, boolean setupDatabase) throws IOException {
+    if (configs.getConfigRoot() == null) {
+      // This branch will only be true in a future Airbyte version, in which
+      // the config root is no longer required and everything lives in the database.
+      return createDbPersistenceWithYamlSeed(configs, setupDatabase);
+    }
+    return createDbPersistenceWithFileSeed(configs, setupDatabase);
+  }
+
+  static ConfigPersistence createDbPersistenceWithYamlSeed(Configs configs, boolean setupDatabase) throws IOException {
+    ConfigPersistence seedConfigPersistence = new YamlSeedConfigPersistence();
+    return createDatabasePersistence(configs, setupDatabase, seedConfigPersistence);
+  }
+
+  static ConfigPersistence createDbPersistenceWithFileSeed(Configs configs, boolean setupDatabase) throws IOException {
     Path configRoot = configs.getConfigRoot();
     ConfigPersistence fsConfigPersistence = FileSystemConfigPersistence.createWithValidation(configRoot);
+    return createDatabasePersistence(configs, setupDatabase, fsConfigPersistence);
+  }
 
-    if (!configs.useConfigDatabase()) {
-      LOGGER.info("Use file system config persistence (config root: {})", configRoot);
-      return fsConfigPersistence;
-    }
+  static ConfigPersistence createDatabasePersistence(Configs configs, boolean setupDatabase, ConfigPersistence seedConfigPersistence) throws IOException {
+    LOGGER.info("Use database config persistence.");
 
-    LOGGER.info("Use database config persistence");
-
-    // When initialization is needed, the database is ready when the connection is alive.
-    // Otherwise, the database is ready when data has been loaded into it.
+    // When setupDatabase is true, it means the database will be initialized after we
+    // connect to the database. So the database itself is considered ready as long as
+    // the connection is alive. Otherwise, the database is expected to have full data.
     Function<Database, Boolean> isReady = setupDatabase
         ? Databases.IS_CONFIG_DATABASE_CONNECTED
         : Databases.IS_CONFIG_DATABASE_LOADED_WITH_DATA;
+
     Database database = Databases.createPostgresDatabaseWithRetry(
         configs.getConfigDatabaseUser(),
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl(),
         isReady);
+
     DatabaseConfigPersistence dbConfigPersistence = new DatabaseConfigPersistence(database);
     if (setupDatabase) {
-      dbConfigPersistence.initialize(MoreResources.readResource(SCHEMA_TEMPLATE_FILE));
-      dbConfigPersistence.loadData(fsConfigPersistence);
+      dbConfigPersistence.initialize(MoreResources.readResource(AIRBYTE_CONFIGS_TABLE_SCHEMA));
+      dbConfigPersistence.loadData(seedConfigPersistence);
     }
 
     return new ValidatingConfigPersistence(dbConfigPersistence);

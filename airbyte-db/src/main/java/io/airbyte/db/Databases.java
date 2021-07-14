@@ -83,7 +83,7 @@ public class Databases {
       try {
         database = createPostgresDatabase(username, password, jdbcConnectionString);
         if (!isDbReady.apply(database)) {
-          LOGGER.info("Database is not ready yet");
+          LOGGER.info("Database is not ready yet. Please wait a moment, it might still be initializing...");
           database = null;
           Exceptions.toRuntime(() -> Thread.sleep(5000));
         }
