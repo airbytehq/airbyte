@@ -25,11 +25,16 @@
 package io.airbyte.integrations.destination.rockset;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.rockset.client.model.CreateWorkspaceRequest;
+import com.rockset.client.model.CreateWorkspaceResponse;
+import com.rockset.client.ApiException;
+import com.rockset.client.RocksetClient;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
@@ -40,14 +45,44 @@ public class RocksetDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RocksetDestination.class);
 
+  private static final String WORKSPACE_ID = "workspace";
+  private static final String API_KEY_ID = "api_key";
+
+  private static final String APISERVER_URL = "api.rs2.usw2.rockset.com";
+
   public static void main(String[] args) throws Exception {
     new IntegrationRunner(new RocksetDestination()).run(args);
   }
 
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
-    // TODO
-    return null;
+    try {
+      String workspace = config.get(WORKSPACE_ID).asText();
+      String apiKey = config.get(API_KEY_ID).asText();
+      createWorkspaceIfNotExists(apiKey, workspace);
+      return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
+    } catch (Exception e) {
+      LOGGER.info("Check failed.", e);
+      return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage() != null ? e.getMessage() : e.toString());
+    }
+  }
+
+  private void createWorkspaceIfNotExists(String apiKey, String workspace) throws Exception {
+    RocksetClient client = new RocksetClient(apiKey, APISERVER_URL);
+    CreateWorkspaceRequest request = new CreateWorkspaceRequest()
+      .name(workspace);
+
+    try {
+      CreateWorkspaceResponse response = client.createWorkspace(request);
+      LOGGER.info(String.format("Created workspace %s", workspace));
+    } catch (ApiException e) {
+      if (e.getCode() == 400) {
+        LOGGER.info(String.format("Workspace %s already exists", workspace));
+        return;
+      }
+
+      throw e;
+    }
   }
 
   @Override
