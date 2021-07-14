@@ -24,16 +24,16 @@
 
 import time
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from pathlib import Path
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
 
 import requests
 import vcr
-from vcr.cassette import Cassette
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from requests.exceptions import HTTPError
+from vcr.cassette import Cassette
 
 
 def request_cache() -> Cassette:
