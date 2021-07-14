@@ -28,26 +28,21 @@ To start contributing:
 
 ## Build with `gradle`
 
-To compile the code and run unit tests:
-
-```bash
-./gradlew clean build
-```
-
-This will build all the code and run all the unit tests.
-
-`./gradlew build` creates all the necessary artifacts \(Webapp, Jars and Docker images\) so that you can run Airbyte locally. Since this builds everything, it can take some time.
-
-To compile and build just the core systems:
+To compile and build just the platform (not all the connectors):
 
 ```bash
 SUB_BUILD=PLATFORM ./gradlew build
 ```
 
+This will build all the code and run all the unit tests.
+
+`SUB_BUILD=PLATFORM ./gradlew build` creates all the necessary artifacts \(Webapp, Jars and Docker images\) so that you can run Airbyte locally. Since this builds everything, it can take some time.
+
+
 {% hint style="info" %}
 Gradle will use all CPU cores by default. If Gradle uses too much/too little CPU, tuning the number of CPU cores it uses to better suit a dev's need can help.
 
-Adjust this by either, 1. Setting an env var: `export GRADLE_OPTS="-Dorg.gradle.workers.max=3"`. 2. Setting a cli option: `./gradlew build --max-workers 3` 3. Setting the `org.gradle.workers.max` property in the `gradle.properties` file.
+Adjust this by either, 1. Setting an env var: `export GRADLE_OPTS="-Dorg.gradle.workers.max=3"`. 2. Setting a cli option: `SUB_BUILD=PLATFORM ./gradlew build --max-workers 3` 3. Setting the `org.gradle.workers.max` property in the `gradle.properties` file.
 
 A good rule of thumb is to set this to \(\# of cores - 1\).
 {% endhint %}
