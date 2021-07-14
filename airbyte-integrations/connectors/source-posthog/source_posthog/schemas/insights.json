@@ -8,7 +8,7 @@
       "type": "string"
     },
     "filters": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "events": {
           "type": "array",
@@ -28,7 +28,7 @@
                 "type": "string"
               },
               "order": {
-                "type": "integer"
+                "type": ["integer", "null"]
               },
               "properties": {
                 "type": "array",
@@ -37,13 +37,13 @@
                 }
               },
               "math_property": {
-                "type": "string"
+                "type": ["string", "null"]
               }
             }
           }
         },
         "display": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "filters": {
           "type": "array",
@@ -55,13 +55,13 @@
           "type": "string"
         },
         "session": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "interval": {
-          "type": "string"
+          "type": ["string", "integer"]
         },
         "pagination": {
-          "type": "object"
+          "type": ["object", "null"]
         }
       }
     },
@@ -69,7 +69,7 @@
       "type": "string"
     },
     "order": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "deleted": {
       "type": "boolean"
@@ -78,10 +78,10 @@
       "type": "string"
     },
     "layouts": {
-      "type": "object"
+      "type": ["object", "null"]
     },
     "color": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "last_refresh": {
       "type": "string",
