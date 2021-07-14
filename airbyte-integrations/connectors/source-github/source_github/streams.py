@@ -418,11 +418,12 @@ class IssueMilestones(SemiIncrementalGithubStream):
     API docs: https://docs.github.com/en/rest/reference/issues#list-milestones
     """
 
+    is_sorted_descending = True
     fields_to_minimize = ("creator",)
     stream_base_params = {
         "state": "all",
         "sort": "updated",
-        "direction": "asc",
+        "direction": "desc",
     }
 
     def path(self, **kwargs) -> str:
