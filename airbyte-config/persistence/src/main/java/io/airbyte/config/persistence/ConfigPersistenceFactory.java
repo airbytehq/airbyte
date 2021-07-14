@@ -93,7 +93,6 @@ public class ConfigPersistenceFactory {
    * <p/>
    * If config root is defined, create a database config persistence and copy the configs from the
    * file-based config persistence. Otherwise, seed the database from the yaml files.
-   *
    */
   public ConfigPersistence create() throws IOException {
     if (!useConfigDatabase) {
@@ -107,6 +106,7 @@ public class ConfigPersistenceFactory {
       // the config root is no longer required and everything lives in the database.
       return createDbPersistenceWithYamlSeed();
     }
+
     return createDbPersistenceWithFileSeed();
   }
 

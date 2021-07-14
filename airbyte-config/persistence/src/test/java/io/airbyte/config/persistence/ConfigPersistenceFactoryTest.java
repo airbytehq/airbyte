@@ -171,7 +171,6 @@ class ConfigPersistenceFactoryTest extends BaseTest {
 
   /**
    * This test mimics the file -> db config persistence migration process.
-   * <li></li>
    */
   @Test
   public void testMigrateFromFileToDbPersistence() throws Exception {
@@ -186,7 +185,7 @@ class ConfigPersistenceFactoryTest extends BaseTest {
         .withEmail("mary@airbyte.io")
         .withInitialSetupComplete(true);
 
-    // first run uses file system config persistence, and has an extra workspace
+    // first run uses file system config persistence, and adds an extra workspace
     Path testRoot = Path.of("/tmp/cpf_test_migration");
     Path rootPath = Files.createTempDirectory(Files.createDirectories(testRoot), ConfigPersistenceFactoryTest.class.getName());
     when(configs.getConfigRoot()).thenReturn(rootPath);

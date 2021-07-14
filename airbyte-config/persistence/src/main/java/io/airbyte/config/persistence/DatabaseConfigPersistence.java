@@ -64,6 +64,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     this.database = new ExceptionWrappingDatabase(database);
   }
 
+  /**
+   * Initialize the database by creating the {@code airbyte_configs} table.
+   */
   public void initialize(String schema) throws IOException {
     database.transaction(ctx -> {
       boolean hasAirConfigsTable = ctx.fetchExists(select()
@@ -72,23 +75,22 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       if (hasAirConfigsTable) {
         return null;
       }
-      LOGGER.info("Config database has not been initialized; creating tables...");
-      LOGGER.info("Config database schema: {}", schema);
+      LOGGER.info("Config database has not been initialized");
+      LOGGER.info("Creating tables with schema: {}", schema);
       ctx.execute(schema);
       return null;
     });
   }
 
   /**
-   * Initialize the {@code airbyte_configs} table with configs from the file system config
-   * persistence. Only do so table if the table is empty. Otherwise, we assume that it has been
-   * initialized.
+   * Populate the {@code airbyte_configs} table with configs from the seed persistence.
+   * Only do so if the table is empty. Otherwise, we assume that it has been populated.
    */
   public void loadData(ConfigPersistence seedConfigPersistence) throws IOException {
     database.transaction(ctx -> {
       boolean isInitialized = ctx.fetchExists(select().from(AIRBYTE_CONFIGS));
       if (isInitialized) {
-        LOGGER.info("Config database is not empty; config seeding and replication are skipped");
+        LOGGER.info("Config database is not empty; skipping config seeding and copying");
         return null;
       }
 

@@ -42,8 +42,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * This config persistence contains all seed definitions according to the yaml files. It is
- * read-only.
+ * This config persistence contains all seed definitions according to the yaml files. It is read-only.
+ * This class can eventually replace the generateSeed task and the file system config persistence.
  */
 public class YamlSeedConfigPersistence implements ConfigPersistence {
 
