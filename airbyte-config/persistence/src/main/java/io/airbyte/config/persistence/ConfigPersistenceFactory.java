@@ -37,9 +37,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * By default, this factory returns a database config persistence. it can still
- * return a file system config persistence for testing purpose. This legacy feature
- * should be removed after the file to database migration is completely done.
+ * By default, this factory returns a database config persistence. it can still return a file system
+ * config persistence for testing purpose. This legacy feature should be removed after the file to
+ * database migration is completely done.
  */
 public class ConfigPersistenceFactory {
 
@@ -65,6 +65,7 @@ public class ConfigPersistenceFactory {
   }
 
   public static class Builder {
+
     private final Configs configs;
     private boolean setupDatabase = true;
     private boolean useConfigDatabase = true;
@@ -86,6 +87,7 @@ public class ConfigPersistenceFactory {
     public ConfigPersistenceFactory get() {
       return new ConfigPersistenceFactory(configs, setupDatabase, useConfigDatabase);
     }
+
   }
 
   /**
