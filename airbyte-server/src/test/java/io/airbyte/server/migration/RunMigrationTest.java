@@ -159,7 +159,11 @@ public class RunMigrationTest {
     assertEquals("MySQL", mysqlDefinition.getName());
 
     final StandardSourceDefinition postgresDefinition = sourceDefinitions.get("decd338e-5647-4c0b-adf4-da0e75f5a750");
-    assertTrue(postgresDefinition.getDockerImageTag().compareTo("0.3.4") >= 0);
+    String[] tagBrokenAsArray = postgresDefinition.getDockerImageTag().replace(".", ",").split(",");
+    assertEquals(3, tagBrokenAsArray.length);
+    assertTrue(Integer.parseInt(tagBrokenAsArray[0]) >= 0);
+    assertTrue(Integer.parseInt(tagBrokenAsArray[1]) >= 3);
+    assertTrue(Integer.parseInt(tagBrokenAsArray[2]) >= 4);
     assertTrue(postgresDefinition.getName().contains("Postgres"));
   }
 
@@ -178,7 +182,11 @@ public class RunMigrationTest {
     assertEquals("0.2.0", localCsvDefinition.getDockerImageTag());
 
     final StandardDestinationDefinition snowflakeDefinition = sourceDefinitions.get("424892c4-daac-4491-b35d-c6688ba547ba");
-    assertTrue(snowflakeDefinition.getDockerImageTag().compareTo("0.3.9") >= 0);
+    String[] tagBrokenAsArray = snowflakeDefinition.getDockerImageTag().replace(".", ",").split(",");
+    assertEquals(3, tagBrokenAsArray.length);
+    assertTrue(Integer.parseInt(tagBrokenAsArray[0]) >= 0);
+    assertTrue(Integer.parseInt(tagBrokenAsArray[1]) >= 3);
+    assertTrue(Integer.parseInt(tagBrokenAsArray[2]) >= 9);
     assertTrue(snowflakeDefinition.getName().contains("Snowflake"));
   }
 
