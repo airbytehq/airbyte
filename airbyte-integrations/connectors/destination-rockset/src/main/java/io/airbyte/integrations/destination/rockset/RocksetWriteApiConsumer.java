@@ -1,20 +1,21 @@
 package io.airbyte.integrations.destination.rockset;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rockset.client.RocksetClient;
 import com.rockset.client.model.AddDocumentsRequest;
-import io.airbyte.commons.json.Jsons;
+import com.rockset.client.model.AddDocumentsResponse;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
-import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,7 @@ import static io.airbyte.integrations.destination.rockset.RocksetUtils.WORKSPACE
 public class RocksetWriteApiConsumer implements AirbyteMessageConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RocksetWriteApiConsumer.class);
+  private static final ObjectMapper mapper = new ObjectMapper();
 
   private final String apiKey;
   private final String workspace;
@@ -63,9 +65,11 @@ public class RocksetWriteApiConsumer implements AirbyteMessageConsumer {
       String cname = message.getRecord().getStream();
 
       AddDocumentsRequest req = new AddDocumentsRequest();
-      req.addDataItem(message.getRecord().getData());
+      req.addDataItem(mapper.convertValue(message.getRecord().getData(), new TypeReference<>(){}));
 
       this.client.addDocuments(workspace, cname, req);
+    } else if (message.getType() == AirbyteMessage.Type.STATE) {
+      this.outputRecordCollector.accept(message);
     }
   }
 
