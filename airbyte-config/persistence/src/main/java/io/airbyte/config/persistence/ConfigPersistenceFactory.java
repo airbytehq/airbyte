@@ -98,6 +98,7 @@ public class ConfigPersistenceFactory {
   public ConfigPersistence create() throws IOException {
     if (!useConfigDatabase) {
       Path configRoot = configs.getConfigRoot();
+      LOGGER.info("Use file system config persistence (root: {})", configRoot);
       return FileSystemConfigPersistence.createWithValidation(configRoot);
     }
 
