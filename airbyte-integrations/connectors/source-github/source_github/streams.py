@@ -27,6 +27,7 @@ import tempfile
 import time
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from urllib import parse
 
 import requests
 from airbyte_cdk.models import SyncMode
@@ -44,9 +45,6 @@ class GithubStream(HttpStream, ABC):
     # GitHub pagination could be from 1 to 100.
     page_size = 100
 
-    # Default page value for pagination.
-    _page = 1
-
     stream_base_params = {}
 
     # Fields in below variable will be used for data clearing. Put there keys which represent:
@@ -62,19 +60,19 @@ class GithubStream(HttpStream, ABC):
         return f"repos/{self.repository}/{self.name}"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        link = response.headers.get("Link")
-        if link and 'rel="next"' in link:
-            response_data = response.json()
-            if response_data and len(response_data) == self.page_size:
-                self._page += 1
-                return {"page": self._page}
+        links = response.links
+        if "next" in links:
+            next_link = links["next"]["url"]
+            parsed_link = parse.urlparse(next_link)
+            page = dict(parse.parse_qsl(parsed_link.query)).get("page")
+            return {"page": page}
 
     def should_retry(self, response: requests.Response) -> bool:
         # We don't call `super()` here because we have custom error handling and GitHub API sometimes returns strange
         # errors. So in `read_records()` we have custom error handling which don't require to call `super()` here.
         return response.headers.get("X-RateLimit-Remaining") == "0" or response.status_code in (
-            500,
-            502,
+            requests.codes.SERVER_ERROR,
+            requests.codes.BAD_GATEWAY,
         )
 
     def backoff_time(self, response: requests.Response) -> Optional[Union[int, float]]:
@@ -82,12 +80,11 @@ class GithubStream(HttpStream, ABC):
         # `X-RateLimit-Reset` header which contains time when this hour will be finished and limits will be reset so
         # we again could have 5000 per another hour.
 
-        if response.status_code == 502:
+        if response.status_code == requests.codes.BAD_GATEWAY:
             return 0.5
 
-        reset_time = int(response.headers.get("X-RateLimit-Reset", time.time() + 60))
-        time_now = int(time.time())
-        return reset_time - time_now
+        reset_time = response.headers.get("X-RateLimit-Reset")
+        return float(reset_time) - time.time() if reset_time else 60
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         try:
@@ -98,13 +95,13 @@ class GithubStream(HttpStream, ABC):
             # This whole try/except situation in `read_records()` isn't good but right now in `self._send_request()`
             # function we have `response.raise_for_status()` so we don't have much choice on how to handle errors.
             # Bocked on https://github.com/airbytehq/airbyte/issues/3514.
-            if e.response.status_code == 403:
+            if e.response.status_code == requests.codes.FORBIDDEN:
                 error_msg = (
                     f"Syncing `{self.__class__.__name__}` stream isn't available for repository "
                     f"`{self.repository}` and your `access_token`, seems like you don't have permissions for "
                     f"this stream."
                 )
-            elif e.response.status_code == 404 and "/teams?" in error_msg:
+            elif e.response.status_code == requests.codes.NOT_FOUND and "/teams?" in error_msg:
                 # For private repositories `Teams` stream is not available and we get "404 Client Error: Not Found for
                 # url: https://api.github.com/orgs/sherifnada/teams?per_page=100" error.
                 error_msg = f"Syncing `Team` stream isn't available for repository `{self.repository}`."
