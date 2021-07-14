@@ -190,13 +190,15 @@ class SourceDefinitionsHandlerTest {
   @Test
   @DisplayName("updateSourceDefinition should correctly update a sourceDefinition")
   void testUpdateSourceDefinition() throws ConfigNotFoundException, IOException, JsonValidationException {
+    final String newDockerImageTag = "averydifferenttag";
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId())).thenReturn(source);
     when(specFetcher.executeWithResponse(source.getDockerRepository() + ":" + source.getDockerImageTag()))
+        .thenReturn((SynchronousResponse<ConnectorSpecification>) jobResponse);
+    when(specFetcher.executeWithResponse(source.getDockerRepository() + ":" + newDockerImageTag))
         .thenReturn((SynchronousResponse<ConnectorSpecification>) jobResponse);
     when(jobResponse.getOutput()).thenReturn(CONNECTION_SPECIFICATION);
     when(jobResponse.isSuccess()).thenReturn(true);
 
-    final String newDockerImageTag = "averydifferenttag";
     final SourceDefinitionRead sourceDefinition = sourceHandler
         .getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(source.getSourceDefinitionId()));
     final String dockerRepository = sourceDefinition.getDockerRepository();

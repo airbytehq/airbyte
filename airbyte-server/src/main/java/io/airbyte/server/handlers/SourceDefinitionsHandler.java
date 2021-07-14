@@ -25,7 +25,6 @@
 package io.airbyte.server.handlers;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import io.airbyte.api.model.*;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
@@ -39,7 +38,6 @@ import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.BadObjectSchemaKnownException;
 import io.airbyte.server.errors.InternalServerKnownException;
-import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -132,70 +130,54 @@ public class SourceDefinitionsHandler {
         .withName(sourceDefinitionCreate.getName())
         .withIcon(sourceDefinitionCreate.getIcon());
 
-    // Validates that the docker image exists and can generate a compatible spec by running a getSpec
-    // job on the provided image and checking that getOutput() worked.
-    SynchronousResponse<ConnectorSpecification> response = null;
-    KnownException validationException = null;
-    try {
-      response = specFetcher.executeWithResponse(
-          DockerUtils.getTaggedImageName(sourceDefinitionCreate.getDockerRepository(), sourceDefinitionCreate.getDockerImageTag()));
-      Preconditions.checkNotNull(response, "Get Spec job returned null response");
-      Preconditions.checkState(response.isSuccess(), "Get Spec job failed.");
-      Preconditions.checkNotNull(response.getOutput(), "Get Spec job returned null spec");
-
-      configRepository.writeStandardSource(sourceDefinition);
-    } catch (NullPointerException npe) {
-      validationException = new BadObjectSchemaKnownException(
-          String.format("Encountered an issue while validating input docker image from %s:%s - %s",
-              sourceDefinitionCreate.getDockerRepository(), sourceDefinitionCreate.getDockerImageTag(), npe.toString() + " " + npe.getMessage()),
-          npe);
-    }
-
-    // When an error occurs, your source isn't echoed back to you, indicating it failed to save.
-    return new SourceDefinitionReadWithJobInfo()
-        .exception(validationException == null ? null : validationException.getKnownExceptionInfo())
-        .sourceDefinitionRead(validationException != null ? null : buildSourceDefinitionRead(sourceDefinition))
-        .jobInfo(JobConverter.getSynchronousJobRead(response));
+    return saveSourceDefinition(sourceDefinition);
   }
 
   public SourceDefinitionReadWithJobInfo updateSourceDefinition(SourceDefinitionUpdate sourceDefinitionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
+
     final StandardSourceDefinition currentSourceDefinition =
         configRepository.getStandardSourceDefinition(sourceDefinitionUpdate.getSourceDefinitionId());
+    currentSourceDefinition.setDockerImageTag(sourceDefinitionUpdate.getDockerImageTag());
 
-    final StandardSourceDefinition newSource = new StandardSourceDefinition()
-        .withSourceDefinitionId(currentSourceDefinition.getSourceDefinitionId())
-        .withDockerImageTag(sourceDefinitionUpdate.getDockerImageTag())
-        .withDockerRepository(currentSourceDefinition.getDockerRepository())
-        .withDocumentationUrl(currentSourceDefinition.getDocumentationUrl())
-        .withName(currentSourceDefinition.getName())
-        .withIcon(currentSourceDefinition.getIcon());
+    return saveSourceDefinition(currentSourceDefinition);
+  }
 
+  private SourceDefinitionReadWithJobInfo saveSourceDefinition(StandardSourceDefinition definition) throws IOException, JsonValidationException {
     // Validates that the docker image exists and can generate a compatible spec by running a getSpec
-    // job on the provided image and checking that getOutput() worked.
-    SynchronousResponse<ConnectorSpecification> response = null;
-    KnownException validationException = null;
-    try {
-      response = specFetcher.executeWithResponse(
-          DockerUtils.getTaggedImageName(currentSourceDefinition.getDockerRepository(), currentSourceDefinition.getDockerImageTag()));
-      Preconditions.checkNotNull(response, "Get Spec job returned null response");
-      Preconditions.checkState(response.isSuccess(), "Get Spec job failed.");
-      Preconditions.checkNotNull(response.getOutput(), "Get Spec job return null spec");
-
-      configRepository.writeStandardSource(newSource);
+    // job on the provided image and checking that getOutput() worked. If it succeeds, then writes the
+    // config.
+    SynchronousResponse<ConnectorSpecification> response = specFetcher.executeWithResponse(
+        DockerUtils.getTaggedImageName(definition.getDockerRepository(), definition.getDockerImageTag()));
+    boolean validationSucceeded = (response != null && response.isSuccess() && response.getOutput() != null);
+    if (validationSucceeded) {
+      configRepository.writeStandardSource(definition);
       // we want to re-fetch the spec for updated definitions.
       schedulerSynchronousClient.resetCache();
-    } catch (NullPointerException e) {
-      validationException =
-          new BadObjectSchemaKnownException(String.format("Encountered an issue while validating input docker image from %s:%s - %s",
-              currentSourceDefinition.getDockerRepository(), currentSourceDefinition.getDockerImageTag(), e.toString() + " " + e.getMessage()), e);
     }
 
-    // When an error occurs, your source isn't echoed back to you, indicating it failed to save.
+    // When an error occurs, your destination isn't echoed back to you, indicating it failed to save.
     return new SourceDefinitionReadWithJobInfo()
-        .exception(validationException == null ? null : validationException.getKnownExceptionInfo())
-        .sourceDefinitionRead(validationException != null ? null : buildSourceDefinitionRead(newSource))
+        .sourceDefinitionRead(validationSucceeded ? buildSourceDefinitionRead(definition) : null)
+        .exception(validationSucceeded ? null
+            : new BadObjectSchemaKnownException(
+                String.format("Error validating docker image %s:%s - %s - see job logs for details.",
+                    definition.getDockerRepository(),
+                    definition.getDockerImageTag(),
+                    getFailureReason(response)))
+                        .asKnownExceptionInfo())
         .jobInfo(JobConverter.getSynchronousJobRead(response));
+  }
+
+  private String getFailureReason(SynchronousResponse<ConnectorSpecification> response) {
+    if (response == null) {
+      return "Get Spec job returned null response";
+    } else if (!response.isSuccess()) {
+      return "Get Spec job failed.";
+    } else if (response.getOutput() == null) {
+      return "Get Spec job returned null spec.";
+    }
+    return "No failure";
   }
 
   public static String loadIcon(String name) {
