@@ -137,7 +137,7 @@ class GithubStream(HttpStream, ABC):
         for record in response.json():  # GitHub puts records in an array.
             yield self.transform(record=record)
 
-    def transform(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def transform(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """
         Use this method to:
             - remove excessive fields from record;
@@ -201,6 +201,12 @@ class SemiIncrementalGithubStream(GithubStream):
         super().__init__(**kwargs)
         self._start_date = start_date
 
+    @property
+    def state_checkpoint_interval(self) -> Optional[int]:
+        if not self.is_sorted_descending:
+            return self.page_size
+        return None
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state
@@ -213,7 +219,7 @@ class SemiIncrementalGithubStream(GithubStream):
 
         return {self.repository: {self.cursor_field: state_value}}
 
-    def get_starting_point(self, stream_state: Mapping[str, Any]):
+    def get_starting_point(self, stream_state: Mapping[str, Any]) -> str:
         start_point = self._start_date
 
         if stream_state and stream_state.get(self.repository, {}).get(self.cursor_field):
@@ -268,7 +274,7 @@ class Reviews(GithubStream):
         return f"repos/{self.repository}/pulls/{pull_request_number}/reviews"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        pull_requests_stream = PullRequestsAsc(authenticator=self.authenticator, repository=self.repository, start_date="")
+        pull_requests_stream = PullRequests(authenticator=self.authenticator, repository=self.repository, start_date="")
         for pull_request in pull_requests_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"pull_request_number": pull_request["number"]}
 
@@ -309,7 +315,7 @@ class Releases(SemiIncrementalGithubStream):
     cursor_field = "created_at"
     fields_to_minimize = ("author",)
 
-    def transform(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def transform(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         record = super().transform(record=record)
 
         assets = record.get("assets", [])
@@ -333,12 +339,11 @@ class Events(SemiIncrementalGithubStream):
     )
 
 
-class PullRequestsBase(SemiIncrementalGithubStream):
+class PullRequests(SemiIncrementalGithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/pulls#list-pull-requests
     """
 
-    name = "pull_requests"
     page_size = 50
     fields_to_minimize = (
         "user",
@@ -350,6 +355,10 @@ class PullRequestsBase(SemiIncrementalGithubStream):
         "requested_teams",
     )
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._first_read = True
+
     # TODO Fix vcr error:
     #   UnicodeDecodeError: 'utf-8' codec can't decode byte 0x72 in position 1: invalid start byteDoes this HTTP
     #   interaction contain binary data? If so, use a different serializer (like the yaml serializer) for this request?
@@ -357,52 +366,42 @@ class PullRequestsBase(SemiIncrementalGithubStream):
     #     with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json"):
     #         yield from super().read_records(**kwargs)
 
+    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        """
+        Decide if this a first read or not by the presence of the state object
+        """
+        self._first_read = not bool(stream_state)
+        yield from super().read_records(stream_state=stream_state, **kwargs)
+
     def path(self, **kwargs) -> str:
         return f"repos/{self.repository}/pulls"
 
-    def transform(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def transform(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         record = super().transform(record=record)
 
-        head = record.get("head", {})
-        head_user = head.pop("user", None)
-        head["user_id"] = head_user.get("id") if head_user else None
-        head_repo = head.pop("repo", None)
-        head["repo_id"] = head_repo.get("id") if head_repo else None
-
-        base = record.get("base", {})
-        base_user = base.pop("user", None)
-        base["user_id"] = base_user.get("id") if base_user else None
-        base_repo = base.pop("repo", None)
-        base["repo_id"] = base_repo.get("id") if base_repo else None
+        for nested in ("head", "base"):
+            entry = record.get(nested, {})
+            entry["user_id"] = record.get("head", {}).pop("user", {}).get("id")
+            entry["repo_id"] = record.get("head", {}).pop("repo", {}).get("id")
 
         return record
 
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        base_params = super().request_params(**kwargs)
+        params = {
+            "state": "all",
+            "sort": "updated",
+            "direction": "desc" if self.is_sorted_descending else "asc"
+        }
 
-class PullRequestsAsc(PullRequestsBase):
-    """
-    API docs: https://docs.github.com/en/rest/reference/pulls#list-pull-requests
-    This class is used when this is the first sync (we don't have state yet).
-    """
+        return {**base_params, **params}
 
-    state_checkpoint_interval = PullRequestsBase.page_size
-    stream_base_params = {
-        "state": "all",
-        "sort": "updated",
-    }
-
-
-class PullRequestsDesc(PullRequestsBase):
-    """
-    API docs: https://docs.github.com/en/rest/reference/pulls#list-pull-requests
-    This class is used when this is not the first sync (we already have state).
-    """
-
-    is_sorted_descending = True
-    stream_base_params = {
-        "state": "all",
-        "sort": "updated",
-        "direction": "desc",
-    }
+    @property
+    def is_sorted_descending(self) -> bool:
+        """
+        Depending if there any state we read stream in ascending or descending order.
+        """
+        return self._first_read
 
 
 class CommitComments(SemiIncrementalGithubStream):
@@ -421,13 +420,11 @@ class IssueMilestones(SemiIncrementalGithubStream):
     API docs: https://docs.github.com/en/rest/reference/issues#list-milestones
     """
 
-    state_checkpoint_interval = SemiIncrementalGithubStream.page_size
-    is_sorted_descending = True
     fields_to_minimize = ("creator",)
     stream_base_params = {
         "state": "all",
         "sort": "updated",
-        "direction": "desc",
+        "direction": "asc",
     }
 
     def path(self, **kwargs) -> str:
@@ -444,11 +441,12 @@ class Stargazers(SemiIncrementalGithubStream):
     fields_to_minimize = ("user",)
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        headers = super().request_headers(**kwargs)
+        base_headers = super().request_headers(**kwargs)
         # We need to send below header if we want to get `starred_at` field. See docs (Alternative response with
         # star creation timestamps) - https://docs.github.com/en/rest/reference/activity#list-stargazers.
-        headers["Accept"] = "application/vnd.github.v3.star+json"
-        return headers
+        headers = {"Accept": "application/vnd.github.v3.star+json"}
+
+        return {**base_headers, **headers}
 
 
 class Projects(SemiIncrementalGithubStream):
@@ -462,11 +460,12 @@ class Projects(SemiIncrementalGithubStream):
     }
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        headers = super().request_headers(**kwargs)
+        base_headers = super().request_headers(**kwargs)
         # Projects stream requires sending following `Accept` header. If we won't sent it
         # we'll get `415 Client Error: Unsupported Media Type` error.
-        headers["Accept"] = "application/vnd.github.inertia-preview+json"
-        return headers
+        headers = {"Accept": "application/vnd.github.inertia-preview+json"}
+
+        return {**base_headers, **headers}
 
 
 class IssueEvents(SemiIncrementalGithubStream):
@@ -494,7 +493,6 @@ class Comments(IncrementalGithubStream):
 
     fields_to_minimize = ("user",)
     page_size = 30  # `comments` is a large stream so it's better to set smaller page size.
-    state_checkpoint_interval = page_size
 
     def path(self, **kwargs) -> str:
         return f"repos/{self.repository}/issues/comments"
@@ -512,7 +510,7 @@ class Commits(IncrementalGithubStream):
         "committer",
     )
 
-    def transform(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def transform(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         record = super().transform(record=record)
 
         # Record of the `commits` stream doesn't have an updated_at/created_at field at the top level (so we could
@@ -530,7 +528,7 @@ class Issues(IncrementalGithubStream):
     """
 
     page_size = 50  # `issues` is a large stream so it's better to set smaller page size.
-    state_checkpoint_interval = page_size
+
     fields_to_minimize = (
         "user",
         "assignee",
