@@ -33,7 +33,7 @@
               "properties": {
                 "type": "array",
                 "items": {
-                  "type": ["string", "null"]
+                  "type": ["string", "null", "object"]
                 }
               },
               "math_property": {
@@ -69,7 +69,7 @@
       "type": ["string", "null"]
     },
     "order": {
-      "type": ["string", "null"]
+      "type": ["string", "null", "object"]
     },
     "deleted": {
       "type": "boolean"
@@ -91,7 +91,7 @@
       "type": "boolean"
     },
     "result": {
-      "type": ["string", "null"]
+      "type": ["string", "null", "object"]
     },
     "created_at": {
       "type": ["string", "null"],
