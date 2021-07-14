@@ -26,6 +26,7 @@ package io.airbyte.server;
 
 import io.airbyte.server.services.BlotoutAuthentication;
 import java.io.IOException;
+import javax.annotation.security.PermitAll;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.HttpHeaders;
@@ -48,6 +49,10 @@ public class AuthenticationFilter implements ContainerRequestFilter {
       String authorizationHeader =
           requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
       // Validate the Authorization header
+      if(requestContext.getMethod().equalsIgnoreCase("OPTIONS")){
+        requestContext.abortWith(Response.ok().build());
+        return;
+      }
       if (!isTokenBasedAuthentication(authorizationHeader)) {
         abortWithUnauthorized(requestContext);
         LOGGER.error(" return from isTokenBasedAuthentication ");
