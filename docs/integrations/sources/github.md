@@ -4,8 +4,6 @@
 
 The GitHub source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This Github source wraps the [Singer Github Tap](https://github.com/singer-io/tap-github).
-
 ### Output schema
 
 This connector outputs the following full refresh streams:
