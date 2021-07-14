@@ -88,7 +88,6 @@ public class IntegrationRunner {
                     Destination destination,
                     Source source,
                     JsonSchemaValidator jsonSchemaValidator) {
-
     this(cliParser, outputRecordCollector, destination, source);
     this.validator = jsonSchemaValidator;
   }
@@ -115,8 +114,7 @@ public class IntegrationRunner {
       case DISCOVER -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
         validateConfig(integration.spec().getConnectionSpecification(), config, "DISCOVER");
-        outputRecordCollector.accept(
-            new AirbyteMessage().withType(Type.CATALOG).withCatalog(source.discover(config)));
+        outputRecordCollector.accept(new AirbyteMessage().withType(Type.CATALOG).withCatalog(source.discover(config)));
       }
       // todo (cgardens) - it is incongruous that that read and write return airbyte message (the
       // envelope) while the other commands return what goes inside it.
@@ -124,10 +122,8 @@ public class IntegrationRunner {
 
         final JsonNode config = parseConfig(parsed.getConfigPath());
         validateConfig(integration.spec().getConnectionSpecification(), config, "READ");
-        final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(),
-            ConfiguredAirbyteCatalog.class);
-        final Optional<JsonNode> stateOptional = parsed.getStatePath()
-            .map(IntegrationRunner::parseConfig);
+        final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
+        final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
         final AutoCloseableIterator<AirbyteMessage> messageIterator = source
             .read(config, catalog, stateOptional.orElse(null));
         try (messageIterator) {
@@ -138,10 +134,8 @@ public class IntegrationRunner {
       case WRITE -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
         validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
-        final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(),
-            ConfiguredAirbyteCatalog.class);
-        final AirbyteMessageConsumer consumer = destination
-            .getConsumer(config, catalog, outputRecordCollector);
+        final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
+        final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector);
         consumeWriteStream(consumer);
       }
       default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
@@ -159,8 +153,7 @@ public class IntegrationRunner {
       consumer.start();
       while (input.hasNext()) {
         final String inputString = input.next();
-        final Optional<AirbyteMessage> singerMessageOptional = Jsons
-            .tryDeserialize(inputString, AirbyteMessage.class);
+        final Optional<AirbyteMessage> singerMessageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
         if (singerMessageOptional.isPresent()) {
           consumer.accept(singerMessageOptional.get());
         } else {

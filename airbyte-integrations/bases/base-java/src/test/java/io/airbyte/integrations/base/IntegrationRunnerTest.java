@@ -102,8 +102,7 @@ class IntegrationRunnerTest {
     Path configDir = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
 
     configPath = IOs.writeFile(configDir, CONFIG_FILE_NAME, CONFIG_STRING);
-    configuredCatalogPath = IOs
-        .writeFile(configDir, CONFIGURED_CATALOG_FILE_NAME, Jsons.serialize(CONFIGURED_CATALOG));
+    configuredCatalogPath = IOs.writeFile(configDir, CONFIGURED_CATALOG_FILE_NAME, Jsons.serialize(CONFIGURED_CATALOG));
     statePath = IOs.writeFile(configDir, STATE_FILE_NAME, Jsons.serialize(STATE));
   }
 
@@ -140,8 +139,7 @@ class IntegrationRunnerTest {
   @Test
   void testCheckSource() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.check(configPath);
-    final AirbyteConnectionStatus output = new AirbyteConnectionStatus().withStatus(Status.FAILED)
-        .withMessage("it failed");
+    final AirbyteConnectionStatus output = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("it failed");
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(source.check(CONFIG)).thenReturn(output);
@@ -150,21 +148,17 @@ class IntegrationRunnerTest {
     when(source.spec()).thenReturn(expectedConnSpec);
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
     JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
-    new IntegrationRunner(cliParser, stdoutConsumer, null, source,
-        jsonSchemaValidator)
-            .run(ARGS);
+    new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS);
 
     verify(source).check(CONFIG);
-    verify(stdoutConsumer)
-        .accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
+    verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
     verify(jsonSchemaValidator).validate(any(), any());
   }
 
   @Test
   void testCheckDestination() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.check(configPath);
-    final AirbyteConnectionStatus output = new AirbyteConnectionStatus().withStatus(Status.FAILED)
-        .withMessage("it failed");
+    final AirbyteConnectionStatus output = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("it failed");
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(destination.check(CONFIG)).thenReturn(output);
@@ -175,12 +169,10 @@ class IntegrationRunnerTest {
 
     JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
 
-    new IntegrationRunner(cliParser, stdoutConsumer, destination, null, jsonSchemaValidator)
-        .run(ARGS);
+    new IntegrationRunner(cliParser, stdoutConsumer, destination, null, jsonSchemaValidator).run(ARGS);
 
     verify(destination).check(CONFIG);
-    verify(stdoutConsumer)
-        .accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
+    verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
     verify(jsonSchemaValidator).validate(any(), any());
   }
 
@@ -209,18 +201,14 @@ class IntegrationRunnerTest {
   void testRead() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.read(configPath, configuredCatalogPath,
         statePath);
-    final AirbyteMessage message1 = new AirbyteMessage()
-        .withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(ImmutableMap.of("names",
-            "byron"))));
-    final AirbyteMessage message2 = new AirbyteMessage()
-        .withType(Type.RECORD).withRecord(new AirbyteRecordMessage()
-            .withData(Jsons.jsonNode(ImmutableMap.of("names", "reginald"))));
+    final AirbyteMessage message1 = new AirbyteMessage().withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(ImmutableMap.of("names", "byron"))));
+    final AirbyteMessage message2 = new AirbyteMessage().withType(Type.RECORD).withRecord(new AirbyteRecordMessage()
+        .withData(Jsons.jsonNode(ImmutableMap.of("names", "reginald"))));
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
-    when(source.read(CONFIG, CONFIGURED_CATALOG,
-        STATE))
-            .thenReturn(AutoCloseableIterators.fromIterator(MoreIterators.of(message1, message2)));
+    when(source.read(CONFIG, CONFIGURED_CATALOG, STATE))
+        .thenReturn(AutoCloseableIterators.fromIterator(MoreIterators.of(message1, message2)));
 
     final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
     when(source.spec()).thenReturn(expectedConnSpec);
@@ -240,8 +228,7 @@ class IntegrationRunnerTest {
     final IntegrationConfig intConfig = IntegrationConfig.write(configPath, configuredCatalogPath);
     final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
-    when(destination.getConsumer(CONFIG, CONFIGURED_CATALOG,
-        stdoutConsumer)).thenReturn(airbyteMessageConsumerMock);
+    when(destination.getConsumer(CONFIG, CONFIGURED_CATALOG, stdoutConsumer)).thenReturn(airbyteMessageConsumerMock);
 
     final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
     when(destination.spec()).thenReturn(expectedConnSpec);
