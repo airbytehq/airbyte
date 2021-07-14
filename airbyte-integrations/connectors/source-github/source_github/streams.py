@@ -388,11 +388,7 @@ class PullRequests(SemiIncrementalGithubStream):
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         base_params = super().request_params(**kwargs)
-        params = {
-            "state": "all",
-            "sort": "updated",
-            "direction": "desc" if self.is_sorted_descending else "asc"
-        }
+        params = {"state": "all", "sort": "updated", "direction": "desc" if self.is_sorted_descending else "asc"}
 
         return {**base_params, **params}
 
