@@ -56,7 +56,6 @@ public class IntegrationRunner {
   private final Integration integration;
   private final Destination destination;
   private final Source source;
-  // private ConfigAgainstSpecValidator configAgainstSpecValidator;
   private static JsonSchemaValidator validator;
 
   public IntegrationRunner(Destination destination) {
