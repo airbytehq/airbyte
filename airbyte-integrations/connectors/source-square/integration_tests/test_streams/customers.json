@@ -1,0 +1,130 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "customers",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "created_at": {
+              "type": ["null", "string"]
+            },
+            "updated_at": {
+              "type": ["null", "string"]
+            },
+            "cards": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "card_brand": {
+                    "type": ["null", "string"]
+                  },
+                  "last_4": {
+                    "type": ["null", "string"]
+                  },
+                  "exp_month": {
+                    "type": ["null", "integer"]
+                  },
+                  "exp_year": {
+                    "type": ["null", "integer"]
+                  },
+                  "cardholder_name": {
+                    "type": ["null", "string"]
+                  },
+                  "billing_address": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "postal_code": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "given_name": {
+              "type": ["null", "string"]
+            },
+            "family_name": {
+              "type": ["null", "string"]
+            },
+            "email_address": {
+              "type": ["null", "string"]
+            },
+            "address": {
+              "type": ["null", "object"],
+              "properties": {
+                "address_line_1": {
+                  "type": ["null", "string"]
+                },
+                "address_line_2": {
+                  "type": ["null", "string"]
+                },
+                "locality": {
+                  "type": ["null", "string"]
+                },
+                "administrative_district_level_1": {
+                  "type": ["null", "string"]
+                },
+                "postal_code": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "phone_number": {
+              "type": ["null", "string"]
+            },
+            "reference_id": {
+              "type": ["null", "string"]
+            },
+            "company_name": {
+              "type": ["null", "string"]
+            },
+            "preferences": {
+              "type": ["null", "object"],
+              "properties": {
+                "email_unsubscribed": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "creation_source": {
+              "type": ["null", "string"]
+            },
+            "birthday": {
+              "type": ["null", "string"]
+            },
+            "segment_ids": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            },
+            "group_ids": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            },
+            "version": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["id"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["id"],
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

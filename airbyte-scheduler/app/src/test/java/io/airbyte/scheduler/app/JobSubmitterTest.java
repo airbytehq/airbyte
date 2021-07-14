@@ -44,7 +44,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.airbyte.config.JobOutput;
-import io.airbyte.config.helpers.LogHelpers;
+import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.app.worker_run.WorkerRun;
 import io.airbyte.scheduler.models.Job;
@@ -89,13 +89,13 @@ public class JobSubmitterTest {
 
     workerRun = mock(WorkerRun.class);
     final Path jobRoot = Files.createTempDirectory("test");
-    final Path logPath = jobRoot.resolve(LogHelpers.LOG_FILENAME);
+    final Path logPath = jobRoot.resolve(LogClientSingleton.LOG_FILENAME);
     when(workerRun.getJobRoot()).thenReturn(jobRoot);
     workerRunFactory = mock(TemporalWorkerRunFactory.class);
     when(workerRunFactory.create(job)).thenReturn(workerRun);
 
     persistence = mock(JobPersistence.class);
-    this.logPath = jobRoot.resolve(LogHelpers.LOG_FILENAME);
+    this.logPath = jobRoot.resolve(LogClientSingleton.LOG_FILENAME);
     when(persistence.getNextJob()).thenReturn(Optional.of(job));
     when(persistence.createAttempt(JOB_ID, logPath)).thenReturn(ATTEMPT_NUMBER);
 
@@ -220,7 +220,7 @@ public class JobSubmitterTest {
 
     assertEquals(
         ImmutableMap.of(
-            "job_log_path", workerRun.getJobRoot() + "/" + LogHelpers.LOG_FILENAME),
+            "job_log_path", workerRun.getJobRoot() + "/" + LogClientSingleton.LOG_FILENAME),
         mdcMap.get());
 
     assertTrue(MDC.getCopyOfContextMap().isEmpty());

@@ -79,3 +79,8 @@ More details how to get a User's Access Token you can find in the following docs
 
 With the Instagram Account ID and API access token, you should be ready to start pulling data from the Facebook Instagram API. Head to the Airbyte UI to setup your source connector!
 
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.1.6  | 2021-07-07 | [4210](https://github.com/airbytehq/airbyte/pull/4210) | Refactor connector to use CDK:<br>- improve error handling.<br>- fix sync fail with HTTP status 400.<br>- integrate SAT.|

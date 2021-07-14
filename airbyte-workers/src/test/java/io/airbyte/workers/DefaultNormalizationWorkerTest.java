@@ -57,7 +57,8 @@ class DefaultNormalizationWorkerTest {
     final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig();
     normalizationInput = new NormalizationInput()
         .withDestinationConfiguration(syncPair.getValue().getDestinationConfiguration())
-        .withCatalog(syncPair.getValue().getCatalog());
+        .withCatalog(syncPair.getValue().getCatalog())
+        .withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
 
     normalizationRunner = mock(NormalizationRunner.class);
 
@@ -66,7 +67,7 @@ class DefaultNormalizationWorkerTest {
         JOB_ATTEMPT,
         normalizationRoot,
         normalizationInput.getDestinationConfiguration(),
-        normalizationInput.getCatalog()))
+        normalizationInput.getCatalog(), WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS))
             .thenReturn(true);
   }
 
@@ -82,7 +83,7 @@ class DefaultNormalizationWorkerTest {
         JOB_ATTEMPT,
         normalizationRoot,
         normalizationInput.getDestinationConfiguration(),
-        normalizationInput.getCatalog());
+        normalizationInput.getCatalog(), WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
     verify(normalizationRunner).close();
   }
 

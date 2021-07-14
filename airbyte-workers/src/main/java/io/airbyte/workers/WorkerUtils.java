@@ -25,10 +25,12 @@
 package io.airbyte.workers;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
-import io.airbyte.config.helpers.LogHelpers;
+import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.protocols.airbyte.HeartbeatMonitor;
 import java.nio.file.Path;
@@ -40,6 +42,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class WorkerUtils {
+
+  public static final ResourceRequirements DEFAULT_RESOURCE_REQUIREMENTS = initResourceRequirements();
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerUtils.class);
 
@@ -189,7 +193,7 @@ public class WorkerUtils {
   }
 
   public static Path getLogPath(Path jobRoot) {
-    return jobRoot.resolve(LogHelpers.LOG_FILENAME);
+    return jobRoot.resolve(LogClientSingleton.LOG_FILENAME);
   }
 
   public static Path getJobRoot(Path workspaceRoot, String jobId, long attemptId) {
@@ -200,6 +204,15 @@ public class WorkerUtils {
     return workspaceRoot
         .resolve(String.valueOf(jobId))
         .resolve(String.valueOf(attemptId));
+  }
+
+  private static ResourceRequirements initResourceRequirements() {
+    final EnvConfigs configs = new EnvConfigs();
+    return new ResourceRequirements()
+        .withCpuRequest(configs.getCpuRequest())
+        .withCpuLimit(configs.getCpuLimit())
+        .withMemoryRequest(configs.getMemoryRequest())
+        .withMemoryLimit(configs.getMemoryLimit());
   }
 
 }

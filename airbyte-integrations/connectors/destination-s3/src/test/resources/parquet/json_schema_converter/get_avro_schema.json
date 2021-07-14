@@ -253,5 +253,132 @@
         }
       ]
     }
+  },
+  {
+    "schemaName": "field_with_combined_restriction",
+    "namespace": "namespace8",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "properties": {
+        "created_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": ["null", "string"]
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        }
+      }
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "field_with_combined_restriction",
+      "namespace": "namespace8",
+      "fields": [
+        {
+          "name": "created_at",
+          "type": ["null", "string", "int"],
+          "default": null
+        }
+      ]
+    }
+  },
+  {
+    "schemaName": "record_with_combined_restriction_field",
+    "namespace": "namespace9",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "properties": {
+        "user": {
+          "type": "object",
+          "properties": {
+            "created_at": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": ["null", "string"]
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "record_with_combined_restriction_field",
+      "namespace": "namespace9",
+      "fields": [
+        {
+          "name": "user",
+          "type": [
+            "null",
+            {
+              "type": "record",
+              "name": "user",
+              "namespace": "",
+              "fields": [
+                {
+                  "name": "created_at",
+                  "type": ["null", "string", "int"],
+                  "default": null
+                }
+              ]
+            }
+          ],
+          "default": null
+        }
+      ]
+    }
+  },
+  {
+    "schemaName": "array_with_combined_restriction_field",
+    "namespace": "namespace10",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "properties": {
+        "identifiers": {
+          "type": "array",
+          "items": [
+            {
+              "oneOf": [{ "type": "integer" }, { "type": "string" }]
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        }
+      }
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "array_with_combined_restriction_field",
+      "namespace": "namespace10",
+      "fields": [
+        {
+          "name": "identifiers",
+          "type": [
+            "null",
+            {
+              "type": "array",
+              "items": ["null", "int", "string", "boolean"]
+            }
+          ],
+          "default": null
+        }
+      ]
+    }
   }
 ]

@@ -21,6 +21,7 @@ __pycache__
 .venv
 .mypy_cache
 .ipynb_checkpoints
+.pytest_
 
 # dbt
 profiles.yml
@@ -31,6 +32,3 @@ crash.log
 *.tfstate
 *.tfstate.backup
 *.lock.hcl
-
-# Marco's gradle
-gradlew

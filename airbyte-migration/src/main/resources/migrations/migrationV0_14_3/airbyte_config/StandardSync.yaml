@@ -11,6 +11,9 @@ required:
   - catalog
 additionalProperties: false
 properties:
+  prefix:
+    description: Prefix that will be prepended to the name of each stream when it is written to the destination.
+    type: string
   sourceId:
     type: string
     format: uuid

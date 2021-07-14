@@ -146,7 +146,7 @@ class JobNotifierTest {
     return new Notification()
         .withNotificationType(NotificationType.SLACK)
         .withSlackConfiguration(new SlackNotificationConfiguration()
-            .withWebhook("http://random.webhook.url"));
+            .withWebhook("http://random.webhook.url/hooks.slack.com/"));
   }
 
 }
