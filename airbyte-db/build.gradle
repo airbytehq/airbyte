@@ -17,7 +17,7 @@ dependencies {
 
     // Big Query
     implementation platform('com.google.cloud:libraries-bom:20.6.0')
-    compile 'com.google.cloud:google-cloud-bigquery:1.133.1'
+    implementation('com.google.cloud:google-cloud-bigquery:1.133.1')
 
     // Lombok
     implementation 'org.projectlombok:lombok:1.18.20'

@@ -125,11 +125,11 @@ public class JdbcUtils {
       case BIT, BOOLEAN -> o.put(columnName, r.getBoolean(i));
       case TINYINT, SMALLINT -> o.put(columnName, r.getShort(i));
       case INTEGER -> putInteger(o, columnName, r, i);
-      case BIGINT -> o.put(columnName, DataTypeUtils.nullIfInvalid(() -> r.getLong(i)));
+      case BIGINT -> o.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> r.getLong(i)));
       case FLOAT, DOUBLE -> o.put(columnName, DataTypeUtils
-          .nullIfInvalid(() -> r.getDouble(i), Double::isFinite));
-      case REAL -> o.put(columnName, DataTypeUtils.nullIfInvalid(() -> r.getFloat(i), Float::isFinite));
-      case NUMERIC, DECIMAL -> o.put(columnName, DataTypeUtils.nullIfInvalid(() -> r.getBigDecimal(i)));
+          .returnNullIfInvalid(() -> r.getDouble(i), Double::isFinite));
+      case REAL -> o.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> r.getFloat(i), Float::isFinite));
+      case NUMERIC, DECIMAL -> o.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> r.getBigDecimal(i)));
       case CHAR, VARCHAR, LONGVARCHAR -> o.put(columnName, r.getString(i));
       case DATE -> o.put(columnName, DataTypeUtils.toISO8601String(r.getDate(i)));
       case TIME -> o.put(columnName, DataTypeUtils.toISO8601String(r.getTime(i)));
@@ -153,7 +153,7 @@ public class JdbcUtils {
     try {
       node.put(columnName, resultSet.getInt(index));
     } catch (SQLException e) {
-      node.put(columnName, DataTypeUtils.nullIfInvalid(() -> resultSet.getLong(index)));
+      node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> resultSet.getLong(index)));
     }
   }
 

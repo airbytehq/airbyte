@@ -35,7 +35,7 @@ import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DefaultDSLContext;
 
 /**
- * This class is a temporary and will be removed as part of the issue #4547
+ * This class is a temporary and will be removed as part of the issue @TODO #4547
  */
 public class TempBigQueryJoolDatabaseImpl extends Database {
 

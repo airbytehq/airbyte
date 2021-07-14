@@ -24,7 +24,7 @@
 
 package io.airbyte.db.bigquery;
 
-import static io.airbyte.db.DataTypeUtils.nullIfInvalid;
+import static io.airbyte.db.DataTypeUtils.returnNullIfInvalid;
 import static io.airbyte.db.DataTypeUtils.toISO8601String;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -74,7 +74,7 @@ public class BigQueryUtils {
           case INT64 -> node.put(fieldName, fieldValue.getLongValue());
           case FLOAT64 -> node.put(fieldName, fieldValue.getDoubleValue());
           case NUMERIC -> node.put(fieldName, fieldValue.getNumericValue());
-          case BIGNUMERIC -> node.put(fieldName, nullIfInvalid(fieldValue::getNumericValue));
+          case BIGNUMERIC -> node.put(fieldName, returnNullIfInvalid(fieldValue::getNumericValue));
           case STRING -> node.put(fieldName, fieldValue.getStringValue());
           case BYTES -> node.put(fieldName, fieldValue.getBytesValue());
           case DATE -> node.put(fieldName, toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATE_FORMAT)));

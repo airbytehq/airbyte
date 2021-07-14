@@ -35,11 +35,11 @@ public class DataTypeUtils {
 
   public static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
 
-  public static <T> T nullIfInvalid(DataTypeSupplier<T> valueProducer) {
-    return nullIfInvalid(valueProducer, ignored -> true);
+  public static <T> T returnNullIfInvalid(DataTypeSupplier<T> valueProducer) {
+    return returnNullIfInvalid(valueProducer, ignored -> true);
   }
 
-  public static <T> T nullIfInvalid(DataTypeSupplier<T> valueProducer, Function<T, Boolean> isValidFn) {
+  public static <T> T returnNullIfInvalid(DataTypeSupplier<T> valueProducer, Function<T, Boolean> isValidFn) {
     // Some edge case values (e.g: Infinity, NaN) have no java or JSON equivalent, and will throw an
     // exception when parsed. We want to parse those
     // values as null.
