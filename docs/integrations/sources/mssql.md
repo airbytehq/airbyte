@@ -84,7 +84,7 @@ Please read the [CDC docs](../../understanding-airbyte/cdc.md) for an overview o
 * There are some critical issues regarding certain datatypes. Please find detailed info in [this Github issue](https://github.com/airbytehq/airbyte/issues/4542).
 * CDC is only available for SQL Server 2016 Service Pack 1 (SP1) and later.
 * *db_owner* (or higher) permissions are required to perform the [neccessary setup](mssql.md#Setting-up-CDC-for-MSSQL) for CDC.
-* You are willing to enable [snapshot isolation mode](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql/snapshot-isolation-in-sql-server) on the database(s) you want to sync. This is used for retrieving an initial snapshot without locking tables.
+* You must enable [snapshot isolation mode](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql/snapshot-isolation-in-sql-server) on the database(s) you want to sync. This is used for retrieving an initial snapshot without locking tables.
 * On Linux, CDC is not supported on versions earlier than SQL Server 2017 CU18 (SQL Server 2019 is supported).
 * Change data capture cannot be enabled on tables with a clustered columnstore index. (It can be enabled on tables with a *non-clustered* columnstore index).
 * The SQL Server CDC feature processes changes that occur in user-created tables only. You cannot enable CDC on the SQL Server master database.
