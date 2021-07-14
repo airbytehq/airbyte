@@ -49,9 +49,12 @@ class SourceBlob(AbstractSource, ABC):
         found_a_blob = False
         try:
             for blob_name in self.stream_class.blob_iterator(logger, config.get("provider")):
-                fnmatch(blob_name, config.get("path"))  # test that matching on the pattern doesn't error
-                found_a_blob = True
-                break  # just find first blob then break, no need to search all yet
+                for path_pattern in config.get("path_patterns"):
+                    fnmatch(blob_name, path_pattern)  # test that matching on the pattern doesn't error
+                    found_a_blob = True
+                    break  # just find first blob then break, no need to search all yet
+                if found_a_blob:
+                    break
 
         except Exception as e:
             logger.error(format_exc())

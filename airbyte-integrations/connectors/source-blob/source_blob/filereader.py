@@ -30,6 +30,7 @@ from typing import Iterator
 
 from airbyte_cdk.logger import AirbyteLogger
 import pyarrow as pa
+from pyarrow import csv as pacsv
 
 
 class FileReader(ABC):
@@ -48,7 +49,7 @@ class FileReader(ABC):
         """TODO docstring"""
 
     @abstractmethod
-    def stream_dataframes(self, file, skip_data=False) -> Iterator:
+    def stream_records(self, file, skip_data=False) -> Iterator:
         """load and return the appropriate pandas dataframe.
 
         :param file: file-like object to read from
@@ -64,19 +65,33 @@ class FileReader(ABC):
         str_typ = str(typ)
         # this is a map of airbyte types to pyarrow types. The first list element of the pyarrow types should be the one to use where required.
         map = {
-            "boolean": ("bool_(", ),
-            "integer": ("int64(", "int8(", "int16(", "int32(", "uint8(", "uint16(", "uint32(", "uint64("),
-            "number": ("float64(", "float16(", "float32(", "decimal128(", "decimal256("),
-            "string": ("large_string(", )
+            "boolean": ("bool_", "bool"),
+            "integer": ("int64", "int8", "int16", "int32", "uint8", "uint16", "uint32", "uint64"),
+            "number": ("float64", "float16", "float32", "decimal128", "decimal256", "halffloat", "float", "double"),
+            "string": ("large_string", ),
+            "object": ("large_string", ),
+            "array": ("large_string", ),
+            "null": ("large_string", )
         }
         if not reverse:
-            raise NotImplementedError()
-        
+            for json_type, pyarrow_types in map.items():
+                if str_typ == json_type:
+                    return getattr(pa, pyarrow_types[0]).__call__()  # better way might be necessary when we decide to handle more type complexity
         else:
             for json_type, pyarrow_types in map.items():
-                if any([str(pa_type).startswith(str_typ) for pa_type in pyarrow_types]):
+                if any([str_typ.startswith(pa_type) for pa_type in pyarrow_types]):
                     return json_type
             return "string"  # default type if unspecified in map
+
+    @staticmethod
+    def json_schema_to_pyarrow_schema(schema, reverse=False):
+        """ TODO docstring """
+        new_schema = {}
+
+        for column, json_type in schema.items():
+            new_schema[column] = FileReader.json_type_to_pyarrow_type(json_type, reverse=reverse)
+
+        return new_schema
 
 
 class FileReaderCsv(FileReader):
@@ -85,47 +100,42 @@ class FileReaderCsv(FileReader):
 
     @property
     def is_binary(self):
-        return False
+        return True
 
     @property
     def read_options(self):
         return pa.csv.ReadOptions(
             block_size=10000,
-            encoding=self._format.get("encoding", default='utf8')
+            encoding=self._format.get("encoding", 'utf8')
         )
 
     @property
     def parse_options(self):
         return pa.csv.ParseOptions(
-            delimiter=self._format.get("delimiter", default=','),
-            quote_char=self._format.get("quote_char", default='"'),
-            double_quote=self._format.get("double_quote", default=True),
-            escape_char=self._format.get("escape_char", default=False),
-            newlines_in_values=self._format.get("newlines_in_values", default=False)
+            delimiter=self._format.get("delimiter", ','),
+            quote_char=self._format.get("quote_char", '"'),
+            double_quote=self._format.get("double_quote", True),
+            escape_char=self._format.get("escape_char", False),
+            newlines_in_values=self._format.get("newlines_in_values", False)
         )
 
     @property
     def convert_options(self):
-        check_utf8 = True if self._format.get("encoding", default='utf8').lower().replace("-", "") == 'utf8' else False
+        check_utf8 = True if self._format.get("encoding", 'utf8').lower().replace("-", "") == 'utf8' else False
         return pa.csv.ConvertOptions(
             check_utf8=check_utf8,
-            column_types=self._schema,
-            **json.loads(self._format.get("additional_reader_options"))
+            column_types=self.json_schema_to_pyarrow_schema(self._schema),
+            **json.loads(self._format.get("additional_reader_options", '{}'))
         )
 
-
-    # def stream_dataframes(self, file) -> Iterator:
-    #     # set variable defaults
-
-    #     # init reader option dicts with airbyte defaults
-    #     read_options = 
-    #     headers = True
-    #     if self._format.get("headers") is None
-    #     reader_options = {'chunksize': 10000}  # TODO: make this configurable so user can attempt to optimise?
-    #     # deal with specific user defined options
-    #     options = ['sep', 'quotechar', 'escapechar', 'encoding']
-    #     reader_options = {opt: self._format.get(opt) for opt in options if self._format.get(opt) is not None}
-    #     # now parse and unpack any additional_reader_options
-    #     if self._format.get("additional_reader_options") is not None:
-    #         # TODO: clear error if the json.loads fails on the additional reader options provided
-    #         reader_options = {**reader_options, **}
+    def stream_records(self, file) -> Iterator:
+        streaming_reader = pacsv.open_csv(file, self.read_options, self.parse_options, self.convert_options)
+        still_reading = True
+        while still_reading:
+            try:
+                batch = streaming_reader.read_next_batch().to_pydict()
+            except StopIteration:
+                still_reading = False
+            else:
+                for record_values in zip(*[batch[column] for column in self._schema.keys()]):
+                    yield {list(self._schema.keys())[i]: record_values[i] for i in range(len(self._schema.keys()))}

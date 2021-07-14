@@ -58,6 +58,7 @@ class BlobFile(ABC):
         self._provider = provider
         self._file = None
         self.logger = AirbyteLogger()
+        self.logger.info(f"initialised BlobFile with fullurl: {self.fullurl}")
 
     def __enter__(self):
         return self._file
@@ -66,18 +67,14 @@ class BlobFile(ABC):
         self.close()
 
     @property
+    @abstractmethod
     def url(self) -> str:
         """Convert URL to remove the URL prefix (scheme)
         :return: the corresponding URL without URL prefix / scheme
         """
-        parse_result = urlparse(self._url)
-        if parse_result.scheme:
-            return self._url.split("://")[-1]
-        else:
-            return self._url
 
     @property
-    def full_url(self):
+    def fullurl(self):
         return f"{self.storage_scheme}{self.url}"
 
     @property
@@ -100,7 +97,7 @@ class BlobFile(ABC):
         #     return "file://"
         # elif parse_result.scheme:
         #     return parse_result.scheme
-        # self.logger.error(f"Unknown Storage provider in: {self.full_url}")
+        # self.logger.error(f"Unknown Storage provider in: {self.fullurl}")
         # return ""
 
     @property
@@ -123,7 +120,7 @@ class BlobFile(ABC):
         """TODO docstring"""
         # mode = "rb" if binary else "r"
         # storage = self.storage_scheme
-        # url = self.url
+        # url = self._url
         # if storage == "webhdfs://":
         #     host = self._provider["host"]
         #     port = self._provider["port"]
@@ -140,7 +137,7 @@ class BlobFile(ABC):
         #     else:
         #         uri = f"{storage}{user}@{host}:{port}/{url}"
         #     return smart_open.open(uri, transport_params=transport_params, mode=mode)
-        # return smart_open.open(self.full_url, mode=mode)
+        # return smart_open.open(self.fullurl, mode=mode)
 
 
 class BlobFileS3(BlobFile):
@@ -171,13 +168,18 @@ class BlobFileS3(BlobFile):
 
     @property
     def storage_scheme(self) -> str:
-        return "s3://"
+        return f"s3://"
+
+    @property
+    def url(self) -> str:
+        bucket = self._provider.get("bucket")
+        return f"{bucket}/{self._url}"
 
     @property
     @_Decorators.init_boto_session
     def last_modified(self) -> datetime:
         """ TODO docstring """
-        obj = self._boto_s3_resource.Object(self._provider.get('bucket'), self.url)
+        obj = self._boto_s3_resource.Object(self._provider.get('bucket'), self._url)
         return obj.last_modified
 
     @staticmethod
@@ -257,5 +259,5 @@ class BlobFileAzure(BlobFile):
             # assuming anonymous public read access given no credential
             client = BlobServiceClient(account_url=storage_acc_url)
 
-        result = smart_open.open(f"{self.storage_scheme}{self.url}", transport_params=dict(client=client), mode=mode)
+        result = smart_open.open(f"{self.storage_scheme}{self._url}", transport_params=dict(client=client), mode=mode)
         return result

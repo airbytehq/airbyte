@@ -96,13 +96,13 @@
           }
         ]
       },
-      "path": {
-        "type": "string",
-        "description": "TODO: explain how this works, including glob pattern"
+      "path_patterns": {
+        "type": "array",
+        "description": "list of path patterns, minimum 1 required, TODO: explain how this works in more detail"
       },
       "schema" : {
         "type": "string",
-        "description": "TODO: explain how this works. Must use double-quotes!!! (<a href=\"https://json-schema.org/understanding-json-schema/reference/type.html\" target=\"_blank\">JSON Schema</a>)",
+        "description": "TODO: explain how this works. Ensure this is a simple mapping of column:type. Complex types are allowed but will be coerced to String in current implementation. Must use double-quotes!!! (<a href=\"https://json-schema.org/understanding-json-schema/reference/type.html\" target=\"_blank\">JSON Schema</a>)",
         "examples": ["{\"column_1\": \"number\", \"column_2\": \"string\", \"column_3\": \"array\", \"column_4\": \"object\", \"column_5\": \"boolean\"}"]
       }
     }

@@ -55,12 +55,11 @@ class BlobStream(Stream, ABC):
         # etc.
     }
 
-    def __init__(self, dataset_name: str, provider: dict, format: dict, path: str, schema: str = None):
+    def __init__(self, dataset_name: str, provider: dict, format: dict, path_patterns: List[str], schema: str = None):
         self.dataset_name = dataset_name
-        self._path = path
+        self._path_patterns = path_patterns
         self._provider = provider
         self._format = format
-        self._schema = {}
         self.logger = AirbyteLogger()
         if schema:
             try:
@@ -75,7 +74,6 @@ class BlobStream(Stream, ABC):
                 error_msg = f"Schema is not a valid JSON schema {repr(err)}\n{schema}\n{format_exc()}"
                 self.logger.error(error_msg)
                 raise ConfigurationError(error_msg) from err
-            self.logger.info(f"Schema: {self._schema}")
             # TODO: we could still have an 'invalid' schema after this, should we handle that explicitly?
 
     @property
@@ -121,8 +119,9 @@ class BlobStream(Stream, ABC):
     def pattern_matched_blobs_iterator(self) -> Iterator[str]:
         """ TODO docstring """
         for blob in self.blob_iterator(self.logger, self._provider):
-            if fnmatch(blob, self._path):
-                yield blob
+            for path_pattern in self._path_patterns:
+                if fnmatch(blob, path_pattern):
+                    yield blob
 
     def time_ordered_blobfile_iterator(self) -> Iterator[Tuple[datetime, BlobFile]]:
         """TODO docstring"""
@@ -142,22 +141,38 @@ class BlobStream(Stream, ABC):
         for last_mod, blobfile in sorted(blobfiles):
             yield (last_mod, blobfile)
 
-    def read_records(self,
-                     sync_mode: SyncMode,
-                     cursor_field: List[str],
-                     stream_slice: Mapping[str, Any],
-                     stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         TODO docstring
-        This enacts a full_refresh style read_records regardless of sync_mode
+        This enacts full_refresh style regardless of sync_mode, incremental achieved via incremental child classes
         """
         # TODO: this could be optimised via concurrent reads, however we'd lose chronology and need to deal with knock-ons of that
-        # TODO: this is very basic first pass, optimise
-        file_reader = self.filereader_class(self._format, self.get_json_schema())
+        # spoke with Sherif, we could do this concurrently both full and incremental by running batches in parallel
+        # and then incrementing the cursor per each complete batch 
         for last_mod, blobfile in self.time_ordered_blobfile_iterator():
-            with blobfile.open(file_reader.is_binary) as f:
-                pass
+            yield {blobfile.url: (last_mod, blobfile)}
 
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """
+        TODO docstring
+        This enacts a full_refresh style read_records regardless of sync_mode, incremental achieved via read_records of incremental child classes
+        """
+        file_reader = self.filereader_class(self._format, self.get_json_schema())
+
+        stream_slice_key = list(stream_slice.keys())[0]  # unique full filepath
+        last_mod = stream_slice[stream_slice_key][0]  # TODO: use this as cursor
+        blobfile = stream_slice[stream_slice_key][1]
+
+        with blobfile.open(file_reader.is_binary) as f:
+            yield from file_reader.stream_records(f)
 
 
 class IncrementalBlobStream(BlobStream, ABC):
@@ -168,18 +183,20 @@ class IncrementalBlobStream(BlobStream, ABC):
     # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
     state_checkpoint_interval = None
 
-    def read_records(self,
-                     sync_mode: SyncMode,
-                     cursor_field: List[str],
-                     stream_slice: Mapping[str, Any],
-                     stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-
-        if sync_mode == "full_refresh":
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """ TODO docstring """
+        if sync_mode.value == "full_refresh":
             yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
         else:
             # TODO do the code
             # also could possibly handle the first-time incremental snapshot by using super() here
-            pass
+            raise NotImplementedError()
 
     @property
     def cursor_field(self) -> str:
