@@ -54,16 +54,16 @@ const SourcesPage: React.FC = () => {
     [feedbackList, formatMessage, updateSourceDefinition]
   );
 
-  const usedSourcesDefinitions = useMemo<SourceDefinition[]>(() => {
+  const usedSourcesDefinitions: SourceDefinition[] = useMemo(() => {
     const sourceDefinitionMap = new Map<string, SourceDefinition>();
     sources.forEach((source) => {
-      const sourceDestination = sourceDefinitions.find(
+      const sourceDefinition = sourceDefinitions.find(
         (sourceDefinition) =>
           sourceDefinition.sourceDefinitionId === source.sourceDefinitionId
       );
 
-      if (sourceDestination) {
-        sourceDefinitionMap.set(source?.sourceDefinitionId, sourceDestination);
+      if (sourceDefinition) {
+        sourceDefinitionMap.set(source.sourceDefinitionId, sourceDefinition);
       }
     });
 
@@ -82,15 +82,15 @@ const SourcesPage: React.FC = () => {
   return (
     <ConnectorsView
       type="sources"
-      isUpdateSuccess={isUpdateSuccess}
-      hasNewConnectorVersion={hasNewSourceVersion}
-      onUpdateVersion={onUpdateVersion}
-      usedConnectorsDefinitions={usedSourcesDefinitions}
-      connectorsDefinitions={sourceDefinitions}
       loading={loading}
       error={error}
-      onUpdate={onUpdate}
+      isUpdateSuccess={isUpdateSuccess}
+      hasNewConnectorVersion={hasNewSourceVersion}
+      usedConnectorsDefinitions={usedSourcesDefinitions}
+      connectorsDefinitions={sourceDefinitions}
       feedbackList={feedbackList}
+      onUpdateVersion={onUpdateVersion}
+      onUpdate={onUpdate}
     />
   );
 };

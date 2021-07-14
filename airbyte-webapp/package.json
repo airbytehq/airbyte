@@ -48,8 +48,10 @@
     "yup": "^0.32.9"
   },
   "devDependencies": {
+    "@rest-hooks/test": "^6.2.0",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
+    "@testing-library/react-hooks": "^7.0.1",
     "@testing-library/user-event": "^12.1.10",
     "@types/flat": "^5.0.1",
     "@types/jest": "^24.0.0",

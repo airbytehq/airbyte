@@ -1,4 +1,7 @@
 import { MutateShape, ReadShape, Resource, SchemaDetail } from "rest-hooks";
+
+import { destinationDefinitionService } from "core/domain/connector/DestinationDefinitionService";
+
 import BaseResource from "./BaseResource";
 
 export interface DestinationDefinition {
@@ -84,6 +87,12 @@ export default class DestinationDefinitionResource
   ): MutateShape<SchemaDetail<DestinationDefinition>> {
     return {
       ...super.partialUpdateShape(),
+      fetch(
+        _: Readonly<Record<string, unknown>>,
+        body: DestinationDefinition
+      ): Promise<DestinationDefinition> {
+        return destinationDefinitionService.update(body);
+      },
       schema: this,
     };
   }

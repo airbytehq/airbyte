@@ -1,6 +1,13 @@
-import React, { memo } from "react";
+import React, { memo, useMemo } from "react";
 import styled from "styled-components";
-import { ColumnInstance, useTable, Column, Cell } from "react-table";
+import {
+  Cell,
+  Column,
+  ColumnInstance,
+  SortingRule,
+  useSortBy,
+  useTable,
+} from "react-table";
 
 type IHeaderProps = {
   headerHighlighted?: boolean;
@@ -81,6 +88,8 @@ type IProps = {
   data: any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onClickRow?: (data: any) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sortBy?: Array<SortingRule<any>>;
 };
 
 const Table: React.FC<IProps> = ({
@@ -88,17 +97,32 @@ const Table: React.FC<IProps> = ({
   data,
   onClickRow,
   erroredRows,
+  sortBy,
 }) => {
+  const [plugins, config] = useMemo(() => {
+    const pl = [];
+    const plConfig: Record<string, unknown> = {};
+
+    if (sortBy) {
+      pl.push(useSortBy);
+      plConfig.initialState = { sortBy };
+    }
+    return [pl, plConfig];
+  }, [sortBy]);
   const {
     getTableProps,
     getTableBodyProps,
     headerGroups,
     rows,
     prepareRow,
-  } = useTable({
-    columns,
-    data,
-  });
+  } = useTable(
+    {
+      ...config,
+      columns,
+      data,
+    },
+    ...plugins
+  );
 
   return (
     <TableView {...getTableProps()}>

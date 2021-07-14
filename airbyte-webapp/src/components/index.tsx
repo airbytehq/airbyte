@@ -4,6 +4,7 @@ export * from "./Spinner";
 export * from "./StatusIcon";
 export * from "./Label";
 export * from "./LabeledControl";
+export * from "./LabeledInput";
 export * from "./LabeledToggle";
 export * from "./Link";
 export * from "./TextWithHTML";
