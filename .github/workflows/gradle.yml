@@ -87,13 +87,13 @@ jobs:
         run: python3 -m pip install virtualenv==16.7.9 --user
 
       - name: Generate Template scaffold
-        run: SUB_BUILD=CONNECTOR_BASE ./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates --scan
+        run: SUB_BUILD=CONNECTORS_BASE ./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates --scan
 
       - name: Format
-        run: SUB_BUILD=CONNECTOR_BASE ./gradlew format --scan --info --stacktrace
+        run: SUB_BUILD=CONNECTORS_BASE ./gradlew format --scan --info --stacktrace
 
       - name: Build
-        run: SUB_BUILD=CONNECTOR_BASE ./gradlew build --scan
+        run: SUB_BUILD=CONNECTORS_BASE ./gradlew build --scan
 
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
@@ -261,7 +261,7 @@ jobs:
         run: ./tools/bin/acceptance_test.sh
 
       - name: Automatic Migration Acceptance Test
-        run: MIGRATION_TEST_VERSION=$(grep VERSION .env | tr  -d "VERSION=") ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan
+        run: MIGRATION_TEST_VERSION=$(grep VERSION .env | tr  -d "VERSION=") SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan
 
       - name: Push Platform Docker Images
         if: success() && github.ref == 'refs/heads/master'

@@ -79,7 +79,7 @@ To run acceptance \(end-to-end\) tests, you must have the Airbyte running locall
 ```bash
 SUB_BUILD=PLATFORM ./gradlew build
 VERSION=dev docker-compose up
-./gradlew :airbyte-tests:acceptanceTests
+SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests
 ```
 
 ## Run formatting automation/tests

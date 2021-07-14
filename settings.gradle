@@ -13,14 +13,14 @@ gradleEnterprise {
 
 rootProject.name = 'airbyte'
 
-// SUB_BUILD is an enum of <blank>, PLATFORM, CONNECTOR_BASE. Blank is equivalent to all.
+// SUB_BUILD is an enum of <blank>, PLATFORM, CONNECTORS_BASE. Blank is equivalent to all.
 if(!System.getenv().containsKey("SUB_BUILD")) {
     println("Building all of Airbyte.")
 } else {
     def subBuild = System.getenv().get("SUB_BUILD")
     println("Building Airbyte Sub Build: " + subBuild)
-    if(subBuild != "PLATFORM" && subBuild != "CONNECTOR_BASE") {
-        throw new IllegalArgumentException(String.format("%s is invalid. Must be unset or PLATFORM or CONNECTOR_BASE", subBuild))
+    if(subBuild != "PLATFORM" && subBuild != "CONNECTORS_BASE") {
+        throw new IllegalArgumentException(String.format("%s is invalid. Must be unset or PLATFORM or CONNECTORS_BASE", subBuild))
     }
 }
 
@@ -55,7 +55,7 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
 }
 
 // connectors base
-if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "CONNECTOR_BASE") {
+if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "CONNECTORS_BASE") {
     include ':airbyte-cdk:python'
     include ':airbyte-integrations:bases:airbyte-protocol'
     include ':airbyte-integrations:bases:base'
