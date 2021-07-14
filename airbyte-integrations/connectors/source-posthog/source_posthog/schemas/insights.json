@@ -16,7 +16,7 @@
             "type": "object",
             "properties": {
               "id": {
-                "type": "string"
+                "type": ["string", "null"]
               },
               "math": {
                 "type": ["string", "null"]
