@@ -388,6 +388,8 @@ class PullRequests(SemiIncrementalGithubStream):
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         base_params = super().request_params(**kwargs)
+        # The very first time we read this stream we want to read ascending so we can save state in case of 
+        # a halfway failure. But if there is state, we read descending to allow incremental behavior. 
         params = {"state": "all", "sort": "updated", "direction": "desc" if self.is_sorted_descending else "asc"}
 
         return {**base_params, **params}
