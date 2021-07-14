@@ -6,7 +6,7 @@ ENV APPLICATION airbyte-server
 
 WORKDIR /app
 
-COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
+COPY build/distributions/${APPLICATION}-0*.tar ${APPLICATION}.tar
 
 RUN mkdir latest_seeds
 COPY build/config_init/resources/main/config latest_seeds
