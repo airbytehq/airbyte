@@ -48,7 +48,7 @@ class IntercomStream(HttpStream, ABC):
     def __init__(
         self,
         authenticator: HttpAuthenticator,
-        start_date: Union[date, str] = None,
+        start_date: str = None,
         **kwargs,
     ):
         self.start_date = start_date
