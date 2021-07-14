@@ -10,13 +10,20 @@ import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 import static io.airbyte.integrations.destination.rockset.RocksetUtils.APISERVER_URL;
 import static io.airbyte.integrations.destination.rockset.RocksetUtils.API_KEY_ID;
 
 public class RocksetWriteApiConsumer implements AirbyteMessageConsumer {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(RocksetWriteApiConsumer.class);
 
   private final String apiKey;
   private final String workspace;
@@ -30,7 +37,8 @@ public class RocksetWriteApiConsumer implements AirbyteMessageConsumer {
                                  ConfiguredAirbyteCatalog catalog,
                                  Consumer<AirbyteMessage> outputRecordCollector) {
     this.apiKey = config.get(API_KEY_ID).asText();
-    this.workspace = config.get(API_KEY_ID).asText();
+//    this.workspace = config.get(API_KEY_ID).asText();
+    this.workspace = "sam-manual-ws";
 
     this.catalog = catalog;
     this.outputRecordCollector = outputRecordCollector;
@@ -40,16 +48,27 @@ public class RocksetWriteApiConsumer implements AirbyteMessageConsumer {
   public void start() throws Exception {
     this.client = new RocksetClient(apiKey, APISERVER_URL);
 
+    LOGGER.info("creating workspace: " + workspace);
     RocksetUtils.createWorkspaceIfNotExists(client, workspace);
+    List<String> collectionNames = catalog.getStreams().stream()
+        .map(s -> s.getStream().getName()).collect(Collectors.toList());
+    LOGGER.info("CNAMES: " + collectionNames);
+    for (String cname : collectionNames) {
+      RocksetUtils.createCollectionIfNotExists(client, workspace, cname);
+      RocksetUtils.waitUntilCollectionReady(client, workspace, cname);
+    }
   }
 
   @Override
   public void accept(AirbyteMessage message) throws Exception {
-    AddDocumentsRequest req = new AddDocumentsRequest();
-    req.addDataItem(message);
+    if (message.getType() == AirbyteMessage.Type.RECORD) {
+      String cname = message.getRecord().getStream();
 
-    // TODO Get desired collection name from somewhere inside AirbyteMessage
-    this.client.addDocuments(workspace, "TODO-real-collection", req);
+      AddDocumentsRequest req = new AddDocumentsRequest();
+      req.addDataItem(message.getRecord().getData());
+
+      this.client.addDocuments(workspace, cname, req);
+    }
   }
 
   @Override
