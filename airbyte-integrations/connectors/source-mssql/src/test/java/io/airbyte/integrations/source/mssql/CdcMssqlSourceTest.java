@@ -117,8 +117,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         String.format("jdbc:sqlserver://%s:%s",
             container.getHost(),
             container.getFirstMappedPort()),
-        DRIVER_CLASS
-    );
+        DRIVER_CLASS);
 
     executeQuery("CREATE DATABASE " + dbName + ";");
     switchSnapshotIsolation(true, dbName);
@@ -249,7 +248,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   private void switchSqlServerAgentAndWait(Boolean start) throws InterruptedException {
     String startOrStop = start ? "START" : "STOP";
     executeQuery(String.format("EXEC xp_servicecontrol N'%s',N'SQLServerAGENT';", startOrStop));
-    Thread.sleep(15*1000); // 15 seconds to wait for change of agent state
+    Thread.sleep(15 * 1000); // 15 seconds to wait for change of agent state
   }
 
   @Test
@@ -298,16 +297,16 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
   }
 
-  //todo: check LSN returned is actually the max LSN
-  //todo: check we fail as expected under certain conditions
+  // todo: check LSN returned is actually the max LSN
+  // todo: check we fail as expected under certain conditions
   @Test
   void testGetTargetPosition() throws InterruptedException {
-    Thread.sleep(10*1000); // Sleeping because sometimes the db is not yet completely ready and the lsn is not found
+    Thread.sleep(10 * 1000); // Sleeping because sometimes the db is not yet completely ready and the lsn is not found
     // check that getTargetPosition returns higher Lsn after inserting new row
     Lsn firstLsn = MssqlCdcTargetPosition.getTargetPosition(testJdbcDatabase, dbName).targetLsn;
     executeQuery(String.format("USE %s; INSERT INTO %s.%s (%s, %s, %s) VALUES (%s, %s, '%s');",
         dbName, MODELS_SCHEMA, MODELS_STREAM_NAME, COL_ID, COL_MAKE_ID, COL_MODEL, 910019, 1, "another car"));
-    Thread.sleep(15*1000); // 15 seconds to wait for Agent capture job to log cdc change
+    Thread.sleep(15 * 1000); // 15 seconds to wait for Agent capture job to log cdc change
     Lsn secondLsn = MssqlCdcTargetPosition.getTargetPosition(testJdbcDatabase, dbName).targetLsn;
     assertTrue(secondLsn.compareTo(firstLsn) > 0);
   }
