@@ -84,8 +84,11 @@ class IntercomStream(HttpStream, ABC):
 
     def get_data(self, response: requests.Response) -> List:
         data = response.json()
+
         for data_field in self.data_fields:
-            data = data.get(data_field, [])
+            if data and isinstance(data, dict):
+                data = data.get(data_field, [])
+
         if isinstance(data, list):
             data = data
         elif isinstance(data, dict):
