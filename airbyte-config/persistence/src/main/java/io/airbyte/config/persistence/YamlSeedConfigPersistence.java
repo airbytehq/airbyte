@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.airbyte.config.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -18,11 +42,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * This config persistence contains all seed definitions according to the yaml files. It is read-only.
+ * This config persistence contains all seed definitions according to the yaml files. It is
+ * read-only.
  */
 public class YamlSeedConfigPersistence implements ConfigPersistence {
 
   private enum SeedConfigType {
+
     STANDARD_WORKSPACE("/seed/workspace_definitions.yaml", "workspaceId"),
     STANDARD_SOURCE_DEFINITION("/seed/source_definitions.yaml", "sourceDefinitionId"),
     STANDARD_DESTINATION_DEFINITION("/seed/destination_definitions.yaml", "destinationDefinitionId");
@@ -34,6 +60,7 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
       this.resourcePath = resourcePath;
       this.idName = idName;
     }
+
   }
 
   private static final Map<ConfigSchema, SeedConfigType> CONFIG_SCHEMA_MAP = Map.of(
@@ -99,4 +126,5 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
         e -> e.getKey().name(),
         e -> e.getValue().values().stream()));
   }
+
 }

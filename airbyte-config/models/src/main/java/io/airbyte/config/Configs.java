@@ -41,15 +41,11 @@ public interface Configs {
 
   Path getLocalRoot();
 
-  String getDatabaseDb();
-
   String getDatabaseUser();
 
   String getDatabasePassword();
 
   String getDatabaseUrl();
-
-  String getConfigDatabaseDb();
 
   String getConfigDatabaseUser();
 

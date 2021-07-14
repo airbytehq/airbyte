@@ -36,41 +36,91 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * By default, this factory returns a database config persistence. it can still
+ * return a file system config persistence for testing purpose. This legacy feature
+ * should be removed after the file to database migration is completely done.
+ */
 public class ConfigPersistenceFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigPersistenceFactory.class);
 
+  private final Configs configs;
+  private final boolean setupDatabase;
+  private final boolean useConfigDatabase;
+
+  /**
+   * @param setupDatabase initialize the database and load data; this is necessary because this method
+   *        has multiple callers, and we want to setup the database only once to prevent race
+   *        conditions.
+   */
+  private ConfigPersistenceFactory(Configs configs, boolean setupDatabase, boolean useConfigDatabase) {
+    this.configs = configs;
+    this.setupDatabase = setupDatabase;
+    this.useConfigDatabase = useConfigDatabase;
+  }
+
+  public static Builder build(Configs configs) {
+    return new Builder(configs);
+  }
+
+  public static class Builder {
+    private final Configs configs;
+    private boolean setupDatabase = true;
+    private boolean useConfigDatabase = true;
+
+    private Builder(Configs configs) {
+      this.configs = configs;
+    }
+
+    public Builder setupDatabase(boolean setupDatabase) {
+      this.setupDatabase = setupDatabase;
+      return this;
+    }
+
+    public Builder useConfigDatabase(boolean useConfigDatabase) {
+      this.useConfigDatabase = useConfigDatabase;
+      return this;
+    }
+
+    public ConfigPersistenceFactory get() {
+      return new ConfigPersistenceFactory(configs, setupDatabase, useConfigDatabase);
+    }
+  }
 
   /**
    * Create a config persistence based on the configs.
    * <p/>
-   * If config root is defined, create a database config persistence and copy the configs
-   * from the file-based config persistence. Otherwise, seed the database from the yaml files.
-   * @param setupDatabase initialize the database and load data; this is necessary because
-   *                      this method has multiple callers, and we want to setup the database only once
-   *                      to prevent race conditions.
+   * If config root is defined, create a database config persistence and copy the configs from the
+   * file-based config persistence. Otherwise, seed the database from the yaml files.
+   *
    */
-  public static ConfigPersistence create(Configs configs, boolean setupDatabase) throws IOException {
+  public ConfigPersistence create() throws IOException {
+    if (!useConfigDatabase) {
+      Path configRoot = configs.getConfigRoot();
+      return FileSystemConfigPersistence.createWithValidation(configRoot);
+    }
+
     if (configs.getConfigRoot() == null) {
       // This branch will only be true in a future Airbyte version, in which
       // the config root is no longer required and everything lives in the database.
-      return createDbPersistenceWithYamlSeed(configs, setupDatabase);
+      return createDbPersistenceWithYamlSeed();
     }
-    return createDbPersistenceWithFileSeed(configs, setupDatabase);
+    return createDbPersistenceWithFileSeed();
   }
 
-  static ConfigPersistence createDbPersistenceWithYamlSeed(Configs configs, boolean setupDatabase) throws IOException {
+  ConfigPersistence createDbPersistenceWithYamlSeed() throws IOException {
     ConfigPersistence seedConfigPersistence = new YamlSeedConfigPersistence();
-    return createDatabasePersistence(configs, setupDatabase, seedConfigPersistence);
+    return createDbPersistence(seedConfigPersistence);
   }
 
-  static ConfigPersistence createDbPersistenceWithFileSeed(Configs configs, boolean setupDatabase) throws IOException {
+  ConfigPersistence createDbPersistenceWithFileSeed() throws IOException {
     Path configRoot = configs.getConfigRoot();
     ConfigPersistence fsConfigPersistence = FileSystemConfigPersistence.createWithValidation(configRoot);
-    return createDatabasePersistence(configs, setupDatabase, fsConfigPersistence);
+    return createDbPersistence(fsConfigPersistence);
   }
 
-  static ConfigPersistence createDatabasePersistence(Configs configs, boolean setupDatabase, ConfigPersistence seedConfigPersistence) throws IOException {
+  ConfigPersistence createDbPersistence(ConfigPersistence seedConfigPersistence) throws IOException {
     LOGGER.info("Use database config persistence.");
 
     // When setupDatabase is true, it means the database will be initialized after we

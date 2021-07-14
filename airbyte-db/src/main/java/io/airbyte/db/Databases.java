@@ -54,6 +54,7 @@ public class Databases {
   };
   public static final Function<Database, Boolean> IS_CONFIG_DATABASE_CONNECTED = database -> {
     try {
+      LOGGER.info("Testing config database connection...");
       return database.query(ctx -> ctx.fetchExists(select().from("information_schema.tables")));
     } catch (Exception e) {
       return false;
@@ -61,6 +62,7 @@ public class Databases {
   };
   public static final Function<Database, Boolean> IS_CONFIG_DATABASE_LOADED_WITH_DATA = database -> {
     try {
+      LOGGER.info("Testing if airbyte_configs has been created...");
       return database.query(ctx -> ctx.fetchExists(select().from("airbyte_configs")));
     } catch (Exception e) {
       return false;
@@ -101,6 +103,10 @@ public class Databases {
 
   public static JdbcDatabase createRedshiftDatabase(String username, String password, String jdbcConnectionString) {
     return createJdbcDatabase(username, password, jdbcConnectionString, "com.amazon.redshift.jdbc.Driver");
+  }
+
+  public static Database createMySqlDatabase(String username, String password, String jdbcConnectionString) {
+    return createDatabase(username, password, jdbcConnectionString, "com.mysql.cj.jdbc.Driver", SQLDialect.MYSQL);
   }
 
   public static Database createSqlServerDatabase(String username, String password, String jdbcConnectionString) {

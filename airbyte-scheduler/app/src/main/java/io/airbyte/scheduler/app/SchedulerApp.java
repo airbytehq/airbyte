@@ -209,7 +209,7 @@ public class SchedulerApp {
     final ProcessFactory processFactory = getProcessBuilderFactory(configs);
 
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
-    final ConfigPersistence configPersistence = ConfigPersistenceFactory.create(configs, false);
+    final ConfigPersistence configPersistence = ConfigPersistenceFactory.build(configs).setupDatabase(false).get().create();
     final ConfigRepository configRepository = new ConfigRepository(configPersistence);
     final JobCleaner jobCleaner = new JobCleaner(
         configs.getWorkspaceRetentionConfig(),
