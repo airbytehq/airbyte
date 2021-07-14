@@ -13,18 +13,22 @@ dependencies {
 
     implementation project(':airbyte-db')
     implementation project(':airbyte-integrations:bases:base-java')
+    implementation project(':airbyte-integrations:bases:debezium')
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-integrations:connectors:source-relational-db')
 
+    implementation 'io.debezium:debezium-connector-sqlserver:1.4.2.Final'
     implementation 'com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre14'
 
+    testImplementation testFixtures(project(':airbyte-integrations:bases:debezium'))
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation "org.testcontainers:mssqlserver:1.15.1"
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mssql')
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)

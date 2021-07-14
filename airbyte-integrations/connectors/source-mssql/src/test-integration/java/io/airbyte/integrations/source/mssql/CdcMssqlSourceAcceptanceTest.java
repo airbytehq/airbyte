@@ -1,0 +1,221 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package io.airbyte.integrations.source.mssql;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.db.Database;
+import io.airbyte.db.Databases;
+import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
+import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.SyncMode;
+import java.util.Collections;
+import java.util.List;
+import org.testcontainers.containers.MSSQLServerContainer;
+
+public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
+
+  private static final String DB_NAME = "acceptance";
+  private static final String SCHEMA_NAME = "dbo";
+  private static final String STREAM_NAME = "id_and_name";
+  private static final String STREAM_NAME2 = "starships";
+  private static final String TEST_USER_NAME = "tester";
+  private static final String TEST_USER_PASSWORD = "testerjester[1]";
+  private static final String CDC_ROLE_NAME = "cdc_selector";
+  private MSSQLServerContainer<?> container;
+  private JsonNode config;
+  private Database database;
+
+  @Override
+  protected String getImageName() {
+    return "airbyte/source-mssql:dev";
+  }
+
+  @Override
+  protected ConnectorSpecification getSpec() throws Exception {
+    return Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
+  }
+
+  @Override
+  protected JsonNode getConfig() {
+    return config;
+  }
+
+  @Override
+  protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
+    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                String.format("%s", STREAM_NAME),
+                String.format("%s", SCHEMA_NAME),
+                Field.of("id", JsonSchemaPrimitive.NUMBER),
+                Field.of("name", JsonSchemaPrimitive.STRING))
+                .withSourceDefinedCursor(true)
+                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+                .withSupportedSyncModes(
+                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                String.format("%s", STREAM_NAME2),
+                String.format("%s", SCHEMA_NAME),
+                Field.of("id", JsonSchemaPrimitive.NUMBER),
+                Field.of("name", JsonSchemaPrimitive.STRING))
+                .withSourceDefinedCursor(true)
+                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+                .withSupportedSyncModes(
+                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+  }
+
+  @Override
+  protected JsonNode getState() {
+    return null;
+  }
+
+  @Override
+  protected List<String> getRegexTests() {
+    return Collections.emptyList();
+  }
+
+  @Override
+  protected void setupEnvironment(TestDestinationEnv environment) throws InterruptedException {
+    container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
+    container.addEnv("MSSQL_AGENT_ENABLED", "True"); // need this running for cdc to work
+    container.start();
+    database = Databases.createDatabase(
+        container.getUsername(),
+        container.getPassword(),
+        String.format("jdbc:sqlserver://%s:%s",
+            container.getHost(),
+            container.getFirstMappedPort()),
+        "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+        null);
+
+    config = Jsons.jsonNode(ImmutableMap.builder()
+        .put("host", container.getHost())
+        .put("port", container.getFirstMappedPort())
+        .put("database", DB_NAME)
+        .put("username", TEST_USER_NAME)
+        .put("password", TEST_USER_PASSWORD)
+        .put("replication_method", "CDC")
+        .build());
+
+    executeQuery("CREATE DATABASE " + DB_NAME + ";");
+    executeQuery("ALTER DATABASE " + DB_NAME + "\n\tSET ALLOW_SNAPSHOT_ISOLATION ON");
+    executeQuery("USE " + DB_NAME + "\n" + "EXEC sys.sp_cdc_enable_db");
+
+    setupTestUser();
+    revokeAllPermissions();
+    createAndPopulateTables();
+    grantCorrectPermissions();
+  }
+
+  private void setupTestUser() {
+    executeQuery("USE " + DB_NAME);
+    executeQuery("CREATE LOGIN " + TEST_USER_NAME + " WITH PASSWORD = '" + TEST_USER_PASSWORD + "';");
+    executeQuery("CREATE USER " + TEST_USER_NAME + " FOR LOGIN " + TEST_USER_NAME + ";");
+  }
+
+  private void revokeAllPermissions() {
+    executeQuery("REVOKE ALL FROM " + TEST_USER_NAME + " CASCADE;");
+    executeQuery("EXEC sp_msforeachtable \"REVOKE ALL ON '?' TO " + TEST_USER_NAME + ";\"");
+  }
+
+  private void createAndPopulateTables() throws InterruptedException {
+    executeQuery(String.format("CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, name VARCHAR(200));",
+        SCHEMA_NAME, STREAM_NAME));
+    executeQuery(String.format("INSERT INTO %s.%s (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');",
+        SCHEMA_NAME, STREAM_NAME));
+    executeQuery(String.format("CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, name VARCHAR(200));",
+        SCHEMA_NAME, STREAM_NAME2));
+    executeQuery(String.format("INSERT INTO %s.%s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');",
+        SCHEMA_NAME, STREAM_NAME2));
+
+    // sometimes seeing an error that we can't enable cdc on a table while sql server agent is still
+    // spinning up
+    // solving with a simple while retry loop
+    boolean failingToStart = true;
+    int retryNum = 0;
+    int maxRetries = 10;
+    while (failingToStart) {
+      try {
+        // enabling CDC on each table
+        String[] tables = {STREAM_NAME, STREAM_NAME2};
+        for (String table : tables) {
+          executeQuery(String.format(
+              "EXEC sys.sp_cdc_enable_table\n"
+                  + "\t@source_schema = N'%s',\n"
+                  + "\t@source_name   = N'%s', \n"
+                  + "\t@role_name     = N'%s',\n"
+                  + "\t@supports_net_changes = 0",
+              SCHEMA_NAME, table, CDC_ROLE_NAME));
+        }
+        failingToStart = false;
+      } catch (Exception e) {
+        if (retryNum >= maxRetries) {
+          throw e;
+        } else {
+          retryNum++;
+          Thread.sleep(10000); // 10 seconds
+        }
+      }
+    }
+  }
+
+  private void grantCorrectPermissions() {
+    executeQuery(String.format("EXEC sp_addrolemember N'%s', N'%s';", "db_datareader", TEST_USER_NAME));
+    executeQuery(String.format("USE %s;\n" + "GRANT SELECT ON SCHEMA :: [%s] TO %s", DB_NAME, "cdc", TEST_USER_NAME));
+    executeQuery(String.format("EXEC sp_addrolemember N'%s', N'%s';", CDC_ROLE_NAME, TEST_USER_NAME));
+  }
+
+  private void executeQuery(String query) {
+    try {
+      database.query(
+          ctx -> ctx
+              .execute(query));
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  protected void tearDown(TestDestinationEnv testEnv) {
+    container.close();
+  }
+
+}
