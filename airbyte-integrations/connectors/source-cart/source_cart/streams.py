@@ -22,23 +22,17 @@
 # SOFTWARE.
 #
 
-import tempfile
 import urllib.parse
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
-import pendulum
 import requests
-import vcr
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
-
-cache_file = tempfile.NamedTemporaryFile()
 
 
 class CartStream(HttpStream, ABC):
     primary_key = "id"
-    data_field = "data"
 
     def __init__(self, start_date: pendulum.datetime, data_center: str, **kwargs):
         self._start_date = start_date
@@ -51,8 +45,7 @@ class CartStream(HttpStream, ABC):
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
-        we dont need to check the response.status_code == 429 since this header exists only in this case
-         (ref to
+        We dont need to check the response.status_code == 429 since this header exists only in this case.
         """
         retry_after = response.headers.get("Retry-After")
         if retry_after:
@@ -74,7 +67,6 @@ class CartStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
-        self.raise_error_from_response(response_json=response_json)
         result = response_json.get(self.data_field, [])
         yield from result
 
@@ -87,14 +79,7 @@ class CartStream(HttpStream, ABC):
 class IncrementalCartStream(CartStream, ABC):
 
     state_checkpoint_interval = 1000
-
-    @property
-    @abstractmethod
-    def cursor_field(self) -> str:
-        """
-        Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
-        and define a cursor field.
-        """
+    cursor_field = "updated_at"
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
@@ -114,146 +99,45 @@ class IncrementalCartStream(CartStream, ABC):
         return {}
 
 
-class Surveys(IncrementalSurveymonkeyStream):
+class CustomerCart(IncrementalCartStream):
     """
-    Docs: https://developer.surveymonkey.com/api/v3/#surveys
-    A source for stream slices. It does not contain useful info itself.
+    TODO: Placeholder for documentation links
     """
 
-    cursor_field = "date_modified"
+    data_field = "customers"
 
     def path(self, **kwargs) -> str:
-        return "surveys"
-
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        result = super().parse_response(response=response, stream_state=stream_state, **kwargs)
-        for record in result:
-            substream = SurveyDetails(survey_id=record["id"], start_date=self._start_date, authenticator=self.authenticator)
-            child_record = substream.read_records(sync_mode=SyncMode.full_refresh)
-            yield from child_record
+        return "customers"
 
 
-class SurveyDetails(SurveymonkeyStream):
+class Orders(IncrementalCartStream):
     """
-    The `/id/details` endpoint contains full data about pages and questions. This data is already collected and
-    gathered into array [pages] and array of arrays questions, where each inner array contains data about certain page.
-    Example [[q1, q2,q3], [q4,q5]] means we have 2 pages, first page contains 3 questions q1, q2, q3, second page contains other.
-
-    If we use the "normal" query, we need to query surveys/id/pages for page enumeration,
-        then we need to query each page_id in every new request for details (because `pages` doesn't contain full info
-        and valid only for enumeration), then for each page need to enumerate questions and get each question_id for details
-        (since `/surveys/id/pages/id/questions` without ending /id also doesnt contain full info,
-
-    In other words, we need to have triple stream slices, (note that api is very very rate limited
-    and we need details for each survey etc), and finally we get a response similar to those we can have from `/id/details`
-    endpoint. Also we will need to gather info to array in case of overrequesting, but details is already gathered it for us.
-    We just need to apply filtering or small data transformation against array.
-    So this way is very much better in terms of API limits.
+    TODO: Placeholder for documentation links
     """
 
-    def __init__(self, survey_id, start_date, **kwargs):
-        self.survey_id = survey_id
-        super().__init__(start_date=start_date, **kwargs)
+    data_field = "orders"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"surveys/{self.survey_id}/details"
-
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        response_json = response.json()
-        self.raise_error_from_response(response_json=response_json)
-        response_json.pop("pages", None)
-        yield response_json
+    def path(self, **kwargs) -> str:
+        return "orders"
 
 
-class SurveyPages(SurveymonkeyStream):
-    """should be filled from SurveyDetails"""
-
-    data_field = "pages"
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        survey_id = stream_slice["survey_id"]
-        return f"surveys/{survey_id}/details"
-
-    def stream_slices(self, **kwargs):
-        survey_stream = Surveys(start_date=self._start_date, authenticator=self.authenticator)
-        for survey in survey_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield {"survey_id": survey["id"]}
-
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        data = super().parse_response(response=response, stream_state=stream_state, **kwargs)
-        for record in data:
-            record.pop("questions", None)
-            yield record
-
-
-class SurveyQuestions(SurveymonkeyStream):
-    """should be filled from SurveyDetails"""
-
-    data_field = "pages"
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        survey_id = stream_slice["survey_id"]
-        return f"surveys/{survey_id}/details"
-
-    def stream_slices(self, **kwargs):
-        survey_stream = Surveys(start_date=self._start_date, authenticator=self.authenticator)
-        for survey in survey_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield {"survey_id": survey["id"]}
-
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        data = super().parse_response(response=response, stream_state=stream_state, **kwargs)
-        for entry in data:
-            page_id = entry["id"]
-            questions = entry["questions"]
-            for question in questions:
-                question["page_id"] = page_id
-                yield question
-
-
-class SurveyResponses(IncrementalSurveymonkeyStream):
+class OrderPayments(IncrementalCartStream):
     """
-    Docs: https://developer.surveymonkey.com/api/v3/#survey-responses
+    TODO: Placeholder for documentation links
     """
 
-    cursor_field = "date_modified"
+    data_field = "payments"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        survey_id = stream_slice["survey_id"]
-        return f"surveys/{survey_id}/responses/bulk"
+    def path(self, **kwargs) -> str:
+        return "order_payments"
 
-    def stream_slices(self, **kwargs):
-        survey_stream = Surveys(start_date=self._start_date, authenticator=self.authenticator)
-        for survey in survey_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield {"survey_id": survey["id"]}
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the survey_id and cursor value in the latest record with the stream's most recent state object
-        and returning an updated state object.
-        """
-        survey_id = latest_record.get("survey_id")
-        latest_cursor_value = latest_record.get(self.cursor_field)
-        current_stream_state = current_stream_state or {}
-        current_state = current_stream_state.get(survey_id) if current_stream_state else None
-        if current_state:
-            current_state = current_state.get(self.cursor_field)
-        current_state_value = current_state or latest_cursor_value
-        max_value = max(current_state_value, latest_cursor_value)
-        new_value = {self.cursor_field: max_value}
+class Products(IncrementalCartStream):
+    """
+    TODO: Placeholder for documentation links
+    """
 
-        current_stream_state[survey_id] = new_value
-        return current_stream_state
+    data_field = "products"
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, **kwargs)
-
-        since_value_surv = stream_state.get(stream_slice["survey_id"])
-        if since_value_surv:
-            since_value = (
-                pendulum.parse(since_value_surv.get(self.cursor_field)) if since_value_surv.get(self.cursor_field) else self._start_date
-            )
-            since_value = max(since_value, self._start_date)
-        else:
-            since_value = self._start_date
-        params["start_modified_at"] = since_value.strftime("%Y-%m-%dT%H:%M:%S")
-        return params
+    def path(self, **kwargs) -> str:
+        return "products"
