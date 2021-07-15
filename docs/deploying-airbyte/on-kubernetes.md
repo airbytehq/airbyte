@@ -10,7 +10,7 @@ Airbyte allows scaling sync workloads horizontally using Kubernetes. The core co
 For local testing we recommend following one of the following setup guides:
 * [Docker Desktop (Mac)](https://docs.docker.com/desktop/kubernetes/)
 * [Minikube](https://minikube.sigs.k8s.io/docs/start/)
-  * NOTE: Start Minikube with at least 4gb RAM to Minikube with `minikube start --memory=4000`
+  * NOTE: Start Minikube with at least 4gb RAM with `minikube start --memory=4000`
 * [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/)
 
 For testing on GKE you can [create a cluster with the command line or the Cloud Console UI](https://cloud.google.com/kubernetes-engine/docs/how-to/creating-a-zonal-cluster).
@@ -135,6 +135,17 @@ Now visit [http://localhost:8000](http://localhost:8000) in your browser and sta
 
 ## Production Airbyte on Kubernetes
 
+### Setting resource limits
+
+* Core container pods
+  * Instead of launching Airbyte with `kubectl apply -k kube/overlays/stable`, you can run with `kubectl apply -k kube/overlays/stable-with-resource-limits`.
+  * The `kube/overlays/stable-with-resource-limits/set-resource-limits.yaml` file can be modified to provide different resource requirements for core pods.
+* Connector pods
+  * By default, connector pods launch without resource limits.
+  * To add resource limits, configure the "Docker Resource Limits" section of the `.env` file in the overlay folder you're using.
+* Volume sizes
+  * You can modify `kube/resources/volume-*` files to specify different volume sizes for the persistent volumes backing Airbyte.
+
 ### Cloud logging
 
 Airbyte writes logs to two directories. App logs, including server and scheduler logs, are written to the `app-logging` directory.
@@ -163,10 +174,6 @@ there are any other issues blocking your adoption of Airbyte or if you would lik
 
 * The server and scheduler deployments must run on the same node. ([#4232](https://github.com/airbytehq/airbyte/issues/4232))
 * Some UI operations have higher latency on Kubernetes than Docker-Compose. ([#4233](https://github.com/airbytehq/airbyte/issues/4233))
-* Pod histories must be cleaned up manually. ([#3634](https://github.com/airbytehq/airbyte/issues/3634))
-* Specifying resource limits for pods is not supported yet. ([#3638](https://github.com/airbytehq/airbyte/issues/3638))
-* Pods Airbyte launches to run connector jobs are always launched in the `default` namespace. ([#3636](https://github.com/airbytehq/airbyte/issues/3636))
-* S3 is the only Cloud Storage currently supported. ([#4200](https://github.com/airbytehq/airbyte/issues/4200))
 * Large log files might take a while to load. ([#4201](https://github.com/airbytehq/airbyte/issues/4201))
 * UI does not include configured buckets in the displayed log path. ([#4204](https://github.com/airbytehq/airbyte/issues/4204))
 * Logs are not reset when Airbyte is re-deployed. ([#4235](https://github.com/airbytehq/airbyte/issues/4235))
