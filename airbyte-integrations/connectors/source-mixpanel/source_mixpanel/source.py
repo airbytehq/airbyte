@@ -485,10 +485,10 @@ class Engage(MixpanelStream):
             for property_name in properties:
                 this_property_name = property_name
                 if property_name.startswith("$"):
-                    # Transform properties name for compatibility with singer schema:
+                    # Just remove leading '$' for 'reserved' mixpanel properties name, example:
                     # from API: '$browser'
-                    # to stream: 'mp_reserved_browser'
-                    this_property_name = property_name.replace("$", "mp_reserved_")
+                    # to stream: 'browser'
+                    this_property_name = this_property_name[1:]
                 item[this_property_name] = properties[property_name]
             yield item
 
@@ -521,10 +521,10 @@ class Engage(MixpanelStream):
             property_name: str = property_entry["name"]
             property_type: str = property_entry["type"]
             if property_name.startswith("$"):
-                # Transform properties name for compatibility with singer schema:
+                # Just remove leading '$' for 'reserved' mixpanel properties name, example:
                 # from API: '$browser'
-                # to stream: 'mp_reserved_browser'
-                property_name = property_name.replace("$", "mp_reserved_")
+                # to stream: 'browser'
+                property_name = property_name[1:]
             schema["properties"][property_name] = types.get(property_type, {"type": ["null", "string"]})
 
         return schema
@@ -698,7 +698,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
                 "properties": {
                     "time": 1623860880,
                     "distinct_id": "1d694fd9-31a5-4b99-9eef-ae63112063ed",
-                    "$browser": "Chrome",
+                    "$browser": "Chrome",                                           -> will be renamed to "browser"
                     "$browser_version": "91.0.4472.101",
                     "$current_url": "https://unblockdata.com/solutions/e-commerce/",
                     "$insert_id": "c5eed127-c747-59c8-a5ed-d766f48e39a4",
@@ -718,10 +718,10 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
             for property_name in properties:
                 this_property_name = property_name
                 if property_name.startswith("$"):
-                    # Transform properties name for compatibility with singer schema:
+                    # Just remove leading '$' for 'reserved' mixpanel properties name, example:
                     # from API: '$browser'
-                    # to stream: 'mp_reserved_browser'
-                    this_property_name = property_name.replace("$", "mp_reserved_")
+                    # to stream: 'browser'
+                    this_property_name = this_property_name[1:]
                 # Convert all values to string (this is default property type)
                 # because API does not provide properties type information
                 item[this_property_name] = str(properties[property_name])
@@ -755,10 +755,10 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
         for property_entry in schema_properties:
             property_name: str = property_entry
             if property_name.startswith("$"):
-                # Transform properties name for compatibility with singer schema:
+                # Just remove leading '$' for 'reserved' mixpanel properties name, example:
                 # from API: '$browser'
-                # to stream: 'mp_reserved_browser'
-                property_name = property_name.replace("$", "mp_reserved_")
+                # to stream: 'browser'
+                property_name = property_name[1:]
             # Schema does not provide exact property type
             # string ONLY for event properties (no other datatypes)
             # Reference: https://help.mixpanel.com/hc/en-us/articles/360001355266-Event-Properties#field-size-character-limits-for-event-properties
