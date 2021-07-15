@@ -27,10 +27,15 @@ const Content = styled.div`
 
 type IProps = {
   connection: Connection;
+  disabled?: boolean;
   frequencyText?: string;
 };
 
-const EnabledControl: React.FC<IProps> = ({ connection, frequencyText }) => {
+const EnabledControl: React.FC<IProps> = ({
+  connection,
+  disabled,
+  frequencyText,
+}) => {
   const { updateConnection } = useConnection();
 
   const onChangeStatus = async () => {
@@ -48,7 +53,7 @@ const EnabledControl: React.FC<IProps> = ({ connection, frequencyText }) => {
 
     AnalyticsService.track("Source - Action", {
       action:
-        connection.status === "active"
+        connection.status === Status.ACTIVE
           ? "Disable connection"
           : "Reenable connection",
       connector_source: connection.source?.sourceName,
@@ -65,15 +70,16 @@ const EnabledControl: React.FC<IProps> = ({ connection, frequencyText }) => {
       <ToggleLabel htmlFor="toggle-enabled-source">
         <FormattedMessage
           id={
-            connection.status === "active"
+            connection.status === Status.ACTIVE
               ? "tables.enabled"
               : "tables.disabled"
           }
         />
       </ToggleLabel>
       <Toggle
+        disabled={disabled}
         onChange={onChangeStatus}
-        checked={connection.status === "active"}
+        checked={connection.status === Status.ACTIVE}
         id="toggle-enabled-source"
       />
     </Content>
