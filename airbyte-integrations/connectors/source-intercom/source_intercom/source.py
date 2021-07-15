@@ -40,7 +40,7 @@ class IntercomStream(HttpStream, ABC):
     url_base = "https://api.intercom.io/"
 
     # https://developers.intercom.com/intercom-api-reference/reference#rate-limiting
-    rate_limit = 1000  # 1000 queries per hour == 1 req in 3,6 secs
+    queries_per_hour = 1000  # 1000 queries per hour == 1 req in 3,6 secs
 
     primary_key = "id"
     data_fields = ["data"]
@@ -110,7 +110,7 @@ class IntercomStream(HttpStream, ABC):
             yield record
 
         # wait for 3,6 seconds according to API limit
-        time.sleep(3600 / self.rate_limit)
+        time.sleep(3600 / self.queries_per_hour)
 
 
 class IncrementalIntercomStream(IntercomStream, ABC):
@@ -147,7 +147,7 @@ class IncrementalIntercomStream(IntercomStream, ABC):
             yield from self.filter_by_state(stream_state=stream_state, record=record)
 
         # wait for 3,6 seconds according to API limit
-        time.sleep(3600 / self.rate_limit)
+        time.sleep(3600 / self.queries_per_hour)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
         """
