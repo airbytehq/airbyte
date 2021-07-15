@@ -22,9 +22,9 @@
 # SOFTWARE.
 #
 
+import os
 import time
 from abc import ABC
-from pathlib import Path
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
 
@@ -42,8 +42,12 @@ def request_cache() -> Cassette:
     It deletes file everytime we create it, normally should be called only once.
     We can't use NamedTemporaryFile here because yaml serializer doesn't work well with empty files.
     """
-    filename = Path("request_cache.yml")
-    filename.unlink(missing_ok=True)
+    filename = "request_cache.yml"
+    try:
+        os.remove(filename)
+    except FileNotFoundError:
+        pass
+
     return vcr.use_cassette(str(filename), record_mode="new_episodes", serializer="yaml")
 
 
