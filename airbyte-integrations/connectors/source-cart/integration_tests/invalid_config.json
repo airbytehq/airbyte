@@ -1,3 +1,5 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "access_token": "1234567890absc",
+  "start_date": "2021-01-01T00:00:00Z",
+  "data_center": "abracadabra"
 }
