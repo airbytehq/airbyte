@@ -92,8 +92,11 @@ jobs:
       - name: Format
         run: SUB_BUILD=CONNECTORS_BASE ./gradlew format --scan --info --stacktrace
 
-      - name: Build
-        run: SUB_BUILD=CONNECTORS_BASE ./gradlew build --scan
+#      - name: Build
+#        run: SUB_BUILD=CONNECTORS_BASE ./gradlew build --scan
+
+      - name: Ensure no file change
+        run: git diff
 
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
