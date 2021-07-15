@@ -73,7 +73,7 @@ def createSpotlessTarget = { pattern ->
         'secrets'
     ]
 
-    if (System.getenv().containsKey("SUB_BUILD")) {
+    if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
         excludes.add("airbyte-integrations/connectors")
     }
 
