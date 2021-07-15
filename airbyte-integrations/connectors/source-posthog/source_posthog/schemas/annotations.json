@@ -5,17 +5,17 @@
       "type": "integer"
     },
     "content": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "date_marker": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "creation_type": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "dashboard_item": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "created_by": {
       "type": "object",

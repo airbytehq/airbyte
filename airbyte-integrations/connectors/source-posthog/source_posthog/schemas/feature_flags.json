@@ -11,7 +11,7 @@
       "type": "string"
     },
     "rollout_percentage": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "filters": {
       "type": "object",
