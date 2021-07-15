@@ -75,12 +75,13 @@ import org.slf4j.MDC;
 
 /**
  * The SchedulerApp is responsible for finding new scheduled jobs that need to be run and to launch
- * them. The current implementation uses two thread pools to do so. One pool is responsible for all job
- * launching operations. The other pool is responsible for clean up operations.
+ * them. The current implementation uses two thread pools to do so. One pool is responsible for all
+ * job launching operations. The other pool is responsible for clean up operations.
  *
- * Operations can have thread pools under the hood. An important thread pool to note is that the job submitter
- * thread pool. This pool does the work of submitting jobs to temporal - the size of this pool determines the number of
- * concurrent jobs that can be run. This is controlled via the {@link #SUBMITTER_NUM_THREADS} variable.
+ * Operations can have thread pools under the hood. An important thread pool to note is that the job
+ * submitter thread pool. This pool does the work of submitting jobs to temporal - the size of this
+ * pool determines the number of concurrent jobs that can be run. This is controlled via the
+ * {@link #SUBMITTER_NUM_THREADS} variable.
  */
 public class SchedulerApp {
 
