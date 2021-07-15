@@ -30,7 +30,7 @@ import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
-import io.airbyte.config.helpers.LogHelpers;
+import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.protocols.airbyte.HeartbeatMonitor;
 import java.nio.file.Path;
@@ -193,7 +193,7 @@ public class WorkerUtils {
   }
 
   public static Path getLogPath(Path jobRoot) {
-    return jobRoot.resolve(LogHelpers.LOG_FILENAME);
+    return jobRoot.resolve(LogClientSingleton.LOG_FILENAME);
   }
 
   public static Path getJobRoot(Path workspaceRoot, String jobId, long attemptId) {

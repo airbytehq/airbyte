@@ -58,14 +58,9 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   );
 
   const onSelectSyncMode = useCallback(
-    (
-      data: DropDownRow.IDataItem & {
-        rawValue: {
-          syncMode: SyncMode;
-          destinationSyncMode: DestinationSyncMode;
-        };
-      }
-    ) => updateStreamWithConfig(data.rawValue),
+    (data: DropDownRow.IDataItem | null) => {
+      data && updateStreamWithConfig(data.value);
+    },
     [updateStreamWithConfig]
   );
 
@@ -132,9 +127,8 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
           stream.supportedSyncModes.includes(syncMode) &&
           destinationSupportedSyncModes.includes(destinationSyncMode)
       ).map(([syncMode, destinationSyncMode]) => ({
-        value: `${syncMode}.${destinationSyncMode}`,
-        rawValue: { syncMode, destinationSyncMode },
-        text: formatMessage(
+        value: { syncMode, destinationSyncMode },
+        label: formatMessage(
           {
             id: "connection.stream.syncMode",
             defaultMessage: `${syncMode}.${destinationSyncMode}`,
@@ -158,6 +152,10 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
 
   const configErrors = getIn(errors, `schema.streams[${streamNode.id}].config`);
   const hasError = configErrors && Object.keys(configErrors).length > 0;
+  const currentSyncMode = {
+    syncMode: config.syncMode,
+    destinationSyncMode: config.destinationSyncMode,
+  };
 
   return (
     <Section error={hasError}>
