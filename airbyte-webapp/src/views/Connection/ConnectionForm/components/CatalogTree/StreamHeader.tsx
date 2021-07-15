@@ -32,6 +32,8 @@ interface StreamHeaderProps {
 
 export const StreamHeader: React.FC<StreamHeaderProps> = ({
   stream,
+  destName,
+  destNamespace,
   onSelectSyncMode,
   onSelectStream,
   availableSyncModes,
@@ -60,12 +62,14 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
           </EmptyField>
         )}
       </Cell>
-      {/*TODO: add data*/}
-      <LightTextCell>data</LightTextCell>
-      <Cell>data</Cell>
+      <LightTextCell>{destName}</LightTextCell>
+      <Cell>{destNamespace}</Cell>
       <SyncSettingsCell
-        value={`${stream.config.syncMode}.${stream.config.destinationSyncMode}`}
-        data={availableSyncModes}
+        value={{
+          syncMode: stream.config.syncMode,
+          destinationSyncMode: stream.config.destinationSyncMode,
+        }}
+        options={availableSyncModes}
         onChange={onSelectSyncMode}
       />
       <Cell>

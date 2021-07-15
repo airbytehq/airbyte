@@ -77,6 +77,7 @@ const DropDown: React.FC<DropdownProps> = (props) => {
       classNamePrefix="react-select"
       menuPortalTarget={document.body}
       placeholder="..."
+      $error={props.error}
       {...props}
       menuShouldBlockScroll
       value={props.options?.find((op) => equal(op.value, props.value))}

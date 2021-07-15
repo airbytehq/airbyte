@@ -185,7 +185,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                       if (onDropDownSelect) {
                         onDropDownSelect(item);
                       }
-                      setFieldValue(field.name, item.config);
+                      setFieldValue(field.name, item.value);
                     }}
                   />
                 </ConnectorLabel>

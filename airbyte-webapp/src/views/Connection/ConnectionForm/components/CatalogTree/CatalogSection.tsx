@@ -5,7 +5,6 @@ import styled from "styled-components";
 import { FormikErrors, getIn } from "formik";
 
 import {
-  AirbyteStream,
   AirbyteStreamConfiguration,
   DestinationSyncMode,
   SyncMode,
@@ -35,7 +34,7 @@ type TreeViewRowProps = {
   errors: FormikErrors<ConnectionFormValues>;
   destinationSupportedSyncModes: DestinationSyncMode[];
   updateStream: (
-    stream: AirbyteStream,
+    id: string,
     newConfiguration: Partial<AirbyteStreamConfiguration>
   ) => void;
 };
@@ -53,7 +52,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
 
   const updateStreamWithConfig = useCallback(
     (config: Partial<AirbyteStreamConfiguration>) =>
-      updateStream(stream, config),
+      updateStream(streamNode.id, config),
     [updateStream, stream]
   );
 
@@ -152,10 +151,6 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
 
   const configErrors = getIn(errors, `schema.streams[${streamNode.id}].config`);
   const hasError = configErrors && Object.keys(configErrors).length > 0;
-  const currentSyncMode = {
-    syncMode: config.syncMode,
-    destinationSyncMode: config.destinationSyncMode,
-  };
 
   return (
     <Section error={hasError}>

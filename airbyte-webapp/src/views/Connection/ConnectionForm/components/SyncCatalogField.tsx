@@ -12,6 +12,7 @@ import CatalogTree from "./CatalogTree";
 import Search from "./Search";
 import SectionTitle from "./SectionTitle";
 import { naturalComparatorBy } from "utils/objects";
+import { SyncCatalogFilters } from "./SyncCatalogFilters";
 
 const TreeViewContainer = styled.div`
   width: 100%;
@@ -66,8 +67,16 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
   const { value: streams, name: fieldName } = field;
 
   const [searchString, setSearchString] = useState("");
+  const [filterMode, setFilterMode] = useState(SyncCatalogFilters.All);
+
   const onChangeSchema = useCallback(
     (newValue: SyncSchemaStream[]) => form.setFieldValue(fieldName, newValue),
+    [fieldName, form.setFieldValue]
+  );
+
+  const onChangeStream = useCallback(
+    (newValue: SyncSchemaStream) =>
+      streams.map((str) => (str.id === newValue.id ? newValue : str)),
     [fieldName, form.setFieldValue]
   );
 
@@ -78,12 +87,25 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
   );
 
   const filteredStreams = useMemo(() => {
-    return searchString
-      ? sortedSchema.filter((stream) =>
-          stream.stream.name.toLowerCase().includes(searchString.toLowerCase())
-        )
-      : sortedSchema;
-  }, [searchString, sortedSchema]);
+    const filters: Array<(s: SyncSchemaStream) => boolean> = [
+      (_: SyncSchemaStream) => true,
+      searchString
+        ? (stream: SyncSchemaStream) =>
+            stream.stream.name
+              .toLowerCase()
+              .includes(searchString.toLowerCase())
+        : null,
+      filterMode !== SyncCatalogFilters.All
+        ? (stream: SyncSchemaStream) =>
+            (filterMode === SyncCatalogFilters.Selected &&
+              stream.config.selected) ||
+            (filterMode === SyncCatalogFilters.NotSelected &&
+              !stream.config.selected)
+        : null,
+    ].filter(Boolean) as Array<(s: SyncSchemaStream) => boolean>;
+
+    return sortedSchema.filter((stream) => filters.every((f) => f(stream)));
+  }, [searchString, filterMode, sortedSchema]);
 
   const hasSelectedItem = useMemo(
     () => filteredStreams.some((streamNode) => streamNode.config.selected),
@@ -93,20 +115,12 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
   const onCheckAll = useCallback(() => {
     const allSelectedValues = !hasSelectedItem;
 
-    const newSchema = streams.map((streamNode) => {
-      if (
-        streamNode.stream.name
-          .toLowerCase()
-          .includes(searchString.toLowerCase())
-      ) {
-        return setIn(streamNode, "config.selected", allSelectedValues);
-      }
-
-      return streamNode;
-    });
+    const newSchema = filteredStreams.map((streamNode) =>
+      setIn(streamNode, "config.selected", allSelectedValues)
+    );
 
     onChangeSchema(newSchema);
-  }, [hasSelectedItem, onChangeSchema, streams, searchString]);
+  }, [hasSelectedItem, onChangeSchema, filteredStreams, searchString]);
 
   return (
     <>
@@ -118,9 +132,31 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
       </div>
       <SearchContent>
         <Search onSearch={setSearchString} />
-        <RadioButtonControl label={<FormattedMessage id="form.all" />} />
-        <RadioButtonControl label={<FormattedMessage id="form.selected" />} />
         <RadioButtonControl
+          onChange={(value) => {
+            setFilterMode(value.target.value as SyncCatalogFilters);
+          }}
+          name="FilterAll"
+          value={SyncCatalogFilters.All}
+          checked={filterMode === SyncCatalogFilters.All}
+          label={<FormattedMessage id="form.all" />}
+        />
+        <RadioButtonControl
+          onChange={(value) => {
+            setFilterMode(value.target.value as SyncCatalogFilters);
+          }}
+          name="FilterSelected"
+          value={SyncCatalogFilters.Selected}
+          checked={filterMode === SyncCatalogFilters.Selected}
+          label={<FormattedMessage id="form.selected" />}
+        />
+        <RadioButtonControl
+          onChange={(value) => {
+            setFilterMode(value.target.value as SyncCatalogFilters);
+          }}
+          name="FilterNotSelected"
+          value={SyncCatalogFilters.NotSelected}
+          checked={filterMode === SyncCatalogFilters.NotSelected}
           label={<FormattedMessage id="form.notSelected" />}
         />
       </SearchContent>
@@ -153,7 +189,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
       <TreeViewContainer>
         <CatalogTree
           streams={filteredStreams}
-          onChangeSchema={onChangeSchema}
+          onChangeStream={onChangeStream}
           destinationSupportedSyncModes={destinationSupportedSyncModes}
         />
       </TreeViewContainer>
