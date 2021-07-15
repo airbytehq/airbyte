@@ -62,7 +62,7 @@ module.exports = function (plop) {
       {
         type:'add',
         abortOnFail: true,
-        templateFile: `${pythonDestinationInputRoot}/.dockerignore.hbs`,
+        templateFile: `${pythonDestinationInputRoot}/.dockerignore`,
         path: `${pythonDestinationOutputRoot}/.dockerignore`
       },
       {type: 'emitSuccess', outputPath: pythonDestinationOutputRoot}

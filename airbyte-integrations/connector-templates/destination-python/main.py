@@ -25,7 +25,7 @@
 
 import sys
 
-from destination_google_sheets import DestinationGoogleSheets
+from destination_{{snakeCase name}} import Destination{{pascalCase name}}
 
 if __name__ == "__main__":
     Destination{{pascalCase name}}().run(sys.argv[1:])

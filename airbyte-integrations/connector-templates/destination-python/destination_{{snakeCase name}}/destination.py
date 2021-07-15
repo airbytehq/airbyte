@@ -28,7 +28,7 @@ from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, ConfiguredAirbyteCatalog, AirbyteMessage, Type
 
 
-class Destination{{ProperCase name}}(Destination):
+class Destination{{properCase name}}(Destination):
     def write(
             self,
             config: Mapping[str, Any],

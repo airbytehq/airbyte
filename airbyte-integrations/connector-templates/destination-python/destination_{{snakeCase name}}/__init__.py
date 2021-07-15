@@ -21,6 +21,6 @@
 # SOFTWARE.
 
 
-from .destination import Destination{{ProperCase name}}
+from .destination import Destination{{properCase name}}
 
-__all__ = ["Destination{{ProperCase name}}"]
+__all__ = ["Destination{{properCase name}}"]
