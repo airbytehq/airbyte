@@ -67,7 +67,7 @@ public class ConfigPersistenceFactory {
   public static class Builder {
 
     private final Configs configs;
-    private boolean setupDatabase = true;
+    private boolean setupDatabase = false;
     private boolean useConfigDatabase = true;
 
     private Builder(Configs configs) {

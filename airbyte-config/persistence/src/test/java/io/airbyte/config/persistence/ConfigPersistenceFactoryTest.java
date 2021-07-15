@@ -103,7 +103,7 @@ class ConfigPersistenceFactoryTest extends BaseTest {
 
   @Test
   public void testCreateDbPersistenceWithYamlSeed() throws IOException {
-    ConfigPersistence dbPersistence = ConfigPersistenceFactory.build(configs).get().createDbPersistenceWithYamlSeed();
+    ConfigPersistence dbPersistence = ConfigPersistenceFactory.build(configs).setupDatabase(true).get().createDbPersistenceWithYamlSeed();
     ConfigPersistence seedPersistence = new YamlSeedConfigPersistence();
     assertSameConfigDump(seedPersistence.dumpConfigs(), dbPersistence.dumpConfigs());
   }
@@ -118,7 +118,7 @@ class ConfigPersistenceFactoryTest extends BaseTest {
 
     when(configs.getConfigRoot()).thenReturn(rootPath);
 
-    ConfigPersistence dbPersistence = ConfigPersistenceFactory.build(configs).get().createDbPersistenceWithFileSeed();
+    ConfigPersistence dbPersistence = ConfigPersistenceFactory.build(configs).setupDatabase(true).get().createDbPersistenceWithFileSeed();
     int dbConfigSize = (int) dbPersistence.dumpConfigs().values().stream()
         .map(stream -> stream.collect(Collectors.toList()))
         .mapToLong(Collection::size)
@@ -198,7 +198,7 @@ class ConfigPersistenceFactoryTest extends BaseTest {
     // second run uses database config persistence;
     // the only difference is that useConfigDatabase is no longer overridden to false;
     // the extra workspace should be ported to this persistence
-    ConfigPersistence dbPersistence = ConfigPersistenceFactory.build(configs).get().create();
+    ConfigPersistence dbPersistence = ConfigPersistenceFactory.build(configs).setupDatabase(true).get().create();
     Map<String, Stream<JsonNode>> expected = Map.of(
         ConfigSchema.STANDARD_WORKSPACE.name(), Stream.of(Jsons.jsonNode(DEFAULT_WORKSPACE), Jsons.jsonNode(extraWorkspace)),
         ConfigSchema.STANDARD_SOURCE_DEFINITION.name(), Stream.of(Jsons.jsonNode(SOURCE_GITHUB), Jsons.jsonNode(SOURCE_POSTGRES)),
