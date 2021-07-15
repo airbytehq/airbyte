@@ -16,4 +16,4 @@ export GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcs.json"
 export GCP_STORAGE_BUCKET=airbyte-kube-integration-logging-test
 
 echo "Running logging tests.."
-./gradlew --no-daemon :airbyte-config:models:integrationTest  --scan
+SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-config:models:integrationTest  --scan
