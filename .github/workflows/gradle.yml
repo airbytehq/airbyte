@@ -98,10 +98,6 @@ jobs:
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
 
-      - name: Check documentation
-        if: success() && github.ref == 'refs/heads/master'
-        run: ./tools/site/link_checker.sh check_docs
-
       - name: Slack Notification - Failure
         if: failure() && github.ref == 'refs/heads/master'
         uses: rtCamp/action-slack-notify@master
