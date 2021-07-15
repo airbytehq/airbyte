@@ -70,7 +70,7 @@ class ExchangeRates(HttpStream):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
-        start_date = pendulum.parse(stream_state.get(self.date_field_name, self._start_date))
+        start_date = pendulum.parse(stream_state.get(self.date_field_name, self._start_date)).add(days=1)
         return chunk_date_range(start_date)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
