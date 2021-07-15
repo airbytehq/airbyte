@@ -38,7 +38,6 @@ By default, the Config Database and the Job Database use the same database insta
 ```bash
 CONFIG_DATABASE_USER=airbyte_config_db_user
 CONFIG_DATABASE_PASSWORD=password
-CONFIG_DATABASE_HOST=host.docker.internal
 CONFIG_DATABASE_PORT=5432
 CONFIG_DATABASE_DB=airbyte_config_db
 ```
