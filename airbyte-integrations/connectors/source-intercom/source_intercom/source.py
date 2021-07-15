@@ -358,10 +358,10 @@ class SourceIntercom(AbstractSource):
             CompanySegments(authenticator=auth, **config),
             Conversations(authenticator=auth, **config),
             ConversationParts(authenticator=auth, **config),
-            Segments(authenticator=auth, **config),
             Contacts(authenticator=auth, **config),
             CompanyAttributes(authenticator=auth, **config),
             ContactAttributes(authenticator=auth, **config),
+            Segments(authenticator=auth, **config),
             Tags(authenticator=auth, **config),
             Teams(authenticator=auth, **config),
         ]
