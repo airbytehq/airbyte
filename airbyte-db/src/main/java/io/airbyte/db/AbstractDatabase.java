@@ -25,13 +25,26 @@
 package io.airbyte.db;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import java.sql.SQLException;
-import java.util.stream.Stream;
 
-public abstract class SqlDatabase extends AbstractDatabase {
+public abstract class AbstractDatabase implements AutoCloseable {
 
-  public abstract void execute(String sql) throws SQLException;
+  private JsonNode sourceConfig;
+  private JsonNode databaseConfig;
 
-  public abstract Stream<JsonNode> query(String sql, String... params) throws SQLException;
+  public JsonNode getSourceConfig() {
+    return sourceConfig;
+  }
+
+  public void setSourceConfig(JsonNode sourceConfig) {
+    this.sourceConfig = sourceConfig;
+  }
+
+  public JsonNode getDatabaseConfig() {
+    return databaseConfig;
+  }
+
+  public void setDatabaseConfig(JsonNode databaseConfig) {
+    this.databaseConfig = databaseConfig;
+  }
 
 }
