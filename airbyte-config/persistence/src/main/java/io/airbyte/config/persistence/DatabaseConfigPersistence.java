@@ -69,10 +69,10 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    */
   public void initialize(String schema) throws IOException {
     database.transaction(ctx -> {
-      boolean hasAirConfigsTable = ctx.fetchExists(select()
+      boolean hasConfigsTable = ctx.fetchExists(select()
           .from("information_schema.tables")
           .where("table_name = 'airbyte_configs'"));
-      if (hasAirConfigsTable) {
+      if (hasConfigsTable) {
         return null;
       }
       LOGGER.info("Config database has not been initialized");
