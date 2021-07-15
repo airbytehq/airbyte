@@ -134,16 +134,16 @@ class TestBasicRead(BaseTest):
         output = docker_runner.call_read(connector_config, configured_catalog)
         records = [message.record for message in output if message.type == Type.RECORD]
         counter = Counter(record.stream for record in records)
-
         if inputs.validate_schema:
-            streams_with_errors = set()
-            for record, errors in verify_records_schema(records, configured_catalog):
-                if record.stream not in streams_with_errors:
-                    logging.error(f"The {record.stream} stream has the following schema errors: {errors}")
-                    streams_with_errors.add(record.stream)
+            bar = "-" * 80
+            streams_errors = verify_records_schema(records, configured_catalog)
+            for stream_name, errors in streams_errors.items():
+                errors = map(str, errors.values())
+                str_errors = f"\n{bar}\n".join(errors)
+                logging.error(f"The {stream_name} stream has the following schema errors:\n{str_errors}")
 
-            if streams_with_errors:
-                pytest.fail(f"Please check your json_schema in selected streams {streams_with_errors}.")
+            if streams_errors:
+                pytest.fail(f"Please check your json_schema in selected streams {streams_errors.keys()}.")
 
         all_streams = set(stream.stream.name for stream in configured_catalog.streams)
         streams_with_records = set(counter.keys())

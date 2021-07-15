@@ -37,7 +37,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
@@ -48,14 +47,9 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
-import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.SQLException;
 import java.util.List;
@@ -252,26 +246,6 @@ class CdcPostgresSourceTest extends CdcSourceTest {
   @Override
   public String createSchemaQuery(String schemaName) {
     return "CREATE SCHEMA " + schemaName + ";";
-  }
-
-  @Override
-  protected AirbyteCatalog expectedCatalogForDiscover() {
-    AirbyteCatalog catalog = super.expectedCatalogForDiscover();
-    List<AirbyteStream> streams = catalog.getStreams();
-
-    AirbyteStream randomStream = CatalogHelpers.createAirbyteStream(
-        MODELS_STREAM_NAME + "_random",
-        MODELS_SCHEMA + "_random",
-        Field.of(COL_ID + "_random", JsonSchemaPrimitive.NUMBER),
-        Field.of(COL_MAKE_ID + "_random", JsonSchemaPrimitive.NUMBER),
-        Field.of(COL_MODEL + "_random", JsonSchemaPrimitive.STRING))
-        .withSourceDefinedCursor(true)
-        .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-        .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID + "_random")));
-    addCdcMetadataColumns(randomStream);
-    streams.add(randomStream);
-    catalog.withStreams(streams);
-    return catalog;
   }
 
 }

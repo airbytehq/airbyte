@@ -126,7 +126,7 @@ public class MigrationAcceptanceTest {
 
       customDockerComposeContainer.start();
 
-      Thread.sleep(20000);
+      Thread.sleep(50000);
 
       assertTrue(logsToExpect.isEmpty());
       ApiClient apiClient = getApiClient();
