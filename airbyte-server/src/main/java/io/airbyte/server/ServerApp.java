@@ -35,7 +35,7 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
-import io.airbyte.config.persistence.ConfigPersistenceFactory;
+import io.airbyte.config.persistence.ConfigPersistenceBuilder;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
@@ -209,7 +209,7 @@ public class ServerApp {
     MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, LogClientSingleton.getServerLogsRoot(configs).toString());
 
     LOGGER.info("Creating config repository...");
-    final ConfigPersistence configPersistence = ConfigPersistenceFactory.build(configs).setupDatabase(true).get().create();
+    final ConfigPersistence configPersistence = ConfigPersistenceBuilder.builder(configs).setupDatabase(true).build();
     final ConfigRepository configRepository = new ConfigRepository(configPersistence);
 
     // hack: upon installation we need to assign a random customerId so that when

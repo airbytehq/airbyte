@@ -44,6 +44,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.persistence.ConfigPersistenceBuilder.ConfigPersistenceFactory;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import java.io.IOException;
@@ -64,7 +65,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-class ConfigPersistenceFactoryTest extends BaseTest {
+class ConfigPersistenceBuilderTest extends BaseTest {
 
   private static PostgreSQLContainer<?> container;
   private static Configs configs;
@@ -103,7 +104,7 @@ class ConfigPersistenceFactoryTest extends BaseTest {
 
   @Test
   public void testCreateDbPersistenceWithYamlSeed() throws IOException {
-    ConfigPersistence dbPersistence = ConfigPersistenceFactory.build(configs).setupDatabase(true).get().createDbPersistenceWithYamlSeed();
+    ConfigPersistence dbPersistence = new ConfigPersistenceFactory(configs, true, false).createDbPersistenceWithYamlSeed();
     ConfigPersistence seedPersistence = new YamlSeedConfigPersistence();
     assertSameConfigDump(seedPersistence.dumpConfigs(), dbPersistence.dumpConfigs());
   }
@@ -111,14 +112,14 @@ class ConfigPersistenceFactoryTest extends BaseTest {
   @Test
   public void testCreateDbPersistenceWithFileSeed() throws Exception {
     Path testRoot = Path.of("/tmp/cpf_test_file_seed");
-    Path rootPath = Files.createTempDirectory(Files.createDirectories(testRoot), ConfigPersistenceFactoryTest.class.getName());
+    Path rootPath = Files.createTempDirectory(Files.createDirectories(testRoot), ConfigPersistenceBuilderTest.class.getName());
     ConfigPersistence seedPersistence = new FileSystemConfigPersistence(rootPath);
     writeSource(seedPersistence, SOURCE_GITHUB);
     writeDestination(seedPersistence, DESTINATION_S3);
 
     when(configs.getConfigRoot()).thenReturn(rootPath);
 
-    ConfigPersistence dbPersistence = ConfigPersistenceFactory.build(configs).setupDatabase(true).get().createDbPersistenceWithFileSeed();
+    ConfigPersistence dbPersistence = new ConfigPersistenceFactory(configs, true, false).createDbPersistenceWithFileSeed();
     int dbConfigSize = (int) dbPersistence.dumpConfigs().values().stream()
         .map(stream -> stream.collect(Collectors.toList()))
         .mapToLong(Collection::size)
@@ -147,7 +148,7 @@ class ConfigPersistenceFactoryTest extends BaseTest {
     ConfigPersistence seedPersistence = spy(new YamlSeedConfigPersistence());
     // When setupDatabase is false, the createDbPersistence method does not initialize
     // the database itself, but it expects that the database has already been initialized.
-    ConfigPersistence dbPersistence = ConfigPersistenceFactory.build(configs).setupDatabase(false).get().createDbPersistence(seedPersistence);
+    ConfigPersistence dbPersistence = new ConfigPersistenceFactory(configs, false, false).createDbPersistence(seedPersistence);
     // The return persistence is not initialized by the seed persistence, and has only one config.
     verify(seedPersistence, never()).dumpConfigs();
     assertSameConfigDump(
@@ -158,14 +159,14 @@ class ConfigPersistenceFactoryTest extends BaseTest {
   @Test
   public void testCreateFileSystemConfigPersistence() throws Exception {
     Path testRoot = Path.of("/tmp/cpf_test_file_system");
-    Path rootPath = Files.createTempDirectory(Files.createDirectories(testRoot), ConfigPersistenceFactoryTest.class.getName());
+    Path rootPath = Files.createTempDirectory(Files.createDirectories(testRoot), ConfigPersistenceBuilderTest.class.getName());
     ConfigPersistence seedPersistence = new FileSystemConfigPersistence(rootPath);
     writeSource(seedPersistence, SOURCE_GITHUB);
     writeDestination(seedPersistence, DESTINATION_S3);
 
     when(configs.getConfigRoot()).thenReturn(rootPath);
 
-    ConfigPersistence filePersistence = ConfigPersistenceFactory.build(configs).useConfigDatabase(false).get().create();
+    ConfigPersistence filePersistence = new ConfigPersistenceFactory(configs, true, false).create();
     assertSameConfigDump(seedPersistence.dumpConfigs(), filePersistence.dumpConfigs());
   }
 
@@ -187,10 +188,10 @@ class ConfigPersistenceFactoryTest extends BaseTest {
 
     // first run uses file system config persistence, and adds an extra workspace
     Path testRoot = Path.of("/tmp/cpf_test_migration");
-    Path rootPath = Files.createTempDirectory(Files.createDirectories(testRoot), ConfigPersistenceFactoryTest.class.getName());
+    Path rootPath = Files.createTempDirectory(Files.createDirectories(testRoot), ConfigPersistenceBuilderTest.class.getName());
     when(configs.getConfigRoot()).thenReturn(rootPath);
 
-    ConfigPersistence filePersistence = ConfigPersistenceFactory.build(configs).useConfigDatabase(false).get().create();
+    ConfigPersistence filePersistence = new ConfigPersistenceFactory(configs, true, false).create();
 
     filePersistence.replaceAllConfigs(seedConfigs, false);
     filePersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, extraWorkspace.getWorkspaceId().toString(), extraWorkspace);
@@ -198,7 +199,7 @@ class ConfigPersistenceFactoryTest extends BaseTest {
     // second run uses database config persistence;
     // the only difference is that useConfigDatabase is no longer overridden to false;
     // the extra workspace should be ported to this persistence
-    ConfigPersistence dbPersistence = ConfigPersistenceFactory.build(configs).setupDatabase(true).get().create();
+    ConfigPersistence dbPersistence = new ConfigPersistenceFactory(configs, true, false).create();
     Map<String, Stream<JsonNode>> expected = Map.of(
         ConfigSchema.STANDARD_WORKSPACE.name(), Stream.of(Jsons.jsonNode(DEFAULT_WORKSPACE), Jsons.jsonNode(extraWorkspace)),
         ConfigSchema.STANDARD_SOURCE_DEFINITION.name(), Stream.of(Jsons.jsonNode(SOURCE_GITHUB), Jsons.jsonNode(SOURCE_POSTGRES)),

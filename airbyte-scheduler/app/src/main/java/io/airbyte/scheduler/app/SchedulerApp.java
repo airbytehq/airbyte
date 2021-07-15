@@ -32,7 +32,7 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.persistence.ConfigPersistence;
-import io.airbyte.config.persistence.ConfigPersistenceFactory;
+import io.airbyte.config.persistence.ConfigPersistenceBuilder;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
@@ -209,7 +209,7 @@ public class SchedulerApp {
     final ProcessFactory processFactory = getProcessBuilderFactory(configs);
 
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
-    final ConfigPersistence configPersistence = ConfigPersistenceFactory.build(configs).setupDatabase(false).get().create();
+    final ConfigPersistence configPersistence = ConfigPersistenceBuilder.builder(configs).setupDatabase(false).build();
     final ConfigRepository configRepository = new ConfigRepository(configPersistence);
     final JobCleaner jobCleaner = new JobCleaner(
         configs.getWorkspaceRetentionConfig(),
