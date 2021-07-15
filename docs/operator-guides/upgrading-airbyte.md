@@ -30,8 +30,12 @@ If you are running [Airbyte on Kubernetes](../deploying-airbyte/on-kubernetes.md
    docker-compose up
    ```
 
-{% hint style="info" %}
-If you did not start Airbyte from the root of the Airbyte monorepo, you will need to still need to manually remove these now orphaned Airbyte configurations. You can do this with `docker volume rm $(docker volume ls -q | grep airbyte)`.
+### Resetting your Configuration
+
+If you did not start Airbyte from the root of the Airbyte monorepo, you may run into issues where existing orphaned Airbyte configurations will prevent you from upgrading with the automatic process. To fix this, we will need to globally remove these lost Airbyte configurations. You can do this with `docker volume rm $(docker volume ls -q | grep airbyte)`.
+
+{% hint style="danger" %}
+This will completely reset your Airbyte instance back to scratch and you will lose all data.
 {% endhint %}
 
 ## Upgrading on K8s (0.27.0-alpha and above)
