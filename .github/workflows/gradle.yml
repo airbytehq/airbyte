@@ -41,7 +41,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Check images exist
-        run: ./tools/bin/check_images_exist.sh
+        run: ./tools/bin/check_images_exist.sh connectors
 
       - name: Pip Caching
         uses: actions/cache@v2
@@ -178,9 +178,8 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
 
-      # todo (cgardens) - scope by platform.
       - name: Check images exist
-        run: ./tools/bin/check_images_exist.sh
+        run: ./tools/bin/check_images_exist.sh platform
 
       - name: Pip Caching
         uses: actions/cache@v2
