@@ -1,4 +1,4 @@
-# {{titleCase name}} Destinatino
+# {{titleCase name}} Destination
 
 This is the repository for the {{titleCase name}} destination connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/destinations/{{dashCase name}}).
