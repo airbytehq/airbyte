@@ -29,13 +29,13 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 | SSL connection | Yes |
 | Namespaces | No |
 
-Please note, that incremental sync could return old records for the state date due to API filter limitation, which is granular to the whole day only.
+Please note, that incremental sync could return duplicated (old records) for the state date due to API filter limitation, which is granular to the whole day only.
 
 ### Performance considerations
 
 The Mixpanel connector should not run into Mixpanel API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
-Export stream - 60 reqs per hour
-All streams - 400 reqs per hour
+* Export stream - 60 reqs per hour
+* All streams - 400 reqs per hour
 
 ## Getting started
 

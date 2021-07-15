@@ -47,6 +47,7 @@ class MixpanelStream(HttpStream, ABC):
       A maximum of 5 concurrent queries
       400 queries per hour.
     """
+
     url_base = "https://mixpanel.com/api/2.0/"
 
     # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
