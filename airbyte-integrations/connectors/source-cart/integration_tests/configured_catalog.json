@@ -1,4 +1,3 @@
-// TODO: Construct a configured catalog that can be used for testing. Each stream's `json_schema` field should match the corresponding json schema file.
 {
   "streams": [
     {
@@ -7,17 +6,7 @@
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "string"]
-            },
-            "name": {
-              "type": ["null", "string"]
-            },
-            "signup_date": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            }
+          "properties": {}
           }
         },
         "supported_sync_modes": ["full_refresh"]
@@ -31,20 +20,7 @@
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "string"]
-            },
-            "name": {
-              "type": ["null", "string"]
-            },
-            "years_of_service": {
-              "type": ["null", "integer"]
-            },
-            "start_date": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            }
+          "properties": {}
           }
         },
         "supported_sync_modes": ["full_refresh", "incremental"]
