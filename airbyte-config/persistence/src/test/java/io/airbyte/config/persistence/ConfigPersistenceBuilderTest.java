@@ -104,7 +104,7 @@ class ConfigPersistenceBuilderTest extends BaseTest {
 
   @Test
   public void testCreateDbPersistenceWithYamlSeed() throws IOException {
-    ConfigPersistence dbPersistence = new ConfigPersistenceFactory(configs, true, false).createDbPersistenceWithYamlSeed();
+    ConfigPersistence dbPersistence = new ConfigPersistenceFactory(configs, true, true).createDbPersistenceWithYamlSeed();
     ConfigPersistence seedPersistence = new YamlSeedConfigPersistence();
     assertSameConfigDump(seedPersistence.dumpConfigs(), dbPersistence.dumpConfigs());
   }
@@ -119,7 +119,7 @@ class ConfigPersistenceBuilderTest extends BaseTest {
 
     when(configs.getConfigRoot()).thenReturn(rootPath);
 
-    ConfigPersistence dbPersistence = new ConfigPersistenceFactory(configs, true, false).createDbPersistenceWithFileSeed();
+    ConfigPersistence dbPersistence = new ConfigPersistenceFactory(configs, true, true).createDbPersistenceWithFileSeed();
     int dbConfigSize = (int) dbPersistence.dumpConfigs().values().stream()
         .map(stream -> stream.collect(Collectors.toList()))
         .mapToLong(Collection::size)
@@ -166,7 +166,7 @@ class ConfigPersistenceBuilderTest extends BaseTest {
 
     when(configs.getConfigRoot()).thenReturn(rootPath);
 
-    ConfigPersistence filePersistence = new ConfigPersistenceFactory(configs, true, false).create();
+    ConfigPersistence filePersistence = ConfigPersistenceBuilder.builder(configs).useConfigDatabase(false).build();
     assertSameConfigDump(seedPersistence.dumpConfigs(), filePersistence.dumpConfigs());
   }
 
@@ -191,7 +191,7 @@ class ConfigPersistenceBuilderTest extends BaseTest {
     Path rootPath = Files.createTempDirectory(Files.createDirectories(testRoot), ConfigPersistenceBuilderTest.class.getName());
     when(configs.getConfigRoot()).thenReturn(rootPath);
 
-    ConfigPersistence filePersistence = new ConfigPersistenceFactory(configs, true, false).create();
+    ConfigPersistence filePersistence = ConfigPersistenceBuilder.builder(configs).useConfigDatabase(false).build();
 
     filePersistence.replaceAllConfigs(seedConfigs, false);
     filePersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, extraWorkspace.getWorkspaceId().toString(), extraWorkspace);
@@ -199,7 +199,7 @@ class ConfigPersistenceBuilderTest extends BaseTest {
     // second run uses database config persistence;
     // the only difference is that useConfigDatabase is no longer overridden to false;
     // the extra workspace should be ported to this persistence
-    ConfigPersistence dbPersistence = new ConfigPersistenceFactory(configs, true, false).create();
+    ConfigPersistence dbPersistence = ConfigPersistenceBuilder.builder(configs).useConfigDatabase(true).setupDatabase(true).build();
     Map<String, Stream<JsonNode>> expected = Map.of(
         ConfigSchema.STANDARD_WORKSPACE.name(), Stream.of(Jsons.jsonNode(DEFAULT_WORKSPACE), Jsons.jsonNode(extraWorkspace)),
         ConfigSchema.STANDARD_SOURCE_DEFINITION.name(), Stream.of(Jsons.jsonNode(SOURCE_GITHUB), Jsons.jsonNode(SOURCE_POSTGRES)),
