@@ -5,23 +5,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rockset.client.RocksetClient;
 import com.rockset.client.model.AddDocumentsRequest;
-import com.rockset.client.model.AddDocumentsResponse;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static io.airbyte.integrations.destination.rockset.RocksetUtils.APISERVER_URL;
-import static io.airbyte.integrations.destination.rockset.RocksetUtils.API_KEY_ID;
-import static io.airbyte.integrations.destination.rockset.RocksetUtils.WORKSPACE_ID;
+import static io.airbyte.integrations.destination.rockset.RocksetUtils.*;
 
 public class RocksetWriteApiConsumer implements AirbyteMessageConsumer {
 
@@ -36,9 +31,10 @@ public class RocksetWriteApiConsumer implements AirbyteMessageConsumer {
 
   private RocksetClient client;
 
-  public RocksetWriteApiConsumer(JsonNode config,
-                                 ConfiguredAirbyteCatalog catalog,
-                                 Consumer<AirbyteMessage> outputRecordCollector) {
+  public RocksetWriteApiConsumer(
+      JsonNode config,
+      ConfiguredAirbyteCatalog catalog,
+      Consumer<AirbyteMessage> outputRecordCollector) {
     this.apiKey = config.get(API_KEY_ID).asText();
     this.workspace = config.get(WORKSPACE_ID).asText();
 
@@ -51,8 +47,22 @@ public class RocksetWriteApiConsumer implements AirbyteMessageConsumer {
     this.client = new RocksetClient(apiKey, APISERVER_URL);
 
     RocksetUtils.createWorkspaceIfNotExists(client, workspace);
-    List<String> collectionNames = catalog.getStreams().stream()
-        .map(s -> s.getStream().getName()).collect(Collectors.toList());
+        catalog.getStreams()
+                .stream()
+            .filter(s -> s.getDestinationSyncMode() == DestinationSyncMode.OVERWRITE)
+            .forEach(s -> {
+              try {
+                RocksetUtils.deleteAllDocsInCollection(client, workspace, s.getStream().getName());
+              } catch (Exception e) {
+                e.printStackTrace();
+              }
+            });
+
+    List<String> collectionNames =
+            catalog.getStreams().stream()
+                    .map(s -> s.getStream().getName())
+                    .collect(Collectors.toList());
+
     for (String cname : collectionNames) {
       RocksetUtils.createCollectionIfNotExists(client, workspace, cname);
       RocksetUtils.waitUntilCollectionReady(client, workspace, cname);
@@ -65,7 +75,7 @@ public class RocksetWriteApiConsumer implements AirbyteMessageConsumer {
       String cname = message.getRecord().getStream();
 
       AddDocumentsRequest req = new AddDocumentsRequest();
-      req.addDataItem(mapper.convertValue(message.getRecord().getData(), new TypeReference<>(){}));
+      req.addDataItem(mapper.convertValue(message.getRecord().getData(), new TypeReference<>() {}));
 
       this.client.addDocuments(workspace, cname, req);
     } else if (message.getType() == AirbyteMessage.Type.STATE) {
