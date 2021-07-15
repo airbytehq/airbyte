@@ -73,7 +73,7 @@ def createSpotlessTarget = { pattern ->
         'secrets'
     ]
 
-    if (System.getenv().containsKey("CORE_ONLY")) {
+    if (System.getenv().containsKey("SUB_BUILD")) {
         excludes.add("airbyte-integrations/connectors")
     }
 
@@ -237,7 +237,10 @@ task composeBuild {
         }
     }
 }
-build.dependsOn(composeBuild)
+
+if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
+    build.dependsOn(composeBuild)
+}
 
 task('generate') {
     dependsOn subprojects.collect { it.getTasksByName('generateSeed', true) }
