@@ -47,12 +47,10 @@ class MixpanelStream(HttpStream, ABC):
       A maximum of 5 concurrent queries
       400 queries per hour.
     """
-
     url_base = "https://mixpanel.com/api/2.0/"
-    date_window_size = 30  # days
 
     # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
-    rate_limit = 400  # 400 queries per hour (1 req in 9 secs)
+    reqs_per_hour_limit = 400  # 1 req in 9 secs
 
     def __init__(
         self,
@@ -102,8 +100,8 @@ class MixpanelStream(HttpStream, ABC):
         for record in data:
             yield record
 
-        # wait for 9 seconds according to API limit
-        time.sleep(3600 / self.rate_limit)
+        # wait for X seconds to match API limitations
+        time.sleep(3600 / self.reqs_per_hour_limit)
 
 
 class IncrementalMixpanelStream(MixpanelStream, ABC):
@@ -192,9 +190,9 @@ class DateSlicesMixin:
             # add 1 additional day because date range is inclusive
             start_date = end_date + timedelta(days=1)
 
-        # reset rate_limit if we expect less requests (1 req per stream) than it is allowed by API rate_limit
-        if len(date_slices) < self.rate_limit:
-            self.rate_limit = 3600  # queries per hour (1 query per sec)
+        # reset reqs_per_hour_limit if we expect less requests (1 req per stream) than it is allowed by API reqs_per_hour_limit
+        if len(date_slices) < self.reqs_per_hour_limit:
+            self.reqs_per_hour_limit = 3600  # 1 query per sec
 
         return date_slices
 
@@ -272,9 +270,9 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
             for date_slice in date_slices:
                 stream_slices.append({**funnel_slice, **date_slice})
 
-        # reset rate_limit if we expect less requests (1 req per stream) than it is allowed by API rate_limit
-        if len(stream_slices) < self.rate_limit:
-            self.rate_limit = 3600  # queries per hour (1 query per sec)
+        # reset reqs_per_hour_limit if we expect less requests (1 req per stream) than it is allowed by API reqs_per_hour_limit
+        if len(stream_slices) < self.reqs_per_hour_limit:
+            self.reqs_per_hour_limit = 3600  # queries per hour (1 query per sec)
         return stream_slices
 
     def request_params(
@@ -684,7 +682,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
 
     primary_key = None
     cursor_field = "time"
-    rate_limit = 60  # queries per hour (1 query per minute)
+    reqs_per_hour_limit = 60  # 1 query per minute
 
     url_base = "https://data.mixpanel.com/api/2.0/"
 
@@ -733,8 +731,8 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
 
             yield item
 
-        # wait for 60 seconds according to API limit
-        time.sleep(3600 / self.rate_limit)
+        # wait for X seconds to meet API limitation
+        time.sleep(3600 / self.reqs_per_hour_limit)
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """
@@ -829,11 +827,11 @@ class SourceMixpanel(AbstractSource):
 
         auth = TokenAuthenticatorBase64(token=config["api_secret"])
         return [
-            Funnels(authenticator=auth, **config),
-            Engage(authenticator=auth, **config),
+            Annotations(authenticator=auth, **config),
             Cohorts(authenticator=auth, **config),
             CohortMembers(authenticator=auth, **config),
-            Annotations(authenticator=auth, **config),
-            Revenue(authenticator=auth, **config),
+            Engage(authenticator=auth, **config),
             Export(authenticator=auth, **config),
+            Funnels(authenticator=auth, **config),
+            Revenue(authenticator=auth, **config),
         ]

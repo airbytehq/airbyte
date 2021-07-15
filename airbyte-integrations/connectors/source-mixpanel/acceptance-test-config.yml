@@ -20,7 +20,8 @@ tests:
       configured_catalog_path: "integration_tests/configured_catalog.json"
   incremental:
     # incremental streams Funnels, Revenue, Export
-    # funnels fails because it has complex state (
+    # Funnels - fails because it has complex state, like {'funnel_idX': {'date': 'dateX'}}
+    # Export - fails because it could return a few previous records for the date of previous sync
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
       # Test is skipped because requests fails when start_date is in the future
