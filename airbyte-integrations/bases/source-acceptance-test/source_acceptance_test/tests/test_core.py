@@ -135,11 +135,11 @@ class TestBasicRead(BaseTest):
         records = [message.record for message in output if message.type == Type.RECORD]
         counter = Counter(record.stream for record in records)
         if inputs.validate_schema:
-            bar = '-' * 80
+            bar = "-" * 80
             streams_errors = verify_records_schema(records, configured_catalog)
             for stream_name, errors in streams_errors.items():
                 errors = map(str, errors.values())
-                str_errors = f'\n{bar}\n'.join(errors)
+                str_errors = f"\n{bar}\n".join(errors)
                 logging.error(f"The {stream_name} stream has the following schema errors:\n{str_errors}")
 
             if streams_errors:
