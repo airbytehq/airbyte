@@ -99,11 +99,11 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-            - name: MAX_WORKERS
+            - name: SUBMITTER_NUM_THREADS
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
-                  key: MAX_WORKERS
+                  key: SUBMITTER_NUM_THREADS
             - name: RESOURCE_CPU_REQUEST
               valueFrom:
                 configMapKeyRef:
