@@ -32,7 +32,6 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,9 +67,9 @@ public class ConfigPersistenceBuilder {
   }
 
   /**
-   * Create a database config persistence based on the configs.
-   * If config root is defined, create a database config persistence and copy the configs from the
-   * file-based config persistence. Otherwise, seed the database from the yaml files.
+   * Create a database config persistence based on the configs. If config root is defined, create a
+   * database config persistence and copy the configs from the file-based config persistence.
+   * Otherwise, seed the database from the yaml files.
    */
   ConfigPersistence create() throws IOException {
     if (configs.getConfigRoot() == null) {
@@ -91,8 +90,8 @@ public class ConfigPersistenceBuilder {
   }
 
   /**
-   * Create the database config persistence and load it with the initial seed from the
-   * YAML seed files if the database should be initialized.
+   * Create the database config persistence and load it with the initial seed from the YAML seed files
+   * if the database should be initialized.
    */
   ConfigPersistence getDbPersistenceWithYamlSeed() throws IOException {
     ConfigPersistence seedConfigPersistence = new YamlSeedConfigPersistence();
@@ -100,8 +99,8 @@ public class ConfigPersistenceBuilder {
   }
 
   /**
-   * Create the database config persistence and load it with the existing configs from the
-   * file system config persistence if the database should be initialized.
+   * Create the database config persistence and load it with the existing configs from the file system
+   * config persistence if the database should be initialized.
    */
   ConfigPersistence getDbPersistenceWithFileSeed() throws IOException {
     Path configRoot = configs.getConfigRoot();
