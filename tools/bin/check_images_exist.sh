@@ -48,6 +48,8 @@ main() {
 
   [[ "$SUBSET" =~ ^(all|platform)$ ]] && checkPlatformImages
   [[ "$SUBSET" =~ ^(all|connectors)$ ]] && checkConnectorImages
+
+  echo "Image check complete."
 }
 
 main "$@"
