@@ -116,23 +116,28 @@ public class ConfigPersistenceBuilder {
   ConfigPersistence getDbPersistence(ConfigPersistence seedConfigPersistence) throws IOException {
     LOGGER.info("Use database config persistence.");
 
-    // When setupDatabase is true, it means the database will be initialized after we
-    // connect to the database. So the database itself is considered ready as long as
-    // the connection is alive. Otherwise, the database is expected to have full data.
-    Function<Database, Boolean> isReady = setupDatabase
-        ? Databases.IS_CONFIG_DATABASE_CONNECTED
-        : Databases.IS_CONFIG_DATABASE_LOADED_WITH_DATA;
-
-    Database database = Databases.createPostgresDatabaseWithRetry(
-        configs.getConfigDatabaseUser(),
-        configs.getConfigDatabasePassword(),
-        configs.getConfigDatabaseUrl(),
-        isReady);
-
-    DatabaseConfigPersistence dbConfigPersistence = new DatabaseConfigPersistence(database);
+    DatabaseConfigPersistence dbConfigPersistence;
     if (setupDatabase) {
-      dbConfigPersistence.initialize(MoreResources.readResource(AIRBYTE_CONFIGS_TABLE_SCHEMA));
-      dbConfigPersistence.loadData(seedConfigPersistence);
+      // When we need to setup the database, it means the database will be initialized after
+      // we connect to the database. So the database itself is considered ready as long as
+      // the connection is alive.
+      Database database = Databases.createPostgresDatabaseWithRetry(
+          configs.getConfigDatabaseUser(),
+          configs.getConfigDatabasePassword(),
+          configs.getConfigDatabaseUrl(),
+          Databases.IS_CONFIG_DATABASE_CONNECTED);
+      dbConfigPersistence = new DatabaseConfigPersistence(database)
+          .initialize(MoreResources.readResource(AIRBYTE_CONFIGS_TABLE_SCHEMA))
+          .loadData(seedConfigPersistence);
+    } else {
+      // When we don't need to setup the database, it means the database is initialized
+      // somewhere else, and it is considered ready only when data has been loaded into it.
+      Database database = Databases.createPostgresDatabaseWithRetry(
+          configs.getConfigDatabaseUser(),
+          configs.getConfigDatabasePassword(),
+          configs.getConfigDatabaseUrl(),
+          Databases.IS_CONFIG_DATABASE_LOADED_WITH_DATA);
+      dbConfigPersistence = new DatabaseConfigPersistence(database);
     }
 
     return new ValidatingConfigPersistence(dbConfigPersistence);

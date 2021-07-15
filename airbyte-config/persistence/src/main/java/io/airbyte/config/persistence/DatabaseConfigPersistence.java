@@ -67,7 +67,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   /**
    * Initialize the database by creating the {@code airbyte_configs} table.
    */
-  public void initialize(String schema) throws IOException {
+  public DatabaseConfigPersistence initialize(String schema) throws IOException {
     database.transaction(ctx -> {
       boolean hasConfigsTable = ctx.fetchExists(select()
           .from("information_schema.tables")
@@ -80,13 +80,14 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       ctx.execute(schema);
       return null;
     });
+    return this;
   }
 
   /**
    * Populate the {@code airbyte_configs} table with configs from the seed persistence. Only do so if
    * the table is empty. Otherwise, we assume that it has been populated.
    */
-  public void loadData(ConfigPersistence seedConfigPersistence) throws IOException {
+  public DatabaseConfigPersistence loadData(ConfigPersistence seedConfigPersistence) throws IOException {
     database.transaction(ctx -> {
       boolean isInitialized = ctx.fetchExists(select().from(AIRBYTE_CONFIGS));
       if (isInitialized) {
@@ -118,6 +119,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       LOGGER.info("Config database data loading completed");
       return null;
     });
+    return this;
   }
 
   @Override
