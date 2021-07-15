@@ -22,9 +22,8 @@
 # SOFTWARE.
 #
 
-import time
 from abc import ABC
-from datetime import date, datetime
+from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import parse_qsl, urlparse
 
@@ -109,8 +108,9 @@ class IntercomStream(HttpStream, ABC):
         for record in data:
             yield record
 
-        # wait for 3,6 seconds according to API limit
-        time.sleep(3600 / self.queries_per_hour)
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        wait_time = 3600 / self.queries_per_hour  # wait for 3,6 seconds according to API limit
+        return wait_time
 
 
 class IncrementalIntercomStream(IntercomStream, ABC):
@@ -145,9 +145,6 @@ class IncrementalIntercomStream(IntercomStream, ABC):
                 ).isoformat()  # convert timestamp to datetime string
 
             yield from self.filter_by_state(stream_state=stream_state, record=record)
-
-        # wait for 3,6 seconds according to API limit
-        time.sleep(3600 / self.queries_per_hour)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
         """
