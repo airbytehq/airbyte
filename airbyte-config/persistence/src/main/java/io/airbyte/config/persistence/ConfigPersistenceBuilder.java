@@ -26,7 +26,6 @@ package io.airbyte.config.persistence;
 
 import static io.airbyte.config.persistence.AirbyteConfigsTable.AIRBYTE_CONFIGS_TABLE_SCHEMA;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.Configs;
 import io.airbyte.db.Database;
@@ -46,116 +45,97 @@ public class ConfigPersistenceBuilder {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigPersistenceBuilder.class);
 
-  @VisibleForTesting
-  static class ConfigPersistenceFactory {
+  private final Configs configs;
+  private final boolean setupDatabase;
 
-    private final Configs configs;
-    private final boolean setupDatabase;
-    private final boolean useConfigDatabase;
-
-    /**
-     * @param setupDatabase initialize the database and load data; this is necessary because this method
-     *        has multiple callers, and we want to setup the database only once to prevent race
-     *        conditions.
-     */
-    @VisibleForTesting
-    ConfigPersistenceFactory(Configs configs, boolean setupDatabase, boolean useConfigDatabase) {
-      this.configs = configs;
-      this.setupDatabase = setupDatabase;
-      this.useConfigDatabase = useConfigDatabase;
-    }
-
-    /**
-     * Create a config persistence based on the configs.
-     * <p/>
-     * If config root is defined, create a database config persistence and copy the configs from the
-     * file-based config persistence. Otherwise, seed the database from the yaml files.
-     */
-    public ConfigPersistence create() throws IOException {
-      if (!useConfigDatabase) {
-        Path configRoot = configs.getConfigRoot();
-        LOGGER.info("Use file system config persistence (root: {})", configRoot);
-        return FileSystemConfigPersistence.createWithValidation(configRoot);
-      }
-
-      if (configs.getConfigRoot() == null) {
-        // This branch will only be true in a future Airbyte version, in which
-        // the config root is no longer required and everything lives in the database.
-        return createDbPersistenceWithYamlSeed();
-      }
-
-      return createDbPersistenceWithFileSeed();
-    }
-
-    @VisibleForTesting
-    ConfigPersistence createDbPersistenceWithYamlSeed() throws IOException {
-      ConfigPersistence seedConfigPersistence = new YamlSeedConfigPersistence();
-      return createDbPersistence(seedConfigPersistence);
-    }
-
-    @VisibleForTesting
-    ConfigPersistence createDbPersistenceWithFileSeed() throws IOException {
-      Path configRoot = configs.getConfigRoot();
-      ConfigPersistence fsConfigPersistence = FileSystemConfigPersistence.createWithValidation(configRoot);
-      return createDbPersistence(fsConfigPersistence);
-    }
-
-    @VisibleForTesting
-    ConfigPersistence createDbPersistence(ConfigPersistence seedConfigPersistence) throws IOException {
-      LOGGER.info("Use database config persistence.");
-
-      // When setupDatabase is true, it means the database will be initialized after we
-      // connect to the database. So the database itself is considered ready as long as
-      // the connection is alive. Otherwise, the database is expected to have full data.
-      Function<Database, Boolean> isReady = setupDatabase
-          ? Databases.IS_CONFIG_DATABASE_CONNECTED
-          : Databases.IS_CONFIG_DATABASE_LOADED_WITH_DATA;
-
-      Database database = Databases.createPostgresDatabaseWithRetry(
-          configs.getConfigDatabaseUser(),
-          configs.getConfigDatabasePassword(),
-          configs.getConfigDatabaseUrl(),
-          isReady);
-
-      DatabaseConfigPersistence dbConfigPersistence = new DatabaseConfigPersistence(database);
-      if (setupDatabase) {
-        dbConfigPersistence.initialize(MoreResources.readResource(AIRBYTE_CONFIGS_TABLE_SCHEMA));
-        dbConfigPersistence.loadData(seedConfigPersistence);
-      }
-
-      return new ValidatingConfigPersistence(dbConfigPersistence);
-    }
-
+  ConfigPersistenceBuilder(Configs configs, boolean setupDatabase) {
+    this.configs = configs;
+    this.setupDatabase = setupDatabase;
   }
 
-  public static Builder builder(Configs configs) {
-    return new Builder(configs);
+  /**
+   * Create a db config persistence and setup the database, including table creation and data loading.
+   */
+  public static ConfigPersistence getAndInitializeDbPersistence(Configs configs) throws IOException {
+    return new ConfigPersistenceBuilder(configs, true).create();
   }
 
-  public static class Builder {
+  /**
+   * Create a db config persistence without seting up the database.
+   */
+  public static ConfigPersistence getDbPersistence(Configs configs) throws IOException {
+    return new ConfigPersistenceBuilder(configs, false).create();
+  }
 
-    private final Configs configs;
-    private boolean setupDatabase = false;
-    private boolean useConfigDatabase = true;
+  /**
+   * Create a database config persistence based on the configs.
+   * If config root is defined, create a database config persistence and copy the configs from the
+   * file-based config persistence. Otherwise, seed the database from the yaml files.
+   */
+  ConfigPersistence create() throws IOException {
+    if (configs.getConfigRoot() == null) {
+      // This branch will only be true in a future Airbyte version, in which
+      // the config root is no longer required and everything lives in the database.
+      return getDbPersistenceWithYamlSeed();
+    }
+    return getDbPersistenceWithFileSeed();
+  }
 
-    private Builder(Configs configs) {
-      this.configs = configs;
+  /**
+   * Create the file-based config persistence. This method only exists for testing purposes.
+   */
+  ConfigPersistence getFileSystemPersistence() throws IOException {
+    Path configRoot = configs.getConfigRoot();
+    LOGGER.info("Use file system config persistence (root: {})", configRoot);
+    return FileSystemConfigPersistence.createWithValidation(configRoot);
+  }
+
+  /**
+   * Create the database config persistence and load it with the initial seed from the
+   * YAML seed files if the database should be initialized.
+   */
+  ConfigPersistence getDbPersistenceWithYamlSeed() throws IOException {
+    ConfigPersistence seedConfigPersistence = new YamlSeedConfigPersistence();
+    return getDbPersistence(seedConfigPersistence);
+  }
+
+  /**
+   * Create the database config persistence and load it with the existing configs from the
+   * file system config persistence if the database should be initialized.
+   */
+  ConfigPersistence getDbPersistenceWithFileSeed() throws IOException {
+    Path configRoot = configs.getConfigRoot();
+    ConfigPersistence fsConfigPersistence = FileSystemConfigPersistence.createWithValidation(configRoot);
+    return getDbPersistence(fsConfigPersistence);
+  }
+
+  /**
+   * Create the database config persistence and load it with configs from the
+   * {@code seedConfigPersistence} if database should be initialized.
+   */
+  ConfigPersistence getDbPersistence(ConfigPersistence seedConfigPersistence) throws IOException {
+    LOGGER.info("Use database config persistence.");
+
+    // When setupDatabase is true, it means the database will be initialized after we
+    // connect to the database. So the database itself is considered ready as long as
+    // the connection is alive. Otherwise, the database is expected to have full data.
+    Function<Database, Boolean> isReady = setupDatabase
+        ? Databases.IS_CONFIG_DATABASE_CONNECTED
+        : Databases.IS_CONFIG_DATABASE_LOADED_WITH_DATA;
+
+    Database database = Databases.createPostgresDatabaseWithRetry(
+        configs.getConfigDatabaseUser(),
+        configs.getConfigDatabasePassword(),
+        configs.getConfigDatabaseUrl(),
+        isReady);
+
+    DatabaseConfigPersistence dbConfigPersistence = new DatabaseConfigPersistence(database);
+    if (setupDatabase) {
+      dbConfigPersistence.initialize(MoreResources.readResource(AIRBYTE_CONFIGS_TABLE_SCHEMA));
+      dbConfigPersistence.loadData(seedConfigPersistence);
     }
 
-    public Builder setupDatabase(boolean setupDatabase) {
-      this.setupDatabase = setupDatabase;
-      return this;
-    }
-
-    public Builder useConfigDatabase(boolean useConfigDatabase) {
-      this.useConfigDatabase = useConfigDatabase;
-      return this;
-    }
-
-    public ConfigPersistence build() throws IOException {
-      return new ConfigPersistenceFactory(configs, setupDatabase, useConfigDatabase).create();
-    }
-
+    return new ValidatingConfigPersistence(dbConfigPersistence);
   }
 
 }

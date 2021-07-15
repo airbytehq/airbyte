@@ -44,7 +44,6 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs;
 import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.persistence.ConfigPersistenceBuilder.ConfigPersistenceFactory;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import java.io.IOException;
@@ -104,7 +103,7 @@ class ConfigPersistenceBuilderTest extends BaseTest {
 
   @Test
   public void testCreateDbPersistenceWithYamlSeed() throws IOException {
-    ConfigPersistence dbPersistence = new ConfigPersistenceFactory(configs, true, true).createDbPersistenceWithYamlSeed();
+    ConfigPersistence dbPersistence = new ConfigPersistenceBuilder(configs, true).getDbPersistenceWithYamlSeed();
     ConfigPersistence seedPersistence = new YamlSeedConfigPersistence();
     assertSameConfigDump(seedPersistence.dumpConfigs(), dbPersistence.dumpConfigs());
   }
@@ -119,7 +118,7 @@ class ConfigPersistenceBuilderTest extends BaseTest {
 
     when(configs.getConfigRoot()).thenReturn(rootPath);
 
-    ConfigPersistence dbPersistence = new ConfigPersistenceFactory(configs, true, true).createDbPersistenceWithFileSeed();
+    ConfigPersistence dbPersistence = new ConfigPersistenceBuilder(configs, true).getDbPersistenceWithFileSeed();
     int dbConfigSize = (int) dbPersistence.dumpConfigs().values().stream()
         .map(stream -> stream.collect(Collectors.toList()))
         .mapToLong(Collection::size)
@@ -148,7 +147,7 @@ class ConfigPersistenceBuilderTest extends BaseTest {
     ConfigPersistence seedPersistence = spy(new YamlSeedConfigPersistence());
     // When setupDatabase is false, the createDbPersistence method does not initialize
     // the database itself, but it expects that the database has already been initialized.
-    ConfigPersistence dbPersistence = new ConfigPersistenceFactory(configs, false, false).createDbPersistence(seedPersistence);
+    ConfigPersistence dbPersistence = new ConfigPersistenceBuilder(configs, false).getDbPersistence(seedPersistence);
     // The return persistence is not initialized by the seed persistence, and has only one config.
     verify(seedPersistence, never()).dumpConfigs();
     assertSameConfigDump(
@@ -166,7 +165,7 @@ class ConfigPersistenceBuilderTest extends BaseTest {
 
     when(configs.getConfigRoot()).thenReturn(rootPath);
 
-    ConfigPersistence filePersistence = ConfigPersistenceBuilder.builder(configs).useConfigDatabase(false).build();
+    ConfigPersistence filePersistence = new ConfigPersistenceBuilder(configs, false).getFileSystemPersistence();
     assertSameConfigDump(seedPersistence.dumpConfigs(), filePersistence.dumpConfigs());
   }
 
@@ -191,7 +190,7 @@ class ConfigPersistenceBuilderTest extends BaseTest {
     Path rootPath = Files.createTempDirectory(Files.createDirectories(testRoot), ConfigPersistenceBuilderTest.class.getName());
     when(configs.getConfigRoot()).thenReturn(rootPath);
 
-    ConfigPersistence filePersistence = ConfigPersistenceBuilder.builder(configs).useConfigDatabase(false).build();
+    ConfigPersistence filePersistence = new ConfigPersistenceBuilder(configs, false).getFileSystemPersistence();
 
     filePersistence.replaceAllConfigs(seedConfigs, false);
     filePersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, extraWorkspace.getWorkspaceId().toString(), extraWorkspace);
@@ -199,7 +198,7 @@ class ConfigPersistenceBuilderTest extends BaseTest {
     // second run uses database config persistence;
     // the only difference is that useConfigDatabase is no longer overridden to false;
     // the extra workspace should be ported to this persistence
-    ConfigPersistence dbPersistence = ConfigPersistenceBuilder.builder(configs).useConfigDatabase(true).setupDatabase(true).build();
+    ConfigPersistence dbPersistence = new ConfigPersistenceBuilder(configs, true).create();
     Map<String, Stream<JsonNode>> expected = Map.of(
         ConfigSchema.STANDARD_WORKSPACE.name(), Stream.of(Jsons.jsonNode(DEFAULT_WORKSPACE), Jsons.jsonNode(extraWorkspace)),
         ConfigSchema.STANDARD_SOURCE_DEFINITION.name(), Stream.of(Jsons.jsonNode(SOURCE_GITHUB), Jsons.jsonNode(SOURCE_POSTGRES)),
