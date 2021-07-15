@@ -86,8 +86,8 @@ jobs:
       - name: Install Pyenv
         run: python3 -m pip install virtualenv==16.7.9 --user
 
-#      - name: Generate Template scaffold
-#        run: ./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates --scan
+      - name: Generate Template scaffold
+        run: ./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates --scan
 
       - name: Format
         run: SUB_BUILD=CONNECTORS_BASE ./gradlew format --scan --info --stacktrace
