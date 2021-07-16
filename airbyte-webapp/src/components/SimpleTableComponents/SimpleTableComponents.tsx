@@ -34,4 +34,5 @@ export const LightCell = styled(Cell)`
 
 export const LightTextCell = styled(LightCell)`
   color: ${({ theme }) => theme.greyColor40};
+  white-space: pre;
 `;

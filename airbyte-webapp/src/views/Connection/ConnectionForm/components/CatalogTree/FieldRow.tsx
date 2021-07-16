@@ -50,12 +50,22 @@ const FieldRow: React.FC<FieldRowProps> = (props) => {
       <Cell>{props.destinationName}</Cell>
       <Cell flex={1.5} />
       <Cell>
-        <CheckBox checked={props.isPrimaryKey} />
+        {props.isPrimaryKeyEnabled && (
+          <CheckBox
+            checked={props.isPrimaryKey}
+            onChange={props.onPrimaryKeyChange}
+          />
+        )}
       </Cell>
       <LastCell depth={props.depth}>
-        <RadiobuttonContainer depth={props.depth}>
-          <RadioButton checked={props.isCursor} />
-        </RadiobuttonContainer>
+        {props.isCursorEnabled && (
+          <RadiobuttonContainer depth={props.depth}>
+            <RadioButton
+              checked={props.isCursor}
+              onChange={props.onCursorChange}
+            />
+          </RadiobuttonContainer>
+        )}
       </LastCell>
     </>
   );

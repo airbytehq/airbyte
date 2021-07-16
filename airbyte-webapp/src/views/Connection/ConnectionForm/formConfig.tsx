@@ -22,6 +22,7 @@ import FrequencyConfig from "config/FrequencyConfig.json";
 import { DestinationDefinitionSpecification } from "core/resources/DestinationDefinitionSpecification";
 import { Connection, ScheduleProperties } from "core/resources/Connection";
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
+import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
 
 type FormikConnectionFormValues = {
   schedule?: ScheduleProperties | null;
@@ -256,7 +257,7 @@ const useInitialValues = (
       namespaceDefinition:
         connection.namespaceDefinition ?? ConnectionNamespaceDefinition.Source,
       // eslint-disable-next-line no-template-curly-in-string
-      namespaceFormat: connection.namespaceFormat ?? "${SOURCE_NAMESPACE}",
+      namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,
     };
 
     const { operations = [] } = connection;

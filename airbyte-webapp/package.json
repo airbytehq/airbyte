@@ -38,6 +38,7 @@
     "react-helmet": "6.1.0",
     "react-intl": "^3.12.0",
     "react-lazylog": "^4.5.3",
+    "react-lines-ellipsis": "^0.15.0",
     "react-pose": "^4.0.10",
     "react-router-dom": "^5.1.2",
     "react-select": "^4.3.1",

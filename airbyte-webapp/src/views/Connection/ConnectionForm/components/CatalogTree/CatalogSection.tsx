@@ -2,11 +2,12 @@ import React, { memo, useCallback, useMemo } from "react";
 import { useToggle } from "react-use";
 import { useIntl } from "react-intl";
 import styled from "styled-components";
-import { FormikErrors, getIn } from "formik";
+import { FormikErrors, getIn, useField } from "formik";
 
 import {
   AirbyteStreamConfiguration,
   DestinationSyncMode,
+  getDestinationNamespace,
   SyncMode,
   SyncSchemaField,
   SyncSchemaFieldObject,
@@ -53,7 +54,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   const updateStreamWithConfig = useCallback(
     (config: Partial<AirbyteStreamConfiguration>) =>
       updateStream(streamNode.id, config),
-    [updateStream, stream]
+    [updateStream, streamNode]
   );
 
   const onSelectSyncMode = useCallback(
@@ -151,16 +152,22 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
 
   const configErrors = getIn(errors, `schema.streams[${streamNode.id}].config`);
   const hasError = configErrors && Object.keys(configErrors).length > 0;
+  const [{ value: namespaceDefinition }] = useField("namespaceDefinition");
+  const [{ value: namespaceFormat }] = useField("namespaceFormat");
+  const destNamespace = getDestinationNamespace({
+    namespaceDefinition,
+    namespaceFormat,
+    sourceNamespace: stream.namespace,
+  });
 
   return (
     <Section error={hasError}>
       <TreeRowWrapper>
         <StreamHeader
           stream={streamNode}
-          destName={""}
-          destNamespace={""}
+          destNamespace={destNamespace}
+          destName={streamNode.stream.name}
           availableSyncModes={availableSyncModes}
-          syncMode={`${config.syncMode}.${config.destinationSyncMode}`}
           onSelectStream={onSelectStream}
           onSelectSyncMode={onSelectSyncMode}
           isRowExpanded={isRowExpanded}
@@ -180,7 +187,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
                   depth={1}
                   name={field.name}
                   type={field.type}
-                  destinationName={""}
+                  destinationName={field.cleanedName}
                   isCursor={field.name === selectedCursorPath}
                   isPrimaryKey={pkPaths.has(field.name)}
                   isPrimaryKeyEnabled={
