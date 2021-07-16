@@ -52,7 +52,6 @@ class CartStream(HttpStream, ABC):
             return int(retry_after)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        raise NotImplementedError('TODO')
         response_json = response.json()
         if response_json.get("next_page"):
             next_query_string = urllib.parse.urlsplit(links["next_page"]).query
@@ -105,7 +104,7 @@ class IncrementalCartStream(CartStream, ABC):
         return {}
 
 
-class CustomerCart(IncrementalCartStream):
+class CustomersCart(IncrementalCartStream):
     """
     TODO: Placeholder for documentation links
     """
