@@ -26,7 +26,9 @@ package io.airbyte.integrations.destination.gcs.writer;
 
 import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.integrations.destination.gcs.avro.GcsAvroWriter;
 import io.airbyte.integrations.destination.gcs.csv.GcsCsvWriter;
+import io.airbyte.integrations.destination.gcs.jsonl.GcsJsonlWriter;
 import io.airbyte.integrations.destination.gcs.parquet.GcsParquetWriter;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
@@ -49,23 +51,33 @@ public class ProductionWriterFactory implements GcsWriterFactory {
                          ConfiguredAirbyteStream configuredStream,
                          Timestamp uploadTimestamp)
       throws Exception {
-        S3Format format = config.getFormatConfig().getFormat();
-    if (format == S3Format.CSV) {
-      return new GcsCsvWriter(config, s3Client, configuredStream, uploadTimestamp);
-    }
-    if (format == S3Format.PARQUET) {
+    S3Format format = config.getFormatConfig().getFormat();
+
+    if (format == S3Format.AVRO || format == S3Format.PARQUET) {
       AirbyteStream stream = configuredStream.getStream();
 
       JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
       Schema avroSchema = schemaConverter.getAvroSchema(stream.getJsonSchema(), stream.getName(), stream.getNamespace(), true);
       JsonFieldNameUpdater nameUpdater = new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
 
-      // LOGGER.info("Paquet schema for stream {}: {}", stream.getName(), avroSchema.toString(false));
+      LOGGER.info("Paquet schema for stream {}: {}", stream.getName(), avroSchema.toString(false));
       if (nameUpdater.hasNameUpdate()) {
         LOGGER.info("The following field names will be standardized: {}", nameUpdater);
       }
 
-      return new GcsParquetWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, nameUpdater);
+      if (format == S3Format.AVRO) {
+        return new GcsAvroWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, nameUpdater);
+      } else {
+        return new GcsParquetWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, nameUpdater);
+      }
+    }
+
+    if (format == S3Format.CSV) {
+      return new GcsCsvWriter(config, s3Client, configuredStream, uploadTimestamp);
+    }
+
+    if (format == S3Format.JSONL) {
+      return new GcsJsonlWriter(config, s3Client, configuredStream, uploadTimestamp);
     }
 
     throw new RuntimeException("Unexpected GCS destination format: " + format);

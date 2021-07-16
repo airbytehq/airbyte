@@ -61,8 +61,8 @@ public abstract class BaseGcsWriter implements S3Writer {
   protected final String outputPrefix;
 
   protected BaseGcsWriter(GcsDestinationConfig config,
-                         AmazonS3 s3Client,
-                         ConfiguredAirbyteStream configuredStream) {
+                          AmazonS3 s3Client,
+                          ConfiguredAirbyteStream configuredStream) {
     this.config = config;
     this.s3Client = s3Client;
     this.stream = configuredStream.getStream();
@@ -75,7 +75,7 @@ public abstract class BaseGcsWriter implements S3Writer {
    * <li>2. Under OVERWRITE mode, delete all objects with the output prefix.</li>
    */
   @Override
-  public void initialize() throws IOException{
+  public void initialize() {
     String bucket = config.getBucketName();
     if (!s3Client.doesBucketExistV2(bucket)) {
       LOGGER.info("Bucket {} does not exist; creating...", bucket);
@@ -95,7 +95,7 @@ public abstract class BaseGcsWriter implements S3Writer {
       if (keysToDelete.size() > 0) {
         LOGGER.info("Purging non-empty output path for stream '{}' under OVERWRITE mode...",
             stream.getName());
-        // Google Cloud Storage doesn't acceppt request to delete multiple objects so looping
+        // Google Cloud Storage doesn't accept request to delete multiple objects
         for (KeyVersion keyToDelete : keysToDelete) {
           s3Client.deleteObject(bucket, keyToDelete.getKey());
         }

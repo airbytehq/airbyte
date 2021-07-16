@@ -32,6 +32,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.integrations.destination.gcs.credential.GcsHmacKeyCredentialConfig;
 import io.airbyte.integrations.destination.gcs.writer.GcsWriterFactory;
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -49,6 +50,8 @@ import java.util.function.Consumer;
 
 public class GcsConsumer extends FailureTrackingAirbyteMessageConsumer {
 
+  private static final String GCS_ENDPOINT = "https://storage.googleapis.com";
+
   private final GcsDestinationConfig gcsDestinationConfig;
   private final ConfiguredAirbyteCatalog configuredCatalog;
   private final GcsWriterFactory writerFactory;
@@ -58,9 +61,9 @@ public class GcsConsumer extends FailureTrackingAirbyteMessageConsumer {
   private AirbyteMessage lastStateMessage = null;
 
   public GcsConsumer(GcsDestinationConfig gcsDestinationConfig,
-                    ConfiguredAirbyteCatalog configuredCatalog,
-                    GcsWriterFactory writerFactory,
-                    Consumer<AirbyteMessage> outputRecordCollector) {
+                     ConfiguredAirbyteCatalog configuredCatalog,
+                     GcsWriterFactory writerFactory,
+                     Consumer<AirbyteMessage> outputRecordCollector) {
     this.gcsDestinationConfig = gcsDestinationConfig;
     this.configuredCatalog = configuredCatalog;
     this.writerFactory = writerFactory;
@@ -70,12 +73,12 @@ public class GcsConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   @Override
   protected void startTracked() throws Exception {
-    BasicAWSCredentials awsCreds = new BasicAWSCredentials(gcsDestinationConfig.getAccessKeyId(), gcsDestinationConfig.getSecretAccessKey());
+    GcsHmacKeyCredentialConfig hmacKeyCredential = (GcsHmacKeyCredentialConfig) gcsDestinationConfig.getCredentialConfig();
+    BasicAWSCredentials awsCreds = new BasicAWSCredentials(hmacKeyCredential.getHmacKeyAccessId(), hmacKeyCredential.getHmacKeySecret());
 
     AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
         .withEndpointConfiguration(
-          new AwsClientBuilder.EndpointConfiguration(
-          "https://storage.googleapis.com", gcsDestinationConfig.getBucketRegion()))
+            new AwsClientBuilder.EndpointConfiguration(GCS_ENDPOINT, gcsDestinationConfig.getBucketRegion()))
         .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
         .build();
 

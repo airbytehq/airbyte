@@ -31,6 +31,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.integrations.destination.gcs.credential.GcsHmacKeyCredentialConfig;
 import io.airbyte.integrations.destination.gcs.writer.BaseGcsWriter;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
@@ -79,14 +80,12 @@ public class GcsParquetWriter extends BaseGcsWriter implements S3Writer {
 
     String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.PARQUET);
     String objectKey = String.join("/", outputPrefix, outputFilename);
+    LOGGER.info("Storage path for stream '{}': {}/{}", stream.getName(), config.getBucketName(), objectKey);
 
-    // LOGGER.info("Storage path for stream '{}': {}/{}", stream.getName(), config.getBucketName(), objectKey);
-
-    URI uri = new URI(
-        String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename));    // <----- CHECK
+    URI uri = new URI(String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename));
     Path path = new Path(uri);
 
-    // LOGGER.info("Full Gcs path for stream '{}': {}", stream.getName(), path.toString());
+    LOGGER.info("Full GCS path for stream '{}': {}", stream.getName(), path);
 
     S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
     Configuration hadoopConfig = getHadoopConfig(config);
@@ -102,15 +101,16 @@ public class GcsParquetWriter extends BaseGcsWriter implements S3Writer {
   }
 
   public static Configuration getHadoopConfig(GcsDestinationConfig config) {
+    GcsHmacKeyCredentialConfig hmacKeyCredential = (GcsHmacKeyCredentialConfig) config.getCredentialConfig();
     Configuration hadoopConfig = new Configuration();
 
     // https://stackoverflow.com/questions/64141204/process-data-in-google-storage-on-an-aws-emr-cluster-in-spark
-    hadoopConfig.set("fs.s3a.access.key", config.getAccessKeyId());
-    hadoopConfig.set("fs.s3a.secret.key", config.getSecretAccessKey());
+    hadoopConfig.set("fs.s3a.access.key", hmacKeyCredential.getHmacKeyAccessId());
+    hadoopConfig.set("fs.s3a.secret.key", hmacKeyCredential.getHmacKeySecret());
     hadoopConfig.setBoolean("fs.s3a.path.style.access", true);
     hadoopConfig.set("fs.s3a.endpoint", "storage.googleapis.com");
     hadoopConfig.setInt("fs.s3a.list.version", 1);
-    
+
     return hadoopConfig;
   }
 
