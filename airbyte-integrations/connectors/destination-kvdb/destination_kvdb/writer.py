@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,8 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
+
 from collections import Mapping
 
 from destination_kvdb.client import KvDbClient
@@ -34,6 +37,7 @@ class KvDbWriter:
     Since KvDB allows reading records with certain prefixes, we treat it more like a message queue, expecting the reader to
     read messages with a particular prefix e.g: name__ab__123, where 123 is the timestamp they last read data from.
     """
+
     write_buffer = []
     flush_interval = 1000
 

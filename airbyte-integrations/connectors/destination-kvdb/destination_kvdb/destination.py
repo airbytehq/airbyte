@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,27 +20,24 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
-import uuid
-import traceback
 import time
-from typing import Mapping, Any, Iterable
+import traceback
+import uuid
+from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, ConfiguredAirbyteCatalog, AirbyteMessage, Status, DestinationSyncMode, Type
-
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from destination_kvdb.client import KvDbClient
 from destination_kvdb.writer import KvDbWriter
 
 
 class DestinationKvdb(Destination):
     def write(
-            self,
-            config: Mapping[str, Any],
-            configured_catalog: ConfiguredAirbyteCatalog,
-            input_messages: Iterable[AirbyteMessage]
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
 
         """
@@ -56,17 +54,17 @@ class DestinationKvdb(Destination):
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 writer.delete_stream_entries(configured_stream.stream.name)
 
-        latest_state_message = None
         for message in input_messages:
             if message.type == Type.STATE:
                 # Emitting a state message indicates that all records which came before it have been written to the destination. So we flush
                 # the queue to ensure writes happen, then output the state message to indicate it's safe to checkpoint state
                 writer.flush()
-                latest_state_message = message
                 yield message
             elif message.type == Type.RECORD:
                 record = message.record
-                writer.queue_write_operation(record.stream, record.data, time.time_ns() / 1_000_000)  # convert from nanoseconds to milliseconds
+                writer.queue_write_operation(
+                    record.stream, record.data, time.time_ns() / 1_000_000
+                )  # convert from nanoseconds to milliseconds
             else:
                 # ignore other message types for now
                 continue
@@ -88,4 +86,6 @@ class DestinationKvdb(Destination):
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             traceback.print_exc()
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {e}. \nStacktrace: \n{traceback.format_exc()}")
+            return AirbyteConnectionStatus(
+                status=Status.FAILED, message=f"An exception occurred: {e}. \nStacktrace: \n{traceback.format_exc()}"
+            )

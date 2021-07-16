@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,7 +20,9 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from typing import Mapping, Any, Iterable, List, Union, Tuple
+#
+
+from typing import Any, Iterable, List, Mapping, Tuple, Union
 
 import requests
 
@@ -58,9 +61,9 @@ class KvDbClient:
                     "skip": offset,
                     "format": "json",
                     "prefix": prefix or "",
-                    "values": "true" if list_values else "false"
+                    "values": "true" if list_values else "false",
                 },
-                endpoint="/"  # the "list" endpoint doesn't work without adding a trailing slash to the URL
+                endpoint="/",  # the "list" endpoint doesn't work without adding a trailing slash to the URL
             )
 
             response_json = response.json()
@@ -81,25 +84,15 @@ class KvDbClient:
         return f"{self.base_url}/{self.bucket_id}"
 
     def _get_auth_headers(self) -> Mapping[str, Any]:
-        return {'Authorization': f'Bearer {self.secret_key}'} if self.secret_key else {}
+        return {"Authorization": f"Bearer {self.secret_key}"} if self.secret_key else {}
 
     def _request(
-            self,
-            http_method: str,
-            endpoint: str = None,
-            params: Mapping[str, Any] = None,
-            json: Mapping[str, Any] = None
+        self, http_method: str, endpoint: str = None, params: Mapping[str, Any] = None, json: Mapping[str, Any] = None
     ) -> requests.Response:
-        url = self._get_base_url() + (endpoint or '')
-        headers = {"Accept": 'application/json', **self._get_auth_headers()}
+        url = self._get_base_url() + (endpoint or "")
+        headers = {"Accept": "application/json", **self._get_auth_headers()}
 
-        response = requests.request(
-            method=http_method,
-            params=params,
-            url=url,
-            headers=headers,
-            json=json
-        )
+        response = requests.request(method=http_method, params=params, url=url, headers=headers, json=json)
 
         response.raise_for_status()
         return response
