@@ -26,21 +26,16 @@ package io.airbyte.integrations.destination.gcs;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.cloud.storage.BlobId;
-import com.google.cloud.storage.BlobInfo;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.gcs.writer.GcsWriterFactory;
 import io.airbyte.integrations.destination.gcs.writer.ProductionWriterFactory;
-import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsConfig;
-import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsStreamCopier;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import java.io.IOException;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,15 +71,6 @@ public class GcsDestination extends BaseConnector implements Destination {
                                             Consumer<AirbyteMessage> outputRecordCollector) {
     GcsWriterFactory formatterFactory = new ProductionWriterFactory();
     return new GcsConsumer(GcsDestinationConfig.getGcsDestinationConfig(config), configuredCatalog, formatterFactory, outputRecordCollector);
-  }
-
-  private static void attemptWriteAndDeleteGcsObject(GcsConfig gcsConfig) throws IOException {
-    var storage = GcsStreamCopier.getStorageClient(gcsConfig);
-    var blobId = BlobId.of(gcsConfig.getBucketName(), "check-content/test-file");
-    var blobInfo = BlobInfo.newBuilder(blobId).build();
-
-    storage.create(blobInfo, "".getBytes());
-    storage.delete(blobId);
   }
 
 }

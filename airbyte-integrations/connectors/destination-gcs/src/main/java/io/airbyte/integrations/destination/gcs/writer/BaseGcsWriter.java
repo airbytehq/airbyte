@@ -94,8 +94,7 @@ public abstract class BaseGcsWriter implements S3Writer {
       }
 
       if (keysToDelete.size() > 0) {
-        LOGGER.info("Purging non-empty output path for stream '{}' under OVERWRITE mode...",
-            stream.getName());
+        LOGGER.info("Purging non-empty output path for stream '{}' under OVERWRITE mode...", stream.getName());
         // Google Cloud Storage doesn't accept request to delete multiple objects
         for (KeyVersion keyToDelete : keysToDelete) {
           s3Client.deleteObject(bucket, keyToDelete.getKey());
