@@ -34,13 +34,13 @@
 - sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   name: GitHub
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.1.1
-  documentationUrl: https://hub.docker.com/r/airbyte/source-github
+  dockerImageTag: 0.1.2
+  documentationUrl: https://docs.airbyte.io/integrations/sources/github
   icon: github.svg
 - sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   name: Microsoft SQL Server (MSSQL)
   dockerRepository: airbyte/source-mssql
-  dockerImageTag: 0.3.2
+  dockerImageTag: 0.3.3
   documentationUrl: https://hub.docker.com/r/airbyte/source-mssql
   icon: mssql.svg
 - sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
@@ -51,13 +51,13 @@
   icon: postgresql.svg
 - sourceDefinitionId: 9fa5862c-da7c-11eb-8d19-0242ac130003
   name: Cockroachdb
-  dockerRepository: airbyte/source-postgres
+  dockerRepository: airbyte/source-cockroachdb
   dockerImageTag: 0.1.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-cockroachdb
 - sourceDefinitionId: af6d50ee-dddf-4126-a8ee-7faee990774f
   name: PostHog
   dockerRepository: airbyte/source-posthog
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/posthog
 - sourceDefinitionId: cd42861b-01fc-4658-a8ab-5d11d0510f01
   name: Recurly
@@ -335,7 +335,7 @@
 - sourceDefinitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
   name: Slack
   dockerRepository: airbyte/source-slack
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   documentationUrl: https://hub.docker.com/repository/docker/airbyte/source-slack
   icon: slack.svg
 - sourceDefinitionId: 6ff047c0-f5d5-4ce5-8c81-204a830fa7e1
