@@ -36,7 +36,7 @@ class CartStream(HttpStream, ABC):
 
     def __init__(self, start_date: str, store_name: str, **kwargs):
         self._start_date = start_date
-        self.store_name = data_center
+        self.store_name = store_name
         super().__init__(**kwargs)
 
     @property
@@ -53,10 +53,9 @@ class CartStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         raise NotImplementedError('TODO')
-        resp_json = response.json()
-        links = resp_json.get("links", {})
-        if links.get("next"):
-            next_query_string = urllib.parse.urlsplit(links["next"]).query
+        response_json = response.json()
+        if response_json.get("next_page"):
+            next_query_string = urllib.parse.urlsplit(links["next_page"]).query
             params = dict(urllib.parse.parse_qsl(next_query_string))
             return params
 
@@ -74,7 +73,13 @@ class CartStream(HttpStream, ABC):
     def request_params(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        return next_page_token or {}
+        params = {
+            'count': 100,
+            'sort': "updated_at"
+        }
+        if next_page_token:
+            params.update(next_page_token)
+        return params
 
 
 class IncrementalCartStream(CartStream, ABC):

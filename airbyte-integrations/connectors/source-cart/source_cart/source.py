@@ -39,7 +39,7 @@ class SourceCart(AbstractSource):
         try:
             authenticator = TokenAuthenticator(token=config["access_token"])
             pendulum.parse(config["start_date"])
-            stream = Products(authenticator=authenticator, start_date=config["start_date"])
+            stream = Products(authenticator=authenticator, start_date=config["start_date"], store_name=config["store_name"])
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
             return True, None
@@ -48,7 +48,7 @@ class SourceCart(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(token=config["access_token"])
-        args = {"authenticator": authenticator, "start_date": config["start_date"]}
+        args = {"authenticator": authenticator, "start_date": config["start_date"], "store_name": config["store_name"]}
         return [
             CustomerCart(**args),
             Orders(**args),
