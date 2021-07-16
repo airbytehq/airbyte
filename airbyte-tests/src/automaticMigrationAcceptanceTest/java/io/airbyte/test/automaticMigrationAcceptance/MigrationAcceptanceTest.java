@@ -65,8 +65,9 @@ import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.output.OutputFrame;
 
 /**
- * In order to run this test from intellij, build the docker images via ./gradlew composeBuild and
- * replace System.getenv("MIGRATION_TEST_VERSION") with the version in your .env file
+ * In order to run this test from intellij, build the docker images via SUB_BUILD=PLATFORM ./gradlew
+ * composeBuild and replace System.getenv("MIGRATION_TEST_VERSION") with the version in your .env
+ * file
  */
 public class MigrationAcceptanceTest {
 
@@ -126,7 +127,7 @@ public class MigrationAcceptanceTest {
 
       customDockerComposeContainer.start();
 
-      Thread.sleep(20000);
+      Thread.sleep(50000);
 
       assertTrue(logsToExpect.isEmpty());
       ApiClient apiClient = getApiClient();
