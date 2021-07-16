@@ -1,52 +1,37 @@
 # Rockset
 
-TODO: update this doc
+Rockset is a serverless real-time database serving millisecond-latency queries
+on terabytes of data.
 
 ## Sync overview
 
 ### Output schema
 
-Is the output schema fixed (e.g: for an API like Stripe)? If so, point to the connector's schema (e.g: link to Stripe’s documentation) or describe the schema here directly (e.g: include a diagram or paragraphs describing the schema).
-
-Describe how the connector's schema is mapped to Airbyte concepts. An example description might be: "MagicDB tables become Airbyte Streams and MagicDB columns become Airbyte Fields. In addition, an extracted\_at column is appended to each row being read."
-
-### Data type mapping
-
-This section should contain a table mapping each of the connector's data types to Airbyte types. At the moment, Airbyte uses the same types used by [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html). `string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number` are the most commonly used data types.
-
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-
+Each stream will correspond to a single collection in Rockset. All collections created will
+exist under the workspace configured when the destination is created. The data schema will remain simply
+as given by the source, with the usual `_id`, `_meta`, and `_event_time` fields added to each record. See
+the [Rockset documentation](https://docs.rockset.com/special-fields/#the-_id-field) for more information on these fields.
 
 ### Features
 
-This section should contain a table with the following format:
-
-| Feature | Supported?(Yes/No) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync |  |  |
-| Incremental Sync |  |  |
-| Replicate Incremental Deletes |  |  |
-| For databases, WAL/Logical replication |  |  |
-| SSL connection |  |  |
-| SSH Tunnel Support |  |  |
-| (Any other source-specific features) |  |  |
+| Feature | Supported?(Yes/No) |
+| :--- | :--- |
+| Full Refresh Sync | Yes  |
+| Incremental Sync | Yes |
 
 ### Performance considerations
 
-Could this connector hurt the user's database/API/etc... or put too much strain on it in certain circumstances? For example, if there are a lot of tables or rows in a table? What is the breaking point (e.g: 100mm&gt; records)? What can the user do to prevent this? (e.g: use a read-only replica, or schedule frequent syncs, etc..)
+Collection counts should be considered when using Airbyte on Rockset from multiple Airbyte sources.
+By default, 30 collections are allowed in the Shared tier and 10 collections in the Free tier.
 
 ## Getting started
 
 ### Requirements
 
-* What versions of this connector does this implementation support? (e.g: `postgres v3.14 and above`)
-* What configurations, if any, are required on the connector? (e.g: `buffer_size > 1024`)
-* Network accessibility requirements
-* Credentials/authentication requirements? (e.g: A  DB user with read permissions on certain tables)
+The Rockset Airbyte destination is quite simple. To get started, you will need:
 
-### Setup guide
+* A valid Rockset Api Key
 
-For each of the above high-level requirements as appropriate, add or point to a follow-along guide. See existing source or destination guides for an example.
-
-For each major cloud provider we support, also add a follow-along guide for setting up Airbyte to connect to that destination. See the Postgres destination guide for an example of what this should look like.
+With your api key entered during the destination creation step and a workspace name of your choice
+(which does not need to exist prior to creating the connection), you are ready to get started using Airbyte
+on top of Rockset!
