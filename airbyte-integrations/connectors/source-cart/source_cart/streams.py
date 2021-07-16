@@ -54,7 +54,7 @@ class CartStream(HttpStream, ABC):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_json = response.json()
         if response_json.get("next_page"):
-            next_query_string = urllib.parse.urlsplit(links["next_page"]).query
+            next_query_string = urllib.parse.urlsplit(response_json.get("next_page")).query
             params = dict(urllib.parse.parse_qsl(next_query_string))
             return params
 
