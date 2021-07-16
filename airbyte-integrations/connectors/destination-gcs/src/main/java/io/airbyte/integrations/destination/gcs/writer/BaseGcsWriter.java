@@ -107,10 +107,9 @@ public abstract class BaseGcsWriter implements S3Writer {
   }
 
   /**
-   * {@link AmazonS3#doesBucketExistV2} should be used to check the bucket existence.
-   * However, this method does not work for GCS. So we use {@link AmazonS3#headBucket}
-   * instead, which will throw an exception if the bucket does not exist, or there is
-   * no permission to access it.
+   * {@link AmazonS3#doesBucketExistV2} should be used to check the bucket existence. However, this
+   * method does not work for GCS. So we use {@link AmazonS3#headBucket} instead, which will throw an
+   * exception if the bucket does not exist, or there is no permission to access it.
    */
   public boolean gcsBucketExist(AmazonS3 s3Client, String bucket) {
     try {

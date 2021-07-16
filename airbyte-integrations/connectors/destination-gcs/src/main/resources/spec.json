@@ -84,7 +84,11 @@
         "oneOf": [
           {
             "title": "HMAC key",
-            "required": ["credential_type", "hmac_key_access_id", "hmac_key_secret"],
+            "required": [
+              "credential_type",
+              "hmac_key_access_id",
+              "hmac_key_secret"
+            ],
             "properties": {
               "credential_type": {
                 "type": "string",
@@ -96,9 +100,7 @@
                 "description": "The access ID for the GCS bucket. When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long.",
                 "title": "HMAC Key Access ID",
                 "airbyte_secret": true,
-                "examples": [
-                  "1234567890abcdefghij1234"
-                ]
+                "examples": ["1234567890abcdefghij1234"]
               },
               "hmac_key_secret": {
                 "type": "string",
