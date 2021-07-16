@@ -15,7 +15,8 @@
         "title": "Api Key",
         "description": "Rockset api key",
         "type": "string",
-        "order": 0
+        "order": 0,
+        "airbyte_secret": true
       },
       "workspace": {
         "title": "Workspace",
