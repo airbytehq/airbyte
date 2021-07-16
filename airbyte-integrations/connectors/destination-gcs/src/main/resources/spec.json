@@ -97,14 +97,14 @@
               },
               "hmac_key_access_id": {
                 "type": "string",
-                "description": "The access ID for the GCS bucket. When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long.",
+                "description": "HMAC key access ID. When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long.",
                 "title": "HMAC Key Access ID",
                 "airbyte_secret": true,
                 "examples": ["1234567890abcdefghij1234"]
               },
               "hmac_key_secret": {
                 "type": "string",
-                "description": "The corresponding secret to the access id. It is a 40-character base-64 encoded string.",
+                "description": "The corresponding secret for the access ID. It is a 40-character base-64 encoded string.",
                 "title": "HMAC Key Secret",
                 "airbyte_secret": true,
                 "examples": ["1234567890abcdefghij1234567890ABCDEFGHIJ"]
