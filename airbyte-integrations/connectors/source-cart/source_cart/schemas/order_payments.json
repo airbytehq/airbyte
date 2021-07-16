@@ -5,19 +5,19 @@
       "type": "integer"
     },
     "customer_id": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "order_id": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "customer_payment_method_id": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "payment_method_id": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "payment_type": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "is_approved": {
       "type": "boolean"
@@ -26,43 +26,43 @@
       "type": "boolean"
     },
     "card_type": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "card_expiration_month": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "card_expiration_year": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "cardholder_name": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "paid_at": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "approved_at": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "authorization_code": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "reject_reason": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "avs_code": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "payment_method_name": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "transaction_type": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "amount": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "payment_note": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "updated_at": {
       "type": "string"
@@ -71,37 +71,37 @@
       "type": "string"
     },
     "gift_certificate_id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "is_captured": {
       "type": "boolean"
     },
     "transaction_id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "last_four": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "is_void": {
       "type": "boolean"
     },
     "gateway_response_code": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "cvv_response_code": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "sent_to_spark_pay": {
       "type": "boolean"
     },
     "token": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "payment_ref_num": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "store_payment_method_id": {
-      "type": "string"
+      "type": ["string", "null"]
     }
   }
 }

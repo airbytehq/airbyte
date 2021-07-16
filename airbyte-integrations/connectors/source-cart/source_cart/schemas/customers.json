@@ -5,61 +5,61 @@
       "type": "integer"
     },
     "customer_number": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "last_name": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "first_name": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "email": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "phone_number": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "registered_at": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "last_visit_at": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "adcode": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "adcode_id": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "affiliate_id": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "customer_type_id": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "is_no_tax_customer": {
       "type": "boolean"
     },
     "comments": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "store_id": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "source": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "search_string": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "no_account": {
       "type": "boolean"
     },
     "sales_person": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "alternate_phone_number": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "is_affiliate_customer": {
       "type": "boolean"
@@ -77,36 +77,36 @@
       "type": "boolean"
     },
     "tax_exemption_number": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "company": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "source_group": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "sales_person_user_id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "store_payment_methods_enabled": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": ["string", "null"]
       }
     },
     "tax_rate": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "reward_tier_id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "sub": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "customer_payment_methods_availability": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": ["string", "null"]
       }
     }
   }
