@@ -23,11 +23,10 @@
 #
 
 import urllib.parse
-from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from abc import ABC
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
@@ -59,10 +58,7 @@ class CartStream(HttpStream, ABC):
             return params
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        return {
-            "Cache-Control": "no-cache",
-            "Content-Type": "application/json"
-        }
+        return {"Cache-Control": "no-cache", "Content-Type": "application/json"}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
@@ -70,12 +66,9 @@ class CartStream(HttpStream, ABC):
         yield from result
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = {
-            'count': 100,
-            'sort': "updated_at"
-        }
+        params = {"count": 100, "sort": "updated_at"}
         if next_page_token:
             params.update(next_page_token)
         return params
