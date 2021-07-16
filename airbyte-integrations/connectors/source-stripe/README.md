@@ -68,11 +68,22 @@ To run your integration tests with acceptance tests, from the connector root, ru
 ```
 python -m pytest integration_tests -p integration_tests.acceptance
 ```
-To run your integration tests with docker
 
-### Locally running the connector docker image
+### Using gradle to run tests
+All commands should be run from airbyte project root.
+To run unit tests:
+```
+./gradlew :airbyte-integrations:connectors:source-stripe:unitTest
+```
+
+To run acceptance and custom integration tests:
+```
+./gradlew :airbyte-integrations:connectors:source-stripe:integrationTest
+```
 
 #### Build
+To run your integration tests with docker localy
+
 First, make sure you build the latest Docker image:
 ```
 docker build --no-cache . -t airbyte/source-stripe:dev

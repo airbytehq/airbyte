@@ -31,7 +31,7 @@
               "type": ["null", "string"]
             },
             "fingerprint": {
-              "type": ["null", "integer"]
+              "type": ["null", "string"]
             },
             "last4": {
               "type": ["null", "string"]
@@ -58,6 +58,7 @@
       "stream": {
         "name": "balance_transactions",
         "json_schema": {
+          "type": ["null", "object"],
           "properties": {
             "fee": {
               "type": ["null", "integer"]
@@ -120,17 +121,15 @@
               "type": ["null", "string"]
             },
             "created": {
-              "type": ["null", "integer"]
+              "type": ["null", "number"]
             },
             "amount": {
               "type": ["null", "integer"]
             },
             "updated": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": ["null", "string"]
             }
-          },
-          "type": ["null", "object"]
+          }
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -558,8 +557,24 @@
               "type": ["null", "string"]
             },
             "refunds": {
-              "type": ["null", "array"],
-              "items": {}
+              "type": ["null", "object"],
+              "properties": {
+                "object": {
+                  "type": ["null", "string"]
+                },
+                "data": {
+                  "type": ["null", "array"]
+                },
+                "has_more": {
+                  "type": ["null", "boolean"]
+                },
+                "total_count": {
+                  "type": ["null", "number"]
+                },
+                "url": {
+                  "type": ["null", "string"]
+                }
+              }
             },
             "application_fee": {
               "type": ["null", "string"]
@@ -2081,9 +2096,23 @@
               "type": ["null", "string"]
             },
             "subscriptions": {
-              "type": ["null", "array"],
-              "items": {
-                "type": ["null", "string"]
+              "type": ["null", "object"],
+              "properties": {
+                "object": {
+                  "type": ["null", "string"]
+                },
+                "data": {
+                  "type": ["null", "array"]
+                },
+                "has_more": {
+                  "type": ["null", "boolean"]
+                },
+                "total_count": {
+                  "type": ["null", "number"]
+                },
+                "url": {
+                  "type": ["null", "string"]
+                }
               }
             },
             "discount": {
@@ -2208,47 +2237,47 @@
         "name": "customer_balance_transactions",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-04/schema#",
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "id": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "object": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "amount": {
-              "type": "integer"
+              "type": ["null", "number"]
             },
             "created": {
-              "type": "integer"
+              "type": ["null", "number"]
             },
             "credit_note": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "currency": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "customer": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "description": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "ending_balance": {
-              "type": "integer"
+              "type": ["null", "number"]
             },
             "invoice": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "livemode": {
-              "type": "boolean"
+              "type": ["null", "boolean"]
             },
             "metadata": {
-              "type": "object",
+              "type": ["null", "object"],
               "additionalProperties": true
             },
             "type": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           }
         },
@@ -2384,8 +2413,7 @@
               "type": ["null", "object"],
               "properties": {
                 "due_by": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "number"]
                 },
                 "has_evidence": {
                   "type": ["null", "boolean"]
@@ -2458,7 +2486,15 @@
               "type": ["null", "integer"]
             },
             "request": {
-              "type": ["null", "string"]
+              "type": ["null", "object"],
+              "properties": {
+                "id": {
+                  "type": ["null", "string"]
+                },
+                "idempotency_key": {
+                  "type": ["null", "string"]
+                }
+              }
             },
             "type": {
               "type": ["null", "string"]
@@ -2588,12 +2624,10 @@
               "type": ["null", "object"],
               "properties": {
                 "end": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "number"]
                 },
                 "start": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "number"]
                 }
               }
             },
@@ -2657,12 +2691,11 @@
         "json_schema": {
           "type": ["null", "object"],
           "properties": {
-            "date": {
+            "created": {
               "type": ["null", "integer"]
             },
             "next_payment_attempt": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": ["null", "number"]
             },
             "tax": {
               "type": ["null", "integer"]
@@ -2690,15 +2723,13 @@
               "type": ["null", "integer"]
             },
             "due_date": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": ["null", "number"]
             },
             "id": {
               "type": ["null", "string"]
             },
             "webhooks_delivered_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": ["null", "number"]
             },
             "statement_descriptor": {
               "type": ["null", "string"]
@@ -2707,8 +2738,7 @@
               "type": ["null", "string"]
             },
             "period_end": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": ["null", "number"]
             },
             "amount_remaining": {
               "type": ["null", "integer"]
@@ -2726,11 +2756,13 @@
               "type": ["null", "boolean"]
             },
             "discount": {
-              "type": ["null", "object"],
+              "type": ["null", "string"]
+            },
+            "discounts": {
+              "type": ["null", "array", "object"],
               "properties": {
                 "end": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "number"]
                 },
                 "coupon": {
                   "type": ["null", "object"],
@@ -2749,8 +2781,7 @@
                       "type": ["null", "integer"]
                     },
                     "redeem_by": {
-                      "type": ["null", "string"],
-                      "format": "date-time"
+                      "type": ["null", "number"]
                     },
                     "duration_in_months": {
                       "type": ["null", "integer"]
@@ -2791,8 +2822,7 @@
                   "type": ["null", "string"]
                 },
                 "start": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                  "type": ["null", "number"]
                 },
                 "object": {
                   "type": ["null", "string"]
@@ -2815,8 +2845,7 @@
               "type": ["null", "boolean"]
             },
             "period_start": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": ["null", "number"]
             },
             "attempted": {
               "type": ["null", "boolean"]
@@ -2871,8 +2900,7 @@
               "type": ["null", "string"]
             },
             "updated": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": ["null", "number"]
             }
           }
         },
@@ -3109,8 +3137,7 @@
               "type": ["null", "string"]
             },
             "arrival_date": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": ["null", "number"]
             },
             "description": {
               "type": ["null", "string"]
@@ -3216,8 +3243,7 @@
               "type": ["null", "string"]
             },
             "updated": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": ["null", "number"]
             },
             "url": {
               "type": ["null", "string"]
@@ -3244,8 +3270,7 @@
               "properties": {}
             },
             "canceled_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": ["null", "number"]
             },
             "livemode": {
               "type": ["null", "boolean"]
@@ -3255,24 +3280,36 @@
               "format": "date-time"
             },
             "items": {
-              "items": {
-                "type": ["null", "string"]
-              },
-              "type": ["null", "array"]
+              "type": ["null", "object"],
+              "properties": {
+                "object": {
+                  "type": ["null", "string"]
+                },
+                "data": {
+                  "type": ["null", "array"]
+                },
+                "has_more": {
+                  "type": ["null", "boolean"]
+                },
+                "total_count": {
+                  "type": ["null", "number"]
+                },
+                "url": {
+                  "type": ["null", "string"]
+                }
+              }
             },
             "id": {
               "type": ["null", "string"]
             },
             "trial_start": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": ["null", "number"]
             },
             "application_fee_percent": {
               "type": ["null", "number"]
             },
             "billing_cycle_anchor": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": ["null", "number"]
             },
             "cancel_at_period_end": {
               "type": ["null", "boolean"]
@@ -3301,20 +3338,20 @@
                       "type": ["null", "boolean"]
                     },
                     "amount_off": {
-                      "type": ["null", "integer"]
+                      "type": ["null", "number"]
                     },
                     "redeem_by": {
                       "type": ["null", "string"],
                       "format": "date-time"
                     },
                     "duration_in_months": {
-                      "type": ["null", "integer"]
+                      "type": ["null", "number"]
                     },
                     "percent_off_precise": {
                       "type": ["null", "number"]
                     },
                     "max_redemptions": {
-                      "type": ["null", "integer"]
+                      "type": ["null", "number"]
                     },
                     "currency": {
                       "type": ["null", "string"]
@@ -3323,7 +3360,7 @@
                       "type": ["null", "string"]
                     },
                     "times_redeemed": {
-                      "type": ["null", "integer"]
+                      "type": ["null", "number"]
                     },
                     "id": {
                       "type": ["null", "string"]
@@ -3335,19 +3372,18 @@
                       "type": ["null", "string"]
                     },
                     "percent_off": {
-                      "type": ["null", "integer"]
+                      "type": ["null", "number"]
                     },
                     "created": {
-                      "type": ["null", "integer"]
+                      "type": ["null", "number"]
                     }
                   }
                 },
                 "customer": {
                   "type": ["null", "string"]
                 },
-                "start": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
+                "start_date": {
+                  "type": ["null", "number"]
                 },
                 "object": {
                   "type": ["null", "string"]
@@ -3358,8 +3394,7 @@
               }
             },
             "current_period_end": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": ["null", "number"]
             },
             "plan": {
               "type": ["null", "object"],
@@ -3463,19 +3498,16 @@
               "type": ["null", "integer"]
             },
             "ended_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": ["null", "number"]
             },
             "customer": {
               "type": ["null", "string"]
             },
             "current_period_start": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": ["null", "number"]
             },
             "trial_end": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": ["null", "number"]
             },
             "object": {
               "type": ["null", "string"]
@@ -3738,10 +3770,23 @@
               "properties": {}
             },
             "reversals": {
-              "type": ["null", "array"],
-              "items": {
-                "type": ["null", "object"],
-                "properties": {}
+              "type": ["null", "object"],
+              "properties": {
+                "object": {
+                  "type": ["null", "string"]
+                },
+                "data": {
+                  "type": ["null", "array"]
+                },
+                "has_more": {
+                  "type": ["null", "boolean"]
+                },
+                "total_count": {
+                  "type": ["null", "number"]
+                },
+                "url": {
+                  "type": ["null", "string"]
+                }
               }
             },
             "id": {
