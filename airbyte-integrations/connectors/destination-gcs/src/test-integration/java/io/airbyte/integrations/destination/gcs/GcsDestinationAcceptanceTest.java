@@ -52,7 +52,8 @@ import org.slf4j.LoggerFactory;
  * <li>Implement {@link #getFormatConfig} that returns a {@link S3FormatConfig}</li>
  * <li>Implement {@link #retrieveRecords} that returns the Json records for the test</li>
  *
- * Under the hood, a {@link io.airbyte.integrations.destination.gcs.GcsDestinationConfig} is constructed as follows:
+ * Under the hood, a {@link io.airbyte.integrations.destination.gcs.GcsDestinationConfig} is
+ * constructed as follows:
  * <li>Retrieve the secrets from "secrets/config.json"</li>
  * <li>Get the GCS bucket path from the constructor</li>
  * <li>Get the format config from {@link #getFormatConfig}</li>
