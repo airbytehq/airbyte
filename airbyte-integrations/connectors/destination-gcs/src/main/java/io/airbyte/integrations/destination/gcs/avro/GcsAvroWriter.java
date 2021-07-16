@@ -22,15 +22,18 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.s3.avro;
+package io.airbyte.integrations.destination.gcs.avro;
 
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
-import io.airbyte.integrations.destination.s3.GcsDestinationConfig;
+import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.integrations.destination.gcs.writer.BaseGcsWriter;
 import io.airbyte.integrations.destination.s3.S3Format;
+import io.airbyte.integrations.destination.s3.avro.AvroRecordFactory;
+import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
+import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
 import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
-import io.airbyte.integrations.destination.s3.writer.BaseGcsWriter;
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -55,11 +58,11 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer {
   private final DataFileWriter<GenericData.Record> dataFileWriter;
 
   public GcsAvroWriter(GcsDestinationConfig config,
-                      AmazonS3 s3Client,
-                      ConfiguredAirbyteStream configuredStream,
-                      Timestamp uploadTimestamp,
-                      Schema schema,
-                      JsonFieldNameUpdater nameUpdater)
+                       AmazonS3 s3Client,
+                       ConfiguredAirbyteStream configuredStream,
+                       Timestamp uploadTimestamp,
+                       Schema schema,
+                       JsonFieldNameUpdater nameUpdater)
       throws IOException {
     super(config, s3Client, configuredStream);
 

@@ -22,21 +22,24 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.s3;
+package io.airbyte.integrations.destination.gcs;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.BlobInfo;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsConfig;
 import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsStreamCopier;
-import io.airbyte.integrations.destination.s3.writer.ProductionWriterFactory;
-import io.airbyte.integrations.destination.s3.writer.GcsWriterFactory;
+import io.airbyte.integrations.destination.gcs.writer.ProductionWriterFactory;
+import io.airbyte.integrations.destination.gcs.writer.GcsWriterFactory;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.io.IOException;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,10 +55,10 @@ public class GcsDestination extends BaseConnector implements Destination {
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
     try {
-      GcsStreamCopier.attemptGcsWriteAndDelete(GcsConfig.getGcsConfig(config));
+      attemptWriteAndDeleteGcsObject(GcsConfig.getGcsConfig(config));
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
-      LOGGER.error("Exception attempting to access the Gcs bucket: ", e.getMessage());
+      LOGGER.error("Exception attempting to access the Gcs bucket: {}", e.getMessage());
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
           .withMessage("Could not connect to the Gcs bucket with the provided configuration. \n" + e
@@ -69,6 +72,15 @@ public class GcsDestination extends BaseConnector implements Destination {
                                             Consumer<AirbyteMessage> outputRecordCollector) {
     GcsWriterFactory formatterFactory = new ProductionWriterFactory();
     return new GcsConsumer(GcsDestinationConfig.getGcsDestinationConfig(config), configuredCatalog, formatterFactory, outputRecordCollector);
+  }
+
+  private static void attemptWriteAndDeleteGcsObject(GcsConfig gcsConfig) throws IOException {
+    var storage = GcsStreamCopier.getStorageClient(gcsConfig);
+    var blobId = BlobId.of(gcsConfig.getBucketName(), "check-content/test-file");
+    var blobInfo = BlobInfo.newBuilder(blobId).build();
+
+    storage.create(blobInfo, "".getBytes());
+    storage.delete(blobId);
   }
 
 }
