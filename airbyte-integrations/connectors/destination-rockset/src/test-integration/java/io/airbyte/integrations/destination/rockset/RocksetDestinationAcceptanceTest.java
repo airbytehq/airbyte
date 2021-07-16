@@ -99,8 +99,9 @@ public class RocksetDestinationAcceptanceTest extends DestinationAcceptanceTest 
     QueriesApi queryClient = new QueriesApi(RocksetUtils.apiClientFromConfig(getConfig()));
 
     try {
-      Thread.sleep(5000);
-      // HACK, wait for data to be fully updated
+      // As Rockset is not a transactional database, we have to wait a few seconds to be extra sure
+      // that we've given documents enough time to be fully indexed when retrieving records
+      Thread.sleep(10000);
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
