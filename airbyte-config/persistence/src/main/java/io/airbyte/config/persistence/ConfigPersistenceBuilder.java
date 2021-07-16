@@ -94,6 +94,7 @@ public class ConfigPersistenceBuilder {
    * if the database should be initialized.
    */
   ConfigPersistence getDbPersistenceWithYamlSeed() throws IOException {
+    LOGGER.info("Creating database-based config persistence, and loading initial seed from YAML files");
     ConfigPersistence seedConfigPersistence = new YamlSeedConfigPersistence();
     return getDbPersistence(seedConfigPersistence);
   }
@@ -103,6 +104,7 @@ public class ConfigPersistenceBuilder {
    * config persistence if the database should be initialized.
    */
   ConfigPersistence getDbPersistenceWithFileSeed() throws IOException {
+    LOGGER.info("Creating database-based config persistence, and loading seed and existing data from files");
     Path configRoot = configs.getConfigRoot();
     ConfigPersistence fsConfigPersistence = FileSystemConfigPersistence.createWithValidation(configRoot);
     return getDbPersistence(fsConfigPersistence);
