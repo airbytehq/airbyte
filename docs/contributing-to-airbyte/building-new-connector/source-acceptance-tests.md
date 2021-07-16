@@ -67,7 +67,7 @@ Configuring all streams in the input catalog to full refresh mode verifies that 
 |||x|
 ||||
 
-### Example of `expected_records.json`:
+### Example of `expected_records.txt`:
 In general, the expected_records.json should contain the subset of output of the records of particular stream you need to test.
 The required fields are: `stream, data, emitted_at`
 
