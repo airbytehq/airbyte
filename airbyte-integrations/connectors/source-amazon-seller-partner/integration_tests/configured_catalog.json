@@ -59,6 +59,20 @@
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["LastUpdateDate"]
+    },
+    {
+      "stream": {
+        "name": "GET_FBA_INVENTORY_AGED_DATA",
+        "json_schema": {
+          "type": "object",
+          "title": "GET_FBA_INVENTORY_AGED_DATA",
+          "description": "All orders that were placed in the specified period.",
+          "properties": {}
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

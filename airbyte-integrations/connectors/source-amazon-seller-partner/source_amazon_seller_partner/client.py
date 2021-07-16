@@ -73,11 +73,24 @@ class BaseClient:
             streams.append(AirbyteStream.parse_obj(raw_schema))
         return streams
 
+    def read_orders(
+        self, current_date: str, page: int, cursor_field: str, stream_name: str
+    ) -> Generator[AirbyteMessage, None, None]:
+        response = self._amazon_client.fetch_orders(current_date, self._amazon_client.PAGECOUNT, NEXT_TOKEN)
+        orders = response["Orders"]
+        if "NextToken" in response:
+            NEXT_TOKEN = response["NextToken"]
+        for order in orders:
+            current_date = pendulum.parse(order[cursor_field]).to_date_string()
+            cursor_value = max(current_date, cursor_value) if cursor_value else current_date
+            yield self._record(stream=stream_name, data=order, seller_id=self.seller_id)
+
     def read_stream(
         self, logger: AirbyteLogger, stream_name: str, state: MutableMapping[str, Any]
     ) -> Generator[AirbyteMessage, None, None]:
         cursor_field = self._amazon_client.get_cursor_for_stream(stream_name)
         cursor_value = self._get_cursor_or_none(state, stream_name, cursor_field) or self.start_date
+        data_field = self._amazon_client.get_data_field_stream(stream_name)
 
         if pendulum.parse(cursor_value) > pendulum.now():
             yield self._state(state)
@@ -91,16 +104,19 @@ class BaseClient:
         PAGE = 1
         while HAS_NEXT:
             logger.info(f"Pulling for page: {PAGE}")
-            response = self._amazon_client.fetch_orders(current_date, self._amazon_client.PAGECOUNT, NEXT_TOKEN)
-            orders = response["Orders"]
-            if "NextToken" in response:
-                NEXT_TOKEN = response["NextToken"]
+            if stream_name == AmazonClient.GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL:
+                response = self._amazon_client.fetch_orders(current_date, self._amazon_client.PAGECOUNT, NEXT_TOKEN)
+            elif stream_name == AmazonClient.GET_FBA_INVENTORY_AGED_DATA:
+                response = self._amazon_client.fetch_inventory_summary_marketplace(current_date, NEXT_TOKEN)
+            records = response[data_field]
+            if "NextToken" in response or "nextToken" in response:
+                NEXT_TOKEN = response.get("NextToken") or response.get("nextToken")
             HAS_NEXT = True if NEXT_TOKEN else False
             PAGE = PAGE + 1
-            for order in orders:
-                current_date = pendulum.parse(order[cursor_field]).to_date_string()
+            for record in records:
+                current_date = pendulum.parse(record[cursor_field]).to_date_string()
                 cursor_value = max(current_date, cursor_value) if cursor_value else current_date
-                yield self._record(stream=stream_name, data=order, seller_id=self.seller_id)
+                yield self._record(stream=stream_name, data=record, seller_id=self.seller_id)
 
             if cursor_value:
                 state[stream_name][cursor_field] = pendulum.parse(cursor_value).add(days=1).to_date_string()

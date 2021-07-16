@@ -25,7 +25,7 @@
 
 from typing import List, Optional
 
-from sp_api.api import Orders, Reports
+from sp_api.api import Orders, Reports, Inventories
 from sp_api.base import Marketplaces
 
 
@@ -56,10 +56,20 @@ class AmazonClient:
 
     GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
     ORDERS = "Orders"
-    CURSORS = {GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL: "purchase-date", ORDERS: "LastUpdateDate"}
+    GET_FBA_INVENTORY_AGED_DATA = "GET_FBA_INVENTORY_AGED_DATA"
+    CURSORS = {
+        GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL: "purchase-date",
+        GET_FBA_INVENTORY_AGED_DATA: "startDateTime",
+        ORDERS: "LastUpdateDate",
+    }
+    DATA_FIELDS = {
+        GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL: None,
+        GET_FBA_INVENTORY_AGED_DATA: "inventorySummaries",
+        ORDERS: "Orders",
+    }
 
     _REPORT_ENTITIES = [GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL]
-    _OTHER_ENTITIES = [ORDERS]
+    _OTHER_ENTITIES = [ORDERS, GET_FBA_INVENTORY_AGED_DATA]
     _ENTITIES = _REPORT_ENTITIES + _OTHER_ENTITIES
 
     def __init__(self, credentials: dict, marketplace: str):
@@ -76,6 +86,15 @@ class AmazonClient:
 
     def get_cursor_for_stream(self, stream_name: str) -> str:
         return self.CURSORS[stream_name]
+
+    def get_data_field_stream(self, stream_name: str) -> str:
+        return self.DATA_FIELDS[stream_name]
+
+    def fetch_inventory_summary_marketplace(self, start_date_time: str, next_token: Optional[str]):
+        response = Inventories(credentials=self.credentials, marketplace=self.marketplace).get_inventory_summary_marketplace(
+            startDateTime=start_date_time, nextToken=next_token
+        )
+        return response.payload
 
     def fetch_orders(self, updated_after: str, page_size: int, next_token: Optional[str]) -> any:
         page_count = page_size or self.PAGECOUNT
