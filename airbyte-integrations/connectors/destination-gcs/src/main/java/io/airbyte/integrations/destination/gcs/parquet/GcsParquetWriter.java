@@ -104,6 +104,9 @@ public class GcsParquetWriter extends BaseGcsWriter implements S3Writer {
     GcsHmacKeyCredentialConfig hmacKeyCredential = (GcsHmacKeyCredentialConfig) config.getCredentialConfig();
     Configuration hadoopConfig = new Configuration();
 
+    // the default org.apache.hadoop.fs.s3a.S3AFileSystem does not work for GCS
+    hadoopConfig.set("fs.s3a.impl", "io.airbyte.integrations.destination.gcs.util.GcsS3FileSystem");
+
     // https://stackoverflow.com/questions/64141204/process-data-in-google-storage-on-an-aws-emr-cluster-in-spark
     hadoopConfig.set("fs.s3a.access.key", hmacKeyCredential.getHmacKeyAccessId());
     hadoopConfig.set("fs.s3a.secret.key", hmacKeyCredential.getHmacKeySecret());
