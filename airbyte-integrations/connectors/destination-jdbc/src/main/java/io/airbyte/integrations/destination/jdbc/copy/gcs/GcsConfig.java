@@ -28,49 +28,33 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public class GcsConfig {
 
+  private final String projectId;
   private final String bucketName;
-  private final String bucketPath;
-  private final String accessKeyId;
-  private final String secretAccessKey;
-  private final String region;
+  private final String credentialsJson;
 
-  public GcsConfig(String bucketName, String bucketPath, String accessKeyId, String secretAccessKey, String region) {
+  public GcsConfig(String projectId, String bucketName, String credentialsJson) {
+    this.projectId = projectId;
     this.bucketName = bucketName;
-    this.bucketPath = bucketPath;
-    this.accessKeyId = accessKeyId;
-    this.secretAccessKey = secretAccessKey;
-    this.region = region;
+    this.credentialsJson = credentialsJson;
+  }
+
+  public String getProjectId() {
+    return projectId;
   }
 
   public String getBucketName() {
     return bucketName;
   }
 
-  public String getbucketPath() {
-    return bucketPath;
+  public String getCredentialsJson() {
+    return credentialsJson;
   }
 
-  public String getAccessKeyId() {
-    return accessKeyId;
-  }
-
-  public String getSecretAccessKey() {
-    return secretAccessKey;
-  }
-
-  public String getRegion() {
-    return region;
-  }
-
-   public static GcsConfig getGcsConfig(JsonNode config) {
-
+  public static GcsConfig getGcsConfig(JsonNode config) {
     return new GcsConfig(
-        config.get("gcs_bucket_name").asText(),
-        config.get("gcs_bucket_path").asText(),
-        config.get("access_key_id").asText(),
-        config.get("secret_access_key").asText(),
-        config.get("gcs_bucket_region").asText()
-      );
+        config.get("loading_method").get("project_id").asText(),
+        config.get("loading_method").get("bucket_name").asText(),
+        config.get("loading_method").get("credentials_json").asText());
   }
 
 }
