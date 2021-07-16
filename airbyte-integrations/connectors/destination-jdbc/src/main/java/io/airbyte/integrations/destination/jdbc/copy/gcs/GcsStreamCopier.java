@@ -68,14 +68,14 @@ public abstract class GcsStreamCopier implements StreamCopier {
   private final SqlOperations sqlOperations;
 
   public GcsStreamCopier(String stagingFolder,
-      DestinationSyncMode destSyncMode,
-      String schema,
-      String streamName,
-      Storage storageClient,
-      JdbcDatabase db,
-      GcsConfig gcsConfig,
-      ExtendedNameTransformer nameTransformer,
-      SqlOperations sqlOperations) {
+                         DestinationSyncMode destSyncMode,
+                         String schema,
+                         String streamName,
+                         Storage storageClient,
+                         JdbcDatabase db,
+                         GcsConfig gcsConfig,
+                         ExtendedNameTransformer nameTransformer,
+                         SqlOperations sqlOperations) {
     this.destSyncMode = destSyncMode;
     this.schemaName = schema;
     this.streamName = streamName;
@@ -200,10 +200,10 @@ public abstract class GcsStreamCopier implements StreamCopier {
   }
 
   public abstract void copyGcsCsvFileIntoTable(JdbcDatabase database,
-      String gcsFileLocation,
-      String schema,
-      String tableName,
-      GcsConfig gcsConfig)
+                                               String gcsFileLocation,
+                                               String schema,
+                                               String tableName,
+                                               GcsConfig gcsConfig)
       throws SQLException;
 
 }

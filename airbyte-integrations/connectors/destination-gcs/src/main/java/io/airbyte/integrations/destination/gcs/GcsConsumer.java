@@ -47,7 +47,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-
 public class GcsConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   private static final String GCS_ENDPOINT = "https://storage.googleapis.com";

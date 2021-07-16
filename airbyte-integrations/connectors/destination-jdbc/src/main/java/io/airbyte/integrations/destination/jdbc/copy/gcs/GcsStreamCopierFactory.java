@@ -45,13 +45,13 @@ public abstract class GcsStreamCopierFactory implements StreamCopierFactory<GcsC
    */
   @Override
   public StreamCopier create(String configuredSchema,
-      GcsConfig gcsConfig,
-      String stagingFolder,
-      DestinationSyncMode syncMode,
-      AirbyteStream stream,
-      ExtendedNameTransformer nameTransformer,
-      JdbcDatabase db,
-      SqlOperations sqlOperations) {
+                             GcsConfig gcsConfig,
+                             String stagingFolder,
+                             DestinationSyncMode syncMode,
+                             AirbyteStream stream,
+                             ExtendedNameTransformer nameTransformer,
+                             JdbcDatabase db,
+                             SqlOperations sqlOperations) {
     try {
       var pair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
       var schema = getSchema(stream, configuredSchema, nameTransformer);
@@ -74,14 +74,14 @@ public abstract class GcsStreamCopierFactory implements StreamCopierFactory<GcsC
    * For specific copier suppliers to implement.
    */
   public abstract StreamCopier create(String stagingFolder,
-      DestinationSyncMode syncMode,
-      String schema,
-      String streamName,
-      Storage storageClient,
-      JdbcDatabase db,
-      GcsConfig gcsConfig,
-      ExtendedNameTransformer nameTransformer,
-      SqlOperations sqlOperations)
+                                      DestinationSyncMode syncMode,
+                                      String schema,
+                                      String streamName,
+                                      Storage storageClient,
+                                      JdbcDatabase db,
+                                      GcsConfig gcsConfig,
+                                      ExtendedNameTransformer nameTransformer,
+                                      SqlOperations sqlOperations)
       throws Exception;
 
   private String getSchema(AirbyteStream stream, String configuredSchema, ExtendedNameTransformer nameTransformer) {
