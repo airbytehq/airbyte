@@ -25,15 +25,21 @@
 
 from setuptools import find_packages, setup
 
+MAIN_REQUIREMENTS = ["airbyte-cdk", "stripe"]
+
+TEST_REQUIREMENTS = [
+    "pytest~=6.1",
+]
+
 setup(
     name="source_stripe",
     description="Source implementation for Stripe.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
+    install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
-    install_requires=["airbyte-cdk==0.1.2", "stripe"],
     extras_require={
-        "tests": ["pytest==6.1.2"],
+        "tests": TEST_REQUIREMENTS,
     },
 )
