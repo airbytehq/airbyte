@@ -34,14 +34,14 @@ from airbyte_cdk.sources.streams.http import HttpStream
 class CartStream(HttpStream, ABC):
     primary_key = "id"
 
-    def __init__(self, start_date: str, data_center: str, **kwargs):
+    def __init__(self, start_date: str, store_name: str, **kwargs):
         self._start_date = start_date
-        self.data_center = data_center
+        self.store_name = data_center
         super().__init__(**kwargs)
 
     @property
     def url_base(self) -> str:
-        return f"https://{self.data_center}/api/v1/"
+        return f"https://{self.store_name}/api/v1/"
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
@@ -62,7 +62,8 @@ class CartStream(HttpStream, ABC):
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         return {
-            "Cache-Control": "no-cache"
+            "Cache-Control": "no-cache",
+            "Content-Type": "application/json"
         }
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:

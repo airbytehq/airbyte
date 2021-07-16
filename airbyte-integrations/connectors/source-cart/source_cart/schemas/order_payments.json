@@ -1,0 +1,107 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "customer_id": {
+      "type": "integer"
+    },
+    "order_id": {
+      "type": "integer"
+    },
+    "customer_payment_method_id": {
+      "type": "integer"
+    },
+    "payment_method_id": {
+      "type": "integer"
+    },
+    "payment_type": {
+      "type": "string"
+    },
+    "is_approved": {
+      "type": "boolean"
+    },
+    "is_declined": {
+      "type": "boolean"
+    },
+    "card_type": {
+      "type": "string"
+    },
+    "card_expiration_month": {
+      "type": "integer"
+    },
+    "card_expiration_year": {
+      "type": "integer"
+    },
+    "cardholder_name": {
+      "type": "string"
+    },
+    "paid_at": {
+      "type": "string"
+    },
+    "approved_at": {
+      "type": "string"
+    },
+    "authorization_code": {
+      "type": "string"
+    },
+    "reject_reason": {
+      "type": "string"
+    },
+    "avs_code": {
+      "type": "string"
+    },
+    "payment_method_name": {
+      "type": "string"
+    },
+    "transaction_type": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "payment_note": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "gift_certificate_id": {
+      "type": "string"
+    },
+    "is_captured": {
+      "type": "boolean"
+    },
+    "transaction_id": {
+      "type": "string"
+    },
+    "last_four": {
+      "type": "string"
+    },
+    "is_void": {
+      "type": "boolean"
+    },
+    "gateway_response_code": {
+      "type": "string"
+    },
+    "cvv_response_code": {
+      "type": "string"
+    },
+    "sent_to_spark_pay": {
+      "type": "boolean"
+    },
+    "token": {
+      "type": "string"
+    },
+    "payment_ref_num": {
+      "type": "string"
+    },
+    "store_payment_method_id": {
+      "type": "string"
+    }
+  }
+}

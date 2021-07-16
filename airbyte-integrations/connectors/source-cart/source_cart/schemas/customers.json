@@ -1,5 +1,113 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "properties": {}
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "customer_number": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone_number": {
+      "type": "string"
+    },
+    "registered_at": {
+      "type": "string"
+    },
+    "last_visit_at": {
+      "type": "string"
+    },
+    "adcode": {
+      "type": "string"
+    },
+    "adcode_id": {
+      "type": "integer"
+    },
+    "affiliate_id": {
+      "type": "integer"
+    },
+    "customer_type_id": {
+      "type": "integer"
+    },
+    "is_no_tax_customer": {
+      "type": "boolean"
+    },
+    "comments": {
+      "type": "string"
+    },
+    "store_id": {
+      "type": "integer"
+    },
+    "source": {
+      "type": "string"
+    },
+    "search_string": {
+      "type": "string"
+    },
+    "no_account": {
+      "type": "boolean"
+    },
+    "sales_person": {
+      "type": "string"
+    },
+    "alternate_phone_number": {
+      "type": "string"
+    },
+    "is_affiliate_customer": {
+      "type": "boolean"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "username": {
+      "type": "string"
+    },
+    "is_contact_information_only": {
+      "type": "boolean"
+    },
+    "tax_exemption_number": {
+      "type": "string"
+    },
+    "company": {
+      "type": "string"
+    },
+    "source_group": {
+      "type": "string"
+    },
+    "sales_person_user_id": {
+      "type": "string"
+    },
+    "store_payment_methods_enabled": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "tax_rate": {
+      "type": "string"
+    },
+    "reward_tier_id": {
+      "type": "string"
+    },
+    "sub": {
+      "type": "string"
+    },
+    "customer_payment_methods_availability": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
 }
