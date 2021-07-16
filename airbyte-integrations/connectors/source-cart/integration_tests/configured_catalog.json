@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "customers",
+        "name": "customers_cart",
         "json_schema": {
           "type": "object",
           "properties": {
