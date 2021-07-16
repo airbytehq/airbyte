@@ -27,7 +27,7 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
       - name: Build CDK Package
-        run: ./gradlew --no-daemon --no-build-cache :airbyte-cdk:python:build
+        run: SUB_BUILD=CONNECTORS_BASE ./gradlew --no-daemon --no-build-cache :airbyte-cdk:python:build
       - name: Add Failure Comment
         if: github.event.inputs.comment-id && !success()
         uses: peter-evans/create-or-update-comment@v1
