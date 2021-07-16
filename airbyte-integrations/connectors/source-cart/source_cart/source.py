@@ -34,7 +34,7 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from .streams import CustomerCart, Orders, OrderPayments, Products
 
 
-class SourceSurveymonkey(AbstractSource):
+class SourceCart(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             authenticator = TokenAuthenticator(token=config["access_token"])

@@ -34,7 +34,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 class CartStream(HttpStream, ABC):
     primary_key = "id"
 
-    def __init__(self, start_date: pendulum.datetime, data_center: str, **kwargs):
+    def __init__(self, start_date: str, data_center: str, **kwargs):
         self._start_date = start_date
         self.data_center = data_center
         super().__init__(**kwargs)
