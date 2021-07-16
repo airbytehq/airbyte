@@ -299,7 +299,7 @@ public class BigQuerySourceComprehensiveTest extends SourceComprehensiveTest {
             .addExpectedValues("15:30:00", null)
             .build());
 
-        addDataTypeTestData(
+    addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("array")
             .fullSourceDataType("array<String>")

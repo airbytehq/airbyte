@@ -174,10 +174,8 @@ public class BigQueryDatabase extends SqlDatabase {
   public List<Table> getDatasetTables(String datasetId) {
     List<Table> tableList = new ArrayList<>();
     bigQuery.listTables(datasetId)
-            .iterateAll()
-            .forEach(table ->
-                tableList.add(bigQuery.getTable(table.getTableId()))
-            );
+        .iterateAll()
+        .forEach(table -> tableList.add(bigQuery.getTable(table.getTableId())));
     return tableList;
   }
 

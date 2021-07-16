@@ -125,9 +125,8 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
       }
     });
 
-    expectedValues.forEach((streamName, values) ->
-      assertTrue(values.isEmpty(), "The streamer " + streamName + " should return all expected values. Missing values: " + values)
-    );
+    expectedValues.forEach((streamName, values) -> assertTrue(values.isEmpty(),
+        "The streamer " + streamName + " should return all expected values. Missing values: " + values));
   }
 
   private String getValueFromJsonNode(JsonNode jsonNode) {
@@ -137,7 +136,8 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
       String value = (nodeText != null && !nodeText.equals("") ? nodeText : nodeString);
       value = (value != null && value.equals("null") ? null : value);
       return value;
-    } else return null;
+    } else
+      return null;
   }
 
   /**
