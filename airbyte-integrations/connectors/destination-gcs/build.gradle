@@ -18,7 +18,6 @@ dependencies {
 
     implementation platform('com.amazonaws:aws-java-sdk-bom:1.12.14')
     implementation 'com.google.cloud.bigdataoss:gcs-connector:hadoop3-2.2.1'
-    // implementation 'com.amazonaws:aws-java-sdk-s3'
 
     // csv
     implementation 'com.amazonaws:aws-java-sdk-s3:1.11.978'

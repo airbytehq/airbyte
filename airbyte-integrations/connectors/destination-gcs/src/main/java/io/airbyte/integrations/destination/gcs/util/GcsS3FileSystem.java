@@ -28,10 +28,14 @@ import java.io.IOException;
 import org.apache.hadoop.fs.s3a.Retries;
 import org.apache.hadoop.fs.s3a.S3AFileSystem;
 
+/**
+ * Patch {@link S3AFileSystem} to make it work for GCS.
+ */
 public class GcsS3FileSystem extends S3AFileSystem {
 
   /**
-   * {@code doesBucketExistV2} does not work for GCS.
+   * Method {@code doesBucketExistV2} used in the {@link S3AFileSystem#verifyBucketExistsV2} does not
+   * work for GCS.
    */
   @Override
   @Retries.RetryTranslated
