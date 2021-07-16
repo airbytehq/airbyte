@@ -29,15 +29,24 @@ from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 
 from .streams import CustomerCart, Orders, OrderPayments, Products
+
+
+class CustomHeaderAuthenticator(HttpAuthenticator):
+
+    def __init__(self, access_token):
+        self._access_token = access_token
+
+    def get_auth_header(self) -> Mapping[str, Any]:
+        return {"X-AC-Auth-Token": self._access_token}
 
 
 class SourceCart(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
-            authenticator = TokenAuthenticator(token=config["access_token"])
+            authenticator = CustomHeaderAuthenticator(access_token=config["access_token"])
             pendulum.parse(config["start_date"])
             stream = Products(authenticator=authenticator, start_date=config["start_date"], store_name=config["store_name"])
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
@@ -47,7 +56,7 @@ class SourceCart(AbstractSource):
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        authenticator = TokenAuthenticator(token=config["access_token"])
+        authenticator = CustomHeaderAuthenticator(access_token=config["access_token"])
         args = {"authenticator": authenticator, "start_date": config["start_date"], "store_name": config["store_name"]}
         return [
             CustomerCart(**args),
