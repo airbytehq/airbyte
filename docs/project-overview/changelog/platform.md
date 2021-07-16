@@ -6,6 +6,12 @@ description: Be sure to not miss out on new features and improvements!
 
 This is the changelog for Airbyte Platform. For our connector changelog, please visit our [Connector Changelog](connectors.md) page.
 
+## [07-15-2021 - 0.27.3](https://github.com/airbytehq/airbyte/releases/tag/v0.27.3-alpha)
+* Fixed some minor API spec errors.
+
+## [07-12-2021 - 0.27.2](https://github.com/airbytehq/airbyte/releases/tag/v0.27.2-alpha)
+* GCP environment variable is now stubbed out to prevent noisy and harmless errors.
+
 ## [07-8-2021 - 0.27.1](https://github.com/airbytehq/airbyte/releases/tag/v0.27.1-alpha)
 * New API endpoint: List workspaces
 * K8s: Server doesn't start up before Temporal is ready to operate now.
