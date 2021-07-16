@@ -33,7 +33,7 @@ public class GcsCredentialConfigs {
     JsonNode credentialConfig = config.get("credential");
     GcsCredential credentialType = GcsCredential.valueOf(credentialConfig.get("credential_type").asText().toUpperCase());
 
-    if (credentialType == GcsCredential.HMAC) {
+    if (credentialType == GcsCredential.HMAC_KEY) {
       return new GcsHmacKeyCredentialConfig(credentialConfig);
     }
     throw new RuntimeException("Unexpected credential: " + Jsons.serialize(credentialConfig));

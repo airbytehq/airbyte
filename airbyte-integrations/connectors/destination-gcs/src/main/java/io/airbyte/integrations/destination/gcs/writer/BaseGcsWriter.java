@@ -26,6 +26,7 @@ package io.airbyte.integrations.destination.gcs.writer;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
+import com.amazonaws.services.s3.model.HeadBucketRequest;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.s3.S3DestinationConstants;
@@ -77,7 +78,7 @@ public abstract class BaseGcsWriter implements S3Writer {
   @Override
   public void initialize() {
     String bucket = config.getBucketName();
-    if (!s3Client.doesBucketExistV2(bucket)) {
+    if (!gcsBucketExist(s3Client, bucket)) {
       LOGGER.info("Bucket {} does not exist; creating...", bucket);
       s3Client.createBucket(bucket);
       LOGGER.info("Bucket {} has been created.", bucket);
@@ -102,6 +103,21 @@ public abstract class BaseGcsWriter implements S3Writer {
         LOGGER.info("Deleted {} file(s) for stream '{}'.", keysToDelete.size(),
             stream.getName());
       }
+    }
+  }
+
+  /**
+   * {@link AmazonS3#doesBucketExistV2} should be used to check the bucket existence.
+   * However, this method does not work for GCS. So we use {@link AmazonS3#headBucket}
+   * instead, which will throw an exception if the bucket does not exist, or there is
+   * no permission to access it.
+   */
+  public boolean gcsBucketExist(AmazonS3 s3Client, String bucket) {
+    try {
+      s3Client.headBucket(new HeadBucketRequest(bucket));
+      return true;
+    } catch (Exception e) {
+      return false;
     }
   }
 

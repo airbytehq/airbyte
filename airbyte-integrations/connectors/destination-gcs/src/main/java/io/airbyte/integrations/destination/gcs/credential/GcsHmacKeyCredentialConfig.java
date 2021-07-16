@@ -46,7 +46,7 @@ public class GcsHmacKeyCredentialConfig implements GcsCredentialConfig {
 
   @Override
   public GcsCredential getCredentialType() {
-    return GcsCredential.HMAC;
+    return GcsCredential.HMAC_KEY;
   }
 
 }

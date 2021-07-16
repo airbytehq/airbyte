@@ -1,4 +1,5 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/gcs",
   "supportsIncremental": true,
   "supportsNormalization": false,
@@ -83,28 +84,28 @@
         "oneOf": [
           {
             "title": "HMAC key",
-            "required": ["hmac_key_access_id", "hmac_key_secret"],
+            "required": ["credential_type", "hmac_key_access_id", "hmac_key_secret"],
             "properties": {
               "credential_type": {
                 "type": "string",
                 "enum": ["HMAC_KEY"],
-                "default": "HMAC"
+                "default": "HMAC_KEY"
               },
-              "access_key": {
+              "hmac_key_access_id": {
                 "type": "string",
-                "description": "The access key to access the GCS bucket. Airbyte requires Read and Write permissions to the given bucket.",
+                "description": "The access ID for the GCS bucket. When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long.",
                 "title": "HMAC Key Access ID",
                 "airbyte_secret": true,
                 "examples": [
-                  "GOOGTS7C7FUP3AIRVJTE2BCDKINBTES3HC2GY5CBFJDCQ2SYHV6A6XXVTJFSA"
+                  "1234567890abcdefghij1234"
                 ]
               },
-              "secret": {
+              "hmac_key_secret": {
                 "type": "string",
-                "description": "The corresponding secret to the access id.",
+                "description": "The corresponding secret to the access id. It is a 40-character base-64 encoded string.",
                 "title": "HMAC Key Secret",
                 "airbyte_secret": true,
-                "examples": ["bGoa+V7g/yqDXvKRqq+JTFn4uQZbPiQJo4pf9RzJ\n\n"]
+                "examples": ["1234567890abcdefghij1234567890ABCDEFGHIJ"]
               }
             }
           }

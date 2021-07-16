@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.s3.GcsDestination'
+    mainClass = 'io.airbyte.integrations.destination.gcs.GcsDestination'
 }
 
 dependencies {
