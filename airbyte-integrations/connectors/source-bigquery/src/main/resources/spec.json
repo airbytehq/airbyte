@@ -18,7 +18,7 @@
       },
       "dataset_id": {
         "type": "string",
-        "description": "Default BigQuery Dataset ID tables are replicated to if the source does not specify a namespace.",
+        "description": "The BigQuery Dataset ID to look for tables to replicate from.",
         "title": "Default Dataset ID"
       },
       "credentials_json": {
