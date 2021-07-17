@@ -29,7 +29,6 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -38,15 +37,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
-import org.apache.kafka.common.KafkaException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,19 +108,20 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   }
 
   private void sendRecord(ProducerRecord<String, JsonNode> record) throws Exception {
-    Future<RecordMetadata> future = producer.send(record, (recordMetadata, exception) -> {
+    producer.send(record, (recordMetadata, exception) -> {
         if (exception != null) {
           LOGGER.error("Error sending message to topic.", exception);
           throw new RuntimeException("Cannot send message to Kafka. Error: " + exception.getMessage(), exception);
         }
       });
     if (sync) {
-      future.get();
+      producer.flush();
     }
   }
 
   @Override
   protected void close(boolean hasFailed) {
+    producer.flush();
     producer.close();
     outputRecordCollector.accept(lastStateMessage);
   }
