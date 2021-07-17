@@ -28,14 +28,20 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import io.airbyte.commons.json.Jsons;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.connect.json.JsonSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class KafkaDestinationConfig {
+
+  protected static final Logger LOGGER = LoggerFactory.getLogger(KafkaDestinationConfig.class);
 
   private final String topicPattern;
   private final boolean sync;
@@ -57,11 +63,7 @@ public class KafkaDestinationConfig {
   private KafkaProducer<String, JsonNode> buildKafkaProducer(JsonNode config) {
     final Map<String, Object> props = ImmutableMap.<String, Object>builder()
         .put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, config.get("bootstrap_servers").asText())
-        .put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, config.get("security_protocol").asText())
-        .put(SaslConfigs.SASL_JAAS_CONFIG,
-            config.has("sasl_jaas_config") ? config.get("sasl_jaas_config").asText() : null)
-        .put(SaslConfigs.SASL_MECHANISM,
-            config.has("sasl_mechanism") ? config.get("sasl_mechanism").asText() : null)
+        .putAll(propertiesByProtocol(config))
         .put(ProducerConfig.CLIENT_ID_CONFIG,
             config.has("client_id") ? config.get("client_id").asText() : null)
         .put(ProducerConfig.ACKS_CONFIG, config.get("acks").asText())
@@ -93,6 +95,26 @@ public class KafkaDestinationConfig {
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
     return new KafkaProducer<>(filteredProps);
+  }
+
+  private Map<String, Object> propertiesByProtocol(JsonNode config) {
+    JsonNode protocolConfig = config.get("protocol");
+    LOGGER.info("Kafka protocol config: {}", protocolConfig.toString());
+    final KafkaProtocol protocol = KafkaProtocol.valueOf(protocolConfig.get("security_protocol").asText().toUpperCase());
+    final ImmutableMap.Builder<String, Object> builder = ImmutableMap.<String, Object>builder()
+      .put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, protocol.toString());
+
+    switch (protocol) {
+      case PLAINTEXT -> {
+      }
+      case SASL_SSL, SASL_PLAINTEXT -> {
+        builder.put(SaslConfigs.SASL_JAAS_CONFIG, config.get("sasl_jaas_config").asText());
+        builder.put(SaslConfigs.SASL_MECHANISM, config.get("sasl_mechanism").asText());
+      }
+      default -> throw new RuntimeException("Unexpected Kafka protocol: " + Jsons.serialize(protocol));
+    }
+
+    return builder.build();
   }
 
   public String getTopicPattern() {

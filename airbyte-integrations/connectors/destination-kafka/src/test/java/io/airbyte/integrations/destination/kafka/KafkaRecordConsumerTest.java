@@ -25,7 +25,10 @@
 package io.airbyte.integrations.destination.kafka;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.StandardNameTransformer;
@@ -59,6 +62,7 @@ import static org.mockito.Mockito.mock;
 @DisplayName("KafkaRecordConsumer")
 public class KafkaRecordConsumerTest {
 
+  private static final ObjectMapper mapper = MoreMappers.initMapper();
   private static final String TOPIC_NAME = "test.topic";
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "id_and_name";
@@ -104,11 +108,14 @@ public class KafkaRecordConsumerTest {
   }
 
   private JsonNode getConfig(String topicPattern) {
+    ObjectNode stubProtocolConfig = mapper.createObjectNode();
+    stubProtocolConfig.put("security_protocol", KafkaProtocol.PLAINTEXT.toString());
+
     return Jsons.jsonNode(ImmutableMap.builder()
       .put("bootstrap_servers", "localhost:9092")
       .put("topic_pattern", topicPattern)
       .put("sync_producer", true)
-      .put("security_protocol", "PLAINTEXT")
+      .put("protocol", stubProtocolConfig)
       .put("sasl_jaas_config", "")
       .put("sasl_mechanism", "PLAIN")
       .put("client_id", "test-client")

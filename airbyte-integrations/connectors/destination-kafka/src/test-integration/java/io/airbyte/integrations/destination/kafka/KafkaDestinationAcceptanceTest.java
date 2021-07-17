@@ -25,7 +25,10 @@
 package io.airbyte.integrations.destination.kafka;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
@@ -45,6 +48,7 @@ import org.testcontainers.utility.DockerImageName;
 
 public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
+  private static final ObjectMapper mapper = MoreMappers.initMapper();
   private static final String TOPIC_NAME = "test.topic";
 
   private static KafkaContainer KAFKA;
@@ -58,13 +62,14 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected JsonNode getConfig() {
+    ObjectNode stubProtocolConfig = mapper.createObjectNode();
+    stubProtocolConfig.put("security_protocol", KafkaProtocol.PLAINTEXT.toString());
+
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("bootstrap_servers", KAFKA.getBootstrapServers())
         .put("topic_pattern", "{namespace}.{stream}." + TOPIC_NAME)
         .put("sync_producer", true)
-        .put("security_protocol", "PLAINTEXT")
-        .put("sasl_jaas_config", "")
-        .put("sasl_mechanism", "PLAIN")
+        .put("protocol", stubProtocolConfig)
         .put("client_id", "test-client")
         .put("acks", "all")
         .put("enable_idempotence", true)
@@ -88,13 +93,16 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected JsonNode getFailCheckConfig() {
+    ObjectNode stubProtocolConfig = mapper.createObjectNode();
+    stubProtocolConfig.put("security_protocol", KafkaProtocol.SASL_PLAINTEXT.toString());
+    stubProtocolConfig.put("sasl_mechanism", "PLAIN");
+    stubProtocolConfig.put("sasl_jaas_config", "invalid");
+
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("bootstrap_servers", KAFKA.getBootstrapServers())
         .put("topic_pattern", "{namespace}.{stream}." + TOPIC_NAME)
         .put("test_topic", "check-topic")
-        .put("security_protocol", "SASL_PLAINTEXT")
-        .put("sasl_jaas_config", "invalid")
-        .put("sasl_mechanism", "PLAIN")
+        .put("protocol", stubProtocolConfig)
         .put("client_id", "test-client")
         .put("acks", "all")
         .put("enable_idempotence", true)
