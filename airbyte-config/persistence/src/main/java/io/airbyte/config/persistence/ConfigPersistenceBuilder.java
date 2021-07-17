@@ -60,7 +60,7 @@ public class ConfigPersistenceBuilder {
   }
 
   /**
-   * Create a db config persistence without seting up the database.
+   * Create a db config persistence without setting up the database.
    */
   public static ConfigPersistence getDbPersistence(Configs configs) throws IOException {
     return new ConfigPersistenceBuilder(configs, false).create();
