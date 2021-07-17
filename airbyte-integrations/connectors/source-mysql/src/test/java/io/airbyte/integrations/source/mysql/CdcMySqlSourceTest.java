@@ -55,10 +55,14 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.jooq.SQLDialect;
@@ -69,6 +73,7 @@ import org.testcontainers.containers.MySQLContainer;
 
 public class CdcMySqlSourceTest extends CdcSourceTest {
 
+  private static final String DB_NAME = MODELS_SCHEMA;
   private MySQLContainer<?> container;
   private Database database;
   private MySqlSource source;
@@ -284,6 +289,33 @@ public class CdcMySqlSourceTest extends CdcSourceTest {
       assertNotNull(stateMessage.getData().get("cdc_state").get("state").get(MYSQL_CDC_OFFSET));
       assertNotNull(stateMessage.getData().get("cdc_state").get("state").get(MYSQL_DB_HISTORY));
     }
+  }
+
+  @Override
+  protected AirbyteCatalog expectedCatalogForDiscover() {
+    final AirbyteCatalog expectedCatalog = Jsons.clone(CATALOG);
+
+    createTable(MODELS_SCHEMA, MODELS_STREAM_NAME + "_2",
+        columnClause(ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)"), Optional.empty()));
+
+    List<AirbyteStream> streams = expectedCatalog.getStreams();
+    // stream with PK
+    streams.get(0).setSourceDefinedCursor(true);
+    addCdcMetadataColumns(streams.get(0));
+
+    AirbyteStream streamWithoutPK = CatalogHelpers.createAirbyteStream(
+        MODELS_STREAM_NAME + "_2",
+        MODELS_SCHEMA,
+        Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
+        Field.of(COL_MAKE_ID, JsonSchemaPrimitive.NUMBER),
+        Field.of(COL_MODEL, JsonSchemaPrimitive.STRING));
+    streamWithoutPK.setSourceDefinedPrimaryKey(Collections.emptyList());
+    streamWithoutPK.setSupportedSyncModes(List.of(SyncMode.FULL_REFRESH));
+    addCdcMetadataColumns(streamWithoutPK);
+
+    streams.add(streamWithoutPK);
+    expectedCatalog.withStreams(streams);
+    return expectedCatalog;
   }
 
 }

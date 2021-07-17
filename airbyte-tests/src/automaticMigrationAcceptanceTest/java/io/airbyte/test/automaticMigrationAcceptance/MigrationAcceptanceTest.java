@@ -65,8 +65,9 @@ import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.output.OutputFrame;
 
 /**
- * In order to run this test from intellij, build the docker images via ./gradlew composeBuild and
- * replace System.getenv("MIGRATION_TEST_VERSION") with the version in your .env file
+ * In order to run this test from intellij, build the docker images via SUB_BUILD=PLATFORM ./gradlew
+ * composeBuild and replace System.getenv("MIGRATION_TEST_VERSION") with the version in your .env
+ * file
  */
 public class MigrationAcceptanceTest {
 
@@ -126,7 +127,7 @@ public class MigrationAcceptanceTest {
 
       customDockerComposeContainer.start();
 
-      Thread.sleep(20000);
+      Thread.sleep(50000);
 
       assertTrue(logsToExpect.isEmpty());
       ApiClient apiClient = getApiClient();
@@ -348,6 +349,11 @@ public class MigrationAcceptanceTest {
     env.put("API_URL", "http://localhost:7001/api/v1/");
     env.put("TEMPORAL_HOST", "airbyte-temporal:7233");
     env.put("INTERNAL_API_HOST", "airbyte-server:7001");
+    env.put("S3_LOG_BUCKET", "");
+    env.put("S3_LOG_BUCKET_REGION", "");
+    env.put("AWS_ACCESS_KEY_ID", "");
+    env.put("AWS_SECRET_ACCESS_KEY", "");
+    env.put("GCP_STORAGE_BUCKET", "");
     return env;
   }
 
