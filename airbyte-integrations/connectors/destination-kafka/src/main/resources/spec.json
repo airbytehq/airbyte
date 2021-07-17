@@ -13,7 +13,6 @@
       "topic_pattern",
       "security_protocol",
       "acks",
-      "transaction_timeout_ms",
       "enable_idempotence",
       "compression_type",
       "batch_size",
@@ -25,6 +24,8 @@
       "retries",
       "socket_connection_setup_timeout_ms",
       "socket_connection_setup_timeout_max_ms",
+      "max_block_ms",
+      "request_timeout_ms",
       "delivery_timeout_ms",
       "send_buffer_bytes",
       "receive_buffer_bytes"
@@ -56,7 +57,7 @@
         "title": "Sync producer",
         "description": "Wait synchronously until the record has been sent to Kafka.",
         "type": "boolean",
-        "default": false,
+        "default": true,
         "order": 3
       },
       "security_protocol": {
@@ -98,27 +99,12 @@
         "enum": ["0", "1", "all"],
         "order": 8
       },
-      "transactional_id": {
-        "title": "Transactional ID",
-        "description": "The transactional ID to use for transactional delivery. This enables reliability semantics which span multiple producer sessions since it allows the client to guarantee that transactions using the same transactional ID have been completed prior to starting any new transactions. If no transactional ID is provided, then the producer is limited to idempotent delivery.",
-        "type": "string",
-        "default": "",
-        "examples": ["txn-id"],
-        "order": 9
-      },
-      "transaction_timeout_ms": {
-        "title": "Transaction timeout ms",
-        "description": "The maximum amount of time in ms that the transaction coordinator will wait for a transaction status update from the producer before proactively aborting the ongoing transaction.",
-        "type": "integer",
-        "default": 60000,
-        "order": 10
-      },
       "enable_idempotence": {
         "title": "Enable idempotence",
         "description": "When set to 'true', the producer will ensure that exactly one copy of each message is written in the stream. If 'false', producer retries due to broker failures, etc., may write duplicates of the retried message in the stream.",
         "type": "boolean",
         "default": false,
-        "order": 11
+        "order": 9
       },
       "compression_type": {
         "title": "Compression type",
@@ -126,28 +112,28 @@
         "type": "string",
         "default": "none",
         "enum": ["none", "gzip", "snappy", "lz4", "zstd"],
-        "order": 12
+        "order": 10
       },
       "batch_size": {
         "title": "Batch size",
         "description": "The producer will attempt to batch records together into fewer requests whenever multiple records are being sent to the same partition.",
         "type": "integer",
         "default": 16384,
-        "order": 13
+        "order": 11
       },
       "linger_ms": {
         "title": "Linger ms",
         "description": "The producer groups together any records that arrive in between request transmissions into a single batched request.",
-        "type": "integer",
+        "type": "number",
         "default": 0,
-        "order": 14
+        "order": 12
       },
       "max_in_flight_requests_per_connection": {
         "title": "Max in flight requests per connection",
         "description": "The maximum number of unacknowledged requests the client will send on a single connection before blocking.",
         "type": "integer",
         "default": 5,
-        "order": 15
+        "order": 13
       },
       "client_dns_lookup": {
         "title": "Client DNS lookup",
@@ -160,39 +146,53 @@
           "resolve_canonical_bootstrap_servers_only",
           "use_all_dns_ips"
         ],
-        "order": 16
+        "order": 14
       },
       "buffer_memory": {
         "title": "Buffer memory",
         "description": "The total bytes of memory the producer can use to buffer records waiting to be sent to the server.",
-        "type": "integer",
+        "type": "number",
         "default": 33554432,
-        "order": 17
+        "order": 15
       },
       "max_request_size": {
         "title": "Max request size",
         "description": "The maximum size of a request in bytes.",
         "type": "integer",
         "default": 1048576,
-        "order": 18
+        "order": 16
       },
       "retries": {
         "title": "Retries",
         "description": "Setting a value greater than zero will cause the client to resend any record whose send fails with a potentially transient error.",
         "type": "integer",
         "default": 2147483647,
-        "order": 19
+        "order": 17
       },
       "socket_connection_setup_timeout_ms": {
         "title": "Socket connection setup timeout",
         "description": "The amount of time the client will wait for the socket connection to be established.",
-        "type": "integer",
+        "type": "number",
         "default": 10000,
-        "order": 20
+        "order": 18
       },
       "socket_connection_setup_timeout_max_ms": {
         "title": "Socket connection setup max timeout",
         "description": "The maximum amount of time the client will wait for the socket connection to be established. The connection setup timeout will increase exponentially for each consecutive connection failure up to this maximum.",
+        "type": "number",
+        "default": 30000,
+        "order": 19
+      },
+      "max_block_ms": {
+        "title": "Max block ms",
+        "description": "The configuration controls how long the KafkaProducer's send(), partitionsFor(), initTransactions(), sendOffsetsToTransaction(), commitTransaction() and abortTransaction() methods will block.",
+        "type": "number",
+        "default": 60000,
+        "order": 20
+      },
+      "request_timeout_ms": {
+        "title": "Request timeout",
+        "description": "The configuration controls the maximum amount of time the client will wait for the response of a request. If the response is not received before the timeout elapses the client will resend the request if necessary or fail the request if retries are exhausted.",
         "type": "integer",
         "default": 30000,
         "order": 21

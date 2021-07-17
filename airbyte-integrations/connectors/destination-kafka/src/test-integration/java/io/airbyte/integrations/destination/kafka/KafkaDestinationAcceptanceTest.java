@@ -36,8 +36,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -49,7 +47,8 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final String TOPIC_NAME = "test.topic";
 
-  private KafkaContainer kafka;
+  private static KafkaContainer KAFKA;
+
   private final NamingConventionTransformer namingResolver = new StandardNameTransformer();
 
   @Override
@@ -60,7 +59,7 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
   @Override
   protected JsonNode getConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("bootstrap_servers", kafka.getBootstrapServers())
+        .put("bootstrap_servers", KAFKA.getBootstrapServers())
         .put("topic_pattern", "{namespace}.{stream}." + TOPIC_NAME)
         .put("sync", true)
         .put("security_protocol", "PLAINTEXT")
@@ -68,8 +67,6 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
         .put("sasl_mechanism", "PLAIN")
         .put("client_id", "test-client")
         .put("acks", "all")
-        .put("transactional_id", "txn-id")
-        .put("transaction_timeout_ms", 60000)
         .put("enable_idempotence", true)
         .put("compression_type", "none")
         .put("batch_size", 16384)
@@ -81,6 +78,8 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
         .put("retries", 2147483647)
         .put("socket_connection_setup_timeout_ms", 10000)
         .put("socket_connection_setup_timeout_max_ms", 30000)
+        .put("max_block_ms", 60000)
+        .put("request_timeout_ms", 30000)
         .put("delivery_timeout_ms", 120000)
         .put("send_buffer_bytes", -1)
         .put("receive_buffer_bytes", -1)
@@ -90,7 +89,7 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
   @Override
   protected JsonNode getFailCheckConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("bootstrap_servers", kafka.getBootstrapServers())
+        .put("bootstrap_servers", KAFKA.getBootstrapServers())
         .put("topic_pattern", "{namespace}.{stream}." + TOPIC_NAME)
         .put("test_topic", "check-topic")
         .put("security_protocol", "SASL_PLAINTEXT")
@@ -98,8 +97,6 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
         .put("sasl_mechanism", "PLAIN")
         .put("client_id", "test-client")
         .put("acks", "all")
-        .put("transactional_id", "txn-id")
-        .put("transaction_timeout_ms", 60000)
         .put("enable_idempotence", true)
         .put("compression_type", "none")
         .put("batch_size", 16384)
@@ -111,6 +108,8 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
         .put("retries", 2147483647)
         .put("socket_connection_setup_timeout_ms", 10000)
         .put("socket_connection_setup_timeout_max_ms", 30000)
+        .put("max_block_ms", 60000)
+        .put("request_timeout_ms", 30000)
         .put("delivery_timeout_ms", 120000)
         .put("send_buffer_bytes", -1)
         .put("receive_buffer_bytes", -1)
@@ -129,15 +128,16 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName, String namespace) {
-    return retrieveRecords(testEnv, streamName, namespace);
+    return retrieveRecords(testEnv, streamName, namespace, null);
   }
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
                                            String streamName,
-                                           String namespace) {
+                                           String namespace,
+                                           JsonNode streamSchema) {
     final Map<String, Object> props = ImmutableMap.<String, Object>builder()
-        .put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafka.getBootstrapServers())
+        .put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers())
         .put(ConsumerConfig.GROUP_ID_CONFIG, namingResolver.getIdentifier(namespace + "-" + streamName))
         .put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
         .put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName())
@@ -157,15 +157,13 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected void setup(TestDestinationEnv testEnv) {
-    kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.1.1"));
-    kafka.start();
-    try (var ignored = AdminClient.create(Map.of(
-        AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafka.getBootstrapServers()))) {}
+    KAFKA = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.0"));
+    KAFKA.start();
   }
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) {
-    kafka.close();
+    KAFKA.close();
   }
 
 }

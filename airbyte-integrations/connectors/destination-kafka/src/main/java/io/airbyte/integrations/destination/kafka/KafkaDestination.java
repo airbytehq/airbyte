@@ -49,6 +49,11 @@ public class KafkaDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KafkaDestination.class);
 
+  public static final String COLUMN_NAME_AB_ID = JavaBaseConstants.COLUMN_NAME_AB_ID;
+  public static final String COLUMN_NAME_EMITTED_AT = JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
+  public static final String COLUMN_NAME_DATA = JavaBaseConstants.COLUMN_NAME_DATA;
+  public static final String COLUMN_NAME_STREAM = "_airbyte_stream";
+
   private final StandardNameTransformer namingResolver;
 
   public KafkaDestination() {
@@ -64,22 +69,14 @@ public class KafkaDestination extends BaseConnector implements Destination {
         final KafkaProducer<String, JsonNode> producer = kafkaDestinationConfig.getProducer();
         final String key = UUID.randomUUID().toString();
         final JsonNode value = Jsons.jsonNode(ImmutableMap.of(
-            JavaBaseConstants.COLUMN_NAME_AB_ID, key,
-            JavaBaseConstants.COLUMN_NAME_EMITTED_AT, System.currentTimeMillis(),
-            JavaBaseConstants.COLUMN_NAME_DATA, Jsons.jsonNode(ImmutableMap.of("test-key", "test-value"))));
-
-        if (kafkaDestinationConfig.isTransactionalProducer()) {
-          producer.initTransactions();
-          producer.beginTransaction();
-        }
+            COLUMN_NAME_AB_ID, key,
+            COLUMN_NAME_STREAM, "test-topic-stream",
+            COLUMN_NAME_EMITTED_AT, System.currentTimeMillis(),
+            COLUMN_NAME_DATA, Jsons.jsonNode(ImmutableMap.of("test-key", "test-value"))));
 
         final RecordMetadata metadata = producer.send(new ProducerRecord<>(
             namingResolver.getIdentifier(testTopic), key, value)).get();
         producer.flush();
-
-        if (kafkaDestinationConfig.isTransactionalProducer()) {
-          producer.commitTransaction();
-        }
 
         LOGGER.info("Successfully connected to Kafka brokers for topic '{}'.", metadata.topic());
       }

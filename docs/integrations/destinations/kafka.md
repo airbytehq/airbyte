@@ -17,6 +17,7 @@ Each record will contain in its key the uuid assigned by Airbyte, and in the val
 * `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed.
 * `_airbyte_emitted_at`:  a timestamp representing when the event was pulled from the data source.
 * `_airbyte_data`: a json blob representing with the event data.
+* `_airbyte_stream`: the name of each record's stream.
 
 #### Features
 
@@ -43,13 +44,13 @@ Make sure your Kafka brokers can be accessed by Airbyte.
 #### **Permissions**
 
 Airbyte should be allowed to write messages into topics, and these topics should be created before writing into Kafka
-or, at least, enable the configuration in the brokers ``auto.create.topics.enable`` (which is not recommended for
+or, at least, enable the configuration in the brokers `auto.create.topics.enable` (which is not recommended for
 production environments).
 
 #### Target topics
 
-Each message will be written to its corresponding topic defined in the property ``topic_pattern``. In case you
-define in this pattern values such as ``{namespace}`` and/or ``{stream}``, each message can be written to different
+Each message will be written to its corresponding topic defined in the property `topic_pattern`. In case you
+define in this pattern values such as `{namespace}` and/or `{stream}`, each message can be written to different
 topics based on their values inferred when producing the records.
 
 ### Setup the Kafka destination in Airbyte
@@ -65,8 +66,6 @@ You should now have all the requirements needed to configure Kafka as a destinat
 * **SASL mechanism**
 * **Client ID**
 * **ACKs**
-* **Transactional ID**
-* **Transaction timeout ms**
 * **Enable idempotence**
 * **Compression type**
 * **Batch size**
@@ -78,6 +77,8 @@ You should now have all the requirements needed to configure Kafka as a destinat
 * **Retries**
 * **Socket connection setup timeout**
 * **Socket connection setup max timeout**
+* **Max block ms**
+* **Request timeout**
 * **Delivery timeout**
 * **Send buffer bytes**
 * **Receive buffer bytes**

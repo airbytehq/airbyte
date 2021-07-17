@@ -58,9 +58,7 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   private final Map<AirbyteStreamNameNamespacePair, String> topicMap;
   private final KafkaProducer<String, JsonNode> producer;
   private final boolean sync;
-  private final boolean transactionalProducer;
   private final ConfiguredAirbyteCatalog catalog;
-  private final Callback callback;
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final NamingConventionTransformer nameTransformer;
 
@@ -74,31 +72,14 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
     this.topicMap = new HashMap<>();
     this.producer = kafkaDestinationConfig.getProducer();
     this.sync = kafkaDestinationConfig.isSync();
-    this.transactionalProducer = kafkaDestinationConfig.isTransactionalProducer();
     this.catalog = catalog;
-    this.callback = (metadata, exception) -> {
-      if (exception != null) {
-        // TODO improve error management
-        LOGGER.error("Error sending message to topic", exception);
-      }
-    };
     this.outputRecordCollector = outputRecordCollector;
     this.nameTransformer = nameTransformer;
   }
 
   @Override
   protected void startTracked() {
-    Map<AirbyteStreamNameNamespacePair, String> mapped = catalog.getStreams().stream()
-        .map(stream -> AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream.getStream()))
-        .collect(Collectors.toMap(Function.identity(),
-            pair -> nameTransformer.getIdentifier(topicPattern
-                .replaceAll("\\{namespace}", Optional.ofNullable(pair.getNamespace()).orElse(""))
-                .replaceAll("\\{stream}", Optional.ofNullable(pair.getName()).orElse("")))));
-    topicMap.putAll(mapped);
-
-    if (transactionalProducer) {
-      producer.initTransactions();
-    }
+    topicMap.putAll(buildTopicMap());
   }
 
   @Override
@@ -111,39 +92,35 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
       final String topic = topicMap.get(AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage));
       final String key = UUID.randomUUID().toString();
       final JsonNode value = Jsons.jsonNode(ImmutableMap.of(
-          JavaBaseConstants.COLUMN_NAME_AB_ID, key,
-          JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt(),
-          JavaBaseConstants.COLUMN_NAME_DATA, recordMessage.getData()));
-      final ProducerRecord<String, JsonNode> record = new ProducerRecord<>(topic, key, value);
+          KafkaDestination.COLUMN_NAME_AB_ID, key,
+          KafkaDestination.COLUMN_NAME_STREAM, recordMessage.getStream(),
+          KafkaDestination.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt(),
+          KafkaDestination.COLUMN_NAME_DATA, recordMessage.getData()));
 
-      if (transactionalProducer) {
-        sendRecordInTransaction(record);
-      } else {
-        sendRecord(record);
-      }
+      sendRecord(new ProducerRecord<>(topic, key, value));
     } else {
       LOGGER.warn("Unexpected message: " + airbyteMessage.getType());
     }
   }
 
-  private void sendRecord(ProducerRecord<String, JsonNode> record) throws Exception {
-    Future<RecordMetadata> future = producer.send(record, callback);
-    if (sync) {
-      future.get();
-    }
+  Map<AirbyteStreamNameNamespacePair, String> buildTopicMap() {
+    return catalog.getStreams().stream()
+      .map(stream -> AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream.getStream()))
+      .collect(Collectors.toMap(Function.identity(),
+        pair -> nameTransformer.getIdentifier(topicPattern
+          .replaceAll("\\{namespace}", Optional.ofNullable(pair.getNamespace()).orElse(""))
+          .replaceAll("\\{stream}", Optional.ofNullable(pair.getName()).orElse("")))));
   }
 
-  private void sendRecordInTransaction(ProducerRecord<String, JsonNode> record) throws Exception {
-    try {
-      producer.beginTransaction();
-      Future<RecordMetadata> future = producer.send(record, callback);
-      if (sync) {
-        future.get();
-      }
-      producer.commitTransaction();
-    } catch (KafkaException ke) {
-      producer.abortTransaction();
-      throw ke;
+  private void sendRecord(ProducerRecord<String, JsonNode> record) throws Exception {
+    Future<RecordMetadata> future = producer.send(record, (recordMetadata, exception) -> {
+        if (exception != null) {
+          LOGGER.error("Error sending message to topic.", exception);
+          throw new RuntimeException("Cannot send message to Kafka. Error: " + exception.getMessage(), exception);
+        }
+      });
+    if (sync) {
+      future.get();
     }
   }
 

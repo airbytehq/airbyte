@@ -40,13 +40,11 @@ public class KafkaDestinationConfig {
   private final String topicPattern;
   private final boolean sync;
   private final KafkaProducer<String, JsonNode> producer;
-  private final boolean transactionalProducer;
 
   private KafkaDestinationConfig(String topicPattern, boolean sync, JsonNode config) {
     this.topicPattern = topicPattern;
     this.sync = sync;
     this.producer = buildKafkaProducer(config);
-    this.transactionalProducer = isTransactionalProducer(config);
   }
 
   public static KafkaDestinationConfig getKafkaDestinationConfig(JsonNode config) {
@@ -67,23 +65,22 @@ public class KafkaDestinationConfig {
         .put(ProducerConfig.CLIENT_ID_CONFIG,
             config.has("client_id") ? config.get("client_id").asText() : null)
         .put(ProducerConfig.ACKS_CONFIG, config.get("acks").asText())
-        .put(ProducerConfig.TRANSACTIONAL_ID_CONFIG,
-            config.has("transactional_id") ? config.get("transactional_id").asText() : null)
-        .put(ProducerConfig.TRANSACTION_TIMEOUT_CONFIG, config.get("transaction_timeout_ms").intValue())
         .put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, config.get("enable_idempotence").booleanValue())
         .put(ProducerConfig.COMPRESSION_TYPE_CONFIG, config.get("compression_type").asText())
         .put(ProducerConfig.BATCH_SIZE_CONFIG, config.get("batch_size").intValue())
-        .put(ProducerConfig.LINGER_MS_CONFIG, config.get("linger_ms").intValue())
+        .put(ProducerConfig.LINGER_MS_CONFIG, config.get("linger_ms").longValue())
         .put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION,
             config.get("max_in_flight_requests_per_connection").intValue())
         .put(ProducerConfig.CLIENT_DNS_LOOKUP_CONFIG, config.get("client_dns_lookup").asText())
-        .put(ProducerConfig.BUFFER_MEMORY_CONFIG, config.get("buffer_memory").intValue())
+        .put(ProducerConfig.BUFFER_MEMORY_CONFIG, config.get("buffer_memory").longValue())
         .put(ProducerConfig.MAX_REQUEST_SIZE_CONFIG, config.get("max_request_size").intValue())
         .put(ProducerConfig.RETRIES_CONFIG, config.get("retries").intValue())
         .put(ProducerConfig.SOCKET_CONNECTION_SETUP_TIMEOUT_MS_CONFIG,
-            config.get("socket_connection_setup_timeout_ms").intValue())
+            config.get("socket_connection_setup_timeout_ms").longValue())
         .put(ProducerConfig.SOCKET_CONNECTION_SETUP_TIMEOUT_MAX_MS_CONFIG,
-            config.get("socket_connection_setup_timeout_max_ms").intValue())
+            config.get("socket_connection_setup_timeout_max_ms").longValue())
+        .put(ProducerConfig.MAX_BLOCK_MS_CONFIG, config.get("max_block_ms").longValue())
+        .put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, config.get("request_timeout_ms").intValue())
         .put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG, config.get("delivery_timeout_ms").intValue())
         .put(ProducerConfig.SEND_BUFFER_CONFIG, config.get("send_buffer_bytes").intValue())
         .put(ProducerConfig.RECEIVE_BUFFER_CONFIG, config.get("receive_buffer_bytes").intValue())
@@ -98,13 +95,6 @@ public class KafkaDestinationConfig {
     return new KafkaProducer<>(filteredProps);
   }
 
-  private boolean isTransactionalProducer(JsonNode config) {
-    String transactionalId = config.has("transactional_id") ? config.get("transactional_id").asText() : null;
-    return config.get("enable_idempotence").booleanValue() &&
-        transactionalId != null &&
-        !transactionalId.isBlank();
-  }
-
   public String getTopicPattern() {
     return topicPattern;
   }
@@ -115,10 +105,6 @@ public class KafkaDestinationConfig {
 
   public KafkaProducer<String, JsonNode> getProducer() {
     return producer;
-  }
-
-  public boolean isTransactionalProducer() {
-    return transactionalProducer;
   }
 
 }
