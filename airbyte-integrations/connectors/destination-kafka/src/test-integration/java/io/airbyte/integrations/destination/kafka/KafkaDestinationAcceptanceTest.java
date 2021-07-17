@@ -61,7 +61,7 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("bootstrap_servers", KAFKA.getBootstrapServers())
         .put("topic_pattern", "{namespace}.{stream}." + TOPIC_NAME)
-        .put("sync", true)
+        .put("sync_producer", true)
         .put("security_protocol", "PLAINTEXT")
         .put("sasl_jaas_config", "")
         .put("sasl_mechanism", "PLAIN")

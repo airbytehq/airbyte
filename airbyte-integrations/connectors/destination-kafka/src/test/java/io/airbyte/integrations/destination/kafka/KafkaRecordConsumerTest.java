@@ -107,7 +107,7 @@ public class KafkaRecordConsumerTest {
     return Jsons.jsonNode(ImmutableMap.builder()
       .put("bootstrap_servers", "localhost:9092")
       .put("topic_pattern", topicPattern)
-      .put("sync", true)
+      .put("sync_producer", true)
       .put("security_protocol", "PLAINTEXT")
       .put("sasl_jaas_config", "")
       .put("sasl_mechanism", "PLAIN")
