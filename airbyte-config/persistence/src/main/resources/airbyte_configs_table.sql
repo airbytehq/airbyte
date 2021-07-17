@@ -16,8 +16,10 @@
 
 -- indices
  CREATE
-    UNIQUE INDEX IF NOT EXISTS airbyte_configs_idx ON
+    UNIQUE INDEX IF NOT EXISTS airbyte_configs_type_id_idx ON
     AIRBYTE_CONFIGS(
         config_type,
         config_id
     );
+
+ CREATE INDEX IF NOT EXISTS airbyte_configs_id_idx ON AIRBYTE_CONFIGS(config_id);
