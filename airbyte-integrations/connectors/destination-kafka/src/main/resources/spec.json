@@ -137,7 +137,7 @@
       },
       "client_dns_lookup": {
         "title": "Client DNS lookup",
-        "description": "Controls how the client uses DNS lookups.",
+        "description": "Controls how the client uses DNS lookups. If set to use_all_dns_ips, connect to each returned IP address in sequence until a successful connection is established. After a disconnection, the next IP is used. Once all IPs have been used once, the client resolves the IP(s) from the hostname again. If set to resolve_canonical_bootstrap_servers_only, resolve each bootstrap address into a list of canonical names. After the bootstrap phase, this behaves the same as use_all_dns_ips. If set to default (deprecated), attempt to connect to the first IP address returned by the lookup, even if the lookup returns multiple IP addresses.",
         "type": "string",
         "default": "use_all_dns_ips",
         "enum": [
@@ -208,14 +208,14 @@
         "title": "Send buffer bytes",
         "description": "The size of the TCP send buffer (SO_SNDBUF) to use when sending data. If the value is -1, the OS default will be used.",
         "type": "integer",
-        "default": -1,
+        "default": 131072,
         "order": 23
       },
       "receive_buffer_bytes": {
         "title": "Receive buffer bytes",
         "description": "The size of the TCP receive buffer (SO_RCVBUF) to use when reading data. If the value is -1, the OS default will be used.",
         "type": "integer",
-        "default": -1,
+        "default": 32768,
         "order": 24
       }
     }
