@@ -14,7 +14,7 @@ As a community contributor, you can follow these steps to run integration tests.
 
 ## Airbyte Employee
 
-- Access the `destination s3 creds` secrets on Last Pass, and put it in `sample_secrets/config.json`.
+- Access the `destination gcs creds` secrets on Last Pass, and put it in `sample_secrets/config.json`.
 - Rename the directory from `sample_secrets` to `secrets`.
 
 ## Add New Output Format
