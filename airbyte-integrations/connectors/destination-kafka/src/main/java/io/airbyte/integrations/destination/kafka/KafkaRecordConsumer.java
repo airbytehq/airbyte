@@ -78,7 +78,7 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   }
 
   @Override
-  protected void acceptTracked(AirbyteMessage airbyteMessage) throws Exception {
+  protected void acceptTracked(AirbyteMessage airbyteMessage) {
     if (airbyteMessage.getType() == AirbyteMessage.Type.STATE) {
       lastStateMessage = airbyteMessage;
     } else if (airbyteMessage.getType() == AirbyteMessage.Type.RECORD) {
@@ -107,7 +107,7 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
           .replaceAll("\\{stream}", Optional.ofNullable(pair.getName()).orElse("")))));
   }
 
-  private void sendRecord(ProducerRecord<String, JsonNode> record) throws Exception {
+  private void sendRecord(ProducerRecord<String, JsonNode> record) {
     producer.send(record, (recordMetadata, exception) -> {
         if (exception != null) {
           LOGGER.error("Error sending message to topic.", exception);
@@ -116,6 +116,7 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
       });
     if (sync) {
       producer.flush();
+      outputRecordCollector.accept(lastStateMessage);
     }
   }
 
