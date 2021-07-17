@@ -32,7 +32,7 @@ from suds import sudsobject
 
 class Client:
     api_version: int = 13
-    refresh_token_safe_delta = 10  # in seconds
+    refresh_token_safe_delta: int = 10  # in seconds
 
     def __init__(
         self,
@@ -75,6 +75,9 @@ class Client:
         return self.authentication.request_oauth_tokens_by_refresh_token(self.refresh_token)
 
     def is_token_expiring(self) -> bool:
+        """
+        Performs check if access token expiring in less than refresh_token_safe_delta seconds
+        """
         time_diff: timedelta = datetime.utcnow() - self.oauth.access_token_received_datetime
         soconds_diff: int = time_diff.seconds + self.refresh_token_safe_delta
         return True if soconds_diff > self.oauth.access_token_expires_in_seconds else False
@@ -87,7 +90,7 @@ class Client:
         params: Mapping[str, Any],
     ) -> Mapping[str, Any]:
         """
-        Executes appropriate Service Operation
+        Executes appropriate Service Operation on Bing Ads API
         """
         if self.is_token_expiring():
             self.oauth = self._get_access_token()
@@ -107,7 +110,8 @@ class Client:
             environment="production",
         )
 
-    def asdict(self, suds_object: sudsobject.Object) -> Mapping[str, Any]:
+    @classmethod
+    def asdict(cls, suds_object: sudsobject.Object) -> Mapping[str, Any]:
         """
         Converts nested Suds Object into serializable format.
         """
@@ -115,12 +119,12 @@ class Client:
 
         for field, val in sudsobject.asdict(suds_object).items():
             if hasattr(val, "__keylist__"):
-                result[field] = self.asdict(val)
+                result[field] = cls.asdict(val)
             elif isinstance(val, list):
                 result[field] = []
                 for item in val:
                     if hasattr(item, "__keylist__"):
-                        result[field].append(self.asdict(item))
+                        result[field].append(cls.asdict(item))
                     else:
                         result[field].append(item)
             elif isinstance(val, datetime):
