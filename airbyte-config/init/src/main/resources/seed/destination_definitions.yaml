@@ -75,3 +75,4 @@
   dockerRepository: airbyte/destination-kafka
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/kafka
+  icon: kafka.svg
