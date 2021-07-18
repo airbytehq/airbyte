@@ -1,9 +1,9 @@
 import React from "react";
-import { Formik, Form, FieldProps, Field } from "formik";
+import { Field, FieldProps, Form, Formik } from "formik";
 import styled from "styled-components";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { Input, Button, Spinner } from "components";
+import { Input, LoadingButton } from "components";
 import { FormContent } from "./PageComponents";
 
 type IProps = {
@@ -33,6 +33,7 @@ const InputField = styled.div<{ showNote?: boolean }>`
     right: 22px;
     z-index: 3;
   }
+
   &:focus-within:before {
     display: none;
   }
@@ -60,27 +61,15 @@ const ErrorMessage = styled(SuccessMessage)`
 `;
 
 const VersionCell: React.FC<IProps> = ({
-  version,
   id,
+  version,
   onChange,
   feedback,
   currentVersion,
 }) => {
   const formatMessage = useIntl().formatMessage;
 
-  const renderFeedback = (
-    dirty: boolean,
-    isSubmitting: boolean,
-    feedback?: string
-  ) => {
-    if (isSubmitting) {
-      return (
-        <SuccessMessage>
-          <Spinner small />
-        </SuccessMessage>
-      );
-    }
-
+  const renderFeedback = (dirty: boolean, feedback?: string) => {
     if (feedback && !dirty) {
       if (feedback === "success") {
         return (
@@ -102,14 +91,11 @@ const VersionCell: React.FC<IProps> = ({
         initialValues={{
           version,
         }}
-        onSubmit={async (values, { setSubmitting }) => {
-          await onChange({ id, version: values.version });
-          setSubmitting(false);
-        }}
+        onSubmit={(values) => onChange({ id, version: values.version })}
       >
         {({ isSubmitting, dirty }) => (
           <Form>
-            {renderFeedback(dirty, isSubmitting, feedback)}
+            {renderFeedback(dirty, feedback)}
             <Field name="version">
               {({ field }: FieldProps<string>) => (
                 <InputField
@@ -122,12 +108,13 @@ const VersionCell: React.FC<IProps> = ({
                 </InputField>
               )}
             </Field>
-            <Button
+            <LoadingButton
+              isLoading={isSubmitting}
               type="submit"
               disabled={(isSubmitting || !dirty) && currentVersion === version}
             >
               <FormattedMessage id="form.change" />
-            </Button>
+            </LoadingButton>
           </Form>
         )}
       </Formik>
