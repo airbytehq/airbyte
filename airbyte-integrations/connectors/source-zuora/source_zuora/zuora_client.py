@@ -45,7 +45,9 @@ class ZoqlExportClient:
 
     logger = AirbyteLogger()
 
-    def __init__(self, authenticator: Dict, url_base: str, start_date: str, window_in_days: int, client_id: str, client_secret: str, is_sandbox: bool):
+    def __init__(
+        self, authenticator: Dict, url_base: str, start_date: str, window_in_days: int, client_id: str, client_secret: str, is_sandbox: bool
+    ):
         self.authenticator = authenticator
         self.url_base = url_base
         self.start_date = start_date
@@ -56,11 +58,11 @@ class ZoqlExportClient:
         self.retry_max = 3
 
     # MAKE try/except request warper with handling errors
-    def _make_request(self, method: str = "GET", url: str = None, data: Dict = None) -> requests.Response:
+    def _make_request(self, method: str = "GET", url: str = None, payload: Dict = None) -> requests.Response:
         retry = 0
         while retry <= self.retry_max:
             try:
-                request = requests.request(method=method, url=url, headers=self.authenticator, json=data)
+                request = requests.request(method=method, url=url, headers=self.authenticator, json=payload)
                 request.raise_for_status()
                 return request
             except requests.exceptions.HTTPError as e:
@@ -75,9 +77,8 @@ class ZoqlExportClient:
     def _make_dq_query(
         self, q_type: str = "select", obj: str = None, date_field: str = None, start_date: str = None, end_date: str = None
     ) -> Dict:
-        # POTENTIALLY COULD BE REPLACED WITH request_parameters()
         valid_types = ["select", "describe", "show_tables"]
-        base_query = {"compression": "NONE", "output": {"target": "S3"}, "outputFormat": "JSON", "query": ""}
+        base_query = {"compression": "NONE", "output": {"target": "S3"}, "outputFormat": "JSON"}
 
         if q_type not in valid_types:
             raise ZOQLQueryNotValid(q_type, valid_types)
@@ -94,20 +95,21 @@ class ZoqlExportClient:
 
     # SUBMIT: data_query_job using data_query
     def _submit_dq_job(self, dq_query: Dict) -> str:
-        submit_job = self._make_request(method="POST", url=f"{self.url_base}/query/jobs", data=dq_query)
-        submit_job = submit_job.json()["data"]["id"]
-        # self.logger.debug(submit_job)
-        return submit_job
+        submit_job = self._make_request(method="POST", url=f"{self.url_base}/query/jobs", payload=dq_query)
+        # self.logger.debug(submit_job.json()["data"]["id"])
+        return submit_job.json()["data"]["id"]
 
     # CHECK: the submited data_query_job status
-    def _check_dq_job_status(self, dq_job_id: str, status: str = None) -> Dict:
-        success = "completed"
-        # Define the error status
+    def _check_dq_job_status(self, dq_job_id: str) -> Dict:
+        # Define the job error statuses
         errors = ["failed", "canceled", "aborted"]
-        # Define specific error msg when the cursor_field cannot be resolved
+        # Error msg: the cursor_field cannot be resolved
         cursor_error = "Column 'updateddate' cannot be resolved"
+        # Error msg: cannot process object
         obj_read_error = "failed to process object"
 
+        status = None
+        success = "completed"
         while status != success:
             response = self._make_request(url=f"{self.url_base}/query/jobs/{dq_job_id}")
             dq_job_check = response.json()
@@ -173,7 +175,7 @@ class ZoqlExportClient:
 
     # Check the end-date before assign next date-slice
     @staticmethod
-    def _check_end_date(slice_end_date, global_end_date: str) -> str:
+    def _check_end_date(slice_end_date: str, global_end_date: str) -> str:
         return global_end_date.to_datetime_string() if pendulum.parse(slice_end_date) > global_end_date else slice_end_date
 
     # Get n of date-slices needed to fetch the data
@@ -186,7 +188,6 @@ class ZoqlExportClient:
     # Creates the next-date-slice
     @staticmethod
     def _next_slice_end_date(end_date: str, window_days: int) -> str:
-        # potentially could be replaced with next_page_token
         format = "YYYY-MM-DD HH:mm:ss Z"
         return pendulum.from_format(end_date, format).add(days=window_days).to_datetime_string()
 
@@ -202,27 +203,28 @@ class ZoqlExportClient:
         return any(_str in s for s in _list)
 
     # Convert Zuora DataTypes to JsonSchema Types
-    def _cast_schema_types(self, _schema: List) -> Dict:
+    def _cast_schema_types(self, _schema: List[Dict]) -> Dict:
         casted_schema_types = {}
 
         for field in range(len(_schema)):
-            field_name = _schema[field].get("field").lower()
-            field_type = _schema[field].get("type")
+            field_type = _schema[field].get("type").lower()
 
             # Casting Zuora ZOQL Data Types into JsonSchema types
-            if self._check_data_type(field_type, ["decimal(22,9)", "integer", "int", "bigint", "timestamp"]):
+            if self._check_data_type(field_type, ["decimal(22,9)", "integer", "number", "int", "bigint", "smallint", "timestamp"]):
                 field_type = ["number", "null"]
             elif self._check_data_type(field_type, ["date", "datetime", "timestamp with time zone", "picklist", "text", "varchar"]):
                 field_type = ["string", "null"]
             elif self._check_data_type(field_type, ["zoql", "binary", "json", "xml", "blob"]):
                 field_type = ["object", "null"]
+            elif self._check_data_type(field_type, ["list", "array"]):
+                field_type = ["array", "null"]
             elif self._check_data_type(field_type, ["boolean"]):
                 field_type = ["boolean", "null"]
             else:
                 # if there is something else we don't cover, cast it as string
                 field_type = ["string", "null"]
 
-            casted_schema_types.update(**{field_name: {"type": field_type}})
+            casted_schema_types.update(**{_schema[field].get("field").lower(): {"type": field_type}})
 
         return casted_schema_types
 

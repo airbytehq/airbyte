@@ -59,7 +59,7 @@ class ZuoraStream(Stream, ABC):
         schema["properties"] = self.api._zuora_object_to_json_schema(self.name)
         return schema
 
-    def as_airbyte_stream(self)-> AirbyteStream:
+    def as_airbyte_stream(self) -> AirbyteStream:
         """
         Override this method to set the default_cursor_field to the stream schema.
         """
