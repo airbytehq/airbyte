@@ -133,9 +133,6 @@ public class ServerApp {
 
     ResourceConfig rc =
         new ResourceConfig()
-            // add filters
-            .registerInstances(requestFilters)
-            .registerInstances(responseFilters)
             // request logging
             .register(new RequestLogger(mdc))
             // api
@@ -161,6 +158,10 @@ public class ServerApp {
             // needed so that the custom json exception mappers don't get overridden
             // https://stackoverflow.com/questions/35669774/jersey-custom-exception-mapper-for-invalid-json-string
             .register(JacksonJaxbJsonProvider.class);
+
+    // add filters
+    requestFilters.forEach(rc::register);
+    responseFilters.forEach(rc::register);
 
     ServletHolder configServlet = new ServletHolder(new ServletContainer(rc));
 
