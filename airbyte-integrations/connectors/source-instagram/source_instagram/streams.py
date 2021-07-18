@@ -274,6 +274,7 @@ class UserInsights(InstagramIncrementalStream):
     def upgrade_state_to_latest_format(self, state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """Upgrade state to latest format and return new state object"""
         if self._state_has_legacy_format(state):
+            self.logger.info(f"The {self.name} state has old format, converting...")
             return {account_id: {self.cursor_field: str(cursor_value)} for account_id, cursor_value in state.items()}
 
         return super().upgrade_state_to_latest_format(state)
@@ -378,9 +379,7 @@ class MediaInsights(Media):
             # the user's account was converted to a business account from a personal account
             if error.api_error_subcode() == 2108006:
                 details = error.body().get("error", {}).get("error_user_title") or error.api_error_message()
-                self.logger.error(
-                    f"Insights error for business_account_id {account_id}: {details}"
-                )
+                self.logger.error(f"Insights error for business_account_id {account_id}: {details}")
                 # We receive all Media starting from the last one, and if on the next Media we get an Insight error,
                 # then no reason to make inquiries for each Media further, since they were published even earlier.
                 return None

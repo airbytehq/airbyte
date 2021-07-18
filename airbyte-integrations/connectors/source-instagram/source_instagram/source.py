@@ -23,10 +23,10 @@
 #
 
 from datetime import datetime
-from typing import Any, List, Mapping, Tuple, MutableMapping, Iterator
+from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple
 
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import ConnectorSpecification, DestinationSyncMode, ConfiguredAirbyteCatalog, AirbyteMessage
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, DestinationSyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from pydantic import BaseModel, Field
@@ -76,7 +76,7 @@ class SourceInstagram(AbstractSource):
     ) -> Iterator[AirbyteMessage]:
         for stream in self.streams(config):
             state_key = str(stream.name)
-            if state_key in state and hasattr(stream, 'upgrade_state_to_latest_format'):
+            if state_key in state and hasattr(stream, "upgrade_state_to_latest_format"):
                 state[state_key] = stream.upgrade_state_to_latest_format(state[state_key])
         return super().read(logger, config, catalog, state)
 
