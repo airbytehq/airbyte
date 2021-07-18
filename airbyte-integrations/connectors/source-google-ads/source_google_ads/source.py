@@ -77,7 +77,7 @@ class GoogleAdsStream(Stream, ABC):
         if start_date > pendulum.now():
             return start_date.to_date_string(), start_date.add(days=1).to_date_string()
 
-        end_date = min(end_date, pendulum.parse(stream_slice.get(cursor_field)).add(months=1))
+        end_date = max(end_date, pendulum.parse(stream_slice.get(cursor_field)).add(months=1))
         return start_date.add(days=1).to_date_string(), end_date.to_date_string()
 
     def read_records(
