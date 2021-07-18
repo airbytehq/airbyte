@@ -33,6 +33,7 @@ This Source is capable of syncing the following core Streams:
 
 ### Performance considerations
 
+API limits number of requests for all Microsoft Advertising clients. You can find detailied info [here](https://docs.microsoft.com/en-us/advertising/guides/services-protocol?view=bingads-13#throttling)
 
 ## Getting started
 
@@ -61,4 +62,4 @@ Be aware that `refresh token` will expire in 90 days. You need to repeat auth pr
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.0   | 2021-06-23 | []() | Initial release |
+| 0.1.0   | 2021-07-18 | []() | Initial release |

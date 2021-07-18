@@ -78,9 +78,9 @@ class Client:
         """
         Performs check if access token expiring in less than refresh_token_safe_delta seconds
         """
-        time_diff: timedelta = datetime.utcnow() - self.oauth.access_token_received_datetime
-        soconds_diff: int = time_diff.seconds + self.refresh_token_safe_delta
-        return True if soconds_diff > self.oauth.access_token_expires_in_seconds else False
+        token_total_lifetime: timedelta = datetime.utcnow() - self.oauth.access_token_received_datetime
+        token_updated_expires_in: int = self.oauth.access_token_expires_in_seconds - token_total_lifetime.seconds
+        return False if token_updated_expires_in > self.refresh_token_safe_delta else True
 
     def request(
         self,

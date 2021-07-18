@@ -22,9 +22,11 @@
 # SOFTWARE.
 #
 
-from datetime import datetime
+from datetime import datetime, timedelta
+from unittest import mock
 
 import source_bing_ads.client
+from bingads.authorization import OAuthTokens
 from suds import sudsobject
 
 
@@ -69,3 +71,38 @@ def test_sudsobject_todict_nested():
     assert serialized_obj["arr"][0]["value"] == nested_suds_2["value"]
     assert serialized_obj["arr"][1]["value"] == nested_suds_3["value"]
     assert serialized_obj["arr"][2]["value"] == nested_suds_4["value"]
+
+
+def test_is_expired_true():
+    def fake__init__(self, **kwargs):
+        self.oauth = OAuthTokens(access_token_expires_in_seconds=10)
+        self.oauth._access_token_received_datetime = datetime.utcnow() - timedelta(seconds=100)
+
+    with mock.patch.object(source_bing_ads.client.Client, "__init__", fake__init__):
+        client = source_bing_ads.client.Client()
+        assert client.is_token_expiring() is True
+
+
+def test_is_expired_true_with_delta_threshold():
+    """
+    Testing case when token still not expired actually, but refresh_token_safe_delta check is not passed
+    """
+
+    def fake__init__(self, **kwargs):
+        expires_in = 100 + source_bing_ads.client.Client.refresh_token_safe_delta / 2
+        self.oauth = OAuthTokens(access_token_expires_in_seconds=expires_in)
+        self.oauth._access_token_received_datetime = datetime.utcnow() - timedelta(seconds=100)
+
+    with mock.patch.object(source_bing_ads.client.Client, "__init__", fake__init__):
+        client = source_bing_ads.client.Client()
+        assert client.is_token_expiring() is True
+
+
+def test_is_expired_false():
+    def fake__init__(self, **kwargs):
+        self.oauth = OAuthTokens(access_token_expires_in_seconds=100)
+        self.oauth._access_token_received_datetime = datetime.utcnow() - timedelta(seconds=10)
+
+    with mock.patch.object(source_bing_ads.client.Client, "__init__", fake__init__):
+        client = source_bing_ads.client.Client()
+        assert client.is_token_expiring() is False
