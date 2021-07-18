@@ -87,8 +87,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   /**
-   * Populate the {@code airbyte_configs} table with configs from the seed persistence. Only do so if the table is empty. Otherwise, we assume that it
-   * has been populated.
+   * Populate the {@code airbyte_configs} table with configs from the seed persistence. Only do so if
+   * the table is empty. Otherwise, we assume that it has been populated.
    */
   public DatabaseConfigPersistence loadData(ConfigPersistence seedConfigPersistence) throws IOException {
     database.transaction(ctx -> {
@@ -192,9 +192,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(System.currentTimeMillis()));
     database.transaction(ctx -> {
       ctx.truncate(AIRBYTE_CONFIGS).restartIdentity().execute();
-      configs.forEach((configType, configObjectStream) ->
-          configObjectStream.forEach(configObject ->
-              insertConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(configObject), configType.getIdFieldName())));
+      configs.forEach((configType, configObjectStream) -> configObjectStream
+          .forEach(configObject -> insertConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(configObject), configType.getIdFieldName())));
       return null;
     });
   }
