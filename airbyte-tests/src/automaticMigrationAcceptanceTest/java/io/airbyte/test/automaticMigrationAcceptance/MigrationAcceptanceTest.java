@@ -318,8 +318,12 @@ public class MigrationAcceptanceTest {
 
   private void healthCheck(ApiClient apiClient) throws ApiException {
     HealthApi healthApi = new HealthApi(apiClient);
-    HealthCheckRead healthCheck = healthApi.getHealthCheck();
-    assertTrue(healthCheck.getDb());
+    try {
+      HealthCheckRead healthCheck = healthApi.getHealthCheck();
+      assertTrue(healthCheck.getDb());
+    } catch (ApiException e) {
+      throw new RuntimeException("Health check failed, usually due to auto migration failure. Please check the logs for details.");
+    }
   }
 
   private ApiClient getApiClient() {
