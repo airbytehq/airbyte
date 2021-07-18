@@ -1,4 +1,3 @@
-import React from "react";
 import { components, MenuProps } from "react-select";
 import styled from "styled-components";
 import { theme } from "theme";
@@ -27,7 +26,7 @@ import { IDataItem } from "./Option";
 //   );
 // };
 
-const MenuList = styled(components.Menu)`
+const Menu = styled(components.Menu)<MenuProps<IDataItem, boolean>>`
   background: ${theme.textColor};
   background: red;
 
@@ -51,9 +50,5 @@ const MenuList = styled(components.Menu)`
     }
   }
 `;
-
-const Menu: React.FC<MenuProps<IDataItem, boolean>> = (props) => {
-  return <MenuList {...props}>{props.children}</MenuList>;
-};
 
 export default Menu;

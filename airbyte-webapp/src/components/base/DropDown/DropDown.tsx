@@ -15,6 +15,7 @@ type DropdownProps = Props<any> & {
   error?: boolean;
 };
 
+// @ts-ignore
 const CustomSelect = styled(Select)<{
   $withBorder?: boolean;
   $error?: boolean;
@@ -56,15 +57,16 @@ const CustomSelect = styled(Select)<{
 
 const DropDown: React.FC<DropdownProps> = (props) => {
   const propsComponents = props.components;
+
   const components = React.useMemo(
     () => ({
       DropdownIndicator,
       Menu,
       Option,
       SingleValue,
-      IndicatorSeparator: () => null,
-      ClearIndicator: () => null,
-      MultiValueRemove: () => null,
+      IndicatorSeparator: null,
+      ClearIndicator: null,
+      MultiValueRemove: null,
       ...(propsComponents ?? {}),
     }),
     [propsComponents]
@@ -73,13 +75,12 @@ const DropDown: React.FC<DropdownProps> = (props) => {
   return (
     <CustomSelect
       data-testid={props.name}
+      $error={props.error}
       className="react-select-container"
       classNamePrefix="react-select"
       menuPortalTarget={document.body}
       placeholder="..."
-      $error={props.error}
       {...props}
-      menuShouldBlockScroll
       value={props.options?.find((op) => equal(op.value, props.value))}
       components={components}
       closeMenuOnSelect={!props.isMulti}

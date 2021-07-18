@@ -5,7 +5,7 @@ import { DropDown, DropdownProps } from "components";
 
 const SyncSettingsCell: React.FC<DropdownProps> = (props) => (
   <Cell flex={1.5}>
-    <DropDown {...props} fullText withBorder />
+    <DropDown {...props} fullText withBorder isSearchable={false} />
   </Cell>
 );
 

@@ -1,12 +1,29 @@
-import React, { ReactNode, useState } from "react";
+import React, { ReactNode } from "react";
+import styled from "styled-components";
+
 import { DropDown } from "components";
 import { DropdownProps } from "../DropDown";
+import { useToggle } from "react-use";
 
-const D = ({ children, isOpen, target, onClose }: any) => (
-  <div>
+const OutsideClickListener = styled.div`
+  bottom: 0;
+  left: 0;
+  top: 0;
+  right: 0;
+  position: fixed;
+  z-index: 1;
+`;
+
+const Menu = styled.div`
+  position: absolute;
+  z-index: 2;
+`;
+
+const PopupOpener = ({ children, isOpen, target, onClose }: any) => (
+  <div css={{ position: "relative" }}>
     {target}
-    {isOpen ? children : null}
-    {isOpen ? <div onClick={onClose} /> : null}
+    {isOpen ? <Menu>{children}</Menu> : null}
+    {isOpen ? <OutsideClickListener onClick={onClose} /> : null}
   </div>
 );
 
@@ -24,18 +41,14 @@ const Popout: React.FC<PopoutProps> = ({
   targetComponent,
   ...props
 }) => {
-  const [state, setState] = useState({ isOpen: false, value: undefined });
-  const toggleOpen = () => {
-    setState((prevState) => ({ ...prevState, isOpen: !prevState.isOpen }));
-  };
+  const [isOpen, toggleOpen] = useToggle(false);
   const onSelectChange = (value: any) => {
     toggleOpen();
     onChange(value);
   };
 
-  const { isOpen, value } = state;
   return (
-    <D
+    <PopupOpener
       isOpen={isOpen}
       onClose={toggleOpen}
       target={targetComponent({ onOpen: toggleOpen })}
@@ -56,9 +69,9 @@ const Popout: React.FC<PopoutProps> = ({
         placeholder={null}
         styles={selectStyles}
         tabSelectsValue={false}
-        value={value}
+        value={props.value}
       />
-    </D>
+    </PopupOpener>
   );
 };
 
