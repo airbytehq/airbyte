@@ -129,7 +129,7 @@ public class MigrationAcceptanceTest {
 
       Thread.sleep(50000);
 
-      assertTrue(logsToExpect.isEmpty());
+      assertTrue(logsToExpect.isEmpty(), "Missing logs: " + logsToExpect);
       ApiClient apiClient = getApiClient();
       healthCheck(apiClient);
       populateDataForFirstRun(apiClient);
@@ -176,7 +176,7 @@ public class MigrationAcceptanceTest {
       ApiClient apiClient = getApiClient();
       healthCheck(apiClient);
 
-      assertTrue(logsToExpect.isEmpty());
+      assertTrue(logsToExpect.isEmpty(), "Missing logs: " + logsToExpect);
       assertDataFromApi(apiClient);
     } finally {
       dockerComposeContainer.stop();
