@@ -68,6 +68,7 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
     include ':airbyte-integrations:connectors:destination-e2e-test'
     include ':airbyte-integrations:connectors:destination-jdbc'
     include ':airbyte-integrations:connectors:source-e2e-test'
+    include ':tools:code-generator'
 }
 
 // connectors base
