@@ -6,6 +6,7 @@ declare global {
     TRACKING_STRATEGY?: string;
     PAPERCUPS_STORYTIME?: string;
     FULLSTORY?: string;
+    OPENREPLAY?: string;
     AIRBYTE_VERSION?: string;
     API_URL?: string;
     IS_DEMO?: string;
@@ -69,7 +70,7 @@ const config: Config = {
     enableStorytime: window.PAPERCUPS_STORYTIME !== "disabled",
   },
   openreplay: {
-    projectKey: "6611843272536134",
+    projectKey: window.OPENREPLAY !== "disabled" ? "6611843272536134" : "",
   },
   fullstory: {
     orgId: "13AXQ4",
