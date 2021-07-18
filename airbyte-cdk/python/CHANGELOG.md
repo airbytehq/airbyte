@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.6
+Add initial destination abstraction.
+Fix logging of the initial state.
+
 ## 0.1.5
 Allow specifying keyword arguments to be sent on a request made by an HTTP stream: https://github.com/airbytehq/airbyte/pull/4493
 
