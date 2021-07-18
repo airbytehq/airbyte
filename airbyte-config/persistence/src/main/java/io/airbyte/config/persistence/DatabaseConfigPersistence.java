@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Result;
@@ -84,8 +85,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   /**
-   * Populate the {@code airbyte_configs} table with configs from the seed persistence. Only do so if
-   * the table is empty. Otherwise, we assume that it has been populated.
+   * Populate the {@code airbyte_configs} table with configs from the seed persistence. Only do so if the table is empty. Otherwise, we assume that it
+   * has been populated.
    */
   public DatabaseConfigPersistence loadData(ConfigPersistence seedConfigPersistence) throws IOException {
     database.transaction(ctx -> {
@@ -105,16 +106,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         throw new SQLException(e);
       }
       Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(System.currentTimeMillis()));
-      seedConfigs.forEach((configType, value) -> value.forEach(node -> {
-        Object config = Jsons.object(node, configType.getClassName());
-        ctx.insertInto(AIRBYTE_CONFIGS)
-            .set(CONFIG_ID, configType.getId(config))
-            .set(CONFIG_TYPE, configType.name())
-            .set(CONFIG_BLOB, JSONB.valueOf(Jsons.serialize(node)))
-            .set(CREATED_AT, timestamp)
-            .set(UPDATED_AT, timestamp)
-            .execute();
-      }));
+      seedConfigs.forEach((configType, configJsonStream) ->
+          configJsonStream.forEach(node ->
+              insertConfigRecord(ctx, timestamp, configType, node)));
 
       LOGGER.info("Config database data loading completed");
       return null;
@@ -195,18 +189,24 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     }
 
     Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(System.currentTimeMillis()));
-
     database.transaction(ctx -> {
       ctx.truncate(AIRBYTE_CONFIGS).restartIdentity().execute();
-      configs.forEach((configType, value) -> value.forEach(config -> ctx.insertInto(AIRBYTE_CONFIGS)
-          .set(CONFIG_ID, configType.getId(config))
-          .set(CONFIG_TYPE, configType.name())
-          .set(CONFIG_BLOB, JSONB.valueOf(Jsons.serialize(config)))
-          .set(CREATED_AT, timestamp)
-          .set(UPDATED_AT, timestamp)
-          .execute()));
+      configs.forEach((configType, configObjectStream) ->
+          configObjectStream.forEach(configObject ->
+              insertConfigRecord(ctx, timestamp, configType, Jsons.jsonNode(configObject))));
       return null;
     });
+  }
+
+  private void insertConfigRecord(DSLContext ctx, Timestamp timestamp, ConfigSchema configType, JsonNode configJson) {
+    Object config = Jsons.object(configJson, configType.getClassName());
+    ctx.insertInto(AIRBYTE_CONFIGS)
+        .set(CONFIG_ID, configType.getId(config))
+        .set(CONFIG_TYPE, configType.name())
+        .set(CONFIG_BLOB, JSONB.valueOf(Jsons.serialize(configJson)))
+        .set(CREATED_AT, timestamp)
+        .set(UPDATED_AT, timestamp)
+        .execute();
   }
 
   @Override
