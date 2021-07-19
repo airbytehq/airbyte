@@ -47,17 +47,21 @@ import io.kubernetes.client.openapi.ApiException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ProcessHandle.Info;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -528,6 +532,11 @@ public class KubePodProcess extends Process {
     }
   }
 
+  @Override
+  public Info info() {
+    return new KubePodProcessInfo(podDefinition.getMetadata().getName());
+  }
+
   /**
    * Close all open resource in the opposite order of resource creation.
    */
@@ -538,8 +547,13 @@ public class KubePodProcess extends Process {
     Exceptions.swallow(this.stdoutServerSocket::close);
     Exceptions.swallow(this.stderrServerSocket::close);
     Exceptions.swallow(this.executorService::shutdownNow);
-    Exceptions.swallow(() -> portReleaser.accept(stdoutLocalPort));
-    Exceptions.swallow(() -> portReleaser.accept(stderrLocalPort));
+    try {
+      portReleaser.accept(stdoutLocalPort);
+      portReleaser.accept(stderrLocalPort);
+    } catch (Exception e) {
+      LOGGER.error("Error releasing ports ", e);
+    }
+    LOGGER.debug("Closed {}", podDefinition.getMetadata().getName());
   }
 
   private boolean isTerminal(Pod pod) {
@@ -595,6 +609,12 @@ public class KubePodProcess extends Process {
         .orElseThrow();
 
     LOGGER.info("Exit code for pod {} is {}", name, returnCode);
+    // The OS traditionally handles process resource clean up. Therefore an exit code of 0, also indicates that all kernel resources were shut down.
+    // Because this is a custom implementation, manually close all the resources.
+    // Further, since the local resources are used to talk to Kubernetes resources, shut local resources down after Kubernetes resources are shut down,
+    // regardless of termination status.
+    close();
+    LOGGER.info("Closed all resources for pod {}", name);
     return returnCode;
   }
 

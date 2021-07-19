@@ -52,8 +52,11 @@ public class WorkerUtils {
       return;
     }
 
+    LOGGER.debug("Gently closing process {}", process.info().command().get());
     try {
-      process.waitFor(timeout, timeUnit);
+      if (process.isAlive()) {
+        process.waitFor(timeout, timeUnit);
+      }
     } catch (InterruptedException e) {
       LOGGER.error("Exception while while waiting for process to finish", e);
     }
@@ -100,9 +103,10 @@ public class WorkerUtils {
                                        final Duration checkHeartbeatDuration,
                                        final Duration forcedShutdownDuration,
                                        final BiConsumer<Process, Duration> forceShutdown) {
-
+    var processName = process.info().command().get();
     while (process.isAlive() && heartbeatMonitor.isBeating()) {
       try {
+        LOGGER.debug("Gently closing process {} with heartbeat..", processName);
         process.waitFor(checkHeartbeatDuration.toMillis(), TimeUnit.MILLISECONDS);
       } catch (InterruptedException e) {
         LOGGER.error("Exception while waiting for process to finish", e);
@@ -111,6 +115,7 @@ public class WorkerUtils {
 
     if (process.isAlive()) {
       try {
+        LOGGER.debug("Gently closing process {} without heartbeat..", processName);
         process.waitFor(gracefulShutdownDuration.toMillis(), TimeUnit.MILLISECONDS);
       } catch (InterruptedException e) {
         LOGGER.error("Exception during grace period for process to finish. This can happen when cancelling jobs.");
@@ -119,6 +124,7 @@ public class WorkerUtils {
 
     // if we were unable to exist gracefully, force shutdown...
     if (process.isAlive()) {
+      LOGGER.debug("Force shutdown process {}..", processName;
       forceShutdown.accept(process, forcedShutdownDuration);
     }
   }
