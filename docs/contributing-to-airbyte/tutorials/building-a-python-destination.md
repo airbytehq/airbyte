@@ -94,7 +94,7 @@ cat messages.jsonl | python main.py write --config secrets/config.json --catalog
 
 The nice thing about this approach is that you can iterate completely within in python. The downside is that you are not quite running your destination as it will actually be run by Airbyte. Specifically you're not running it from within the docker container that will house it.
 
-**Run using docker**
+**Run using Docker**
 If you want to run your destination exactly as it will be run by Airbyte \(i.e. within a docker container\), you can use the following commands from the connector module directory \(`airbyte-integrations/connectors/destination-<name>`\):
 
 ```bash
