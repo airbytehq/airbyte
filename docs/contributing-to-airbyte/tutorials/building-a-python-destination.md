@@ -80,7 +80,7 @@ All logging should be done through the `self.logger` object available in the `De
 
 Everyone develops differently but here are 3 ways that we recommend iterating on a destination. Consider using whichever one matches your style.
 
-**Run the destination using python**
+**Run the destination using Python**
 
 You'll notice in your destination's directory that there is a python file called `main.py`. This file is the entrypoint for the connector:
 
