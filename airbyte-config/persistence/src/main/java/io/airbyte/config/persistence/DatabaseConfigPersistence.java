@@ -106,12 +106,16 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         throw new SQLException(e);
       }
       Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(System.currentTimeMillis()));
-      seedConfigs.forEach((configType, configJsonStream) -> {
-        String idFieldName = ConfigSchemaMigrationSupport.CONFIG_SCHEMA_ID_FIELD_NAMES.get(configType);
-        configJsonStream.forEach(node -> insertConfigRecord(ctx, timestamp, configType, node, idFieldName));
-      });
 
-      LOGGER.info("Config database data loading completed");
+      int insertionCount = seedConfigs.entrySet().stream().map(entry -> {
+        String configType = entry.getKey();
+        return entry.getValue().map(configJson -> {
+          String idFieldName = ConfigSchemaMigrationSupport.CONFIG_SCHEMA_ID_FIELD_NAMES.get(configType);
+          return insertConfigRecord(ctx, timestamp, configType, configJson, idFieldName);
+        }).reduce(0, Integer::sum);
+      }).reduce(0, Integer::sum);
+
+      LOGGER.info("Config database data loading completed with {} records", insertionCount);
       return null;
     });
     return this;
@@ -148,6 +152,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
   @Override
   public <T> void writeConfig(ConfigSchema configType, String configId, T config) throws IOException {
+    LOGGER.info("Upserting {} record {}", configType, configId);
+
     database.transaction(ctx -> {
       boolean isExistingConfig = ctx.fetchExists(select()
           .from(AIRBYTE_CONFIGS)
@@ -189,20 +195,32 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       return;
     }
 
+    LOGGER.info("Replacing all configs");
+
     Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(System.currentTimeMillis()));
-    database.transaction(ctx -> {
+    int insertionCount = database.transaction(ctx -> {
       ctx.truncate(AIRBYTE_CONFIGS).restartIdentity().execute();
-      configs.forEach((configType, configObjectStream) -> configObjectStream
-          .forEach(configObject -> insertConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(configObject), configType.getIdFieldName())));
-      return null;
+
+      return configs.entrySet().stream().map(entry -> {
+        ConfigSchema configType = entry.getKey();
+        return entry.getValue()
+            .map(configObject -> insertConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(configObject), configType.getIdFieldName()))
+            .reduce(0, Integer::sum);
+      }).reduce(0, Integer::sum);
     });
+
+    LOGGER.info("Config database is reset with {} records", insertionCount);
   }
 
-  private void insertConfigRecord(DSLContext ctx, Timestamp timestamp, String configType, JsonNode configJson, String idFieldName) {
+  /**
+   * @return the number of inserted records for convenience, which is always 1.
+   */
+  private int insertConfigRecord(DSLContext ctx, Timestamp timestamp, String configType, JsonNode configJson, String idFieldName) {
     String configId = idFieldName == null
         ? UUID.randomUUID().toString()
         : configJson.get(idFieldName).asText();
     LOGGER.info("Inserting {} record {}", configType, configId);
+
     ctx.insertInto(AIRBYTE_CONFIGS)
         .set(CONFIG_ID, configId)
         .set(CONFIG_TYPE, configType)
@@ -210,10 +228,13 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .set(CREATED_AT, timestamp)
         .set(UPDATED_AT, timestamp)
         .execute();
+    return 1;
   }
 
   @Override
   public Map<String, Stream<JsonNode>> dumpConfigs() throws IOException {
+    LOGGER.info("Exporting all configs...");
+
     Map<String, Result<Record>> results = database.query(ctx -> ctx.select(asterisk())
         .from(AIRBYTE_CONFIGS)
         .orderBy(CONFIG_TYPE, CONFIG_ID)
