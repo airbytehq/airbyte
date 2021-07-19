@@ -193,7 +193,7 @@ public class EnvConfigs implements Configs {
 
   @Override
   public String getSubmitterNumThreads() {
-    return getEnsureEnv(SUBMITTER_NUM_THREADS);
+    return getEnvOrDefault(SUBMITTER_NUM_THREADS, "5");
   }
 
   @Override
