@@ -83,17 +83,17 @@ public class KubeProcessFactory implements ProcessFactory {
       final String podName = getPodName(imageName, jobId, attempt);
 
       final int stdoutLocalPort = workerPorts.take();
-      LOGGER.info("stdoutLocalPort = " + stdoutLocalPort);
+      LOGGER.info("{} stdoutLocalPort = {}", podName, stdoutLocalPort);
 
       final int stderrLocalPort = workerPorts.take();
-      LOGGER.info("stderrLocalPort = " + stderrLocalPort);
+      LOGGER.info("{} stderrLocalPort = {}", podName, stderrLocalPort);
 
       final Consumer<Integer> portReleaser = port -> {
         if (!workerPorts.contains(port)) {
           workerPorts.add(port);
-          LOGGER.info("Port consumer from {} releasing: {}", podName, port);
+          LOGGER.info("{} releasing: {}", podName, port);
         } else {
-          LOGGER.info("Port consumer from {} skipping releasing: {}", podName, port);
+          LOGGER.info("{} skipping releasing: {}", podName, port);
         }
       };
 
@@ -119,15 +119,20 @@ public class KubeProcessFactory implements ProcessFactory {
 
 
   /**
-   * Docker image names are by convention separated by slashes and have the last portion as the image's name. e.g. airbyte/scheduler or gcr.io/my-project/image-name.
+   * Docker image names are by convention separated by slashes. The last portion is the image's name. This is followed by a colon and a version number.
+   * e.g. airbyte/scheduler:v1 or gcr.io/my-project/image-name:v2.
+   *
    * Kubernetes has a maximum pod name length of 63 characters.
    *
-   * With these two facts, attempt to construct a unique Pod name to with the image name present for easier operations.
+   * With these two facts, attempt to construct a unique Pod name with the image name present for easier operations.
    */
   @VisibleForTesting
   protected static String getPodName(String fullImagePath, String jobId, int attempt) {
-    String dockerDelimiter = "/";
-    var nameParts = fullImagePath.split(dockerDelimiter);
+    var versionDelimiter = ":";
+    var noVersion = fullImagePath.split(versionDelimiter)[0];
+
+    var dockerDelimiter = "/";
+    var nameParts = noVersion.split(dockerDelimiter);
     var imageName = nameParts[nameParts.length-1];
 
     var randSuffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
