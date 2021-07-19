@@ -16,6 +16,7 @@ declare global {
 type Config = {
   ui: {
     helpLink: string;
+    updateLink: string;
     slackLink: string;
     docsLink: string;
     configurationArchiveLink: string;
@@ -44,6 +45,7 @@ const config: Config = {
   ui: {
     technicalSupport: `${BASE_DOCS_LINK}/troubleshooting/on-deploying`,
     helpLink: "https://airbyte.io/community",
+    updateLink: "https://docs.airbyte.io/upgrading-airbyte",
     slackLink: "https://slack.airbyte.io",
     docsLink: "https://docs.airbyte.io",
     configurationArchiveLink: `${BASE_DOCS_LINK}/tutorials/upgrading-airbyte`,
