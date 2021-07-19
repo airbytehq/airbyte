@@ -3,10 +3,10 @@
 set -e
 
 # This script should only be used to set up the status site for the first time or to make your own version for testing.
-# Prod refers to the prod environment used for prior Airbyte projects.
+# TODO move this setup to terraform
 
-BUCKET=airbyte-status
-PROFILE=prod
+BUCKET=airbyte-connector-build-status
+PROFILE=dev # AWS dev environment
 REGION=us-east-2
 S3_DOMAIN="$BUCKET.s3-website.$REGION.amazonaws.com"
 
