@@ -61,11 +61,11 @@ class AirbytePythonPlugin implements Plugin<Project> {
                 }
             }
         } else if(project.file('setup.py').exists()) {
-            // If requirements.txt does not exists, install from setup.py instead, assume a dev profile exists.
+            // If requirements.txt does not exists, install from setup.py instead, assume a dev or "tests" profile exists.
             // In this case, there is no need to depend on the base python modules since everything should be contained in the setup.py.
             project.task('installLocalReqs', type: PythonTask) {
                 module = "pip"
-                command = "install -e .[dev]"
+                command = "install .[dev,tests]"
             }
         } else {
             throw new GradleException('Error: Python module lacks requirement.txt and setup.py')
@@ -94,6 +94,18 @@ class AirbytePythonPlugin implements Plugin<Project> {
             project.task('unitTest') {
                 logger.info "Skipping Python unit tests because unit_tests directory doesn't exist."
             }
+        }
+
+        if (project.file('integration_tests').exists()){
+            project.task('customIntegrationTests', type: PythonTask, dependsOn: project.installTestReqs) {
+                module = "pytest"
+                command = "-s integration_tests"
+            }
+            if (!project.hasProperty('integrationTest')) {
+                project.task('integrationTest')
+            }
+
+            project.integrationTest.dependsOn(project.customIntegrationTests)
         }
 
         if (extension.moduleDirectory) {
