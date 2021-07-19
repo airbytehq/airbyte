@@ -187,8 +187,9 @@ class ConfigPersistenceBuilderTest extends BaseTest {
 
     // first run uses file system config persistence, and adds an extra workspace
     Path testRoot = Path.of("/tmp/cpf_test_migration");
-    Path rootPath = Files.createTempDirectory(Files.createDirectories(testRoot), ConfigPersistenceBuilderTest.class.getName());
-    when(configs.getConfigRoot()).thenReturn(rootPath);
+    Path storageRoot = Files.createTempDirectory(Files.createDirectories(testRoot), ConfigPersistenceBuilderTest.class.getName());
+    Files.createDirectories(storageRoot.resolve("config"));
+    when(configs.getConfigRoot()).thenReturn(storageRoot);
 
     ConfigPersistence filePersistence = new ConfigPersistenceBuilder(configs, false).getFileSystemPersistence();
 

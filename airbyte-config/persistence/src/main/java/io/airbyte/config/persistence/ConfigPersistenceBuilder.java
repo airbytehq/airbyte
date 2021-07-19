@@ -79,7 +79,7 @@ public class ConfigPersistenceBuilder {
     return getDbPersistenceWithFileSeed();
   }
 
-  ConfigPersistence getFileSystemPersistence() throws IOException {
+  ConfigPersistence getFileSystemPersistence() {
     Path configRoot = configs.getConfigRoot();
     LOGGER.info("Use file system config persistence (root: {})", configRoot);
     return FileSystemConfigPersistence.createWithValidation(configRoot);
