@@ -9,23 +9,47 @@ import Text from "components/base/DropDown/components/Text";
 import { IProps } from "components/base/DropDown/components/SingleValue";
 import { OptionView } from "components/base/DropDown/components/Option";
 
+const ValueView = styled(components.SingleValue)`
+  display: flex;
+  align-items: center;
+  overflow: visible !important;
+  text-overflow: initial !important;
+  word-break: normal;
+  white-space: normal !important;
+  line-height: 12px;
+  padding-top: 2px;
+`;
+
+const Separator = styled.div`
+  padding: 0 5px;
+`;
+
 const SingleValue: React.FC<IProps> = (props) => {
   const { syncMode, destinationSyncMode } = props.data.value;
   return (
-    <Text fullText>
-      <components.SingleValue {...props}>
-        <FormattedMessage id={`syncMode.${syncMode}`} /> |{" "}
-        <FormattedMessage id={`destinationSyncMode.${destinationSyncMode}`} />
-      </components.SingleValue>
+    <Text>
+      <ValueView {...props}>
+        <div>
+          <FormattedMessage id={`syncMode.${syncMode}`} />
+        </div>
+        <Separator>|</Separator>
+        <div>
+          <FormattedMessage id={`destinationSyncMode.${destinationSyncMode}`} />
+        </div>
+      </ValueView>
     </Text>
   );
 };
 
 const Title = styled.span`
-  color: ${({ theme }) => theme.greyColor20};
+  color: ${({ theme }) => theme.greyColor55};
+  font-size: 10px;
+  padding-right: 5px;
 `;
 
-const Label = styled.span``;
+const OptionContent = styled(OptionView)`
+  justify-content: left;
+`;
 
 const Mode: React.FC<{
   title: React.ReactNode;
@@ -35,9 +59,8 @@ const Mode: React.FC<{
   return (
     <>
       <Title> {props.title}:</Title>
-      <Label>
-        {props.label} {props.separator ? props.separator : null}
-      </Label>
+      <div>{props.label}</div>
+      {props.separator ? <Separator>{props.separator}</Separator> : null}
     </>
   );
 };
@@ -47,7 +70,7 @@ const Option: React.FC<any> = (props) => {
 
   return (
     <components.Option {...props}>
-      <OptionView
+      <OptionContent
         data-id={props.data.value}
         isSelected={props.isSelected && !props.isMulti}
       >
@@ -64,7 +87,7 @@ const Option: React.FC<any> = (props) => {
             />
           }
         />
-      </OptionView>
+      </OptionContent>
     </components.Option>
   );
 };
@@ -78,7 +101,7 @@ const SyncSettingsCell: React.FC<DropdownProps> = (props) => {
           SingleValue: SingleValue,
           Option: Option,
         }}
-        withBorder
+        $withBorder
         isSearchable={false}
       />
     </Cell>

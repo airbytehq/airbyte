@@ -51,6 +51,9 @@ const CustomSelect = styled(Select)<{
     & .react-select__multi-value {
       background: rgba(255, 255, 255, 0);
     }
+    & .react-select__value-container {
+      overflow: visible;
+    }
   }
 `;
 
