@@ -20,8 +20,8 @@ This source is capable of syncing the following streams:
 | Feature | Supported? |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
-| Incremental Sync | Coming soon |
-| Replicate Incremental Deletes | Coming soon |
+| Incremental Sync | Yes |
+| Replicate Incremental Deletes | No |
 | SSL connection | Yes |
 | Namespaces | No |
 
