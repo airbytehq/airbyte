@@ -490,15 +490,11 @@ public class KubePodProcess extends Process {
    */
   @Override
   public int waitFor() throws InterruptedException {
-    try {
-      Pod refreshedPod =
-          fabricClient.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName()).get();
-      fabricClient.resource(refreshedPod).waitUntilCondition(this::isTerminal, 10, TimeUnit.DAYS);
-      wasKilled.set(true);
-      return exitValue();
-    } finally {
-      close();
-    }
+    Pod refreshedPod =
+        fabricClient.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName()).get();
+    fabricClient.resource(refreshedPod).waitUntilCondition(this::isTerminal, 10, TimeUnit.DAYS);
+    wasKilled.set(true);
+    return exitValue();
   }
 
   /**
@@ -507,11 +503,7 @@ public class KubePodProcess extends Process {
    */
   @Override
   public boolean waitFor(long timeout, TimeUnit unit) throws InterruptedException {
-    try {
-      return super.waitFor(timeout, unit);
-    } finally {
-      close();
-    }
+    return super.waitFor(timeout, unit);
   }
 
   /**
@@ -606,6 +598,12 @@ public class KubePodProcess extends Process {
         .orElseThrow();
 
     LOGGER.info("Exit code for pod {} is {}", name, returnCode);
+    return returnCode;
+  }
+
+  @Override
+  public int exitValue() {
+    var returnCode = getReturnCode(podDefinition);
     // The OS traditionally handles process resource clean up. Therefore an exit code of 0, also
     // indicates that all kernel resources were shut down.
     // Because this is a custom implementation, manually close all the resources.
@@ -613,13 +611,8 @@ public class KubePodProcess extends Process {
     // down after Kubernetes resources are shut down,
     // regardless of termination status.
     close();
-    LOGGER.info("Closed all resources for pod {}", name);
+    LOGGER.info("Closed all resources for pod {}", podDefinition.getMetadata().getName());
     return returnCode;
-  }
-
-  @Override
-  public int exitValue() {
-    return getReturnCode(podDefinition);
   }
 
   private static ResourceRequirementsBuilder getResourceRequirementsBuilder(ResourceRequirements resourceRequirements) {
