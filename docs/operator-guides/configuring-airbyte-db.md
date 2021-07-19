@@ -38,8 +38,6 @@ By default, the Config Database and the Job Database use the same database insta
 ```bash
 CONFIG_DATABASE_USER=airbyte_config_db_user
 CONFIG_DATABASE_PASSWORD=password
-CONFIG_DATABASE_PORT=5432
-CONFIG_DATABASE_DB=airbyte_config_db
 ```
 
 Additionally, you must redefine the JDBC URL constructed in the environment variable `DATABASE_URL` to include the correct host, port, and database. If you need to provide extra arguments to the JDBC driver (for example, to handle SSL) you should add it here as well:
