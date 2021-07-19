@@ -40,6 +40,7 @@ public class EnvConfigs implements Configs {
   private static final Logger LOGGER = LoggerFactory.getLogger(EnvConfigs.class);
 
   public static final String AIRBYTE_ROLE = "AIRBYTE_ROLE";
+  public static final String AIRBYTE_SERVER_HOST = "AIRBYTE_SERVER_HOST";
   public static final String AIRBYTE_VERSION = "AIRBYTE_VERSION";
   public static final String WORKER_ENVIRONMENT = "WORKER_ENVIRONMENT";
   public static final String WORKSPACE_ROOT = "WORKSPACE_ROOT";
@@ -89,6 +90,11 @@ public class EnvConfigs implements Configs {
   @Override
   public String getAirbyteRole() {
     return getEnv(AIRBYTE_ROLE);
+  }
+
+  @Override
+  public String getAirbyteServerHost() {
+    return getEnsureEnv(AIRBYTE_SERVER_HOST);
   }
 
   @Override

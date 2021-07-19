@@ -31,6 +31,8 @@ public interface Configs {
 
   String getAirbyteRole();
 
+  String getAirbyteServerHost();
+
   String getAirbyteVersion();
 
   String getAirbyteVersionOrWarning();
