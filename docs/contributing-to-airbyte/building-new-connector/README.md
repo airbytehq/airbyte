@@ -64,7 +64,7 @@ As you implement your connector, make sure to review the [Best Practices for Con
 
 At a minimum, your connector must implement the acceptance tests described in [Testing Connectors](testing-connectors.md)
 
-**Note:  Acceptance tests are not yet available for Python destination connectors. Coming soon!**
+**Note:  Acceptance tests are not yet available for Python destination connectors. Coming [soon](https://github.com/airbytehq/airbyte/issues/4698)!**
 
 ### 3. Document building & testing your connector
 
