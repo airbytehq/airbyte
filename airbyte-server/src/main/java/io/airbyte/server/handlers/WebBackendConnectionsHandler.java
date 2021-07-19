@@ -202,9 +202,9 @@ public class WebBackendConnectionsHandler {
     final DestinationRead destinationRead = destinationHandler.getDestination(new DestinationIdRequestBody().destinationId(connectionRead.getDestinationId()));
     final DestinationRead destinationReadFromSearch = fromDestinationSearch(connectionSearch.getDestination(), destinationRead);
 
-    return connectionReadFromSearch.equals(connectionRead) &&
-      sourceReadFromSearch.equals(sourceRead) &&
-      destinationReadFromSearch.equals(destinationRead);
+    return (connectionReadFromSearch == null || connectionReadFromSearch.equals(connectionRead)) &&
+      (sourceReadFromSearch == null || sourceReadFromSearch.equals(sourceRead)) &&
+      (destinationReadFromSearch == null || destinationReadFromSearch.equals(destinationRead));
   }
 
   private ConnectionRead fromConnectionSearch(WebBackendConnectionSearch connectionSearch, ConnectionRead connectionRead) {
