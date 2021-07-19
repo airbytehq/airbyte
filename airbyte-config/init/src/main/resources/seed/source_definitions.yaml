@@ -43,6 +43,11 @@
   dockerImageTag: 0.3.3
   documentationUrl: https://hub.docker.com/r/airbyte/source-mssql
   icon: mssql.svg
+- sourceDefinitionId: d8286229-c680-4063-8c59-23b9b391c700
+  name: Pipedrive
+  dockerRepository: airbyte/source-pipedrive
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-pipedrive
 - sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   name: Postgres
   dockerRepository: airbyte/source-postgres
@@ -116,7 +121,7 @@
 - sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   name: Facebook Marketing
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.13
+  dockerImageTag: 0.2.14
   documentationUrl: https://hub.docker.com/r/airbyte/source-facebook-marketing
   icon: facebook.svg
 - sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
@@ -184,9 +189,9 @@
   icon: zendesk.svg
 - sourceDefinitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
   name: Intercom
-  dockerRepository: airbyte/source-intercom-singer
-  dockerImageTag: 0.2.3
-  documentationUrl: https://hub.docker.com/r/airbyte/source-intercom-singer
+  dockerRepository: airbyte/source-intercom
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-intercom
   icon: intercom.svg
 - sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
   name: Jira
