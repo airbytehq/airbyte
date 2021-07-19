@@ -44,11 +44,15 @@ Setup your Python virtual environment:
 
 ```bash
 cd airbyte-integrations/connectors/destination-<name>
+
 # Create a virtual environment in the .venv directory
 python -m venv .venv 
+
 # activate the virtualenv
 source .venv/bin/activate 
-pip install -r requirements.txt
+
+# Install with the "tests" extra which provides test requirements
+pip install '.[tests]'
 ```
 This step sets up the initial python environment. **All** subsequent `python` or `pip` commands assume you have activated your virtual environment.
 
@@ -117,7 +121,7 @@ _note: these tests aren't yet available for Python connectors but will be very s
 
 Airbyte provides a standard test suite that is run against every destination. The objective of these tests is to provide some "free" tests that can sanity check that the basic functionality of the destination works. One approach to developing your connector is to simply run the tests between each change and use the feedback from them to guide your development.
 
-If you want to try out this approach, check out Step 8 which describes what you need to do to set up the standard tests for your destination.
+If you want to try out this approach, check out Step 6 which describes what you need to do to set up the standard tests for your destination.
 
 The nice thing about this approach is that you are running your destination exactly as Airbyte will run it in the CI. The downside is that the tests do not run very quickly.
 
