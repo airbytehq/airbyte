@@ -6,6 +6,7 @@ declare global {
     TRACKING_STRATEGY?: string;
     PAPERCUPS_STORYTIME?: string;
     FULLSTORY?: string;
+    OPENREPLAY?: string;
     AIRBYTE_VERSION?: string;
     API_URL?: string;
     IS_DEMO?: string;
@@ -31,6 +32,9 @@ type Config = {
     accountId: string;
     baseUrl: string;
     enableStorytime: boolean;
+  };
+  openreplay: {
+    projectKey: string;
   };
   fullstory: Fullstory.SnippetOptions;
   apiUrl: string;
@@ -66,6 +70,9 @@ const config: Config = {
     accountId: "74560291-451e-4ceb-a802-56706ece528b",
     baseUrl: "https://app.papercups.io",
     enableStorytime: window.PAPERCUPS_STORYTIME !== "disabled",
+  },
+  openreplay: {
+    projectKey: window.OPENREPLAY !== "disabled" ? "6611843272536134" : "",
   },
   fullstory: {
     orgId: "13AXQ4",
