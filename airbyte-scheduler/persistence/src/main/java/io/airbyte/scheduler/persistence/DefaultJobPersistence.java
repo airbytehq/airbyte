@@ -96,6 +96,9 @@ public class DefaultJobPersistence implements JobPersistence {
   private static final JSONFormat DB_JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
   protected static final String DEFAULT_SCHEMA = "public";
   private static final String BACKUP_SCHEMA = "import_backup";
+  public static final String DEPLOYMENT_ID_KEY = "deployment_id";
+  public static final String METADATA_KEY_COL = "KEY";
+  public static final String METADATA_VAL_COL = "value";
 
   @VisibleForTesting
   static final String BASE_JOB_SELECT_AND_JOIN =
@@ -457,10 +460,42 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public void setVersion(String airbyteVersion) throws IOException {
     database.query(ctx -> ctx.execute(String.format(
-        "INSERT INTO %s VALUES('%s', '%s'), ('%s_init_db', '%s') ON CONFLICT (key) DO UPDATE SET value = '%s'",
+        "INSERT INTO %s(key,value) VALUES('%s', '%s'), ('%s_init_db', '%s') ON CONFLICT (key) DO UPDATE SET value = '%s'",
         AIRBYTE_METADATA_TABLE,
-        AirbyteVersion.AIRBYTE_VERSION_KEY_NAME, airbyteVersion,
-        current_timestamp(), airbyteVersion, airbyteVersion)));
+        AirbyteVersion.AIRBYTE_VERSION_KEY_NAME,
+        airbyteVersion,
+        current_timestamp(),
+        airbyteVersion,
+        airbyteVersion)));
+  }
+
+  @Override
+  public Optional<UUID> getDeployment() throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select()
+        .from(AIRBYTE_METADATA_TABLE)
+        .where(DSL.field("key").eq(DEPLOYMENT_ID_KEY))
+        .fetch());
+    return result.stream().findFirst().map(r -> UUID.fromString(r.getValue("value", String.class)));
+  }
+
+  @Override
+  public void setDeployment(UUID deployment) throws IOException {
+    final UUID committedDeploymentId = database.query(ctx -> ctx.fetch(String.format(
+        "INSERT INTO %s(key, value) VALUES('%s', '%s') ON CONFLICT (key) DO NOTHING RETURNING value",
+        AIRBYTE_METADATA_TABLE,
+        DEPLOYMENT_ID_KEY,
+        deployment)))
+        .stream()
+        .map(record -> UUID.fromString(record.get("key", String.class)))
+        .findFirst()
+        .orElseThrow();
+
+    // todo (cgardens) - this will work if we replace stuff surgically in the db and use set deployment
+    // in the importer. otherwise it'll just get overwritten which will be confusing
+    // todo track OSS / cloud in tracker
+    if (!deployment.equals(committedDeploymentId)) {
+      LOGGER.warn("Attempted to set a deployment id %s, but deployment id %s already set. Retained original value.");
+    }
   }
 
   private static String current_timestamp() {

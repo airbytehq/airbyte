@@ -132,7 +132,7 @@ public class ServerApp {
     ConfigurationApiFactory.setArchiveTtlManager(new FileTtlManager(10, TimeUnit.MINUTES, 10));
     ConfigurationApiFactory.setMdc(mdc);
 
-    ResourceConfig rc =
+    final ResourceConfig rc =
         new ResourceConfig()
             // request logging
             .register(new RequestLogger(mdc))
@@ -176,8 +176,17 @@ public class ServerApp {
     server.join();
   }
 
-  private static void setCustomerIdIfNotSet(final ConfigRepository configRepository) throws InterruptedException {
-    StandardWorkspace workspace = null;
+  private static void createDeploymentIfNoneExists(final JobPersistence jobPersistence) throws IOException {
+    final Optional<UUID> deploymentOptional = jobPersistence.getDeployment();
+    final UUID deployment;
+    if (deploymentOptional.isPresent()) {
+      LOGGER.info("running deployment: {}", deploymentOptional.get());
+    } else {
+      final UUID deploymentId = UUID.randomUUID();
+      jobPersistence.setDeployment(deploymentId);
+      LOGGER.info("created deployment: {}", deploymentId);
+    }
+  }
 
     // retry until the workspace is available / waits for file config initialization
     while (workspace == null) {
@@ -219,6 +228,7 @@ public class ServerApp {
 
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
+        configs.getWorkerEnvironment(),
         configs.getAirbyteRole(),
         configs.getAirbyteVersion(),
         configRepository);
@@ -230,6 +240,8 @@ public class ServerApp {
         configs.getDatabaseUrl(),
         Databases.IS_JOB_DATABASE_READY);
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
+
+    createDeploymentIfNoneExists(jobPersistence);
 
     final String airbyteVersion = configs.getAirbyteVersion();
     if (jobPersistence.getVersion().isEmpty()) {
