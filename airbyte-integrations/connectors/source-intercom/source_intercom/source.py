@@ -22,6 +22,7 @@
 # SOFTWARE.
 #
 
+import time
 from abc import ABC
 from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -67,9 +68,7 @@ class IntercomStream(HttpStream, ABC):
         else:
             return None
 
-    def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Mapping[str, Any]:
+    def request_headers(self, **kwargs) -> Mapping[str, Any]:
         return {"Accept": "application/json"}
 
     def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
@@ -108,9 +107,8 @@ class IntercomStream(HttpStream, ABC):
         for record in data:
             yield record
 
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        wait_time = 3600 / self.queries_per_hour  # wait for 3,6 seconds according to API limit
-        return wait_time
+        # wait for 3,6 seconds according to API limit
+        time.sleep(3600 / self.queries_per_hour)
 
 
 class IncrementalIntercomStream(IntercomStream, ABC):
@@ -134,9 +132,9 @@ class IncrementalIntercomStream(IntercomStream, ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
 
-        data = self.get_data(response)
+        record = super().parse_response(response, stream_state, stream_slice, next_page_token)
 
-        for record in data:
+        for record in record:
             updated_at = record.get(self.cursor_field)
 
             if updated_at:
@@ -162,11 +160,11 @@ class IncrementalIntercomStream(IntercomStream, ABC):
         return {self.cursor_field: max(current_stream_state_date, latest_record_date)}
 
 
-class StreamMixin:
-    slicing_stream: Optional[IntercomStream] = None
+class ChildStreamMixin:
+    parent_stream_class: Optional[IntercomStream] = None
 
     def stream_slices(self, sync_mode, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        for item in self.slicing_stream(authenticator=self.authenticator, start_date=self.start_date).read_records(sync_mode=sync_mode):
+        for item in self.parent_stream_class(authenticator=self.authenticator, start_date=self.start_date).read_records(sync_mode=sync_mode):
             yield {"id": item["id"]}
 
         yield from []
@@ -180,9 +178,7 @@ class Admins(IntercomStream):
 
     data_fields = ["admins"]
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return "admins"
 
 
@@ -192,23 +188,19 @@ class Companies(IncrementalIntercomStream):
     Endpoint: https://api.intercom.io/companies
     """
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return "companies"
 
 
-class CompanySegments(StreamMixin, IncrementalIntercomStream):
+class CompanySegments(ChildStreamMixin, IncrementalIntercomStream):
     """Return list of all company segments.
     API Docs: https://developers.intercom.com/intercom-api-reference/reference#list-attached-segments-1
     Endpoint: https://api.intercom.io/companies/<id>/segments
     """
 
-    slicing_stream = Companies
+    parent_stream_class = Companies
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"/companies/{stream_slice['id']}/segments"
 
 
@@ -220,24 +212,20 @@ class Conversations(IncrementalIntercomStream):
 
     data_fields = ["conversations"]
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return "conversations"
 
 
-class ConversationParts(StreamMixin, IncrementalIntercomStream):
+class ConversationParts(ChildStreamMixin, IncrementalIntercomStream):
     """Return list of all conversation parts.
     API Docs: https://developers.intercom.com/intercom-api-reference/reference#retrieve-a-conversation
     Endpoint: https://api.intercom.io/conversations/<id>
     """
 
     data_fields = ["conversation_parts", "conversation_parts"]
-    slicing_stream = Conversations
+    parent_stream_class = Conversations
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"/conversations/{stream_slice['id']}"
 
 
@@ -249,9 +237,7 @@ class Segments(IncrementalIntercomStream):
 
     data_fields = ["segments"]
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return "segments"
 
 
@@ -261,18 +247,14 @@ class Contacts(IncrementalIntercomStream):
     Endpoint: https://api.intercom.io/contacts
     """
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return "contacts"
 
 
 class DataAttributes(IntercomStream):
     primary_key = "name"
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return "data_attributes"
 
 
@@ -282,9 +264,7 @@ class CompanyAttributes(DataAttributes):
     Endpoint: https://api.intercom.io/data_attributes?model=company
     """
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         return {"model": "company"}
 
 
@@ -294,9 +274,7 @@ class ContactAttributes(DataAttributes):
     Endpoint: https://api.intercom.io/data_attributes?model=contact
     """
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         return {"model": "contact"}
 
 
@@ -308,9 +286,7 @@ class Tags(IntercomStream):
 
     primary_key = "name"
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return "tags"
 
 
@@ -323,9 +299,7 @@ class Teams(IntercomStream):
     primary_key = "name"
     data_fields = ["teams"]
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return "teams"
 
 
