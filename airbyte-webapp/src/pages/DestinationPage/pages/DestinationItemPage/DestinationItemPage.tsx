@@ -1,13 +1,11 @@
 import React, { Suspense, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 import { useResource } from "rest-hooks";
 
 import PageTitle from "components/PageTitle";
 import useRouter from "components/hooks/useRouterHook";
 import config from "config";
-import ContentCard from "components/ContentCard";
-import EmptyResource from "components/EmptyResourceBlock";
+import Placeholder, { ResourceTypes } from "components/Placeholder";
 import ConnectionResource from "core/resources/Connection";
 import { Routes } from "../../../routes";
 import Breadcrumbs from "components/Breadcrumbs";
@@ -27,10 +25,6 @@ import { getIcon } from "utils/imageUtils";
 import ImageBlock from "components/ImageBlock";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import HeadTitle from "components/HeadTitle";
-
-const Content = styled(ContentCard)`
-  margin: 0 32px 0 27px;
-`;
 
 const DestinationItemPage: React.FC = () => {
   const { query, push } = useRouter<{ id: string }>();
@@ -140,14 +134,7 @@ const DestinationItemPage: React.FC = () => {
             connections={connectionsWithDestination}
           />
         ) : (
-          <Content>
-            <EmptyResource
-              text={<FormattedMessage id="destinations.noSources" />}
-              description={
-                <FormattedMessage id="destinations.addSourceReplicateData" />
-              }
-            />
-          </Content>
+          <Placeholder resource={ResourceTypes.Sources} />
         )}
       </>
     );
