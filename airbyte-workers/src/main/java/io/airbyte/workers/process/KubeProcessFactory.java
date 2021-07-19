@@ -24,6 +24,7 @@
 
 package io.airbyte.workers.process;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerException;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -79,8 +80,7 @@ public class KubeProcessFactory implements ProcessFactory {
       throws WorkerException {
     try {
       // used to differentiate source and destination processes with the same id and attempt
-      final String suffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
-      final String podName = "airbyte-worker-" + jobId + "-" + attempt + "-" + suffix;
+      final String podName = getPodName(imageName, jobId, attempt);
 
       final int stdoutLocalPort = workerPorts.take();
       LOGGER.info("stdoutLocalPort = " + stdoutLocalPort);
@@ -117,4 +117,31 @@ public class KubeProcessFactory implements ProcessFactory {
     }
   }
 
+
+  /**
+   * Docker image names are by convention separated by slashes and have the last portion as the image's name. e.g. airbyte/scheduler or gcr.io/my-project/image-name.
+   * Kubernetes has a maximum pod name length of 63 characters.
+   *
+   * With these two facts, attempt to construct a unique Pod name to with the image name present for easier operations.
+   */
+  @VisibleForTesting
+  protected static String getPodName(String fullImagePath, String jobId, int attempt) {
+    String dockerDelimiter = "/";
+    var nameParts = fullImagePath.split(dockerDelimiter);
+    var imageName = nameParts[nameParts.length-1];
+
+    var randSuffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
+    final String suffix = "worker-" + jobId + "-" + attempt + "-" + randSuffix;
+
+    var podName = imageName + "-" + suffix;
+
+    var podNameLenLimit = 63;
+    if (podName.length() > podNameLenLimit) {
+      var extra = podName.length() - podNameLenLimit;
+      imageName = imageName.substring(extra);
+      podName = imageName + "-" + suffix;
+    }
+
+    return podName;
+  }
 }
