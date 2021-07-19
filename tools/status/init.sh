@@ -3,16 +3,16 @@
 set -e
 
 # This script should only be used to set up the status site for the first time or to make your own version for testing.
-# Prod refers to the prod environment used for prior Airbyte projects.
+# TODO move this setup to terraform
 
 BUCKET=airbyte-connector-build-status
-PROFILE=dev
+PROFILE=dev # AWS dev environment
 REGION=us-east-2
 S3_DOMAIN="$BUCKET.s3-website.$REGION.amazonaws.com"
 
 export AWS_PAGER=""
 
-#echo "This has already been created. Comment out this line if you really want to run this again." && exit 1
+echo "This has already been created. Comment out this line if you really want to run this again." && exit 1
 
 echo "Creating bucket..."
 aws s3api create-bucket --bucket "$BUCKET" --region "$REGION"  --create-bucket-configuration LocationConstraint="$REGION" --profile "$PROFILE"
@@ -34,5 +34,5 @@ aws cloudfront create-distribution \
 
 echo "Site should be ready at http://$S3_DOMAIN"
 echo "1. Add a certificate and cname to the distribution: https://advancedweb.hu/how-to-use-a-custom-domain-on-cloudfront-with-cloudflare-managed-dns/"
-echo "2. Configure a CNAME on Cloudflare for status-api.airbyte.io to point to the bucket!"
+echo "2. Configure a CNAME on Cloudflare for airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com to point to the bucket!"
 echo "3. Create STATUS_API_AWS_ACCESS_KEY_ID and STATUS_API_AWS_SECRET_ACCESS_KEY Github secrets with access to the bucket."
