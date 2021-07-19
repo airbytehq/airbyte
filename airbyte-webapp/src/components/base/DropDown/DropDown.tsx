@@ -53,6 +53,7 @@ const CustomSelect = styled(Select)<{
     & .react-select__multi-value {
       background: rgba(255, 255, 255, 0);
     }
+
     & .react-select__value-container {
       overflow: visible;
     }
@@ -62,7 +63,7 @@ const CustomSelect = styled(Select)<{
 const DropDown: React.FC<DropdownProps> = (props) => {
   const propsComponents = props.components;
 
-  const components = React.useMemo<SelectComponentsConfig<OptionType, true>>(
+  const components = React.useMemo<SelectComponentsConfig<OptionType, boolean>>(
     () =>
       ({
         DropdownIndicator,
@@ -72,9 +73,6 @@ const DropDown: React.FC<DropdownProps> = (props) => {
         IndicatorSeparator: null,
         ClearIndicator: null,
         MultiValueRemove: null,
-        // MultiValue: null,
-        // MultiValueContainer: null,
-        // MultiValueLabel: null,
         ...(propsComponents ?? {}),
       } as any),
     [propsComponents]
@@ -86,10 +84,6 @@ const DropDown: React.FC<DropdownProps> = (props) => {
       )
     : props.options?.find((op) => equal(op.value, props.value));
 
-  if (props.isMulti) {
-    console.log(currentValue);
-  }
-
   return (
     <CustomSelect
       data-testid={props.name}
@@ -98,6 +92,7 @@ const DropDown: React.FC<DropdownProps> = (props) => {
       classNamePrefix="react-select"
       menuPortalTarget={document.body}
       placeholder="..."
+      isSearchable={false}
       {...props}
       value={currentValue}
       components={components}

@@ -78,7 +78,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
     (pkPath: string[]) => {
       let newPrimaryKey: string[][];
 
-      if (pkPaths.has(pkPath.join("."))) {
+      if (config.primaryKey.find((pk) => equal(pk, pkPath))) {
         newPrimaryKey = config.primaryKey.filter((key) => !equal(key, pkPath));
       } else {
         newPrimaryKey = [...config.primaryKey, pkPath];
@@ -86,7 +86,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
 
       updateStreamWithConfig({ primaryKey: newPrimaryKey });
     },
-    [config.primaryKey, pkPaths, updateStreamWithConfig]
+    [config.primaryKey, updateStreamWithConfig]
   );
 
   const onCursorSelect = useCallback(
@@ -120,6 +120,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
           destinationSupportedSyncModes.includes(destinationSyncMode)
       ).map(([syncMode, destinationSyncMode]) => ({
         value: { syncMode, destinationSyncMode },
+        disabled: true,
       })),
     [stream.supportedSyncModes, destinationSupportedSyncModes]
   );
@@ -137,9 +138,13 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
     sourceNamespace: stream.namespace,
   });
 
-  const primitiveFields = fields
-    .filter(SyncSchemaFieldObject.isPrimitive)
-    .map((field) => field.name);
+  const primitiveFields = useMemo(
+    () =>
+      fields
+        .filter(SyncSchemaFieldObject.isPrimitive)
+        .map((field) => field.name),
+    [fields]
+  );
 
   return (
     <Section error={hasError}>

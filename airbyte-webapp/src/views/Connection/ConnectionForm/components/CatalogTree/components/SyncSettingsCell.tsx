@@ -102,7 +102,6 @@ const SyncSettingsCell: React.FC<DropdownProps> = (props) => {
           Option: Option,
         }}
         $withBorder
-        isSearchable={false}
       />
     </Cell>
   );

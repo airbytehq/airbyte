@@ -21,7 +21,10 @@ export type IDataItem = {
   config?: any;
 };
 
-export const OptionView = styled.div<{ isSelected?: boolean }>`
+export const OptionView = styled.div<{
+  isSelected?: boolean;
+  isDisabled?: boolean;
+}>`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -48,6 +51,7 @@ const Option: React.FC<IProps> = (props) => {
       <OptionView
         data-id={props.data.value}
         isSelected={props.isSelected && !props.isMulti}
+        isDisabled={props.isDisabled}
       >
         <Text
           primary={props.data.primary}
