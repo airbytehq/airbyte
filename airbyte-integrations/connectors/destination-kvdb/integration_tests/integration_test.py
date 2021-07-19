@@ -124,7 +124,9 @@ def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, cl
     first_record_chunk = [_record(append_stream, str(i), i) for i in range(5)] + [_record(overwrite_stream, str(i), i) for i in range(5)]
 
     second_state_message = _state({"state": "2"})
-    second_record_chunk = [_record(append_stream, str(i), i) for i in range(5, 10)] + [_record(overwrite_stream, str(i), i) for i in range(5, 10)]
+    second_record_chunk = [_record(append_stream, str(i), i) for i in range(5, 10)] + [
+        _record(overwrite_stream, str(i), i) for i in range(5, 10)
+    ]
 
     destination = DestinationKvdb()
 
@@ -142,11 +144,15 @@ def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, cl
 
     # After this sync we expect the append stream to have 15 messages and the overwrite stream to have 5
     third_state_message = _state({"state": "3"})
-    third_record_chunk = [_record(append_stream, str(i), i) for i in range(10, 15)] + [_record(overwrite_stream, str(i), i) for i in range(10, 15)]
+    third_record_chunk = [_record(append_stream, str(i), i) for i in range(10, 15)] + [
+        _record(overwrite_stream, str(i), i) for i in range(10, 15)
+    ]
 
     output_states = list(destination.write(config, configured_catalog, [*third_record_chunk, third_state_message]))
     assert [third_state_message] == output_states
 
     records_in_destination = retrieve_all_records(client)
-    expected_records = [_record(append_stream, str(i), i) for i in range(15)] + [_record(overwrite_stream, str(i), i) for i in range(10, 15)]
+    expected_records = [_record(append_stream, str(i), i) for i in range(15)] + [
+        _record(overwrite_stream, str(i), i) for i in range(10, 15)
+    ]
     assert expected_records == records_in_destination
