@@ -61,23 +61,30 @@ class IntercomStream(HttpStream, ABC):
         Returning None means there are no more pages to read in response.
         """
 
-        next_page = response.links.get("next", None)
+        next_page = response.json().get("pages", {}).get('next')
 
         if next_page:
-            return dict(parse_qsl(urlparse(next_page.get("url")).query))
+            return {"starting_after": next_page["starting_after"]}
         else:
             return None
+
+    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = {}
+        if next_page_token:
+            params.update(**next_page_token)
+        return params
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         return {"Accept": "application/json"}
 
-    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         try:
-            return super()._send_request(request, request_kwargs)
+            yield from super().read_records(*args, **kwargs)
         except requests.exceptions.HTTPError as e:
             error_message = e.response.text
             if error_message:
-                self.logger.error(f"Stream {self.name}: {e.response.status_code} " f"{e.response.reason} - {error_message}")
+                self.logger.error(
+                    f"Stream {self.name}: {e.response.status_code} " f"{e.response.reason} - {error_message}")
             raise e
 
     def get_data(self, response: requests.Response) -> List:
@@ -184,12 +191,23 @@ class Admins(IntercomStream):
 
 class Companies(IncrementalIntercomStream):
     """Return list of all companies.
-    API Docs: https://developers.intercom.com/intercom-api-reference/reference#list-companies
-    Endpoint: https://api.intercom.io/companies
+    API Docs: https://developers.intercom.com/intercom-api-reference/reference#iterating-over-all-companies
+    Endpoint: https://api.intercom.io/companies/scroll
     """
 
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """For reset scroll needs to iterate pages untill the last.
+        Another way need wait 1 min for the scroll to expire to get a new list for companies segments."""
+
+        data = response.json().get("data")
+
+        if data:
+            return {"scroll_param": response.json()["scroll_param"]}
+        else:
+            return None
+
     def path(self, **kwargs) -> str:
-        return "companies"
+        return "companies/scroll"
 
 
 class CompanySegments(ChildStreamMixin, IncrementalIntercomStream):
