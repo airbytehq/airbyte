@@ -8,8 +8,10 @@ import SingleValue from "./components/SingleValue";
 import Option from "./components/Option";
 
 import { equal } from "utils/objects";
+import { SelectComponentsConfig } from "react-select/src/components";
 
-type DropdownProps = Props<any> & {
+type OptionType = any;
+type DropdownProps = Props<OptionType> & {
   withBorder?: boolean;
   fullText?: boolean;
   error?: boolean;
@@ -57,17 +59,21 @@ const CustomSelect = styled(Select)<{
 const DropDown: React.FC<DropdownProps> = (props) => {
   const propsComponents = props.components;
 
-  const components = React.useMemo(
-    () => ({
-      DropdownIndicator,
-      Menu,
-      Option,
-      SingleValue,
-      IndicatorSeparator: null,
-      ClearIndicator: null,
-      MultiValueRemove: null,
-      ...(propsComponents ?? {}),
-    }),
+  const components = React.useMemo<SelectComponentsConfig<OptionType, true>>(
+    () =>
+      ({
+        DropdownIndicator,
+        Menu,
+        Option,
+        SingleValue,
+        IndicatorSeparator: null,
+        ClearIndicator: null,
+        MultiValueRemove: null,
+        // MultiValue: null,
+        // MultiValueContainer: null,
+        // MultiValueLabel: null,
+        ...(propsComponents ?? {}),
+      } as any),
     [propsComponents]
   );
 
@@ -76,6 +82,10 @@ const DropDown: React.FC<DropdownProps> = (props) => {
         props.value.find((o: any) => equal(o, op.value))
       )
     : props.options?.find((op) => equal(op.value, props.value));
+
+  if (props.isMulti) {
+    console.log(currentValue);
+  }
 
   return (
     <CustomSelect

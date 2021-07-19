@@ -8,7 +8,7 @@ const Arrow = styled(FontAwesomeIcon)`
   margin-top: -6px;
 `;
 
-const DropdownIndicator: React.FC<IndicatorProps<OptionTypeBase, boolean>> = (
+const DropdownIndicator: React.FC<IndicatorProps<OptionTypeBase, false>> = (
   props
 ) => (
   <components.DropdownIndicator {...props}>

@@ -50,8 +50,14 @@ const Popout: React.FC<PopoutProps> = ({
 }) => {
   const [isOpen, toggleOpen] = useToggle(false);
   const onSelectChange = (value: Value, meta: ActionMeta<Value>) => {
-    toggleOpen();
+    !props.isMulti && toggleOpen();
     onChange?.(value, meta);
+  };
+
+  const components = {
+    IndicatorSeparator: null,
+    DropdownIndicator: null,
+    ...props.components,
   };
 
   return (
@@ -63,20 +69,17 @@ const Popout: React.FC<PopoutProps> = ({
       <DropDown
         autoFocus
         backspaceRemovesValue={false}
-        components={{
-          IndicatorSeparator: null,
-          DropdownIndicator: null,
-        }}
         controlShouldRenderValue={false}
         hideSelectedOptions={false}
         isClearable={false}
         menuIsOpen
-        onChange={onSelectChange}
-        options={props.options}
         placeholder={null}
         styles={selectStyles}
         tabSelectsValue={false}
+        {...props}
+        onChange={onSelectChange}
         value={value}
+        components={components}
       />
     </PopupOpener>
   );

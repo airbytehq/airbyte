@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 
 import styled from "styled-components";
 
-import { DropDown, DropDownRow } from "components";
+import { DropDownRow } from "components";
 import { MainInfoCell } from "./components/MainInfoCell";
 import { Cell } from "components/SimpleTableComponents";
 import { SyncSettingsCell } from "./components/SyncSettingsCell";
@@ -51,7 +51,7 @@ interface StreamHeaderProps {
   primitiveFields: string[];
 
   pkRequired: boolean;
-  onPrimaryKeyChange: (pkPath: string[]) => void;
+  onPrimaryKeyChange: (pkPath: string[][]) => void;
   cursorRequired: boolean;
   onCursorChange: (cursorPath: string[]) => void;
 
@@ -90,8 +90,6 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
     [syncMode, destinationSyncMode]
   );
 
-  const pkKeyItems = primaryKey.map((k) => k.join("."));
-
   const dropdownFields = primitiveFields.map((f) => ({
     value: f.split("."),
     label: f,
@@ -125,23 +123,27 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
       />
       <Cell>
         {pkRequired && (
-          <DropDown
+          <Popout
             options={dropdownFields}
-            value={pkKeyItems}
+            value={primaryKey}
             // @ts-ignore
             isMulti={true}
-            onChange={(option) => {
+            onChange={(option: any) => {
               onPrimaryKeyChange(option.map((op: any) => op.value));
             }}
-            // targetComponent={({ onOpen }) => (
-            //   <div onClick={onOpen}>
-            //     <FormattedMessage
-            //       id="form.pkSelected"
-            //       values={{ count: pkKeyItems.length, items: pkKeyItems }}
-            //     />
-            //     <Arrow icon={faSortDown} />
-            //   </div>
-            // )}
+            components={{ MultiValue: () => null }}
+            targetComponent={({ onOpen }) => (
+              <div onClick={onOpen}>
+                <FormattedMessage
+                  id="form.pkSelected"
+                  values={{
+                    count: primaryKey.length,
+                    items: primaryKey.map((k) => k.join(".")),
+                  }}
+                />
+                <Arrow icon={faSortDown} />
+              </div>
+            )}
           />
         )}
       </Cell>
@@ -150,7 +152,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
           <Popout
             options={dropdownFields}
             value={cursorField}
-            onChange={onCursorChange}
+            onChange={(op) => onCursorChange(op.value)}
             targetComponent={({ onOpen }) => (
               <Ct onClick={onOpen}>
                 {stream.config.cursorField.join(".")}

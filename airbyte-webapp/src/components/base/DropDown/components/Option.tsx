@@ -8,7 +8,7 @@ import CheckBox from "components/base/CheckBox";
 
 export type IProps = {
   data: { disabled: boolean; index: number; fullText?: boolean } & IDataItem;
-} & OptionProps<OptionTypeBase, boolean>;
+} & OptionProps<OptionTypeBase, false>;
 
 export type IDataItem = {
   label?: string;

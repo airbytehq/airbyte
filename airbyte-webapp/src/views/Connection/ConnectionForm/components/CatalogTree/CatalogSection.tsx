@@ -99,7 +99,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
     config.destinationSyncMode === DestinationSyncMode.Dedupted;
   const cursorRequired = config.syncMode === SyncMode.Incremental;
   const showPkControl =
-    stream.sourceDefinedPrimaryKey.length !== 0 && pkRequired;
+    stream.sourceDefinedPrimaryKey.length === 0 && pkRequired;
   const showCursorControl = !stream.sourceDefinedCursor && cursorRequired;
 
   const selectedCursorPath = config.cursorField.join(".");
@@ -128,6 +128,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
 
   const configErrors = getIn(errors, `schema.streams[${streamNode.id}].config`);
   const hasError = configErrors && Object.keys(configErrors).length > 0;
+
   const [{ value: namespaceDefinition }] = useField("namespaceDefinition");
   const [{ value: namespaceFormat }] = useField("namespaceFormat");
   const destNamespace = getDestinationNamespace({
@@ -138,7 +139,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
 
   const primitiveFields = fields
     .filter(SyncSchemaFieldObject.isPrimitive)
-    .map((f) => f.name);
+    .map((field) => field.name);
 
   return (
     <Section error={hasError}>
@@ -154,7 +155,9 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
           pkRequired={showPkControl}
           cursorRequired={showCursorControl}
           primitiveFields={primitiveFields}
-          onPrimaryKeyChange={onPkSelect}
+          onPrimaryKeyChange={(newPrimaryKey) =>
+            updateStreamWithConfig({ primaryKey: newPrimaryKey })
+          }
           onCursorChange={onCursorSelect}
           hasFields={hasChildren}
           onExpand={onExpand}

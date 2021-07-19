@@ -3,7 +3,7 @@ import styled from "styled-components";
 
 import { IDataItem } from "./Option";
 
-const Menu = styled(components.Menu)<MenuProps<IDataItem, boolean>>`
+const Menu = styled(components.Menu)<MenuProps<IDataItem, false>>`
   background: ${({ theme }) => theme.textColor};
   background: red;
 
