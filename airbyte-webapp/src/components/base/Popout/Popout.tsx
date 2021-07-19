@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { DropDown } from "components";
 import { DropdownProps } from "../DropDown";
 import { useToggle } from "react-use";
+import { ActionMeta } from "react-select";
 
 const OutsideClickListener = styled.div`
   bottom: 0;
@@ -19,7 +20,13 @@ const Menu = styled.div`
   z-index: 2;
 `;
 
-const PopupOpener = ({ children, isOpen, target, onClose }: any) => (
+type Value = any;
+
+const PopupOpener: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  target: React.ReactNode;
+}> = ({ children, isOpen, target, onClose }) => (
   <div css={{ position: "relative" }}>
     {target}
     {isOpen ? <Menu>{children}</Menu> : null}
@@ -28,30 +35,30 @@ const PopupOpener = ({ children, isOpen, target, onClose }: any) => (
 );
 
 type PopoutProps = DropdownProps & {
-  targetComponent: (props: { onOpen: () => void }) => ReactNode;
-  onChange: any;
+  targetComponent: (props: { onOpen: () => void; value: Value }) => ReactNode;
 };
 
 const selectStyles = {
-  control: (provided: any) => ({ ...provided, minWidth: 240, marginTop: 8 }),
+  control: (provided: Value) => ({ ...provided, minWidth: 240, marginTop: 8 }),
 };
 
 const Popout: React.FC<PopoutProps> = ({
   onChange,
   targetComponent,
+  value,
   ...props
 }) => {
   const [isOpen, toggleOpen] = useToggle(false);
-  const onSelectChange = (value: any) => {
+  const onSelectChange = (value: Value, meta: ActionMeta<Value>) => {
     toggleOpen();
-    onChange(value);
+    onChange?.(value, meta);
   };
 
   return (
     <PopupOpener
       isOpen={isOpen}
       onClose={toggleOpen}
-      target={targetComponent({ onOpen: toggleOpen })}
+      target={targetComponent({ onOpen: toggleOpen, value })}
     >
       <DropDown
         autoFocus
@@ -69,7 +76,7 @@ const Popout: React.FC<PopoutProps> = ({
         placeholder={null}
         styles={selectStyles}
         tabSelectsValue={false}
-        value={props.value}
+        value={value}
       />
     </PopupOpener>
   );

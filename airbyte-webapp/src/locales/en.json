@@ -104,6 +104,8 @@
   "connectionForm.sourceFormat": "Mirror source structure",
   "connectionForm.destinationFormat": "Destination connector settings",
   "connectionForm.customFormat": "Custom format",
+  "connectionForm.syncType.source": "Source",
+  "connectionForm.syncType.destination": "Dest",
   "form.rawData": "Raw data - no normalization",
   "form.basicNormalization": "Basic normalization - ",
   "form.basicNormalization.message": "Map the JSON object to the types and format native to the destination. <lnk>Learn more</lnk>",

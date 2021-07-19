@@ -1,7 +1,6 @@
 import React from "react";
 import styled from "styled-components";
 import { components, OptionProps, OptionTypeBase } from "react-select";
-import { theme } from "theme";
 
 import { naturalComparatorBy } from "utils/objects";
 import Text from "./Text";
@@ -22,15 +21,15 @@ export type IDataItem = {
   config?: any;
 };
 
-const ItemView = styled.div<{ isSelected?: boolean }>`
+export const OptionView = styled.div<{ isSelected?: boolean }>`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
-  color: ${({ isSelected }) =>
+  color: ${({ isSelected, theme }) =>
     isSelected ? theme.primaryColor : theme.textColor};
-  background: ${({ isSelected }) =>
+  background: ${({ isSelected, theme }) =>
     isSelected ? theme.primaryColor12 : theme.whiteColor};
   border: none;
   padding: 10px 16px;
@@ -38,7 +37,7 @@ const ItemView = styled.div<{ isSelected?: boolean }>`
   line-height: 19px;
 
   &:hover {
-    background: ${({ isSelected }) =>
+    background: ${({ isSelected, theme }) =>
       isSelected ? theme.primaryColor12 : theme.greyColor0};
   }
 `;
@@ -46,7 +45,7 @@ const ItemView = styled.div<{ isSelected?: boolean }>`
 const Option: React.FC<IProps> = (props) => {
   return (
     <components.Option {...props}>
-      <ItemView
+      <OptionView
         data-id={props.data.value}
         isSelected={props.isSelected && !props.isMulti}
       >
@@ -63,7 +62,7 @@ const Option: React.FC<IProps> = (props) => {
           {props.label}
         </Text>
         {props.data.img || null}
-      </ItemView>
+      </OptionView>
     </components.Option>
   );
 };

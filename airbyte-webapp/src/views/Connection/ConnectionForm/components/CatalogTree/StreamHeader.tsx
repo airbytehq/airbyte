@@ -5,16 +5,31 @@ import LinesEllipsis from "react-lines-ellipsis";
 
 import styled from "styled-components";
 
-import { DropDownRow } from "components";
+import { DropDown, DropDownRow } from "components";
 import { MainInfoCell } from "./components/MainInfoCell";
 import { Cell, LightTextCell } from "components/SimpleTableComponents";
-import { ExpandFieldCell } from "./components/ExpandFieldCell";
 import { SyncSettingsCell } from "./components/SyncSettingsCell";
 import {
   DestinationSyncMode,
   SyncMode,
   SyncSchemaStream,
 } from "core/domain/catalog";
+import { Popout } from "components/base/Popout";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSortDown } from "@fortawesome/free-solid-svg-icons";
+
+const Arrow = styled(FontAwesomeIcon)<{ isOpen?: boolean }>`
+  color: ${({ theme }) => theme.greyColor40};
+  //font-size: 14px;
+  margin-left: 6px;
+  transform: ${({ isOpen }) => isOpen && "rotate(180deg)"};
+  transition: 0.3s;
+  vertical-align: sub;
+`;
+
+const Ct = styled.div`
+  display: flex;
+`;
 
 const EmptyField = styled.span`
   color: ${({ theme }) => theme.greyColor40};
@@ -35,8 +50,12 @@ interface StreamHeaderProps {
   onSelectSyncMode: (selectedMode: DropDownRow.IDataItem | null) => void;
   onSelectStream: () => void;
 
-  pkRequired?: boolean;
-  cursorRequired?: boolean;
+  primitiveFields: string[];
+
+  pkRequired: boolean;
+  onPrimaryKeyChange: (pkPath: string[]) => void;
+  cursorRequired: boolean;
+  onCursorChange: (cursorPath: string[]) => void;
 
   isRowExpanded: boolean;
   hasFields: boolean;
@@ -51,20 +70,34 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
   onSelectStream,
   availableSyncModes,
   pkRequired,
+  onPrimaryKeyChange,
+  onCursorChange,
+  primitiveFields,
   cursorRequired,
   isRowExpanded,
   hasFields,
   onExpand,
 }) => {
-  const { primaryKey, syncMode, destinationSyncMode } = stream.config;
-  const pkKeyItems = primaryKey.map((k) => k.join("."));
+  const {
+    primaryKey,
+    syncMode,
+    cursorField,
+    destinationSyncMode,
+  } = stream.config;
   const syncSchema = useMemo(
     () => ({
-      syncMode: syncMode,
-      destinationSyncMode: destinationSyncMode,
+      syncMode,
+      destinationSyncMode,
     }),
     [syncMode, destinationSyncMode]
   );
+
+  const pkKeyItems = primaryKey.map((k) => k.join("."));
+
+  const dropdownFields = primitiveFields.map((f) => ({
+    value: f.split("."),
+    label: f,
+  }));
 
   return (
     <>
@@ -118,23 +151,39 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
       />
       <Cell>
         {pkRequired && (
-          <ExpandFieldCell
-            onExpand={onExpand}
-            isItemOpen={isRowExpanded}
-            tooltipItems={pkKeyItems}
-          >
-            <FormattedMessage
-              id="form.pkSelected"
-              values={{ count: pkKeyItems.length, items: pkKeyItems }}
-            />
-          </ExpandFieldCell>
+          <DropDown
+            options={dropdownFields}
+            value={pkKeyItems}
+            // @ts-ignore
+            isMulti={true}
+            onChange={(option) => {
+              onPrimaryKeyChange(option.map((op: any) => op.value));
+            }}
+            // targetComponent={({ onOpen }) => (
+            //   <div onClick={onOpen}>
+            //     <FormattedMessage
+            //       id="form.pkSelected"
+            //       values={{ count: pkKeyItems.length, items: pkKeyItems }}
+            //     />
+            //     <Arrow icon={faSortDown} />
+            //   </div>
+            // )}
+          />
         )}
       </Cell>
       <Cell>
         {cursorRequired && (
-          <ExpandFieldCell onExpand={onExpand} isItemOpen={isRowExpanded}>
-            {stream.config.cursorField.join(".")}
-          </ExpandFieldCell>
+          <Popout
+            options={dropdownFields}
+            value={cursorField}
+            onChange={onCursorChange}
+            targetComponent={({ onOpen }) => (
+              <Ct onClick={onOpen}>
+                {stream.config.cursorField.join(".")}
+                <Arrow icon={faSortDown} />
+              </Ct>
+            )}
+          />
         )}
       </Cell>
     </>

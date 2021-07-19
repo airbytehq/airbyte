@@ -1,6 +1,5 @@
 import React, { memo, useCallback, useMemo } from "react";
 import { useToggle } from "react-use";
-import { useIntl } from "react-intl";
 import styled from "styled-components";
 import { FormikErrors, getIn, useField } from "formik";
 
@@ -9,7 +8,6 @@ import {
   DestinationSyncMode,
   getDestinationNamespace,
   SyncMode,
-  SyncSchemaField,
   SyncSchemaFieldObject,
   SyncSchemaStream,
 } from "core/domain/catalog";
@@ -46,7 +44,6 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   errors,
   destinationSupportedSyncModes,
 }) => {
-  const formatMessage = useIntl().formatMessage;
   const [isRowExpanded, onExpand] = useToggle(false);
   const { stream, config } = streamNode;
   const streamId = stream.name;
@@ -78,12 +75,10 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   );
 
   const onPkSelect = useCallback(
-    (field: SyncSchemaField) => {
-      const pkPath = field.name.split(".");
-
+    (pkPath: string[]) => {
       let newPrimaryKey: string[][];
 
-      if (pkPaths.has(field.name)) {
+      if (pkPaths.has(pkPath.join("."))) {
         newPrimaryKey = config.primaryKey.filter((key) => !equal(key, pkPath));
       } else {
         newPrimaryKey = [...config.primaryKey, pkPath];
@@ -95,11 +90,8 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   );
 
   const onCursorSelect = useCallback(
-    (field: SyncSchemaField) => {
-      const cursorPath = field.name.split(".");
-
-      updateStreamWithConfig({ cursorField: cursorPath });
-    },
+    (cursorPath: string[]) =>
+      updateStreamWithConfig({ cursorField: cursorPath }),
     [updateStreamWithConfig]
   );
 
@@ -107,7 +99,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
     config.destinationSyncMode === DestinationSyncMode.Dedupted;
   const cursorRequired = config.syncMode === SyncMode.Incremental;
   const showPkControl =
-    stream.sourceDefinedPrimaryKey.length === 0 && pkRequired;
+    stream.sourceDefinedPrimaryKey.length !== 0 && pkRequired;
   const showCursorControl = !stream.sourceDefinedCursor && cursorRequired;
 
   const selectedCursorPath = config.cursorField.join(".");
@@ -128,24 +120,8 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
           destinationSupportedSyncModes.includes(destinationSyncMode)
       ).map(([syncMode, destinationSyncMode]) => ({
         value: { syncMode, destinationSyncMode },
-        label: formatMessage(
-          {
-            id: "connection.stream.syncMode",
-            defaultMessage: `${syncMode}.${destinationSyncMode}`,
-          },
-          {
-            syncMode: formatMessage({
-              id: `syncMode.${syncMode}`,
-              defaultMessage: syncMode,
-            }),
-            destinationSyncMode: formatMessage({
-              id: `destinationSyncMode.${destinationSyncMode}`,
-              defaultMessage: destinationSyncMode,
-            }),
-          }
-        ),
       })),
-    [stream.supportedSyncModes, destinationSupportedSyncModes, formatMessage]
+    [stream.supportedSyncModes, destinationSupportedSyncModes]
   );
 
   const hasChildren = fields && fields.length > 0;
@@ -160,6 +136,10 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
     sourceNamespace: stream.namespace,
   });
 
+  const primitiveFields = fields
+    .filter(SyncSchemaFieldObject.isPrimitive)
+    .map((f) => f.name);
+
   return (
     <Section error={hasError}>
       <TreeRowWrapper>
@@ -171,6 +151,11 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
           onSelectStream={onSelectStream}
           onSelectSyncMode={onSelectSyncMode}
           isRowExpanded={isRowExpanded}
+          pkRequired={showPkControl}
+          cursorRequired={showCursorControl}
+          primitiveFields={primitiveFields}
+          onPrimaryKeyChange={onPkSelect}
+          onCursorChange={onCursorSelect}
           hasFields={hasChildren}
           onExpand={onExpand}
         />
@@ -197,8 +182,8 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
                     showCursorControl &&
                     SyncSchemaFieldObject.isPrimitive(field)
                   }
-                  onPrimaryKeyChange={() => onPkSelect(field)}
-                  onCursorChange={() => onCursorSelect(field)}
+                  onPrimaryKeyChange={() => onPkSelect(field.name.split("."))}
+                  onCursorChange={() => onCursorSelect(field.name.split("."))}
                 />
               </TreeRowWrapper>
             )}

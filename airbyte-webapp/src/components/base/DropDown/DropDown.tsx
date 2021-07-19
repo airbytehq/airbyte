@@ -15,7 +15,6 @@ type DropdownProps = Props<any> & {
   error?: boolean;
 };
 
-// @ts-ignore
 const CustomSelect = styled(Select)<{
   $withBorder?: boolean;
   $error?: boolean;
@@ -72,6 +71,12 @@ const DropDown: React.FC<DropdownProps> = (props) => {
     [propsComponents]
   );
 
+  const currentValue = props.isMulti
+    ? props.options?.filter((op) =>
+        props.value.find((o: any) => equal(o, op.value))
+      )
+    : props.options?.find((op) => equal(op.value, props.value));
+
   return (
     <CustomSelect
       data-testid={props.name}
@@ -81,7 +86,7 @@ const DropDown: React.FC<DropdownProps> = (props) => {
       menuPortalTarget={document.body}
       placeholder="..."
       {...props}
-      value={props.options?.find((op) => equal(op.value, props.value))}
+      value={currentValue}
       components={components}
       closeMenuOnSelect={!props.isMulti}
       hideSelectedOptions={false}

@@ -1,33 +1,10 @@
 import { components, MenuProps } from "react-select";
 import styled from "styled-components";
-import { theme } from "theme";
+
 import { IDataItem } from "./Option";
 
-// function getLength(options) {
-//   return options.reduce((acc, curr) => {
-//     if (curr.options) return acc + getLength(curr.options);
-//     return acc + 1;
-//   }, 0);
-// }
-
-// const menuHeaderStyle = {
-//   padding: "8px 12px",
-// };
-
-// const Menu = (props) => {
-//   const optionsLength = getLength(props.options);
-//   return (
-//     <Fragment>
-//       <div style={menuHeaderStyle}>
-//         Custom Menu with {optionsLength} options
-//       </div>
-//       <components.Menu {...props}>{props.children}</components.Menu>
-//     </Fragment>
-//   );
-// };
-
 const Menu = styled(components.Menu)<MenuProps<IDataItem, boolean>>`
-  background: ${theme.textColor};
+  background: ${({ theme }) => theme.textColor};
   background: red;
 
   &.react-select__menu {

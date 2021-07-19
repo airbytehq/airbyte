@@ -10,12 +10,10 @@ const Arrow = styled(FontAwesomeIcon)`
 
 const DropdownIndicator: React.FC<IndicatorProps<OptionTypeBase, boolean>> = (
   props
-) => {
-  return (
-    <components.DropdownIndicator {...props}>
-      <Arrow icon={faSortDown} />
-    </components.DropdownIndicator>
-  );
-};
+) => (
+  <components.DropdownIndicator {...props}>
+    <Arrow icon={faSortDown} />
+  </components.DropdownIndicator>
+);
 
 export default DropdownIndicator;
