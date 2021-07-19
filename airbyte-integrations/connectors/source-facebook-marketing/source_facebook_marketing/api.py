@@ -41,7 +41,6 @@ class MyFacebookAdsApi(FacebookAdsApi):
     call_rate_threshold = 90  # maximum percentage of call limit utilization
     pause_interval_minimum = pendulum.duration(minutes=1)  # default pause interval if reached or close to call rate limit
 
-
     @staticmethod
     def parse_call_rate_header(headers):
         usage = 0
