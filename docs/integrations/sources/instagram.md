@@ -83,4 +83,5 @@ With the Instagram Account ID and API access token, you should be ready to start
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.7  | 2021-07-19 | [4805](https://github.com/airbytehq/airbyte/pull/4805) | Add support for previous format of STATE.|
 | 0.1.6  | 2021-07-07 | [4210](https://github.com/airbytehq/airbyte/pull/4210) | Refactor connector to use CDK:<br>- improve error handling.<br>- fix sync fail with HTTP status 400.<br>- integrate SAT.|
