@@ -83,9 +83,10 @@ class DestinationKvdb(Destination):
             random_key = str(uuid.uuid4())
             client.write(random_key, {"value": "_airbyte_connection_check"})
             client.delete(random_key)
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             traceback.print_exc()
             return AirbyteConnectionStatus(
                 status=Status.FAILED, message=f"An exception occurred: {e}. \nStacktrace: \n{traceback.format_exc()}"
             )
+        else:
+            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
