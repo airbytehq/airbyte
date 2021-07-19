@@ -47,15 +47,13 @@ class KvDbWriter:
     def delete_stream_entries(self, stream_name: str):
         """ Deletes all the records belonging to the input stream """
         keys_to_delete = []
-        flush_interval = 1000
         for key in self.client.list_keys(prefix=f"{stream_name}__ab__"):
             keys_to_delete.append(key)
-            if len(keys_to_delete) == flush_interval:
+            if len(keys_to_delete) == self.flush_interval:
                 self.client.delete(keys_to_delete)
                 keys_to_delete.clear()
         if len(keys_to_delete) > 0:
             self.client.delete(keys_to_delete)
-            keys_to_delete.clear()
 
     def queue_write_operation(self, stream_name: str, record: Mapping, written_at: int):
         kv_pair = (f"{stream_name}__ab__{written_at}", record)
@@ -66,3 +64,4 @@ class KvDbWriter:
     def flush(self):
         self.client.batch_write(self.write_buffer)
         self.write_buffer.clear()
+
