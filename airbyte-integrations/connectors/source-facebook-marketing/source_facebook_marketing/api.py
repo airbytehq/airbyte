@@ -56,12 +56,12 @@ class MyFacebookAdsApi(FacebookAdsApi):
             usage = max(usage, usage_header_ad_account_loaded.get("acc_id_util_pct") )
 
         if usage_header_app:
-            usage_header_app_loaded = json.loads()
+            usage_header_app_loaded = json.loads(usage_header_app)
             usage = max(usage, usage_header_app_loaded.get("call_count"), usage_header_app_loaded.get("total_time"), usage_header_app_loaded.get("total_cputime") )
 
         if usage_header_business:
 
-            usage_header_business_loaded =  json.loads(usage_header_business)
+            usage_header_business_loaded = json.loads(usage_header_business)
             for business_object_id in usage_header_business_loaded:
                 usage_limits = usage_header_business_loaded.get(business_object_id)[0]
                 usage = max(usage, usage_limits.get('call_count'), usage_limits.get('total_cputime'), usage_limits.get('total_time'))
