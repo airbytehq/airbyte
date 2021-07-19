@@ -2,7 +2,7 @@
 
 set -e
 
-BUCKET=airbyte-status
+BUCKET=airbyte-connector-build-status
 
 CONNECTOR=$1
 REPOSITORY=$2
