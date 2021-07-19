@@ -17,5 +17,5 @@ CMD npm install --silent --no-update-notifier && echo "INSTALL DONE" && \
     chown -R $ENV_UID:$ENV_GID $LAST_CREATED_CONNECTOR/* && \
     echo "chowning docs directory: $DOCS_DIR" && \
     chown -R $ENV_UID:$ENV_GID $DOCS_DIR/* && \
-    echo "chowning docs directory: $CONFIG_DIR" && \
+    echo "chowning config directory: $CONFIG_DIR" && \
     chown -R $ENV_UID:$ENV_GID $CONFIG_DIR/*
