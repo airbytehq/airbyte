@@ -64,4 +64,3 @@ class KvDbWriter:
     def flush(self):
         self.client.batch_write(self.write_buffer)
         self.write_buffer.clear()
-

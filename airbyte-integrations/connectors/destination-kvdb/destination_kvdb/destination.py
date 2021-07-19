@@ -90,4 +90,3 @@ class DestinationKvdb(Destination):
             )
         else:
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-

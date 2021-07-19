@@ -156,4 +156,3 @@ def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, cl
         _record(overwrite_stream, str(i), i) for i in range(10, 15)
     ]
     assert expected_records == records_in_destination
-
