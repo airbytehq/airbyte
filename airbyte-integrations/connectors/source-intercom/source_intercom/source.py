@@ -25,8 +25,7 @@
 import time
 from abc import ABC
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
-from urllib.parse import parse_qsl, urlparse
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 from airbyte_cdk.logger import AirbyteLogger
@@ -61,7 +60,7 @@ class IntercomStream(HttpStream, ABC):
         Returning None means there are no more pages to read in response.
         """
 
-        next_page = response.json().get("pages", {}).get('next')
+        next_page = response.json().get("pages", {}).get("next")
 
         if next_page:
             return {"starting_after": next_page["starting_after"]}
@@ -83,8 +82,7 @@ class IntercomStream(HttpStream, ABC):
         except requests.exceptions.HTTPError as e:
             error_message = e.response.text
             if error_message:
-                self.logger.error(
-                    f"Stream {self.name}: {e.response.status_code} " f"{e.response.reason} - {error_message}")
+                self.logger.error(f"Stream {self.name}: {e.response.status_code} " f"{e.response.reason} - {error_message}")
             raise e
 
     def get_data(self, response: requests.Response) -> List:
@@ -101,14 +99,7 @@ class IntercomStream(HttpStream, ABC):
 
         return data
 
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
-
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         data = self.get_data(response)
 
         for record in data:
@@ -131,15 +122,8 @@ class IncrementalIntercomStream(IntercomStream, ABC):
         if not stream_state or record[self.cursor_field] >= stream_state.get(self.cursor_field):
             yield record
 
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
-
-        record = super().parse_response(response, stream_state, stream_slice, next_page_token)
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        record = super().parse_response(response, stream_state, **kwargs)
 
         for record in record:
             updated_at = record.get(self.cursor_field)
@@ -171,7 +155,9 @@ class ChildStreamMixin:
     parent_stream_class: Optional[IntercomStream] = None
 
     def stream_slices(self, sync_mode, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        for item in self.parent_stream_class(authenticator=self.authenticator, start_date=self.start_date).read_records(sync_mode=sync_mode):
+        for item in self.parent_stream_class(authenticator=self.authenticator, start_date=self.start_date).read_records(
+            sync_mode=sync_mode
+        ):
             yield {"id": item["id"]}
 
         yield from []
