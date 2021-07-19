@@ -190,6 +190,8 @@ class Templates(SendgridStreamMetadataPagination):
 
 
 class GlobalSuppressions(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
+    primary_key = "email"
+
     def path(self, **kwargs) -> str:
         return "suppression/unsubscribes"
 
@@ -205,20 +207,28 @@ class SuppressionGroupMembers(SendgridStreamOffsetPagination):
 
 
 class Blocks(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
+    primary_key = "email"
+
     def path(self, **kwargs) -> str:
         return "suppression/blocks"
 
 
 class Bounces(SendgridStream, SendgridStreamIncrementalMixin):
+    primary_key = "email"
+
     def path(self, **kwargs) -> str:
         return "suppression/bounces"
 
 
 class InvalidEmails(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
+    primary_key = "email"
+
     def path(self, **kwargs) -> str:
         return "suppression/invalid_emails"
 
 
 class SpamReports(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
+    primary_key = "email"
+
     def path(self, **kwargs) -> str:
         return "suppression/spam_reports"
