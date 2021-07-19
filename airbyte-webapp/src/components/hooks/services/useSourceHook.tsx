@@ -2,7 +2,6 @@ import { useCallback } from "react";
 import { useFetcher, useResource } from "rest-hooks";
 import { useStatefulResource } from "@rest-hooks/legacy";
 
-import config from "config";
 import SourceResource, { Source } from "core/resources/Source";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
 import { Routes } from "pages/routes";
@@ -13,6 +12,7 @@ import SourceDefinitionSpecificationResource, {
 } from "core/resources/SourceDefinitionSpecification";
 import SchedulerResource, { Scheduler } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
+import useWorkspace from "./useWorkspace";
 
 type ValuesProps = {
   name: string;
@@ -71,7 +71,7 @@ type SourceService = {
 
 const useSource = (): SourceService => {
   const { push } = useRouter();
-
+  const { workspace } = useWorkspace();
   const createSourcesImplementation = useFetcher(SourceResource.createShape());
 
   const sourceCheckConnectionShape = useFetcher(
@@ -110,13 +110,13 @@ const useSource = (): SourceService => {
         {
           name: values.name,
           sourceDefinitionId: sourceConnector?.sourceDefinitionId,
-          workspaceId: config.ui.workspaceId,
+          workspaceId: workspace.workspaceId,
           connectionConfiguration: values.connectionConfiguration,
         },
         [
           [
             SourceResource.listShape(),
-            { workspaceId: config.ui.workspaceId },
+            { workspaceId: workspace.workspaceId },
             (newsourceId: string, sourceIds: { sources: string[] }) => ({
               sources: [...(sourceIds?.sources || []), newsourceId],
             }),
@@ -196,7 +196,7 @@ const useSource = (): SourceService => {
         name: values.name,
         sourceId,
         connectionConfiguration: values.connectionConfiguration,
-        workspaceId: config.ui.workspaceId,
+        workspaceId: workspace.workspaceId,
         sourceDefinitionId: values.serviceType,
       },
       // Method used only in onboarding.
@@ -204,7 +204,7 @@ const useSource = (): SourceService => {
       [
         [
           SourceResource.listShape(),
-          { workspaceId: config.ui.workspaceId },
+          { workspaceId: workspace.workspaceId },
           (newsourceId: string) => ({
             sources: [newsourceId],
           }),
@@ -244,10 +244,12 @@ const useSource = (): SourceService => {
   };
 };
 
-const useSourceList = (): { sources: Source[] } =>
-  useResource(SourceResource.listShape(), {
-    workspaceId: config.ui.workspaceId,
+const useSourceList = (): { sources: Source[] } => {
+  const { workspace } = useWorkspace();
+  return useResource(SourceResource.listShape(), {
+    workspaceId: workspace.workspaceId,
   });
+};
 
 export { useSourceList };
 export default useSource;

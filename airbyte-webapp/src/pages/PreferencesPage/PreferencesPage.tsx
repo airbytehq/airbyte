@@ -4,9 +4,8 @@ import { FormattedMessage } from "react-intl";
 import { PageViewContainer } from "../../components/CenteredPageComponents";
 import { H1 } from "components";
 import { PreferencesForm } from "views/Settings/PreferencesForm";
-import config from "../../config";
 import { AnalyticsService } from "../../core/analytics/AnalyticsService";
-import useWorkspace from "../../components/hooks/services/useWorkspaceHook";
+import useWorkspace from "components/hooks/services/useWorkspace";
 import styled from "styled-components";
 import HeadTitle from "components/HeadTitle";
 
@@ -19,7 +18,7 @@ const PreferencesPage: React.FC = () => {
     AnalyticsService.page("Preferences Page");
   }, []);
 
-  const { setInitialSetupConfig } = useWorkspace();
+  const { setInitialSetupConfig, workspace } = useWorkspace();
 
   const onSubmit = async (data: {
     email: string;
@@ -30,7 +29,7 @@ const PreferencesPage: React.FC = () => {
     await setInitialSetupConfig(data);
 
     AnalyticsService.track("Specified Preferences", {
-      user_id: config.ui.workspaceId,
+      user_id: workspace.workspaceId,
       email: data.email,
       anonymized: data.anonymousDataCollection,
       subscribed_newsletter: data.news,

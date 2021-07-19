@@ -22,7 +22,7 @@ import SupportChat from "components/SupportChat";
 import useSegment from "components/hooks/useSegment";
 import useFullStory from "components/hooks/useFullStory";
 import useRouter from "components/hooks/useRouterHook";
-import useWorkspace from "components/hooks/services/useWorkspaceHook";
+import useWorkspace from "components/hooks/services/useWorkspace";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
 import { useNotificationService } from "components/hooks/services/Notification/NotificationService";
 import { useApiHealthPoll } from "components/hooks/services/Health";

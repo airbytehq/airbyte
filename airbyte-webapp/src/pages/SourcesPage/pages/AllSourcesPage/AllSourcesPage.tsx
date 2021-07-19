@@ -8,11 +8,11 @@ import { Routes } from "../../../routes";
 import PageTitle from "components/PageTitle";
 import useRouter from "components/hooks/useRouterHook";
 import SourcesTable from "./components/SourcesTable";
-import config from "config";
 import ContentCard from "components/ContentCard";
 import EmptyResource from "components/EmptyResourceBlock";
 import SourceResource from "core/resources/Source";
 import HeadTitle from "components/HeadTitle";
+import useWorkspace from "components/hooks/services/useWorkspace";
 
 const Content = styled(ContentCard)`
   margin: 0 32px 0 27px;
@@ -20,9 +20,9 @@ const Content = styled(ContentCard)`
 
 const AllSourcesPage: React.FC = () => {
   const { push } = useRouter();
-
+  const { workspace } = useWorkspace();
   const { sources } = useResource(SourceResource.listShape(), {
-    workspaceId: config.ui.workspaceId,
+    workspaceId: workspace.workspaceId,
   });
 
   const onCreateSource = () => push(`${Routes.Source}${Routes.SourceNew}`);

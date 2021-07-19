@@ -12,13 +12,13 @@ import ConnectionResource, { Connection } from "core/resources/Connection";
 import JobResource from "core/resources/Job";
 import JobsList from "./JobsList";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
-import config from "config";
 import EmptyResource from "components/EmptyResourceBlock";
 import ResetDataModal from "components/ResetDataModal";
 import useConnection from "components/hooks/services/useConnectionHook";
 import useLoadingStateHook from "components/hooks/useLoadingStateHook";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import { SourceDefinition } from "core/resources/SourceDefinition";
+import useWorkspace from "components/hooks/services/useWorkspace";
 
 type IProps = {
   connection: Connection;
@@ -63,6 +63,7 @@ const StatusView: React.FC<IProps> = ({
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { isLoading, showFeedback, startAction } = useLoadingStateHook();
+  const { workspace } = useWorkspace();
   const { jobs } = useResource(JobResource.listShape(), {
     configId: connection.connectionId,
     configTypes: ["sync", "reset_connection"],
@@ -78,7 +79,7 @@ const StatusView: React.FC<IProps> = ({
 
   const onSync = async () => {
     AnalyticsService.track("Source - Action", {
-      user_id: config.ui.workspaceId,
+      user_id: workspace.workspaceId,
       action: "Full refresh sync",
       connector_source: connection.source?.sourceName,
       connector_source_id: connection.source?.sourceDefinitionId,

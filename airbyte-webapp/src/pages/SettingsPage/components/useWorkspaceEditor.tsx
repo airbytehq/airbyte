@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import useWorkspace from "../../../components/hooks/services/useWorkspaceHook";
+import useWorkspace from "components/hooks/services/useWorkspace";
 import { FormattedMessage } from "react-intl";
 import { useAsyncFn } from "react-use";
 

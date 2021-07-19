@@ -11,12 +11,12 @@ import {
   ContentCard,
 } from "components";
 import ConnectionResource from "core/resources/Connection";
-import config from "config";
 import ConnectionsTable from "./components/ConnectionsTable";
 import { Routes } from "pages/routes";
 import useRouter from "components/hooks/useRouterHook";
 import EmptyResource from "components/EmptyResourceBlock";
 import HeadTitle from "components/HeadTitle";
+import useWorkspace from "components/hooks/services/useWorkspace";
 
 const Content = styled(ContentCard)`
   margin: 0 32px 0 27px;
@@ -24,9 +24,9 @@ const Content = styled(ContentCard)`
 
 const AllConnectionsPage: React.FC = () => {
   const { push } = useRouter();
-
+  const { workspace } = useWorkspace();
   const { connections } = useResource(ConnectionResource.listShape(), {
-    workspaceId: config.ui.workspaceId,
+    workspaceId: workspace.workspaceId,
   });
 
   const onClick = () => push(`${Routes.Connections}${Routes.ConnectionNew}`);

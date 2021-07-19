@@ -8,11 +8,11 @@ import { Routes } from "../../../routes";
 import PageTitle from "components/PageTitle";
 import useRouter from "components/hooks/useRouterHook";
 import DestinationsTable from "./components/DestinationsTable";
-import config from "config";
 import ContentCard from "components/ContentCard";
 import EmptyResource from "components/EmptyResourceBlock";
 import DestinationResource from "core/resources/Destination";
 import HeadTitle from "components/HeadTitle";
+import useWorkspace from "components/hooks/services/useWorkspace";
 
 const Content = styled(ContentCard)`
   margin: 0 32px 0 27px;
@@ -20,9 +20,9 @@ const Content = styled(ContentCard)`
 
 const AllDestinationsPage: React.FC = () => {
   const { push } = useRouter();
-
+  const { workspace } = useWorkspace();
   const { destinations } = useResource(DestinationResource.listShape(), {
-    workspaceId: config.ui.workspaceId,
+    workspaceId: workspace.workspaceId,
   });
 
   const onCreateDestination = () =>

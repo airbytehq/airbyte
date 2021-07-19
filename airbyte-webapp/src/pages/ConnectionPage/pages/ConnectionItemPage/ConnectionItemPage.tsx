@@ -11,7 +11,6 @@ import SettingsView from "./components/SettingsView";
 import ConnectionResource from "core/resources/Connection";
 import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
-import config from "config";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
 import FrequencyConfig from "config/FrequencyConfig.json";
 import Link from "components/Link";
@@ -19,6 +18,7 @@ import { Routes } from "../../../routes";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import { equal } from "utils/objects";
+import useWorkspace from "components/hooks/services/useWorkspace";
 
 type ConnectionItemPageProps = {
   currentStep: "status" | "settings";
@@ -28,7 +28,7 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
   currentStep,
 }) => {
   const { query, push } = useRouter<{ id: string }>();
-
+  const { workspace } = useWorkspace();
   const connection = useResource(ConnectionResource.detailShape(), {
     connectionId: query.id,
   });
@@ -80,7 +80,7 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
 
   const onAfterSaveSchema = () => {
     AnalyticsService.track("Source - Action", {
-      user_id: config.ui.workspaceId,
+      user_id: workspace.workspaceId,
       action: "Edit schema",
       connector_source: source.sourceName,
       connector_source_id: source.sourceDefinitionId,

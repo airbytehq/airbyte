@@ -2,7 +2,6 @@ import { useCallback } from "react";
 import { useFetcher, useResource } from "rest-hooks";
 import { useStatefulResource } from "@rest-hooks/legacy";
 
-import config from "config";
 import DestinationResource, { Destination } from "core/resources/Destination";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
 import ConnectionResource, { Connection } from "core/resources/Connection";
@@ -13,6 +12,7 @@ import DestinationDefinitionSpecificationResource, {
 } from "core/resources/DestinationDefinitionSpecification";
 import SchedulerResource, { Scheduler } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
+import useWorkspace from "./useWorkspace";
 
 type ValuesProps = {
   name: string;
@@ -98,7 +98,7 @@ type DestinationService = {
 
 const useDestination = (): DestinationService => {
   const { push } = useRouter();
-
+  const { workspace } = useWorkspace();
   const createDestinationsImplementation = useFetcher(
     DestinationResource.createShape()
   );
@@ -146,13 +146,13 @@ const useDestination = (): DestinationService => {
           name: values.name,
           destinationDefinitionId:
             destinationConnector?.destinationDefinitionId,
-          workspaceId: config.ui.workspaceId,
+          workspaceId: workspace.workspaceId,
           connectionConfiguration: values.connectionConfiguration,
         },
         [
           [
             DestinationResource.listShape(),
-            { workspaceId: config.ui.workspaceId },
+            { workspaceId: workspace.workspaceId },
             (
               newdestinationId: string,
               destinationIds: { destinations: string[] }
@@ -225,7 +225,7 @@ const useDestination = (): DestinationService => {
         name: values.name,
         destinationId,
         connectionConfiguration: values.connectionConfiguration,
-        workspaceId: config.ui.workspaceId,
+        workspaceId: workspace.workspaceId,
         destinationDefinitionId: values.serviceType,
       },
       // Method used only in onboarding.
@@ -233,7 +233,7 @@ const useDestination = (): DestinationService => {
       [
         [
           DestinationResource.listShape(),
-          { workspaceId: config.ui.workspaceId },
+          { workspaceId: workspace.workspaceId },
           (newdestinationId: string) => ({
             destinations: [newdestinationId],
           }),
@@ -292,10 +292,12 @@ const useDestination = (): DestinationService => {
   };
 };
 
-const useDestinationList = (): { destinations: Destination[] } =>
-  useResource(DestinationResource.listShape(), {
-    workspaceId: config.ui.workspaceId,
+const useDestinationList = (): { destinations: Destination[] } => {
+  const { workspace } = useWorkspace();
+  return useResource(DestinationResource.listShape(), {
+    workspaceId: workspace.workspaceId,
   });
+};
 
 export { useDestinationList };
 export default useDestination;

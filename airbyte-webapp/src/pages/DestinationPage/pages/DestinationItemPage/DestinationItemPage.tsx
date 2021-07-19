@@ -5,7 +5,6 @@ import { useResource } from "rest-hooks";
 
 import PageTitle from "components/PageTitle";
 import useRouter from "components/hooks/useRouterHook";
-import config from "config";
 import ContentCard from "components/ContentCard";
 import EmptyResource from "components/EmptyResourceBlock";
 import ConnectionResource from "core/resources/Connection";
@@ -27,6 +26,7 @@ import { getIcon } from "utils/imageUtils";
 import ImageBlock from "components/ImageBlock";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import HeadTitle from "components/HeadTitle";
+import useWorkspace from "components/hooks/services/useWorkspace";
 
 const Content = styled(ContentCard)`
   margin: 0 32px 0 27px;
@@ -34,18 +34,18 @@ const Content = styled(ContentCard)`
 
 const DestinationItemPage: React.FC = () => {
   const { query, push } = useRouter<{ id: string }>();
-
+  const { workspace } = useWorkspace();
   const [currentStep, setCurrentStep] = useState<string>(StepsTypes.OVERVIEW);
   const onSelectStep = (id: string) => setCurrentStep(id);
 
   const { sources } = useResource(SourceResource.listShape(), {
-    workspaceId: config.ui.workspaceId,
+    workspaceId: workspace.workspaceId,
   });
 
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
     {
-      workspaceId: config.ui.workspaceId,
+      workspaceId: workspace.workspaceId,
     }
   );
 
@@ -61,7 +61,7 @@ const DestinationItemPage: React.FC = () => {
   );
 
   const { connections } = useResource(ConnectionResource.listShape(), {
-    workspaceId: config.ui.workspaceId,
+    workspaceId: workspace.workspaceId,
   });
 
   const onClickBack = () => push(Routes.Destination);

@@ -1,7 +1,6 @@
 import { useCallback } from "react";
 import { useResource, useFetcher } from "rest-hooks";
 
-import config from "config";
 import FrequencyConfig from "config/FrequencyConfig.json";
 
 import { AnalyticsService } from "core/analytics/AnalyticsService";
@@ -16,7 +15,7 @@ import { Source } from "core/resources/Source";
 import { Routes } from "pages/routes";
 import useRouter from "../useRouterHook";
 import { Destination } from "core/resources/Destination";
-import useWorkspace from "./useWorkspaceHook";
+import useWorkspace from "./useWorkspace";
 import {
   ConnectionConfiguration,
   ConnectionNamespaceDefinition,
@@ -119,7 +118,7 @@ const useConnection = (): {
         [
           [
             ConnectionResource.listShape(),
-            { workspaceId: config.ui.workspaceId },
+            { workspaceId: workspace.workspaceId },
             (
               newConnectionId: string,
               connectionsIds: { connections: string[] }

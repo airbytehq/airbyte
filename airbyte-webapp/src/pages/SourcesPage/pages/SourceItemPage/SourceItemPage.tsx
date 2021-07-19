@@ -3,9 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useResource } from "rest-hooks";
 
-import config from "config";
 import { Routes } from "pages/routes";
-
 import { ImageBlock } from "components";
 import PageTitle from "components/PageTitle";
 import useRouter from "components/hooks/useRouterHook";
@@ -31,6 +29,7 @@ import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationsDefinitionResource from "core/resources/DestinationDefinition";
 import { getIcon } from "utils/imageUtils";
 import HeadTitle from "components/HeadTitle";
+import useWorkspace from "components/hooks/services/useWorkspace";
 
 const Content = styled(ContentCard)`
   margin: 0 32px 0 27px;
@@ -38,18 +37,18 @@ const Content = styled(ContentCard)`
 
 const SourceItemPage: React.FC = () => {
   const { query, push } = useRouter<{ id: string }>();
-
+  const { workspace } = useWorkspace();
   const [currentStep, setCurrentStep] = useState<string>(StepsTypes.OVERVIEW);
   const onSelectStep = (id: string) => setCurrentStep(id);
 
   const { destinations } = useResource(DestinationResource.listShape(), {
-    workspaceId: config.ui.workspaceId,
+    workspaceId: workspace.workspaceId,
   });
 
   const { destinationDefinitions } = useResource(
     DestinationsDefinitionResource.listShape(),
     {
-      workspaceId: config.ui.workspaceId,
+      workspaceId: workspace.workspaceId,
     }
   );
 
@@ -62,7 +61,7 @@ const SourceItemPage: React.FC = () => {
   });
 
   const { connections } = useResource(ConnectionResource.listShape(), {
-    workspaceId: config.ui.workspaceId,
+    workspaceId: workspace.workspaceId,
   });
 
   const onClickBack = () => push(Routes.Source);
