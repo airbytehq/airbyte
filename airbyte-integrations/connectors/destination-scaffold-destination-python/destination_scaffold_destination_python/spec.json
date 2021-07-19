@@ -1,6 +1,8 @@
 {
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/scaffold-destination-python",
-  "supported_destination_sync_modes": ["TODO, available options are: 'overwrite', 'append', and 'append_dedup'"],
+  "supported_destination_sync_modes": [
+    "TODO, available options are: 'overwrite', 'append', and 'append_dedup'"
+  ],
   "supportsIncremental": true,
   "supportsDBT": false,
   "supportsNormalization": false,
