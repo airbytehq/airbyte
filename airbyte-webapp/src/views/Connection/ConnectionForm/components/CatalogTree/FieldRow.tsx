@@ -47,7 +47,7 @@ const FieldRow: React.FC<FieldRowProps> = (props) => {
       </FirstCell>
       <Cell />
       <DataTypeCell nullable={props.nullable}>{props.type}</DataTypeCell>
-      <Cell>{props.destinationName}</Cell>
+      <Cell title={props.destinationName}>{props.destinationName}</Cell>
       <Cell flex={1.5} />
       <Cell>
         {props.isPrimaryKeyEnabled && (

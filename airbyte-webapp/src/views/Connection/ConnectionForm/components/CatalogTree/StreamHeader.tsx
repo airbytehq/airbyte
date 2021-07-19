@@ -1,13 +1,11 @@
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
-// @ts-ignore
-import LinesEllipsis from "react-lines-ellipsis";
 
 import styled from "styled-components";
 
 import { DropDown, DropDownRow } from "components";
 import { MainInfoCell } from "./components/MainInfoCell";
-import { Cell, LightTextCell } from "components/SimpleTableComponents";
+import { Cell } from "components/SimpleTableComponents";
 import { SyncSettingsCell } from "./components/SyncSettingsCell";
 import {
   DestinationSyncMode,
@@ -109,41 +107,17 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
         isItemHasChildren={hasFields}
         isItemOpen={isRowExpanded}
       />
-      <Cell>
+      <Cell title={stream.stream.namespace || ""}>
         {stream.stream.namespace || (
           <EmptyField>
             <FormattedMessage id="form.noNamespace" />
           </EmptyField>
         )}
       </Cell>
-      <Cell>
-        <LinesEllipsis
-          // maxLine={2}
-          text={destNamespace}
-          ellipsis="..."
-          trimRight
-          basedOn="letters"
-          style={{
-            "word-break": "break-all",
-            "overflow-wrap": "break-all",
-            "word-wrap": "break-all",
-            width: "50px",
-          }}
-        />
+      <Cell title={destNamespace}>{destNamespace}</Cell>
+      <Cell light title={destName}>
+        {destName}
       </Cell>
-      <LightTextCell>
-        <LinesEllipsis
-          maxLine={2}
-          text={destName}
-          basedOn="letters"
-          style={{
-            "word-break": "break-all",
-            "overflow-wrap": "break-word",
-            "word-wrap": "break-word",
-            width: "50px",
-          }}
-        />
-      </LightTextCell>
       <SyncSettingsCell
         value={syncSchema}
         options={availableSyncModes}
