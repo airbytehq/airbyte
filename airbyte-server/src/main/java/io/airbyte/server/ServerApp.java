@@ -188,6 +188,9 @@ public class ServerApp {
     }
   }
 
+  private static void setCustomerIdIfNotSet(final ConfigRepository configRepository) throws InterruptedException {
+    StandardWorkspace workspace = null;
+
     // retry until the workspace is available / waits for file config initialization
     while (workspace == null) {
       try {
