@@ -53,15 +53,12 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -609,9 +606,11 @@ public class KubePodProcess extends Process {
         .orElseThrow();
 
     LOGGER.info("Exit code for pod {} is {}", name, returnCode);
-    // The OS traditionally handles process resource clean up. Therefore an exit code of 0, also indicates that all kernel resources were shut down.
+    // The OS traditionally handles process resource clean up. Therefore an exit code of 0, also
+    // indicates that all kernel resources were shut down.
     // Because this is a custom implementation, manually close all the resources.
-    // Further, since the local resources are used to talk to Kubernetes resources, shut local resources down after Kubernetes resources are shut down,
+    // Further, since the local resources are used to talk to Kubernetes resources, shut local resources
+    // down after Kubernetes resources are shut down,
     // regardless of termination status.
     close();
     LOGGER.info("Closed all resources for pod {}", name);

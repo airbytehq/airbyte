@@ -124,7 +124,7 @@ public class WorkerUtils {
 
     // if we were unable to exist gracefully, force shutdown...
     if (process.isAlive()) {
-      LOGGER.debug("Force shutdown process {}..", processName;
+      LOGGER.debug("Force shutdown process {}..", processName);
       forceShutdown.accept(process, forcedShutdownDuration);
     }
   }

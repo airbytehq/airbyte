@@ -117,14 +117,15 @@ public class KubeProcessFactory implements ProcessFactory {
     }
   }
 
-
   /**
-   * Docker image names are by convention separated by slashes. The last portion is the image's name. This is followed by a colon and a version number.
-   * e.g. airbyte/scheduler:v1 or gcr.io/my-project/image-name:v2.
+   * Docker image names are by convention separated by slashes. The last portion is the image's name.
+   * This is followed by a colon and a version number. e.g. airbyte/scheduler:v1 or
+   * gcr.io/my-project/image-name:v2.
    *
    * Kubernetes has a maximum pod name length of 63 characters.
    *
-   * With these two facts, attempt to construct a unique Pod name with the image name present for easier operations.
+   * With these two facts, attempt to construct a unique Pod name with the image name present for
+   * easier operations.
    */
   @VisibleForTesting
   protected static String getPodName(String fullImagePath, String jobId, int attempt) {
@@ -133,7 +134,7 @@ public class KubeProcessFactory implements ProcessFactory {
 
     var dockerDelimiter = "/";
     var nameParts = noVersion.split(dockerDelimiter);
-    var imageName = nameParts[nameParts.length-1];
+    var imageName = nameParts[nameParts.length - 1];
 
     var randSuffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
     final String suffix = "worker-" + jobId + "-" + attempt + "-" + randSuffix;
@@ -149,4 +150,5 @@ public class KubeProcessFactory implements ProcessFactory {
 
     return podName;
   }
+
 }
