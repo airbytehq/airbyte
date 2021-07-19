@@ -51,7 +51,7 @@ class MixpanelStream(HttpStream, ABC):
     If total number of planned requests is lower than it is allowed per hour
     then
         reset reqs_per_hour_limit and send requests with small delay (1 reqs/sec)
-        because API endpoint accept requests sparks up to 3 reqs/sec
+        because API endpoint accept requests bursts up to 3 reqs/sec
     else
         send requests with planned delay: 3600/reqs_per_hour_limit seconds
     """
