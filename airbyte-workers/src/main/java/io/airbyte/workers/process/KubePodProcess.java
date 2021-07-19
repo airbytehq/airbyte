@@ -63,7 +63,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 import org.apache.commons.io.output.NullOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,7 +135,6 @@ public class KubePodProcess extends Process {
   private Integer returnCode = null;
   private Long lastStatusCheck = null;
 
-  private final Consumer<Integer> portReleaser;
   private final ServerSocket stdoutServerSocket;
   private final int stdoutLocalPort;
   private final ServerSocket stderrServerSocket;
@@ -286,7 +284,6 @@ public class KubePodProcess extends Process {
 
   public KubePodProcess(ApiClient officialClient,
                         KubernetesClient fabricClient,
-                        Consumer<Integer> portReleaser,
                         String podName,
                         String namespace,
                         String image,
@@ -300,7 +297,6 @@ public class KubePodProcess extends Process {
                         final String... args)
       throws IOException, InterruptedException {
     this.fabricClient = fabricClient;
-    this.portReleaser = portReleaser;
     this.stdoutLocalPort = stdoutLocalPort;
     this.stderrLocalPort = stderrLocalPort;
 
@@ -544,12 +540,18 @@ public class KubePodProcess extends Process {
     Exceptions.swallow(this.stdoutServerSocket::close);
     Exceptions.swallow(this.stderrServerSocket::close);
     Exceptions.swallow(this.executorService::shutdownNow);
-    try {
-      portReleaser.accept(stdoutLocalPort);
-      portReleaser.accept(stderrLocalPort);
-    } catch (Exception e) {
-      LOGGER.error("Error releasing ports ", e);
+
+    var podName = podDefinition.getMetadata().getName();
+    var stdoutPortReleased = KubePortManagerSingleton.offer(stdoutLocalPort);
+    if (!stdoutPortReleased) {
+      LOGGER.error("{} failed to release port: {}", podName, stdoutLocalPort);
     }
+
+    var stderrPortReleased = KubePortManagerSingleton.offer(stderrLocalPort);
+    if (!stderrPortReleased) {
+      LOGGER.error("{} failed to release port: {}", podName, stderrLocalPort);
+    }
+
     LOGGER.debug("Closed {}", podDefinition.getMetadata().getName());
   }
 

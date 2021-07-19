@@ -46,8 +46,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,12 +56,10 @@ public class KubePodProcessIntegrationTest {
 
   private static final boolean IS_MINIKUBE = Boolean.parseBoolean(Optional.ofNullable(System.getenv("IS_MINIKUBE")).orElse("false"));
   private List<Integer> openPorts;
-  private List<Integer> openWorkerPorts;
   private int heartbeatPort;
   private String heartbeatUrl;
   private ApiClient officialClient;
   private KubernetesClient fabricClient;
-  private BlockingQueue<Integer> workerPorts;
   private KubeProcessFactory processFactory;
 
   private static WorkerHeartbeatServer server;
@@ -71,14 +67,14 @@ public class KubePodProcessIntegrationTest {
   @BeforeEach
   public void setup() throws Exception {
     openPorts = new ArrayList<>(getOpenPorts(5));
-    openWorkerPorts = openPorts.subList(1, openPorts.size() - 1);
+    KubePortManagerSingleton.setWorkerPorts(new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
+
     heartbeatPort = openPorts.get(0);
     heartbeatUrl = getHost() + ":" + heartbeatPort;
 
     officialClient = Config.defaultClient();
     fabricClient = new DefaultKubernetesClient();
-    workerPorts = new LinkedBlockingDeque<>(openWorkerPorts);
-    processFactory = new KubeProcessFactory("default", officialClient, fabricClient, heartbeatUrl, workerPorts);
+    processFactory = new KubeProcessFactory("default", officialClient, fabricClient, heartbeatUrl);
 
     server = new WorkerHeartbeatServer(heartbeatPort);
     server.startBackground();
