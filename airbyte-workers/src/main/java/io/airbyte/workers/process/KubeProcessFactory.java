@@ -91,9 +91,9 @@ public class KubeProcessFactory implements ProcessFactory {
       final Consumer<Integer> portReleaser = port -> {
         if (!workerPorts.contains(port)) {
           workerPorts.add(port);
-          LOGGER.info("Port consumer releasing: " + port);
+          LOGGER.info("Port consumer from {} releasing: {}", podName, port);
         } else {
-          LOGGER.info("Port consumer skipping releasing: " + port);
+          LOGGER.info("Port consumer from {} skipping releasing: {}", podName, port);
         }
       };
 
