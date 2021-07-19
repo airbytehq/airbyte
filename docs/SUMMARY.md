@@ -72,6 +72,7 @@
     * [Oracle DB](integrations/sources/oracle.md)
     * [Paypal Transaction](integrations/sources/paypal-transaction.md)
     * [Plaid](integrations/sources/plaid.md)
+    * [Pipedrive](integrations/sources/pipedrive.md)
     * [PokéAPI](integrations/sources/pokeapi.md)
     * [Postgres](integrations/sources/postgres.md)
     * [PostHog](integrations/sources/posthog.md)

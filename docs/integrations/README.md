@@ -55,6 +55,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Okta](./sources/okta.md)| Beta |
 |[Oracle DB](./sources/oracle.md)| Certified |
 |[PayPal Transaction](./sources/paypal-transaction.md)| Beta |
+|[Pipedrive](./sources/pipedrive.md)| Alpha |
 |[Plaid](./sources/plaid.md)| Alpha |
 |[PokéAPI](./sources/pokeapi.md)| Beta |
 |[Postgres](./sources/postgres.md)| Certified |
