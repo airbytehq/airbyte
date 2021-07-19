@@ -12,19 +12,22 @@ import UpgradeAllButton from "./UpgradeAllButton";
 import CreateConnector from "./CreateConnector";
 import HeadTitle from "components/HeadTitle";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
+import { Connector, ConnectorDefinition } from "core/domain/connector";
 
 type ConnectorsViewProps = {
   type: "sources" | "destinations";
   isUpdateSuccess: boolean;
   hasNewConnectorVersion?: boolean;
-  onUpdateVersion: ({ id, version }: { id: string; version: string }) => void;
   usedConnectorsDefinitions: SourceDefinition[] | DestinationDefinition[];
   connectorsDefinitions: SourceDefinition[] | DestinationDefinition[];
   loading: boolean;
   error?: Error;
   onUpdate: () => void;
+  onUpdateVersion: ({ id, version }: { id: string; version: string }) => void;
   feedbackList: Record<string, string>;
 };
+
+const defaultSorting = [{ id: "name" }];
 
 const ConnectorsView: React.FC<ConnectorsViewProps> = ({
   type,
@@ -44,20 +47,11 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
         Header: <FormattedMessage id="admin.connectors" />,
         accessor: "name",
         customWidth: 25,
-        Cell: ({
-          cell,
-          row,
-        }: CellProps<{
-          latestDockerImageTag: string;
-          dockerImageTag: string;
-          icon?: string;
-        }>) => (
+        Cell: ({ cell, row }: CellProps<ConnectorDefinition>) => (
           <ConnectorCell
             connectorName={cell.value}
             img={row.original.icon}
-            hasUpdate={
-              row.original.latestDockerImageTag !== row.original.dockerImageTag
-            }
+            hasUpdate={Connector.hasNewerVersion(row.original)}
           />
         ),
       },
@@ -65,7 +59,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
         Header: <FormattedMessage id="admin.image" />,
         accessor: "dockerRepository",
         customWidth: 36,
-        Cell: ({ cell, row }: CellProps<{ documentationUrl: string }>) => (
+        Cell: ({ cell, row }: CellProps<ConnectorDefinition>) => (
           <ImageCell
             imageName={cell.value}
             link={row.original.documentationUrl}
@@ -85,18 +79,12 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
         ),
         accessor: "latestDockerImageTag",
         collapse: true,
-        Cell: ({
-          cell,
-          row,
-        }: CellProps<{
-          sourceDefinitionId: string;
-          dockerImageTag: string;
-        }>) => (
+        Cell: ({ cell, row }: CellProps<ConnectorDefinition>) => (
           <VersionCell
             version={cell.value}
-            id={row.original.sourceDefinitionId}
+            id={Connector.id(row.original)}
             onChange={onUpdateVersion}
-            feedback={feedbackList[row.original.sourceDefinitionId]}
+            feedback={feedbackList[Connector.id(row.original)]}
             currentVersion={row.original.dockerImageTag}
           />
         ),
@@ -104,6 +92,22 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
     ],
     [feedbackList, onUpdateVersion]
   );
+
+  const renderHeaderControls = (section: "used" | "available") =>
+    ((section === "used" && usedConnectorsDefinitions.length > 0) ||
+      (section === "available" && usedConnectorsDefinitions.length === 0)) && (
+      <div>
+        <CreateConnector type={type} />
+        {(hasNewConnectorVersion || isUpdateSuccess) && (
+          <UpgradeAllButton
+            isLoading={loading}
+            hasError={!!error && !loading}
+            hasSuccess={isUpdateSuccess}
+            onUpdate={onUpdate}
+          />
+        )}
+      </div>
+    );
 
   return (
     <>
@@ -113,7 +117,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
           { id: type === "sources" ? "admin.sources" : "admin.destinations" },
         ]}
       />
-      {usedConnectorsDefinitions.length ? (
+      {usedConnectorsDefinitions.length > 0 && (
         <Block>
           <Title bold>
             <FormattedMessage
@@ -123,21 +127,15 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
                   : "admin.manageDestination"
               }
             />
-            <div>
-              <CreateConnector type={type} />
-              {(hasNewConnectorVersion || isUpdateSuccess) && (
-                <UpgradeAllButton
-                  isLoading={loading}
-                  hasError={!!error && !loading}
-                  hasSuccess={isUpdateSuccess}
-                  onUpdate={onUpdate}
-                />
-              )}
-            </div>
+            {renderHeaderControls("used")}
           </Title>
-          <Table columns={columns} data={usedConnectorsDefinitions} />
+          <Table
+            columns={columns}
+            data={usedConnectorsDefinitions}
+            sortBy={defaultSorting}
+          />
         </Block>
-      ) : null}
+      )}
 
       <Block>
         <Title bold>
@@ -148,17 +146,13 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
                 : "admin.availableDestinations"
             }
           />
-          {(hasNewConnectorVersion || isUpdateSuccess) &&
-            !usedConnectorsDefinitions.length && (
-              <UpgradeAllButton
-                isLoading={loading}
-                hasError={!!error && !loading}
-                hasSuccess={isUpdateSuccess}
-                onUpdate={onUpdate}
-              />
-            )}
+          {renderHeaderControls("available")}
         </Title>
-        <Table columns={columns} data={connectorsDefinitions} />
+        <Table
+          columns={columns}
+          data={connectorsDefinitions}
+          sortBy={defaultSorting}
+        />
       </Block>
     </>
   );

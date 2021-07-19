@@ -2,7 +2,7 @@
   "sourceDefinitionId": "c2281cee-86f9-4a86-bb48-d23286b4c7bd",
   "name": "Slack",
   "dockerRepository": "airbyte/source-slack",
-  "dockerImageTag": "0.1.7",
+  "dockerImageTag": "0.1.8",
   "documentationUrl": "https://hub.docker.com/repository/docker/airbyte/source-slack",
   "icon": "slack.svg"
 }

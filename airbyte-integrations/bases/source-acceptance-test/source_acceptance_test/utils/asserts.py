@@ -23,7 +23,8 @@
 #
 
 import logging
-from typing import Iterator, List, Tuple
+from collections import defaultdict
+from typing import List, Mapping
 
 from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog
 from jsonschema import Draft4Validator, ValidationError
@@ -31,13 +32,15 @@ from jsonschema import Draft4Validator, ValidationError
 
 def verify_records_schema(
     records: List[AirbyteRecordMessage], catalog: ConfiguredAirbyteCatalog
-) -> Iterator[Tuple[AirbyteRecordMessage, List[ValidationError]]]:
+) -> Mapping[str, Mapping[str, ValidationError]]:
     """Check records against their schemas from the catalog, yield error messages.
     Only first record with error will be yielded for each stream.
     """
     validators = {}
     for stream in catalog.streams:
         validators[stream.stream.name] = Draft4Validator(stream.stream.json_schema)
+
+    stream_errors = defaultdict(dict)
 
     for record in records:
         validator = validators.get(record.stream)
@@ -46,5 +49,7 @@ def verify_records_schema(
             continue
 
         errors = list(validator.iter_errors(record.data))
-        if errors:
-            yield record, sorted(errors, key=str)
+        for error in errors:
+            stream_errors[record.stream][str(error.schema_path)] = error
+
+    return stream_errors
