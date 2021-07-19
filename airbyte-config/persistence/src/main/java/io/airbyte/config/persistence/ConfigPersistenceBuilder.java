@@ -72,17 +72,13 @@ public class ConfigPersistenceBuilder {
    * Otherwise, seed the database from the yaml files.
    */
   ConfigPersistence create() throws IOException {
-    if (configs.getConfigRoot() == null) {
-      // This branch will only be true in a future Airbyte version, in which
-      // the config root is no longer required and everything lives in the database.
-      return getDbPersistenceWithYamlSeed();
-    }
+    // Uncomment this branch in a future version when config volume is removed.
+    // if (configs.getConfigRoot() == null) {
+    // return getDbPersistenceWithYamlSeed();
+    // }
     return getDbPersistenceWithFileSeed();
   }
 
-  /**
-   * Create the file-based config persistence. This method only exists for testing purposes.
-   */
   ConfigPersistence getFileSystemPersistence() throws IOException {
     Path configRoot = configs.getConfigRoot();
     LOGGER.info("Use file system config persistence (root: {})", configRoot);
@@ -94,7 +90,7 @@ public class ConfigPersistenceBuilder {
    * if the database should be initialized.
    */
   ConfigPersistence getDbPersistenceWithYamlSeed() throws IOException {
-    LOGGER.info("Creating database-based config persistence, and loading initial seed from YAML files");
+    LOGGER.info("Creating db-based config persistence, and loading initial seed from YAML files");
     ConfigPersistence seedConfigPersistence = new YamlSeedConfigPersistence();
     return getDbPersistence(seedConfigPersistence);
   }
@@ -104,7 +100,7 @@ public class ConfigPersistenceBuilder {
    * config persistence if the database should be initialized.
    */
   ConfigPersistence getDbPersistenceWithFileSeed() throws IOException {
-    LOGGER.info("Creating database-based config persistence, and loading seed and existing data from files");
+    LOGGER.info("Creating db-based config persistence, and loading seed and existing data from files");
     Path configRoot = configs.getConfigRoot();
     ConfigPersistence fsConfigPersistence = FileSystemConfigPersistence.createWithValidation(configRoot);
     return getDbPersistence(fsConfigPersistence);
