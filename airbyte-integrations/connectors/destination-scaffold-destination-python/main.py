@@ -23,26 +23,9 @@
 #
 
 
-from setuptools import find_packages, setup
+import sys
 
-MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
-]
+from destination_scaffold_destination_python import DestinationScaffoldDestinationPython
 
-TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-    "source-acceptance-test",
-]
-
-setup(
-    name="source_{{snakeCase name}}",
-    description="Source implementation for {{titleCase name}}.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json"]},
-    extras_require={
-        "tests": TEST_REQUIREMENTS,
-    },
-)
+if __name__ == "__main__":
+    DestinationScaffoldDestinationPython().run(sys.argv[1:])

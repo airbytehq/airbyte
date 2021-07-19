@@ -30,13 +30,12 @@ MAIN_REQUIREMENTS = [
 ]
 
 TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-    "source-acceptance-test",
+    "pytest~=6.1"
 ]
 
 setup(
-    name="source_{{snakeCase name}}",
-    description="Source implementation for {{titleCase name}}.",
+    name="destination_{{snakeCase name}}",
+    description="Destination implementation for {{titleCase name}}.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
