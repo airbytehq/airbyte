@@ -49,20 +49,20 @@ class SendgridStream(HttpStream, ABC):
         json_response = response.json()
         records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
 
-        if records is None:
+        if records is not None:
             for record in records:
                 yield record
-        # else:
-        # TODO sendgrid's API is sending empty (not empty array, just empty) responses at times. It's not entirely clear why, but adding these
-        #  log statements to help reproduce and prevent the connector from failing
-        err_msg = f"Response contained no valid JSON data. Response body: {response.text}\n"\
-                  f"Response status: {response.status_code}\n"\
-                  f"Response body: {response.text}\n"\
-                  f"Response headers: {response.headers}\n"\
-                  f"Request URL: {response.request.url}\n"\
-                  f"Request body: {response.request.body}\n"
-        # do NOT print request headers as it contains auth token
-        self.logger.info(err_msg)
+        else:
+            # TODO sendgrid's API is sending empty (not empty array, just empty) responses at times. It's not entirely clear why, but adding these
+            #  log statements to help reproduce and prevent the connector from failing
+            err_msg = f"Response contained no valid JSON data. Response body: {response.text}\n"\
+                      f"Response status: {response.status_code}\n"\
+                      f"Response body: {response.text}\n"\
+                      f"Response headers: {response.headers}\n"\
+                      f"Request URL: {response.request.url}\n"\
+                      f"Request body: {response.request.body}\n"
+            # do NOT print request headers as it contains auth token
+            self.logger.info(err_msg)
 
 
 
