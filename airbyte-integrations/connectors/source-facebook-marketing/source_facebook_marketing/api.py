@@ -52,18 +52,23 @@ class MyFacebookAdsApi(FacebookAdsApi):
 
         if usage_header_ad_account:
             usage_header_ad_account_loaded = json.loads(usage_header_ad_account)
-            usage = max(usage, usage_header_ad_account_loaded.get("acc_id_util_pct") )
+            usage = max(usage, usage_header_ad_account_loaded.get("acc_id_util_pct"))
 
         if usage_header_app:
             usage_header_app_loaded = json.loads(usage_header_app)
-            usage = max(usage, usage_header_app_loaded.get("call_count"), usage_header_app_loaded.get("total_time"), usage_header_app_loaded.get("total_cputime") )
+            usage = max(
+                usage,
+                usage_header_app_loaded.get("call_count"),
+                usage_header_app_loaded.get("total_time"),
+                usage_header_app_loaded.get("total_cputime"),
+            )
 
         if usage_header_business:
 
             usage_header_business_loaded = json.loads(usage_header_business)
             for business_object_id in usage_header_business_loaded:
                 usage_limits = usage_header_business_loaded.get(business_object_id)[0]
-                usage = max(usage, usage_limits.get('call_count'), usage_limits.get('total_cputime'), usage_limits.get('total_time'))
+                usage = max(usage, usage_limits.get("call_count"), usage_limits.get("total_cputime"), usage_limits.get("total_time"))
                 pause_interval = max(pause_interval, pendulum.duration(minutes=usage_limits.get("estimated_time_to_regain_access", 0)))
 
         return usage, pause_interval
@@ -78,7 +83,6 @@ class MyFacebookAdsApi(FacebookAdsApi):
                 usage, pause_interval = self.parse_call_rate_header(headers)
                 max_usage = max(max_usage, usage)
                 max_pause_interval = max(max_pause_interval, pause_interval)
-
 
             if max_usage > self.call_rate_threshold:
                 max_pause_interval = max(max_pause_interval, self.pause_interval_minimum)
