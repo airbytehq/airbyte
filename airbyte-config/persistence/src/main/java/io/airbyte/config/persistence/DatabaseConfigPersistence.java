@@ -202,6 +202,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     String configId = idFieldName == null
         ? UUID.randomUUID().toString()
         : configJson.get(idFieldName).asText();
+    LOGGER.info("Inserting {} record {}", configType, configId);
     ctx.insertInto(AIRBYTE_CONFIGS)
         .set(CONFIG_ID, configId)
         .set(CONFIG_TYPE, configType)
