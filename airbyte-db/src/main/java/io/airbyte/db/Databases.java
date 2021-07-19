@@ -57,6 +57,7 @@ public class Databases {
       LOGGER.info("Testing config database connection...");
       return database.query(ctx -> ctx.fetchExists(select().from("information_schema.tables")));
     } catch (Exception e) {
+      LOGGER.info("Unsuccessful connection to config database", e);
       return false;
     }
   };
