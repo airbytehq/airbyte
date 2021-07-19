@@ -95,17 +95,25 @@
             },
             "fields": {
               "type": "object",
-              "additionalProperties": {}
+              "additionalProperties": {},
+              "properties": {
+                "updated": {
+                  "type": "string",
+                  "description": "The datetime on which the issue was last updated.",
+                  "format": "date-time",
+                  "readOnly": true
+                }
+              }
             }
           },
           "additionalProperties": false
         },
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["created"]
+        "default_cursor_field": ["updated"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["created"],
+      "cursor_field": ["updated"],
       "destination_sync_mode": "append"
     },
     {
@@ -182,8 +190,14 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
-            "id": { "type": "string", "description": "The ID of the field." },
-            "key": { "type": "string", "description": "The key of the field." },
+            "id": {
+              "type": "string",
+              "description": "The ID of the field."
+            },
+            "key": {
+              "type": "string",
+              "description": "The key of the field."
+            },
             "name": {
               "type": "string",
               "description": "The name of the field."
@@ -208,7 +222,9 @@
               "uniqueItems": true,
               "type": "array",
               "description": "The names that can be used to reference the field in an advanced search. For more information, see [Advanced searching - fields reference](https://confluence.atlassian.com/x/gwORLQ).",
-              "items": { "type": "string" }
+              "items": {
+                "type": "string"
+              }
             },
             "scope": {
               "description": "The scope of the field.",
@@ -345,7 +361,9 @@
                 },
                 "configuration": {
                   "type": "object",
-                  "additionalProperties": { "readOnly": true },
+                  "additionalProperties": {
+                    "readOnly": true
+                  },
                   "description": "If the field is a custom field, the configuration of the field.",
                   "readOnly": true
                 }
@@ -402,7 +420,10 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
-            "id": { "type": "string", "description": "The ID of the context." },
+            "id": {
+              "type": "string",
+              "description": "The ID of the context."
+            },
             "name": {
               "type": "string",
               "description": "The name of the context."
@@ -440,7 +461,9 @@
               "type": "array",
               "description": "The issue link type bean.",
               "readOnly": true,
-              "xml": { "name": "issueLinkTypes" },
+              "xml": {
+                "name": "issueLinkTypes"
+              },
               "items": {
                 "type": "object",
                 "properties": {
@@ -520,7 +543,9 @@
               "description": "The ID of the notification scheme.",
               "format": "int64"
             },
-            "self": { "type": "string" },
+            "self": {
+              "type": "string"
+            },
             "name": {
               "type": "string",
               "description": "The name of the notification scheme."
@@ -641,7 +666,9 @@
                               "uniqueItems": true,
                               "type": "array",
                               "description": "The names that can be used to reference the field in an advanced search. For more information, see [Advanced searching - fields reference](https://confluence.atlassian.com/x/gwORLQ).",
-                              "items": { "type": "string" }
+                              "items": {
+                                "type": "string"
+                              }
                             },
                             "scope": {
                               "description": "The scope of the field.",
@@ -782,7 +809,9 @@
                                 },
                                 "configuration": {
                                   "type": "object",
-                                  "additionalProperties": { "readOnly": true },
+                                  "additionalProperties": {
+                                    "readOnly": true
+                                  },
                                   "description": "If the field is a custom field, the configuration of the field.",
                                   "readOnly": true
                                 }
@@ -1668,7 +1697,9 @@
                       "size": {
                         "type": "integer",
                         "format": "int32",
-                        "xml": { "attribute": true }
+                        "xml": {
+                          "attribute": true
+                        }
                       },
                       "items": {
                         "type": "array",
@@ -1688,12 +1719,19 @@
                           }
                         }
                       },
-                      "pagingCallback": { "type": "object" },
-                      "callback": { "type": "object" },
+                      "pagingCallback": {
+                        "type": "object"
+                      },
+                      "callback": {
+                        "type": "object"
+                      },
                       "max-results": {
                         "type": "integer",
                         "format": "int32",
-                        "xml": { "name": "max-results", "attribute": true }
+                        "xml": {
+                          "name": "max-results",
+                          "attribute": true
+                        }
                       }
                     }
                   },
@@ -1705,7 +1743,9 @@
                       "size": {
                         "type": "integer",
                         "format": "int32",
-                        "xml": { "attribute": true }
+                        "xml": {
+                          "attribute": true
+                        }
                       },
                       "items": {
                         "type": "array",
@@ -1720,7 +1760,9 @@
                               "uniqueItems": true,
                               "type": "array",
                               "description": "The groups associated with the application role.",
-                              "items": { "type": "string" }
+                              "items": {
+                                "type": "string"
+                              }
                             },
                             "name": {
                               "type": "string",
@@ -1730,7 +1772,9 @@
                               "uniqueItems": true,
                               "type": "array",
                               "description": "The groups that are granted default access for this application role.",
-                              "items": { "type": "string" }
+                              "items": {
+                                "type": "string"
+                              }
                             },
                             "selectedByDefault": {
                               "type": "boolean",
@@ -1759,7 +1803,9 @@
                               "type": "string",
                               "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license."
                             },
-                            "hasUnlimitedSeats": { "type": "boolean" },
+                            "hasUnlimitedSeats": {
+                              "type": "boolean"
+                            },
                             "platform": {
                               "type": "boolean",
                               "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
@@ -1767,12 +1813,19 @@
                           }
                         }
                       },
-                      "pagingCallback": { "type": "object" },
-                      "callback": { "type": "object" },
+                      "pagingCallback": {
+                        "type": "object"
+                      },
+                      "callback": {
+                        "type": "object"
+                      },
                       "max-results": {
                         "type": "integer",
                         "format": "int32",
-                        "xml": { "name": "max-results", "attribute": true }
+                        "xml": {
+                          "name": "max-results",
+                          "attribute": true
+                        }
                       }
                     }
                   },
@@ -1780,7 +1833,9 @@
                     "type": "string",
                     "description": "Expand options that include additional user details in the response.",
                     "readOnly": true,
-                    "xml": { "attribute": true }
+                    "xml": {
+                      "attribute": true
+                    }
                   }
                 }
               }

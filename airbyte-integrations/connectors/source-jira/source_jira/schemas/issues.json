@@ -90,7 +90,15 @@
     },
     "fields": {
       "type": "object",
-      "additionalProperties": {}
+      "additionalProperties": {},
+      "properties": {
+        "updated": {
+          "type": "string",
+          "description": "The datetime on which the issue was last updated.",
+          "format": "date-time",
+          "readOnly": true
+        }
+      }
     }
   },
   "additionalProperties": false

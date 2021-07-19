@@ -101,6 +101,6 @@
       }
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "description": "List of project avatars."
 }

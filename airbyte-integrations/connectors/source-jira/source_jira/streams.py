@@ -175,16 +175,16 @@ class Issues(IncrementalJiraStream):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
         params["fields"] = ["attachment", "issuelinks", "security", "issuetype", "updated"]
-        if stream_state.get(self.cursor_field):
-            issues_state = pendulum.parse(stream_state.get(self.cursor_field))
+        if stream_state.get(self.cursor_field, None):
+            issues_state = pendulum.parse(stream_state[self.cursor_field])
             issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
             params["jql"] = f"updated > '{issues_state_row}'"
         return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        latest_record_date = pendulum.parse(latest_record.get("fields", {}).get(self.cursor_field))
+        latest_record_date = pendulum.parse(latest_record.get("fields", {}).get(self.cursor_field, ""))
         if current_stream_state:
-            current_stream_state = current_stream_state.get(self.cursor_field)
+            current_stream_state = current_stream_state.get(self.cursor_field, "")
             if current_stream_state:
                 return {self.cursor_field: str(max(latest_record_date, pendulum.parse(current_stream_state)))}
         else:
@@ -361,7 +361,7 @@ class IssueWorklogs(IncrementalJiraStream):
         return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        latest_record_date = pendulum.parse(latest_record.get("fields", {}).get(self.cursor_field))
+        latest_record_date = pendulum.parse(latest_record[self.cursor_field])
         if current_stream_state:
             current_stream_state = current_stream_state.get(self.cursor_field)
             if current_stream_state:
