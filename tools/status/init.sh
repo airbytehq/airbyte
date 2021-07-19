@@ -34,5 +34,5 @@ aws cloudfront create-distribution \
 
 echo "Site should be ready at http://$S3_DOMAIN"
 echo "1. Add a certificate and cname to the distribution: https://advancedweb.hu/how-to-use-a-custom-domain-on-cloudfront-with-cloudflare-managed-dns/"
-echo "2. Configure a CNAME on Cloudflare for airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com to point to the bucket!"
+echo "2. Configure a CNAME on Cloudflare for status-api.airbyte.io to point to the bucket!"
 echo "3. Create STATUS_API_AWS_ACCESS_KEY_ID and STATUS_API_AWS_SECRET_ACCESS_KEY Github secrets with access to the bucket."
