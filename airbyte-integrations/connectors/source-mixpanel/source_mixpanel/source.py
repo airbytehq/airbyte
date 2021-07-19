@@ -46,6 +46,14 @@ class MixpanelStream(HttpStream, ABC):
     Formatted API Rate Limit  (https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-API-Endpoints):
       A maximum of 5 concurrent queries
       400 queries per hour.
+
+    API Rate Limit Handler:
+    If total number of planned requests is lower than it is allowed per hour
+    then
+        reset reqs_per_hour_limit and send requests with small delay (1 reqs/sec)
+        because API endpoint accept requests sparks up to 3 reqs/sec
+    else
+        send requests with planned delay: 3600/reqs_per_hour_limit seconds
     """
 
     url_base = "https://mixpanel.com/api/2.0/"
@@ -262,7 +270,6 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
         # One stream slice is a combination of all funnel_slices and date_slices
         stream_slices = []
         funnel_slices = self.funnel_slices(sync_mode)
-        # date_slices = self.date_slices(sync_mode, cursor_field=cursor_field, stream_state=stream_state)
         for funnel_slice in funnel_slices:
             # get single funnel state
             funnel_id = str(funnel_slice["funnel_id"])
