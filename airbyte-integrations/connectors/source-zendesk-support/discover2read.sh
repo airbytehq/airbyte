@@ -28,7 +28,7 @@ echo "$cat_cmd"
 bash -c "$cat_cmd"
 
 echo "TRY WITH SAVED STATE"
-cmd2="cat $TMP_STATE_FILE2 | grep \"STATE\" | jq -c '.state.data' | tee ${TMP_STATE_FILE} || exit 1"
+cmd2="cat $TMP_STATE_FILE2 | grep \"STATE\" | head -n1 | jq -c '.state.data' | tee ${TMP_STATE_FILE} || exit 1"
 echo "$cmd2"
 bash -c "$cmd2"
 state_cmd="$cmd --state ${TMP_STATE_FILE} || exit 1"
