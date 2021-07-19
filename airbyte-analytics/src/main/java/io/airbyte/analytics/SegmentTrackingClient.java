@@ -35,6 +35,7 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 public class SegmentTrackingClient implements TrackingClient {
@@ -67,7 +68,7 @@ public class SegmentTrackingClient implements TrackingClient {
   }
 
   @Override
-  public void identify() {
+  public void identify(UUID workspaceId) {
     final TrackingIdentity trackingIdentity = identitySupplier.get();
     final Map<String, Object> identityMetadata = new HashMap<>();
 
@@ -93,17 +94,17 @@ public class SegmentTrackingClient implements TrackingClient {
   }
 
   @Override
-  public void alias(String previousCustomerId) {
+  public void alias(UUID workspaceId, String previousCustomerId) {
     analytics.enqueue(AliasMessage.builder(previousCustomerId).userId(identitySupplier.get().getCustomerId().toString()));
   }
 
   @Override
-  public void track(String action) {
-    track(action, Collections.emptyMap());
+  public void track(UUID workspaceId, String action) {
+    track(workspaceId, action, Collections.emptyMap());
   }
 
   @Override
-  public void track(String action, Map<String, Object> metadata) {
+  public void track(UUID workspaceId, String action, Map<String, Object> metadata) {
     final Map<String, Object> mapCopy = new HashMap<>(metadata);
     final TrackingIdentity trackingIdentity = identitySupplier.get();
     mapCopy.put(AIRBYTE_VERSION_KEY, trackingIdentity.getAirbyteVersion());

@@ -26,6 +26,7 @@ package io.airbyte.analytics;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,22 +42,22 @@ public class LoggingTrackingClient implements TrackingClient {
   }
 
   @Override
-  public void identify() {
+  public void identify(UUID workspaceId) {
     LOGGER.info("identify. userId: {}", identitySupplier.get().getCustomerId());
   }
 
   @Override
-  public void alias(String previousCustomerId) {
+  public void alias(UUID workspaceId, String previousCustomerId) {
     LOGGER.info("merge. userId: {} previousUserId: {}", identitySupplier.get().getCustomerId(), previousCustomerId);
   }
 
   @Override
-  public void track(String action) {
-    track(action, Collections.emptyMap());
+  public void track(UUID workspaceId, String action) {
+    track(workspaceId, action, Collections.emptyMap());
   }
 
   @Override
-  public void track(String action, Map<String, Object> metadata) {
+  public void track(UUID workspaceId, String action, Map<String, Object> metadata) {
     LOGGER.info("track. version: {}, userId: {}, action: {}, metadata: {}",
         identitySupplier.get().getAirbyteVersion(),
         identitySupplier.get().getCustomerId(),
