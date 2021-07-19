@@ -106,14 +106,14 @@ Everyone develops differently but here are 3 ways that we recommend iterating on
 
 **Run the source using python**
 
-You'll notice in your source's directory that there is a python file called `main_dev.py`. This file exists as convenience for development. You can call it from within the virtual environment mentioned above `. ./.venv/bin/activate` to test out that your source works.
+You'll notice in your source's directory that there is a python file called `main.py`. This file exists as convenience for development. You can call it from within the virtual environment mentioned above `. ./.venv/bin/activate` to test out that your source works.
 
 ```text
 # from airbyte-integrations/connectors/source-<source-name>
-python main_dev.py spec
-python main_dev.py check --config secrets/config.json
-python main_dev.py discover --config secrets/config.json
-python main_dev.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
+python main.py spec
+python main.py check --config secrets/config.json
+python main.py discover --config secrets/config.json
+python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
 
 The nice thing about this approach is that you can iterate completely within in python. The downside is that you are not quite running your source as it will actually be run by Airbyte. Specifically you're not running it from within the docker container that will house it.
