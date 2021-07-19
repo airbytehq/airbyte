@@ -22,8 +22,7 @@
       "type": ["null", "integer"]
     },
     "amount": {
-      "type": ["null", "number"],
-      "multipleOf": 1e-10
+      "type": ["null", "string"]
     },
     "authorization": {
       "type": ["null", "string"]
