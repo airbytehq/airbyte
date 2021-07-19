@@ -82,7 +82,6 @@
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": null,
         "default_cursor_field": null,
-        "source_defined_primary_key": [["id"]],
         "namespace": null
       },
       "sync_mode": "full_refresh",
@@ -97,7 +96,6 @@
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": null,
         "default_cursor_field": null,
-        "source_defined_primary_key": [["id"]],
         "namespace": null
       },
       "sync_mode": "full_refresh",
@@ -127,7 +125,6 @@
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": null,
         "default_cursor_field": null,
-        "source_defined_primary_key": [["id"]],
         "namespace": null
       },
       "sync_mode": "full_refresh",

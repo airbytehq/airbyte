@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.12
+Improve error message when data mismatches schema: https://github.com/airbytehq/airbyte/pull/4753
+
 ## 0.1.11
 Fix error in the naming of method `test_match_expected` for class `TestSpec`.
 
