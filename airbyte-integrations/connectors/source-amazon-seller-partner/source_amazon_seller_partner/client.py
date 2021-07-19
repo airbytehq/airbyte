@@ -73,18 +73,6 @@ class BaseClient:
             streams.append(AirbyteStream.parse_obj(raw_schema))
         return streams
 
-    def read_orders(
-        self, current_date: str, page: int, cursor_field: str, stream_name: str
-    ) -> Generator[AirbyteMessage, None, None]:
-        response = self._amazon_client.fetch_orders(current_date, self._amazon_client.PAGECOUNT, NEXT_TOKEN)
-        orders = response["Orders"]
-        if "NextToken" in response:
-            NEXT_TOKEN = response["NextToken"]
-        for order in orders:
-            current_date = pendulum.parse(order[cursor_field]).to_date_string()
-            cursor_value = max(current_date, cursor_value) if cursor_value else current_date
-            yield self._record(stream=stream_name, data=order, seller_id=self.seller_id)
-
     def read_stream(
         self, logger: AirbyteLogger, stream_name: str, state: MutableMapping[str, Any]
     ) -> Generator[AirbyteMessage, None, None]:

@@ -57,15 +57,18 @@ class AmazonClient:
     GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
     ORDERS = "Orders"
     GET_FBA_INVENTORY_AGED_DATA = "GET_FBA_INVENTORY_AGED_DATA"
+    GET_MERCHANT_LISTINGS_ALL_DATA = "GET_MERCHANT_LISTINGS_ALL_DATA"
     CURSORS = {
         GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL: "purchase-date",
         GET_FBA_INVENTORY_AGED_DATA: "startDateTime",
         ORDERS: "LastUpdateDate",
+        GET_MERCHANT_LISTINGS_ALL_DATA: ''
     }
     DATA_FIELDS = {
         GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL: None,
         GET_FBA_INVENTORY_AGED_DATA: "inventorySummaries",
         ORDERS: "Orders",
+        GET_MERCHANT_LISTINGS_ALL_DATA: ''
     }
 
     _REPORT_ENTITIES = [GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL]
@@ -90,16 +93,16 @@ class AmazonClient:
     def get_data_field_stream(self, stream_name: str) -> str:
         return self.DATA_FIELDS[stream_name]
 
-    def fetch_inventory_summary_marketplace(self, start_date_time: str, next_token: Optional[str]):
-        response = Inventories(credentials=self.credentials, marketplace=self.marketplace).get_inventory_summary_marketplace(
-            startDateTime=start_date_time, nextToken=next_token
-        )
-        return response.payload
-
     def fetch_orders(self, updated_after: str, page_size: int, next_token: Optional[str]) -> any:
         page_count = page_size or self.PAGECOUNT
         response = Orders(credentials=self.credentials, marketplace=self.marketplace).get_orders(
             LastUpdatedAfter=updated_after, MaxResultsPerPage=page_count, NextToken=next_token
+        )
+        return response.payload
+
+    def fetch_inventory_summary_marketplace(self, start_date_time: str, next_token: Optional[str]):
+        response = Inventories(credentials=self.credentials, marketplace=self.marketplace).get_inventory_summary_marketplace(
+            startDateTime=start_date_time, nextToken=next_token
         )
         return response.payload
 
