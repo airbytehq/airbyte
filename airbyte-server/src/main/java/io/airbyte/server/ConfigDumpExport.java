@@ -41,6 +41,7 @@ import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
@@ -93,7 +94,8 @@ public class ConfigDumpExport {
   }
 
   private void dumpDatabase(Path parentFolder) throws Exception {
-    final Map<String, Stream<JsonNode>> tables = jobPersistence.dump();
+    final Map<String, Stream<JsonNode>> tables = jobPersistence.exportDatabase().entrySet().stream()
+        .collect(Collectors.toMap(e -> e.getKey().name(), Entry::getValue));
     Files.createDirectories(parentFolder.resolve(DB_FOLDER_NAME));
     for (Map.Entry<String, Stream<JsonNode>> table : tables.entrySet()) {
       final Path tablePath = buildTablePath(parentFolder, table.getKey());
