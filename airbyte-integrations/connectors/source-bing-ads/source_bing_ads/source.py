@@ -24,7 +24,7 @@
 
 
 import logging
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 from airbyte_cdk import AirbyteLogger
@@ -56,12 +56,14 @@ class BingAdsStream(Stream, ABC):
 
         yield from []
 
-    @abstractmethod
-    def send_request(self, **kwargs) -> Mapping[str, Any]:
+    def send_request(self, params: Mapping[str, Any], account_id: str = None) -> Mapping[str, Any]:
+        return self.client.request(service_name=self.service_name, account_id=account_id, operation_name=self.operation_name, params=params)
+
+    def get_account_id(self, stream_slice: Mapping[str, Any] = None) -> Optional[str]:
         """
-        This method should be overridden by subclasses to send proper SOAP request
+        Fetches account_id from slice object
         """
-        pass
+        return stream_slice.get("account_id") if stream_slice else None
 
     def read_records(
         self,
@@ -80,7 +82,7 @@ class BingAdsStream(Stream, ABC):
                 stream_slice=stream_slice,
                 next_page_token=next_page_token,
             )
-            response = self.send_request(**params)
+            response = self.send_request(params, account_id=self.get_account_id(stream_slice))
 
             next_page_token = self.next_page_token(response, current_page_token=next_page_token)
             if not next_page_token:
@@ -96,9 +98,6 @@ class Accounts(BingAdsStream):
     data_field: str = "AdvertiserAccount"
     service_name: str = "CustomerManagementService"
     operation_name: str = "SearchAccounts"
-
-    def send_request(self, **kwargs) -> Mapping[str, Any]:
-        return self.client.request(service_name=self.service_name, account_id=None, operation_name=self.operation_name, params=kwargs)
 
     def next_page_token(self, response: sudsobject.Object, current_page_token: Optional[int]) -> Optional[Mapping[str, Any]]:
         current_page_token = current_page_token or 0
@@ -138,7 +137,7 @@ class Campaigns(BingAdsStream):
     service_name: str = "CampaignManagement"
     operation_name: str = "GetCampaignsByAccountId"
 
-    additional_fields = " ".join(
+    additional_fields: str = " ".join(
         [
             "AdScheduleUseSearcherTimeZone",
             "BidStrategyId",
@@ -152,11 +151,6 @@ class Campaigns(BingAdsStream):
             "VerifiedTrackingSetting",
         ]
     )
-
-    def send_request(self, **kwargs) -> Mapping[str, Any]:
-        return self.client.request(
-            service_name=self.service_name, account_id=kwargs["AccountId"], operation_name=self.operation_name, params=kwargs
-        )
 
     def request_params(
         self,
@@ -179,6 +173,68 @@ class Campaigns(BingAdsStream):
             yield {"account_id": account_id}
 
 
+class AdGroups(BingAdsStream):
+    data_field: str = "AdGroup"
+    service_name: str = "CampaignManagement"
+    operation_name: str = "GetAdGroupsByCampaignId"
+    additional_fields: str = "AdGroupType AdScheduleUseSearcherTimeZone CpmBid CpvBid MultimediaAdsBidAdjustment"
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        return {"CampaignId": stream_slice["campaign_id"], "ReturnAdditionalFields": self.additional_fields}
+
+    def stream_slices(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        campaigns = Campaigns(self.client, self.config)
+        for account_id in self.config["account_ids"]:
+            for campaign in campaigns.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"account_id": account_id}):
+                yield {"campaign_id": campaign["Id"], "account_id": account_id}
+
+        yield from []
+
+
+class Ads(BingAdsStream):
+    data_field: str = "Ad"
+    service_name: str = "CampaignManagement"
+    operation_name: str = "GetAdsByAdGroupId"
+    additional_fields: str = "ImpressionTrackingUrls Videos LongHeadlines"
+    ad_types = ["Text", "Image", "Product", "AppInstall", "ExpandedText", "DynamicSearch", "ResponsiveAd", "ResponsiveSearch"]
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        return {
+            "AdGroupId": stream_slice["ad_group_id"],
+            "AdTypes": {
+                "AdType": self.ad_types
+            },
+            "ReturnAdditionalFields": self.additional_fields,
+        }
+
+    def stream_slices(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        ad_groups = AdGroups(self.client, self.config)
+        for slice in ad_groups.stream_slices(sync_mode=SyncMode.full_refresh):
+            for ad_group in ad_groups.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice):
+                yield {"ad_group_id": ad_group["Id"], "account_id": slice["account_id"]}
+        yield from []
+
+
 class SourceBingAds(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
@@ -191,4 +247,4 @@ class SourceBingAds(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         client = Client(**config)
-        return [Accounts(client, config), Campaigns(client, config)]
+        return [Accounts(client, config), Campaigns(client, config), AdGroups(client, config), Ads(client, config)]
