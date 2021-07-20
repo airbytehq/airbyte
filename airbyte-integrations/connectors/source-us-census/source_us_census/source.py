@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,14 +20,15 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-from airbyte_cdk.models.airbyte_protocol import SyncMode
+from urllib.parse import parse_qs
 
 import requests
-from urllib.parse import parse_qs
+from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -49,9 +51,7 @@ class UsCensusStream(HttpStream, ABC):
     primary_key = ""
     url_base = "https://api.census.gov/"
 
-    def __init__(
-        self, query_params: Optional[str], query_path: str, api_key: str, **kwargs: dict
-    ):
+    def __init__(self, query_params: Optional[str], query_path: str, api_key: str, **kwargs: dict):
         super().__init__(**kwargs)
         if not query_path:
             raise ValueError("query_path is required!")
@@ -63,9 +63,7 @@ class UsCensusStream(HttpStream, ABC):
         self.query_path = query_path
         self.api_key = api_key
 
-    def next_page_token(
-        self, response: requests.Response
-    ) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
     def request_params(
@@ -79,9 +77,7 @@ class UsCensusStream(HttpStream, ABC):
         """
         return prepare_request_params(self.query_params, self.api_key)
 
-    def parse_response(
-        self, response: requests.Response, **kwargs
-    ) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         Parses the response from the us census website.
 
@@ -183,9 +179,7 @@ class UsCensusStream(HttpStream, ABC):
                 "type": "object",
                 "properties": json_schema,
             }
-        raise ValueError(
-            "For schema discovery: the request must return at least one result"
-        )
+        raise ValueError("For schema discovery: the request must return at least one result")
 
     def path(
         self,
@@ -214,9 +208,7 @@ class SourceUsCensus(AbstractSource):
                 config.get("query_params"),
                 config.get("api_key"),
             )
-            resp = requests.get(
-                f"{UsCensusStream.url_base}{config.get('query_path')}", params=params
-            )
+            resp = requests.get(f"{UsCensusStream.url_base}{config.get('query_path')}", params=params)
             status = resp.status_code
             logger.info(f"Ping response code: {status}")
 

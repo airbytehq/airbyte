@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,14 +20,14 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
-from typing import List
-from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
+
 import pytest
-import responses
 import requests
-from source_us_census.source import UsCensusStream
+import responses
 from airbyte_cdk.sources.streams.http.auth import NoAuth
+from source_us_census.source import UsCensusStream
 
 
 @pytest.fixture
@@ -102,9 +103,7 @@ example_from_docs_test = (
         ),
     ],
 )
-def test_parse_response(
-    us_census_stream: UsCensusStream, response: str, expected_result: dict
-):
+def test_parse_response(us_census_stream: UsCensusStream, response: str, expected_result: dict):
     responses.add(
         responses.GET,
         us_census_stream.url_base,
@@ -140,9 +139,7 @@ type_string = {"type": "string"}
         ),
     ],
 )
-def test_discover_schema(
-    us_census_stream: UsCensusStream, response: str, expected_schema: dict
-):
+def test_discover_schema(us_census_stream: UsCensusStream, response: str, expected_schema: dict):
     responses.add(
         responses.GET,
         f"{us_census_stream.url_base}{us_census_stream.query_path}",
