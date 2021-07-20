@@ -35,13 +35,11 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonSchemaValidator;
-
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.function.Consumer;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,10 +67,11 @@ public class IntegrationRunner {
     this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, source);
   }
 
-  @VisibleForTesting IntegrationRunner(IntegrationCliParser cliParser,
-                                       Consumer<AirbyteMessage> outputRecordCollector,
-                                       Destination destination,
-                                       Source source) {
+  @VisibleForTesting
+  IntegrationRunner(IntegrationCliParser cliParser,
+                    Consumer<AirbyteMessage> outputRecordCollector,
+                    Destination destination,
+                    Source source) {
     Preconditions.checkState(destination != null ^ source != null, "can only pass in a destination or a source");
     this.cliParser = cliParser;
     this.outputRecordCollector = outputRecordCollector;
@@ -83,11 +82,12 @@ public class IntegrationRunner {
     validator = new JsonSchemaValidator();
   }
 
-  @VisibleForTesting IntegrationRunner(IntegrationCliParser cliParser,
-                                       Consumer<AirbyteMessage> outputRecordCollector,
-                                       Destination destination,
-                                       Source source,
-                                       JsonSchemaValidator jsonSchemaValidator) {
+  @VisibleForTesting
+  IntegrationRunner(IntegrationCliParser cliParser,
+                    Consumer<AirbyteMessage> outputRecordCollector,
+                    Destination destination,
+                    Source source,
+                    JsonSchemaValidator jsonSchemaValidator) {
     this(cliParser, outputRecordCollector, destination, source);
     this.validator = jsonSchemaValidator;
   }
@@ -116,10 +116,7 @@ public class IntegrationRunner {
                       .withConnectionStatus(
                           new AirbyteConnectionStatus()
                               .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                              .withMessage(e.getMessage()
-                              )
-                      )
-              );
+                              .withMessage(e.getMessage())));
         }
 
         outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(integration.check(config)));

@@ -27,7 +27,6 @@ package io.airbyte.integrations.destination.mssql;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
@@ -73,7 +72,7 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
         .put("username", db.getUsername())
         .put("password", db.getPassword())
         .put("schema", "testSchema")
-        .put("ssl_method", Jsons.jsonNode(ImmutableMap.of("method", "encrypted_trust_server_certificate")))
+        .put("ssl_method", Jsons.jsonNode(ImmutableMap.of("ssl_method", "encrypted_trust_server_certificate")))
         .build());
   }
 
