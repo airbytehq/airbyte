@@ -75,8 +75,7 @@ class GoogleAds:
             query_template += "WHERE {cursor_field} > '{from_date}' AND {cursor_field} < '{to_date}' ORDER BY {cursor_field}"
             substitute_params.update(dict(from_date=from_date, to_date=to_date, cursor_field=cursor_field))
 
-        query = query_template.format(**substitute_params)
-        return query
+        return query_template.format(**substitute_params)
 
     @staticmethod
     def get_field_value(field_value: GoogleAdsRow, field: str) -> str:
