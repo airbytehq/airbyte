@@ -1,5 +1,5 @@
 import React from "react";
-import { LightCell } from "components/SimpleTableComponents";
+import { Cell } from "components/SimpleTableComponents";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -10,25 +10,25 @@ const Name = styled.div<{ depth?: number }>`
 const FieldHeader: React.FC<{ depth?: number }> = (props) => {
   return (
     <>
-      <LightCell flex={1.5}>
+      <Cell lighter flex={1.5}>
         <Name depth={props.depth}>
           <FormattedMessage id="form.field.name" />
         </Name>
-      </LightCell>
-      <LightCell />
-      <LightCell>
+      </Cell>
+      <Cell lighter />
+      <Cell lighter>
         <FormattedMessage id="form.field.dataType" />
-      </LightCell>
-      <LightCell>
+      </Cell>
+      <Cell lighter>
         <FormattedMessage id="form.field.destinationName" />
-      </LightCell>
-      <LightCell flex={1.5} />
-      <LightCell>
+      </Cell>
+      <Cell lighter flex={1.5} />
+      <Cell lighter>
         <FormattedMessage id="form.field.primaryKey" />
-      </LightCell>
-      <LightCell>
+      </Cell>
+      <Cell lighter>
         <FormattedMessage id="form.field.cursorField" />
-      </LightCell>
+      </Cell>
     </>
   );
 };

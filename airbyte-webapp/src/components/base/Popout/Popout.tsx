@@ -1,10 +1,10 @@
-import React, { ReactNode } from "react";
+import React, { ReactNode, useMemo } from "react";
 import styled from "styled-components";
-
-import { DropDown } from "components";
-import { DropdownProps } from "../DropDown";
 import { useToggle } from "react-use";
 import { ActionMeta } from "react-select";
+
+import { DropDown } from "components";
+import { DropdownProps } from "components/base/DropDown";
 
 const OutsideClickListener = styled.div`
   bottom: 0;
@@ -45,7 +45,6 @@ const selectStyles = {
 const Popout: React.FC<PopoutProps> = ({
   onChange,
   targetComponent,
-  value,
   ...props
 }) => {
   const [isOpen, toggleOpen] = useToggle(false);
@@ -54,17 +53,20 @@ const Popout: React.FC<PopoutProps> = ({
     onChange?.(value, meta);
   };
 
-  const components = {
-    IndicatorSeparator: null,
-    DropdownIndicator: null,
-    ...props.components,
-  };
+  const components = useMemo(
+    () => ({
+      IndicatorSeparator: null,
+      DropdownIndicator: null,
+      ...props.components,
+    }),
+    [props.components]
+  );
 
   return (
     <PopupOpener
       isOpen={isOpen}
       onClose={toggleOpen}
-      target={targetComponent({ onOpen: toggleOpen, value })}
+      target={targetComponent({ onOpen: toggleOpen, value: props.value })}
     >
       <DropDown
         autoFocus
@@ -78,7 +80,6 @@ const Popout: React.FC<PopoutProps> = ({
         tabSelectsValue={false}
         {...props}
         onChange={onSelectChange}
-        value={value}
         components={components}
       />
     </PopupOpener>

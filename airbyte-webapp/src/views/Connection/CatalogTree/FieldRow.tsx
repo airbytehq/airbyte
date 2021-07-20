@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo, useCallback } from "react";
 import styled from "styled-components";
 import { Cell } from "components/SimpleTableComponents";
 import { CheckBox, RadioButton } from "components";
@@ -15,8 +15,8 @@ interface FieldRowProps {
   isCursorEnabled: boolean;
   depth?: number;
 
-  onPrimaryKeyChange: () => void;
-  onCursorChange: () => void;
+  onPrimaryKeyChange: (pk: string[]) => void;
+  onCursorChange: (cs: string[]) => void;
 }
 
 const FirstCell = styled(Cell)<{ depth?: number }>`
@@ -37,7 +37,17 @@ const RadiobuttonContainer = styled.div<{ depth?: number }>`
   padding-right: ${({ depth }) => (depth ? depth * 38 : 0)}px;
 `;
 
-const FieldRow: React.FC<FieldRowProps> = (props) => {
+const FieldRowInner: React.FC<FieldRowProps> = (props) => {
+  const { name: fieldName, onPrimaryKeyChange, onCursorChange } = props;
+  const handlePkChange = useCallback(
+    () => onPrimaryKeyChange(fieldName.split(".")),
+    [fieldName, onPrimaryKeyChange]
+  );
+
+  const handleCursorChange = useCallback(
+    () => onCursorChange(fieldName.split(".")),
+    [fieldName, onCursorChange]
+  );
   return (
     <>
       <FirstCell depth={props.depth} flex={1.5}>
@@ -51,10 +61,7 @@ const FieldRow: React.FC<FieldRowProps> = (props) => {
       <Cell flex={1.5} />
       <Cell>
         {props.isPrimaryKeyEnabled && (
-          <CheckBox
-            checked={props.isPrimaryKey}
-            onChange={props.onPrimaryKeyChange}
-          />
+          <CheckBox checked={props.isPrimaryKey} onChange={handlePkChange} />
         )}
       </Cell>
       <LastCell depth={props.depth}>
@@ -62,7 +69,7 @@ const FieldRow: React.FC<FieldRowProps> = (props) => {
           <RadiobuttonContainer depth={props.depth}>
             <RadioButton
               checked={props.isCursor}
-              onChange={props.onCursorChange}
+              onChange={handleCursorChange}
             />
           </RadiobuttonContainer>
         )}
@@ -71,4 +78,5 @@ const FieldRow: React.FC<FieldRowProps> = (props) => {
   );
 };
 
+const FieldRow = memo(FieldRowInner);
 export { FieldRow };

@@ -7,8 +7,8 @@ import type { DestinationSyncMode } from "core/domain/catalog";
 import { SyncSchemaStream } from "core/domain/catalog";
 
 import { CheckBox, LabeledRadioButton } from "components";
-import { Header, LightCell } from "components/SimpleTableComponents";
-import CatalogTree from "./CatalogTree";
+import { Cell, Header } from "components/SimpleTableComponents";
+import CatalogTree from "views/Connection/CatalogTree";
 import Search from "./Search";
 import SectionTitle from "./SectionTitle";
 import { naturalComparatorBy } from "utils/objects";
@@ -37,7 +37,7 @@ const SelectAll = styled.div`
   margin: 0 9px 0 30px;
 `;
 
-const NamespaceTitleCell = styled(LightCell)`
+const NamespaceTitleCell = styled(Cell).attrs(() => ({ lighter: true }))`
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -171,24 +171,24 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
           </SelectAll>
           <FormattedMessage id="form.sourceNamespace" />
         </NamespaceTitleCell>
-        <LightCell>
+        <Cell lighter>
           <FormattedMessage id="form.sourceStreamName" />
-        </LightCell>
-        <LightCell>
+        </Cell>
+        <Cell lighter>
           <FormattedMessage id="form.destinationNamespace" />
-        </LightCell>
-        <LightCell>
+        </Cell>
+        <Cell lighter>
           <FormattedMessage id="form.destinationStreamName" />
-        </LightCell>
-        <LightCell flex={1.5}>
+        </Cell>
+        <Cell lighter flex={1.5}>
           <FormattedMessage id="form.syncMode" />
-        </LightCell>
-        <LightCell>
+        </Cell>
+        <Cell lighter>
           <FormattedMessage id="form.primaryKey" />
-        </LightCell>
-        <LightCell>
+        </Cell>
+        <Cell lighter>
           <FormattedMessage id="form.cursorField" />
-        </LightCell>
+        </Cell>
       </SchemaHeader>
       <TreeViewContainer>
         <CatalogTree

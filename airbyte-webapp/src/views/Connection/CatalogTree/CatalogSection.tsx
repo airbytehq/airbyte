@@ -8,24 +8,47 @@ import {
   DestinationSyncMode,
   getDestinationNamespace,
   SyncMode,
+  SyncSchemaField,
   SyncSchemaFieldObject,
   SyncSchemaStream,
 } from "core/domain/catalog";
 import { traverseSchemaToField } from "core/domain/catalog/fieldUtil";
 import { DropDownRow } from "components";
 import { TreeRowWrapper } from "./components/TreeRowWrapper";
-import { Rows } from "./components/Rows";
 
-import { ConnectionFormValues, SUPPORTED_MODES } from "../../formConfig";
+import {
+  ConnectionFormValues,
+  SUPPORTED_MODES,
+} from "views/Connection/ConnectionForm/formConfig";
 import { StreamHeader } from "./StreamHeader";
 import { FieldHeader } from "./FieldHeader";
 import { FieldRow } from "./FieldRow";
 
 import { equal, naturalComparatorBy } from "utils/objects";
 
+const flatten = (
+  fArr: SyncSchemaField[],
+  arr: SyncSchemaField[] = []
+): SyncSchemaField[] =>
+  fArr.reduce<SyncSchemaField[]>((acc, f) => {
+    acc.push(f);
+
+    if (f.fields?.length) {
+      return flatten(f.fields, acc);
+    }
+    return acc;
+  }, arr);
+
 const Section = styled.div<{ error?: boolean }>`
   border: 1px solid
     ${(props) => (props.error ? props.theme.dangerColor : "none")};
+`;
+
+const RowsContainer = styled.div<{ depth?: number }>`
+  background: ${({ theme }) => theme.whiteColor5};
+  border-radius: 4px;
+  margin: 0
+    ${({ depth = 0 }) => `${depth * 38}px ${depth * 5}px ${depth * 38}px`};
 `;
 
 type TreeViewRowProps = {
@@ -55,9 +78,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   );
 
   const onSelectSyncMode = useCallback(
-    (data: DropDownRow.IDataItem | null) => {
-      data && updateStreamWithConfig(data.value);
-    },
+    (data: DropDownRow.IDataItem) => updateStreamWithConfig(data.value),
     [updateStreamWithConfig]
   );
 
@@ -104,14 +125,6 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
 
   const selectedCursorPath = config.cursorField.join(".");
 
-  const fields = useMemo(() => {
-    const traversedFields = traverseSchemaToField(stream.jsonSchema, streamId);
-
-    return traversedFields.sort(
-      naturalComparatorBy((field) => field.cleanedName)
-    );
-  }, [stream, streamId]);
-
   const availableSyncModes = useMemo(
     () =>
       SUPPORTED_MODES.filter(
@@ -120,12 +133,9 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
           destinationSupportedSyncModes.includes(destinationSyncMode)
       ).map(([syncMode, destinationSyncMode]) => ({
         value: { syncMode, destinationSyncMode },
-        disabled: true,
       })),
     [stream.supportedSyncModes, destinationSupportedSyncModes]
   );
-
-  const hasChildren = fields && fields.length > 0;
 
   const configErrors = getIn(errors, `schema.streams[${streamNode.id}].config`);
   const hasError = configErrors && Object.keys(configErrors).length > 0;
@@ -138,12 +148,24 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
     sourceNamespace: stream.namespace,
   });
 
-  const primitiveFields = useMemo(
+  const fields = useMemo(() => {
+    const traversedFields = traverseSchemaToField(stream.jsonSchema, streamId);
+
+    return traversedFields.sort(
+      naturalComparatorBy((field) => field.cleanedName)
+    );
+  }, [stream.jsonSchema, streamId]);
+
+  const hasChildren = fields && fields.length > 0;
+
+  const flattenedFields = useMemo(() => flatten(fields), [fields]);
+
+  const primitiveFieldNames = useMemo(
     () =>
-      fields
+      flattenedFields
         .filter(SyncSchemaFieldObject.isPrimitive)
         .map((field) => field.name),
-    [fields]
+    [flattenedFields]
   );
 
   return (
@@ -159,7 +181,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
           isRowExpanded={isRowExpanded}
           pkRequired={showPkControl}
           cursorRequired={showCursorControl}
-          primitiveFields={primitiveFields}
+          primitiveFields={primitiveFieldNames}
           onPrimaryKeyChange={(newPrimaryKey) =>
             updateStreamWithConfig({ primaryKey: newPrimaryKey })
           }
@@ -173,9 +195,9 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
           <TreeRowWrapper noBorder>
             <FieldHeader depth={1} />
           </TreeRowWrapper>
-          <Rows fields={fields} depth={1}>
-            {(field) => (
-              <TreeRowWrapper depth={1}>
+          <RowsContainer depth={1}>
+            {flattenedFields.map((field) => (
+              <TreeRowWrapper depth={1} key={field.name}>
                 <FieldRow
                   depth={1}
                   name={field.name}
@@ -190,12 +212,12 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
                     showCursorControl &&
                     SyncSchemaFieldObject.isPrimitive(field)
                   }
-                  onPrimaryKeyChange={() => onPkSelect(field.name.split("."))}
-                  onCursorChange={() => onCursorSelect(field.name.split("."))}
+                  onPrimaryKeyChange={onPkSelect}
+                  onCursorChange={onCursorSelect}
                 />
               </TreeRowWrapper>
-            )}
-          </Rows>
+            ))}
+          </RowsContainer>
         </>
       )}
     </Section>

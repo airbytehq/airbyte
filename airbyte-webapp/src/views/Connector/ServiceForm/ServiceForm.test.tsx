@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { screen, findByText, waitFor } from "@testing-library/react";
 import { JSONSchema7 } from "json-schema";
 
-import ServiceForm from "components/ServiceForm";
+import ServiceForm from "views/Connector/ServiceForm";
 import { render } from "utils/testutils";
 import { ServiceFormValues } from "./types";
 

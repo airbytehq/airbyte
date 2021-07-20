@@ -18,16 +18,15 @@ import { faSortDown } from "@fortawesome/free-solid-svg-icons";
 
 const Arrow = styled(FontAwesomeIcon)<{ isOpen?: boolean }>`
   color: ${({ theme }) => theme.greyColor40};
-  //font-size: 14px;
   margin-left: 6px;
   transform: ${({ isOpen }) => isOpen && "rotate(180deg)"};
   transition: 0.3s;
   vertical-align: sub;
 `;
 
-const Ct = styled.div`
-  display: flex;
-`;
+// const Ct = styled.div`
+//   display: flex;
+// `;
 
 const EmptyField = styled.span`
   color: ${({ theme }) => theme.greyColor40};
@@ -45,7 +44,7 @@ interface StreamHeaderProps {
   availableSyncModes: {
     value: SyncSchema;
   }[];
-  onSelectSyncMode: (selectedMode: DropDownRow.IDataItem | null) => void;
+  onSelectSyncMode: (selectedMode: DropDownRow.IDataItem) => void;
   onSelectStream: () => void;
 
   primitiveFields: string[];
@@ -59,6 +58,8 @@ interface StreamHeaderProps {
   hasFields: boolean;
   onExpand: () => void;
 }
+
+const PkPopupComponents = { MultiValue: () => null };
 
 export const StreamHeader: React.FC<StreamHeaderProps> = ({
   stream,
@@ -90,9 +91,9 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
     [syncMode, destinationSyncMode]
   );
 
-  const dropdownFields = primitiveFields.map((f) => ({
-    value: f.split("."),
-    label: f,
+  const dropdownFields = primitiveFields.map((field) => ({
+    value: field.split("."),
+    label: field,
   }));
 
   return (
@@ -112,10 +113,10 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
           </EmptyField>
         )}
       </Cell>
-      <Cell title={destNamespace}>{destNamespace}</Cell>
-      <Cell light title={destName}>
-        {destName}
+      <Cell light title={destNamespace}>
+        {destNamespace}
       </Cell>
+      <Cell title={destName}>{destName}</Cell>
       <SyncSettingsCell
         value={syncSchema}
         options={availableSyncModes}
@@ -126,21 +127,17 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
           <Popout
             options={dropdownFields}
             value={primaryKey}
-            // @ts-ignore
+            isSearchable
+            // @ts-ignore need to solve issue with typings
             isMulti={true}
-            onChange={(option: any) => {
-              onPrimaryKeyChange(option.map((op: any) => op.value));
+            onChange={(options: { value: string[] }[]) => {
+              onPrimaryKeyChange(options.map((op) => op.value));
             }}
-            components={{ MultiValue: () => null }}
+            placeholder={"search key fields by name"}
+            components={PkPopupComponents}
             targetComponent={({ onOpen }) => (
               <div onClick={onOpen}>
-                <FormattedMessage
-                  id="form.pkSelected"
-                  values={{
-                    count: primaryKey.length,
-                    items: primaryKey.map((k) => k.join(".")),
-                  }}
-                />
+                {primaryKey.map((k) => k.join(".")).join(", ")}
                 <Arrow icon={faSortDown} />
               </div>
             )}
@@ -152,12 +149,14 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
           <Popout
             options={dropdownFields}
             value={cursorField}
+            isSearchable
+            placeholder={"search cursor fields by name"}
             onChange={(op) => onCursorChange(op.value)}
             targetComponent={({ onOpen }) => (
-              <Ct onClick={onOpen}>
+              <div onClick={onOpen}>
                 {stream.config.cursorField.join(".")}
                 <Arrow icon={faSortDown} />
-              </Ct>
+              </div>
             )}
           />
         )}
