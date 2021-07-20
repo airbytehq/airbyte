@@ -80,7 +80,7 @@ public class KubeProcessFactory implements ProcessFactory {
       throws WorkerException {
     try {
       // used to differentiate source and destination processes with the same id and attempt
-      final String podName = getPodName(imageName, jobId, attempt);
+      final String podName = createPodName(imageName, jobId, attempt);
 
       final int stdoutLocalPort = workerPorts.take();
       LOGGER.info("{} stdoutLocalPort = {}", podName, stdoutLocalPort);
@@ -128,7 +128,7 @@ public class KubeProcessFactory implements ProcessFactory {
    * easier operations.
    */
   @VisibleForTesting
-  protected static String getPodName(String fullImagePath, String jobId, int attempt) {
+  protected static String createPodName(String fullImagePath, String jobId, int attempt) {
     var versionDelimiter = ":";
     var noVersion = fullImagePath.split(versionDelimiter)[0];
 

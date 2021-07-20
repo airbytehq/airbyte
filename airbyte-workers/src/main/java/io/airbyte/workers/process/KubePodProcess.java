@@ -603,13 +603,14 @@ public class KubePodProcess extends Process {
 
   @Override
   public int exitValue() {
+    // getReturnCode throws IllegalThreadException if the Kube pod has not exited;
+    // close() is only called if the Kube pod has terminated.
     var returnCode = getReturnCode(podDefinition);
     // The OS traditionally handles process resource clean up. Therefore an exit code of 0, also
     // indicates that all kernel resources were shut down.
     // Because this is a custom implementation, manually close all the resources.
     // Further, since the local resources are used to talk to Kubernetes resources, shut local resources
-    // down after Kubernetes resources are shut down,
-    // regardless of termination status.
+    // down after Kubernetes resources are shut down, regardless of Kube termination status.
     close();
     LOGGER.info("Closed all resources for pod {}", podDefinition.getMetadata().getName());
     return returnCode;
