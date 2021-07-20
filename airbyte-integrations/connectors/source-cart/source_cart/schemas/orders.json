@@ -74,7 +74,7 @@
       "type": ["string", "null"]
     },
     "affiliate_id": {
-      "type": ["string", "null"]
+      "type": ["integer", "null"]
     },
     "store_id": {
       "type": ["integer", "null"]
@@ -119,7 +119,7 @@
       "type": ["string", "null"]
     },
     "from_subscription_id": {
-      "type": ["string", "null"]
+      "type": ["integer", "null"]
     },
     "previous_order_status_id": {
       "type": ["integer", "null"]
@@ -146,7 +146,7 @@
       "type": "boolean"
     },
     "from_quote_id": {
-      "type": ["string", "null"]
+      "type": ["integer", "null"]
     },
     "campaign_code": {
       "type": ["string", "null"]

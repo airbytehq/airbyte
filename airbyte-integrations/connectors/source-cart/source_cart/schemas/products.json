@@ -233,7 +233,7 @@
       "type": ["integer", "null"]
     },
     "available_region_id": {
-      "type": ["string", "null"]
+      "type": ["integer", "null"]
     },
     "call_for_shipping_on_whole_order": {
       "type": "boolean"
@@ -284,7 +284,7 @@
       "type": "boolean"
     },
     "low_stock_warning_threshold": {
-      "type": ["string", "null"]
+      "type": ["integer", "null"]
     },
     "enable_low_stock_warning": {
       "type": "boolean"
@@ -320,7 +320,7 @@
       "type": "boolean"
     },
     "subscription_frequency": {
-      "type": ["string", "null"]
+      "type": ["integer", "null"]
     },
     "subscription_frequency_type": {
       "type": ["string", "null"]
@@ -332,10 +332,10 @@
       "type": ["string", "null"]
     },
     "shipping_override": {
-      "type": ["string", "null"]
+      "type": ["number", "null"]
     },
     "insurance_cost": {
-      "type": ["string", "null"]
+      "type": ["number", "null"]
     },
     "exclude_from_commissions": {
       "type": "boolean"
@@ -362,19 +362,19 @@
       "type": ["string", "null"]
     },
     "profile_id": {
-      "type": ["string", "null"]
+      "type": ["integer", "null"]
     },
     "is_linked_product": {
       "type": "boolean"
     },
     "master_product_id": {
-      "type": ["string", "null"]
+      "type": ["integer", "null"]
     },
     "do_not_send_review_request": {
       "type": "boolean"
     },
     "vendor_store_id": {
-      "type": ["string", "null"]
+      "type": ["integer", "null"]
     }
   }
 }

@@ -71,7 +71,7 @@
       "type": "string"
     },
     "gift_certificate_id": {
-      "type": ["string", "null"]
+      "type": ["integer", "null"]
     },
     "is_captured": {
       "type": "boolean"
@@ -101,7 +101,7 @@
       "type": ["string", "null"]
     },
     "store_payment_method_id": {
-      "type": ["string", "null"]
+      "type": ["integer", "null"]
     }
   }
 }
