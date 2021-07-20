@@ -112,6 +112,7 @@ import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WebBackendDestinationHandler;
 import io.airbyte.server.handlers.WebBackendSourceHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
+import io.airbyte.server.helpers.WorkspaceHelper;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -162,6 +163,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         jobNotifier,
         temporalService);
     final DockerImageValidator dockerImageValidator = new DockerImageValidator(synchronousSchedulerClient);
+    final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence, schemaValidator, specFetcher);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
     connectionsHandler = new ConnectionsHandler(configRepository);
     operationsHandler = new OperationsHandler(configRepository);
@@ -177,7 +179,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         jobHistoryHandler,
         schedulerHandler,
         operationsHandler);
-    webBackendSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler);
+    webBackendSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler, workspaceHelper);
     webBackendDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler);
     healthCheckHandler = new HealthCheckHandler(configRepository);
     archiveHandler = new ArchiveHandler(configs.getAirbyteVersion(), configRepository, jobPersistence, archiveTtlManager);
