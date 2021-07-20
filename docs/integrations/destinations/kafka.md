@@ -47,6 +47,8 @@ Airbyte should be allowed to write messages into topics, and these topics should
 or, at least, enable the configuration in the brokers `auto.create.topics.enable` (which is not recommended for
 production environments).
 
+Note that if you choose to use dynamic topic names, you will probably need to enable `auto.create.topics.enable` to avoid your connection failing if there was an update to the source connector's schema. Otherwise a hardcoded topic name may be best. 
+
 #### Target topics
 
 Each message will be written to its corresponding topic defined in the property `topic_pattern`. In case you
