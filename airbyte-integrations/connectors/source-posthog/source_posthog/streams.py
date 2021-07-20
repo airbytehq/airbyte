@@ -122,6 +122,7 @@ class IncrementalPosthogStream(PosthogStream, ABC):
         """
         Initialize initial_state value
         """
+        stream_state = stream_state or {}
         self._initial_state = self._initial_state or stream_state.get(self.cursor_field) or self._start_date
         return super().read_records(sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
 
