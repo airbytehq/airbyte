@@ -49,7 +49,6 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.NotImplementedException;
 
 public class WorkspaceHelper {
@@ -148,7 +147,7 @@ public class WorkspaceHelper {
 
   private static <K, V> LoadingCache<K, V> getExpiringCache(CacheLoader<K, V> cacheLoader) {
     return CacheBuilder.newBuilder()
-        .expireAfterAccess(5, TimeUnit.MINUTES)
+        .maximumSize(20000)
         .build(cacheLoader);
   }
 
