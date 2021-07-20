@@ -1,0 +1,44 @@
+{
+  "seller-sku": {
+    "type": ["null", "string"]
+  },
+  "asin1": {
+    "type": ["null", "string"]
+  },
+  "item-name": {
+    "type": ["null", "string"]
+  },
+  "item-description": {
+    "type": ["null", "string"]
+  },
+  "listing-id": {
+    "type": ["null", "string"]
+  },
+  "price": {
+    "type": ["null", "integer"]
+  },
+  "quantity": {
+    "type": ["null", "integer"]
+  },
+  "open-date": {
+    "type": ["null", "string"]
+  },
+  "product-id-type": {
+    "type": ["null", "integer"]
+  },
+  "item-note": {
+    "type": ["null", "string"]
+  },
+  "item-condition": {
+    "type": ["null", "integer"]
+  },
+  "product-id": {
+    "type": ["null", "string"]
+  },
+  "pending-quantity": {
+    "type": ["null", "integer"]
+  },
+  "fulfillment-channel": {
+    "type": ["null", "string"]
+  }
+}

@@ -25,7 +25,7 @@
 
 from typing import List, Optional
 
-from sp_api.api import Orders, Reports, Inventories
+from sp_api.api import Inventories, Orders, Reports
 from sp_api.base import Marketplaces
 
 
@@ -62,16 +62,16 @@ class AmazonClient:
         GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL: "purchase-date",
         GET_FBA_INVENTORY_AGED_DATA: "startDateTime",
         ORDERS: "LastUpdateDate",
-        GET_MERCHANT_LISTINGS_ALL_DATA: ''
+        GET_MERCHANT_LISTINGS_ALL_DATA: "purchase-date",
     }
     DATA_FIELDS = {
         GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL: None,
         GET_FBA_INVENTORY_AGED_DATA: "inventorySummaries",
         ORDERS: "Orders",
-        GET_MERCHANT_LISTINGS_ALL_DATA: ''
+        GET_MERCHANT_LISTINGS_ALL_DATA: None,
     }
 
-    _REPORT_ENTITIES = [GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL]
+    _REPORT_ENTITIES = [GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL, GET_MERCHANT_LISTINGS_ALL_DATA]
     _OTHER_ENTITIES = [ORDERS, GET_FBA_INVENTORY_AGED_DATA]
     _ENTITIES = _REPORT_ENTITIES + _OTHER_ENTITIES
 
