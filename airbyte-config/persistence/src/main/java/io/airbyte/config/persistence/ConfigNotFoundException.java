@@ -29,20 +29,24 @@ import java.util.UUID;
 
 public class ConfigNotFoundException extends Exception {
 
-  private ConfigSchema type;
+  private final String type;
   private final String configId;
 
-  public ConfigNotFoundException(ConfigSchema type, String configId) {
+  public ConfigNotFoundException(String type, String configId) {
     super(String.format("config type: %s id: %s", type, configId));
     this.type = type;
     this.configId = configId;
   }
 
-  public ConfigNotFoundException(ConfigSchema type, UUID uuid) {
-    this(type, uuid.toString());
+  public ConfigNotFoundException(ConfigSchema type, String configId) {
+    this(type.toString(), configId);
   }
 
-  public ConfigSchema getType() {
+  public ConfigNotFoundException(ConfigSchema type, UUID uuid) {
+    this(type.toString(), uuid.toString());
+  }
+
+  public String getType() {
     return type;
   }
 
