@@ -97,6 +97,10 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
             return start_date.to_date_string(), start_date.add(days=1).to_date_string()
 
         end_date = min(end_date, pendulum.parse(stream_slice.get(cursor_field)).add(months=1))
+
+        # Fix issue #4806, start date should always be lower than end date.
+        if start_date.add(days=1).date() >= end_date.date():
+            return start_date.add(days=1).to_date_string(), start_date.add(days=2).to_date_string()
         return start_date.add(days=1).to_date_string(), end_date.to_date_string()
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
