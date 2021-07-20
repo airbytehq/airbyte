@@ -236,6 +236,7 @@ public class SchedulerApp {
 
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
+        configs.getWorkerEnvironment(),
         configs.getAirbyteRole(),
         configs.getAirbyteVersion(),
         configRepository);

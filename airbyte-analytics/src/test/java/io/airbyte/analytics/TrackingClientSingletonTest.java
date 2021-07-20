@@ -30,6 +30,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.config.Configs;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -58,6 +59,7 @@ class TrackingClientSingletonTest {
     assertTrue(
         TrackingClientSingleton.createTrackingClient(
             Configs.TrackingStrategy.LOGGING,
+            WorkerEnvironment.DOCKER,
             "role",
             TrackingIdentity::empty) instanceof LoggingTrackingClient);
   }
@@ -67,6 +69,7 @@ class TrackingClientSingletonTest {
     assertTrue(
         TrackingClientSingleton.createTrackingClient(
             Configs.TrackingStrategy.SEGMENT,
+            WorkerEnvironment.DOCKER,
             "role",
             TrackingIdentity::empty) instanceof SegmentTrackingClient);
   }
