@@ -84,6 +84,8 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
     } else if (airbyteMessage.getType() == AirbyteMessage.Type.RECORD) {
       final AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
 
+      // if brokers have the property "auto.create.topics.enable" enabled then topics will be auto-created
+      // otherwise these topics need to have been pre-created. 
       final String topic = topicMap.get(AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage));
       final String key = UUID.randomUUID().toString();
       final JsonNode value = Jsons.jsonNode(ImmutableMap.of(
