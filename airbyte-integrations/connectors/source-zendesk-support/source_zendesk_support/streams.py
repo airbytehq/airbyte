@@ -23,17 +23,13 @@
 
 from abc import ABC, abstractmethod
 from collections import deque
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Tuple, Union
 from airbyte_cdk.models import SyncMode
 import requests
 import types
-from enum import Enum, auto
 import pytz
 from datetime import datetime
-from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from urllib.parse import parse_qsl, urlparse
 
 
@@ -60,12 +56,12 @@ class SourceZendeskSupportStream(HttpStream, ABC):
         """Parses a response and tries to find next page number"""
         next_page = response.json()['next_page']
         # TODO test page
-        # next_page = """https://foo.zendesk.com/api/v2/search.json?query=\"type:Group hello\"\u0026sort_by=created_at\u0026sort_order=desc\u0026page=2"""
+        # next_page = """https://foo.zendesk.com/api/v2/search.json?page=2"""
         if next_page:
-            raise Exception(dict(parse_qsl(urlparse(next_page).query)).get('page'))
+            raise Exception(
+                dict(parse_qsl(urlparse(next_page).query)).get('page'))
             return dict(parse_qsl(urlparse(next_page).query)).get('page')
         return None
-
 
     @staticmethod
     def str2datetime(s):
@@ -76,10 +72,10 @@ class SourceZendeskSupportStream(HttpStream, ABC):
     def datetime2str(dt):
         """convert string to datetime object"""
         return datetime.strftime(
-                    dt.replace(tzinfo=pytz.UTC),
-                    DATATIME_FORMAT
+            dt.replace(tzinfo=pytz.UTC),
+            DATATIME_FORMAT
         )
-    
+
 
 class UserSettingsStream(SourceZendeskSupportStream):
     """Stream for checking of a request token and permissions"""
@@ -103,10 +99,10 @@ class UserSettingsStream(SourceZendeskSupportStream):
 
 class IncrementalBasicSearchStream(SourceZendeskSupportStream, ABC):
     """Base class for all data lists with increantal stream"""
-    
+
     # max size of one data chunk. 100 is limitation of ZenDesk
     state_checkpoint_interval = 100
-    
+
     # default sorted field
     cursor_field = 'updated_at'
 
@@ -169,7 +165,6 @@ class IncrementalBasicSearchStream(SourceZendeskSupportStream, ABC):
         }
 
 
-
 class IncrementalBasicEntityStream(IncrementalBasicSearchStream, ABC):
     """basic stream for endpoints where an entity name can be used in a path value
         https://<subdomain>.zendesk.com/api/v2/<entity_name>.json
@@ -183,11 +178,9 @@ class IncrementalBasicEntityStream(IncrementalBasicSearchStream, ABC):
     def path(self, *args, **kwargs) -> str:
         return f'{self.entity_type}.json'
 
-
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """returns data from API AS IS"""
         yield from response.json()[self.response_list_name or self.entity_type] or []
-
 
 
 class IncrementalBasicUnsortedStream(IncrementalBasicEntityStream, ABC):
@@ -205,6 +198,8 @@ class IncrementalBasicUnsortedStream(IncrementalBasicEntityStream, ABC):
         self._finished = False
         # For saving of a relevant last updated date
         self._max_cursor_date = None
+        # For changing of filter logic
+        self._updated_cursor_field = None
 
     def _save_cursor_state(self, state: Mapping[str, Any] = None):
         """need to save stream state for some internal logic"""
@@ -220,31 +215,39 @@ class IncrementalBasicUnsortedStream(IncrementalBasicEntityStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """try to select relevent data only"""
-    
-        records = response.json()[self.response_list_name or self.entity_type] or []
+
+        records = response.json(
+        )[self.response_list_name or self.entity_type] or []
 
         # filter by start date
-        records = [record for record in records if self.str2datetime(record['created_at']) >= self._start_date]
+        records = [record for record in records if not record.get('created_at') or self.str2datetime(
+            record['created_at']) >= self._start_date]
         if not records:
             # mark as finished process. All needed data was loaded
             self._finished = True
-        send_cnt = 0
-        for record in records:
-            updated = self.str2datetime(record[self.cursor_field])
-            if not self._max_cursor_date or self._max_cursor_date < updated:
-                self._max_cursor_date = updated
-            if not self._cursor_date or updated > self._cursor_date:
-                send_cnt += 1
-                yield from [record]
-        if not send_cnt:
-            self._finished = True
+
+        if self.cursor_field:
+            send_cnt = 0
+            for record in records:
+                updated = self.str2datetime(
+                    record[self._updated_cursor_field or self.cursor_field])
+                if not self._max_cursor_date or self._max_cursor_date < updated:
+                    self._max_cursor_date = updated
+                if not self._cursor_date or updated > self._cursor_date:
+                    send_cnt += 1
+                    yield from [record]
+            if not send_cnt:
+                self._finished = True
+        else:
+            yield from records
         yield from []
 
     def get_updated_state(self,
                           current_stream_state: MutableMapping[str, Any],
                           latest_record: Mapping[str, Any]
                           ) -> Mapping[str, Any]:
-        max_updated_at = self.datetime2str(self._max_cursor_date) if self._max_cursor_date else ''
+        max_updated_at = self.datetime2str(
+            self._max_cursor_date) if self._max_cursor_date else ''
         return {
             self.cursor_field: max(
                 max_updated_at,
@@ -259,7 +262,6 @@ class IncrementalBasicUnsortedStream(IncrementalBasicEntityStream, ABC):
     @abstractmethod
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """can be different for each case"""
-
 
 
 class IncrementalBasicUnsortedPageStream(IncrementalBasicUnsortedStream, ABC):
@@ -287,6 +289,7 @@ class IncrementalBasicUnsortedPageStream(IncrementalBasicUnsortedStream, ABC):
 class FullRefreshBasicStream(IncrementalBasicUnsortedPageStream, ABC):
     """"Basic stream for endpoints where there are not any created_at or updated_at fields"""
     state_checkpoint_interval = None
+    cursor_field = []
 
 
 class IncrementalBasicSortedCursorStream(IncrementalBasicUnsortedStream, ABC):
@@ -303,7 +306,11 @@ class IncrementalBasicSortedCursorStream(IncrementalBasicUnsortedStream, ABC):
         res.update({
             'sort_by': self.cursor_field,
             'sort_order': 'desc',
+            'limit': self.state_checkpoint_interval
         })
+        before_cursor = (next_page_token or {}).get('before_cursor')
+        if before_cursor:
+            res['cursor'] = before_cursor
         return res
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -312,8 +319,9 @@ class IncrementalBasicSortedCursorStream(IncrementalBasicUnsortedStream, ABC):
         before_cursor = response.json()['before_cursor']
 
         if before_cursor:
-              return {'before_cursor': before_cursor}
+            return {'before_cursor': before_cursor}
         return None
+
 
 class IncrementalBasicSortedPageStream(IncrementalBasicUnsortedPageStream, ABC):
     """basic stream for loading sorting data with normal pagination
@@ -331,11 +339,10 @@ class IncrementalBasicSortedPageStream(IncrementalBasicUnsortedPageStream, ABC):
             'sort_order': 'desc',
             'limit': self.state_checkpoint_interval
         }
-        
+
         if (next_page_token or {}).get('before_cursor'):
             res['cursor'] = next_page_token['before_cursor']
         return res
-
 
 
 class CustomTicketAuditsStream(IncrementalBasicSortedCursorStream, ABC):
@@ -352,20 +359,19 @@ class CustomCommentsStream(IncrementalBasicSortedPageStream, ABC):
        for loading of all comment by one direct endpoints. Thus at first we loads
        all updated tickets and after this tries to load all created/updated comment
        per every ticket"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Flag of loaded state. it is tickets' loaging if it is False and
         #  it is comments' loaging if it is vice versa
         self._loaded = False
-        # Array for ticket IDs 
+        # Array for ticket IDs
         self._ticket_ids = deque()
-
 
     def path(self, *args, **kwargs) -> str:
         if not self._loaded:
             return 'tickets.json'
         return f'tickets/{self._ticket_ids[-1]}/comments.json'
-
 
     def request_params(
         self, stream_state: Mapping[str, Any] = None,
@@ -378,46 +384,42 @@ class CustomCommentsStream(IncrementalBasicSortedPageStream, ABC):
 
         return res
 
-
     @property
     def response_list_name(self):
         if not self._loaded:
             return 'tickets'
         return 'comments'
+    cursor_field = 'created_at'
 
-
-    @property
-    def cursor_field(self):
-        if self._loaded:
-            return 'created_at'
-        return super().cursor_field
-
-        
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """try to select relevent data only"""
         if self._loaded:
+            if self._updated_cursor_field:
+                self._updated_cursor_field = None
             yield from super().parse_response(response, **kwargs)
         else:
+            if not self._updated_cursor_field:
+                self._updated_cursor_field = 'updated_at'
             for record in super().parse_response(response, **kwargs):
                 # will handle tickets with commonts only
                 if record['comment_count']:
                     self._ticket_ids.append(record['id'])
         yield from []
-        
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         res = super().next_page_token(response)
         if res is not None or not len(self._ticket_ids):
             return res
-        
+
         if self._loaded:
             self._ticket_ids.pop()
             if not len(self._ticket_ids):
-                return None 
+                return None
         else:
-            self.logger.info(f"Found updated tickets: {list(self._ticket_ids)}")
-            self._loaded = True 
-        
+            self.logger.info(
+                f"Found updated tickets: {list(self._ticket_ids)}")
+            self._loaded = True
+
         self._finished = False
         self._page = 1
         # self.logger.warn(str(self._ticket_ids))
@@ -425,22 +427,25 @@ class CustomCommentsStream(IncrementalBasicSortedPageStream, ABC):
             'next_page': self._page
         }
 
-
     def _save_cursor_state(self, state: Mapping[str, Any] = None):
         """need to save stream state for some internal logic"""
         if not self._cursor_date and state and (state.get('created_at') or state.get('updated_at')):
-            self._cursor_date = self.str2datetime(state.get('created_at') or state['updated_at'])
+            self._cursor_date = self.str2datetime(
+                state.get('created_at') or state['updated_at'])
         return
+
 
 class CustomTagsStream(FullRefreshBasicStream, ABC):
     """Custom class for tags logic because tag data doesn't included the field 'id'"""
+    primary_key = 'name'
 
-    primary_id = 'name'
 
 class CustomSlaPoliciesStream(FullRefreshBasicStream, ABC):
     """Custom class for sla_policies logic because its path format is not standard"""
+
     def path(self, *args, **kwargs) -> str:
         return 'slas/policies.json'
+
 
 ENTITY_NAMES = {
     # endpoints provide the 'query' field for more detail searching
@@ -463,8 +468,8 @@ ENTITY_NAMES = {
     # endpoints provide a cursor pagination and sorting mechanism
     'ticket_audits': CustomTicketAuditsStream,
 
-    # endpoints dont provide the updated_at/created_at fields 
-    # thus we can't implement an incremental ligic for them    
+    # endpoints dont provide the updated_at/created_at fields
+    # thus we can't implement an incremental ligic for them
     'tags': CustomTagsStream,
     'sla_policies': CustomSlaPoliciesStream,
 }
@@ -488,4 +493,3 @@ def generate_stream_classes():
             )
         )
     return res
-

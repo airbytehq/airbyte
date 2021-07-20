@@ -1,6 +1,4 @@
 {
-  "type": "object",
-  "properties": {
     "type": [
       "null",
       "object"
@@ -19,5 +17,4 @@
         ]
       }
     }
-  }
 }

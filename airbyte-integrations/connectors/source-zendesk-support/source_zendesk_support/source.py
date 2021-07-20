@@ -20,8 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import requests
 import base64
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, List, Mapping, Tuple
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
@@ -30,6 +31,7 @@ from .streams import generate_stream_classes
 
 STREAMS = generate_stream_classes()
 # from .streams import Users, Groups, Organizations, Tickets, generate_stream_classes
+
 
 class BasicAuthenticator(TokenAuthenticator):
     """basic Authorization header"""
@@ -50,18 +52,25 @@ class SourceZendeskSupport(AbstractSource):
 
         :param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
-        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
+        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully,
+        (False, error) otherwise.
         """
 
         auth = BasicApiTokenAuthenticator(config['email'], config['api_token'])
-        settings, err = UserSettingsStream(
-            config['subdomain'], authenticator=auth).get_settings()
+        try:
+            settings, err = UserSettingsStream(
+                config['subdomain'], authenticator=auth).get_settings()
+        except requests.exceptions.RequestException as e:
+            return False, e
+
         if err:
-            return None, err
-        active_features = [k for k, v in settings.get('active_features', {}).items() if v]
+            raise Exception(err)
+            return False, err
+        active_features = [k for k, v in settings.get(
+            'active_features', {}).items() if v]
         logger.info('available features: %s' % active_features)
         if 'organization_access_enabled' not in active_features:
-            return False, "Organization access is not enabled. Please check admin permission of the currect account" 
+            return False, "Organization access is not enabled. Please check admin permission of the currect account"
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -75,6 +84,6 @@ class SourceZendeskSupport(AbstractSource):
             'start_date': config['start_date'],
             'authenticator': BasicApiTokenAuthenticator(config['email'], config['api_token']),
         }
-        return [stream_class(**args) for stream_class in STREAMS]+ [
+        return [stream_class(**args) for stream_class in STREAMS] + [
 
         ]

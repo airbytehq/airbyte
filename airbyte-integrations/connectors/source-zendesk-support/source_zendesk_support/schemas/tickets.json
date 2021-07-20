@@ -1,6 +1,4 @@
 {
-    "type": "object",
-    "properties": {
       "properties": {
         "organization_id": {
           "type": [
@@ -428,5 +426,4 @@
         "null",
         "object"
       ]
-    }
   }

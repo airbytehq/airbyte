@@ -25,6 +25,7 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk",
+    "pytz"
 ]
 
 TEST_REQUIREMENTS = [
@@ -33,8 +34,9 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_source_zendesk_support",
-    description="Source implementation for Source Zendesk Support.",
+    version="0.1.0",
+    name="source_zendesk_support",
+    description="Source implementation for Zendesk Support.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),

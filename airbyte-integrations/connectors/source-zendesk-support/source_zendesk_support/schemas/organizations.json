@@ -1,6 +1,4 @@
 {
-    "type": "object",
-    "properties": {
       "type": [
         "null",
         "object"
@@ -113,5 +111,4 @@
           "format": "date-time"
         }
       }
-    }
   }

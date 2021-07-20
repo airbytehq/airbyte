@@ -1,6 +1,6 @@
 {
   "email": "broken.email@invalid.config",
   "api_token": "<broken token>",
-  "subdomain": "d3v-airbyte",
-  "start_date": "2020-01-01T00:00:00Z"
+  "subdomain": "test-failure-airbyte",
+  "start_date": "2030-01-01T00:00:00Z"
 }

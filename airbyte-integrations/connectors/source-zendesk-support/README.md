@@ -34,12 +34,12 @@ You can also build the connector in Gradle. This is typically used in CI and not
 
 To build using Gradle, from the Airbyte repository root, run:
 ```
-./gradlew :airbyte-integrations:connectors:source-source-zendesk-support:build
+./gradlew :airbyte-integrations:connectors:source-zendesk-support:build
 ```
 
 #### Create credentials
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/source-zendesk-support)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_source_zendesk_support/spec.json` file.
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_zendesk_support/spec.json` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
@@ -59,12 +59,12 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/source-source-zendesk-support:dev
+docker build . -t airbyte/source-zendesk-support:dev
 ```
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-source-zendesk-support:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-zendesk-support:airbyteDocker
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.
@@ -72,10 +72,10 @@ the Dockerfile.
 #### Run
 Then run any of the connector commands as follows:
 ```
-docker run --rm airbyte/source-source-zendesk-support:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-source-zendesk-support:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-source-zendesk-support:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-source-zendesk-support:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm airbyte/source-zendesk-support:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-zendesk-support:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-zendesk-support:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-zendesk-support:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 ## Testing
 Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
@@ -109,11 +109,11 @@ To run your integration tests with docker
 All commands should be run from airbyte project root.
 To run unit tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-source-zendesk-support:unitTest
+./gradlew :airbyte-integrations:connectors:source-zendesk-support:unitTest
 ```
 To run acceptance and custom integration tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-source-zendesk-support:integrationTest
+./gradlew :airbyte-integrations:connectors:source-zendesk-support:integrationTest
 ```
 
 ## Dependency Management
