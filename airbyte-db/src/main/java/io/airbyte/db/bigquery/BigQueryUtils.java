@@ -28,13 +28,13 @@ import static io.airbyte.db.DataTypeUtils.returnNullIfInvalid;
 import static io.airbyte.db.DataTypeUtils.toISO8601String;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.FieldValue;
 import com.google.cloud.bigquery.FieldValue.Attribute;
 import com.google.cloud.bigquery.FieldValueList;
-import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import io.airbyte.commons.json.Jsons;
@@ -62,27 +62,38 @@ public class BigQueryUtils {
     return jsonNode;
   }
 
+  private static void fillObjectNode(String fieldName, StandardSQLTypeName fieldType, FieldValue fieldValue, ObjectNode node) {
+    switch (fieldType) {
+      case BOOL -> node.put(fieldName, fieldValue.getBooleanValue());
+      case INT64 -> node.put(fieldName, fieldValue.getLongValue());
+      case FLOAT64 -> node.put(fieldName, fieldValue.getDoubleValue());
+      case NUMERIC -> node.put(fieldName, fieldValue.getNumericValue());
+      case BIGNUMERIC -> node.put(fieldName, returnNullIfInvalid(fieldValue::getNumericValue));
+      case STRING -> node.put(fieldName, fieldValue.getStringValue());
+      case BYTES -> node.put(fieldName, fieldValue.getBytesValue());
+      case DATE -> node.put(fieldName, toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATE_FORMAT)));
+      case DATETIME -> node.put(fieldName, toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATETIME_FORMAT)));
+      case TIMESTAMP -> node.put(fieldName, toISO8601String(fieldValue.getTimestampValue() / 1000));
+      case TIME -> node.put(fieldName, fieldValue.getStringValue());
+      default -> node.put(fieldName, fieldValue.getStringValue());
+    }
+  }
+
   private static void setJsonField(Field field, FieldValue fieldValue, ObjectNode node) {
+    String fieldName = field.getName();
     if (fieldValue.getAttribute().equals(Attribute.PRIMITIVE)) {
-      LegacySQLTypeName fieldType = field.getType();
-      String fieldName = field.getName();
       if (fieldValue.isNull()) {
         node.put(fieldName, (String) null);
-      } else
-        switch (fieldType.getStandardType()) {
-          case BOOL -> node.put(fieldName, fieldValue.getBooleanValue());
-          case INT64 -> node.put(fieldName, fieldValue.getLongValue());
-          case FLOAT64 -> node.put(fieldName, fieldValue.getDoubleValue());
-          case NUMERIC -> node.put(fieldName, fieldValue.getNumericValue());
-          case BIGNUMERIC -> node.put(fieldName, returnNullIfInvalid(fieldValue::getNumericValue));
-          case STRING -> node.put(fieldName, fieldValue.getStringValue());
-          case BYTES -> node.put(fieldName, fieldValue.getBytesValue());
-          case DATE -> node.put(fieldName, toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATE_FORMAT)));
-          case DATETIME -> node.put(fieldName, toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATETIME_FORMAT)));
-          case TIMESTAMP -> node.put(fieldName, toISO8601String(fieldValue.getTimestampValue() / 1000));
-          case TIME -> node.put(fieldName, fieldValue.getStringValue());
-          default -> node.put(fieldName, fieldValue.getStringValue());
-        }
+      } else {
+        fillObjectNode(fieldName, field.getType().getStandardType(), fieldValue, node);
+      }
+    } else if (fieldValue.getAttribute().equals(Attribute.REPEATED)) {
+      ArrayNode arrayNode = node.putArray(fieldName);
+      StandardSQLTypeName fieldType = field.getType().getStandardType();
+      fieldValue.getRepeatedValue().forEach(arrayFieldValue -> fillObjectNode(fieldName, fieldType, arrayFieldValue, arrayNode.addObject()));
+    } else if (fieldValue.getAttribute().equals(Attribute.RECORD)) {
+      ObjectNode newNode = node.putObject(fieldName);
+      field.getSubFields().forEach(recordField -> setJsonField(recordField, fieldValue.getRecordValue().get(recordField.getName()), newNode));
     }
   }
 

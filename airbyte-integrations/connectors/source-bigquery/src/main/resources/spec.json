@@ -8,7 +8,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Destination Spec",
     "type": "object",
-    "required": ["project_id", "dataset_id"],
+    "required": ["project_id", "credentials_json"],
     "additionalProperties": false,
     "properties": {
       "project_id": {
@@ -18,7 +18,7 @@
       },
       "dataset_id": {
         "type": "string",
-        "description": "Default BigQuery Dataset ID tables are replicated to if the source does not specify a namespace.",
+        "description": "The BigQuery Dataset ID to look for tables to replicate from.",
         "title": "Default Dataset ID"
       },
       "credentials_json": {

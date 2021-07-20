@@ -168,20 +168,14 @@ public class BigQueryDatabase extends SqlDatabase {
   /**
    * Returns full information about all tables from specific Dataset
    *
-   * @param projectId BigQuery project id
    * @param datasetId BigQuery dataset id
    * @return List of BigQuery tables
    */
-  public List<Table> getDatasetTables(String projectId, String datasetId) {
+  public List<Table> getDatasetTables(String datasetId) {
     List<Table> tableList = new ArrayList<>();
-    bigQuery.listDatasets(projectId)
+    bigQuery.listTables(datasetId)
         .iterateAll()
-        .forEach(dataset -> bigQuery.listTables(dataset.getDatasetId())
-            .iterateAll()
-            .forEach(table -> {
-              if (table.getTableId().getDataset().equalsIgnoreCase(datasetId))
-                tableList.add(bigQuery.getTable(table.getTableId()));
-            }));
+        .forEach(table -> tableList.add(bigQuery.getTable(table.getTableId())));
     return tableList;
   }
 

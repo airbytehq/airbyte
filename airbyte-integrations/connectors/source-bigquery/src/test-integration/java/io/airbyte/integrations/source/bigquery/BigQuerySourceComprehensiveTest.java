@@ -298,6 +298,26 @@ public class BigQuerySourceComprehensiveTest extends SourceComprehensiveTest {
             .addInsertValues("TIME(15, 30, 00)", "null")
             .addExpectedValues("15:30:00", null)
             .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("array")
+            .fullSourceDataType("array<String>")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .createTablePatternSql(CREATE_SQL_PATTERN)
+            .addInsertValues("['a', 'b']")
+            .addExpectedValues("[{\"test_column\":\"a\"},{\"test_column\":\"b\"}]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("struct")
+            .fullSourceDataType("STRUCT<frst String, sec int64, obbj STRUCT<id_col int64, mega_obbj STRUCT<last_col time>>>")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .createTablePatternSql(CREATE_SQL_PATTERN)
+            .addInsertValues("STRUCT('s' as frst, 1 as sec, STRUCT(555 as id_col, STRUCT(TIME(15, 30, 00) as time) as mega_obbj) as obbj)")
+            .addExpectedValues("{\"frst\":\"s\",\"sec\":1,\"obbj\":{\"id_col\":555,\"mega_obbj\":{\"last_col\":\"15:30:00\"}}}")
+            .build());
   }
 
   @Override
