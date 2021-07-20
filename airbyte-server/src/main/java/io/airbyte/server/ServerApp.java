@@ -219,6 +219,7 @@ public class ServerApp {
 
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
+        WorkerEnvironment.DOCKER,
         configs.getAirbyteRole(),
         configs.getAirbyteVersion(),
         configRepository);
