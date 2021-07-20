@@ -80,19 +80,6 @@ public class ConfigPersistenceBuilder {
     return getDbPersistenceWithFileSeed();
   }
 
-  ConfigPersistence getFileSystemPersistence() throws InterruptedException {
-    Path configRoot = configs.getConfigRoot();
-    LOGGER.info("Constructing file system config persistence (root: {})", configRoot);
-    while (true) {
-      if (Files.exists(configRoot.resolve("config"))) {
-        LOGGER.info("Config volume is ready");
-        return FileSystemConfigPersistence.createWithValidation(configRoot);
-      }
-      LOGGER.warn("Config volume is not ready yet");
-      Thread.sleep(3000);
-    }
-  }
-
   /**
    * Create the database config persistence and load it with the initial seed from the YAML seed files
    * if the database should be initialized.
@@ -109,7 +96,7 @@ public class ConfigPersistenceBuilder {
    */
   ConfigPersistence getDbPersistenceWithFileSeed() throws IOException, InterruptedException {
     LOGGER.info("Creating db-based config persistence, and loading seed and existing data from files");
-    ConfigPersistence fsConfigPersistence = getFileSystemPersistence();
+    ConfigPersistence fsConfigPersistence = FileSystemConfigPersistence.createWithValidation(configs.getConfigRoot());
     return getDbPersistence(fsConfigPersistence);
   }
 
