@@ -55,7 +55,7 @@ topics based on their values inferred when producing the records.
 
 ### Setup the Kafka destination in Airbyte
 
-You should now have all the requirements needed to configure Kafka as a destination in the UI. You'll need the following information to configure the Kafka destination:
+You should now have all the requirements needed to configure Kafka as a destination in the UI. You can configure the following parameters on the Kafka destination (though many of these are optional or have default values):
 
 * **Bootstrap servers**
 * **Topic pattern**
