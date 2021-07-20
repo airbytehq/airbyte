@@ -23,10 +23,16 @@
 #
 
 from datetime import datetime
-from typing import Any, List, Mapping, Tuple, Type
+from typing import Any, List, Mapping, Tuple, Type, Optional
+from airbyte_cdk.entrypoint import logger
 
-from airbyte_cdk.models import ConnectorSpecification, DestinationSyncMode
+from airbyte_cdk.models import (
+    ConnectorSpecification,
+    DestinationSyncMode,
+    AirbyteCatalog
+)
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources.streams import Stream
 from pydantic import BaseModel, Field
 from source_facebook_marketing.api import API
@@ -41,6 +47,13 @@ from source_facebook_marketing.streams import (
     AdsInsightsPlatformAndDevice,
     AdsInsightsRegion,
     Campaigns,
+    CustomAdsInsights,
+    CustomAdsInsightsAgeAndGender,
+    CustomAdsInsightsCountry,
+    CustomAdsInsightsRegion,
+    CustomAdsInsightsDma,
+    CustomAdsInsightsPlatformAndDevice,
+
 )
 
 
@@ -76,6 +89,7 @@ class ConnectorConfig(BaseModel):
         minimum=1,
         maximum=30,
     )
+    custom_insights_fields: Optional[str] = Field(description="A list of fields separate by commas describing the custom fields you want to sync from Facebook-AdsInsights")
 
 
 class SourceFacebookMarketing(AbstractSource):
@@ -113,7 +127,7 @@ class SourceFacebookMarketing(AbstractSource):
             days_per_job=config.insights_days_per_job,
         )
 
-        return [
+        streams = [
             Campaigns(api=api, start_date=config.start_date, include_deleted=config.include_deleted),
             AdSets(api=api, start_date=config.start_date, include_deleted=config.include_deleted),
             Ads(api=api, start_date=config.start_date, include_deleted=config.include_deleted),
@@ -125,6 +139,10 @@ class SourceFacebookMarketing(AbstractSource):
             AdsInsightsDma(**insights_args),
             AdsInsightsPlatformAndDevice(**insights_args),
         ]
+
+        streams = self._add_custom_adsinsights_streams(config=config, args=insights_args, streams=streams)
+
+        return streams
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
         """
@@ -138,3 +156,21 @@ class SourceFacebookMarketing(AbstractSource):
             supported_destination_sync_modes=[DestinationSyncMode.append],
             connectionSpecification=ConnectorConfig.schema(),
         )
+
+    def _add_custom_adsinsights_streams(self, config, args, streams) -> List[Type[Stream]]:
+        """ Update method, returns streams plus custom streams
+        After we checked if 'custom_insights_fields' exists we add the custom streams with the
+        fields that we setted in the config
+        """
+        adsinsights_selected_fields = config.custom_insights_fields
+        if adsinsights_selected_fields:
+            args['list_selected_fields'] = [field.strip() for field in adsinsights_selected_fields.split(',') if field and field.strip() !='']
+            streams += [
+                        CustomAdsInsights(**args),
+                        CustomAdsInsightsAgeAndGender(**args),
+                        CustomAdsInsightsCountry(**args),
+                        CustomAdsInsightsRegion(**args),
+                        CustomAdsInsightsDma(**args),
+                        CustomAdsInsightsPlatformAndDevice(**args)]
+
+        return streams

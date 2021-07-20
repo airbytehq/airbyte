@@ -479,3 +479,47 @@ class AdsInsightsDma(AdsInsights):
 class AdsInsightsPlatformAndDevice(AdsInsights):
     breakdowns = ["publisher_platform", "platform_position", "impression_device"]
     action_breakdowns = ["action_type"]  # FB Async Job fails for unknown reason if we set other breakdowns
+
+
+class CustomAdsInsights(AdsInsights):
+
+    def __init__(self, list_selected_fields, **kwargs):
+        super().__init__(**kwargs)
+        self._list_selected_fields = list_selected_fields
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """Add fields from breakdowns to the stream schema
+        :return: A dict of the JSON schema representing this stream.
+        """
+        schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
+        schema["properties"] = {k:v for k,v in schema["properties"].items() if k in self._list_selected_fields}
+        schema["properties"].update(self._schema_for_breakdowns())
+        return schema
+
+    @cached_property
+    def fields(self) -> List[str]:
+        """List of fields that we want to query"""
+        schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
+        schema["properties"] = {k:v for k,v in schema["properties"].items() if k in self._list_selected_fields}
+        return list(schema.get("properties", {}).keys())
+
+
+class CustomAdsInsightsAgeAndGender(CustomAdsInsights):
+    breakdowns = ["age", "gender"]
+
+
+class CustomAdsInsightsCountry(CustomAdsInsights):
+    breakdowns = ["country"]
+
+
+class CustomAdsInsightsRegion(CustomAdsInsights):
+    breakdowns = ["region"]
+
+
+class CustomAdsInsightsDma(CustomAdsInsights):
+    breakdowns = ["dma"]
+
+
+class CustomAdsInsightsPlatformAndDevice(CustomAdsInsights):
+    breakdowns = ["publisher_platform", "platform_position", "impression_device"]
+    action_breakdowns = ["action_type"]  # FB Async Job fails for unknown reason if we set other breakdowns
