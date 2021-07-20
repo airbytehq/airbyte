@@ -31,6 +31,7 @@ import io.airbyte.config.Configs;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,14 +56,14 @@ public class ConfigPersistenceBuilder {
   /**
    * Create a db config persistence and setup the database, including table creation and data loading.
    */
-  public static ConfigPersistence getAndInitializeDbPersistence(Configs configs) throws IOException {
+  public static ConfigPersistence getAndInitializeDbPersistence(Configs configs) throws IOException, InterruptedException {
     return new ConfigPersistenceBuilder(configs, true).create();
   }
 
   /**
    * Create a db config persistence without setting up the database.
    */
-  public static ConfigPersistence getDbPersistence(Configs configs) throws IOException {
+  public static ConfigPersistence getDbPersistence(Configs configs) throws IOException, InterruptedException {
     return new ConfigPersistenceBuilder(configs, false).create();
   }
 
@@ -71,7 +72,7 @@ public class ConfigPersistenceBuilder {
    * database config persistence and copy the configs from the file-based config persistence.
    * Otherwise, seed the database from the yaml files.
    */
-  ConfigPersistence create() throws IOException {
+  ConfigPersistence create() throws IOException, InterruptedException {
     // Uncomment this branch in a future version when config volume is removed.
     // if (configs.getConfigRoot() == null) {
     // return getDbPersistenceWithYamlSeed();
@@ -79,10 +80,17 @@ public class ConfigPersistenceBuilder {
     return getDbPersistenceWithFileSeed();
   }
 
-  ConfigPersistence getFileSystemPersistence() {
+  ConfigPersistence getFileSystemPersistence() throws InterruptedException {
     Path configRoot = configs.getConfigRoot();
-    LOGGER.info("Use file system config persistence (root: {})", configRoot);
-    return FileSystemConfigPersistence.createWithValidation(configRoot);
+    LOGGER.info("Constructing file system config persistence (root: {})", configRoot);
+    while (true) {
+      if (Files.exists(configRoot.resolve("config"))) {
+        LOGGER.info("Config volume is ready");
+        return FileSystemConfigPersistence.createWithValidation(configRoot);
+      }
+      LOGGER.warn("Config volume is not ready yet");
+      Thread.sleep(3000);
+    }
   }
 
   /**
@@ -99,10 +107,9 @@ public class ConfigPersistenceBuilder {
    * Create the database config persistence and load it with the existing configs from the file system
    * config persistence if the database should be initialized.
    */
-  ConfigPersistence getDbPersistenceWithFileSeed() throws IOException {
+  ConfigPersistence getDbPersistenceWithFileSeed() throws IOException, InterruptedException {
     LOGGER.info("Creating db-based config persistence, and loading seed and existing data from files");
-    Path configRoot = configs.getConfigRoot();
-    ConfigPersistence fsConfigPersistence = FileSystemConfigPersistence.createWithValidation(configRoot);
+    ConfigPersistence fsConfigPersistence = getFileSystemPersistence();
     return getDbPersistence(fsConfigPersistence);
   }
 
