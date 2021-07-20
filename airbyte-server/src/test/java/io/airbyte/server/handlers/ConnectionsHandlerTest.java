@@ -45,6 +45,7 @@ import io.airbyte.api.model.NamespaceDefinitionType;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.*;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -55,6 +56,8 @@ import io.airbyte.server.helpers.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
@@ -67,25 +70,64 @@ class ConnectionsHandlerTest {
   private ConfigRepository configRepository;
   private Supplier<UUID> uuidGenerator;
 
-  private StandardSync standardSync;
   private ConnectionsHandler connectionsHandler;
+  private UUID workspaceId;
+  private UUID sourceDefinitionId;
+  private UUID sourceId;
+  private UUID destinationDefinitionId;
+  private UUID destinationId;
+
   private SourceConnection source;
+  private DestinationConnection destination;
+  private StandardSync standardSync;
+  private UUID connectionId;
+  private UUID operationId;
+  private StandardSyncOperation standardSyncOperation;
   private WorkspaceHelper workspaceHelper;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
-  void setUp() throws IOException, ExecutionException {
+  void setUp() throws IOException, JsonValidationException, ConfigNotFoundException, ExecutionException {
+    workspaceId = UUID.randomUUID();
+    sourceDefinitionId = UUID.randomUUID();
+    sourceId = UUID.randomUUID();
+    destinationDefinitionId = UUID.randomUUID();
+    destinationId = UUID.randomUUID();
+    connectionId = UUID.randomUUID();
+    operationId = UUID.randomUUID();
+    source = new SourceConnection()
+        .withSourceId(sourceId)
+        .withWorkspaceId(workspaceId);
+    destination = new DestinationConnection()
+        .withDestinationId(destinationId)
+        .withWorkspaceId(workspaceId);
+    standardSync = new StandardSync()
+        .withConnectionId(connectionId)
+        .withName("presto to hudi")
+        .withNamespaceDefinition(JobSyncConfig.NamespaceDefinitionType.SOURCE)
+        .withNamespaceFormat(null)
+        .withPrefix("presto_to_hudi")
+        .withStatus(StandardSync.Status.ACTIVE)
+        .withCatalog(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog())
+        .withSourceId(sourceId)
+        .withDestinationId(destinationId)
+        .withOperationIds(List.of(operationId))
+        .withManual(false)
+        .withSchedule(ConnectionHelpers.generateBasicSchedule())
+        .withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+
+    standardSyncOperation = new StandardSyncOperation()
+        .withOperationId(operationId)
+        .withWorkspaceId(workspaceId);
+
     configRepository = mock(ConfigRepository.class);
     uuidGenerator = mock(Supplier.class);
-
-    source = SourceHelpers.generateSource(UUID.randomUUID());
-    standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
     workspaceHelper = mock(WorkspaceHelper.class);
-    UUID workspaceId = UUID.randomUUID();
-    when(workspaceHelper.getWorkspaceForSourceId(any())).thenReturn(workspaceId);
-    when(workspaceHelper.getWorkspaceForDestinationId(any())).thenReturn(workspaceId);
-
     connectionsHandler = new ConnectionsHandler(configRepository, uuidGenerator, workspaceHelper);
+
+    when(workspaceHelper.getWorkspaceForSourceId(sourceId)).thenReturn(workspaceId);
+    when(workspaceHelper.getWorkspaceForDestinationId(destinationId)).thenReturn(workspaceId);
+    when(workspaceHelper.getWorkspaceForOperationId(operationId)).thenReturn(workspaceId);
   }
 
   @Test
@@ -127,6 +169,33 @@ class ConnectionsHandlerTest {
     assertEquals(expectedConnectionRead, actualConnectionRead);
 
     verify(configRepository).writeStandardSync(standardSync);
+  }
+
+  @Test
+  void testValidateConnectionCreateSourceAndDestinationInDifferenceWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final DestinationConnection destinationFromDifferentWorkspace = Jsons.clone(destination);
+    destinationFromDifferentWorkspace.setWorkspaceId(UUID.randomUUID());
+    when(configRepository.getDestinationConnection(destinationId)).thenReturn(destinationFromDifferentWorkspace);
+
+    final ConnectionCreate connectionCreate = new ConnectionCreate()
+        .sourceId(standardSync.getSourceId())
+        .destinationId(standardSync.getDestinationId());
+
+    assertThrows(IllegalStateException.class, () -> connectionsHandler.createConnection(connectionCreate));
+  }
+
+  @Test
+  void testValidateConnectionCreateOperationInDifferentWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardSyncOperation operation = Jsons.clone(standardSyncOperation);
+    operation.setWorkspaceId(UUID.randomUUID());
+    when(configRepository.getStandardSyncOperation(operationId)).thenReturn(operation);
+
+    final ConnectionCreate connectionCreate = new ConnectionCreate()
+        .sourceId(standardSync.getSourceId())
+        .destinationId(standardSync.getDestinationId())
+        .operationIds(Collections.singletonList(operationId));
+
+    assertThrows(IllegalStateException.class, () -> connectionsHandler.createConnection(connectionCreate));
   }
 
   @Test
@@ -193,6 +262,7 @@ class ConnectionsHandlerTest {
         .namespaceFormat(standardSync.getNamespaceFormat())
         .prefix(standardSync.getPrefix())
         .connectionId(standardSync.getConnectionId())
+        .operationIds(standardSync.getOperationIds())
         .status(ConnectionStatus.INACTIVE)
         .schedule(null)
         .syncCatalog(catalog);
@@ -208,6 +278,7 @@ class ConnectionsHandlerTest {
         .withPrefix("presto_to_hudi")
         .withSourceId(standardSync.getSourceId())
         .withDestinationId(standardSync.getDestinationId())
+        .withOperationIds(standardSync.getOperationIds())
         .withStatus(StandardSync.Status.INACTIVE)
         .withCatalog(configuredCatalog)
         .withManual(true)
@@ -231,6 +302,21 @@ class ConnectionsHandlerTest {
     assertEquals(expectedConnectionRead, actualConnectionRead);
 
     verify(configRepository).writeStandardSync(updatedStandardSync);
+  }
+
+  @Test
+  void testValidateConnectionUpdateOperationInDifferentWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardSyncOperation operation = Jsons.clone(standardSyncOperation);
+    operation.setWorkspaceId(UUID.randomUUID());
+    when(configRepository.getStandardSyncOperation(operationId)).thenReturn(operation);
+    when(configRepository.getStandardSync(standardSync.getConnectionId()))
+        .thenReturn(standardSync);
+
+    final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
+        .connectionId(standardSync.getConnectionId())
+        .operationIds(Collections.singletonList(operationId));
+
+    assertThrows(IllegalStateException.class, () -> connectionsHandler.updateConnection(connectionUpdate));
   }
 
   @Test
