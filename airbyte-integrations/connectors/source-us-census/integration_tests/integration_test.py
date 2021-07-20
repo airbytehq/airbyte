@@ -23,5 +23,5 @@
 #
 
 
-def integration_test():
-    pass
+def test_hello_world():
+    assert True
