@@ -4,11 +4,53 @@ description: Be sure to not miss out on new features and improvements!
 
 # Platform
 
-This is the changelog for Airbyte core. For our connector changelog, please visit our [Connector Changelog](connectors.md) page.
+This is the changelog for Airbyte Platform. For our connector changelog, please visit our [Connector Changelog](connectors.md) page.
 
-If you're interested in our progress on the Airbyte platform, please read below!
+## [07-15-2021 - 0.27.3](https://github.com/airbytehq/airbyte/releases/tag/v0.27.3-alpha)
+* Fixed some minor API spec errors.
 
-## [05-28-2021 - 0.24.3](https://github.com/airbytehq/airbyte/releases/tag/v0.24.2-alpha)
+## [07-12-2021 - 0.27.2](https://github.com/airbytehq/airbyte/releases/tag/v0.27.2-alpha)
+* GCP environment variable is now stubbed out to prevent noisy and harmless errors.
+
+## [07-8-2021 - 0.27.1](https://github.com/airbytehq/airbyte/releases/tag/v0.27.1-alpha)
+* New API endpoint: List workspaces
+* K8s: Server doesn't start up before Temporal is ready to operate now.
+* Silent source failures caused by last patch fixed to throw exceptions.
+
+## [07-1-2021 - 0.27.0](https://github.com/airbytehq/airbyte/releases/tag/v0.27.0-alpha)
+* Airbyte now automatically upgrades on server startup!
+  * Airbyte will check whether your `.env` Airbyte version is compatible with the Airbyte version in the database and upgrade accordingly.
+* When running Airbyte on K8s logs will automatically be stored in a Minio bucket unless configured otherwise.
+* CDC for MySQL now handles decimal types correctly.
+
+## [06-21-2021 - 0.26.2](https://github.com/airbytehq/airbyte/releases/tag/v0.26.2-alpha)
+
+* First-Class Kubernetes support!
+
+## [06-16-2021 - 0.26.0](https://github.com/airbytehq/airbyte/releases/tag/v0.26.0-alpha)
+
+* Custom dbt transformations! 
+* You can now configure your destination namespace at the table level when setting up a connection!  
+* Migrate basic normalization settings to the sync operations.
+
+## [06-09-2021 - 0.24.8 / 0.25.0](https://github.com/airbytehq/airbyte/releases/tag/v0.24.8-alpha)
+
+* Bugfix: Handle TINYINT(1) and BOOLEAN correctly and fix target file comparison for MySQL CDC.
+* Bugfix: Updating the source/destination name in the UI now works as intended.
+
+## [06-04-2021 - 0.24.7](https://github.com/airbytehq/airbyte/releases/tag/v0.24.7-alpha)
+
+* Bugfix: Ensure that logs from threads created by replication workers are added to the log file.
+
+## [06-03-2021 - 0.24.5](https://github.com/airbytehq/airbyte/releases/tag/v0.24.5-alpha)
+
+* Remove hash from table names when it's not necessary for normalization outputs.
+
+## [06-03-2021 - 0.24.4](https://github.com/airbytehq/airbyte/releases/tag/v0.24.4-alpha)
+
+* PythonCDK: change minimum Python version to 3.7.0
+
+## [05-28-2021 - 0.24.3](https://github.com/airbytehq/airbyte/releases/tag/v0.24.3-alpha)
 
 * Minor fixes to documentation
 * Reliability updates in preparation for custom transformations  

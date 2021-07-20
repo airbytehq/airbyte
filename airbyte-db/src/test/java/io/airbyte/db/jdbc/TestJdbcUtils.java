@@ -34,6 +34,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.MoreStreams;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.math.BigDecimal;
@@ -48,7 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -75,7 +75,7 @@ public class TestJdbcUtils {
 
   @BeforeEach
   void setup() throws Exception {
-    final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
+    final String dbName = Strings.addRandomSuffix("db", "_", 10);
 
     final JsonNode config = getConfig(PSQL_DB, dbName);
 

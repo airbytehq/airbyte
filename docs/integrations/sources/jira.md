@@ -84,3 +84,11 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 Please follow the [Jira confluence for generating an API token](https://confluence.atlassian.com/cloud/api-tokens-938839638.html).
 
+## CHANGELOG
+
+| Version | Date | Pull Request | Subject |
+| :--- | :---  | :--- | :--- |
+| 0.2.6 | 2021-06-15 | [#4113](https://github.com/airbytehq/airbyte/pull/4113) | Fixed `user` stream with the correct endpoint and query param. |
+| 0.2.5 | 2021-06-09 | [#3973](https://github.com/airbytehq/airbyte/pull/3973) | Added `AIRBYTE_ENTRYPOINT` in base Docker image for Kubernetes support. |
+| 0.2.4 | | | Implementing base_read acceptance test dived by stream groups. |
+| 0.2.3 | | | Implementing incremental sync. Migrated to airbyte-cdk. Adding all available entities in Jira Cloud. |

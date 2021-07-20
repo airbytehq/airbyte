@@ -13,7 +13,7 @@ For information about how to use this connector within Airbyte, see [the documen
 #### Build & Activate Virtual Environment and install dependencies
 From this connector directory, create a virtual environment:
 ```
-python -m venv .venv
+python3 -m venv .venv
 ```
 
 This will generate a virtualenv for this module in `.venv/`. Make sure this venv is active in your

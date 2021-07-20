@@ -10,8 +10,9 @@ RUN apt-get update \
 ENV CODE_PATH="source_intercom_singer"
 ENV AIRBYTE_IMPL_MODULE="source_intercom_singer"
 ENV AIRBYTE_IMPL_PATH="SourceIntercomSinger"
+ENV AIRBYTE_ENTRYPOINT "/airbyte/base.sh"
 
-LABEL io.airbyte.version=0.2.1
+LABEL io.airbyte.version=0.2.3
 LABEL io.airbyte.name=airbyte/source-intercom-singer
 
 WORKDIR /airbyte/integration_code

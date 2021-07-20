@@ -1,125 +1,150 @@
 # Build statuses
 
 # Sources 
- Amazon Seller Partner   [![source-amazon-seller-partner](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-amazon-seller-partner%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-amazon-seller-partner)
+ Amazon Seller Partner   [![source-amazon-seller-partner](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-amazon-seller-partner%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-amazon-seller-partner)
 
- Amplitude   [![source-amplitude](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-amplitude%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-amplitude)
+ Amplitude   [![source-amplitude](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-amplitude%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-amplitude)
 
- AppsFlyer   [![source-braintree-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-appsflyer-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-appsflyer-singer) 
+ AppsFlyer   [![source-braintree-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-appsflyer-singer%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-appsflyer-singer) 
 
- App Store   [![source-appstore-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-appstore-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-appstore-singer)
+ App Store   [![source-appstore-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-appstore-singer%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-appstore-singer)
 
- Asana   [![source-asana](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-asana%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-asana)
+ Asana   [![source-asana](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-asana%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-asana)
 
- Braintree   [![source-braintree-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-braintree-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-braintree-singer) 
+ AWS CloudTrail   [![source-aws-cloudtrail](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-aws-cloudtrail%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-aws-cloudtrail)
 
- Drift   [![source-drift](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-drift%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-drift) 
+ Braintree   [![source-braintree-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-braintree-singer%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-braintree-singer)
 
- Exchange Rates API   [![source-exchangeratesapi-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-exchangeratesapi-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-exchangeratesapi-singer) 
+ Dixa   [![source-dixa](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-dixa%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-dixa)
 
- Facebook Marketing   [![source-facebook-marketing](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-facebook-marketing%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-facebook-marketing) 
+ Drift   [![source-drift](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-drift%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-drift) 
 
- Files   [![source-file](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-file%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-file) 
+ Exchange Rates API   [![source-exchangeratesapi-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-exchangeratesapi-singer%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-exchangeratesapi-singer) 
 
- Freshdesk   [![source-freshdesk](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-freshdesk%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-freshdesk) 
+ Facebook Marketing   [![source-facebook-marketing](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-facebook-marketing%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-facebook-marketing) 
 
- GitHub   [![source-github-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-github-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-github-singer) 
+ Files   [![source-file](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-file%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-file) 
 
- GitLab   [![source-gitlab-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-gitlab-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-gitlab-singer) 
+ Freshdesk   [![source-freshdesk](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-freshdesk%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-freshdesk) 
 
- Google Adwords   [![source-google-adwords-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-google-adwords-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-google-adwords-singer) 
+ GitHub   [![source-github](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-github%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-github) 
 
- Google Analytics   [![source-googleanalytics-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-googleanalytics-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-googleanalytics-singer) 
+ GitLab   [![source-gitlab](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-gitlab%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-gitlab) 
 
- Google Sheets   [![source-google-sheets](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-google-sheets%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-google-sheets) 
+ Google Ads   [![source-google-ads](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-google-ads%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-google-ads) 
+ 
+ Google Adwords   [![source-google-adwords-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-google-adwords-singer%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-google-adwords-singer) 
 
- Google Directory API   [![source-google-directory](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-google-directory%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-google-directory) 
+ Google Analytics   [![source-googleanalytics-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-googleanalytics-singer%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-googleanalytics-singer) 
 
- Google Workspace Admin   [![source-google-workspace-admin-reports](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-google-workspace-admin-reports%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-google-workspace-admin-reports) 
+ Google Sheets   [![source-google-sheets](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-google-sheets%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-google-sheets) 
 
- Greenhouse   [![source-greenhouse](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-greenhouse%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-greenhouse) 
+ Google Directory API   [![source-google-directory](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-google-directory%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-google-directory) 
 
- HTTP Request   [![source-http-request](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-http-request%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-http-request) 
+ Google Workspace Admin   [![source-google-workspace-admin-reports](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-google-workspace-admin-reports%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-google-workspace-admin-reports) 
 
- Hubspot   [![source-hubspot-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-hubspot%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-hubspot) 
+ Greenhouse   [![source-greenhouse](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-greenhouse%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-greenhouse) 
 
- Klaviyo   [![source-klaviyo](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-klaviyo%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-klaviyo) 
+ HTTP Request   [![source-http-request](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-http-request%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-http-request) 
 
- Asana   [![source-asana](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-asana%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-asana) 
+ Hubspot   [![source-hubspot-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-hubspot%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-hubspot) 
 
- Instagram   [![source-instagram](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-instagram%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-instagram) 
+ Klaviyo   [![source-klaviyo](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-klaviyo%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-klaviyo) 
 
- Intercom   [![source-intercom-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-intercom-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-intercom-singer) 
+ IBM Db2   [![source-db2](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-db2%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-db2)
 
- Iterable   [![source-iterable](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-iterable%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-iterable) 
+ Instagram   [![source-instagram](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-instagram%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-instagram) 
 
- Jira   [![source-jira](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-jira%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-jira) 
+ Intercom   [![source-intercom](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-intercom-singer%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-intercom) 
 
- Looker   [![source-looker](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-looker%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-looker) 
+ Iterable   [![source-iterable](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-iterable%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-iterable) 
 
- Mailchimp   [![source-mailchimp](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-mailchimp%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-mailchimp) 
+ Jira   [![source-jira](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-jira%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-jira) 
 
- Marketo   [![source-marketo-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-marketo-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-marketo-singer) 
+ Looker   [![source-looker](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-looker%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-looker) 
 
- Microsoft SQL Server \(MSSQL\)   [![source-mssql](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-mssql%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-mssql) 
+ Mailchimp   [![source-mailchimp](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-mailchimp%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-mailchimp) 
 
- Microsoft Teams   [![source-microsoft-teams](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-microsoft-teams%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-microsoft-teams) 
+ Marketo   [![source-marketo-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-marketo-singer%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-marketo-singer) 
 
- Mixpanel   [![source-mixpanel-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-mixpanel-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-mixpanel-singer) 
+ Microsoft SQL Server \(MSSQL\)   [![source-mssql](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-mssql%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-mssql) 
 
- Mongo DB   [![source-mongodb](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-mongodb%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-mongodb) 
+ Microsoft Teams   [![source-microsoft-teams](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-microsoft-teams%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-microsoft-teams) 
 
- MySQL   [![source-mysql](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-mysql%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-mysql) 
+ Mixpanel   [![source-mixpanel](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-mixpanel%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-mixpanel)
 
- Oracle DB   [![source-oracle](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-oracle%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-oracle) 
+ Mixpanel Singer   [![source-mixpanel-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-mixpanel-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-mixpanel-singer) 
 
- Plaid   [![source-plaid](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-plaid%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-plaid) 
+ Mongo DB   [![source-mongodb](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-mongodb%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-mongodb) 
 
- Postgres   [![source-postgres](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-postgres%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-postgres) 
+ MySQL   [![source-mysql](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-mysql%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-mysql) 
 
- Quickbooks   [![source-quickbooks-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-quickbooks-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-quickbooks-singer) 
+ Oracle DB   [![source-oracle](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-oracle%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-oracle) 
 
- Recharge   [![source-recharge](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-recharge%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-recharge) 
+ Paypal Transaction   [![paypal-transaction](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-paypal-transaction%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-paypal-transaction)
 
- Recurly   [![source-recurly](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-recurly%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-recurly) 
+ Pipedrive   [![source-pipedrive](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-plaid%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-pipedrive) 
+ 
+ Plaid   [![source-plaid](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-plaid%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-plaid) 
 
- Redshift   [![source-redshift](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-redshift%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-redshift) 
+ Postgres   [![source-postgres](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-postgres%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-postgres) 
+ 
+ CockroachDb   [![source-cockroachdb](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-cockroachdb%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-cockroachdb)
 
- Salesforce   [![source-salesforce-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-salesforce-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-salesforce-singer) 
+ Quickbooks   [![source-quickbooks-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-quickbooks-singer%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-quickbooks-singer) 
 
- Sendgrid   [![source-sendgrid](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-sendgrid%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-sendgrid) 
+ Recharge   [![source-recharge](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-recharge%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-recharge) 
 
- Shopify   [![source-shopify-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-shopify-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-shopify-singer) 
+ Recurly   [![source-recurly](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-recurly%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-recurly) 
 
- Slack   [![source-slack-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-slack-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-slack-singer) 
+ Redshift   [![source-redshift](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-redshift%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-redshift) 
 
- Smartsheets   [![source-smartsheets](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-smartsheets%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-smartsheets) 
+ Salesforce   [![source-salesforce-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-salesforce-singer%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-salesforce-singer) 
 
- Stripe   [![source-stripe](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-stripe%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-stripe) 
+ Sendgrid   [![source-sendgrid](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-sendgrid%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-sendgrid) 
 
- Tempo   [![source-tempo](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-tempo%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-tempo) 
+ Shopify   [![source-shopify](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-shopify%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-shopify) 
 
- Twilio   [![source-twilio-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-twilio-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-tempo) 
+ Slack   [![source-slack-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-slack-singer%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-slack-singer) 
 
- Zendesk Chat   [![source-zendesk-chat](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-zendesk-chat%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-zendesk-chat) 
+ Smartsheets   [![source-smartsheets](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-smartsheets%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-smartsheets) 
 
- Zendesk Support   [![source-zendesk-support-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-zendesk-support-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-zendesk-support-singer) 
+ Snowflake   [![source-snowflake](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-snowflake%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-snowflake)
 
- Zendesk Talk   [![source-zendesk-talk](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-zendesk-talk%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-zendesk-talk) 
+ Square   [![source-square](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-square%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-square)
 
- Zoom   [![source-zoom-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-zoom-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-zoom-singer) 
+ Stripe   [![source-stripe](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-stripe%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-stripe) 
+
+ Tempo   [![source-tempo](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-tempo%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-tempo) 
+
+ Twilio   [![source-twilio](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-twilio%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-twilio) 
+
+ Typeform   [![source-typeform](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-typeform%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-typeform)
+
+ Zendesk Chat   [![source-zendesk-chat](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-zendesk-chat%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-zendesk-chat) 
+
+ Zendesk Support   [![source-zendesk-support-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-zendesk-support-singer%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-zendesk-support-singer) 
+
+ Zendesk Talk   [![source-zendesk-talk](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-zendesk-talk%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-zendesk-talk) 
+
+ Zoom   [![source-zoom-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-zoom-singer%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/source-zoom-singer) 
 
  
 # Destinations
- BigQuery   [![destination-bigquery](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fdestination-bigquery%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/destination-bigquery) 
+ BigQuery   [![destination-bigquery](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fdestination-bigquery%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/destination-bigquery) 
 
- Local CSV   [![destination-csv](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fdestination-csv%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/destination-csv) 
+ Google Cloud Storage (GCS) [![destination-gcs](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fdestination-s3%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/destination-gcs)
 
- Local JSON   [![destination-local-json](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fdestination-local-json%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/destination-local-json) 
+ Google PubSub   [![destination-pubsub](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fdestination-pubsub%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/destination-pubsub)
 
- Postgres   [![destination-postgres](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fdestination-postgres%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/destination-postgres) 
+ Local CSV   [![destination-csv](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fdestination-csv%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/destination-csv) 
 
- Redshift   [![destination-redshift](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fdestination-redshift%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/destination-redshift) 
+ Local JSON   [![destination-local-json](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fdestination-local-json%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/destination-local-json) 
 
- Snowflake   [![destination-snowflake](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fdestination-snowflake%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/destination-snowflake) 
+ Postgres   [![destination-postgres](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fdestination-postgres%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/destination-postgres) 
 
+ Redshift   [![destination-redshift](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fdestination-redshift%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/destination-redshift) 
+
+ S3         [![destination-s3](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fdestination-s3%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/destination-s3)
+
+ Snowflake   [![destination-snowflake](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fdestination-snowflake%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/destination-snowflake) 

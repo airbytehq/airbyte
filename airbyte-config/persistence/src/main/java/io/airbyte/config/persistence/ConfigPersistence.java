@@ -24,10 +24,13 @@
 
 package io.airbyte.config.persistence;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 public interface ConfigPersistence {
 
@@ -36,5 +39,9 @@ public interface ConfigPersistence {
   <T> List<T> listConfigs(ConfigSchema configType, Class<T> clazz) throws JsonValidationException, IOException;
 
   <T> void writeConfig(ConfigSchema configType, String configId, T config) throws JsonValidationException, IOException;
+
+  <T> void replaceAllConfigs(Map<ConfigSchema, Stream<T>> configs, boolean dryRun) throws IOException;
+
+  Map<String, Stream<JsonNode>> dumpConfigs() throws IOException;
 
 }

@@ -10,5 +10,5 @@ To set it up, just follow the instructions on the screenshot below.
 You might have to wait ~30 seconds before the fields show up because it is the first time you're using Airbyte.
 {% endhint %}
 
-![](../.gitbook/assets/demo_destination.png)
+![](../.gitbook/assets/getting-started-destination.png)
 

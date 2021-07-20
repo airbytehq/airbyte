@@ -27,6 +27,7 @@ package io.airbyte.integrations.source.mysql;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -35,7 +36,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Optional;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -71,7 +71,7 @@ class MySqlStressTest extends JdbcStressTest {
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
-        .put("database", "db_" + RandomStringUtils.randomAlphabetic(10))
+        .put("database", Strings.addRandomSuffix("db", "_", 10))
         .put("username", TEST_USER)
         .put("password", TEST_PASSWORD)
         .build());

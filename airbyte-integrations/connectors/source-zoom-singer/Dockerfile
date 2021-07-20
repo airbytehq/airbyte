@@ -10,8 +10,9 @@ RUN apt-get update \
 ENV CODE_PATH="source_zoom_singer"
 ENV AIRBYTE_IMPL_MODULE="source_zoom_singer"
 ENV AIRBYTE_IMPL_PATH="SourceZoomSinger"
+ENV AIRBYTE_ENTRYPOINT "/airbyte/base.sh"
 
-LABEL io.airbyte.version=0.2.2
+LABEL io.airbyte.version=0.2.4
 LABEL io.airbyte.name=airbyte/source-zoom-singer
 
 WORKDIR /airbyte/integration_code

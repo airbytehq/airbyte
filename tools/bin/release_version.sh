@@ -11,6 +11,8 @@ if [[ "$BRANCH" == "master" ]]; then
   exit 1;
 fi
 
+PREV_VERSION=$(grep VERSION .env | cut -d"=" -f2)
+
 PART_TO_BUMP=$1
 [[ -z "$PART_TO_BUMP" ]] && echo "Usage ./tools/bin/release_version.sh (major|minor|patch)" && exit 1
 
@@ -20,21 +22,26 @@ PART_TO_BUMP=$1
 pip install bumpversion
 bumpversion "$PART_TO_BUMP"
 
+NEW_VERSION=$(grep VERSION .env | cut -d"=" -f2)
 GIT_REVISION=$(git rev-parse HEAD)
 [[ -z "$GIT_REVISION" ]] && echo "Couldn't get the git revision..." && exit 1
 
-echo "Building and publishing version $VERSION for git revision $GIT_REVISION..."
+echo "Bumped version from ${PREV_VERSION} to ${NEW_VERSION}"
+echo "Building and publishing version $NEW_VERSION for git revision $GIT_REVISION..."
 
-ENV_VERSION=$(grep VERSION .env | xargs)
-ENV_VERSION=${ENV_VERSION#*=}
-
-./gradlew clean composeBuild
-VERSION=$ENV_VERSION GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose.build.yaml build
-VERSION=$ENV_VERSION GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose.build.yaml push
+SUB_BUILD=PLATFORM ./gradlew clean composeBuild
+VERSION=$NEW_VERSION GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose.build.yaml build
+VERSION=$NEW_VERSION GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose.build.yaml push
 echo "Completed building and publishing..."
 
+echo
+echo "Changelog:"
+PAGER=cat git log v${PREV_VERSION}..${GIT_REVISION} --oneline --decorate=no
+
+echo
 echo "Final Steps:"
 echo "1. Push your changes"
 echo "2. Merge your PR"
 echo "3. Switch to master"
 echo "4. Run ./tools/bin/tag_version.sh"
+echo "5. Create a GitHub release with the changelog"

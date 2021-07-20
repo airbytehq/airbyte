@@ -136,7 +136,7 @@ public class MySQLSqlOperations extends DefaultSqlOperations {
   }
 
   @Override
-  public String createTableQuery(String schemaName, String tableName) {
+  public String createTableQuery(JdbcDatabase database, String schemaName, String tableName) {
     // MySQL requires byte information with VARCHAR. Since we are using uuid as value for the column,
     // 256 is enough
     return String.format(

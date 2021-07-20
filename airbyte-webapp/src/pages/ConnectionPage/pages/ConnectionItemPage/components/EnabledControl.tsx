@@ -5,8 +5,8 @@ import styled from "styled-components";
 import { Toggle } from "components";
 import { Connection } from "core/resources/Connection";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
-import config from "config";
 import useConnection from "components/hooks/services/useConnectionHook";
+import { Status } from "components/EntityTable/types";
 
 const ToggleLabel = styled.label`
   text-transform: uppercase;
@@ -27,10 +27,15 @@ const Content = styled.div`
 
 type IProps = {
   connection: Connection;
+  disabled?: boolean;
   frequencyText?: string;
 };
 
-const EnabledControl: React.FC<IProps> = ({ connection, frequencyText }) => {
+const EnabledControl: React.FC<IProps> = ({
+  connection,
+  disabled,
+  frequencyText,
+}) => {
   const { updateConnection } = useConnection();
 
   const onChangeStatus = async () => {
@@ -38,14 +43,17 @@ const EnabledControl: React.FC<IProps> = ({ connection, frequencyText }) => {
       connectionId: connection.connectionId,
       syncCatalog: connection.syncCatalog,
       schedule: connection.schedule,
+      namespaceDefinition: connection.namespaceDefinition,
+      namespaceFormat: connection.namespaceFormat,
       prefix: connection.prefix,
-      status: connection.status === "active" ? "inactive" : "active",
+      operations: connection.operations,
+      status:
+        connection.status === Status.ACTIVE ? Status.INACTIVE : Status.ACTIVE,
     });
 
     AnalyticsService.track("Source - Action", {
-      user_id: config.ui.workspaceId,
       action:
-        connection.status === "active"
+        connection.status === Status.ACTIVE
           ? "Disable connection"
           : "Reenable connection",
       connector_source: connection.source?.sourceName,
@@ -62,15 +70,16 @@ const EnabledControl: React.FC<IProps> = ({ connection, frequencyText }) => {
       <ToggleLabel htmlFor="toggle-enabled-source">
         <FormattedMessage
           id={
-            connection.status === "active"
+            connection.status === Status.ACTIVE
               ? "tables.enabled"
               : "tables.disabled"
           }
         />
       </ToggleLabel>
       <Toggle
+        disabled={disabled}
         onChange={onChangeStatus}
-        checked={connection.status === "active"}
+        checked={connection.status === Status.ACTIVE}
         id="toggle-enabled-source"
       />
     </Content>

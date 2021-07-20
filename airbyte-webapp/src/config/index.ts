@@ -1,9 +1,12 @@
+import * as Fullstory from "@fullstory/browser";
 import { SegmentAnalytics } from "core/analytics/types";
 
 declare global {
   interface Window {
     TRACKING_STRATEGY?: string;
     PAPERCUPS_STORYTIME?: string;
+    FULLSTORY?: string;
+    OPENREPLAY?: string;
     AIRBYTE_VERSION?: string;
     API_URL?: string;
     IS_DEMO?: string;
@@ -14,9 +17,12 @@ declare global {
 type Config = {
   ui: {
     helpLink: string;
+    updateLink: string;
     slackLink: string;
     docsLink: string;
     configurationArchiveLink: string;
+    namespaceLink: string;
+    normalizationLink: string;
     workspaceId: string;
     tutorialLink: string;
     technicalSupport: string;
@@ -27,20 +33,28 @@ type Config = {
     baseUrl: string;
     enableStorytime: boolean;
   };
+  openreplay: {
+    projectKey: string;
+  };
+  fullstory: Fullstory.SnippetOptions;
   apiUrl: string;
   healthCheckInterval: number;
   isDemo: boolean;
   version?: string;
 };
 
+const BASE_DOCS_LINK = "https://docs.airbyte.io";
+
 const config: Config = {
   ui: {
-    technicalSupport: "https://docs.airbyte.io/faq/technical-support",
+    technicalSupport: `${BASE_DOCS_LINK}/troubleshooting/on-deploying`,
     helpLink: "https://airbyte.io/community",
+    updateLink: "https://docs.airbyte.io/upgrading-airbyte",
     slackLink: "https://slack.airbyte.io",
     docsLink: "https://docs.airbyte.io",
-    configurationArchiveLink:
-      "https://docs.airbyte.io/tutorials/upgrading-airbyte",
+    configurationArchiveLink: `${BASE_DOCS_LINK}/tutorials/upgrading-airbyte`,
+    normalizationLink: `${BASE_DOCS_LINK}/understanding-airbyte/connections#airbyte-basic-normalization`,
+    namespaceLink: `${BASE_DOCS_LINK}/understanding-airbyte/namespaces`,
     tutorialLink:
       "https://www.youtube.com/watch?v=Rcpt5SVsMpk&feature=emb_logo",
     workspaceId: "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6",
@@ -56,6 +70,13 @@ const config: Config = {
     accountId: "74560291-451e-4ceb-a802-56706ece528b",
     baseUrl: "https://app.papercups.io",
     enableStorytime: window.PAPERCUPS_STORYTIME !== "disabled",
+  },
+  openreplay: {
+    projectKey: window.OPENREPLAY !== "disabled" ? "6611843272536134" : "",
+  },
+  fullstory: {
+    orgId: "13AXQ4",
+    devMode: window.FULLSTORY === "disabled",
   },
   version: window.AIRBYTE_VERSION,
   apiUrl:

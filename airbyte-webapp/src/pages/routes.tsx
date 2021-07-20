@@ -14,18 +14,19 @@ import DestinationPage from "./DestinationPage";
 import PreferencesPage from "./PreferencesPage";
 import OnboardingPage from "./OnboardingPage";
 import ConnectionPage from "./ConnectionPage";
-import AdminPage from "./AdminPage";
 import SettingsPage from "./SettingsPage";
 import LoadingPage from "components/LoadingPage";
 import MainView from "components/MainView";
 import SupportChat from "components/SupportChat";
 
 import useSegment from "components/hooks/useSegment";
+import useFullStory from "components/hooks/useFullStory";
 import useRouter from "components/hooks/useRouterHook";
 import useWorkspace from "components/hooks/services/useWorkspaceHook";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
 import { useNotificationService } from "components/hooks/services/Notification/NotificationService";
-import { useApiHealthPoll } from "../components/hooks/services/Health";
+import { useApiHealthPoll } from "components/hooks/services/Health";
+import useOpenReplay from "../components/hooks/useOpenReplay";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -38,8 +39,11 @@ export enum Routes {
   ConnectionNew = "/new-connection",
   SourceNew = "/new-source",
   DestinationNew = "/new-destination",
-  Admin = "/admin",
   Settings = "/settings",
+  Configuration = "/configuration",
+  Notifications = "/notifications",
+  Metrics = "/metrics",
+  Account = "/account",
   Root = "/",
 }
 
@@ -77,11 +81,20 @@ const getPageName = (pathname: string) => {
   if (pathname.match(itemSourcePageRegex)) {
     return "Source Item Page";
   }
-  if (pathname === Routes.Admin) {
-    return "Admin Page";
+  if (pathname === `${Routes.Settings}${Routes.Source}`) {
+    return "Settings Sources Connectors Page";
   }
-  if (pathname === Routes.Settings) {
-    return "Settings Page";
+  if (pathname === `${Routes.Settings}${Routes.Destination}`) {
+    return "Settings Destinations Connectors Page";
+  }
+  if (pathname === `${Routes.Settings}${Routes.Configuration}`) {
+    return "Settings Configuration Page";
+  }
+  if (pathname === `${Routes.Settings}${Routes.Notifications}`) {
+    return "Settings Notifications Page";
+  }
+  if (pathname === `${Routes.Settings}${Routes.Metrics}`) {
+    return "Settings Metrics Page";
   }
   if (pathname === Routes.Connections) {
     return "Connections Page";
@@ -108,9 +121,6 @@ const MainViewRoutes = () => {
           </Route>
           <Route path={Routes.Source}>
             <SourcesPage />
-          </Route>
-          <Route path={Routes.Admin}>
-            <AdminPage />
           </Route>
           <Route path={Routes.Connections}>
             <ConnectionPage />
@@ -151,14 +161,17 @@ const OnboardingsRoutes = () => {
 };
 
 export const Routing: React.FC = () => {
-  useSegment(config.segment.token);
   useApiHealthPoll(config.healthCheckInterval);
+  useSegment(config.segment.token);
+  useFullStory(config.fullstory);
+  const tracker = useOpenReplay(config.openreplay.projectKey);
 
   const { workspace } = useWorkspace();
 
   useEffect(() => {
     if (workspace) {
       AnalyticsService.identify(workspace.customerId);
+      tracker.setUserID(workspace.customerId);
     }
   }, [workspace]);
 

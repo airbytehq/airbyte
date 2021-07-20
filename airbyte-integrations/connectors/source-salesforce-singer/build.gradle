@@ -1,7 +1,7 @@
 plugins {
     id 'airbyte-docker'
     id 'airbyte-python'
-//    id 'airbyte-standard-source-test-file'
+    id 'airbyte-standard-source-test-file'
 }
 
 airbytePython {
@@ -10,17 +10,11 @@ airbytePython {
 
 // We cannot run standard source tests with every build because it blows through the Salesforce quota. For now, turn this on as needed and run these tests locally; they will not be run in CI.
 // CRITICAL Salesforce has reported 13060/15000 (87.07%) total REST quota used across all Salesforce Applications. Terminating replication to not continue past configured percentage of 80% total quota.
-//airbyteStandardSourceTestFile {
-//    // For more information on standard source tests, see https://docs.airbyte.io/contributing-to-airbyte/building-new-connector/testing-connectors
-//    // All these input paths must live inside this connector's directory (or subdirectories)
-//    specPath = "source_salesforce_singer/spec.json"
-//    // configPath points to a config file which matches the spec.json supplied above. secrets/ is gitignored by default, so place your config file
-//    // there (in case it contains any credentials)
-//    configPath = "secrets/config.json"
-//    // Note: If your source supports incremental syncing, then make sure that the catalog that is returned in the get_catalog method is configured
-//    // for incremental syncing (e.g. include cursor fields, etc).
-//    configuredCatalogPath = "sample_files/configured_catalog.json"
-//}
+airbyteStandardSourceTestFile {
+   specPath = "source_salesforce_singer/spec.json"
+   configPath = "secrets/config.json"
+   configuredCatalogPath = "sample_files/configured_catalog.json"
+}
 
 
 dependencies {

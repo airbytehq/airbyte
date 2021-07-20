@@ -1,6 +1,6 @@
 import React from "react";
 import userEvent from "@testing-library/user-event";
-import { waitFor } from "@testing-library/react";
+import { screen, findByText, waitFor } from "@testing-library/react";
 import { JSONSchema7 } from "json-schema";
 
 import ServiceForm from "components/ServiceForm";
@@ -107,7 +107,7 @@ describe("Service Form", () => {
     test("should display general components: submit button, name and serviceType fields", () => {
       const name = container.querySelector("input[name='name']");
       const serviceType = container.querySelector(
-        "div[data-test-id='serviceType']"
+        "div[data-testid='serviceType']"
       );
       const submit = container.querySelector("button[type='submit']");
 
@@ -149,7 +149,7 @@ describe("Service Form", () => {
 
     test("should display oneOf field", () => {
       const credentials = container.querySelector(
-        "div[data-test-id='connectionConfiguration.credentials']"
+        "div[data-testid='connectionConfiguration.credentials']"
       );
       const credentialsValue = credentials?.querySelector(
         "input[value='api key']"
@@ -179,10 +179,10 @@ describe("Service Form", () => {
 
     test("should display array of objects field", () => {
       const priceList = container.querySelector(
-        "div[data-test-id='connectionConfiguration.priceList']"
+        "div[data-testid='connectionConfiguration.priceList']"
       );
       const addButton = priceList?.querySelector(
-        "button[data-test-id='addItemButton']"
+        "button[data-testid='addItemButton']"
       );
       expect(priceList).toBeInTheDocument();
       expect(addButton).toBeInTheDocument();
@@ -229,10 +229,10 @@ describe("Service Form", () => {
         "div[name='connectionConfiguration.workTime']"
       );
       const priceList = container.querySelector(
-        "div[data-test-id='connectionConfiguration.priceList']"
+        "div[data-testid='connectionConfiguration.priceList']"
       );
       const addButton = priceList?.querySelector(
-        "button[data-test-id='addItemButton']"
+        "button[data-testid='addItemButton']"
       );
 
       userEvent.type(name!, "{selectall}{del}name");
@@ -252,7 +252,7 @@ describe("Service Form", () => {
         "input[name='connectionConfiguration.priceList.0.price']"
       );
       const done = priceList?.querySelector(
-        "button[data-test-id='done-button']"
+        "button[data-testid='done-button']"
       );
       userEvent.type(listName!, "test-price-list-name");
       userEvent.type(listPrice!, "1");
@@ -312,19 +312,20 @@ describe("Service Form", () => {
     });
 
     test("change oneOf field value", async () => {
-      const credentials = container.querySelector(
-        "div[data-test-id='connectionConfiguration.credentials']"
+      const credentials = screen.getByTestId(
+        "connectionConfiguration.credentials"
       );
-      expect(credentials).toBeInTheDocument();
-      await waitFor(() => credentials && userEvent.click(credentials));
 
-      const oauth = container.querySelector("div[data-id='oauth']");
-      expect(oauth).toBeInTheDocument();
-      await waitFor(() => oauth && userEvent.click(oauth));
+      userEvent.click(credentials);
 
-      const credentialsValue = credentials?.querySelector(
+      const oauth = await findByText(credentials, "oauth");
+
+      userEvent.click(oauth);
+
+      const credentialsValue = credentials.querySelector(
         "input[value='oauth']"
       );
+
       const uri = container.querySelector(
         "input[name='connectionConfiguration.credentials.redirect_uri']"
       );
@@ -334,13 +335,15 @@ describe("Service Form", () => {
     });
 
     test("should fill right values oneOf field", async () => {
-      const credentials = container.querySelector(
-        "div[data-test-id='connectionConfiguration.credentials']"
+      const credentials = screen.getByTestId(
+        "connectionConfiguration.credentials"
       );
-      await waitFor(() => userEvent.click(credentials!));
 
-      const oauth = container.querySelector("div[data-id='oauth']");
-      await waitFor(() => userEvent.click(oauth!));
+      userEvent.click(credentials);
+
+      const oauth = await findByText(credentials, "oauth");
+
+      userEvent.click(oauth);
 
       const uri = container.querySelector(
         "input[name='connectionConfiguration.credentials.redirect_uri']"
@@ -357,15 +360,15 @@ describe("Service Form", () => {
 
     test("should fill right values in array of objects field", async () => {
       const priceList = container.querySelector(
-        "div[data-test-id='connectionConfiguration.priceList']"
+        "div[data-testid='connectionConfiguration.priceList']"
       );
       let addButton = priceList?.querySelector(
-        "button[data-test-id='addItemButton']"
+        "button[data-testid='addItemButton']"
       );
       await waitFor(() => userEvent.click(addButton!));
 
       const done = priceList!.querySelector(
-        "button[data-test-id='done-button']"
+        "button[data-testid='done-button']"
       );
 
       const name1 = container.querySelector(
@@ -378,7 +381,7 @@ describe("Service Form", () => {
       userEvent.type(price1!, "1");
       await waitFor(() => userEvent.click(done!));
       addButton = priceList?.querySelector(
-        "button[data-test-id='addItemButton']"
+        "button[data-testid='addItemButton']"
       );
       await waitFor(() => userEvent.click(addButton!));
 

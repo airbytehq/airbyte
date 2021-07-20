@@ -17,6 +17,8 @@ const Content = styled.div`
 `;
 
 type EditorHeaderProps = {
+  mainTitle?: React.ReactNode;
+  addButtonText?: React.ReactNode;
   itemsCount: number;
   onAddItem: () => void;
 };
@@ -24,17 +26,21 @@ type EditorHeaderProps = {
 const EditorHeader: React.FC<EditorHeaderProps> = ({
   itemsCount,
   onAddItem,
+  mainTitle,
+  addButtonText,
 }) => {
   return (
     <Content>
-      <FormattedMessage id="form.items" values={{ count: itemsCount }} />
+      {mainTitle || (
+        <FormattedMessage id="form.items" values={{ count: itemsCount }} />
+      )}
       <Button
         secondary
         type="button"
         onClick={onAddItem}
-        data-test-id="addItemButton"
+        data-testid="addItemButton"
       >
-        <FormattedMessage id="form.addItems" />
+        {addButtonText || <FormattedMessage id="form.addItems" />}
       </Button>
     </Content>
   );

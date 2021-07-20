@@ -17,7 +17,7 @@ Given that we'll pulling currency data for our example source, we'll define the 
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Python Http Tutorial Spec",
     "type": "object",
-    "required": ["start_date", "currency_base"],
+    "required": ["start_date", "base"],
     "additionalProperties": false,
     "properties": {
       "start_date": {
@@ -28,7 +28,7 @@ Given that we'll pulling currency data for our example source, we'll define the 
       },
       "base": {
         "type": "string",
-        "examples": ["USD", "EUR"]
+        "examples": ["USD", "EUR"],
         "description": "ISO reference currency. See <a href=\"https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html\">here</a>."
       }
     }

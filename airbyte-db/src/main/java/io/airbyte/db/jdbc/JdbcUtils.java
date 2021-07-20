@@ -30,7 +30,6 @@ import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.math.BigDecimal;
-import java.sql.Connection;
 import java.sql.Date;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -42,10 +41,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Collections;
-import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.StringJoiner;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -54,7 +51,7 @@ import javax.xml.bind.DatatypeConverter;
 
 public class JdbcUtils {
 
-  private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
+  public static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
 
   /**
    * Map records returned in a result set.
@@ -261,68 +258,11 @@ public class JdbcUtils {
     }
   }
 
-  /**
-   * Create a fully qualified table name (including schema) with db-specific quoted syntax. e.g.
-   * "public"."my_table"
-   *
-   * @param connection connection to jdbc database (gives access to proper quotes)
-   * @param schemaName name of schema, if exists (CAN BE NULL)
-   * @param tableName name of the table
-   * @return fully qualified table name, using db-specific quoted syntax
-   * @throws SQLException throws if fails to pull correct quote character.
-   */
-  public static String getFullyQualifiedTableNameWithQuoting(Connection connection, String schemaName, String tableName) throws SQLException {
-    final String quotedTableName = enquoteIdentifier(connection, tableName);
-    return schemaName != null ? enquoteIdentifier(connection, schemaName) + "." + quotedTableName : quotedTableName;
-  }
-
-  /**
-   * Create a fully qualified table name (including schema). e.g. public.my_table
-   *
-   * @param schemaName name of schema, if exists (CAN BE NULL)
-   * @param tableName name of the table
-   * @return fully qualified table name
-   */
-  public static String getFullyQualifiedTableName(String schemaName, String tableName) {
-    return schemaName != null ? schemaName + "." + tableName : tableName;
-  }
-
   @FunctionalInterface
   private interface SQLSupplier<O> {
 
     O apply() throws SQLException;
 
-  }
-
-  /**
-   * Given a database connection and identifier, adds db-specific quoting.
-   *
-   * @param connection database connection
-   * @param identifier identifier to quote
-   * @return quoted identifier
-   * @throws SQLException throws if there are any issues fulling the quoting metadata from the db.
-   */
-  public static String enquoteIdentifier(Connection connection, String identifier) throws SQLException {
-    final String identifierQuoteString = connection.getMetaData().getIdentifierQuoteString();
-
-    return identifierQuoteString + identifier + identifierQuoteString;
-  }
-
-  /**
-   * Given a database connection and identifiers, adds db-specific quoting to each identifier.
-   *
-   * @param connection database connection
-   * @param identifiers identifiers to quote
-   * @return quoted identifiers
-   * @throws SQLException throws if there are any issues fulling the quoting metadata from the db.
-   */
-  public static String enquoteIdentifierList(Connection connection, List<String> identifiers) throws SQLException {
-    final StringJoiner joiner = new StringJoiner(",");
-    for (String col : identifiers) {
-      String s = JdbcUtils.enquoteIdentifier(connection, col);
-      joiner.add(s);
-    }
-    return joiner.toString();
   }
 
 }

@@ -8,6 +8,10 @@
     "title": "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL",
     "description": "All orders that were placed in the specified period.",
     "properties": {
+      "seller_id": {
+        "type": "string",
+        "title": "seller_id"
+      },
       "amazon-order-id": {
         "type": "string",
         "title": "amazon-order-id",

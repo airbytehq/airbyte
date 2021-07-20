@@ -31,12 +31,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.SQLException;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,7 +58,7 @@ class PostgresUtilsTest {
 
   @BeforeEach
   void setup() throws Exception {
-    final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
+    final String dbName = Strings.addRandomSuffix("db", "_", 10);
 
     final JsonNode config = getConfig(PSQL_DB, dbName);
 

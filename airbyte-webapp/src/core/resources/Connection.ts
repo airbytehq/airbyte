@@ -13,27 +13,14 @@ import { Source } from "./Source";
 import { Destination } from "./Destination";
 
 import BaseResource from "./BaseResource";
+import {
+  ConnectionNamespaceDefinition,
+  Connection,
+  ScheduleProperties,
+  Operation,
+} from "core/domain/connection";
 
-export type ScheduleProperties = {
-  units: number;
-  timeUnit: string;
-};
-
-export interface Connection {
-  connectionId: string;
-  name: string;
-  prefix: string;
-  sourceId: string;
-  destinationId: string;
-  status: string;
-  schedule: ScheduleProperties | null;
-  syncCatalog: SyncSchema;
-  source: Source;
-  destination: Destination;
-  latestSyncJobCreatedAt?: number | null;
-  isSyncing?: boolean;
-  latestSyncJobStatus: string | null;
-}
+export type { Connection, ScheduleProperties };
 
 export default class ConnectionResource
   extends BaseResource
@@ -45,13 +32,18 @@ export default class ConnectionResource
   readonly destinationId: string = "";
   readonly status: string = "";
   readonly message: string = "";
+  readonly namespaceFormat: string = "";
+  readonly namespaceDefinition: ConnectionNamespaceDefinition =
+    ConnectionNamespaceDefinition.Source;
   readonly schedule: ScheduleProperties | null = null;
+  readonly operations: Operation[] = [];
   readonly source: Source = {} as Source;
   readonly destination: Destination = {} as Destination;
   readonly latestSyncJobCreatedAt: number | undefined | null = null;
   readonly latestSyncJobStatus: string | null = null;
   readonly syncCatalog: SyncSchema = { streams: [] };
   readonly isSyncing: boolean = false;
+  readonly operationIds: string[] = [];
 
   pk(): string {
     return this.connectionId?.toString();
@@ -70,10 +62,8 @@ export default class ConnectionResource
   ): ReadShape<SchemaDetail<Connection>> {
     return {
       ...super.detailShape(),
-      getFetchKey: (params: {
-        connectionId: string;
-        withRefreshedCatalog?: boolean;
-      }) => "POST /web_backend/get" + JSON.stringify(params),
+      getFetchKey: (params: { connectionId: string }) =>
+        "POST /web_backend/get" + JSON.stringify(params),
       fetch: async (
         params: Readonly<Record<string, unknown>>
       ): Promise<Connection> =>
@@ -118,15 +108,13 @@ export default class ConnectionResource
       ...super.createShape(),
       schema: this,
       fetch: async (
-        params: Readonly<Record<string, string>>,
+        _: Readonly<Record<string, string>>,
         body: Readonly<Record<string, unknown>>
       ): Promise<Connection> =>
-        await this.fetch("post", `${this.url(params)}/create`, body).then(
-          (response) => ({
-            ...response,
-            // will remove it if BE returns resource in /web_backend/get format
-            ...params,
-          })
+        await this.fetch(
+          "post",
+          `${super.rootUrl()}web_backend/connections/create`,
+          body
         ),
     };
   }
@@ -137,7 +125,7 @@ export default class ConnectionResource
     return {
       ...super.listShape(),
       getFetchKey: (params: { workspaceId: string }) =>
-        "POST /web_backend/list" + JSON.stringify(params),
+        "POST /web_backend/connections/list" + JSON.stringify(params),
       fetch: async (
         params: Readonly<Record<string, string | number>>
       ): Promise<{ connections: Connection[] }> =>

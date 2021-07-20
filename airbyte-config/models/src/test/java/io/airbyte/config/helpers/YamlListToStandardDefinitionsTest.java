@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.config.StandardDestinationDefinition;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -77,7 +78,7 @@ public class YamlListToStandardDefinitionsTest {
 
     private static final String ID_NAME = "destinationDefinitionId";
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = MoreMappers.initMapper();
 
     @Test
     @DisplayName("should correctly read yaml file")

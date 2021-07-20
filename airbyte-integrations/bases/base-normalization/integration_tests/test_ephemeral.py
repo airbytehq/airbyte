@@ -42,10 +42,10 @@ dbt_test_utils = DbtIntegrationTest()
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
     dbt_test_utils.change_current_test_dir(request)
-    dbt_test_utils.setup_postgres_db()
+    dbt_test_utils.setup_db()
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
     yield
-    dbt_test_utils.tear_down_postgres_db()
+    dbt_test_utils.tear_down_db()
     for folder in temporary_folders:
         print(f"Deleting temporary test folder {folder}")
         shutil.rmtree(folder, ignore_errors=True)
@@ -62,7 +62,11 @@ def setup_test_path(request):
 
 @pytest.mark.parametrize("column_count", [1500])
 @pytest.mark.parametrize("integration_type", list(DestinationType))
-def test_destination_supported_limits(integration_type: DestinationType, column_count: int, setup_test_path):
+def test_destination_supported_limits(integration_type: DestinationType, column_count: int):
+    if integration_type == DestinationType.MYSQL:
+        # In MySQL, the max number of columns is limited by row size (8KB),
+        # not by absolute column count. It is way fewer than 1500.
+        return
     run_test(integration_type, column_count)
 
 
@@ -81,6 +85,7 @@ def test_destination_supported_limits(integration_type: DestinationType, column_
             "Operation failed because soft limit on objects of type 'Column' per table was exceeded.",
         ),
         ("Redshift", 1665, "target lists can have at most 1664 entries"),
+        ("MySQL", 250, "Row size too large"),
     ],
 )
 def test_destination_failure_over_limits(integration_type: str, column_count: int, expected_exception_message: str, setup_test_path):
@@ -88,8 +93,7 @@ def test_destination_failure_over_limits(integration_type: str, column_count: in
 
 
 def test_empty_streams(setup_test_path):
-    with pytest.raises(EOFError):
-        run_test(DestinationType.POSTGRES, 0)
+    run_test(DestinationType.POSTGRES, 0)
 
 
 def test_stream_with_1_airbyte_column(setup_test_path):

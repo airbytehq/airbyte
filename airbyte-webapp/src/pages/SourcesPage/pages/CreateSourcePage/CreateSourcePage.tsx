@@ -9,7 +9,7 @@ import useRouter from "components/hooks/useRouterHook";
 import config from "config";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import useSource from "components/hooks/services/useSourceHook";
-import { FormPageContent } from "components/SourceAndDestinationsBlocks";
+import { FormPageContent } from "components/ConnectorBlocks";
 import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import HeadTitle from "components/HeadTitle";

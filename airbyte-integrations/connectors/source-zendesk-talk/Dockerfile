@@ -12,5 +12,7 @@ COPY $CODE_PATH ./$CODE_PATH
 COPY setup.py ./
 RUN pip install .
 
-LABEL io.airbyte.version=0.1.1
+ENV AIRBYTE_ENTRYPOINT "/airbyte/base.sh"
+
+LABEL io.airbyte.version=0.1.2
 LABEL io.airbyte.name=airbyte/source-zendesk-talk

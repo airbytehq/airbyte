@@ -33,12 +33,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.State;
+import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -67,17 +67,19 @@ class DefaultAirbyteSourceTest {
   private static final String STREAM_NAME = "user_preferences";
   private static final String FIELD_NAME = "favorite_color";
 
+  private static final JsonNode STATE = Jsons.jsonNode(ImmutableMap.of("checkpoint", "the future."));
+  private static final JsonNode CONFIG = Jsons.jsonNode(Map.of(
+      "apiKey", "123",
+      "region", "us-east"));
   private static final ConfiguredAirbyteCatalog CATALOG = CatalogHelpers.createConfiguredAirbyteCatalog(
       "hudi:latest",
       NAMESPACE,
       Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
 
-  private static final StandardTapConfig SOURCE_CONFIG = new StandardTapConfig()
-      .withState(new State().withState(Jsons.jsonNode(ImmutableMap.of("checkpoint", "the future."))))
-      .withSourceConnectionConfiguration(Jsons.jsonNode(Map.of(
-          "apiKey", "123",
-          "region", "us-east")))
-      .withCatalog(CatalogHelpers.createConfiguredAirbyteCatalog("hudi:latest", NAMESPACE, Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING)));
+  private static final WorkerSourceConfig SOURCE_CONFIG = new WorkerSourceConfig()
+      .withState(new State().withState(STATE))
+      .withSourceConnectionConfiguration(CONFIG)
+      .withCatalog(CATALOG);
 
   private static final List<AirbyteMessage> MESSAGES = Lists.newArrayList(
       AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue"),
@@ -100,8 +102,11 @@ class DefaultAirbyteSourceTest {
     when(integrationLauncher.read(
         jobRoot,
         WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
+        Jsons.serialize(CONFIG),
         WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
-        WorkerConstants.INPUT_STATE_JSON_FILENAME)).thenReturn(process);
+        Jsons.serialize(CATALOG),
+        WorkerConstants.INPUT_STATE_JSON_FILENAME,
+        Jsons.serialize(STATE))).thenReturn(process);
     when(process.isAlive()).thenReturn(true);
     when(process.getInputStream()).thenReturn(inputStream);
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("qwer".getBytes(StandardCharsets.UTF_8)));
@@ -131,16 +136,6 @@ class DefaultAirbyteSourceTest {
 
     source.close();
 
-    assertEquals(
-        Jsons.jsonNode(SOURCE_CONFIG.getSourceConnectionConfiguration()),
-        Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME)));
-    assertEquals(
-        Jsons.jsonNode(SOURCE_CONFIG.getState().getState()),
-        Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.INPUT_STATE_JSON_FILENAME)));
-    assertEquals(
-        Jsons.jsonNode(CATALOG),
-        Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.SOURCE_CATALOG_JSON_FILENAME)));
-
     assertEquals(MESSAGES, messages);
 
     Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
@@ -150,6 +145,16 @@ class DefaultAirbyteSourceTest {
     });
 
     verify(process).exitValue();
+  }
+
+  @Test
+  public void testNonzeroExitCodeThrows() throws Exception {
+    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
+    tap.start(SOURCE_CONFIG, jobRoot);
+
+    when(process.exitValue()).thenReturn(1);
+
+    Assertions.assertThrows(WorkerException.class, tap::close);
   }
 
 }

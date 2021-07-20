@@ -23,7 +23,7 @@
 #
 
 
-from typing import Optional
+from typing import List, Optional
 
 from sp_api.api import Orders, Reports
 from sp_api.base import Marketplaces
@@ -66,7 +66,7 @@ class AmazonClient:
         self.credentials = credentials
         self.marketplace = self.MARKETPLACES_TO_ID[marketplace]
 
-    def get_entities(self):
+    def get_entities(self) -> List[str]:
         return self._ENTITIES
 
     def is_report(self, stream_name: str) -> bool:
