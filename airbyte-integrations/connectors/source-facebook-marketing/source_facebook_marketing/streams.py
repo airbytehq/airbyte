@@ -228,9 +228,9 @@ class AdCreatives(FBMarketingStream):
     @staticmethod
     def clear_urls(record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """Some URLs has random values, these values doesn't affect validity of URLs, but breaks SAT"""
-        thumbnail_url = record.get('thumbnail_url')
+        thumbnail_url = record.get("thumbnail_url")
         if thumbnail_url:
-            record['thumbnail_url'] = remove_params_from_url(thumbnail_url, ['_nc_hash', 'd'])
+            record["thumbnail_url"] = remove_params_from_url(thumbnail_url, ["_nc_hash", "d"])
         return record
 
     @backoff_policy
