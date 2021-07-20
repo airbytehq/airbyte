@@ -14,4 +14,4 @@ ENV AIRBYTE_ENTRYPOINT "ruby /airbyte/source.rb"
 ENTRYPOINT ["ruby", "/airbyte/source.rb"]
 
 LABEL io.airbyte.name=airbyte/source-mongodb
-LABEL io.airbyte.version=0.3.2
+LABEL io.airbyte.version=0.3.3
