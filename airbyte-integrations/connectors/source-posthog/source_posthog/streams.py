@@ -26,9 +26,10 @@
 import math
 import urllib.parse
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, List
 
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
@@ -103,11 +104,26 @@ class IncrementalPosthogStream(PosthogStream, ABC):
         return {self.cursor_field: max(latest_state, current_state)}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        self._initial_state = self._initial_state or stream_state.get(self.cursor_field) or self._start_date
+        """
+        Filter records by initial_state value
+        """
         data = super().parse_response(response=response, stream_state=stream_state, **kwargs)
         for record in data:
             if record.get(self.cursor_field) >= self._initial_state:
                 yield record
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """
+        Initialize initial_state value
+        """
+        self._initial_state = self._initial_state or stream_state.get(self.cursor_field) or self._start_date
+        return super().read_records(sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
 
 
 class Annotations(IncrementalPosthogStream):
