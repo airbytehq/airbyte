@@ -1,7 +1,8 @@
 # Changelog
 
 ## 0.1.6
-Add initial destination abstraction.
+Add abstraction for creating destinations. 
+
 Fix logging of the initial state.
 
 ## 0.1.5
