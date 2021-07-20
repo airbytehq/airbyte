@@ -113,6 +113,8 @@ public class BigQueryUtils {
       case BOOL -> JsonSchemaPrimitive.BOOLEAN;
       case INT64, FLOAT64, NUMERIC, BIGNUMERIC -> JsonSchemaPrimitive.NUMBER;
       case STRING, BYTES, TIMESTAMP, DATE, TIME, DATETIME -> JsonSchemaPrimitive.STRING;
+      case ARRAY -> JsonSchemaPrimitive.ARRAY;
+      case STRUCT -> JsonSchemaPrimitive.OBJECT;
       default -> JsonSchemaPrimitive.STRING;
     };
   }
