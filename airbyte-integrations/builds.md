@@ -107,6 +107,9 @@
 
  Twilio   [![source-twilio-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-twilio-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-tempo) 
 
+ US Census [![source-us-census](https://img.shields.io/endpoint?url=https%3A%2F%2Fairbyte-connector-build-status.s3-website.us-east-2.amazonaws.com%2Ftests%2Fsummary%2Fsource-us-census%2Fbadge.json)](https://airbyte-connector-build-status.s3-website.us-east-2.amazonaws.com/tests/summary/2Fsource-us-census)
+
+
  Zendesk Chat   [![source-zendesk-chat](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-zendesk-chat%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-zendesk-chat) 
 
  Zendesk Support   [![source-zendesk-support-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-zendesk-support-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-zendesk-support-singer) 
