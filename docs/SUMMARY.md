@@ -92,6 +92,7 @@
     * [Tempo](integrations/sources/tempo.md)
     * [Twilio](integrations/sources/twilio.md)
     * [Typeform](integrations/sources/typeform.md)
+    * [US Census API](integrations/sources/us-census.md)
     * [Zendesk Chat](integrations/sources/zendesk-chat.md)
     * [Zendesk Sunshine](integrations/sources/zendesk-sunshine.md)
     * [Zendesk Support](integrations/sources/zendesk-support.md)
