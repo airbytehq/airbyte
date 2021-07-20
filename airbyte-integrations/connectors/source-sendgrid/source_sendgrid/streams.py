@@ -53,17 +53,18 @@ class SendgridStream(HttpStream, ABC):
             for record in records:
                 yield record
         else:
-            # TODO sendgrid's API is sending null responses at times. This seems like a bug on the API side, so we're adding 
-            #  log statements to help reproduce and prevent the connector from failing. 
-            err_msg = f"Response contained no valid JSON data. Response body: {response.text}\n"\
-                      f"Response status: {response.status_code}\n"\
-                      f"Response body: {response.text}\n"\
-                      f"Response headers: {response.headers}\n"\
-                      f"Request URL: {response.request.url}\n"\
-                      f"Request body: {response.request.body}\n"
+            # TODO sendgrid's API is sending null responses at times. This seems like a bug on the API side, so we're adding
+            #  log statements to help reproduce and prevent the connector from failing.
+            err_msg = (
+                f"Response contained no valid JSON data. Response body: {response.text}\n"
+                f"Response status: {response.status_code}\n"
+                f"Response body: {response.text}\n"
+                f"Response headers: {response.headers}\n"
+                f"Request URL: {response.request.url}\n"
+                f"Request body: {response.request.body}\n"
+            )
             # do NOT print request headers as it contains auth token
             self.logger.info(err_msg)
-
 
 
 class SendgridStreamOffsetPagination(SendgridStream):

@@ -21,6 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+
 from unittest.mock import MagicMock
 
 import pytest
@@ -40,8 +41,8 @@ def sendgrid_stream_fixture(mocker) -> SendgridStream:
 
 def test_parse_response_gracefully_handles_nulls(mocker, sendgrid_stream: SendgridStream):
     response = requests.Response()
-    mocker.patch.object(response, 'json', return_value=None)
-    mocker.patch.object(response, 'request', return_value=MagicMock())
+    mocker.patch.object(response, "json", return_value=None)
+    mocker.patch.object(response, "request", return_value=MagicMock())
     assert [] == list(sendgrid_stream.parse_response(response))
 
 
