@@ -65,8 +65,9 @@ import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.output.OutputFrame;
 
 /**
- * In order to run this test from intellij, build the docker images via ./gradlew composeBuild and
- * replace System.getenv("MIGRATION_TEST_VERSION") with the version in your .env file
+ * In order to run this test from intellij, build the docker images via SUB_BUILD=PLATFORM ./gradlew
+ * composeBuild and replace System.getenv("MIGRATION_TEST_VERSION") with the version in your .env
+ * file
  */
 public class MigrationAcceptanceTest {
 
@@ -128,7 +129,7 @@ public class MigrationAcceptanceTest {
 
       Thread.sleep(50000);
 
-      assertTrue(logsToExpect.isEmpty());
+      assertTrue(logsToExpect.isEmpty(), "Missing logs: " + logsToExpect);
       ApiClient apiClient = getApiClient();
       healthCheck(apiClient);
       populateDataForFirstRun(apiClient);
@@ -175,7 +176,7 @@ public class MigrationAcceptanceTest {
       ApiClient apiClient = getApiClient();
       healthCheck(apiClient);
 
-      assertTrue(logsToExpect.isEmpty());
+      assertTrue(logsToExpect.isEmpty(), "Missing logs: " + logsToExpect);
       assertDataFromApi(apiClient);
     } finally {
       dockerComposeContainer.stop();
@@ -317,8 +318,12 @@ public class MigrationAcceptanceTest {
 
   private void healthCheck(ApiClient apiClient) throws ApiException {
     HealthApi healthApi = new HealthApi(apiClient);
-    HealthCheckRead healthCheck = healthApi.getHealthCheck();
-    assertTrue(healthCheck.getDb());
+    try {
+      HealthCheckRead healthCheck = healthApi.getHealthCheck();
+      assertTrue(healthCheck.getDb());
+    } catch (ApiException e) {
+      throw new RuntimeException("Health check failed, usually due to auto migration failure. Please check the logs for details.");
+    }
   }
 
   private ApiClient getApiClient() {
