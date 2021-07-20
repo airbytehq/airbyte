@@ -4,8 +4,6 @@
 
 The Postgres source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This Postgres source is based on the [Singer Postgres Tap](https://github.com/singer-io/tap-postgres).
-
 ### Resulting schema
 
 The Postgres source does not alter the schema present in your database. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.

@@ -1,5 +1,28 @@
 plugins {
     id 'application'
+    id 'maven-publish'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
+}
+
+shadowJar {
+    zip64 true
+    mergeServiceFiles()
+    exclude 'META-INF/*.RSA'
+    exclude 'META-INF/*.SF'
+    exclude 'META-INF/*.DSA'
+    // Not stubbing this out adds 'all' to the end of the jar's name.
+    classifier = ''
+}
+
+publishing {
+    publications {
+        shadow(MavenPublication) { publication ->
+            project.shadow.component(publication)
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
 }
 
 dependencies {
@@ -52,8 +75,10 @@ task copySeed(type: Copy, dependsOn: [project(':airbyte-config:init').processRes
 //project.tasks.copySeed.mustRunAfter(project(':airbyte-config:init').tasks.processResources)
 assemble.dependsOn(project.tasks.copySeed)
 
+mainClassName = 'io.airbyte.server.ServerApp'
+
 application {
-    mainClass = 'io.airbyte.server.ServerApp'
+    mainClass = mainClassName
 }
 
 Properties env = new Properties()
@@ -63,8 +88,14 @@ run {
     // default for running on local machine.
     environment "DATABASE_USER", env.DATABASE_USER
     environment "DATABASE_PASSWORD", env.DATABASE_PASSWORD
+
+    environment "CONFIG_DATABASE_USER", env.CONFIG_DATABASE_USER
+    environment "CONFIG_DATABASE_PASSWORD", env.CONFIG_DATABASE_PASSWORD
+
     // we map the docker pg db to port 5433 so it does not conflict with other pg instances.
     environment "DATABASE_URL", "jdbc:postgresql://localhost:5433/${env.DATABASE_DB}"
+    environment "CONFIG_DATABASE_URL", "jdbc:postgresql://localhost:5433/${env.CONFIG_DATABASE_DB}"
+
     environment "WORKSPACE_ROOT", env.WORKSPACE_ROOT
     environment "CONFIG_ROOT", "/tmp/airbyte_config"
     environment "TRACKING_STRATEGY", env.TRACKING_STRATEGY
