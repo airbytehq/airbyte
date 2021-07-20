@@ -44,6 +44,7 @@ import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.workers.process.DockerProcessFactory;
+import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.process.WorkerHeartbeatServer;
@@ -219,6 +220,7 @@ public class SchedulerApp {
     final JobNotifier jobNotifier = new JobNotifier(configs.getWebappUrl(), configRepository);
 
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
+      KubePortManagerSingleton.warnIfInsufficientPorts(Integer.parseInt(configs.getSubmitterNumThreads()));
       Map<String, String> mdc = MDC.getCopyOfContextMap();
       Executors.newSingleThreadExecutor().submit(
           () -> {

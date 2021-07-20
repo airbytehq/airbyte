@@ -533,11 +533,16 @@ public class KubePodProcess extends Process {
     Exceptions.swallow(this.stderrServerSocket::close);
     Exceptions.swallow(this.executorService::shutdownNow);
 
-    try {
-      KubePortManagerSingleton.offer(stdoutLocalPort);
-      KubePortManagerSingleton.offer(stderrLocalPort);
-    } catch (Exception e) {
-      LOGGER.error("Error releasing ports ", e);
+    var stdoutPortReleased = KubePortManagerSingleton.offer(stdoutLocalPort);
+    if (!stdoutPortReleased) {
+      LOGGER.warn("Error while releasing port {} from pod {}. This can cause the scheduler to run out of ports.", stdoutLocalPort,
+          podDefinition.getMetadata().getName());
+    }
+
+    var stderrPortReleased = KubePortManagerSingleton.offer(stderrLocalPort);
+    if (!stderrPortReleased) {
+      LOGGER.warn("Error while releasing port {} from pod {}. This can cause the scheduler to run out of ports.", stderrLocalPort,
+          podDefinition.getMetadata().getName());
     }
 
     LOGGER.debug("Closed {}", podDefinition.getMetadata().getName());
