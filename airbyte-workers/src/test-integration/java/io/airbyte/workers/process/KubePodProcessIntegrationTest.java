@@ -88,50 +88,59 @@ public class KubePodProcessIntegrationTest {
   @Test
   public void testSuccessfulSpawning() throws Exception {
     // start a finite process
+    var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
     final Process process = getProcess("echo hi; sleep 1; echo hi2");
     process.waitFor();
 
     // the pod should be dead and in a good state
     assertFalse(process.isAlive());
+    assertEquals(availablePortsBefore, KubePortManagerSingleton.getNumAvailablePorts());
     assertEquals(0, process.exitValue());
   }
 
   @Test
   public void testPipeInEntrypoint() throws Exception {
     // start a process that has a pipe in the entrypoint
+    var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
     final Process process = getProcess("echo hi | cat");
     process.waitFor();
 
     // the pod should be dead and in a good state
     assertFalse(process.isAlive());
+    assertEquals(availablePortsBefore, KubePortManagerSingleton.getNumAvailablePorts());
     assertEquals(0, process.exitValue());
   }
 
   @Test
   public void testExitCodeRetrieval() throws Exception {
     // start a process that requests
+    var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
     final Process process = getProcess("exit 10");
     process.waitFor();
 
     // the pod should be dead with the correct error code
     assertFalse(process.isAlive());
+    assertEquals(availablePortsBefore, KubePortManagerSingleton.getNumAvailablePorts());
     assertEquals(10, process.exitValue());
   }
 
   @Test
   public void testMissingEntrypoint() throws WorkerException, InterruptedException {
     // start a process with an entrypoint that doesn't exist
+    var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
     final Process process = getProcess("ksaiiiasdfjklaslkei");
     process.waitFor();
 
     // the pod should be dead and in an error state
     assertFalse(process.isAlive());
+    assertEquals(availablePortsBefore, KubePortManagerSingleton.getNumAvailablePorts());
     assertEquals(127, process.exitValue());
   }
 
   @Test
   public void testKillingWithoutHeartbeat() throws Exception {
     // start an infinite process
+    var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
     final Process process = getProcess("while true; do echo hi; sleep 1; done");
 
     // kill the heartbeat server
@@ -142,6 +151,7 @@ public class KubePodProcessIntegrationTest {
 
     // the pod should be dead and in an error state
     assertFalse(process.isAlive());
+    assertEquals(availablePortsBefore, KubePortManagerSingleton.getNumAvailablePorts());
     assertNotEquals(0, process.exitValue());
   }
 

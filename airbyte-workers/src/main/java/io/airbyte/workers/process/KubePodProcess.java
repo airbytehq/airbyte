@@ -524,24 +524,37 @@ public class KubePodProcess extends Process {
 
   /**
    * Close all open resource in the opposite order of resource creation.
+   *
+   * Null checks exist because certain local Kube clusters (e.g. Docker for Desktop) back this
+   * implementation with OS processes and resources, which are automatically reaped by the OS.
    */
   private void close() {
-    Exceptions.swallow(this.stdin::close);
-    Exceptions.swallow(this.stdout::close);
-    Exceptions.swallow(this.stderr::close);
+    if (this.stdin != null) {
+      Exceptions.swallow(this.stdin::close);
+    }
+    if (this.stdout != null) {
+      Exceptions.swallow(this.stdout::close);
+    }
+    if (this.stderr != null) {
+      Exceptions.swallow(this.stderr::close);
+    }
     Exceptions.swallow(this.stdoutServerSocket::close);
     Exceptions.swallow(this.stderrServerSocket::close);
     Exceptions.swallow(this.executorService::shutdownNow);
 
     var stdoutPortReleased = KubePortManagerSingleton.offer(stdoutLocalPort);
     if (!stdoutPortReleased) {
-      LOGGER.warn("Error while releasing port {} from pod {}. This can cause the scheduler to run out of ports.", stdoutLocalPort,
+      LOGGER.warn(
+          "Error while releasing port {} from pod {}. This can cause the scheduler to run out of ports. Ignore this error if running on docker for desktop.",
+          stdoutLocalPort,
           podDefinition.getMetadata().getName());
     }
 
     var stderrPortReleased = KubePortManagerSingleton.offer(stderrLocalPort);
     if (!stderrPortReleased) {
-      LOGGER.warn("Error while releasing port {} from pod {}. This can cause the scheduler to run out of ports.", stderrLocalPort,
+      LOGGER.warn(
+          "Error while releasing port {} from pod {}. This can cause the scheduler to run out of ports. Ignore this error if running on docker for desktop",
+          stderrLocalPort,
           podDefinition.getMetadata().getName());
     }
 
