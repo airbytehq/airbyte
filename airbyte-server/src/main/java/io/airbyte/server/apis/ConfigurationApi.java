@@ -180,7 +180,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         schedulerHandler,
         operationsHandler);
     webBackendSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler, workspaceHelper);
-    webBackendDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler);
+    webBackendDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler, workspaceHelper);
     healthCheckHandler = new HealthCheckHandler(configRepository);
     archiveHandler = new ArchiveHandler(configs.getAirbyteVersion(), configRepository, jobPersistence, archiveTtlManager);
     logsHandler = new LogsHandler();
