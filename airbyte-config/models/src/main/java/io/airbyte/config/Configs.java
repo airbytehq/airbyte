@@ -47,6 +47,12 @@ public interface Configs {
 
   String getDatabaseUrl();
 
+  String getConfigDatabaseUser();
+
+  String getConfigDatabasePassword();
+
+  String getConfigDatabaseUrl();
+
   String getWebappUrl();
 
   String getWorkspaceDockerMount();
@@ -66,6 +72,8 @@ public interface Configs {
   Set<Integer> getTemporalWorkerPorts();
 
   String getKubeNamespace();
+
+  String getSubmitterNumThreads();
 
   // Resources
   String getCpuRequest();

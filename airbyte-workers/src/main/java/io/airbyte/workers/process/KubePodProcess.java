@@ -486,15 +486,11 @@ public class KubePodProcess extends Process {
    */
   @Override
   public int waitFor() throws InterruptedException {
-    try {
-      Pod refreshedPod =
-          fabricClient.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName()).get();
-      fabricClient.resource(refreshedPod).waitUntilCondition(this::isTerminal, 10, TimeUnit.DAYS);
-      wasKilled.set(true);
-      return exitValue();
-    } finally {
-      close();
-    }
+    Pod refreshedPod =
+        fabricClient.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName()).get();
+    fabricClient.resource(refreshedPod).waitUntilCondition(this::isTerminal, 10, TimeUnit.DAYS);
+    wasKilled.set(true);
+    return exitValue();
   }
 
   /**
@@ -503,11 +499,7 @@ public class KubePodProcess extends Process {
    */
   @Override
   public boolean waitFor(long timeout, TimeUnit unit) throws InterruptedException {
-    try {
-      return super.waitFor(timeout, unit);
-    } finally {
-      close();
-    }
+    return super.waitFor(timeout, unit);
   }
 
   /**
@@ -541,15 +533,11 @@ public class KubePodProcess extends Process {
     Exceptions.swallow(this.stderrServerSocket::close);
     Exceptions.swallow(this.executorService::shutdownNow);
 
-    var podName = podDefinition.getMetadata().getName();
-    var stdoutPortReleased = KubePortManagerSingleton.offer(stdoutLocalPort);
-    if (!stdoutPortReleased) {
-      LOGGER.error("{} failed to release port: {}", podName, stdoutLocalPort);
-    }
-
-    var stderrPortReleased = KubePortManagerSingleton.offer(stderrLocalPort);
-    if (!stderrPortReleased) {
-      LOGGER.error("{} failed to release port: {}", podName, stderrLocalPort);
+    try {
+      KubePortManagerSingleton.offer(stdoutLocalPort);
+      KubePortManagerSingleton.offer(stderrLocalPort);
+    } catch (Exception e) {
+      LOGGER.error("Error releasing ports ", e);
     }
 
     LOGGER.debug("Closed {}", podDefinition.getMetadata().getName());
@@ -621,7 +609,17 @@ public class KubePodProcess extends Process {
 
   @Override
   public int exitValue() {
-    return getReturnCode(podDefinition);
+    // getReturnCode throws IllegalThreadException if the Kube pod has not exited;
+    // close() is only called if the Kube pod has terminated.
+    var returnCode = getReturnCode(podDefinition);
+    // The OS traditionally handles process resource clean up. Therefore an exit code of 0, also
+    // indicates that all kernel resources were shut down.
+    // Because this is a custom implementation, manually close all the resources.
+    // Further, since the local resources are used to talk to Kubernetes resources, shut local resources
+    // down after Kubernetes resources are shut down, regardless of Kube termination status.
+    close();
+    LOGGER.info("Closed all resources for pod {}", podDefinition.getMetadata().getName());
+    return returnCode;
   }
 
   private static ResourceRequirementsBuilder getResourceRequirementsBuilder(ResourceRequirements resourceRequirements) {

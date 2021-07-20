@@ -23,6 +23,7 @@
 #
 
 import time
+import urllib.parse as urlparse
 from abc import ABC
 from collections import deque
 from datetime import datetime
@@ -43,6 +44,18 @@ from source_facebook_marketing.api import API
 from .common import FacebookAPIException, JobTimeoutException, batch, deep_merge, retry_pattern
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
+
+
+def remove_params_from_url(url, params):
+    parsed_url = urlparse.urlparse(url)
+    res_query = []
+    for q in parsed_url.query.split("&"):
+        key, value = q.split("=")
+        if key not in params:
+            res_query.append(f"{key}={value}")
+
+    parse_result = parsed_url._replace(query="&".join(res_query))
+    return urlparse.urlunparse(parse_result)
 
 
 class FBMarketingStream(Stream, ABC):
@@ -209,7 +222,16 @@ class AdCreatives(FBMarketingStream):
         records = self._read_records(params=self.request_params(stream_state=stream_state))
         requests = [record.api_get(fields=self.fields, pending=True) for record in records]
         for requests_batch in batch(requests, size=self.batch_size):
-            yield from self.execute_in_batch(requests_batch)
+            for record in self.execute_in_batch(requests_batch):
+                yield self.clear_urls(record)
+
+    @staticmethod
+    def clear_urls(record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        """Some URLs has random values, these values doesn't affect validity of URLs, but breaks SAT"""
+        thumbnail_url = record.get("thumbnail_url")
+        if thumbnail_url:
+            record["thumbnail_url"] = remove_params_from_url(thumbnail_url, ["_nc_hash", "d"])
+        return record
 
     @backoff_policy
     def _read_records(self, params: Mapping[str, Any]) -> Iterator:
