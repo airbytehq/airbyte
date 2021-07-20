@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+
 import Indicator from "components/Indicator";
 import { getIcon } from "utils/imageUtils";
 
