@@ -108,7 +108,6 @@ public class WorkerUtils {
                                        final Duration checkHeartbeatDuration,
                                        final Duration forcedShutdownDuration,
                                        final BiConsumer<Process, Duration> forceShutdown) {
-    var processName = process.info().command().get();
     while (process.isAlive() && heartbeatMonitor.isBeating()) {
       try {
         if (new EnvConfigs().getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {

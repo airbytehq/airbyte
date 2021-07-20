@@ -596,14 +596,6 @@ public class KubePodProcess extends Process {
         .orElseThrow();
 
     LOGGER.info("Exit code for pod {} is {}", name, returnCode);
-    // The OS traditionally handles process resource clean up. Therefore an exit code of 0, also
-    // indicates that all kernel resources were shut down.
-    // Because this is a custom implementation, manually close all the resources.
-    // Further, since the local resources are used to talk to Kubernetes resources, shut local resources
-    // down after Kubernetes resources are shut down,
-    // regardless of termination status.
-    close();
-    LOGGER.info("Closed all resources for pod {}", name);
     return returnCode;
   }
 
