@@ -99,7 +99,7 @@ class IncrementalCartStream(CartStream, ABC):
 
 class CustomersCart(IncrementalCartStream):
     """
-    TODO: Placeholder for documentation links
+    Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1customers/get
     """
 
     data_field = "customers"
@@ -110,7 +110,7 @@ class CustomersCart(IncrementalCartStream):
 
 class Orders(IncrementalCartStream):
     """
-    TODO: Placeholder for documentation links
+    Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1orders/get
     """
 
     data_field = "orders"
@@ -121,7 +121,7 @@ class Orders(IncrementalCartStream):
 
 class OrderPayments(IncrementalCartStream):
     """
-    TODO: Placeholder for documentation links
+    Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1order_payments/get
     """
 
     data_field = "payments"
@@ -132,7 +132,7 @@ class OrderPayments(IncrementalCartStream):
 
 class Products(IncrementalCartStream):
     """
-    TODO: Placeholder for documentation links
+    Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1products/get
     """
 
     data_field = "products"
