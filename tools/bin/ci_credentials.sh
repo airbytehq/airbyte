@@ -98,6 +98,7 @@ write_standard_creds source-stripe "$STRIPE_INTEGRATION_CONNECTED_ACCOUNT_TEST_C
 write_standard_creds source-surveymonkey "$SURVEYMONKEY_TEST_CREDS"
 write_standard_creds source-tempo "$TEMPO_INTEGRATION_TEST_CREDS"
 write_standard_creds source-twilio-singer "$TWILIO_TEST_CREDS"
+write_standard_creds source-twilio "$TWILIO_TEST_CREDS"
 write_standard_creds source-typeform "$SOURCE_TYPEFORM_CREDS"
 write_standard_creds source-us-census "$SOURCE_US_CENSUS_TEST_CREDS"
 write_standard_creds source-zendesk-chat "$ZENDESK_CHAT_INTEGRATION_TEST_CREDS"
