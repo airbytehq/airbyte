@@ -142,6 +142,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
 
   const [{ value: namespaceDefinition }] = useField("namespaceDefinition");
   const [{ value: namespaceFormat }] = useField("namespaceFormat");
+  const [{ value: prefix }] = useField("prefix");
   const destNamespace = getDestinationNamespace({
     namespaceDefinition,
     namespaceFormat,
@@ -174,16 +175,24 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
         <StreamHeader
           stream={streamNode}
           destNamespace={destNamespace}
-          destName={streamNode.stream.name}
+          destName={prefix + streamNode.stream.name}
           availableSyncModes={availableSyncModes}
           onSelectStream={onSelectStream}
           onSelectSyncMode={onSelectSyncMode}
           isRowExpanded={isRowExpanded}
-          pkRequired={showPkControl}
-          cursorRequired={showCursorControl}
           primitiveFields={primitiveFieldNames}
+          pkType={
+            pkRequired ? (showPkControl ? "required" : "sourceDefined") : null
+          }
           onPrimaryKeyChange={(newPrimaryKey) =>
             updateStreamWithConfig({ primaryKey: newPrimaryKey })
+          }
+          cursorType={
+            cursorRequired
+              ? showCursorControl
+                ? "required"
+                : "sourceDefined"
+              : null
           }
           onCursorChange={onCursorSelect}
           hasFields={hasChildren}

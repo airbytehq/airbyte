@@ -49,9 +49,9 @@ interface StreamHeaderProps {
 
   primitiveFields: string[];
 
-  pkRequired: boolean;
+  pkType: null | "required" | "sourceDefined";
   onPrimaryKeyChange: (pkPath: string[][]) => void;
-  cursorRequired: boolean;
+  cursorType: null | "required" | "sourceDefined";
   onCursorChange: (cursorPath: string[]) => void;
 
   isRowExpanded: boolean;
@@ -68,11 +68,11 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
   onSelectSyncMode,
   onSelectStream,
   availableSyncModes,
-  pkRequired,
+  pkType,
   onPrimaryKeyChange,
   onCursorChange,
   primitiveFields,
-  cursorRequired,
+  cursorType,
   isRowExpanded,
   hasFields,
   onExpand,
@@ -123,7 +123,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
         onChange={onSelectSyncMode}
       />
       <Cell>
-        {pkRequired && (
+        {pkType === "required" ? (
           <Popout
             options={dropdownFields}
             value={primaryKey}
@@ -133,7 +133,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
             onChange={(options: { value: string[] }[]) => {
               onPrimaryKeyChange(options.map((op) => op.value));
             }}
-            placeholder={"search key fields by name"}
+            placeholder="search key fields by name"
             components={PkPopupComponents}
             targetComponent={({ onOpen }) => (
               <div onClick={onOpen}>
@@ -142,15 +142,17 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
               </div>
             )}
           />
-        )}
+        ) : pkType === "sourceDefined" ? (
+          "<sourceDefined>"
+        ) : null}
       </Cell>
       <Cell>
-        {cursorRequired && (
+        {cursorType === "required" ? (
           <Popout
             options={dropdownFields}
             value={cursorField}
             isSearchable
-            placeholder={"search cursor fields by name"}
+            placeholder="search cursor fields by name"
             onChange={(op) => onCursorChange(op.value)}
             targetComponent={({ onOpen }) => (
               <div onClick={onOpen}>
@@ -159,7 +161,9 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
               </div>
             )}
           />
-        )}
+        ) : cursorType === "sourceDefined" ? (
+          "<sourceDefined>"
+        ) : null}
       </Cell>
     </>
   );
