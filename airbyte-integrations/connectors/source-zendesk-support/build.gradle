@@ -7,8 +7,3 @@ plugins {
 airbytePython {
     moduleDirectory 'source_zendesk_support'
 }
-
-dependencies {
-    implementation files(project(':airbyte-integrations:bases:acceptance-test').airbyteDocker.outputs)
-    implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)
-}
