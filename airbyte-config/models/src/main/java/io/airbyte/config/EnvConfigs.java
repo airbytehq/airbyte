@@ -41,6 +41,7 @@ public class EnvConfigs implements Configs {
 
   public static final String AIRBYTE_ROLE = "AIRBYTE_ROLE";
   public static final String AIRBYTE_VERSION = "AIRBYTE_VERSION";
+  public static final String INTERNAL_API_HOST = "INTERNAL_API_HOST";
   public static final String WORKER_ENVIRONMENT = "WORKER_ENVIRONMENT";
   public static final String WORKSPACE_ROOT = "WORKSPACE_ROOT";
   public static final String WORKSPACE_DOCKER_MOUNT = "WORKSPACE_DOCKER_MOUNT";
@@ -89,6 +90,16 @@ public class EnvConfigs implements Configs {
   @Override
   public String getAirbyteRole() {
     return getEnv(AIRBYTE_ROLE);
+  }
+
+  @Override
+  public String getAirbyteApiUrl() {
+    return getEnsureEnv(INTERNAL_API_HOST).split(":")[0];
+  }
+
+  @Override
+  public int getAirbyteApiPort() {
+    return Integer.parseInt(getEnsureEnv(INTERNAL_API_HOST).split(":")[1]);
   }
 
   @Override
