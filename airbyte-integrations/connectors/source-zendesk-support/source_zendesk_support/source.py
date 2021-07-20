@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,15 +20,17 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
-import requests
 import base64
 from typing import Any, List, Mapping, Tuple
+
+import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from .streams import UserSettingsStream
-from .streams import generate_stream_classes
+
+from .streams import UserSettingsStream, generate_stream_classes
 
 STREAMS = generate_stream_classes()
 # from .streams import Users, Groups, Organizations, Tickets, generate_stream_classes
@@ -37,13 +40,13 @@ class BasicAuthenticator(TokenAuthenticator):
     """basic Authorization header"""
 
     def __init__(self, email: str, password: str):
-        token = base64.b64encode(f'{email}:{password}'.encode('utf-8'))
-        super().__init__(token.decode('utf-8'), auth_method='Basic')
+        token = base64.b64encode(f"{email}:{password}".encode("utf-8"))
+        super().__init__(token.decode("utf-8"), auth_method="Basic")
 
 
 class BasicApiTokenAuthenticator(BasicAuthenticator):
     def __init__(self, email: str, token: str):
-        super().__init__(email + '/token', token)
+        super().__init__(email + "/token", token)
 
 
 class SourceZendeskSupport(AbstractSource):
@@ -56,20 +59,18 @@ class SourceZendeskSupport(AbstractSource):
         (False, error) otherwise.
         """
 
-        auth = BasicApiTokenAuthenticator(config['email'], config['api_token'])
+        auth = BasicApiTokenAuthenticator(config["email"], config["api_token"])
         try:
-            settings, err = UserSettingsStream(
-                config['subdomain'], authenticator=auth).get_settings()
+            settings, err = UserSettingsStream(config["subdomain"], authenticator=auth).get_settings()
         except requests.exceptions.RequestException as e:
             return False, e
 
         if err:
             raise Exception(err)
             return False, err
-        active_features = [k for k, v in settings.get(
-            'active_features', {}).items() if v]
-        logger.info('available features: %s' % active_features)
-        if 'organization_access_enabled' not in active_features:
+        active_features = [k for k, v in settings.get("active_features", {}).items() if v]
+        logger.info("available features: %s" % active_features)
+        if "organization_access_enabled" not in active_features:
             return False, "Organization access is not enabled. Please check admin permission of the currect account"
         return True, None
 
@@ -80,10 +81,8 @@ class SourceZendeskSupport(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         args = {
-            'subdomain': config['subdomain'],
-            'start_date': config['start_date'],
-            'authenticator': BasicApiTokenAuthenticator(config['email'], config['api_token']),
+            "subdomain": config["subdomain"],
+            "start_date": config["start_date"],
+            "authenticator": BasicApiTokenAuthenticator(config["email"], config["api_token"]),
         }
-        return [stream_class(**args) for stream_class in STREAMS] + [
-
-        ]
+        return [stream_class(**args) for stream_class in STREAMS] + []
