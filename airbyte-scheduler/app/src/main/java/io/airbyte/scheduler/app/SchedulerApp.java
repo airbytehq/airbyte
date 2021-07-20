@@ -32,8 +32,8 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.persistence.ConfigPersistence;
+import io.airbyte.config.persistence.ConfigPersistenceBuilder;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.FileSystemConfigPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
@@ -75,16 +75,20 @@ import org.slf4j.MDC;
 
 /**
  * The SchedulerApp is responsible for finding new scheduled jobs that need to be run and to launch
- * them. The current implementation uses a thread pool on the scheduler's machine to launch the
- * jobs. One thread is reserved for the job submitter, which is responsible for finding and
- * launching new jobs.
+ * them. The current implementation uses two thread pools to do so. One pool is responsible for all
+ * job launching operations. The other pool is responsible for clean up operations.
+ *
+ * Operations can have thread pools under the hood. An important thread pool to note is that the job
+ * submitter thread pool. This pool does the work of submitting jobs to temporal - the size of this
+ * pool determines the number of concurrent jobs that can be run. This is controlled via the
+ * {@link #SUBMITTER_NUM_THREADS} variable.
  */
 public class SchedulerApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerApp.class);
 
   private static final long GRACEFUL_SHUTDOWN_SECONDS = 30;
-  private static final int MAX_WORKERS = 4;
+  private static final int SUBMITTER_NUM_THREADS = Integer.parseInt(new EnvConfigs().getSubmitterNumThreads());
   private static final Duration SCHEDULING_DELAY = Duration.ofSeconds(5);
   private static final Duration CLEANING_DELAY = Duration.ofHours(2);
   private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder().setNameFormat("worker-%d").build();
@@ -121,7 +125,7 @@ public class SchedulerApp {
     final TemporalPool temporalPool = new TemporalPool(temporalService, workspaceRoot, processFactory);
     temporalPool.run();
 
-    final ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
+    final ExecutorService workerThreadPool = Executors.newFixedThreadPool(SUBMITTER_NUM_THREADS, THREAD_FACTORY);
     final ScheduledExecutorService scheduledPool = Executors.newSingleThreadScheduledExecutor();
     final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(temporalClient, workspaceRoot);
     final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now, jobNotifier);
@@ -191,9 +195,6 @@ public class SchedulerApp {
 
     final Configs configs = new EnvConfigs();
 
-    final Path configRoot = configs.getConfigRoot();
-    LOGGER.info("configRoot = " + configRoot);
-
     MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, LogClientSingleton.getSchedulerLogsRoot(configs).toString());
 
     final Path workspaceRoot = configs.getWorkspaceRoot();
@@ -202,16 +203,17 @@ public class SchedulerApp {
     final String temporalHost = configs.getTemporalHost();
     LOGGER.info("temporalHost = " + temporalHost);
 
-    LOGGER.info("Creating DB connection pool...");
-    final Database database = Databases.createPostgresDatabaseWithRetry(
+    LOGGER.info("Creating Job DB connection pool...");
+    final Database jobDatabase = Databases.createPostgresDatabaseWithRetry(
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
-        configs.getDatabaseUrl());
+        configs.getDatabaseUrl(),
+        Databases.IS_JOB_DATABASE_READY);
 
     final ProcessFactory processFactory = getProcessBuilderFactory(configs);
 
-    final JobPersistence jobPersistence = new DefaultJobPersistence(database);
-    final ConfigPersistence configPersistence = FileSystemConfigPersistence.createWithValidation(configRoot);
+    final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
+    final ConfigPersistence configPersistence = ConfigPersistenceBuilder.getDbPersistence(configs);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence);
     final JobCleaner jobCleaner = new JobCleaner(
         configs.getWorkspaceRetentionConfig(),
@@ -234,6 +236,7 @@ public class SchedulerApp {
 
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
+        configs.getWorkerEnvironment(),
         configs.getAirbyteRole(),
         configs.getAirbyteVersion(),
         configRepository);
