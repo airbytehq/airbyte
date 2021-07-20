@@ -53,8 +53,8 @@ class SendgridStream(HttpStream, ABC):
             for record in records:
                 yield record
         else:
-            # TODO sendgrid's API is sending empty (not empty array, just empty) responses at times. It's not entirely clear why, but adding these
-            #  log statements to help reproduce and prevent the connector from failing
+            # TODO sendgrid's API is sending null responses at times. This seems like a bug on the API side, so we're adding 
+            #  log statements to help reproduce and prevent the connector from failing. 
             err_msg = f"Response contained no valid JSON data. Response body: {response.text}\n"\
                       f"Response status: {response.status_code}\n"\
                       f"Response body: {response.text}\n"\
