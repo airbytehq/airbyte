@@ -28,8 +28,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.jdbc.SourceJdbcUtils;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import java.util.Collections;
 import java.util.Set;
@@ -104,13 +104,13 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     }
     super.database.execute(connection -> connection.createStatement().execute(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            JdbcUtils.enquoteIdentifier(connection, TABLE_NAME_WITH_SPACES))));
+            SourceJdbcUtils.enquoteIdentifier(connection, TABLE_NAME_WITH_SPACES))));
     super.database.execute(connection -> connection.createStatement().execute(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            JdbcUtils.enquoteIdentifier(connection, TABLE_NAME_WITH_SPACES + 2))));
+            SourceJdbcUtils.enquoteIdentifier(connection, TABLE_NAME_WITH_SPACES + 2))));
     super.database.execute(connection -> connection.createStatement().execute(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME2,
-            JdbcUtils.enquoteIdentifier(connection, TABLE_NAME))));
+            SourceJdbcUtils.enquoteIdentifier(connection, TABLE_NAME))));
 
     super.tearDown();
   }

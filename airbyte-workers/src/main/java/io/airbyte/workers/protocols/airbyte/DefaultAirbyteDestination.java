@@ -110,8 +110,9 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   }
 
   @Override
-  public void close() throws IOException {
+  public void close() throws Exception {
     if (destinationProcess == null) {
+      LOGGER.debug("Destination process already exited");
       return;
     }
 
@@ -122,9 +123,9 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
     LOGGER.debug("Closing destination process");
     WorkerUtils.gentleClose(destinationProcess, 10, TimeUnit.HOURS);
     if (destinationProcess.isAlive() || destinationProcess.exitValue() != 0) {
-      LOGGER.warn(
-          "Destination process might not have shut down correctly. destination process alive: {}, destination process exit value: {}. This warning is normal if the job was cancelled.",
-          destinationProcess.isAlive(), destinationProcess.exitValue());
+      String message =
+          destinationProcess.isAlive() ? "Destination has not terminated " : "Destination process exit with code " + destinationProcess.exitValue();
+      throw new WorkerException(message + ". This warning is normal if the job was cancelled.");
     }
   }
 

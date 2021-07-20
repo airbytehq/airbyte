@@ -23,6 +23,7 @@
 #
 
 import time
+import urllib.parse as urlparse
 from abc import ABC
 from collections import deque
 from datetime import datetime
@@ -43,6 +44,18 @@ from source_facebook_marketing.api import API
 from .common import FacebookAPIException, JobTimeoutException, batch, deep_merge, retry_pattern
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
+
+
+def remove_params_from_url(url, params):
+    parsed_url = urlparse.urlparse(url)
+    res_query = []
+    for q in parsed_url.query.split("&"):
+        key, value = q.split("=")
+        if key not in params:
+            res_query.append(f"{key}={value}")
+
+    parse_result = parsed_url._replace(query="&".join(res_query))
+    return urlparse.urlunparse(parse_result)
 
 
 class FBMarketingStream(Stream, ABC):
@@ -209,7 +222,16 @@ class AdCreatives(FBMarketingStream):
         records = self._read_records(params=self.request_params(stream_state=stream_state))
         requests = [record.api_get(fields=self.fields, pending=True) for record in records]
         for requests_batch in batch(requests, size=self.batch_size):
-            yield from self.execute_in_batch(requests_batch)
+            for record in self.execute_in_batch(requests_batch):
+                yield self.clear_urls(record)
+
+    @staticmethod
+    def clear_urls(record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        """Some URLs has random values, these values doesn't affect validity of URLs, but breaks SAT"""
+        thumbnail_url = record.get("thumbnail_url")
+        if thumbnail_url:
+            record["thumbnail_url"] = remove_params_from_url(thumbnail_url, ["_nc_hash", "d"])
+        return record
 
     @backoff_policy
     def _read_records(self, params: Mapping[str, Any]) -> Iterator:
@@ -252,6 +274,7 @@ class Campaigns(FBMarketingIncrementalStream):
 class AdsInsights(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/insights"""
 
+    cursor_field = "date_start"
     primary_key = None
 
     ALL_ACTION_ATTRIBUTION_WINDOWS = [
@@ -297,14 +320,9 @@ class AdsInsights(FBMarketingIncrementalStream):
         """Waits for current job to finish (slice) and yield its result"""
         result = self.wait_for_job(stream_slice["job"])
         # because we query `lookback_window` days before actual cursor we might get records older then cursor
-        stream_state = stream_state or {}
-        state_value = stream_state.get(self.cursor_field)
-        min_cursor = self._start_date if not state_value else pendulum.parse(state_value)
 
         for obj in result.get_result():
-            record = obj.export_all_data()
-            if pendulum.parse(record[self.cursor_field]) >= min_cursor:
-                yield record
+            yield obj.export_all_data()
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """Slice by date periods and schedule async job for each period, run at most MAX_ASYNC_JOBS jobs at the same time.

@@ -31,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.WorkerUtils;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
@@ -172,7 +173,7 @@ public class KubePodProcessIntegrationTest {
         "busybox:latest",
         false,
         files,
-        entrypoint);
+        entrypoint, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
   }
 
   private static Set<Integer> getOpenPorts(int count) {

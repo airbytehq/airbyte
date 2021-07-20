@@ -31,6 +31,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.text.Names;
 import io.airbyte.commons.text.Sqls;
 import io.airbyte.commons.version.AirbyteVersion;
@@ -82,6 +83,11 @@ import org.slf4j.LoggerFactory;
 
 public class DefaultJobPersistence implements JobPersistence {
 
+  // not static because job history test case manipulates these.
+  private final int JOB_HISTORY_MINIMUM_AGE_IN_DAYS;
+  private final int JOB_HISTORY_MINIMUM_RECENCY;
+  private final int JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS;
+
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJobPersistence.class);
   private static final Set<String> SYSTEM_SCHEMA = Set
       .of("pg_toast", "information_schema", "pg_catalog", "import_backup", "pg_internal",
@@ -119,13 +125,20 @@ public class DefaultJobPersistence implements JobPersistence {
   private final Supplier<Instant> timeSupplier;
 
   @VisibleForTesting
-  DefaultJobPersistence(Database database, Supplier<Instant> timeSupplier) {
+  DefaultJobPersistence(Database database,
+                        Supplier<Instant> timeSupplier,
+                        int minimumAgeInDays,
+                        int excessiveNumberOfJobs,
+                        int minimumRecencyCount) {
     this.database = new ExceptionWrappingDatabase(database);
     this.timeSupplier = timeSupplier;
+    JOB_HISTORY_MINIMUM_AGE_IN_DAYS = minimumAgeInDays;
+    JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS = excessiveNumberOfJobs;
+    JOB_HISTORY_MINIMUM_RECENCY = minimumRecencyCount;
   }
 
   public DefaultJobPersistence(Database database) {
-    this(database, Instant::now);
+    this(database, Instant::now, 30, 500, 10);
   }
 
   @Override
@@ -213,11 +226,15 @@ public class DefaultJobPersistence implements JobPersistence {
     return database.transaction(ctx -> {
       final Job job = getJob(ctx, jobId);
       if (job.isJobInTerminalState()) {
-        throw new IllegalStateException("Cannot create an attempt for a job that is in a terminal state: " + job.getStatus());
+        var errMsg = String.format("Cannot create an attempt for a job id: %s that is in a terminal state: %s for connection id: %s", job.getId(),
+            job.getStatus(), job.getScope());
+        throw new IllegalStateException(errMsg);
       }
 
       if (job.hasRunningAttempt()) {
-        throw new IllegalStateException("Cannot create an attempt for a job that has a running attempt: " + job.getStatus());
+        var errMsg = String.format("Cannot create an attempt for a job id: %s that has a running attempt: %s for connection id: %s", job.getId(),
+            job.getStatus(), job.getScope());
+        throw new IllegalStateException(errMsg);
       }
 
       updateJobStatusIfNotInTerminalState(ctx, jobId, JobStatus.RUNNING, now);
@@ -499,6 +516,26 @@ public class DefaultJobPersistence implements JobPersistence {
           .collect(Collectors.toList()));
     } else {
       return List.of();
+    }
+  }
+
+  @Override
+  public void purgeJobHistory() {
+    purgeJobHistory(LocalDateTime.now());
+  }
+
+  @VisibleForTesting
+  public void purgeJobHistory(LocalDateTime asOfDate) {
+    try {
+      String JOB_HISTORY_PURGE_SQL = MoreResources.readResource("job_history_purge.sql");
+      // interval '?' days cannot use a ? bind, so we're using %d instead.
+      String sql = String.format(JOB_HISTORY_PURGE_SQL, (JOB_HISTORY_MINIMUM_AGE_IN_DAYS - 1));
+      final Integer rows = database.query(ctx -> ctx.execute(sql,
+          asOfDate.format(DateTimeFormatter.ofPattern("YYYY-MM-dd")),
+          JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS,
+          JOB_HISTORY_MINIMUM_RECENCY));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 

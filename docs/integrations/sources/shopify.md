@@ -16,6 +16,7 @@ This Source is capable of syncing the following core Streams:
 * [Collects](https://help.shopify.com/en/api/reference/products/collect)
 * [Custom Collections](https://help.shopify.com/en/api/reference/products/customcollection)
 * [Customers](https://help.shopify.com/en/api/reference/customers)
+* [Draft Orders](https://help.shopify.com/en/api/reference/orders/draftorder)
 * [Discount Codes](https://shopify.dev/docs/admin-api/rest/reference/discounts/discountcode)
 * [Metafields](https://help.shopify.com/en/api/reference/metafield)
 * [Orders](https://help.shopify.com/en/api/reference/orders)
@@ -60,6 +61,9 @@ Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-ap
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.10  | 2021-07-19 | [4830](https://github.com/airbytehq/airbyte/pull/4830) | Fix for streams json schemas, upgrade to API version 2021-07 |
+| 0.1.9   | 2021-07-04 | [4472](https://github.com/airbytehq/airbyte/pull/4472) | Incremental sync is now using updated_at instead of since_id by default |
+| 0.1.8   | 2021-06-29 | [4121](https://github.com/airbytehq/airbyte/pull/4121) | Add draft orders stream |
 | 0.1.7   | 2021-06-26 | [4290](https://github.com/airbytehq/airbyte/pull/4290) | Fixed the bug when limiting output records to 1 caused infinity loop |
 | 0.1.6   | 2021-06-24 | [4009](https://github.com/airbytehq/airbyte/pull/4009) | Add pages, price rules and discount codes streams |
 | 0.1.5   | 2021-06-10 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |

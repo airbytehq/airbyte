@@ -22,7 +22,7 @@
 # SOFTWARE.
 #
 
-
+import logging
 from collections import Counter, defaultdict
 from functools import reduce
 from typing import Any, List, Mapping, MutableMapping
@@ -30,20 +30,43 @@ from typing import Any, List, Mapping, MutableMapping
 import pytest
 from airbyte_cdk.models import AirbyteMessage, ConnectorSpecification, Status, Type
 from docker.errors import ContainerError
+from jsonschema import validate
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
-from source_acceptance_test.utils import ConnectorRunner, serialize
+from source_acceptance_test.utils import ConnectorRunner, SecretDict, serialize, verify_records_schema
 
 
 @pytest.mark.default_timeout(10)
 class TestSpec(BaseTest):
-    def test_spec(self, connector_spec: ConnectorSpecification, docker_runner: ConnectorRunner):
+    def test_match_expected(self, connector_spec: ConnectorSpecification, connector_config: SecretDict, docker_runner: ConnectorRunner):
         output = docker_runner.call_spec()
         spec_messages = [message for message in output if message.type == Type.SPEC]
 
         assert len(spec_messages) == 1, "Spec message should be emitted exactly once"
         if connector_spec:
             assert spec_messages[0].spec == connector_spec, "Spec should be equal to the one in spec.json file"
+
+        assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT"), "AIRBYTE_ENTRYPOINT must be set in dockerfile"
+        assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT") == " ".join(
+            docker_runner.entry_point
+        ), "env should be equal to space-joined entrypoint"
+
+        # Getting rid of technical variables that start with an underscore
+        config = {key: value for key, value in connector_config.data.items() if not key.startswith("_")}
+
+        validate(instance=config, schema=spec_messages[0].spec.connectionSpecification)
+
+    def test_required(self):
+        """Check that connector will fail if any required field is missing"""
+
+    def test_optional(self):
+        """Check that connector can work without any optional field"""
+
+    def test_has_secret(self):
+        """Check that spec has a secret. Not sure if this should be always the case"""
+
+    def test_secret_never_in_the_output(self):
+        """This test should be injected into any docker command it needs to know current config and spec"""
 
 
 @pytest.mark.default_timeout(30)
@@ -98,7 +121,7 @@ def primary_keys_for_records(streams, records):
             yield pk_values, stream_record
 
 
-@pytest.mark.default_timeout(300)
+@pytest.mark.default_timeout(5 * 60)
 class TestBasicRead(BaseTest):
     def test_read(
         self,
@@ -111,6 +134,16 @@ class TestBasicRead(BaseTest):
         output = docker_runner.call_read(connector_config, configured_catalog)
         records = [message.record for message in output if message.type == Type.RECORD]
         counter = Counter(record.stream for record in records)
+        if inputs.validate_schema:
+            bar = "-" * 80
+            streams_errors = verify_records_schema(records, configured_catalog)
+            for stream_name, errors in streams_errors.items():
+                errors = map(str, errors.values())
+                str_errors = f"\n{bar}\n".join(errors)
+                logging.error(f"The {stream_name} stream has the following schema errors:\n{str_errors}")
+
+            if streams_errors:
+                pytest.fail(f"Please check your json_schema in selected streams {streams_errors.keys()}.")
 
         all_streams = set(stream.stream.name for stream in configured_catalog.streams)
         streams_with_records = set(counter.keys())

@@ -214,16 +214,17 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("double")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("null", "power(10, 308)", "1/power(10, 45)")
-            .addExpectedValues(null, String.valueOf(Math.pow(10, 308)), String.valueOf(1 / Math.pow(10, 45)))
+            .addExpectedValues(null, String.valueOf(Math.pow(10, 308)),
+                String.valueOf(1 / Math.pow(10, 45)))
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("decimal")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .fullSourceDataType("decimal(5,2)")
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .fullSourceDataType("decimal(10,4)")
+            .addInsertValues("0.1880", "null")
+            .addExpectedValues("0.1880", null)
             .build());
 
     addDataTypeTestData(
