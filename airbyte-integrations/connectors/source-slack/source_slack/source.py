@@ -21,8 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-
-
+import copy
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -255,6 +254,18 @@ class Threads(IncrementalMessageStream):
 
                 for message in messages_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=message_chunk):
                     yield {"channel": channel["id"], self.sub_primary_key_2: message[self.sub_primary_key_2]}
+
+    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        """
+        Filtering already readed records for incremental sync. Copied state value to X after the last sync
+        to really 100% make sure no one can edit the state during the run.
+        """
+
+        initial_state = copy.deepcopy(stream_state)
+
+        for record in super().read_records(stream_state=stream_state, **kwargs):
+            if record.get(self.cursor_field, 0) >= initial_state.get(self.cursor_field, 0):
+                yield record
 
 
 class JoinChannelsStream(HttpStream):
