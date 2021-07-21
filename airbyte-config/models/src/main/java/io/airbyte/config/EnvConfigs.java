@@ -28,6 +28,7 @@ import com.google.common.base.Preconditions;
 import io.airbyte.config.helpers.LogClientSingleton;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -213,9 +214,11 @@ public class EnvConfigs implements Configs {
 
   @Override
   public Set<Integer> getTemporalWorkerPorts() {
-    return Arrays.stream(getEnvOrDefault(TEMPORAL_WORKER_PORTS, "").split(","))
-        .map(Integer::valueOf)
-        .collect(Collectors.toSet());
+    var ports = getEnvOrDefault(TEMPORAL_WORKER_PORTS, "");
+    if (ports.isEmpty()) {
+      return new HashSet<>();
+    }
+    return Arrays.stream(ports.split(",")).map(Integer::valueOf).collect(Collectors.toSet());
   }
 
   @Override

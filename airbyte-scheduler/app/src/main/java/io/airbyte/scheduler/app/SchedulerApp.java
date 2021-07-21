@@ -44,6 +44,7 @@ import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.workers.process.DockerProcessFactory;
+import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.process.WorkerHeartbeatServer;
@@ -62,10 +63,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -88,7 +87,7 @@ public class SchedulerApp {
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerApp.class);
 
   private static final long GRACEFUL_SHUTDOWN_SECONDS = 30;
-  private static final int SUBMITTER_NUM_THREADS = Integer.parseInt(new EnvConfigs().getSubmitterNumThreads());
+  private static int SUBMITTER_NUM_THREADS = Integer.parseInt(new EnvConfigs().getSubmitterNumThreads());
   private static final Duration SCHEDULING_DELAY = Duration.ofSeconds(5);
   private static final Duration CLEANING_DELAY = Duration.ofHours(2);
   private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder().setNameFormat("worker-%d").build();
@@ -177,11 +176,10 @@ public class SchedulerApp {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
       final ApiClient officialClient = Config.defaultClient();
       final KubernetesClient fabricClient = new DefaultKubernetesClient();
-      final BlockingQueue<Integer> workerPorts = new LinkedBlockingDeque<>(configs.getTemporalWorkerPorts());
       final String localIp = InetAddress.getLocalHost().getHostAddress();
       final String kubeHeartbeatUrl = localIp + ":" + KUBE_HEARTBEAT_PORT;
       LOGGER.info("Using Kubernetes namespace: {}", configs.getKubeNamespace());
-      return new KubeProcessFactory(configs.getKubeNamespace(), officialClient, fabricClient, kubeHeartbeatUrl, workerPorts);
+      return new KubeProcessFactory(configs.getKubeNamespace(), officialClient, fabricClient, kubeHeartbeatUrl);
     } else {
       return new DockerProcessFactory(
           configs.getWorkspaceRoot(),
@@ -222,6 +220,13 @@ public class SchedulerApp {
     final JobNotifier jobNotifier = new JobNotifier(configs.getWebappUrl(), configRepository);
 
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
+      var supportedWorkers = KubePortManagerSingleton.getSupportedWorkers();
+      if (supportedWorkers < SUBMITTER_NUM_THREADS) {
+        LOGGER.warn("{} workers configured with only {} ports available. Insufficient ports. Setting workers to {}.", SUBMITTER_NUM_THREADS,
+            KubePortManagerSingleton.getNumAvailablePorts(), supportedWorkers);
+        SUBMITTER_NUM_THREADS = supportedWorkers;
+      }
+
       Map<String, String> mdc = MDC.getCopyOfContextMap();
       Executors.newSingleThreadExecutor().submit(
           () -> {
