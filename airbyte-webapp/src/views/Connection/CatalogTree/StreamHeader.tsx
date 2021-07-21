@@ -15,6 +15,7 @@ import {
 import { Popout } from "components/base/Popout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSortDown } from "@fortawesome/free-solid-svg-icons";
+import Tooltip from "./components/Tooltip";
 
 const Arrow = styled(FontAwesomeIcon)<{ isOpen?: boolean }>`
   color: ${({ theme }) => theme.greyColor40};
@@ -102,23 +103,25 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
         isItemHasChildren={hasFields}
         isItemOpen={isRowExpanded}
       />
-      <Cell title={stream.stream.namespace || ""}>
+      <Cell ellipsis title={stream.stream.namespace || ""}>
         {stream.stream.namespace || (
           <EmptyField>
             <FormattedMessage id="form.noNamespace" />
           </EmptyField>
         )}
       </Cell>
-      <Cell light title={destNamespace}>
+      <Cell ellipsis light title={destNamespace}>
         {destNamespace}
       </Cell>
-      <Cell title={destName}>{destName}</Cell>
+      <Cell ellipsis title={destName}>
+        {destName}
+      </Cell>
       <SyncSettingsCell
         value={syncSchema}
         options={availableSyncModes}
         onChange={onSelectSyncMode}
       />
-      <Cell>
+      <Cell ellipsis>
         {pkType === "required" ? (
           <Popout
             options={dropdownFields}
@@ -137,6 +140,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
               <div onClick={onOpen}>
                 {primaryKey.map((k) => k.join(".")).join(", ")}
                 <Arrow icon={faSortDown} />
+                <Tooltip items={primaryKey.map((k) => k.join("."))} />
               </div>
             )}
           />
@@ -157,6 +161,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
               <div onClick={onOpen}>
                 {stream.config.cursorField.join(".")}
                 <Arrow icon={faSortDown} />
+                <Tooltip items={stream.config.cursorField} />
               </div>
             )}
           />
