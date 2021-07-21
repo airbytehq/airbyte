@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import styled from "styled-components";
 import { FieldArray, useField } from "formik";
 
@@ -51,6 +51,23 @@ const ConditionSection: React.FC<{
 
   const currentlySelectedCondition = widgetsInfo[formField.path]?.selectedItem;
 
+  const options = useMemo(
+    () =>
+      Object.keys(formField.conditions).map((dataItem) => ({
+        label: dataItem,
+        value: dataItem,
+      })),
+    [formField.conditions]
+  );
+  const onOptionChange = useCallback(
+    (selectedItem: any) =>
+      selectedItem &&
+      setUiWidgetsInfo(formField.path, {
+        selectedItem: selectedItem.value,
+      }),
+    [setUiWidgetsInfo, formField.path]
+  );
+
   const label = formField.title || formField.fieldKey;
 
   return (
@@ -61,15 +78,8 @@ const ConditionSection: React.FC<{
         <>
           {label ? <GroupLabel>{label}:</GroupLabel> : null}
           <DropDown
-            data={Object.keys(formField.conditions).map((dataItem) => ({
-              text: dataItem,
-              value: dataItem,
-            }))}
-            onChange={(selectedItem) =>
-              setUiWidgetsInfo(formField.path, {
-                selectedItem: selectedItem.value,
-              })
-            }
+            options={options}
+            onChange={onOptionChange}
             value={currentlySelectedCondition}
             name={formField.path}
           />
