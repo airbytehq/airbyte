@@ -81,9 +81,50 @@ class GoogleAds:
     def get_field_value(field_value: GoogleAdsRow, field: str) -> str:
         field_name = field.split(".")
         for level_attr in field_name:
+            """
+            We have an object of the GoogleAdsRow class, and in order to get all the attributes we requested,
+            we should alternately go through the nestings according to the path that we have in the field_name variable.
+
+            For example 'field_value' looks like:
+            customer {
+              resource_name: "customers/4186739445"
+              ...
+            }
+            campaign {
+              resource_name: "customers/4186739445/campaigns/8765465473658"
+              ....
+            }
+            ad_group {
+              resource_name: "customers/4186739445/adGroups/2345266867978"
+              ....
+            }
+            metrics {
+              clicks: 0
+              ...
+            }
+            ad_group_ad {
+              resource_name: "customers/4186739445/adGroupAds/2345266867978~46437453679869"
+              status: ENABLED
+              ad {
+                type_: RESPONSIVE_SEARCH_AD
+                id: 46437453679869
+                ....
+              }
+              policy_summary {
+                approval_status: APPROVED
+              }
+            }
+            segments {
+              ad_network_type: SEARCH_PARTNERS
+              ...
+            }
+            """
+
             try:
                 field_value = getattr(field_value, level_attr)
             except AttributeError:
+                # In GoogleAdsRow there are attributes that add an underscore at the end in their name.
+                # For example, 'ad_group_ad.ad.type' is replaced by 'ad_group_ad.ad.type_'.
                 field_value = getattr(field_value, level_attr + "_", None)
 
             if isinstance(field_value, Enum):

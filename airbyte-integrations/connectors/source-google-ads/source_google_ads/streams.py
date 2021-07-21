@@ -28,7 +28,6 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 import pendulum
 from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.v8.services.services.google_ads_service.pagers import SearchPager
-from jsonschema import validate
 
 from .google_ads import GoogleAds
 
@@ -68,9 +67,7 @@ class GoogleAdsStream(Stream, ABC):
 
     def parse_response(self, response: SearchPager) -> Iterable[Mapping]:
         for result in response:
-            record = self.google_ads_client.parse_single_result(self.get_json_schema(), result)
-            validate(instance=record, schema=self.get_json_schema())
-            yield record
+            yield self.google_ads_client.parse_single_result(self.get_json_schema(), result)
 
     def read_records(self, sync_mode, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         response = self.google_ads_client.send_request(self.get_query(stream_slice))
