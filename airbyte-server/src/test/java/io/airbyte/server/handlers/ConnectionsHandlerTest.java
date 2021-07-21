@@ -25,6 +25,7 @@
 package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -50,11 +51,14 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
+import io.airbyte.server.helpers.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -66,17 +70,22 @@ class ConnectionsHandlerTest {
   private StandardSync standardSync;
   private ConnectionsHandler connectionsHandler;
   private SourceConnection source;
+  private WorkspaceHelper workspaceHelper;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
-  void setUp() throws IOException {
+  void setUp() throws IOException, ExecutionException {
     configRepository = mock(ConfigRepository.class);
     uuidGenerator = mock(Supplier.class);
 
     source = SourceHelpers.generateSource(UUID.randomUUID());
     standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
+    workspaceHelper = mock(WorkspaceHelper.class);
+    UUID workspaceId = UUID.randomUUID();
+    when(workspaceHelper.getWorkspaceForSourceId(any())).thenReturn(workspaceId);
+    when(workspaceHelper.getWorkspaceForDestinationId(any())).thenReturn(workspaceId);
 
-    connectionsHandler = new ConnectionsHandler(configRepository, uuidGenerator);
+    connectionsHandler = new ConnectionsHandler(configRepository, uuidGenerator, workspaceHelper);
   }
 
   @Test
@@ -281,6 +290,46 @@ class ConnectionsHandlerTest {
 
     verify(spiedConnectionsHandler).getConnection(connectionIdRequestBody);
     verify(spiedConnectionsHandler).updateConnection(expectedConnectionUpdate);
+  }
+
+  @Test
+  void failOnUnmatchedWorkspacesInCreate() throws ExecutionException, JsonValidationException, ConfigNotFoundException, IOException {
+    when(workspaceHelper.getWorkspaceForSourceId(standardSync.getSourceId())).thenReturn(UUID.randomUUID());
+    when(workspaceHelper.getWorkspaceForDestinationId(standardSync.getDestinationId())).thenReturn(UUID.randomUUID());
+
+    when(uuidGenerator.get()).thenReturn(standardSync.getConnectionId());
+    final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
+        .withName("source-test")
+        .withSourceDefinitionId(UUID.randomUUID());
+    final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
+        .withName("destination-test")
+        .withDestinationDefinitionId(UUID.randomUUID());
+    when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
+    when(configRepository.getSourceDefinitionFromConnection(standardSync.getConnectionId())).thenReturn(sourceDefinition);
+    when(configRepository.getDestinationDefinitionFromConnection(standardSync.getConnectionId())).thenReturn(destinationDefinition);
+
+    final AirbyteCatalog catalog = ConnectionHelpers.generateBasicApiCatalog();
+
+    final ConnectionCreate connectionCreate = new ConnectionCreate()
+        .sourceId(standardSync.getSourceId())
+        .destinationId(standardSync.getDestinationId())
+        .operationIds(standardSync.getOperationIds())
+        .name("presto to hudi")
+        .namespaceDefinition(NamespaceDefinitionType.SOURCE)
+        .namespaceFormat(null)
+        .prefix("presto_to_hudi")
+        .status(ConnectionStatus.ACTIVE)
+        .schedule(ConnectionHelpers.generateBasicConnectionSchedule())
+        .syncCatalog(catalog)
+        .resourceRequirements(new io.airbyte.api.model.ResourceRequirements()
+            .cpuRequest(standardSync.getResourceRequirements().getCpuRequest())
+            .cpuLimit(standardSync.getResourceRequirements().getCpuLimit())
+            .memoryRequest(standardSync.getResourceRequirements().getMemoryRequest())
+            .memoryLimit(standardSync.getResourceRequirements().getMemoryLimit()));
+
+    Assert.assertThrows(IllegalArgumentException.class, () -> {
+      connectionsHandler.createConnection(connectionCreate);
+    });
   }
 
   @Test

@@ -26,13 +26,16 @@ package io.airbyte.server.handlers;
 
 import static io.airbyte.api.model.CheckConnectionRead.StatusEnum.SUCCEEDED;
 
+import com.google.api.client.util.Preconditions;
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.SourceCreate;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceRecreate;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.server.errors.ConnectFailureKnownException;
+import io.airbyte.server.helpers.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import org.slf4j.Logger;
@@ -45,14 +48,19 @@ public class WebBackendSourceHandler {
   private final SourceHandler sourceHandler;
 
   private final SchedulerHandler schedulerHandler;
+  private final WorkspaceHelper workspaceHelper;
 
-  public WebBackendSourceHandler(final SourceHandler sourceHandler, final SchedulerHandler schedulerHandler) {
+  public WebBackendSourceHandler(final SourceHandler sourceHandler, final SchedulerHandler schedulerHandler, final WorkspaceHelper workspaceHelper) {
     this.sourceHandler = sourceHandler;
     this.schedulerHandler = schedulerHandler;
+    this.workspaceHelper = workspaceHelper;
   }
 
   public SourceRead webBackendRecreateSourceAndCheck(SourceRecreate sourceRecreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
+    Exceptions.toRuntime(() -> Preconditions
+        .checkArgument(workspaceHelper.getWorkspaceForSourceId(sourceRecreate.getSourceId()).equals(sourceRecreate.getWorkspaceId())));
+
     final SourceCreate sourceCreate = new SourceCreate();
     sourceCreate.setConnectionConfiguration(sourceRecreate.getConnectionConfiguration());
     sourceCreate.setName(sourceRecreate.getName());
