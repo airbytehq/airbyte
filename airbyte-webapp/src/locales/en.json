@@ -106,6 +106,8 @@
   "connectionForm.customFormat": "Custom format",
   "connectionForm.syncType.source": "Source",
   "connectionForm.syncType.destination": "Dest",
+  "connectionForm.primaryKey.searchPlaceholder": "search key fields by name",
+  "connectionForm.cursor.searchPlaceholder": "search cursor fields by name",
   "form.rawData": "Raw data - no normalization",
   "form.basicNormalization": "Basic normalization - ",
   "form.basicNormalization.message": "Map the JSON object to the types and format native to the destination. <lnk>Learn more</lnk>",

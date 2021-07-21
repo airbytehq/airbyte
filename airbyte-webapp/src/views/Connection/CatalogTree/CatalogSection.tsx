@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useMemo } from "react";
 import { useToggle } from "react-use";
 import styled from "styled-components";
-import { FormikErrors, getIn, useField } from "formik";
+import { FormikErrors, getIn } from "formik";
 
 import {
   AirbyteStreamConfiguration,
@@ -25,6 +25,7 @@ import { FieldHeader } from "./FieldHeader";
 import { FieldRow } from "./FieldRow";
 
 import { equal, naturalComparatorBy } from "utils/objects";
+import { ConnectionNamespaceDefinition } from "core/domain/connection";
 
 const flatten = (
   fArr: SyncSchemaField[],
@@ -55,6 +56,9 @@ type TreeViewRowProps = {
   streamNode: SyncSchemaStream;
   errors: FormikErrors<ConnectionFormValues>;
   destinationSupportedSyncModes: DestinationSyncMode[];
+  namespaceDefinition: ConnectionNamespaceDefinition;
+  namespaceFormat: string;
+  prefix: string;
   updateStream: (
     id: string,
     newConfiguration: Partial<AirbyteStreamConfiguration>
@@ -64,6 +68,9 @@ type TreeViewRowProps = {
 const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   streamNode,
   updateStream,
+  namespaceDefinition,
+  namespaceFormat,
+  prefix,
   errors,
   destinationSupportedSyncModes,
 }) => {
@@ -111,19 +118,22 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   );
 
   const onCursorSelect = useCallback(
-    (cursorPath: string[]) =>
-      updateStreamWithConfig({ cursorField: cursorPath }),
+    (cursorField: string[]) => updateStreamWithConfig({ cursorField }),
+    [updateStreamWithConfig]
+  );
+
+  const onPkUpdate = useCallback(
+    (newPrimaryKey: string[][]) =>
+      updateStreamWithConfig({ primaryKey: newPrimaryKey }),
     [updateStreamWithConfig]
   );
 
   const pkRequired =
     config.destinationSyncMode === DestinationSyncMode.Dedupted;
   const cursorRequired = config.syncMode === SyncMode.Incremental;
-  const showPkControl =
+  const shouldDefinePk =
     stream.sourceDefinedPrimaryKey.length === 0 && pkRequired;
-  const showCursorControl = !stream.sourceDefinedCursor && cursorRequired;
-
-  const selectedCursorPath = config.cursorField.join(".");
+  const shouldDefineCursor = !stream.sourceDefinedCursor && cursorRequired;
 
   const availableSyncModes = useMemo(
     () =>
@@ -137,12 +147,6 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
     [stream.supportedSyncModes, destinationSupportedSyncModes]
   );
 
-  const configErrors = getIn(errors, `schema.streams[${streamNode.id}].config`);
-  const hasError = configErrors && Object.keys(configErrors).length > 0;
-
-  const [{ value: namespaceDefinition }] = useField("namespaceDefinition");
-  const [{ value: namespaceFormat }] = useField("namespaceFormat");
-  const [{ value: prefix }] = useField("prefix");
   const destNamespace = getDestinationNamespace({
     namespaceDefinition,
     namespaceFormat,
@@ -157,8 +161,6 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
     );
   }, [stream.jsonSchema, streamId]);
 
-  const hasChildren = fields && fields.length > 0;
-
   const flattenedFields = useMemo(() => flatten(fields), [fields]);
 
   const primitiveFieldNames = useMemo(
@@ -168,6 +170,11 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
         .map((field) => field.name),
     [flattenedFields]
   );
+
+  const selectedCursorPath = config.cursorField.join(".");
+  const configErrors = getIn(errors, `schema.streams[${streamNode.id}].config`);
+  const hasError = configErrors && Object.keys(configErrors).length > 0;
+  const hasChildren = fields && fields.length > 0;
 
   return (
     <Section error={hasError}>
@@ -182,14 +189,12 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
           isRowExpanded={isRowExpanded}
           primitiveFields={primitiveFieldNames}
           pkType={
-            pkRequired ? (showPkControl ? "required" : "sourceDefined") : null
+            pkRequired ? (shouldDefinePk ? "required" : "sourceDefined") : null
           }
-          onPrimaryKeyChange={(newPrimaryKey) =>
-            updateStreamWithConfig({ primaryKey: newPrimaryKey })
-          }
+          onPrimaryKeyChange={onPkUpdate}
           cursorType={
             cursorRequired
-              ? showCursorControl
+              ? shouldDefineCursor
                 ? "required"
                 : "sourceDefined"
               : null
@@ -215,10 +220,10 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
                   isCursor={field.name === selectedCursorPath}
                   isPrimaryKey={pkPaths.has(field.name)}
                   isPrimaryKeyEnabled={
-                    showPkControl && SyncSchemaFieldObject.isPrimitive(field)
+                    shouldDefinePk && SyncSchemaFieldObject.isPrimitive(field)
                   }
                   isCursorEnabled={
-                    showCursorControl &&
+                    shouldDefineCursor &&
                     SyncSchemaFieldObject.isPrimitive(field)
                   }
                   onPrimaryKeyChange={onPkSelect}

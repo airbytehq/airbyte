@@ -24,10 +24,6 @@ const Arrow = styled(FontAwesomeIcon)<{ isOpen?: boolean }>`
   vertical-align: sub;
 `;
 
-// const Ct = styled.div`
-//   display: flex;
-// `;
-
 const EmptyField = styled.span`
   color: ${({ theme }) => theme.greyColor40};
 `;
@@ -133,7 +129,9 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
             onChange={(options: { value: string[] }[]) => {
               onPrimaryKeyChange(options.map((op) => op.value));
             }}
-            placeholder="search key fields by name"
+            placeholder={
+              <FormattedMessage id="connectionForm.primaryKey.searchPlaceholder" />
+            }
             components={PkPopupComponents}
             targetComponent={({ onOpen }) => (
               <div onClick={onOpen}>
@@ -152,7 +150,9 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
             options={dropdownFields}
             value={cursorField}
             isSearchable
-            placeholder="search cursor fields by name"
+            placeholder={
+              <FormattedMessage id="connectionForm.cursor.searchPlaceholder" />
+            }
             onChange={(op) => onCursorChange(op.value)}
             targetComponent={({ onOpen }) => (
               <div onClick={onOpen}>

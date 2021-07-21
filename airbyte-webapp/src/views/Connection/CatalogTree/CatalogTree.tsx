@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { FieldProps, Field, setIn } from "formik";
+import { FieldProps, Field, setIn, useField } from "formik";
 
 import {
   AirbyteStreamConfiguration,
@@ -36,6 +36,10 @@ const CatalogTree: React.FC<IProps> = ({
     [streams, onChangeStream]
   );
 
+  const [{ value: namespaceDefinition }] = useField("namespaceDefinition");
+  const [{ value: namespaceFormat }] = useField("namespaceFormat");
+  const [{ value: prefix }] = useField("prefix");
+
   return (
     <>
       {streams.map((streamNode) => (
@@ -47,6 +51,9 @@ const CatalogTree: React.FC<IProps> = ({
             <CatalogSection
               key={`schema.streams[${streamNode.id}].config`}
               errors={form.errors}
+              namespaceDefinition={namespaceDefinition}
+              namespaceFormat={namespaceFormat}
+              prefix={prefix}
               streamNode={streamNode}
               destinationSupportedSyncModes={destinationSupportedSyncModes}
               updateStream={onUpdateStream}
