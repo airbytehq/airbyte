@@ -123,9 +123,9 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
           <Popout
             options={dropdownFields}
             value={primaryKey}
-            isSearchable
             // @ts-ignore need to solve issue with typings
             isMulti={true}
+            isSearchable
             onChange={(options: { value: string[] }[]) => {
               onPrimaryKeyChange(options.map((op) => op.value));
             }}
@@ -149,7 +149,6 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
           <Popout
             options={dropdownFields}
             value={cursorField}
-            isSearchable
             placeholder={
               <FormattedMessage id="connectionForm.cursor.searchPlaceholder" />
             }

@@ -20,10 +20,6 @@ const Menu = styled.div`
   z-index: 2;
 `;
 
-const Container = styled.div`
-  position: relative;
-`;
-
 type Value = any;
 
 const PopupOpener: React.FC<{
@@ -31,11 +27,11 @@ const PopupOpener: React.FC<{
   onClose: () => void;
   target: React.ReactNode;
 }> = ({ children, isOpen, target, onClose }) => (
-  <Container>
+  <div>
     {target}
     {isOpen ? <Menu>{children}</Menu> : null}
     {isOpen ? <OutsideClickListener onClick={onClose} /> : null}
-  </Container>
+  </div>
 );
 
 type PopoutProps = DropdownProps & {

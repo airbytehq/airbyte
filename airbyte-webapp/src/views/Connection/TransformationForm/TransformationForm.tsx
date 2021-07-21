@@ -72,7 +72,7 @@ function prepareLabelFields(
 }
 
 // enum with only one value for the moment
-const TransformationTypes = [{ value: "custom", text: "Custom DBT" }];
+const TransformationTypes = [{ value: "custom", label: "Custom DBT" }];
 
 const TransformationForm: React.FC<TransformationProps> = ({
   transformation,

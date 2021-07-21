@@ -93,11 +93,12 @@ const DropDown: React.FC<DropdownProps> = (props) => {
       menuPortalTarget={document.body}
       placeholder="..."
       isSearchable={false}
+      closeMenuOnSelect={!props.isMulti}
+      hideSelectedOptions={false}
+      styles={{ menuPortal: (base: any) => ({ ...base, zIndex: 9999 }) }}
       {...props}
       value={currentValue}
       components={components}
-      closeMenuOnSelect={!props.isMulti}
-      hideSelectedOptions={false}
     />
   );
 };

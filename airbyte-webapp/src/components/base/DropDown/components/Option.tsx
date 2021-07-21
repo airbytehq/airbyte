@@ -60,7 +60,10 @@ const Option: React.FC<IProps> = (props) => {
         >
           {props.isMulti && (
             <>
-              <CheckBox checked={props.isSelected} />{" "}
+              <CheckBox
+                checked={props.isSelected}
+                onChange={() => props.selectOption(props.data)}
+              />{" "}
             </>
           )}
           {props.label}
