@@ -1,21 +1,64 @@
 {
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/sftp-json",
-  "supported_destination_sync_modes": [
-    "TODO, available options are: 'overwrite', 'append', and 'append_dedup'"
-  ],
+  "supported_destination_sync_modes": ["overwrite", "append"],
   "supportsIncremental": true,
   "supportsDBT": false,
   "supportsNormalization": false,
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Destination Sftp Json",
+    "title": "Destination SFTP JSON",
     "type": "object",
-    "required": ["TODO -- fix me!"],
+    "required": [
+      "host",
+      "port",
+      "username",
+      "password",
+      "destination_path"
+    ],
     "additionalProperties": false,
     "properties": {
-      "TODO": {
+      "host": {
+        "title": "Host",
+        "description": "Hostname of the SFTP server.",
         "type": "string",
-        "description": "FIX ME"
+        "order": 0
+      },
+      "port": {
+        "title": "Port",
+        "description": "Port of the SFTP server.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 22,
+        "examples": ["22"],
+        "order": 1
+      },
+      "username": {
+        "title": "User",
+        "description": "Username to use to access the SFTP server.",
+        "type": "string",
+        "order": 2
+      },
+      "password": {
+        "title": "Password",
+        "description": "Password associated with the username.",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 3
+      },
+      "destination_path": {
+        "title": "Destination path",
+        "type": "string",
+        "description": "Path to the directory where json files will be written. The files will be placed inside that local mount. For more information check out our <a href=\"https://docs.airbyte.io/integrations/destinations/local-json\">docs</a>",
+        "examples": ["/json_data"],
+        "order": 4
+      },
+      "bin_by_date": {
+        "title": "Bin by date",
+        "description": "If true, group files into a folder based on the date the data was received.",
+        "type": "boolean",
+        "default": false,
+        "order": 5
       }
     }
   }
