@@ -25,8 +25,11 @@
 
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from urllib.parse import parse_qsl, urlparse
 
+import pendulum
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -47,22 +50,119 @@ There are additional required TODOs in the files within the integration_tests fo
 """
 
 
+class SnapchatMarketingException(Exception):
+    """ Just for formatting the exception as SnapchatMarketing"""
+
+
 # Basic full refresh stream
 class SnapchatMarketingStream(HttpStream, ABC):
-    # TODO: Fill in the url base. Required.
-    url_base = "https://example-api.com/v1/"
+    data_field = None
+    url_base = "https://adsapi.snapchat.com/v1/"
+    primary_key = 'id'
+    items_per_page_limit = 1000
+
+    def __init__(self, start_date, **kwargs):
+        super().__init__(**kwargs)
+        self.start_date = pendulum.parse(start_date).to_rfc3339_string()
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
+        next_page_cursor = response.json().get("paging", False)
+        if next_page_cursor:
+            return {"cursor": dict(parse_qsl(urlparse(next_page_cursor['next_link']).query))['cursor']}
 
     def request_params(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
             next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        return {}
+        params_payload = {}
+        if next_page_token:
+            params_payload.update(next_page_token)
+
+        if self.items_per_page_limit:
+            params_payload["limit"] = self.items_per_page_limit
+
+        return params_payload
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield {}
+        if isinstance(self.data_field, list) and len(self.data_field) == 2:
+            json_response = response.json().get(self.data_field[0])
+            for resp in json_response:
+                yield resp.get(self.data_field[1])
+        else:
+            error_text = f'Cannot parse response. Data field unrecognized: {self.data_field}'
+            self.logger.error(error_text)
+            raise SnapchatMarketingException(error_text)
+
+
+class IncrementalSnapchatMarketingtream(SnapchatMarketingStream, ABC):
+    state_checkpoint_interval = SnapchatMarketingStream.items_per_page_limit
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
+            Mapping[str, Any]:
+        if current_stream_state is not None and self.cursor_field in current_stream_state:
+            return {self.cursor_field: max(current_stream_state[self.cursor_field], latest_record[self.cursor_field])}
+        else:
+            return {self.cursor_field: self.start_date}
+
+
+class Organizations(IncrementalSnapchatMarketingtream):
+    """ Docs: https://marketingapi.snapchat.com/docs/#organizations """
+    data_field = ['organizations', 'organization']
+
+    def path(self, **kwargs) -> str:
+        return "me/organizations"
+
+
+class AdAccounts(IncrementalSnapchatMarketingtream):
+    """ Docs: https://marketingapi.snapchat.com/docs/#get-all-ad-accounts """
+    data_field = ['adaccounts', 'adaccount']
+    cursor_field = 'updated_at'
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        organizations_stream = Organizations(authenticator=self.authenticator, start_date=self.start_date)
+        organizations_records = organizations_stream.read_records(sync_mode=SyncMode.full_refresh)
+        organization_ids = [organization["id"] for organization in organizations_records]
+
+        if not organization_ids:
+            self.logger.error(
+                "No organizations found. Ad Accounts cannot be extracted without organizations. "
+                "Check https://marketingapi.snapchat.com/docs/#get-all-ad-accounts"
+            )
+            yield from []
+
+        for organization_id in organization_ids:
+            yield {"organization_id": organization_id}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return "organizations/{}/adaccounts".format(stream_slice['organization_id'])
+
+
+class Creatives(IncrementalSnapchatMarketingtream):
+    """ Docs: https://marketingapi.snapchat.com/docs/#get-all-creatives """
+
+    data_field = ['creatives', 'creative']
+    cursor_field = 'updated_at'
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        ad_accounts_stream = AdAccounts(authenticator=self.authenticator, start_date=self.start_date)
+        ad_accounts_slices = ad_accounts_stream.stream_slices(**kwargs)
+        ad_account_ids = []
+        for ad_accounts_slice in ad_accounts_slices:
+            ad_accounts_records = ad_accounts_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=ad_accounts_slice)
+            ad_account_ids += [ad_account["id"] for ad_account in ad_accounts_records]
+
+        if not ad_account_ids:
+            self.logger.error(
+                "No ad_accounts found. Creatives cannot be extracted without organizations. "
+                "Check https://marketingapi.snapchat.com/docs/#get-all-creatives"
+            )
+            yield from []
+
+        for ad_account_id in ad_account_ids:
+            yield {"ad_account_id": ad_account_id}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return "adaccounts/{}/creatives".format(stream_slice['ad_account_id'])
 
 
 class SnapchatAdsOauth2Authenticator(Oauth2Authenticator):
@@ -122,5 +222,12 @@ class SourceSnapchatMarketing(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = SnapchatAdsOauth2Authenticator(config)
-
-        return []
+        kwargs = {
+            'authenticator': auth,
+            'start_date': config['start_date']
+        }
+        return [
+            Organizations(**kwargs),
+            AdAccounts(**kwargs),
+            Creatives(**kwargs)
+        ]

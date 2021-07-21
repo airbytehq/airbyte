@@ -1,55 +1,270 @@
-// TODO: Construct a configured catalog that can be used for testing. Each stream's `json_schema` field should match the corresponding json schema file.
 {
   "streams": [
     {
       "stream": {
-        "name": "customers",
+        "name": "organizations",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
-            "id": {
-              "type": ["null", "string"]
-            },
-            "name": {
-              "type": ["null", "string"]
-            },
-            "signup_date": {
-              "type": ["null", "string"],
-              "format": "date-time"
+            "organization": {
+              "type": ["null", "object"],
+              "properties": {
+                "id": {
+                  "type": ["null", "string"]
+                },
+                "updated_at": {
+                  "type": ["null", "string"]
+                },
+                "created_at": {
+                  "type": ["null", "string"]
+                },
+                "name": {
+                  "type": ["null", "string"]
+                },
+                "country": {
+                  "type": ["null", "string"]
+                },
+                "postal_code": {
+                  "type": ["null", "string"]
+                },
+                "locality": {
+                  "type": ["null", "string"]
+                },
+                "contact_name": {
+                  "type": ["null", "string"]
+                },
+                "contact_email": {
+                  "type": ["null", "string"]
+                },
+                "contact_phone": {
+                  "type": ["null", "string"]
+                },
+                "address_line_1": {
+                  "type": ["null", "string"]
+                },
+                "administrative_district_level_1": {
+                  "type": ["null", "string"]
+                },
+                "accepted_term_version": {
+                  "type": ["null", "string"]
+                },
+                "contact_phone_optin": {
+                  "type": ["null", "boolean"]
+                },
+                "configuration_settings": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "notifications_enabled": {
+                      "type": ["null", "boolean"]
+                    }
+                  }
+                },
+                "type": {
+                  "type": ["null", "string"]
+                },
+                "state": {
+                  "type": ["null", "string"]
+                },
+                "roles": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "string"]
+                  }
+                },
+                "my_display_name": {
+                  "type": ["null", "string"]
+                },
+                "my_invited_email": {
+                  "type": ["null", "string"]
+                },
+                "my_member_id": {
+                  "type": ["null", "string"]
+                },
+                "createdByCaller": {
+                  "type": ["null", "boolean"]
+                }
+              }
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
-        "name": "employees",
+        "name": "ad_accounts",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
-            "id": {
-              "type": ["null", "string"]
-            },
-            "name": {
-              "type": ["null", "string"]
-            },
-            "years_of_service": {
-              "type": ["null", "integer"]
-            },
-            "start_date": {
-              "type": ["null", "string"],
-              "format": "date-time"
+            "adaccount": {
+              "type": ["null", "object"],
+              "properties": {
+                "id": {
+                  "type": ["null", "string"]
+                },
+                "updated_at": {
+                  "type": ["null", "string"]
+                },
+                "created_at": {
+                  "type": ["null", "string"]
+                },
+                "name": {
+                  "type": ["null", "string"]
+                },
+                "type": {
+                  "type": ["null", "string"]
+                },
+                "status": {
+                  "type": ["null", "string"]
+                },
+                "organization_id": {
+                  "type": ["null", "string"]
+                },
+                "funding_source_ids": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "string"]
+                  }
+                },
+                "currency": {
+                  "type": ["null", "string"]
+                },
+                "timezone": {
+                  "type": ["null", "string"]
+                },
+                "advertiser_organization_id": {
+                  "type": ["null", "string"]
+                },
+                "billing_center_id": {
+                  "type": ["null", "string"]
+                },
+                "billing_type": {
+                  "type": ["null", "string"]
+                },
+                "agency_representing_client": {
+                  "type": ["null", "boolean"]
+                },
+                "client_paying_invoices": {
+                  "type": ["null", "boolean"]
+                },
+                "regulations": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "restricted_delivery_signals": {
+                      "type": ["null", "boolean"]
+                    }
+                  }
+                }
+              }
             }
           }
         },
-        "supported_sync_modes": ["full_refresh", "incremental"]
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
       },
       "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "creatives",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "creative": {
+              "type": ["null", "object"],
+              "properties": {
+                "id": {
+                  "type": ["null", "string"]
+                },
+                "updated_at": {
+                  "type": ["null", "string"]
+                },
+                "created_at": {
+                  "type": ["null", "string"]
+                },
+                "name": {
+                  "type": ["null", "string"]
+                },
+                "ad_account_id": {
+                  "type": ["null", "string"]
+                },
+                "type": {
+                  "type": ["null", "string"]
+                },
+                "packaging_status": {
+                  "type": ["null", "string"]
+                },
+                "review_status": {
+                  "type": ["null", "string"]
+                },
+                "review_status_details": {
+                  "type": ["null", "string"]
+                },
+                "shareable": {
+                  "type": ["null", "boolean"]
+                },
+                "forced_view_eligibility": {
+                  "type": ["null", "string"]
+                },
+                "headline": {
+                  "type": ["null", "string"]
+                },
+                "brand_name": {
+                  "type": ["null", "string"]
+                },
+                "call_to_action": {
+                  "type": ["null", "string"]
+                },
+                "render_type": {
+                  "type": ["null", "string"]
+                },
+                "top_snap_media_id": {
+                  "type": ["null", "string"]
+                },
+                "top_snap_crop_position": {
+                  "type": ["null", "string"]
+                },
+                "web_view_properties": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "url": {
+                      "type": ["null", "string"]
+                    },
+                    "allow_snap_javascript_sdk": {
+                      "type": ["null", "boolean"]
+                    },
+                    "use_immersive_mode": {
+                      "type": ["null", "boolean"]
+                    },
+                    "deep_link_urls": {
+                      "type": ["null", "array"]
+                    },
+                    "block_preload": {
+                      "type": ["null", "boolean"]
+                    }
+                  }
+                },
+                "ad_product": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
       "destination_sync_mode": "append"
     }
   ]

@@ -1,3 +1,7 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "client_id": "invalid_client_id",
+  "client_secret": "invalid_client_secret",
+  "refresh_token": "invalid_refresh_token",
+  "redirect_uri": "https://airbyte.integration.com/auth",
+  "start_date": "1970-01-01"
 }
