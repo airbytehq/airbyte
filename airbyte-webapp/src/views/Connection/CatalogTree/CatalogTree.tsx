@@ -1,8 +1,7 @@
 import React, { useCallback } from "react";
-import { Field, setIn, FastFieldProps } from "formik";
+import { FieldProps, Field, setIn, useField } from "formik";
 
 import {
-  AirbyteStream,
   AirbyteStreamConfiguration,
   DestinationSyncMode,
   SyncSchemaStream,
@@ -12,30 +11,34 @@ import { CatalogSection } from "./CatalogSection";
 type IProps = {
   streams: SyncSchemaStream[];
   destinationSupportedSyncModes: DestinationSyncMode[];
-  onChangeSchema: (schema: SyncSchemaStream[]) => void;
+  onChangeStream: (stream: SyncSchemaStream) => void;
 };
 
 const CatalogTree: React.FC<IProps> = ({
   streams,
   destinationSupportedSyncModes,
-  onChangeSchema,
+  onChangeStream,
 }) => {
   const onUpdateStream = useCallback(
-    (stream: AirbyteStream, newStream: Partial<AirbyteStreamConfiguration>) => {
-      const newSchema = streams.map((streamNode) => {
-        return streamNode.stream === stream
-          ? setIn(
-              streamNode,
-              "config",
-              Object.assign({}, streamNode.config, newStream)
-            )
-          : streamNode;
-      });
+    (id: string, newStream: Partial<AirbyteStreamConfiguration>) => {
+      const streamNode = streams.find((streamNode) => streamNode.id === id);
 
-      onChangeSchema(newSchema);
+      if (streamNode) {
+        const newStreamNode = setIn(
+          streamNode,
+          "config",
+          Object.assign({}, streamNode.config, newStream)
+        );
+
+        onChangeStream(newStreamNode);
+      }
     },
-    [streams, onChangeSchema]
+    [streams, onChangeStream]
   );
+
+  const [{ value: namespaceDefinition }] = useField("namespaceDefinition");
+  const [{ value: namespaceFormat }] = useField("namespaceFormat");
+  const [{ value: prefix }] = useField("prefix");
 
   return (
     <>
@@ -44,10 +47,13 @@ const CatalogTree: React.FC<IProps> = ({
           key={`schema.streams[${streamNode.id}].config`}
           name={`schema.streams[${streamNode.id}].config`}
         >
-          {({ form }: FastFieldProps) => (
+          {({ form }: FieldProps) => (
             <CatalogSection
               key={`schema.streams[${streamNode.id}].config`}
               errors={form.errors}
+              namespaceDefinition={namespaceDefinition}
+              namespaceFormat={namespaceFormat}
+              prefix={prefix}
               streamNode={streamNode}
               destinationSupportedSyncModes={destinationSupportedSyncModes}
               updateStream={onUpdateStream}
