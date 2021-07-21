@@ -61,7 +61,7 @@ const MainInfoCell: React.FC<MainInfoCellProps> = ({
   depth,
 }) => {
   return (
-    <MainCell flex={2}>
+    <MainCell flex={1.5} light>
       <Content depth={depth}>
         {(isItemHasChildren || !depth) && (
           <ArrowContainer>

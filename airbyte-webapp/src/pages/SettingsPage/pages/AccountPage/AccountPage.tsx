@@ -4,9 +4,9 @@ import styled from "styled-components";
 
 import { ContentCard } from "components";
 import useWorkspace from "components/hooks/services/useWorkspaceHook";
+import useWorkspaceEditor from "pages/SettingsPage/components/useWorkspaceEditor";
 import HeadTitle from "components/HeadTitle";
 import AccountForm from "./components/AccountForm";
-import useWorkspaceEditor from "../../components/useWorkspaceEditor";
 
 const SettingsCard = styled(ContentCard)`
   max-width: 638px;

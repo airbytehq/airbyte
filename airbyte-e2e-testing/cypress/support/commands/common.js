@@ -10,7 +10,7 @@ Cypress.Commands.add("fillTestLocalJsonForm", (name) => {
   cy.intercept("/destination_definition_specifications/get").as("getDestinationSpecifications");
 
   cy.get("input[name=name]").type(name);
-  cy.get("div[role=combobox]").click();
+  cy.get("div[data-testid='serviceType']").click();
   cy.get("div").contains("Local JSON").click();
 
   cy.wait("@getDestinationSpecifications");

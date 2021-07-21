@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { useResource } from "rest-hooks";
 
 import ContentCard from "components/ContentCard";
-import ServiceForm from "components/ServiceForm";
+import ServiceForm from "views/Connector/ServiceForm";
 import { Destination } from "core/resources/Destination";
 import DestinationDefinitionSpecificationResource from "core/resources/DestinationDefinitionSpecification";
 import useDestination from "components/hooks/services/useDestinationHook";

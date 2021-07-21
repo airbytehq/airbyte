@@ -18,7 +18,7 @@ describe("Connection main actions", () => {
     cy.get("div[data-id='settings-step']").click();
 
     cy.get("div[data-testid='schedule']").click();
-    cy.get("div[data-id='5m']").click();
+    cy.get("div[data-testid='Every 5 min']").click();
     cy.submit();
     cy.wait("@updateConnection");
     cy.get("span[data-id='success-result']").should("exist");
