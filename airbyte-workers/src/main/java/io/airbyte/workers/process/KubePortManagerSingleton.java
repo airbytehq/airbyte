@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
 public class KubePortManagerSingleton {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubePortManagerSingleton.class);
-  private static final int MAX_PORTS_PER_WORKERS = 4; // A sync has two workers. Each worker requires 2 ports.
+  private static final int MAX_PORTS_PER_WORKER = 4; // A sync has two workers. Each worker requires 2 ports.
   private static BlockingQueue<Integer> workerPorts = new LinkedBlockingDeque<>(new EnvConfigs().getTemporalWorkerPorts());
 
   public static Integer take() throws InterruptedException {
