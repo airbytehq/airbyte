@@ -87,7 +87,7 @@ public class SchedulerApp {
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerApp.class);
 
   private static final long GRACEFUL_SHUTDOWN_SECONDS = 30;
-  private static final int SUBMITTER_NUM_THREADS = Integer.parseInt(new EnvConfigs().getSubmitterNumThreads());
+  private static int SUBMITTER_NUM_THREADS = Integer.parseInt(new EnvConfigs().getSubmitterNumThreads());
   private static final Duration SCHEDULING_DELAY = Duration.ofSeconds(5);
   private static final Duration CLEANING_DELAY = Duration.ofHours(2);
   private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder().setNameFormat("worker-%d").build();
@@ -220,7 +220,13 @@ public class SchedulerApp {
     final JobNotifier jobNotifier = new JobNotifier(configs.getWebappUrl(), configRepository);
 
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
-      KubePortManagerSingleton.warnIfInsufficientPorts(Integer.parseInt(configs.getSubmitterNumThreads()));
+      var supportedWorkers = KubePortManagerSingleton.getSupportedWorkers();
+      if (supportedWorkers < SUBMITTER_NUM_THREADS) {
+        LOGGER.warn("{} workers configured with only {} ports available. Insufficient ports. Setting workers to {}.", SUBMITTER_NUM_THREADS,
+            KubePortManagerSingleton.getNumAvailablePorts(), supportedWorkers);
+        SUBMITTER_NUM_THREADS = supportedWorkers;
+      }
+
       Map<String, String> mdc = MDC.getCopyOfContextMap();
       Executors.newSingleThreadExecutor().submit(
           () -> {

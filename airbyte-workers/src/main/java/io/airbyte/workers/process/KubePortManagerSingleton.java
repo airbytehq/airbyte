@@ -65,12 +65,8 @@ public class KubePortManagerSingleton {
     return workerPorts.size();
   }
 
-  public static void warnIfInsufficientPorts(int potentialConcurrentWorkers) {
-    var maxUsedPorts = potentialConcurrentWorkers * MAX_PORTS_PER_WORKERS;
-    if (maxUsedPorts > workerPorts.size()) {
-      LOGGER.warn("{} workers can use up to {} ports at once. Only {} ports allocated. This might result in stuck jobs.",
-          potentialConcurrentWorkers, maxUsedPorts, workerPorts.size());
-    }
+  public static int getSupportedWorkers() {
+    return workerPorts.size() / MAX_PORTS_PER_WORKERS;
   }
 
   @VisibleForTesting
