@@ -196,7 +196,7 @@
 - sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
   name: Jira
   dockerRepository: airbyte/source-jira
-  dockerImageTag: 0.2.6
+  dockerImageTag: 0.2.7
   documentationUrl: https://hub.docker.com/r/airbyte/source-jira
   icon: jira.svg
 - sourceDefinitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
@@ -250,7 +250,7 @@
 - sourceDefinitionId: 487b930d-7f6a-43ce-8bac-46e6b2de0a55
   name: Mongo DB
   dockerRepository: airbyte/source-mongodb
-  dockerImageTag: 0.3.2
+  dockerImageTag: 0.3.3
   documentationUrl: https://hub.docker.com/r/airbyte/source-mongodb
   icon: mongodb.svg
 - sourceDefinitionId: d19ae824-e289-4b14-995a-0632eb46d246
@@ -354,6 +354,11 @@
   dockerRepository: airbyte/source-aws-cloudtrail
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/aws-cloudtrail
+- sourceDefinitionId: c4cfaeda-c757-489a-8aba-859fb08b6970
+  name: US Census
+  dockerRepository: airbyte/source-us-census
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/us-census
 - sourceDefinitionId: 1d4fdb25-64fc-4569-92da-fcdca79a8372
   name: Okta
   dockerRepository: airbyte/source-okta
