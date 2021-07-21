@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useMemo } from "react";
 
 import SingletonCard from "components/SingletonCard";
 
@@ -24,11 +24,14 @@ function NotificationService({ children }: { children: React.ReactNode }) {
     actions
   );
 
-  const notificationService: NotificationServiceApi = {
-    addNotification,
-    deleteNotificationById,
-    clearAll,
-  };
+  const notificationService: NotificationServiceApi = useMemo(
+    () => ({
+      addNotification,
+      deleteNotificationById,
+      clearAll,
+    }),
+    []
+  );
 
   const firstNotification =
     state.notifications && state.notifications.length
