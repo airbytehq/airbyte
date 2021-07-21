@@ -281,3 +281,12 @@ Note that all the choices made by Normalization as described in this documentati
 * to build a [custom SQL view](../operator-guides/transformation-and-normalization/transformations-with-sql.md) with your own naming conventions
 * to export, edit and run [custom dbt normalization](../operator-guides/transformation-and-normalization/transformations-with-dbt.md) yourself
 * or further, you can configure the use of a custom dbt project within Airbyte by following [this guide](../operator-guides/transformation-and-normalization/transformations-with-airbyte.md).
+
+## CHANGELOG
+
+### airbyte-integration/bases/base-normalization
+
+| Airbyte Version | Normalization Version | Date | Pull Request | Subject |
+| :--- | :---  | :--- | :--- | :--- |
+| 0.27.4-alpha | 0.1.37 | 2021-07-21 | [#3947](https://github.com/airbytehq/airbyte/pull/4881/) | Handle `NULL` cursor field values when deduping |
+| 0.27.2-alpha | 0.1.36 | 2021-07-09 | [#3947](https://github.com/airbytehq/airbyte/pull/4163/) | Enable normalization for MySQL destination |
