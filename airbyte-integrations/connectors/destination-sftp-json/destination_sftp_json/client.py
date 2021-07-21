@@ -21,7 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-
+import errno
 import json
 from pathlib import Path
 from typing import TextIO, Optional, Dict
@@ -61,7 +61,7 @@ class SftpClient:
         transport_params = {"connect_kwargs": {"look_for_keys": False}}
 
         uri = self._get_uri()
-        return smart_open.open(uri, transport_params=transport_params, mode="w+")
+        return smart_open.open(uri, transport_params=transport_params, mode="a")
 
     def close(self):
         if self._file:
@@ -91,4 +91,10 @@ class SftpClient:
                 look_for_keys=False,
             )
             sftp = client.open_sftp()
-            sftp.remove(str(self.file_path))
+            try:
+                sftp.remove(str(self.file_path))
+            except IOError as err:
+                # Ignore the case where the file doesn't exist, only raise the
+                # exception if it's something else
+                if err.errno != errno.ENOENT:
+                    raise
