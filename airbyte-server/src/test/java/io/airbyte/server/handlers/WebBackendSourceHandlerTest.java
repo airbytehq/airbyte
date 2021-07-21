@@ -47,7 +47,6 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -116,7 +115,8 @@ public class WebBackendSourceHandlerTest {
   }
 
   @Test
-  public void testRecreateDeletesNewCreatedSourceWhenFails() throws JsonValidationException, IOException, ConfigNotFoundException, ExecutionException {
+  public void testRecreateDeletesNewCreatedSourceWhenFails()
+      throws JsonValidationException, IOException, ConfigNotFoundException, ExecutionException {
     SourceCreate sourceCreate = new SourceCreate();
     sourceCreate.setName(sourceRead.getName());
     sourceCreate.setConnectionConfiguration(sourceRead.getConnectionConfiguration());
@@ -159,7 +159,7 @@ public class WebBackendSourceHandlerTest {
     sourceCreate.setSourceDefinitionId(sourceRead.getSourceDefinitionId());
 
     SourceRead newSource = SourceHelpers
-            .getSourceRead(SourceHelpers.generateSource(UUID.randomUUID()), SourceDefinitionHelpers.generateSource());
+        .getSourceRead(SourceHelpers.generateSource(UUID.randomUUID()), SourceDefinitionHelpers.generateSource());
 
     when(sourceHandler.createSource(sourceCreate)).thenReturn(newSource);
 

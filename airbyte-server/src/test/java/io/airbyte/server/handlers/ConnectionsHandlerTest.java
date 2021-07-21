@@ -58,7 +58,6 @@ import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
-
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -300,11 +299,11 @@ class ConnectionsHandlerTest {
 
     when(uuidGenerator.get()).thenReturn(standardSync.getConnectionId());
     final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
-            .withName("source-test")
-            .withSourceDefinitionId(UUID.randomUUID());
+        .withName("source-test")
+        .withSourceDefinitionId(UUID.randomUUID());
     final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
-            .withName("destination-test")
-            .withDestinationDefinitionId(UUID.randomUUID());
+        .withName("destination-test")
+        .withDestinationDefinitionId(UUID.randomUUID());
     when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
     when(configRepository.getSourceDefinitionFromConnection(standardSync.getConnectionId())).thenReturn(sourceDefinition);
     when(configRepository.getDestinationDefinitionFromConnection(standardSync.getConnectionId())).thenReturn(destinationDefinition);
@@ -312,21 +311,21 @@ class ConnectionsHandlerTest {
     final AirbyteCatalog catalog = ConnectionHelpers.generateBasicApiCatalog();
 
     final ConnectionCreate connectionCreate = new ConnectionCreate()
-            .sourceId(standardSync.getSourceId())
-            .destinationId(standardSync.getDestinationId())
-            .operationIds(standardSync.getOperationIds())
-            .name("presto to hudi")
-            .namespaceDefinition(NamespaceDefinitionType.SOURCE)
-            .namespaceFormat(null)
-            .prefix("presto_to_hudi")
-            .status(ConnectionStatus.ACTIVE)
-            .schedule(ConnectionHelpers.generateBasicConnectionSchedule())
-            .syncCatalog(catalog)
-            .resourceRequirements(new io.airbyte.api.model.ResourceRequirements()
-                    .cpuRequest(standardSync.getResourceRequirements().getCpuRequest())
-                    .cpuLimit(standardSync.getResourceRequirements().getCpuLimit())
-                    .memoryRequest(standardSync.getResourceRequirements().getMemoryRequest())
-                    .memoryLimit(standardSync.getResourceRequirements().getMemoryLimit()));
+        .sourceId(standardSync.getSourceId())
+        .destinationId(standardSync.getDestinationId())
+        .operationIds(standardSync.getOperationIds())
+        .name("presto to hudi")
+        .namespaceDefinition(NamespaceDefinitionType.SOURCE)
+        .namespaceFormat(null)
+        .prefix("presto_to_hudi")
+        .status(ConnectionStatus.ACTIVE)
+        .schedule(ConnectionHelpers.generateBasicConnectionSchedule())
+        .syncCatalog(catalog)
+        .resourceRequirements(new io.airbyte.api.model.ResourceRequirements()
+            .cpuRequest(standardSync.getResourceRequirements().getCpuRequest())
+            .cpuLimit(standardSync.getResourceRequirements().getCpuLimit())
+            .memoryRequest(standardSync.getResourceRequirements().getMemoryRequest())
+            .memoryLimit(standardSync.getResourceRequirements().getMemoryLimit()));
 
     Assert.assertThrows(IllegalArgumentException.class, () -> {
       connectionsHandler.createConnection(connectionCreate);

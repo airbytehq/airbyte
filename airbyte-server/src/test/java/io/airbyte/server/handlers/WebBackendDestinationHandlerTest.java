@@ -36,24 +36,17 @@ import io.airbyte.api.model.DestinationCreate;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationRecreate;
-import io.airbyte.api.model.SourceCreate;
-import io.airbyte.api.model.SourceIdRequestBody;
-import io.airbyte.api.model.SourceRead;
-import io.airbyte.api.model.SourceRecreate;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.helpers.DestinationDefinitionHelpers;
 import io.airbyte.server.helpers.DestinationHelpers;
-import io.airbyte.server.helpers.SourceDefinitionHelpers;
-import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.server.helpers.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -167,8 +160,8 @@ public class WebBackendDestinationHandlerTest {
     destinationCreate.setDestinationDefinitionId(destinationRead.getDestinationDefinitionId());
 
     DestinationRead newDestination = DestinationHelpers
-            .getDestinationRead(DestinationHelpers.generateDestination(UUID.randomUUID()), DestinationDefinitionHelpers
-                    .generateDestination());
+        .getDestinationRead(DestinationHelpers.generateDestination(UUID.randomUUID()), DestinationDefinitionHelpers
+            .generateDestination());
 
     when(destinationHandler.createDestination(destinationCreate)).thenReturn(newDestination);
 

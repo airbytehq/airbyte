@@ -38,8 +38,6 @@ import io.airbyte.server.errors.ConnectFailureKnownException;
 import io.airbyte.server.helpers.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +50,9 @@ public class WebBackendDestinationHandler {
   private final SchedulerHandler schedulerHandler;
   private final WorkspaceHelper workspaceHelper;
 
-  public WebBackendDestinationHandler(final DestinationHandler destinationHandler, final SchedulerHandler schedulerHandler, final WorkspaceHelper workspaceHelper) {
+  public WebBackendDestinationHandler(final DestinationHandler destinationHandler,
+                                      final SchedulerHandler schedulerHandler,
+                                      final WorkspaceHelper workspaceHelper) {
     this.destinationHandler = destinationHandler;
     this.schedulerHandler = schedulerHandler;
     this.workspaceHelper = workspaceHelper;
@@ -60,7 +60,8 @@ public class WebBackendDestinationHandler {
 
   public DestinationRead webBackendRecreateDestinationAndCheck(DestinationRecreate destinationRecreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    Exceptions.toRuntime(() -> Preconditions.checkArgument(workspaceHelper.getWorkspaceForDestinationId(destinationRecreate.getDestinationId()).equals(destinationRecreate.getWorkspaceId())));
+    Exceptions.toRuntime(() -> Preconditions.checkArgument(
+        workspaceHelper.getWorkspaceForDestinationId(destinationRecreate.getDestinationId()).equals(destinationRecreate.getWorkspaceId())));
 
     final DestinationCreate destinationCreate = new DestinationCreate();
     destinationCreate.setConnectionConfiguration(destinationRecreate.getConnectionConfiguration());
