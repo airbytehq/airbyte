@@ -5,4 +5,3 @@ docker run --rm -it \
     -v $(pwd):/test_input \
     airbyte/source-acceptance-test \
     --acceptance-test-config /test_input
-
