@@ -105,7 +105,7 @@ Airbyte is comprised of 2 parts:
 
 The "production" version of Airbyte is the version of the app specified in `.env`. With each production release, we update the version in the `.env` file. This version will always be available for download on DockerHub. It is the version of the app that runs when a user runs `docker-compose up`.
 
-The "development" version of Airbyte is the head of master branch. It is the version of the app that runs when a user runs `docker-compose --env-file .env.dev -f docker-compose.yaml -f docker-compose.dev.yaml up`.
+The "development" version of Airbyte is the head of master branch. It is the version of the app that runs when a user runs `./gradlew composeBuild && VERSION=dev docker compose up`.
 
 ### Production Release Schedule
 
