@@ -36,10 +36,9 @@ from .zuora_client import ZoqlExportClient
 from .zuora_errors import ZOQLQueryCannotProcessObject, ZOQLQueryFieldCannotResolve
 
 
-# Main class for Zuora Stream with overriden CDK methods
 class ZuoraStream(Stream, ABC):
-    # Define general primary key
-    primary_key = "id"
+    # Define primary key
+    primary_key = "id" 
 
     def __init__(self, api: ZoqlExportClient):
         self.api = api
@@ -53,11 +52,9 @@ class ZuoraStream(Stream, ABC):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """
-        Get the stream's schema from Zuora Object's Data types,
+        Get the stream's schema from Zuora Object's (stream) Data types,
         """
-        schema = {}
-        schema["properties"] = self.api._zuora_object_to_json_schema(self.name)
-        return schema
+        return {"properties": self.api.zuora_get_json_schema(self.name)}
 
     def as_airbyte_stream(self) -> AirbyteStream:
         """
@@ -67,7 +64,7 @@ class ZuoraStream(Stream, ABC):
         stream.default_cursor_field = [self.get_cursor_from_schema(stream.json_schema["properties"])]
         return stream
 
-    def _get_stream_state(self, stream_state: Mapping[str, Any] = None) -> Mapping[str, Any]:
+    def get_stream_state(self, stream_state: Mapping[str, Any] = None) -> Mapping[str, Any]:
         """
         Get the state of the stream for the default cursor_field = updateddate,
         If the stream doesn't have 'updateddate', then we use 'createddate'.
@@ -77,12 +74,12 @@ class ZuoraStream(Stream, ABC):
 
     def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         # if stream_state is missing, we will use the start-date from config for a full refresh
-        stream_state = self._get_stream_state(stream_state)
+        stream_state = self.get_stream_state(stream_state)
         try:
-            yield from self.api._get_data_with_date_slice("select", self.name, self.cursor_field, stream_state, self.window_in_days)
+            yield from self.api.get_data_with_date_slice("select", self.name, self.cursor_field, stream_state, self.window_in_days)
         except ZOQLQueryFieldCannotResolve:
             self.cursor_field = self.alt_cursor_field
-            yield from self.api._get_data_with_date_slice("select", self.name, self.cursor_field, stream_state, self.window_in_days)
+            yield from self.api.get_data_with_date_slice("select", self.name, self.cursor_field, stream_state, self.window_in_days)
         except ZOQLQueryCannotProcessObject:
             pass
 
@@ -118,49 +115,33 @@ class SourceZuora(AbstractSource):
         else:
             return False, auth["status"]
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+
+    def streams(self, config: Mapping[str, Any]) -> List[ZuoraStream]:
         """
         Mapping a input config of the user input configuration as defined in the connector spec.
-        Defining streams to run.
+        Defining streams to run by building stream classes dynamically.
         """
-
-        def create_stream_class_from_object_name(zuora_objects: List) -> List:
-            """
-            The function to produce the dynamic stream classes from the list of zuora objects names
-            """
-            # Define the bases
-            cls_base = (IncrementalZuoraStream,)
-            cls_props = {}
-            # Build the streams
-            streams = []
-            for obj in zuora_objects:
-                # List of zuora objects >> stream classes
-                streams.append(type(obj, cls_base, cls_props))
-            return streams
 
         # Make instance of ZuoraAuthenticator to get header with token, url_base
         auth_client = ZuoraAuthenticator(config["is_sandbox"])
         authenticator = auth_client.generateToken(config["client_id"], config["client_secret"]).get("header")
-        url_base = auth_client.endpoint
-
-        # Make set of arguments for the ZoqlExportClient
-        args = {
-            "authenticator": authenticator,
-            "url_base": url_base,
-            "start_date": config["start_date"],
-            "window_in_days": config["window_in_days"],
-            "client_id": config["client_id"],
-            "client_secret": config["client_secret"],
-            "is_sandbox": config["is_sandbox"],
-        }
 
         # Making instance of Zuora API Client
-        zuora_client = ZoqlExportClient(**args)
+        zuora_client = ZoqlExportClient(
+            authenticator=authenticator, 
+            url_base=auth_client.endpoint, 
+            **config,
+        )
 
-        # Get the list of available objects from Zuora
-        zuora_objects = ["account", "subscription", "invoicehistory"]
-        # zuora_objects = zuora_client._zuora_list_objects()
-        # created the class for each object
-        streams = create_stream_class_from_object_name(zuora_objects)
-        # Return the list of stream classes with Zuora API Client as input
-        return [streams[c](zuora_client) for c in range(len(streams))]
+        # List available objects (streams) names from Zuora
+        zuora_stream_names = ["account", "subscription", "invoicehistory"]
+        # zuora_stream_names = zuora_client.zuora_list_streams()
+        streams: List[ZuoraStream] = []
+        for stream_name in zuora_stream_names:
+            # construct IncrementalZuoraStream sub-class for each stream_name
+            stream_class = type(stream_name, (IncrementalZuoraStream,), {})
+            # instancetiate a stream with ZoqlExportClient
+            stream_instance = stream_class(zuora_client)
+            streams.append(stream_instance)
+
+        return streams    

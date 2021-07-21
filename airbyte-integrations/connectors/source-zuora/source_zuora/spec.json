@@ -15,9 +15,7 @@
       "window_in_days": {
         "type": "integer",
         "description": "The amount of days for each data-chunk begining from start_date. Bigger the value - faster the fetch. (Min=1, as for a Day; Max=364, as for a Year).",
-        "pattern": "/^[1-2]?[0-9]$|^3[0-2]$/",
-        "minimum": 1,
-        "maximum": 364,
+        "examples": [30, 60, 90, 120, 200, 364],
         "default": 90
       },
       "client_id": {

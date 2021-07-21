@@ -33,32 +33,31 @@ import requests
 from airbyte_cdk import AirbyteLogger
 
 from .zuora_auth import ZuoraAuthenticator
-from .zuora_errors import EndDateError, ZOQLQueryCannotProcessObject, ZOQLQueryFailed, ZOQLQueryFieldCannotResolve, ZOQLQueryNotValid
+from .zuora_errors import ZOQLQueryCannotProcessObject, ZOQLQueryFailed, ZOQLQueryFieldCannotResolve
 
 
 class ZoqlExportClient:
 
     """
     # TODO: Add the description about the ZOQL EXPORT + Links
-    # TODO: Add description to class methods
     """
 
     logger = AirbyteLogger()
 
-    def __init__(
-        self, authenticator: Dict, url_base: str, start_date: str, window_in_days: int, client_id: str, client_secret: str, is_sandbox: bool
-    ):
+    def __init__(self, authenticator: Dict, url_base: str, **config: Dict):
         self.authenticator = authenticator
         self.url_base = url_base
-        self.start_date = start_date
-        self.window_in_days = window_in_days
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.is_sandbox = is_sandbox
+        self.start_date = config["start_date"]
+        self.window_in_days = config["window_in_days"]
+        self.client_id = config["client_id"]
+        self.client_secret = config["client_secret"]
+        self.is_sandbox = config["is_sandbox"]
         self.retry_max = 3
-
-    # MAKE try/except request warper with handling errors
-    def _make_request(self, method: str = "GET", url: str = None, payload: Dict = None) -> requests.Response:
+ 
+    def make_request(self, method: str = "GET", url: str = None, payload: Dict = None) -> requests.Response:
+        """
+        try/except request wraper with handling errors
+        """
         retry = 0
         while retry <= self.retry_max:
             try:
@@ -68,21 +67,22 @@ class ZoqlExportClient:
             except requests.exceptions.HTTPError as e:
                 retry += 1
                 if retry <= self.retry_max:
-                    self._handle_requests_exceptions(e)
+                    self.handle_requests_exceptions(e)
                     continue
                 else:
                     raise Exception(e)
 
-    # MAKE QUERY: for data_query_job
-    def _make_dq_query(
+    def make_query(
         self, q_type: str = "select", obj: str = None, date_field: str = None, start_date: str = None, end_date: str = None
     ) -> Dict:
-        valid_types = ["select", "describe", "show_tables"]
+        """
+        Make the query for dependent methods like: 
+        submit_job, check_job_status, _zuora_list_streams, _zuora_object_to_json_schema
+        """
+
         base_query = {"compression": "NONE", "output": {"target": "S3"}, "outputFormat": "JSON"}
 
-        if q_type not in valid_types:
-            raise ZOQLQueryNotValid(q_type, valid_types)
-        elif q_type == "select":
+        if q_type == "select":
             end_date = pendulum.now().to_datetime_string() if end_date is None else end_date
             base_query[
                 "query"
@@ -93,14 +93,19 @@ class ZoqlExportClient:
             base_query["query"] = "SHOW TABLES"
         return base_query
 
-    # SUBMIT: data_query_job using data_query
-    def _submit_dq_job(self, dq_query: Dict) -> str:
-        submit_job = self._make_request(method="POST", url=f"{self.url_base}/query/jobs", payload=dq_query)
-        # self.logger.debug(submit_job.json()["data"]["id"])
+    def submit_job(self, dq_query: Dict) -> str:
+        """
+        Method to submit the query job for the Zuora
+        """
+        submit_job = self.make_request(method="POST", url=f"{self.url_base}/query/jobs", payload=dq_query)
         return submit_job.json()["data"]["id"]
 
-    # CHECK: the submited data_query_job status
-    def _check_dq_job_status(self, dq_job_id: str) -> Dict:
+    def check_job_status(self, dq_job_id: str) -> Dict:
+        """
+        Method to check submited query job for the Zuora using id.
+        There could be next statuses: ["completed", "in_progress", "failed", "canceled", "aborted"]
+        """
+
         # Define the job error statuses
         errors = ["failed", "canceled", "aborted"]
         # Error msg: the cursor_field cannot be resolved
@@ -111,147 +116,157 @@ class ZoqlExportClient:
         status = None
         success = "completed"
         while status != success:
-            response = self._make_request(url=f"{self.url_base}/query/jobs/{dq_job_id}")
-            dq_job_check = response.json()
-            status = dq_job_check["data"]["queryStatus"]
-            if status in errors and cursor_error in dq_job_check["data"]["errorMessage"]:
+            response = self.make_request(url=f"{self.url_base}/query/jobs/{dq_job_id}")
+            job_check = response.json()
+            status = job_check["data"]["queryStatus"]
+            if status in errors and cursor_error in job_check["data"]["errorMessage"]:
                 raise ZOQLQueryFieldCannotResolve
-            elif status in errors and obj_read_error in dq_job_check["data"]["errorMessage"]:
+            elif status in errors and obj_read_error in job_check["data"]["errorMessage"]:
                 raise ZOQLQueryCannotProcessObject
             elif status in errors:
                 raise ZOQLQueryFailed(response)
-        return dq_job_check
+        return job_check
 
-    # GET: data_query_job result
-    def _get_data_from_dq_job(self, response: requests.Response) -> List:
-        dq_job_data = requests.get(response["data"]["dataFile"])
-        dq_job_data.raise_for_status()
-        data = [j.loads(line) for line in dq_job_data.text.splitlines()]
+    def get_job_data(self, response: requests.Response) -> List:
+        """
+        Get actual output from submited data query job, when it's completed, using the link inside status job response
+        """
+
+        job_data = requests.get(response["data"]["dataFile"])
+        job_data.raise_for_status()
+        data = [j.loads(line) for line in job_data.text.splitlines()]
         return data or []
 
-    # Warpper function for `Query > Submit > Check > Get`
-    def _get_data(
+    def get_data(
         self, q_type: str = "select", obj: str = None, date_field: str = None, start_date: str = None, end_date: str = None
     ) -> Iterable:
-        query = self._make_dq_query(q_type, obj, date_field, start_date, end_date)
-        # self.logger.debug(f"{query}")
-        submit = self._submit_dq_job(query)
-        check = self._check_dq_job_status(submit)
-        get = self._get_data_from_dq_job(check)
+        """
+        Convinient wraper for `Make Query > Submit > Check > Get` operations
+        """
+
+        query = self.make_query(q_type, obj, date_field, start_date, end_date)
+        self.logger.info(f"{query}")
+        submit = self.submit_job(query)
+        check = self.check_job_status(submit)
+        get = self.get_job_data(check)
         yield from get
 
-    # Warper for _get_data using date-slices as pages
-    def _get_data_with_date_slice(
+    def get_data_with_date_slice(
         self, q_type: str, obj: str, date_field: str, start_date: str, window_days: int, end_date: str = None
     ) -> Iterable:
+        """
+        Wraper for get_data using date-slices as pages, to overcome:
+        rate limits, data-job size limits, data-job performance issues on the server side.
+        """
         # Parsing input dates
-        s = pendulum.parse(start_date)
-        tz = self._get_tz(s)
+        start = pendulum.parse(start_date)
+        tz = self.get_tz(start)
         # If there is no `end_date` as input - use now()
-        e = pendulum.parse(pendulum.now().to_datetime_string()) if end_date is None else pendulum.parse(end_date)
-        # check end_date bigger than start_date
-        if s >= e:
-            raise EndDateError
+        end = pendulum.parse(pendulum.now().to_datetime_string()) if not end_date else pendulum.parse(end_date)
+        # Get n of date-slices
+        n = self.get_n_slices(start, end, window_days)
+        # initiating slice_start/end for date slice
+        slice_start = start.to_datetime_string() + tz
+        # if slice_end is bigger than the input end_date, switch to the end_date
+        slice_end = self.check_end_date(self.next_slice_end_date(slice_start, window_days), end) + tz
+        # For multiple date-slices
+        if n > 1:
+            while n > 0:
+                yield from self.get_data(q_type, obj, date_field, slice_start, slice_end)
+                # make next date-slice
+                slice_start = slice_end
+                # if next date-slice end_date is bigger than the input end_date, we switch to the end_date
+                slice_end = self.check_end_date(self.next_slice_end_date(slice_end, window_days), end) + tz
+                # Modify iterator
+                n -= 1
         else:
-            # Get n of date-slices
-            n = self._get_n_slices(s, e, window_days)
-            # initiating slice_start/end for date slice
-            slice_start = s.to_datetime_string() + tz
-            # if slice_end is bigger than the input end_date, switch to the end_date
-            slice_end = self._check_end_date(self._next_slice_end_date(slice_start, window_days), e) + tz
-            # For multiple date-slices
-            if n > 1:
-                while n > 0:
-                    yield from self._get_data(q_type, obj, date_field, slice_start, slice_end)
-                    # make next date-slice
-                    slice_start = slice_end
-                    # if next date-slice end_date is bigger than the input end_date, we switch to the end_date
-                    slice_end = self._check_end_date(self._next_slice_end_date(slice_end, window_days), e) + tz
-                    # Modify iterator
-                    n -= 1
-            else:
-                # For 1 date-slice
-                yield from self._get_data(q_type, obj, date_field, slice_start, slice_end)
+            # For 1 date-slice
+            yield from self.get_data(q_type, obj, date_field, slice_start, slice_end)
 
-    # Check the end-date before assign next date-slice
     @staticmethod
-    def _check_end_date(slice_end_date: str, global_end_date: str) -> str:
+    def check_end_date(slice_end_date: str, global_end_date: str) -> str:
+        """
+        Check the end-date before assign next date-slice
+        """
         return global_end_date.to_datetime_string() if pendulum.parse(slice_end_date) > global_end_date else slice_end_date
 
-    # Get n of date-slices needed to fetch the data
     @staticmethod
-    def _get_n_slices(start_date: datetime, end_date: datetime, window_days: int) -> int:
-        # case where we have 1 sec difference between start and end dates would produce 0 slices, so return 1 instead
+    def get_n_slices(start_date: datetime, end_date: datetime, window_days: int) -> int:
+        """
+        Get n of date-slices needed to fetch the data.
+        Case where we have 1 sec difference between start and end dates would produce 0 slices, so return 1 instead
+        """
         d = pendulum.period(start_date, end_date).in_days()
         return 1 if ceil(d / window_days) <= 0 else ceil(d / window_days)
 
-    # Creates the next-date-slice
     @staticmethod
-    def _next_slice_end_date(end_date: str, window_days: int) -> str:
+    def next_slice_end_date(end_date: str, window_days: int) -> str:
+        """
+        Creates the next-date-slice
+        """
         format = "YYYY-MM-DD HH:mm:ss Z"
         return pendulum.from_format(end_date, format).add(days=window_days).to_datetime_string()
 
-    # Get/Set the timezone information from the date_field
     @staticmethod
-    def _get_tz(start_date: datetime) -> str:
+    def get_tz(start_date: datetime) -> str:
+        """
+        Get / Set if None, the timezone information from the date_field
+        """
         return " +00:00" if start_date.tzname() == "UTC" else f" {start_date.tzname()}"
 
-    # Compares strings for datatypes casting
-    @staticmethod
-    def _check_data_type(_str, _list):
-        # Returns True if the Type is in the List of Types, else - False
-        return any(_str in s for s in _list)
+    def convert_schema_types(self, schema: List[Dict]) -> Dict:
+        """
+        Takes the List of Dict from raw_schema with Zuora Data Types,
+        converts Zuora DataTypes to JSONSchema Types
+        Outputs the Dict that could be set inside of 
+        ::properties of json_schema.
+        """
 
-    # Convert Zuora DataTypes to JsonSchema Types
-    def _cast_schema_types(self, _schema: List[Dict]) -> Dict:
         casted_schema_types = {}
-
-        for field in range(len(_schema)):
-            field_type = _schema[field].get("type").lower()
-
-            # Casting Zuora ZOQL Data Types into JsonSchema types
-            if self._check_data_type(field_type, ["decimal(22,9)", "integer", "number", "int", "bigint", "smallint", "timestamp"]):
+        for field in schema:
+            if field.get("type") in ["decimal(22,9)", "integer", "number", "int", "bigint", "smallint", "timestamp"]:
                 field_type = ["number", "null"]
-            elif self._check_data_type(field_type, ["date", "datetime", "timestamp with time zone", "picklist", "text", "varchar"]):
+            elif field.get("type") in ["date", "datetime", "timestamp with time zone", "picklist", "text", "varchar"]:
                 field_type = ["string", "null"]
-            elif self._check_data_type(field_type, ["zoql", "binary", "json", "xml", "blob"]):
+            elif field.get("type") in ["zoql", "binary", "json", "xml", "blob"]:
                 field_type = ["object", "null"]
-            elif self._check_data_type(field_type, ["list", "array"]):
+            elif field.get("type") in ["list", "array"]:
                 field_type = ["array", "null"]
-            elif self._check_data_type(field_type, ["boolean"]):
+            elif field.get("type") in ["boolean", "bool"]:
                 field_type = ["boolean", "null"]
             else:
                 # if there is something else we don't cover, cast it as string
                 field_type = ["string", "null"]
-
-            casted_schema_types.update(**{_schema[field].get("field").lower(): {"type": field_type}})
-
+            casted_schema_types.update(**{field.get("field"): {"type": field_type}})
         return casted_schema_types
 
-    # Convert Zuora Fields data types to JSONSchema
-    def _zuora_object_to_json_schema(self, obj: str) -> Dict:
+    def zuora_get_json_schema(self, obj: str) -> Dict:
+        """ 
+        Pull out the Zuora Object's (stream) raw data-types,
+        converts them into JsonSchema types,
+        outputs the ready to go ::properties entries for the stream.
+        """
+
         self.logger.info(f"Getting schema information for {obj}")
-        raw_data_types = list(self._get_data(q_type="describe", obj=obj))
-        json_schema = []
-        # Get the raw field names and their types
-        for field in range(len(raw_data_types)):
-            json_schema.append({"field": raw_data_types[field]["Column"], "type": raw_data_types[field]["Type"]})
-        # Cast the Zuora Field Types to JsonSchema Types
-        json_schema = self._cast_schema_types(json_schema)
-        return json_schema
+        raw_data_types = self.get_data(q_type="describe", obj=obj)
+        raw_schema = [{"field": field["Column"], "type": field["Type"]} for field in raw_data_types]
+        return self.convert_schema_types(raw_schema)
 
-    # Convert Zuora Fields data types to JSONSchema
-    def _zuora_list_objects(self) -> List:
+    def zuora_list_streams(self) -> List:
+        """ 
+        Get the list of Zuora Objects (streams) from Zuora account
+        """
+
         self.logger.info("Retrieving the list of available Objects from Zuora")
-        raw_data_types = list(self._get_data(q_type="show_tables"))
-        object_list = []
-        # Get the raw field names and their types
-        for field in range(len(raw_data_types)):
-            object_list.append(raw_data_types[field]["Table"])
-        return object_list
+        zuora_stream_names = self.get_data(q_type="show_tables")
+        return [name["Table"] for name in zuora_stream_names]
 
-    # Method to handle the errors
-    def _handle_requests_exceptions(self, exception: requests.RequestException):
+    def handle_requests_exceptions(self, exception: requests.RequestException):
+
+        """
+        Method to handle exceptions for the make_request
+        """
+
         exception_code = exception.response.status_code
         # print(exception_code)
         if exception_code in [500, 404]:

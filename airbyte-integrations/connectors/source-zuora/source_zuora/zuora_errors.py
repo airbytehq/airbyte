@@ -24,7 +24,6 @@
 
 
 import sys
-from typing import List
 
 import requests
 from airbyte_cdk import AirbyteLogger
@@ -35,33 +34,6 @@ class Error(Exception):
 
     # Define the instance of the Native Airbyte Logger
     logger = AirbyteLogger()
-
-
-class EndDateError(Error):
-    """ The error occures when the START DATE is bigger than END DATE """
-
-    def __init__(self, message="'End Date' should be bigger than 'Start Date'!"):
-        self.message = message
-        super().__init__(self.logger.error(self.message))
-        # Exit with non-zero status
-        sys.exit(1)
-
-
-# ZOQL Query Errors
-class ZOQLQueryNotValid(Error):
-    """
-    The error raises when the Query Type is not valid or used wrong type.
-    """
-
-    def __init__(self, q_type: str, valid_q_types: List):
-        self.q_type = q_type
-        self.valid_q_types = valid_q_types
-        self.message = self.logger.error(
-            f"Query Type is not valid, Type used: '{self.q_type}'', please use one of the following types: {self.valid_q_types}"
-        )
-        super().__init__(self.message)
-        # Exit with non-zero status
-        sys.exit(1)
 
 
 class ZOQLQueryError(Error):
