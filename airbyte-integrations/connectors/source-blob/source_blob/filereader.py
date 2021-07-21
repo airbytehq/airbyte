@@ -23,9 +23,7 @@
 #
 
 from abc import ABC, abstractmethod
-from copy import deepcopy
 import json
-from os import read, uname
 from typing import Iterator
 
 from airbyte_cdk.logger import AirbyteLogger

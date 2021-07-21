@@ -49,7 +49,7 @@ class PermissionsError(Exception):
     """User doesn't have enough permissions"""
 
 
-class BlobFile(ABC):
+class FileClient(ABC):
     """ TODO docstring
     Manages accessing a file using smart_open. Child classes implement provider specific logic.
     """
@@ -140,7 +140,7 @@ class BlobFile(ABC):
         # return smart_open.open(self.fullurl, mode=mode)
 
 
-class BlobFileS3(BlobFile):
+class FileClientS3(FileClient):
     """TODO docstring"""
 
     class _Decorators():
@@ -168,7 +168,7 @@ class BlobFileS3(BlobFile):
 
     @property
     def storage_scheme(self) -> str:
-        return f"s3://"
+        return "s3://"
 
     @property
     def url(self) -> str:
@@ -204,7 +204,7 @@ class BlobFileS3(BlobFile):
         return result
 
 
-class BlobFileGCS(BlobFile):
+class FileClientGCS(FileClient):
     """TODO docstring"""
 
     @property
@@ -235,7 +235,7 @@ class BlobFileGCS(BlobFile):
         return file_to_close
 
 
-class BlobFileAzure(BlobFile):
+class FileClientAzure(FileClient):
     """TODO docstring"""
 
     @property

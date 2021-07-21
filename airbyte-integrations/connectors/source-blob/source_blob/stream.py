@@ -33,7 +33,7 @@ from airbyte_cdk.models.airbyte_protocol import SyncMode
 from fnmatch import fnmatch
 from smart_open.s3 import _list_bucket
 from jsonschema import Draft4Validator, SchemaError
-from .blobfile import BlobFile, BlobFileS3
+from .fileclient import FileClient, FileClientS3
 from .filereader import FileReaderCsv
 
 from airbyte_cdk.logger import AirbyteLogger
@@ -65,7 +65,7 @@ class BlobStream(Stream, ABC):
         self._path_patterns = path_patterns
         self._provider = provider
         self._format = format
-        self._schema = {} 
+        self._schema = {}
         if schema:
             try:
                 self._schema = json.loads(schema)
@@ -81,61 +81,61 @@ class BlobStream(Stream, ABC):
                 raise ConfigurationError(error_msg) from err
             self.logger.info(f"initial schema state: {self._schema}")
             # TODO: we could still have an 'invalid' schema after this, should we handle that explicitly?
-        self.blob_cache = None
+        self.fileclient_cache = None
         self.master_schema = None
-
-    @property
-    @abstractmethod
-    def blobfile_class(self) -> str:
-        """TODO docstring"""
 
     @property
     def name(self) -> str:
         return self.dataset_name
 
     @property
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        return None  # TODO: do we want to implement something here?
+
+    @property
     def filereader_class(self) -> str:
         return self.format_filereader_map[self._format.get("filetype")]
 
     @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        return None  # TODO: do we want to implement something here?
+    @abstractmethod
+    def fileclient_class(self) -> str:
+        """TODO docstring"""
 
     @staticmethod
     @abstractmethod
-    def blob_iterator(logger: AirbyteLogger, provider: dict) -> Iterator[str]:
+    def filepath_iterator(logger: AirbyteLogger, provider: dict) -> Iterator[str]:
         """
         TODO docstring
-        This needs to yield the 'url' to use in BlobFile(). This is possibly better described as blob or blob path. e.g.
+        This needs to yield the 'url' to use in FileClient(). This is possibly better described as blob or file path. e.g.
             For AWS: f"{self.storage_scheme}{aws_access_key_id}:{aws_secret_access_key}@{self.url}" <- self.url is what we want to yield here
         """
 
-    def pattern_matched_blobs_iterator(self) -> Iterator[str]:
+    def pattern_matched_filepath_iterator(self) -> Iterator[str]:
         """ TODO docstring """
-        for blob in self.blob_iterator(self.logger, self._provider):
+        for filepath in self.filepath_iterator(self.logger, self._provider):
             for path_pattern in self._path_patterns:
-                if fnmatch(blob, path_pattern):
-                    yield blob
+                if fnmatch(filepath, path_pattern):
+                    yield filepath
 
-    def time_ordered_blobfile_iterator(self) -> Iterable[Tuple[datetime, BlobFile]]:
+    def time_ordered_fileclient_iterator(self) -> Iterable[Tuple[datetime, FileClient]]:
         """TODO docstring"""
 
-        def get_blobfile_with_lastmod(blob) -> Tuple[datetime, BlobFile]:
-            bf = self.blobfile_class(blob, self._provider)
-            return (bf.last_modified, bf)
+        def get_fileclient_with_lastmod(blob) -> Tuple[datetime, FileClient]:
+            fc = self.fileclient_class(blob, self._provider)
+            return (fc.last_modified, fc)
 
-        if self.blob_cache is None:
-            blobfiles = []  # list of tuples (datetime, BlobFile) which we'll use to sort
+        if self.fileclient_cache is None:
+            fileclients = []  # list of tuples (datetime, FileClient) which we'll use to sort
             # use concurrent future threads to parallelise grabbing last_modified from all the files
             # TODO: don't hardcode max_workers like this
             with concurrent.futures.ThreadPoolExecutor(max_workers=64) as executor:
-                futures = {executor.submit(get_blobfile_with_lastmod, blob): blob for blob in self.pattern_matched_blobs_iterator()}
+                futures = {executor.submit(get_fileclient_with_lastmod, fp): fp for fp in self.pattern_matched_filepath_iterator()}
                 for future in concurrent.futures.as_completed(futures):
-                    blobfiles.append(future.result())  # this will failfast on any errors
+                    fileclients.append(future.result())  # this will failfast on any errors
 
-            self.blob_cache = sorted(blobfiles, key=itemgetter(0))
+            self.fileclient_cache = sorted(fileclients, key=itemgetter(0))
 
-        return self.blob_cache
+        return self.fileclient_cache
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """
@@ -259,7 +259,7 @@ class BlobStream(Stream, ABC):
                         {self.ab_last_mod_col: datetime.strftime(file_info['last_modified'], self.datetime_format_string),
                          self.ab_file_name_col: file_info['unique_url']})
                     yield complete_record
-        self.logger.info("read a stream slice")
+        self.logger.info("finished reading a stream slice")
 
 
 class IncrementalBlobStream(BlobStream, ABC):
