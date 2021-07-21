@@ -48,7 +48,7 @@ class CartStream(HttpStream, ABC):
         """
         retry_after = response.headers.get("Retry-After")
         if retry_after:
-            return int(retry_after)
+            return float(retry_after)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_json = response.json()

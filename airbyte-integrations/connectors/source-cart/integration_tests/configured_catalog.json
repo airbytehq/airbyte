@@ -1,10 +1,8 @@
 {
   "streams": [
     {
-      "cursor_field": ["updated_at"],
-      "destination_sync_mode": "append",
       "stream": {
-        "default_cursor_field": ["updated_at"],
+        "name": "customers_cart",
         "json_schema": {
           "properties": {
             "adcode": {
@@ -118,17 +116,17 @@
           },
           "type": "object"
         },
-        "name": "customers_cart",
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "supported_sync_modes": ["full_refresh", "incremental"]
+        "default_cursor_field": ["updated_at"]
       },
-      "sync_mode": "incremental"
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
     },
     {
-      "cursor_field": ["updated_at"],
-      "destination_sync_mode": "append",
       "stream": {
-        "default_cursor_field": ["updated_at"],
+        "name": "orders",
         "json_schema": {
           "properties": {
             "adcode": {
@@ -308,17 +306,17 @@
           },
           "type": "object"
         },
-        "name": "orders",
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "supported_sync_modes": ["full_refresh", "incremental"]
+        "default_cursor_field": ["updated_at"]
       },
-      "sync_mode": "incremental"
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
     },
     {
-      "cursor_field": ["updated_at"],
-      "destination_sync_mode": "append",
       "stream": {
-        "default_cursor_field": ["updated_at"],
+        "name": "order_payments",
         "json_schema": {
           "properties": {
             "amount": {
@@ -426,17 +424,17 @@
           },
           "type": "object"
         },
-        "name": "order_payments",
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "supported_sync_modes": ["full_refresh", "incremental"]
+        "default_cursor_field": ["updated_at"]
       },
-      "sync_mode": "incremental"
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
     },
     {
-      "cursor_field": ["updated_at"],
-      "destination_sync_mode": "append",
       "stream": {
-        "default_cursor_field": ["updated_at"],
+        "name": "products",
         "json_schema": {
           "properties": {
             "add_to_cart_message": {
@@ -817,11 +815,13 @@
           },
           "type": "object"
         },
-        "name": "products",
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "supported_sync_modes": ["full_refresh", "incremental"]
+        "default_cursor_field": ["updated_at"]
       },
-      "sync_mode": "incremental"
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
     }
   ]
 }

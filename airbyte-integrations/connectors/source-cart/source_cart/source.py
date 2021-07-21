@@ -25,6 +25,7 @@
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
+import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -52,6 +53,8 @@ class SourceCart(AbstractSource):
             next(records)
             return True, None
         except Exception as e:
+            if isinstance(e, requests.exceptions.HTTPError) and e.response.status_code == 401:
+                return False, f"Please check you api_key. Error: {repr(e)}"
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

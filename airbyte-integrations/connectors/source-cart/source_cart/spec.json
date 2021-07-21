@@ -7,10 +7,6 @@
     "required": ["access_token", "start_date", "store_name"],
     "additionalProperties": false,
     "properties": {
-      "username": {
-        "type": "string",
-        "description": "The Username or email you use to sign into Mailchimp"
-      },
       "access_token": {
         "type": "string",
         "airbyte_secret": true,
