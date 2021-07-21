@@ -47,6 +47,16 @@ const TableItemTitle: React.FC<IProps> = ({
   entityIcon,
 }) => {
   const formatMessage = useIntl().formatMessage;
+  const options = [
+    {
+      label: formatMessage({
+        id: `tables.${type}AddNew`,
+      }),
+      value: "create-new-item",
+      primary: true,
+    },
+    ...dropDownData,
+  ];
 
   return (
     <>
@@ -63,23 +73,17 @@ const TableItemTitle: React.FC<IProps> = ({
         </H5>
         <Popout
           data-testid={`select-${type}`}
+          options={options}
+          styles={{
+            // TODO: hack to position select
+            menuPortal: (base) => ({ ...base, "margin-left": "-120px" }),
+          }}
           onChange={onSelect}
-          targetComponent={({ onOpen }: any) => (
+          targetComponent={({ onOpen }) => (
             <Button onClick={onOpen}>
               <FormattedMessage id={`tables.${type}Add`} />
             </Button>
           )}
-          options={[
-            {
-              label: formatMessage({
-                id: `tables.${type}AddNew`,
-              }),
-              value: "create-new-item",
-              primary: true,
-            },
-            ...dropDownData,
-          ]}
-          hasFilter
         />
       </Content>
     </>
