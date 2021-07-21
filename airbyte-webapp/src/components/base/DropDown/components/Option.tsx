@@ -2,9 +2,8 @@ import React from "react";
 import styled from "styled-components";
 import { components, OptionProps, OptionTypeBase } from "react-select";
 
-import { naturalComparatorBy } from "utils/objects";
-import Text from "./Text";
 import CheckBox from "components/base/CheckBox";
+import Text from "./Text";
 
 export type IProps = {
   data: { disabled: boolean; index: number; fullText?: boolean } & IDataItem;
@@ -73,9 +72,5 @@ const Option: React.FC<IProps> = (props) => {
     </components.Option>
   );
 };
-
-export const defaultDataItemSort = naturalComparatorBy<IDataItem>(
-  (dataItem) => dataItem.label || ""
-);
 
 export default Option;

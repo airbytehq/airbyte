@@ -5,9 +5,9 @@ import Select, { Props } from "react-select";
 import DropdownIndicator from "./components/DropdownIndicator";
 import Menu from "./components/Menu";
 import SingleValue from "./components/SingleValue";
-import Option from "./components/Option";
+import Option, { IDataItem } from "./components/Option";
 
-import { equal } from "utils/objects";
+import { equal, naturalComparatorBy } from "utils/objects";
 import { SelectComponentsConfig } from "react-select/src/components";
 
 type OptionType = any;
@@ -103,6 +103,10 @@ const DropDown: React.FC<DropdownProps> = (props) => {
   );
 };
 
+const defaultDataItemSort = naturalComparatorBy<IDataItem>(
+  (dataItem) => dataItem.label || ""
+);
+
 export default DropDown;
-export { DropDown };
+export { DropDown, defaultDataItemSort };
 export type { DropdownProps };

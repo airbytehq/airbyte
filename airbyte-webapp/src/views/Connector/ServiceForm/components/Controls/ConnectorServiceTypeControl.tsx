@@ -5,7 +5,13 @@ import { components } from "react-select";
 import { MenuListComponentProps } from "react-select/src/components/Menu";
 import styled from "styled-components";
 
-import { ControlLabels, DropDown, DropDownRow, ImageBlock } from "components";
+import {
+  ControlLabels,
+  defaultDataItemSort,
+  DropDown,
+  DropDownRow,
+  ImageBlock,
+} from "components";
 
 import { FormBaseItem } from "core/form/types";
 import { SourceDefinition } from "core/resources/SourceDefinition";
@@ -86,7 +92,7 @@ const ConnectorServiceTypeControl: React.FC<{
             : item.destinationDefinitionId,
           img: <ImageBlock img={item.icon} />,
         }))
-        .sort(DropDownRow.defaultDataItemSort),
+        .sort(defaultDataItemSort),
     [availableServices]
   );
 
