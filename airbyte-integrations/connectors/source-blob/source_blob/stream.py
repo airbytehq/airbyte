@@ -44,7 +44,7 @@ class ConfigurationError(Exception):
     """Client mis-configured"""
 
 
-class BlobStream(Stream, ABC):
+class FileStream(Stream, ABC):
     """
     TODO docstring
     """
@@ -120,8 +120,8 @@ class BlobStream(Stream, ABC):
     def time_ordered_fileclient_iterator(self) -> Iterable[Tuple[datetime, FileClient]]:
         """TODO docstring"""
 
-        def get_fileclient_with_lastmod(blob) -> Tuple[datetime, FileClient]:
-            fc = self.fileclient_class(blob, self._provider)
+        def get_fileclient_with_lastmod(filepath) -> Tuple[datetime, FileClient]:
+            fc = self.fileclient_class(filepath, self._provider)
             return (fc.last_modified, fc)
 
         if self.fileclient_cache is None:
@@ -157,8 +157,8 @@ class BlobStream(Stream, ABC):
 
             file_reader = self.filereader_class(self._format)
             # time order isn't necessary here but we might as well use this method so we cache the list for later use
-            for _, blobfile in self.time_ordered_blobfile_iterator():
-                with blobfile.open(file_reader.is_binary) as f:
+            for _, fileclient in self.time_ordered_fileclient_iterator():
+                with fileclient.open(file_reader.is_binary) as f:
                     this_schema = file_reader.get_inferred_schema(f)
 
                 if this_schema == master_schema:
@@ -173,12 +173,12 @@ class BlobStream(Stream, ABC):
                         # this is to allow more leniency as we may be able to coerce this datatype mismatch on read according to provided schema state
                         # if not, then the read will error anyway
                         if col in self._schema.keys():
-                            self.logger.warn(f"Detected mismatched datatype on column '{col}', in file '{blobfile.url}'. "
+                            self.logger.warn(f"Detected mismatched datatype on column '{col}', in file '{fileclient.url}'. "
                                              + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'.")
                         # else we're inferring the schema (or at least this column) from scratch and therefore throw an error on mismatching datatypes
                         else:
                             raise RuntimeError(
-                                f"Detected mismatched datatype on column '{col}', in file '{blobfile.url}'. "
+                                f"Detected mismatched datatype on column '{col}', in file '{fileclient.url}'. "
                                 + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'."
                             )
 
@@ -204,11 +204,11 @@ class BlobStream(Stream, ABC):
         # TODO: this could be optimised via concurrent reads, however we'd lose chronology and need to deal with knock-ons of that
         # spoke with Sherif, we could do this concurrently both full and incremental by running batches in parallel
         # and then incrementing the cursor per each complete batch
-        for last_mod, blobfile in self.time_ordered_blobfile_iterator():
+        for last_mod, fileclient in self.time_ordered_fileclient_iterator():
             yield [{
-                "unique_url": blobfile.url,
+                "unique_url": fileclient.url,
                 "last_modified": last_mod,
-                "blobfile": blobfile
+                "fileclient": fileclient
             }]
 
     def _match_target_schema(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -250,7 +250,7 @@ class BlobStream(Stream, ABC):
 
         # TODO: read all files in a stream_slice concurrently
         for file_info in stream_slice:
-            with file_info['blobfile'].open(file_reader.is_binary) as f:
+            with file_info['fileclient'].open(file_reader.is_binary) as f:
                 # TODO: make this more efficient than mutating every record one-by-one as they stream
                 for record in file_reader.stream_records(f):
                     schema_matched_record = self._match_target_schema(record)
@@ -262,7 +262,7 @@ class BlobStream(Stream, ABC):
         self.logger.info("finished reading a stream slice")
 
 
-class IncrementalBlobStream(BlobStream, ABC):
+class IncrementalFileStream(FileStream, ABC):
     """
     TODO docstring
     """
@@ -272,7 +272,7 @@ class IncrementalBlobStream(BlobStream, ABC):
 
     # TODO: override self._schema to assign it as the schema state from previous incremental if there is one
 
-    # TODO: would be great if we could override time_ordered_blobfile_iterator() here with state awareness
+    # TODO: would be great if we could override time_ordered_fileclient_iterator() here with state awareness
     # this would allow filtering down to only files we need early and avoid unnecessary work
 
     @property
@@ -325,7 +325,7 @@ class IncrementalBlobStream(BlobStream, ABC):
             prev_file_last_mod = None  # init variable to hold previous iterations last modified
             stream_slice = []
 
-            for last_mod, blobfile in self.time_ordered_blobfile_iterator():
+            for last_mod, fileclient in self.time_ordered_fileclient_iterator():
                 # skip this file if not needed in this incremental
                 if (
                     stream_state is not None
@@ -334,15 +334,15 @@ class IncrementalBlobStream(BlobStream, ABC):
                 ):
                     continue
 
-                # check if this blobfile belongs in the next slice, if so yield the current slice before this file
+                # check if this fileclient belongs in the next slice, if so yield the current slice before this file
                 if (prev_file_last_mod is not None) and (last_mod != prev_file_last_mod):
                     yield stream_slice
                     stream_slice.clear()
                 # now we either have an empty stream_slice or a stream_slice that this file shares a last modified with, so append it
                 stream_slice.append({
-                    "unique_url": blobfile.url,
+                    "unique_url": fileclient.url,
                     "last_modified": last_mod,
-                    "blobfile": blobfile
+                    "fileclient": fileclient
                 })
                 # update our prev_file_last_mod to this one for next iteration
                 prev_file_last_mod = last_mod
@@ -352,15 +352,15 @@ class IncrementalBlobStream(BlobStream, ABC):
                 yield stream_slice
 
 
-class IncrementalBlobStreamS3(IncrementalBlobStream):
+class IncrementalFileStreamS3(IncrementalFileStream):
     """TODO docstring"""
 
     @property
-    def blobfile_class(self) -> str:
-        return BlobFileS3
+    def fileclient_class(self) -> str:
+        return FileClientS3
 
     @staticmethod
-    def blob_iterator(logger: AirbyteLogger, provider: dict) -> Tuple[bool, Optional[Any]]:
+    def filepath_iterator(logger: AirbyteLogger, provider: dict) -> Tuple[bool, Optional[Any]]:
 
         prefix = provider["path_prefix"]
         if prefix is None:
@@ -369,7 +369,7 @@ class IncrementalBlobStreamS3(IncrementalBlobStream):
         msg = f"Iterating S3 bucket '{provider['bucket']}'"
         logger.info(msg + f" with prefix: '{prefix}' " if prefix != "" else msg)
 
-        # TODO: use BlobFileS3.use_aws_account to check if we're using public or private bucket
+        # TODO: use FileClientS3.use_aws_account to check if we're using public or private bucket
         #   then make this work for public as well
 
         for blob in _list_bucket(bucket_name=provider['bucket'],

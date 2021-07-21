@@ -29,7 +29,6 @@ from fnmatch import fnmatch
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from .blobfile import BlobFileS3
 from .stream import IncrementalBlobStreamS3
 
 
@@ -46,14 +45,14 @@ class SourceBlob(AbstractSource, ABC):
             - That the credentials provided in config are valid for access.
             - That the path provided in config is valid to be globbed.
         """
-        found_a_blob = False
+        found_a_file = False
         try:
-            for blob_name in self.stream_class.blob_iterator(logger, config.get("provider")):
+            for filepath in self.stream_class.filepath_iterator(logger, config.get("provider")):
                 for path_pattern in config.get("path_patterns"):
-                    fnmatch(blob_name, path_pattern)  # test that matching on the pattern doesn't error
-                    found_a_blob = True
-                    break  # just find first blob then break, no need to search all yet
-                if found_a_blob:
+                    fnmatch(filepath, path_pattern)  # test that matching on the pattern doesn't error
+                    found_a_file = True
+                    break  # just find first file then break, no need to search all here
+                if found_a_file:
                     break
 
         except Exception as e:
@@ -61,8 +60,8 @@ class SourceBlob(AbstractSource, ABC):
             return (False, e)
 
         else:
-            if not found_a_blob:
-                logger.warn("Found 0 blobs (but connection is valid).")
+            if not found_a_file:
+                logger.warn("Found 0 files (but connection is valid).")
             return (True, None)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

@@ -23,11 +23,9 @@
 #
 
 from abc import ABC, abstractmethod
-from collections import namedtuple
 from datetime import datetime
 import json
 import traceback
-from urllib.parse import urlparse
 from boto3 import session as boto3session
 import smart_open
 from azure.storage.blob import BlobServiceClient
@@ -189,7 +187,7 @@ class FileClientS3(FileClient):
         return aws_access_key_id and aws_secret_access_key
 
     def _open(self, binary):
-
+        """ TODO docstring """
         mode = "rb" if binary else "r"
         if self.use_aws_account(self._provider):
             aws_access_key_id = self._provider.get("aws_access_key_id", "")

@@ -14,7 +14,6 @@
       "provider": {
         "type": "object",
         "description": "Storage Provider or Location of the file(s) to be replicated.",
-        "default": "Public Web",
         "oneOf": [
           {
             "title": "S3: Amazon Web Services",
@@ -49,7 +48,6 @@
       "format": {
         "type": "object",
         "description": "File Format of the file to be replicated (Warning: some format may be experimental, please refer to docs).",
-        "default": "csv",
         "oneOf": [
           {
             "title": "csv",
