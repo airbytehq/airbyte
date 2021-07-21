@@ -64,17 +64,19 @@ class SourceZendeskSupport(AbstractSource):
         if err:
             return False, err
         try:
-            settings, err = UserSettingsStream(config["subdomain"], authenticator=auth).get_settings()
+            settings, err = UserSettingsStream(
+                config["subdomain"], authenticator=auth).get_settings()
         except requests.exceptions.RequestException as e:
             return False, e
 
         if err:
             raise Exception(err)
             return False, err
-        active_features = [k for k, v in settings.get("active_features", {}).items() if v]
+        active_features = [k for k, v in settings.get(
+            "active_features", {}).items() if v]
         logger.info("available features: %s" % active_features)
         if "organization_access_enabled" not in active_features:
-            return False, "Organization access is not enabled. Please check admin permission of the currect account"
+            return False, "Organization access is not enabled. Please check admin permission of the current account"
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

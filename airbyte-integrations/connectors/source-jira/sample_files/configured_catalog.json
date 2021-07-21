@@ -69,7 +69,9 @@
           "additionalProperties": false,
           "description": "Details of an application role."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -135,7 +137,9 @@
           "additionalProperties": false,
           "description": "List of system avatars."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -325,7 +329,12 @@
                             "type": "string",
                             "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
                             "readOnly": true,
-                            "enum": ["atlassian", "app", "customer", "unknown"]
+                            "enum": [
+                              "atlassian",
+                              "app",
+                              "customer",
+                              "unknown"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -1383,7 +1392,10 @@
                                   "type": "string",
                                   "description": "The type of scope.",
                                   "readOnly": true,
-                                  "enum": ["PROJECT", "TEMPLATE"]
+                                  "enum": [
+                                    "PROJECT",
+                                    "TEMPLATE"
+                                  ]
                                 },
                                 "project": {
                                   "description": "The project the item has scope in.",
@@ -1498,7 +1510,10 @@
                         "type": "string",
                         "description": "The default assignee when creating issues for this project.",
                         "readOnly": true,
-                        "enum": ["PROJECT_LEAD", "UNASSIGNED"]
+                        "enum": [
+                          "PROJECT_LEAD",
+                          "UNASSIGNED"
+                        ]
                       },
                       "versions": {
                         "type": "array",
@@ -1718,7 +1733,11 @@
                         "type": "string",
                         "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
                         "readOnly": true,
-                        "enum": ["software", "service_desk", "business"]
+                        "enum": [
+                          "software",
+                          "service_desk",
+                          "business"
+                        ]
                       },
                       "simplified": {
                         "type": "boolean",
@@ -1729,7 +1748,10 @@
                         "type": "string",
                         "description": "The type of the project.",
                         "readOnly": true,
-                        "enum": ["classic", "next-gen"]
+                        "enum": [
+                          "classic",
+                          "next-gen"
+                        ]
                       },
                       "favourite": {
                         "type": "boolean",
@@ -1786,7 +1808,11 @@
                                 },
                                 "globalHierarchyLevel": {
                                   "type": "string",
-                                  "enum": ["SUBTASK", "BASE", "EPIC"]
+                                  "enum": [
+                                    "SUBTASK",
+                                    "BASE",
+                                    "EPIC"
+                                  ]
                                 }
                               }
                             }
@@ -1879,7 +1905,12 @@
                             "type": "string",
                             "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
                             "readOnly": true,
-                            "enum": ["atlassian", "app", "customer", "unknown"]
+                            "enum": [
+                              "atlassian",
+                              "app",
+                              "customer",
+                              "unknown"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -2122,7 +2153,12 @@
                             "type": "string",
                             "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
                             "readOnly": true,
-                            "enum": ["atlassian", "app", "customer", "unknown"]
+                            "enum": [
+                              "atlassian",
+                              "app",
+                              "customer",
+                              "unknown"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -2433,7 +2469,10 @@
                             "type": "string",
                             "description": "The type of scope.",
                             "readOnly": true,
-                            "enum": ["PROJECT", "TEMPLATE"]
+                            "enum": [
+                              "PROJECT",
+                              "TEMPLATE"
+                            ]
                           },
                           "project": {
                             "description": "The project the item has scope in.",
@@ -2463,7 +2502,11 @@
                                 "type": "string",
                                 "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
                                 "readOnly": true,
-                                "enum": ["software", "service_desk", "business"]
+                                "enum": [
+                                  "software",
+                                  "service_desk",
+                                  "business"
+                                ]
                               },
                               "simplified": {
                                 "type": "boolean",
@@ -2581,7 +2624,9 @@
           "additionalProperties": false,
           "description": "Details of a dashboard."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -2637,7 +2682,12 @@
                   "type": "string",
                   "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
                   "readOnly": true,
-                  "enum": ["atlassian", "app", "customer", "unknown"]
+                  "enum": [
+                    "atlassian",
+                    "app",
+                    "customer",
+                    "unknown"
+                  ]
                 },
                 "name": {
                   "type": "string",
@@ -2954,7 +3004,12 @@
                             "type": "string",
                             "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
                             "readOnly": true,
-                            "enum": ["atlassian", "app", "customer", "unknown"]
+                            "enum": [
+                              "atlassian",
+                              "app",
+                              "customer",
+                              "unknown"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -4012,7 +4067,10 @@
                                   "type": "string",
                                   "description": "The type of scope.",
                                   "readOnly": true,
-                                  "enum": ["PROJECT", "TEMPLATE"]
+                                  "enum": [
+                                    "PROJECT",
+                                    "TEMPLATE"
+                                  ]
                                 },
                                 "project": {
                                   "description": "The project the item has scope in.",
@@ -4127,7 +4185,10 @@
                         "type": "string",
                         "description": "The default assignee when creating issues for this project.",
                         "readOnly": true,
-                        "enum": ["PROJECT_LEAD", "UNASSIGNED"]
+                        "enum": [
+                          "PROJECT_LEAD",
+                          "UNASSIGNED"
+                        ]
                       },
                       "versions": {
                         "type": "array",
@@ -4347,7 +4408,11 @@
                         "type": "string",
                         "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
                         "readOnly": true,
-                        "enum": ["software", "service_desk", "business"]
+                        "enum": [
+                          "software",
+                          "service_desk",
+                          "business"
+                        ]
                       },
                       "simplified": {
                         "type": "boolean",
@@ -4358,7 +4423,10 @@
                         "type": "string",
                         "description": "The type of the project.",
                         "readOnly": true,
-                        "enum": ["classic", "next-gen"]
+                        "enum": [
+                          "classic",
+                          "next-gen"
+                        ]
                       },
                       "favourite": {
                         "type": "boolean",
@@ -4415,7 +4483,11 @@
                                 },
                                 "globalHierarchyLevel": {
                                   "type": "string",
-                                  "enum": ["SUBTASK", "BASE", "EPIC"]
+                                  "enum": [
+                                    "SUBTASK",
+                                    "BASE",
+                                    "EPIC"
+                                  ]
                                 }
                               }
                             }
@@ -4508,7 +4580,12 @@
                             "type": "string",
                             "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
                             "readOnly": true,
-                            "enum": ["atlassian", "app", "customer", "unknown"]
+                            "enum": [
+                              "atlassian",
+                              "app",
+                              "customer",
+                              "unknown"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -4751,7 +4828,12 @@
                             "type": "string",
                             "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
                             "readOnly": true,
-                            "enum": ["atlassian", "app", "customer", "unknown"]
+                            "enum": [
+                              "atlassian",
+                              "app",
+                              "customer",
+                              "unknown"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -5062,7 +5144,10 @@
                             "type": "string",
                             "description": "The type of scope.",
                             "readOnly": true,
-                            "enum": ["PROJECT", "TEMPLATE"]
+                            "enum": [
+                              "PROJECT",
+                              "TEMPLATE"
+                            ]
                           },
                           "project": {
                             "description": "The project the item has scope in.",
@@ -5092,7 +5177,11 @@
                                 "type": "string",
                                 "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
                                 "readOnly": true,
-                                "enum": ["software", "service_desk", "business"]
+                                "enum": [
+                                  "software",
+                                  "service_desk",
+                                  "business"
+                                ]
                               },
                               "simplified": {
                                 "type": "boolean",
@@ -5238,7 +5327,12 @@
                         "type": "string",
                         "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
                         "readOnly": true,
-                        "enum": ["atlassian", "app", "customer", "unknown"]
+                        "enum": [
+                          "atlassian",
+                          "app",
+                          "customer",
+                          "unknown"
+                        ]
                       },
                       "name": {
                         "type": "string",
@@ -5470,7 +5564,9 @@
           "additionalProperties": false,
           "description": "Details of a filter."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -5558,7 +5654,12 @@
                       "type": "string",
                       "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
                       "readOnly": true,
-                      "enum": ["atlassian", "app", "customer", "unknown"]
+                      "enum": [
+                        "atlassian",
+                        "app",
+                        "customer",
+                        "unknown"
+                      ]
                     },
                     "name": {
                       "type": "string",
@@ -5816,7 +5917,12 @@
                             "type": "string",
                             "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
                             "readOnly": true,
-                            "enum": ["atlassian", "app", "customer", "unknown"]
+                            "enum": [
+                              "atlassian",
+                              "app",
+                              "customer",
+                              "unknown"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -6068,7 +6174,12 @@
                             "type": "string",
                             "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
                             "readOnly": true,
-                            "enum": ["atlassian", "app", "customer", "unknown"]
+                            "enum": [
+                              "atlassian",
+                              "app",
+                              "customer",
+                              "unknown"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -6311,7 +6422,12 @@
                             "type": "string",
                             "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
                             "readOnly": true,
-                            "enum": ["atlassian", "app", "customer", "unknown"]
+                            "enum": [
+                              "atlassian",
+                              "app",
+                              "customer",
+                              "unknown"
+                            ]
                           },
                           "name": {
                             "type": "string",
@@ -6601,7 +6717,10 @@
                             "type": "string",
                             "description": "The type of scope.",
                             "readOnly": true,
-                            "enum": ["PROJECT", "TEMPLATE"]
+                            "enum": [
+                              "PROJECT",
+                              "TEMPLATE"
+                            ]
                           },
                           "project": {
                             "description": "The project the item has scope in.",
@@ -6631,7 +6750,11 @@
                                 "type": "string",
                                 "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
                                 "readOnly": true,
-                                "enum": ["software", "service_desk", "business"]
+                                "enum": [
+                                  "software",
+                                  "service_desk",
+                                  "business"
+                                ]
                               },
                               "simplified": {
                                 "type": "boolean",
@@ -6712,7 +6835,10 @@
                   "type": "string",
                   "description": "The default assignee when creating issues for this project.",
                   "readOnly": true,
-                  "enum": ["PROJECT_LEAD", "UNASSIGNED"]
+                  "enum": [
+                    "PROJECT_LEAD",
+                    "UNASSIGNED"
+                  ]
                 },
                 "versions": {
                   "type": "array",
@@ -6932,7 +7058,11 @@
                   "type": "string",
                   "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
                   "readOnly": true,
-                  "enum": ["software", "service_desk", "business"]
+                  "enum": [
+                    "software",
+                    "service_desk",
+                    "business"
+                  ]
                 },
                 "simplified": {
                   "type": "boolean",
@@ -6943,7 +7073,10 @@
                   "type": "string",
                   "description": "The type of the project.",
                   "readOnly": true,
-                  "enum": ["classic", "next-gen"]
+                  "enum": [
+                    "classic",
+                    "next-gen"
+                  ]
                 },
                 "favourite": {
                   "type": "boolean",
@@ -7000,7 +7133,11 @@
                           },
                           "globalHierarchyLevel": {
                             "type": "string",
-                            "enum": ["SUBTASK", "BASE", "EPIC"]
+                            "enum": [
+                              "SUBTASK",
+                              "BASE",
+                              "EPIC"
+                            ]
                           }
                         }
                       }
@@ -7093,7 +7230,12 @@
                       "type": "string",
                       "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
                       "readOnly": true,
-                      "enum": ["atlassian", "app", "customer", "unknown"]
+                      "enum": [
+                        "atlassian",
+                        "app",
+                        "customer",
+                        "unknown"
+                      ]
                     },
                     "name": {
                       "type": "string",
@@ -7336,7 +7478,12 @@
                       "type": "string",
                       "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
                       "readOnly": true,
-                      "enum": ["atlassian", "app", "customer", "unknown"]
+                      "enum": [
+                        "atlassian",
+                        "app",
+                        "customer",
+                        "unknown"
+                      ]
                     },
                     "name": {
                       "type": "string",
@@ -7647,7 +7794,10 @@
                       "type": "string",
                       "description": "The type of scope.",
                       "readOnly": true,
-                      "enum": ["PROJECT", "TEMPLATE"]
+                      "enum": [
+                        "PROJECT",
+                        "TEMPLATE"
+                      ]
                     },
                     "project": {
                       "description": "The project the item has scope in.",
@@ -7677,7 +7827,11 @@
                           "type": "string",
                           "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
                           "readOnly": true,
-                          "enum": ["software", "service_desk", "business"]
+                          "enum": [
+                            "software",
+                            "service_desk",
+                            "business"
+                          ]
                         },
                         "simplified": {
                           "type": "boolean",
@@ -7787,7 +7941,9 @@
           "additionalProperties": false,
           "description": "Details of a share permission for the filter."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -7838,7 +7994,11 @@
                         "type": {
                           "type": "string",
                           "description": "The type of the group label.",
-                          "enum": ["ADMIN", "SINGLE", "MULTIPLE"]
+                          "enum": [
+                            "ADMIN",
+                            "SINGLE",
+                            "MULTIPLE"
+                          ]
                         }
                       }
                     }
@@ -7854,7 +8014,9 @@
           "additionalProperties": false,
           "description": "The list of groups found in a search, including header text (Showing X of Y matching groups) and total of matched groups."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -7960,12 +8122,18 @@
           },
           "additionalProperties": false
         },
-        "supported_sync_modes": ["incremental"],
+        "supported_sync_modes": [
+          "incremental"
+        ],
         "source_defined_cursor": true,
-        "default_cursor_field": ["created"]
+        "default_cursor_field": [
+          "created"
+        ]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["created"],
+      "cursor_field": [
+        "created"
+      ],
       "destination_sync_mode": "append"
     },
     {
@@ -8029,7 +8197,9 @@
           "additionalProperties": true,
           "description": "A comment."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -8086,7 +8256,10 @@
                   "type": "string",
                   "description": "The type of scope.",
                   "readOnly": true,
-                  "enum": ["PROJECT", "TEMPLATE"]
+                  "enum": [
+                    "PROJECT",
+                    "TEMPLATE"
+                  ]
                 },
                 "project": {
                   "description": "The project the item has scope in.",
@@ -8116,7 +8289,11 @@
                       "type": "string",
                       "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
                       "readOnly": true,
-                      "enum": ["software", "service_desk", "business"]
+                      "enum": [
+                        "software",
+                        "service_desk",
+                        "business"
+                      ]
                     },
                     "simplified": {
                       "type": "boolean",
@@ -8225,7 +8402,9 @@
           "additionalProperties": false,
           "description": "Details about a field."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -8259,7 +8438,9 @@
           "additionalProperties": false,
           "description": "Details of a field configuration."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -8296,7 +8477,9 @@
           "additionalProperties": false,
           "description": "The details of a custom field context."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -8348,7 +8531,9 @@
           "additionalProperties": false,
           "description": "A list of issue link type beans."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -8373,7 +8558,9 @@
           "additionalProperties": false,
           "description": "Details of an issue navigator column item."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -8530,7 +8717,10 @@
                                   "type": "string",
                                   "description": "The type of scope.",
                                   "readOnly": true,
-                                  "enum": ["PROJECT", "TEMPLATE"]
+                                  "enum": [
+                                    "PROJECT",
+                                    "TEMPLATE"
+                                  ]
                                 },
                                 "project": {
                                   "description": "The project the item has scope in.",
@@ -8776,7 +8966,10 @@
                                   "type": "string",
                                   "description": "The type of scope.",
                                   "readOnly": true,
-                                  "enum": ["PROJECT", "TEMPLATE"]
+                                  "enum": [
+                                    "PROJECT",
+                                    "TEMPLATE"
+                                  ]
                                 },
                                 "project": {
                                   "description": "The project the item has scope in.",
@@ -8992,7 +9185,10 @@
                   "type": "string",
                   "description": "The type of scope.",
                   "readOnly": true,
-                  "enum": ["PROJECT", "TEMPLATE"]
+                  "enum": [
+                    "PROJECT",
+                    "TEMPLATE"
+                  ]
                 },
                 "project": {
                   "description": "The project the item has scope in.",
@@ -9022,7 +9218,11 @@
                       "type": "string",
                       "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
                       "readOnly": true,
-                      "enum": ["software", "service_desk", "business"]
+                      "enum": [
+                        "software",
+                        "service_desk",
+                        "business"
+                      ]
                     },
                     "simplified": {
                       "type": "boolean",
@@ -9091,7 +9291,9 @@
           "additionalProperties": false,
           "description": "Details about a notification scheme."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -9132,7 +9334,9 @@
           "additionalProperties": true,
           "description": "An issue priority."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -9156,7 +9360,9 @@
           "additionalProperties": false,
           "description": "An entity property, for more information see [Entity properties](https://developer.atlassian.com/cloud/jira/platform/jira-entity-properties/)."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -9269,7 +9475,9 @@
           "additionalProperties": false,
           "description": "Details of an issue remote link."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -9303,7 +9511,9 @@
           "additionalProperties": false,
           "description": "Details of an issue resolution."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -9385,7 +9595,9 @@
           "additionalProperties": false,
           "description": "List of security schemes."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -9422,7 +9634,9 @@
           "additionalProperties": false,
           "description": "Details of an issue type scheme."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -9451,7 +9665,9 @@
           "additionalProperties": false,
           "description": "Details of an issue type screen scheme."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -9507,7 +9723,12 @@
                     "type": "string",
                     "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
                     "readOnly": true,
-                    "enum": ["atlassian", "app", "customer", "unknown"]
+                    "enum": [
+                      "atlassian",
+                      "app",
+                      "customer",
+                      "unknown"
+                    ]
                   },
                   "name": {
                     "type": "string",
@@ -9720,7 +9941,9 @@
           "additionalProperties": false,
           "description": "The details of votes on an issue."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -9835,7 +10058,9 @@
           "additionalProperties": false,
           "description": "The details of watchers on an issue."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -10034,7 +10259,10 @@
                 "type": {
                   "type": "string",
                   "description": "Whether visibility of this item is restricted to a group or role.",
-                  "enum": ["group", "role"]
+                  "enum": [
+                    "group",
+                    "role"
+                  ]
                 },
                 "value": {
                   "type": "string",
@@ -10086,12 +10314,18 @@
           "additionalProperties": true,
           "description": "Details of a worklog."
         },
-        "supported_sync_modes": ["incremental"],
+        "supported_sync_modes": [
+          "incremental"
+        ],
         "source_defined_cursor": true,
-        "default_cursor_field": ["startedAfter"]
+        "default_cursor_field": [
+          "startedAfter"
+        ]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["startedAfter"],
+      "cursor_field": [
+        "startedAfter"
+      ],
       "destination_sync_mode": "append"
     },
     {
@@ -10143,7 +10377,9 @@
           "additionalProperties": false,
           "description": "Details of an application property."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -10154,30 +10390,53 @@
         "name": "labels",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": ["object", "null"],
+          "type": [
+            "object",
+            "null"
+          ],
           "properties": {
             "id": {
-              "type": ["string", "null"]
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "key": {
-              "type": ["string", "null"]
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "value": {
-              "type": ["string", "null"]
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "name": {
-              "type": ["string", "null"]
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "desc": {
-              "type": ["string", "null"]
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "type": {
-              "type": ["string", "null"]
+              "type": [
+                "string",
+                "null"
+              ]
             }
           },
           "additionalProperties": true
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -10199,7 +10458,9 @@
           "additionalProperties": false,
           "description": "Details about permissions."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -10252,7 +10513,10 @@
                         "type": "string",
                         "description": "The type of scope.",
                         "readOnly": true,
-                        "enum": ["PROJECT", "TEMPLATE"]
+                        "enum": [
+                          "PROJECT",
+                          "TEMPLATE"
+                        ]
                       },
                       "project": {
                         "description": "The project the item has scope in.",
@@ -10282,7 +10546,11 @@
                             "type": "string",
                             "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
                             "readOnly": true,
-                            "enum": ["software", "service_desk", "business"]
+                            "enum": [
+                              "software",
+                              "service_desk",
+                              "business"
+                            ]
                           },
                           "simplified": {
                             "type": "boolean",
@@ -10398,7 +10666,9 @@
           "additionalProperties": false,
           "description": "List of all permission schemes."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -10466,7 +10736,10 @@
               "type": "string",
               "description": "The default assignee when creating issues for this project.",
               "readOnly": true,
-              "enum": ["PROJECT_LEAD", "UNASSIGNED"]
+              "enum": [
+                "PROJECT_LEAD",
+                "UNASSIGNED"
+              ]
             },
             "versions": {
               "type": "array",
@@ -10500,7 +10773,11 @@
               "type": "string",
               "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
               "readOnly": true,
-              "enum": ["software", "service_desk", "business"]
+              "enum": [
+                "software",
+                "service_desk",
+                "business"
+              ]
             },
             "simplified": {
               "type": "boolean",
@@ -10511,7 +10788,10 @@
               "type": "string",
               "description": "The type of the project.",
               "readOnly": true,
-              "enum": ["classic", "next-gen"]
+              "enum": [
+                "classic",
+                "next-gen"
+              ]
             },
             "favourite": {
               "type": "boolean",
@@ -10588,7 +10868,9 @@
           "additionalProperties": false,
           "description": "Details about a project."
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -10702,7 +10984,9 @@
           "additionalProperties": false,
           "description": "List of project avatars."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -10738,7 +11022,9 @@
           "additionalProperties": false,
           "description": "A project category."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -10810,7 +11096,12 @@
                     "type": "string",
                     "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
                     "readOnly": true,
-                    "enum": ["atlassian", "app", "customer", "unknown"]
+                    "enum": [
+                      "atlassian",
+                      "app",
+                      "customer",
+                      "unknown"
+                    ]
                   },
                   "name": {
                     "type": "string",
@@ -11047,7 +11338,12 @@
                     "type": "string",
                     "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
                     "readOnly": true,
-                    "enum": ["atlassian", "app", "customer", "unknown"]
+                    "enum": [
+                      "atlassian",
+                      "app",
+                      "customer",
+                      "unknown"
+                    ]
                   },
                   "name": {
                     "type": "string",
@@ -11283,7 +11579,12 @@
                     "type": "string",
                     "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
                     "readOnly": true,
-                    "enum": ["atlassian", "app", "customer", "unknown"]
+                    "enum": [
+                      "atlassian",
+                      "app",
+                      "customer",
+                      "unknown"
+                    ]
                   },
                   "name": {
                     "type": "string",
@@ -11516,7 +11817,9 @@
             "description": "Details about a component with a count of the issues it contains."
           }
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -11537,7 +11840,9 @@
           "additionalProperties": false,
           "description": "A project's sender email address."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -11609,7 +11914,9 @@
           "additionalProperties": false,
           "description": "Details about a security scheme."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -11651,7 +11958,9 @@
           "additionalProperties": false,
           "description": "Details about a project type."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -11809,7 +12118,9 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -11849,7 +12160,10 @@
                     "type": "string",
                     "description": "The type of scope.",
                     "readOnly": true,
-                    "enum": ["PROJECT", "TEMPLATE"]
+                    "enum": [
+                      "PROJECT",
+                      "TEMPLATE"
+                    ]
                   },
                   "project": {
                     "description": "The project the item has scope in.",
@@ -11879,7 +12193,11 @@
                         "type": "string",
                         "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
                         "readOnly": true,
-                        "enum": ["software", "service_desk", "business"]
+                        "enum": [
+                          "software",
+                          "service_desk",
+                          "business"
+                        ]
                       },
                       "simplified": {
                         "type": "boolean",
@@ -11948,7 +12266,9 @@
             "description": "A screen."
           }
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -11959,7 +12279,9 @@
         "name": "screen_tabs",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
-          "required": ["name"],
+          "required": [
+            "name"
+          ],
           "type": "object",
           "properties": {
             "id": {
@@ -11976,7 +12298,9 @@
           "additionalProperties": false,
           "description": "A screen tab."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -12002,7 +12326,9 @@
           "additionalProperties": false,
           "description": "A screen tab field."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -12061,7 +12387,9 @@
             "description": "A screen scheme."
           }
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -12072,7 +12400,9 @@
         "name": "time_tracking",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
-          "required": ["key"],
+          "required": [
+            "key"
+          ],
           "type": "object",
           "properties": {
             "key": {
@@ -12092,7 +12422,9 @@
           "additionalProperties": false,
           "description": "Details about the time tracking provider."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -12124,7 +12456,12 @@
               "type": "string",
               "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
               "readOnly": true,
-              "enum": ["atlassian", "app", "customer", "unknown"]
+              "enum": [
+                "atlassian",
+                "app",
+                "customer",
+                "unknown"
+              ]
             },
             "name": {
               "type": "string",
@@ -12179,7 +12516,9 @@
           "additionalProperties": false,
           "description": "A user with details as permitted by the user's Atlassian Account privacy settings. However, be aware of these exceptions:\n\n *  User record deleted from Atlassian: This occurs as the result of a right to be forgotten request. In this case, `displayName` provides an indication and other parameters have default values or are blank (for example, email is blank).\n *  User record corrupted: This occurs as a results of events such as a server import and can only happen to deleted users. In this case, `accountId` returns *unknown* and all other parameters have fallback values.\n *  User record unavailable: This usually occurs due to an internal service outage. In this case, all parameters have fallback values."
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -12240,7 +12579,11 @@
                     "type": {
                       "type": "string",
                       "description": "The type of the transition.",
-                      "enum": ["global", "initial", "directed"]
+                      "enum": [
+                        "global",
+                        "initial",
+                        "directed"
+                      ]
                     },
                     "screen": {
                       "type": "object",
@@ -12337,7 +12680,9 @@
             "description": "Details about a workflow."
           }
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -12421,7 +12766,12 @@
                     "type": "string",
                     "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
                     "readOnly": true,
-                    "enum": ["atlassian", "app", "customer", "unknown"]
+                    "enum": [
+                      "atlassian",
+                      "app",
+                      "customer",
+                      "unknown"
+                    ]
                   },
                   "name": {
                     "type": "string",
@@ -12652,7 +13002,9 @@
             "description": "Details about a workflow scheme."
           }
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -12727,7 +13079,9 @@
           "additionalProperties": true,
           "description": "A status."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -12770,7 +13124,9 @@
           "additionalProperties": true,
           "description": "A status category."
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
