@@ -3,6 +3,7 @@
 
 ## Overview
 We have 3 ways of slicing our builds:
+
 1. **Build Everything**: Including every single connectors.
 2. **Build Platform**: Build only modules related to the core platform.
 3. **Build Connectors Base**: Build only modules related to code infrastructure for connectors.
