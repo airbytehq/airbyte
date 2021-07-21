@@ -66,7 +66,7 @@ public class KubePortManagerSingleton {
   }
 
   public static int getSupportedWorkers() {
-    return workerPorts.size() / MAX_PORTS_PER_WORKERS;
+    return workerPorts.size() / MAX_PORTS_PER_WORKER;
   }
 
   @VisibleForTesting
