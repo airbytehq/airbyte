@@ -27,6 +27,8 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk",
+    "smart_open==5.1.0",
+    "paramiko==2.7.2"
 ]
 
 TEST_REQUIREMENTS = [

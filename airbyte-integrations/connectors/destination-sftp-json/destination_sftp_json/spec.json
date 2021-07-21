@@ -53,12 +53,11 @@
         "examples": ["/json_data"],
         "order": 4
       },
-      "bin_by_date": {
-        "title": "Bin by date",
-        "description": "If true, group files into a folder based on the date the data was received.",
-        "type": "boolean",
-        "default": false,
-        "order": 5
+      "filename": {
+        "title": "Filename",
+        "type": "string",
+        "description": "Name of the file to be written to the final destination (without extension).",
+        "examples": ["data"]
       }
     }
   }
