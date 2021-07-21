@@ -54,7 +54,10 @@ class SourceCart(AbstractSource):
             return True, None
         except Exception as e:
             if isinstance(e, requests.exceptions.HTTPError) and e.response.status_code == 401:
-                return False, f"Please check you access token. Error: {repr(e)}"
+                return False, f"Please check your access token. Error: {repr(e)}"
+            if isinstance(e, requests.exceptions.ConnectionError):
+                err_message = f"Please check your `store_name` or internet connection. Error: {repr(e)}"
+                return False, err_message
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
