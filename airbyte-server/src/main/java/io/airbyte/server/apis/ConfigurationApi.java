@@ -163,9 +163,9 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         jobNotifier,
         temporalService);
     final DockerImageValidator dockerImageValidator = new DockerImageValidator(synchronousSchedulerClient);
-    final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence, schemaValidator, specFetcher);
+    final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
-    connectionsHandler = new ConnectionsHandler(configRepository);
+    connectionsHandler = new ConnectionsHandler(configRepository, workspaceHelper);
     operationsHandler = new OperationsHandler(configRepository);
     destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
     destinationHandler = new DestinationHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);

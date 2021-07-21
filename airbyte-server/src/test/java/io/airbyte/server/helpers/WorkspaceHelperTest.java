@@ -72,10 +72,7 @@ class WorkspaceHelperTest {
     configRepository = new ConfigRepository(new FileSystemConfigPersistence(tmpDir));
     jobPersistence = mock(JobPersistence.class);
 
-    SpecFetcher specFetcher = mock(SpecFetcher.class);
-    when(specFetcher.execute(any())).thenReturn(new ConnectorSpecification().withConnectionSpecification(Jsons.deserialize("{}")));
-
-    workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence, new JsonSchemaValidator(), specFetcher);
+    workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
   }
 
   @Test
