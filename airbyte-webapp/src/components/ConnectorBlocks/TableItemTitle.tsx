@@ -62,6 +62,7 @@ const TableItemTitle: React.FC<IProps> = ({
           <FormattedMessage id="tables.connections" />
         </H5>
         <Popout
+          data-testid={`select-${type}`}
           onChange={onSelect}
           targetComponent={({ onOpen }: any) => (
             <Button onClick={onOpen}>

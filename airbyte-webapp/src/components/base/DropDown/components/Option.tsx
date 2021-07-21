@@ -48,7 +48,7 @@ const Option: React.FC<IProps> = (props) => {
   return (
     <components.Option {...props}>
       <OptionView
-        data-id={props.data.value}
+        data-testid={props.data.label}
         isSelected={props.isSelected && !props.isMulti}
         isDisabled={props.isDisabled}
       >

@@ -26,6 +26,7 @@ export const Cell = styled.div<{
   flex?: number;
   light?: boolean;
   lighter?: boolean;
+  ellipsis?: boolean;
 }>`
   flex: ${({ flex }) => flex || 1} 0 0;
   padding-right: 10px;
@@ -35,6 +36,6 @@ export const Cell = styled.div<{
   font-weight: ${({ light, lighter }) =>
     light || lighter ? "normal" : "inherit"};
 
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow: ${({ ellipsis }) => (ellipsis ? "hidden" : "inherit")};
+  text-overflow: ${({ ellipsis }) => (ellipsis ? "ellipsis" : "inherit")};
 `;

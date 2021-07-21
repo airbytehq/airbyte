@@ -24,10 +24,11 @@ type Value = any;
 
 const PopupOpener: React.FC<{
   isOpen: boolean;
+  "data-testid"?: string;
   onClose: () => void;
   target: React.ReactNode;
-}> = ({ children, isOpen, target, onClose }) => (
-  <div>
+}> = ({ children, isOpen, target, onClose, ...props }) => (
+  <div data-testid={props["data-testid"]}>
     {target}
     {isOpen ? <Menu>{children}</Menu> : null}
     {isOpen ? <OutsideClickListener onClick={onClose} /> : null}
@@ -64,6 +65,7 @@ const Popout: React.FC<PopoutProps> = ({
 
   return (
     <PopupOpener
+      data-testid={props["data-testid"]}
       isOpen={isOpen}
       onClose={toggleOpen}
       target={targetComponent({ onOpen: toggleOpen, value: props.value })}
