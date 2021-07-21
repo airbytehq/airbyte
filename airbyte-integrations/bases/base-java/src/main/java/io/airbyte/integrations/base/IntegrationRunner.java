@@ -30,6 +30,7 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -104,7 +105,20 @@ public class IntegrationRunner {
       case SPEC -> outputRecordCollector.accept(new AirbyteMessage().withType(Type.SPEC).withSpec(integration.spec()));
       case CHECK -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
-        validateConfig(integration.spec().getConnectionSpecification(), config, "CHECK");
+        try {
+          validateConfig(integration.spec().getConnectionSpecification(), config, "CHECK");
+        } catch (Exception e) {
+          // if validation fails don't throw an exception, return a failed connection check message
+          outputRecordCollector
+              .accept(
+                  new AirbyteMessage()
+                      .withType(Type.CONNECTION_STATUS)
+                      .withConnectionStatus(
+                          new AirbyteConnectionStatus()
+                              .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                              .withMessage(e.getMessage())));
+        }
+
         outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(integration.check(config)));
       }
       // source only
