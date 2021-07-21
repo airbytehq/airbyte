@@ -77,16 +77,14 @@ class ZoqlExportClient:
     ) -> Dict:
         """
         Make the query for dependent methods like: 
-        submit_job, check_job_status, _zuora_list_streams, _zuora_object_to_json_schema
+        submit_job, check_job_status, zuora_list_streams, zuora_get_json_schema
         """
-
+        # Define base query parameters
         base_query = {"compression": "NONE", "output": {"target": "S3"}, "outputFormat": "JSON"}
 
         if q_type == "select":
             end_date = pendulum.now().to_datetime_string() if end_date is None else end_date
-            base_query[
-                "query"
-            ] = f"select * from {obj} where {date_field} >= TIMESTAMP '{start_date}' and {date_field} <= TIMESTAMP '{end_date}'"
+            base_query["query"] = f"select * from {obj} where {date_field} >= TIMESTAMP '{start_date}' and {date_field} <= TIMESTAMP '{end_date}'"
         elif q_type == "describe":
             base_query["query"] = f"DESCRIBE {obj}"
         elif q_type == "show_tables":
@@ -145,7 +143,6 @@ class ZoqlExportClient:
         """
 
         query = self.make_query(q_type, obj, date_field, start_date, end_date)
-        self.logger.info(f"{query}")
         submit = self.submit_job(query)
         check = self.check_job_status(submit)
         get = self.get_job_data(check)

@@ -73,13 +73,15 @@ class ZuoraStream(Stream, ABC):
         return stream_state.get(self.cursor_field, stream_state.get(self.alt_cursor_field)) if stream_state else self.api.start_date
 
     def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        
         # if stream_state is missing, we will use the start-date from config for a full refresh
         stream_state = self.get_stream_state(stream_state)
+        args = {"q_type": "select", "obj": self.name, "start_date": stream_state, "window_days": self.window_in_days}
         try:
-            yield from self.api.get_data_with_date_slice("select", self.name, self.cursor_field, stream_state, self.window_in_days)
+            yield from self.api.get_data_with_date_slice(date_field=self.cursor_field, **args)
         except ZOQLQueryFieldCannotResolve:
             self.cursor_field = self.alt_cursor_field
-            yield from self.api.get_data_with_date_slice("select", self.name, self.cursor_field, stream_state, self.window_in_days)
+            yield from self.api.get_data_with_date_slice(date_field=self.cursor_field, **args)
         except ZOQLQueryCannotProcessObject:
             pass
 
