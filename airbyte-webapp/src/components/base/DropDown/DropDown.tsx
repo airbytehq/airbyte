@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import Select, { Props } from "react-select";
+import { SelectComponentsConfig } from "react-select/src/components";
 
 import DropdownIndicator from "./components/DropdownIndicator";
 import Menu from "./components/Menu";
@@ -8,7 +9,6 @@ import SingleValue from "./components/SingleValue";
 import Option, { IDataItem } from "./components/Option";
 
 import { equal, naturalComparatorBy } from "utils/objects";
-import { SelectComponentsConfig } from "react-select/src/components";
 
 type OptionType = any;
 type DropdownProps = Props<OptionType> & {

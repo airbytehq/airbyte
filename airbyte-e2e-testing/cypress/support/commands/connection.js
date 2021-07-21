@@ -9,7 +9,7 @@ Cypress.Commands.add("createTestConnection", (sourceName, destinationName) => {
   cy.createTestDestination(destinationName);
   cy.wait(3000);
 
-  cy.get("div[role=combobox]").click();
+  cy.get("div").contains("Select a connector").click();
   cy.get("div").contains(sourceName).click();
   cy.wait("@checkConnectionSource");
   cy.wait("@checkConnectionDestination");

@@ -4,7 +4,7 @@ Cypress.Commands.add("fillPgSourceForm", (name) => {
   );
 
   cy.get("input[name=name]").type(name);
-  cy.get("div[role=combobox]").click();
+  cy.get("div").contains("Select a connector").click();
   cy.get("div").contains("Postgres").click();
 
   cy.wait("@getSourceSpecifications");
