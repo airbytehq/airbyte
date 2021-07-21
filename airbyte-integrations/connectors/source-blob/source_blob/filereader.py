@@ -24,7 +24,7 @@
 
 from abc import ABC, abstractmethod
 import json
-from typing import Iterator
+from typing import Any, Iterator, Mapping
 
 from airbyte_cdk.logger import AirbyteLogger
 import pyarrow as pa
@@ -55,7 +55,7 @@ class FileReader(ABC):
         """ TODO: docstring """
 
     @staticmethod
-    def json_type_to_pyarrow_type(typ, reverse=False):
+    def json_type_to_pyarrow_type(typ: str, reverse=False, logger: AirbyteLogger=AirbyteLogger()) -> str:
         """Convert Airbyte Type to PyArrow types to (or the other way around if reverse=True)
         TODO: Docstring
         """
@@ -72,16 +72,19 @@ class FileReader(ABC):
         }
         if not reverse:
             for json_type, pyarrow_types in map.items():
-                if str_typ == json_type:
+                if str_typ.lower() == json_type:
                     return getattr(pa, pyarrow_types[0]).__call__()  # better way might be necessary when we decide to handle more type complexity
+            logger.warn(f"JSON type '{str_typ}' is unknown, falling back to default conversion to large_string")
+            return pa.large_string()
         else:
             for json_type, pyarrow_types in map.items():
                 if any([str_typ.startswith(pa_type) for pa_type in pyarrow_types]):
                     return json_type
+            logger.warn(f"PyArrow type '{str_typ}' is unknown, falling back to default conversion to string")
             return "string"  # default type if unspecified in map
 
     @staticmethod
-    def json_schema_to_pyarrow_schema(schema, reverse=False):
+    def json_schema_to_pyarrow_schema(schema: Mapping[str, Any], reverse: bool = False) -> Mapping[str, Any]:
         """ TODO docstring """
         new_schema = {}
 

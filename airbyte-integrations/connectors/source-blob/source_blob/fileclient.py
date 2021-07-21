@@ -145,7 +145,7 @@ class FileClientS3(FileClient):
         """ TODO docstring """
         @classmethod
         def init_boto_session(cls, func):
-            """TODO Docstring (this is a decorator)"""
+            """TODO Docstring """
             def inner(self, *args, **kwargs):
                 # why we're making a new Session at file level rather than stream level
                 # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/resources.html#multithreading-and-multiprocessing
@@ -202,6 +202,7 @@ class FileClientS3(FileClient):
         return result
 
 
+# NOTE: Not Implemented yet
 class FileClientGCS(FileClient):
     """TODO docstring"""
 
@@ -233,6 +234,7 @@ class FileClientGCS(FileClient):
         return file_to_close
 
 
+# NOTE: Not Implemented yet
 class FileClientAzure(FileClient):
     """TODO docstring"""
 

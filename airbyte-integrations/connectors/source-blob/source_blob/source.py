@@ -29,7 +29,7 @@ from fnmatch import fnmatch
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from .stream import IncrementalBlobStreamS3
+from .stream import IncrementalFileStreamS3
 
 
 class SourceBlob(AbstractSource, ABC):
@@ -66,8 +66,6 @@ class SourceBlob(AbstractSource, ABC):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
-        TODO: Replace the streams below with your own streams.
-
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         return [self.stream_class(**config)]

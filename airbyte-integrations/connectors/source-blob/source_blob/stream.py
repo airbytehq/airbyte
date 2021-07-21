@@ -48,8 +48,6 @@ class FileStream(Stream, ABC):
     """
     TODO docstring
     """
-
-    # TODO: is there a better place to persist this mapping?
     format_filereader_map = {
         'csv': FileReaderCsv,
         # 'parquet': FileReaderParquet,
@@ -202,7 +200,7 @@ class FileStream(Stream, ABC):
         This enacts full_refresh style regardless of sync_mode, incremental achieved via incremental child classes
         """
         # TODO: this could be optimised via concurrent reads, however we'd lose chronology and need to deal with knock-ons of that
-        # spoke with Sherif, we could do this concurrently both full and incremental by running batches in parallel
+        # we could do this concurrently both full and incremental by running batches in parallel
         # and then incrementing the cursor per each complete batch
         for last_mod, fileclient in self.time_ordered_fileclient_iterator():
             yield [{
@@ -267,10 +265,8 @@ class IncrementalFileStream(FileStream, ABC):
     TODO docstring
     """
 
-    # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
+    # TODO: ideally want to checkpoint after every file or stream slice rather than N records
     state_checkpoint_interval = None
-
-    # TODO: override self._schema to assign it as the schema state from previous incremental if there is one
 
     # TODO: would be great if we could override time_ordered_fileclient_iterator() here with state awareness
     # this would allow filtering down to only files we need early and avoid unnecessary work
