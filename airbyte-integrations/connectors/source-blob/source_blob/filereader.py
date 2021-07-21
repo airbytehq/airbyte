@@ -30,7 +30,7 @@ from typing import Iterator
 
 from airbyte_cdk.logger import AirbyteLogger
 import pyarrow as pa
-from pyarrow import csv as pacsv
+from pyarrow import csv as pa_csv
 
 
 class FileReader(ABC):
@@ -38,9 +38,9 @@ class FileReader(ABC):
     Manages parsing a tabular file. Child classes implement format specific logic (e.g. csv).
     """
 
-    def __init__(self, format: dict, schema: dict):
+    def __init__(self, format: dict, master_schema: dict = None):
         self._format = format
-        self._schema = schema
+        self._master_schema = master_schema  # this may need to be used differently by some formats, pyarrow allows extra columns in csv schema
         self.logger = AirbyteLogger()
 
     @property
@@ -49,13 +49,12 @@ class FileReader(ABC):
         """TODO docstring"""
 
     @abstractmethod
-    def stream_records(self, file, skip_data=False) -> Iterator:
-        """load and return the appropriate pandas dataframe.
+    def get_inferred_schema(self, file) -> dict:
+        """ TODO docstring """
 
-        :param file: file-like object to read from
-        :param skip_data: limit reading data
-        :return: a generator of dataframes loaded from file
-        """
+    @abstractmethod
+    def stream_records(self, file) -> Iterator:
+        """ TODO: docstring """
 
     @staticmethod
     def json_type_to_pyarrow_type(typ, reverse=False):
@@ -102,15 +101,13 @@ class FileReaderCsv(FileReader):
     def is_binary(self):
         return True
 
-    @property
-    def read_options(self):
+    def _read_options(self):
         return pa.csv.ReadOptions(
             block_size=10000,
             encoding=self._format.get("encoding", 'utf8')
         )
 
-    @property
-    def parse_options(self):
+    def _parse_options(self):
         return pa.csv.ParseOptions(
             delimiter=self._format.get("delimiter", ','),
             quote_char=self._format.get("quote_char", '"'),
@@ -119,23 +116,28 @@ class FileReaderCsv(FileReader):
             newlines_in_values=self._format.get("newlines_in_values", False)
         )
 
-    @property
-    def convert_options(self):
+    def _convert_options(self, json_schema=None):
         check_utf8 = True if self._format.get("encoding", 'utf8').lower().replace("-", "") == 'utf8' else False
+        convert_schema = self.json_schema_to_pyarrow_schema(json_schema) if json_schema is not None else None
         return pa.csv.ConvertOptions(
             check_utf8=check_utf8,
-            column_types=self.json_schema_to_pyarrow_schema(self._schema),
+            column_types=convert_schema,
             **json.loads(self._format.get("additional_reader_options", '{}'))
         )
 
+    def get_inferred_schema(self, file) -> dict:
+        streaming_reader = pa_csv.open_csv(file, self._read_options(), self._parse_options(), self._convert_options())
+        schema_dict = {field.name: field.type for field in streaming_reader.schema}
+        return self.json_schema_to_pyarrow_schema(schema_dict, reverse=True)
+
     def stream_records(self, file) -> Iterator:
-        streaming_reader = pacsv.open_csv(file, self.read_options, self.parse_options, self.convert_options)
+        streaming_reader = pa_csv.open_csv(file, self._read_options(), self._parse_options(), self._convert_options(self._master_schema))
         still_reading = True
         while still_reading:
             try:
-                batch = streaming_reader.read_next_batch().to_pydict()
+                batch = streaming_reader.read_next_batch()
             except StopIteration:
                 still_reading = False
             else:
-                for record_values in zip(*[batch[column] for column in self._schema.keys()]):
-                    yield {list(self._schema.keys())[i]: record_values[i] for i in range(len(self._schema.keys()))}
+                for record_values in zip(*[batch.to_pydict()[column.name] for column in batch.schema]):
+                    yield {[c.name for c in batch.schema][i]: record_values[i] for i in range(len(batch.schema))}

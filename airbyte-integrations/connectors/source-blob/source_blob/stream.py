@@ -22,10 +22,11 @@
 
 
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from datetime import datetime
 import json
 import concurrent
-from logging import Logger
+from operator import itemgetter
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 from traceback import format_exc
 from airbyte_cdk.models.airbyte_protocol import SyncMode
@@ -54,13 +55,17 @@ class BlobStream(Stream, ABC):
         # 'parquet': FileReaderParquet,
         # etc.
     }
+    ab_additional_col = "_airbyte_additional_properties"
+    ab_last_mod_col = "_airbyte_source_file_last_modified"
+    ab_file_name_col = "_airbyte_source_file_url"
+    datetime_format_string = "%Y-%m-%dT%H:%M:%S%z"
 
     def __init__(self, dataset_name: str, provider: dict, format: dict, path_patterns: List[str], schema: str = None):
         self.dataset_name = dataset_name
         self._path_patterns = path_patterns
         self._provider = provider
         self._format = format
-        self.logger = AirbyteLogger()
+        self._schema = {} 
         if schema:
             try:
                 self._schema = json.loads(schema)
@@ -74,7 +79,10 @@ class BlobStream(Stream, ABC):
                 error_msg = f"Schema is not a valid JSON schema {repr(err)}\n{schema}\n{format_exc()}"
                 self.logger.error(error_msg)
                 raise ConfigurationError(error_msg) from err
+            self.logger.info(f"initial schema state: {self._schema}")
             # TODO: we could still have an 'invalid' schema after this, should we handle that explicitly?
+        self.blob_cache = None
+        self.master_schema = None
 
     @property
     @abstractmethod
@@ -102,20 +110,6 @@ class BlobStream(Stream, ABC):
             For AWS: f"{self.storage_scheme}{aws_access_key_id}:{aws_secret_access_key}@{self.url}" <- self.url is what we want to yield here
         """
 
-    def get_json_schema(self) -> Mapping[str, Any]:
-        """
-        :return: A dict of the JSON schema representing this stream.
-
-        The default implementation of this method looks for a JSONSchema file with the same name as this stream's "name" property.
-        Override as needed.
-        """
-        if self._schema:
-            return self._schema
-        else:
-            raise NotImplementedError()
-            # TODO: Build in ability to determine schema automatically based on all files for this stream
-            # could this look different in incremental v.s. non-incremental?
-
     def pattern_matched_blobs_iterator(self) -> Iterator[str]:
         """ TODO docstring """
         for blob in self.blob_iterator(self.logger, self._provider):
@@ -123,23 +117,82 @@ class BlobStream(Stream, ABC):
                 if fnmatch(blob, path_pattern):
                     yield blob
 
-    def time_ordered_blobfile_iterator(self) -> Iterator[Tuple[datetime, BlobFile]]:
+    def time_ordered_blobfile_iterator(self) -> Iterable[Tuple[datetime, BlobFile]]:
         """TODO docstring"""
 
         def get_blobfile_with_lastmod(blob) -> Tuple[datetime, BlobFile]:
             bf = self.blobfile_class(blob, self._provider)
             return (bf.last_modified, bf)
 
-        blobfiles = []  # list of tuples (datetime, BlobFile) which we'll use to sort
-        # use concurrent future threads to parallelise grabbing last_modified from all the files
-        # TODO: don't hardcode max_workers like this
-        with concurrent.futures.ThreadPoolExecutor(max_workers=64) as executor:
-            futures = {executor.submit(get_blobfile_with_lastmod, blob): blob for blob in self.pattern_matched_blobs_iterator()}
-            for future in concurrent.futures.as_completed(futures):
-                blobfiles.append(future.result())  # this will failfast on any errors
+        if self.blob_cache is None:
+            blobfiles = []  # list of tuples (datetime, BlobFile) which we'll use to sort
+            # use concurrent future threads to parallelise grabbing last_modified from all the files
+            # TODO: don't hardcode max_workers like this
+            with concurrent.futures.ThreadPoolExecutor(max_workers=64) as executor:
+                futures = {executor.submit(get_blobfile_with_lastmod, blob): blob for blob in self.pattern_matched_blobs_iterator()}
+                for future in concurrent.futures.as_completed(futures):
+                    blobfiles.append(future.result())  # this will failfast on any errors
 
-        for last_mod, blobfile in sorted(blobfiles):
-            yield (last_mod, blobfile)
+            self.blob_cache = sorted(blobfiles, key=itemgetter(0))
+
+        return self.blob_cache
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """
+        TODO docstring
+        """
+        if self._schema != {}:
+            return_schema = deepcopy(self._schema)
+        else:  # we have no provided schema or schema state from a previous incremental run
+            return_schema = self._get_master_schema()
+
+        return_schema[self.ab_additional_col] = "object"
+        return return_schema
+
+    def _get_master_schema(self):
+        """ TODO docstring """
+        # TODO: maybe implement a 'lazy' mode that skips schema checking to improve performance (user beware)
+        if self.master_schema is None:
+            master_schema = deepcopy(self._schema)
+
+            file_reader = self.filereader_class(self._format)
+            # time order isn't necessary here but we might as well use this method so we cache the list for later use
+            for _, blobfile in self.time_ordered_blobfile_iterator():
+                with blobfile.open(file_reader.is_binary) as f:
+                    this_schema = file_reader.get_inferred_schema(f)
+
+                if this_schema == master_schema:
+                    continue  # exact schema match so go to next file
+
+                # creates a superset of columns retaining order of master_schema with any additional columns added to end
+                column_superset = list(master_schema.keys()) + [c for c in this_schema.keys() if c not in master_schema.keys()]
+                # this compares datatype of every column that the two schemas have in common
+                for col in column_superset:
+                    if (col in master_schema.keys()) and (col in this_schema.keys()) and (master_schema[col] != this_schema[col]):
+                        # if this column exists in a provided schema or schema state, we'll WARN here rather than throw an error
+                        # this is to allow more leniency as we may be able to coerce this datatype mismatch on read according to provided schema state
+                        # if not, then the read will error anyway
+                        if col in self._schema.keys():
+                            self.logger.warn(f"Detected mismatched datatype on column '{col}', in file '{blobfile.url}'. "
+                                             + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'.")
+                        # else we're inferring the schema (or at least this column) from scratch and therefore throw an error on mismatching datatypes
+                        else:
+                            raise RuntimeError(
+                                f"Detected mismatched datatype on column '{col}', in file '{blobfile.url}'. "
+                                + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'."
+                            )
+
+                # missing columns in this_schema doesn't affect our master_schema so we don't check for it here
+
+                # add to master_schema any columns from this_schema that aren't already present
+                for col, datatype in this_schema.items():
+                    if col not in master_schema.keys():
+                        master_schema[col] = datatype
+
+            self.logger.info(f"determined master schema: {master_schema}")
+            self.master_schema = master_schema
+
+        return self.master_schema
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -150,9 +203,38 @@ class BlobStream(Stream, ABC):
         """
         # TODO: this could be optimised via concurrent reads, however we'd lose chronology and need to deal with knock-ons of that
         # spoke with Sherif, we could do this concurrently both full and incremental by running batches in parallel
-        # and then incrementing the cursor per each complete batch 
+        # and then incrementing the cursor per each complete batch
         for last_mod, blobfile in self.time_ordered_blobfile_iterator():
-            yield {blobfile.url: (last_mod, blobfile)}
+            yield [{
+                "unique_url": blobfile.url,
+                "last_modified": last_mod,
+                "blobfile": blobfile
+            }]
+
+    def _match_target_schema(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """TODO docstring"""
+        target_columns = self.get_json_schema().keys()
+
+        # check if we're already matching to avoid unnecessary iteration
+        if set(list(record.keys()) + [self.ab_additional_col]) == set(target_columns):
+            record[self.ab_additional_col] = {}
+            return record
+
+        for c in target_columns - [self.ab_additional_col]:
+            if c not in record.keys():
+                record[c] = None
+
+        record[self.ab_additional_col] = {c: deepcopy(record[c]) for c in record.keys() if c not in target_columns}
+        for c in record[self.ab_additional_col].keys():
+            del record[c]
+
+        return record
+
+    def _add_airbyte_system_columns(self, record: Mapping[str, Any], airbyte_system_info: Mapping[str, Any]) -> Mapping[str, Any]:
+        """TODO docstring"""
+        for key, value in airbyte_system_info.items():
+            record[key] = value
+        return record
 
     def read_records(
         self,
@@ -163,16 +245,21 @@ class BlobStream(Stream, ABC):
     ) -> Iterable[Mapping[str, Any]]:
         """
         TODO docstring
-        This enacts a full_refresh style read_records regardless of sync_mode, incremental achieved via read_records of incremental child classes
         """
-        file_reader = self.filereader_class(self._format, self.get_json_schema())
+        file_reader = self.filereader_class(self._format, self._get_master_schema())
 
-        stream_slice_key = list(stream_slice.keys())[0]  # unique full filepath
-        last_mod = stream_slice[stream_slice_key][0]  # TODO: use this as cursor
-        blobfile = stream_slice[stream_slice_key][1]
-
-        with blobfile.open(file_reader.is_binary) as f:
-            yield from file_reader.stream_records(f)
+        # TODO: read all files in a stream_slice concurrently
+        for file_info in stream_slice:
+            with file_info['blobfile'].open(file_reader.is_binary) as f:
+                # TODO: make this more efficient than mutating every record one-by-one as they stream
+                for record in file_reader.stream_records(f):
+                    schema_matched_record = self._match_target_schema(record)
+                    complete_record = self._add_airbyte_system_columns(
+                        schema_matched_record,
+                        {self.ab_last_mod_col: datetime.strftime(file_info['last_modified'], self.datetime_format_string),
+                         self.ab_file_name_col: file_info['unique_url']})
+                    yield complete_record
+        self.logger.info("read a stream slice")
 
 
 class IncrementalBlobStream(BlobStream, ABC):
@@ -183,38 +270,86 @@ class IncrementalBlobStream(BlobStream, ABC):
     # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
     state_checkpoint_interval = None
 
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        """ TODO docstring """
-        if sync_mode.value == "full_refresh":
-            yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
-        else:
-            # TODO do the code
-            # also could possibly handle the first-time incremental snapshot by using super() here
-            raise NotImplementedError()
+    # TODO: override self._schema to assign it as the schema state from previous incremental if there is one
+
+    # TODO: would be great if we could override time_ordered_blobfile_iterator() here with state awareness
+    # this would allow filtering down to only files we need early and avoid unnecessary work
 
     @property
     def cursor_field(self) -> str:
         """
-        TODO
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
         :return str: The name of the cursor field.
         """
-        return []
+        return self.ab_last_mod_col
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
+        Override to extract state from the latest record. Needed to implement incremental sync.
+
+        Inspects the latest record extracted from the data source and the current state object and return an updated state object.
+
+        For example: if the state object is based on created_at timestamp, and the current state is {'created_at': 10}, and the latest_record is
+        {'name': 'octavia', 'created_at': 20 } then this method would return {'created_at': 20} to indicate state should be updated to this object.
+
+        :param current_stream_state: The stream's current state object
+        :param latest_record: The latest record extracted from the stream
+        :return: An updated state object
         """
-        return {}
+        state_dict = {}
+        if current_stream_state is not None and self.cursor_field in current_stream_state.keys():
+            current_parsed_datetime = datetime.strptime(current_stream_state[self.cursor_field], self.datetime_format_string)
+            latest_record_datetime = datetime.strptime(latest_record[self.cursor_field], self.datetime_format_string)
+            state_dict[self.cursor_field] = datetime.strftime(max(current_parsed_datetime, latest_record_datetime), self.datetime_format_string)
+        else:
+            state_dict[self.cursor_field] = "1970-01-01T00:00:00+0000"
+
+        state_dict["schema"] = self.get_json_schema()
+        return state_dict
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        TODO docstring
+        """
+        if sync_mode.value == "full_refresh":
+            yield from super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+
+        else:
+            # if necessary and present, let's update this object's schema attribute to the schema stored in state
+            # TODO: ideally we could do this on __init__ but I'm not sure that's possible without breaking from cdk style implementation
+            if self._schema == {} and stream_state is not None and "schema" in stream_state.keys():
+                self._schema = stream_state['schema']
+
+            # logic here is to bundle all files with exact same last modified timestamp together in each slice
+            prev_file_last_mod = None  # init variable to hold previous iterations last modified
+            stream_slice = []
+
+            for last_mod, blobfile in self.time_ordered_blobfile_iterator():
+                # skip this file if not needed in this incremental
+                if (
+                    stream_state is not None
+                    and self.cursor_field in stream_state.keys()
+                    and last_mod <= datetime.strptime(stream_state[self.cursor_field], self.datetime_format_string)
+                ):
+                    continue
+
+                # check if this blobfile belongs in the next slice, if so yield the current slice before this file
+                if (prev_file_last_mod is not None) and (last_mod != prev_file_last_mod):
+                    yield stream_slice
+                    stream_slice.clear()
+                # now we either have an empty stream_slice or a stream_slice that this file shares a last modified with, so append it
+                stream_slice.append({
+                    "unique_url": blobfile.url,
+                    "last_modified": last_mod,
+                    "blobfile": blobfile
+                })
+                # update our prev_file_last_mod to this one for next iteration
+                prev_file_last_mod = last_mod
+
+            # now yield the final stream_slice. This is required because our loop only yields the slice previous to its current iteration.
+            if len(stream_slice) > 0:
+                yield stream_slice
 
 
 class IncrementalBlobStreamS3(IncrementalBlobStream):

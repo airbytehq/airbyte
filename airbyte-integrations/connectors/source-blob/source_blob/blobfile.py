@@ -23,6 +23,7 @@
 #
 
 from abc import ABC, abstractmethod
+from collections import namedtuple
 from datetime import datetime
 import json
 import traceback
@@ -58,7 +59,6 @@ class BlobFile(ABC):
         self._provider = provider
         self._file = None
         self.logger = AirbyteLogger()
-        self.logger.info(f"initialised BlobFile with fullurl: {self.fullurl}")
 
     def __enter__(self):
         return self._file
