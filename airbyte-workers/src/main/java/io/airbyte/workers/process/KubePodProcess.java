@@ -545,7 +545,7 @@ public class KubePodProcess extends Process {
     var stdoutPortReleased = KubePortManagerSingleton.offer(stdoutLocalPort);
     if (!stdoutPortReleased) {
       LOGGER.warn(
-          "Error while releasing port {} from pod {}. This can cause the scheduler to run out of ports. Ignore this error if running on docker for desktop.",
+          "Error while releasing port {} from pod {}. This can cause the scheduler to run out of ports. Ignore this error if running Kubernetes on docker for desktop.",
           stdoutLocalPort,
           podDefinition.getMetadata().getName());
     }
@@ -553,7 +553,7 @@ public class KubePodProcess extends Process {
     var stderrPortReleased = KubePortManagerSingleton.offer(stderrLocalPort);
     if (!stderrPortReleased) {
       LOGGER.warn(
-          "Error while releasing port {} from pod {}. This can cause the scheduler to run out of ports. Ignore this error if running on docker for desktop",
+          "Error while releasing port {} from pod {}. This can cause the scheduler to run out of ports. Ignore this error if running Kubernetes on docker for desktop",
           stderrLocalPort,
           podDefinition.getMetadata().getName());
     }
