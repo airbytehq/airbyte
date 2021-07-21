@@ -28,22 +28,14 @@ import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import io.airbyte.api.model.ConnectionIdRequestBody;
-import io.airbyte.api.model.ConnectionRead;
-import io.airbyte.api.model.DestinationIdRequestBody;
-import io.airbyte.api.model.DestinationRead;
-import io.airbyte.api.model.SourceIdRequestBody;
-import io.airbyte.api.model.SourceRead;
+import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobConfig;
+import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.server.converters.SpecFetcher;
-import io.airbyte.server.handlers.ConnectionsHandler;
-import io.airbyte.server.handlers.DestinationHandler;
-import io.airbyte.server.handlers.SourceHandler;
-import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.Objects;
@@ -53,28 +45,18 @@ import org.apache.commons.lang3.NotImplementedException;
 
 public class WorkspaceHelper {
 
-  private final ConnectionsHandler connectionsHandler;
-  private final SourceHandler sourceHandler;
-  private final DestinationHandler destinationHandler;
-
   private final LoadingCache<UUID, UUID> sourceToWorkspaceCache;
   private final LoadingCache<UUID, UUID> destinationToWorkspaceCache;
   private final LoadingCache<UUID, UUID> connectionToWorkspaceCache;
   private final LoadingCache<Long, UUID> jobToWorkspaceCache;
 
-  public WorkspaceHelper(ConfigRepository configRepository,
-                         JobPersistence jobPersistence,
-                         JsonSchemaValidator jsonSchemaValidator,
-                         SpecFetcher specFetcher) {
-    this.connectionsHandler = new ConnectionsHandler(configRepository);
-    this.sourceHandler = new SourceHandler(configRepository, jsonSchemaValidator, specFetcher, connectionsHandler);
-    this.destinationHandler = new DestinationHandler(configRepository, jsonSchemaValidator, specFetcher, connectionsHandler);
+  public WorkspaceHelper(ConfigRepository configRepository, JobPersistence jobPersistence) {
 
     this.sourceToWorkspaceCache = getExpiringCache(new CacheLoader<>() {
 
       @Override
       public UUID load(UUID sourceId) throws JsonValidationException, ConfigNotFoundException, IOException {
-        final SourceRead source = sourceHandler.getSource(new SourceIdRequestBody().sourceId(sourceId));
+        final SourceConnection source = configRepository.getSourceConnection(sourceId);;
         return source.getWorkspaceId();
       }
 
@@ -84,7 +66,7 @@ public class WorkspaceHelper {
 
       @Override
       public UUID load(UUID destinationId) throws JsonValidationException, ConfigNotFoundException, IOException {
-        final DestinationRead destination = destinationHandler.getDestination(new DestinationIdRequestBody().destinationId(destinationId));
+        final DestinationConnection destination = configRepository.getDestinationConnection(destinationId);
         return destination.getWorkspaceId();
       }
 
@@ -94,7 +76,7 @@ public class WorkspaceHelper {
 
       @Override
       public UUID load(UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException, ExecutionException {
-        final ConnectionRead connection = connectionsHandler.getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+        final StandardSync connection = configRepository.getStandardSync(connectionId);;
         final UUID sourceId = connection.getSourceId();
         final UUID destinationId = connection.getDestinationId();
         return getWorkspaceForConnection(sourceId, destinationId);
