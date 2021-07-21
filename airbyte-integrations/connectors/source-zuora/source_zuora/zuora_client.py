@@ -24,7 +24,7 @@
 
 
 import json as j
-from datetime import datetime
+from datetime import datetime, timedelta
 from math import ceil
 from typing import Dict, Iterable, List
 
@@ -52,7 +52,7 @@ class ZoqlExportClient:
         self.client_id = config["client_id"]
         self.client_secret = config["client_secret"]
         self.is_sandbox = config["is_sandbox"]
-        self.retry_max = 3
+        self.retry_max = 3 # Max number of retries for make_request method
  
     def make_request(self, method: str = "GET", url: str = None, payload: Dict = None) -> requests.Response:
         """
@@ -143,6 +143,7 @@ class ZoqlExportClient:
         """
 
         query = self.make_query(q_type, obj, date_field, start_date, end_date)
+        self.logger.info(f"{query}")
         submit = self.submit_job(query)
         check = self.check_job_status(submit)
         get = self.get_job_data(check)
@@ -156,36 +157,31 @@ class ZoqlExportClient:
         rate limits, data-job size limits, data-job performance issues on the server side.
         """
         # Parsing input dates
-        start = pendulum.parse(start_date)
-        tz = self.get_tz(start)
+        start: datetime = pendulum.parse(start_date)
         # If there is no `end_date` as input - use now()
-        end = pendulum.parse(pendulum.now().to_datetime_string()) if not end_date else pendulum.parse(end_date)
+        end: datetime = pendulum.parse(end_date).astimezone() if end_date else pendulum.now().astimezone()
         # Get n of date-slices
-        n = self.get_n_slices(start, end, window_days)
+        n_slices = self.get_n_slices(start, end, window_days)
+        
         # initiating slice_start/end for date slice
-        slice_start = start.to_datetime_string() + tz
+        slice_start: datetime = start
         # if slice_end is bigger than the input end_date, switch to the end_date
-        slice_end = self.check_end_date(self.next_slice_end_date(slice_start, window_days), end) + tz
-        # For multiple date-slices
-        if n > 1:
-            while n > 0:
-                yield from self.get_data(q_type, obj, date_field, slice_start, slice_end)
-                # make next date-slice
-                slice_start = slice_end
-                # if next date-slice end_date is bigger than the input end_date, we switch to the end_date
-                slice_end = self.check_end_date(self.next_slice_end_date(slice_end, window_days), end) + tz
-                # Modify iterator
-                n -= 1
-        else:
-            # For 1 date-slice
-            yield from self.get_data(q_type, obj, date_field, slice_start, slice_end)
+        slice_end: datetime = min(start+timedelta(days=window_days), end)
 
+        while n_slices > 0:
+            yield from self.get_data(q_type, obj, date_field, self.to_datetime_str(slice_start), self.to_datetime_str(slice_end))
+            slice_start = slice_end
+            slice_end = min(slice_end+timedelta(days=window_days), end)
+            n_slices -= 1
+    
     @staticmethod
-    def check_end_date(slice_end_date: str, global_end_date: str) -> str:
+    def to_datetime_str(date: datetime) -> str:
+        """ 
+        The output from this method should be formated as follows:
+        :: "YYYY-mm-dd HH:mm:ss Z"
+        :: example: '2021-07-15 07:45:55 -07:00'
         """
-        Check the end-date before assign next date-slice
-        """
-        return global_end_date.to_datetime_string() if pendulum.parse(slice_end_date) > global_end_date else slice_end_date
+        return f"{date.to_datetime_string()} {date.strftime('%Z')}"
 
     @staticmethod
     def get_n_slices(start_date: datetime, end_date: datetime, window_days: int) -> int:
@@ -195,21 +191,6 @@ class ZoqlExportClient:
         """
         d = pendulum.period(start_date, end_date).in_days()
         return 1 if ceil(d / window_days) <= 0 else ceil(d / window_days)
-
-    @staticmethod
-    def next_slice_end_date(end_date: str, window_days: int) -> str:
-        """
-        Creates the next-date-slice
-        """
-        format = "YYYY-MM-DD HH:mm:ss Z"
-        return pendulum.from_format(end_date, format).add(days=window_days).to_datetime_string()
-
-    @staticmethod
-    def get_tz(start_date: datetime) -> str:
-        """
-        Get / Set if None, the timezone information from the date_field
-        """
-        return " +00:00" if start_date.tzname() == "UTC" else f" {start_date.tzname()}"
 
     def convert_schema_types(self, schema: List[Dict]) -> Dict:
         """

@@ -22,15 +22,36 @@
 # SOFTWARE.
 #
 
-
+import json
 import pytest
+from typing import Any, Dict, Mapping
+from source_zuora.zuora_auth import ZuoraAuthenticator
+from source_zuora.zuora_client import ZoqlExportClient
 
-pytest_plugins = ("source_acceptance_test.plugin",)
+
+# read config from test_input/secrets/config.json
+def _config() -> Mapping[str, Any]:
+    with open("secrets/config.json", "r") as f:
+        return json.loads(f.read())
+
+class TestClient:
+    # Make instance of ZoqlExportClient using credentials
+    def client(config: Dict = _config()):
+        # Reading config from the input
+        auth_client = ZuoraAuthenticator(config["is_sandbox"])
+        authenticator = auth_client.generateToken(config["client_id"], config["client_secret"]).get("header")
+        zuora_client = ZoqlExportClient(authenticator=authenticator, url_base=auth_client.endpoint, **config)
+        return zuora_client
 
 
-@pytest.fixture(scope="session", autouse=True)
-def connector_setup():
-    """ This fixture is a placeholder for external resources that acceptance test might require."""
-    # TODO: setup test dependencies if needed. otherwise remove the TODO comments
-    yield
-    # TODO: clean up test dependencies
+# TEST 1 - CAST ZUORA SCHEMA TO JSON SCHEMA
+def test_zuora_list_streams():
+    zuora_streams_list = TestClient.client().zuora_list_streams()
+    assert True if zuora_streams_list is not None else False
+
+# TEST 2 - CAST ZUORA SCHEMA TO JSON SCHEMA
+def test_zuora_get_json_schema():
+    test_obj = "account"
+    json_schema = TestClient.client().zuora_get_json_schema(test_obj)
+    # print(json_schema)
+    assert True if "id" in json_schema.keys() else False
