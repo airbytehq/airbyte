@@ -160,7 +160,10 @@ class IncrementalMessageStream(SlackStream, ABC):
     def set_sub_primary_key(self):
         if isinstance(self.primary_key, list):
             for index, value in enumerate(self.primary_key):
-                exec(f"self.sub_primary_key_{index + 1} = '{value}'")
+                setattr(self, f"sub_primary_key_{index + 1}", value)
+        else:
+            logger = AirbyteLogger()
+            logger.error("Failed during setting sub primary keys. Primary key should be list.")
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
