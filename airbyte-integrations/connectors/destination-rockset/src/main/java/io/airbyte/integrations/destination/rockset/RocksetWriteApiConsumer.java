@@ -47,21 +47,21 @@ public class RocksetWriteApiConsumer implements AirbyteMessageConsumer {
     this.client = new RocksetClient(apiKey, APISERVER_URL);
 
     RocksetUtils.createWorkspaceIfNotExists(client, workspace);
-        catalog.getStreams()
-                .stream()
-            .filter(s -> s.getDestinationSyncMode() == DestinationSyncMode.OVERWRITE)
-            .forEach(s -> {
-              try {
-                RocksetUtils.deleteAllDocsInCollection(client, workspace, s.getStream().getName());
-              } catch (Exception e) {
-                e.printStackTrace();
-              }
-            });
+      catalog.getStreams()
+        .stream()
+        .filter(s -> s.getDestinationSyncMode() == DestinationSyncMode.OVERWRITE)
+        .forEach(s -> {
+          try {
+            RocksetUtils.deleteAllDocsInCollection(client, workspace, s.getStream().getName());
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
+        });
 
     List<String> collectionNames =
-            catalog.getStreams().stream()
-                    .map(s -> s.getStream().getName())
-                    .collect(Collectors.toList());
+      catalog.getStreams().stream()
+        .map(s -> s.getStream().getName())
+        .collect(Collectors.toList());
 
     for (String cname : collectionNames) {
       RocksetUtils.createCollectionIfNotExists(client, workspace, cname);

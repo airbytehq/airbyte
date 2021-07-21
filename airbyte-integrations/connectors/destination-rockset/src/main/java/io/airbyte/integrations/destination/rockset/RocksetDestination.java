@@ -24,8 +24,11 @@
 
 package io.airbyte.integrations.destination.rockset;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import com.rockset.client.model.AddDocumentsRequest;
 import com.rockset.client.model.CreateWorkspaceRequest;
 import com.rockset.client.model.CreateWorkspaceResponse;
 import com.rockset.client.ApiException;
@@ -45,6 +48,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
@@ -55,6 +59,7 @@ import static io.airbyte.integrations.destination.rockset.RocksetUtils.WORKSPACE
 public class RocksetDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RocksetDestination.class);
+  private static final ObjectMapper mapper = new ObjectMapper();
 
   public static void main(String[] args) throws Exception {
     new IntegrationRunner(new RocksetDestination()).run(args);
@@ -63,8 +68,30 @@ public class RocksetDestination extends BaseConnector implements Destination {
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
     try {
+      RocksetClient client = RocksetUtils.clientFromConfig(config);
+
       String workspace = config.get(WORKSPACE_ID).asText();
-      RocksetUtils.createWorkspaceIfNotExists(RocksetUtils.clientFromConfig(config), workspace);
+      RocksetUtils.createWorkspaceIfNotExists(client, workspace);
+
+      // Create a temporary table
+      String cname = "test-collection";
+      RocksetUtils.createCollectionIfNotExists(client, workspace, cname);
+      RocksetUtils.waitUntilCollectionReady(client, workspace, cname);
+
+      // Write a single document
+      Map<String, String> dummyRecord  = ImmutableMap.of("k1", "val1");
+      AddDocumentsRequest req = new AddDocumentsRequest();
+      req.addDataItem(mapper.convertValue(dummyRecord, new TypeReference<>() {}));
+      client.addDocuments(workspace, cname, req);
+
+      // Verify that the doc shows up
+      String sql = String.format("SELECT * FROM %s.%s WHERE k1 = 'val1';", workspace, cname);
+      RocksetUtils.waitUntilDocCount(client, sql, 1);
+
+      // Delete the collection
+      RocksetUtils.deleteCollectionIfExists(client, workspace, cname);
+      RocksetUtils.waitUntilCollectionDeleted(client, workspace, cname);
+
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
       LOGGER.info("Check failed.", e);

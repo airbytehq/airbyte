@@ -11,6 +11,7 @@ import com.rockset.client.model.CreateCollectionResponse;
 import com.rockset.client.model.CreateWorkspaceRequest;
 import com.rockset.client.model.CreateWorkspaceResponse;
 
+import com.rockset.client.model.DeleteCollectionResponse;
 import com.rockset.client.model.DeleteDocumentsRequest;
 import com.rockset.client.model.DeleteDocumentsRequestData;
 import com.rockset.client.model.DeleteDocumentsResponse;
@@ -18,6 +19,7 @@ import com.rockset.client.model.ErrorModel;
 import com.rockset.client.model.GetCollectionResponse;
 import com.rockset.client.model.QueryRequest;
 import com.rockset.client.model.QueryRequestSql;
+import com.rockset.client.model.QueryResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,6 +83,22 @@ public class RocksetUtils {
   }
 
   // Assumes the collection exists
+  public static void deleteCollectionIfExists(
+      RocksetClient client, String workspace, String cname) throws Exception {
+    try {
+      client.deleteCollection(workspace, cname);
+      LOGGER.info(String.format("Deleted collection %s.%s", workspace, cname));
+    } catch (ApiException e) {
+      if (e.getCode() == 400 && e.getErrorModel().getType() == ErrorModel.TypeEnum.NOTFOUND) {
+        LOGGER.info(String.format("Collection %s.%s does not exist", workspace, cname));
+        return;
+      }
+
+      throw e;
+    }
+  }
+
+  // Assumes the collection exists
   public static void waitUntilCollectionReady(RocksetClient client, String workspace, String cname)
       throws Exception {
     while (true) {
@@ -93,6 +111,52 @@ public class RocksetUtils {
         LOGGER.info(
             String.format(
                 "Waiting until %s.%s is READY, it is %s", workspace, cname, status.toString()));
+        Thread.sleep(5000);
+      }
+    }
+  }
+
+  // Assumes the collection exists
+  public static void waitUntilCollectionDeleted(RocksetClient client, String workspace, String cname)
+      throws Exception {
+    while (true) {
+      try {
+        client.getCollection(workspace, cname);
+        LOGGER.info(String.format("Collection %s.%s still exists, waiting for deletion to complete", workspace, cname));
+        Thread.sleep(5000);
+      } catch (ApiException e) {
+        if (e.getCode() == 400 && e.getErrorModel().getType() == ErrorModel.TypeEnum.NOTFOUND) {
+          LOGGER.info(String.format("Collection %s.%s does not exist", workspace, cname));
+          return;
+        }
+
+        throw e;
+      }
+    }
+  }
+
+  // Assumes the collection exists
+  public static void waitUntilDocCount(RocksetClient client, String sql, int desiredCount)
+      throws Exception {
+    while (true) {
+      LOGGER.info(String.format("Running query %s", sql));
+
+      QueryRequestSql qrs = new QueryRequestSql();
+      qrs.setQuery(sql);
+
+      QueryRequest qr = new QueryRequest();
+      qr.setSql(qrs);
+
+      QueryResponse response = client.query(qr);
+      int resultCount = response.getResults().size();
+
+      if (resultCount == desiredCount) {
+        LOGGER.info(String.format("Desired result count %s found", desiredCount));
+        break;
+      } else {
+        LOGGER.info(
+            String.format(
+                "Waiting for desired result count %s, current is %s", desiredCount, resultCount));
         Thread.sleep(5000);
       }
     }
@@ -115,8 +179,6 @@ public class RocksetUtils {
             .collect(Collectors.toList());
 
     DeleteDocumentsRequest req = new DeleteDocumentsRequest().data(allDocIds);
-    DeleteDocumentsResponse resp = client.deleteDocuments(workspace, cname, req);
-    // TODO handle resp
-
+    client.deleteDocuments(workspace, cname, req);
   }
 }
