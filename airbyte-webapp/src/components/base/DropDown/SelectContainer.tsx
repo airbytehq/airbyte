@@ -7,7 +7,7 @@ export const SelectContainer: React.FC<ContainerProps<OptionType, false>> = (
 ) => {
   const wrapperProps = {
     "data-testid": props.selectProps["data-testid"],
-    role: props.selectProps["role"],
+    role: props.selectProps["role"] || "combobox",
   };
   return (
     <components.SelectContainer

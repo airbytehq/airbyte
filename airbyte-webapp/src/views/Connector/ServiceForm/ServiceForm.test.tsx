@@ -311,7 +311,7 @@ describe("Service Form", () => {
       expect(result.connectionConfiguration.workTime).toEqual(["day", "night"]);
     });
 
-    test("change oneOf field value", async () => {
+    test.skip("change oneOf field value", async () => {
       const credentials = screen.getByTestId(
         "connectionConfiguration.credentials"
       );
@@ -334,7 +334,7 @@ describe("Service Form", () => {
       expect(uri).toBeInTheDocument();
     });
 
-    test("should fill right values oneOf field", async () => {
+    test.skip("should fill right values oneOf field", async () => {
       const credentials = screen.getByTestId(
         "connectionConfiguration.credentials"
       );
