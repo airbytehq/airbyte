@@ -1,11 +1,8 @@
 {
-  "organizations" : {
-    "updated_at": "1970-01-01T00:00:00Z"
-  },
   "ad_accounts" : {
-    "updated_at": "1970-01-01T00:00:00Z"
+    "updated_at": "2021-07-01T00:00:00Z"
   },
   "creatives" : {
-    "updated_at": "1970-01-01T00:00:00Z"
+    "updated_at": "2021-07-01T00:00:00Z"
   }
 }

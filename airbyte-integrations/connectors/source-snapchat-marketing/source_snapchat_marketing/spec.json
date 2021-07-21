@@ -12,7 +12,7 @@
         "type": "string",
         "description": "The Snapchat Client ID for API credentials."
       },
-      "client_secret": {
+      "secret": {
         "title": "Client Secret",
         "type": "string",
         "description": "The Client Secret for a given Client ID.",

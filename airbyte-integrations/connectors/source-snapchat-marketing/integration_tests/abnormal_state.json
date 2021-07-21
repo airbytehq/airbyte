@@ -1,5 +1,8 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "todo-abnormal-value"
+  "ad_accounts" : {
+    "updated_at": "2221-01-01T00:00:00Z"
+  },
+  "creatives" : {
+    "updated_at": "2221-01-01T00:00:00Z"
   }
 }
