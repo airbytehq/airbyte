@@ -34,11 +34,11 @@ class SftpClient:
     def __init__(
         self,
         host: str,
-        port: int,
         username: str,
         password: str,
         destination_path: str,
-        filename: str,
+        filename: str = "data",
+        port: int = 22,
     ):
         self.host = host
         self.port = port
@@ -61,7 +61,7 @@ class SftpClient:
         transport_params = {"connect_kwargs": {"look_for_keys": False}}
 
         uri = self._get_uri()
-        return smart_open.open(uri, transport_params=transport_params, mode="w")
+        return smart_open.open(uri, transport_params=transport_params, mode="w+")
 
     def close(self):
         if self._file:
@@ -81,8 +81,14 @@ class SftpClient:
 
     def delete(self) -> None:
         with paramiko.SSHClient() as client:
-            ssh = client.connect(
-                self.host, self.port, username=self.username, password=self.password
+            client.load_system_host_keys()
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            client.connect(
+                self.host,
+                self.port,
+                username=self.username,
+                password=self.password,
+                look_for_keys=False,
             )
-            sftp = ssh.open_sftp()
+            sftp = client.open_sftp()
             sftp.remove(str(self.file_path))
