@@ -65,7 +65,7 @@ class FileReader(ABC):
             "boolean": ("bool_", "bool"),
             "integer": ("int64", "int8", "int16", "int32", "uint8", "uint16", "uint32", "uint64"),
             "number": ("float64", "float16", "float32", "decimal128", "decimal256", "halffloat", "float", "double"),
-            "string": ("large_string", ),
+            "string": ("large_string", "string"),
             "object": ("large_string", ),
             "array": ("large_string", ),
             "null": ("large_string", )

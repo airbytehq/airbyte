@@ -76,4 +76,4 @@ class SourceBlobS3(SourceBlob):
 
     @property
     def stream_class(self) -> str:
-        return IncrementalBlobStreamS3
+        return IncrementalFileStreamS3
