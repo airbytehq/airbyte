@@ -36,20 +36,22 @@ STREAMS = generate_stream_classes()
 # from .streams import Users, Groups, Organizations, Tickets, generate_stream_classes
 
 
-class BasicAuthenticator(TokenAuthenticator):
+class BasicApiTokenAuthenticator(TokenAuthenticator):
     """basic Authorization header"""
 
     def __init__(self, email: str, password: str):
-        token = base64.b64encode(f"{email}:{password}".encode("utf-8"))
+        # for API token auth we need to add the suffix '/token' in the end of email value
+        email_login = email + "/token"
+        token = base64.b64encode(f"{email_login}:{password}".encode("utf-8"))
         super().__init__(token.decode("utf-8"), auth_method="Basic")
 
 
-class BasicApiTokenAuthenticator(BasicAuthenticator):
-    def __init__(self, email: str, token: str):
-        super().__init__(email + "/token", token)
-
-
 class SourceZendeskSupport(AbstractSource):
+    def get_authenticator(self, config):
+        if config["auth_method"].get("email") and config["auth_method"].get("api_token"):
+            return BasicApiTokenAuthenticator(config["auth_method"]["email"], config["auth_method"]["api_token"]), None
+        return None, "Not implemented authorization method"
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
 
@@ -58,8 +60,9 @@ class SourceZendeskSupport(AbstractSource):
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully,
         (False, error) otherwise.
         """
-
-        auth = BasicApiTokenAuthenticator(config["email"], config["api_token"])
+        auth, err = self.get_authenticator(config)
+        if err:
+            return False, err
         try:
             settings, err = UserSettingsStream(config["subdomain"], authenticator=auth).get_settings()
         except requests.exceptions.RequestException as e:
@@ -80,9 +83,13 @@ class SourceZendeskSupport(AbstractSource):
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
+        auth, err = self.get_authenticator(config)
+        if err:
+            return False, err
+
         args = {
             "subdomain": config["subdomain"],
             "start_date": config["start_date"],
-            "authenticator": BasicApiTokenAuthenticator(config["email"], config["api_token"]),
+            "authenticator": auth,
         }
-        return [stream_class(**args) for stream_class in STREAMS] + []
+        return [stream_class(**args) for stream_class in STREAMS]

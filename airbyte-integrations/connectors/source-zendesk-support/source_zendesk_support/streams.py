@@ -35,7 +35,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
-DATATIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 
 class SourceZendeskSupportStream(HttpStream, ABC):
@@ -66,12 +66,12 @@ class SourceZendeskSupportStream(HttpStream, ABC):
     @staticmethod
     def str2datetime(s):
         """convert string to datetime object"""
-        return datetime.strptime(s, DATATIME_FORMAT)
+        return datetime.strptime(s, DATETIME_FORMAT)
 
     @staticmethod
     def datetime2str(dt):
-        """convert string to datetime object"""
-        return datetime.strftime(dt.replace(tzinfo=pytz.UTC), DATATIME_FORMAT)
+        """convert datetime object to string"""
+        return datetime.strftime(dt.replace(tzinfo=pytz.UTC), DATETIME_FORMAT)
 
 
 class UserSettingsStream(SourceZendeskSupportStream):
@@ -175,7 +175,7 @@ class IncrementalBasicEntityStream(IncrementalBasicSearchStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """returns data from API AS IS"""
-        yield from response.json()[self.response_list_name or self.entity_type] or []
+        yield from response.json().get(self.response_list_name or self.entity_type) or []
 
 
 class IncrementalBasicUnsortedStream(IncrementalBasicEntityStream, ABC):
@@ -263,9 +263,9 @@ class IncrementalBasicUnsortedPageStream(IncrementalBasicUnsortedStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        res = super().request_params(stream_state, next_page_token)
-        res["page"] = (next_page_token or {}).get("next_page") or 1
-        return res
+        params = super().request_params(stream_state, next_page_token)
+        params["page"] = (next_page_token or {}).get("next_page") or 1
+        return params
 
 
 class FullRefreshBasicStream(IncrementalBasicUnsortedPageStream, ABC):
@@ -281,13 +281,13 @@ class IncrementalBasicSortedCursorStream(IncrementalBasicUnsortedStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        res = super().request_params(stream_state, next_page_token)
+        params = super().request_params(stream_state, next_page_token)
         self._save_cursor_state(stream_state)
-        res.update({"sort_by": self.cursor_field, "sort_order": "desc", "limit": self.state_checkpoint_interval})
+        params.update({"sort_by": self.cursor_field, "sort_order": "desc", "limit": self.state_checkpoint_interval})
         before_cursor = (next_page_token or {}).get("before_cursor")
         if before_cursor:
-            res["cursor"] = before_cursor
-        return res
+            params["cursor"] = before_cursor
+        return params
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if self.is_finished:
@@ -320,7 +320,7 @@ class CustomTicketAuditsStream(IncrementalBasicSortedCursorStream, ABC):
     # ticket audits doesn't have the 'updated_by' field
     cursor_field = "created_at"
 
-    # Root of response is 'audits'. As rule as an endpoint name is equel a response list name
+    # Root of response is 'audits'. As rule as an endpoint name is equal a response list name
     response_list_name = "audits"
 
 
@@ -346,11 +346,10 @@ class CustomCommentsStream(IncrementalBasicSortedPageStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        res = super().request_params(stream_state, next_page_token)
+        params = super().request_params(stream_state, next_page_token)
         if not self._loaded:
-            res["include"] = "comment_count"
-
-        return res
+            params["include"] = "comment_count"
+        return params
 
     @property
     def response_list_name(self):
