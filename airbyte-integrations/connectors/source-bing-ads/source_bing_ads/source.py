@@ -24,6 +24,8 @@
 
 
 import logging
+
+# import tempfile
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -36,7 +38,11 @@ from suds import sudsobject
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("suds.client").setLevel(logging.DEBUG)
-logging.getLogger("suds.transport.http").setLevel(logging.DEBUG)
+# logging.getLogger("suds.transport.http").setLevel(logging.DEBUG)
+
+# cache_file = tempfile.NamedTemporaryFile()
+# cache_file.write(b"interactions: []")
+# cache_file.flush()
 
 
 class BingAdsStream(Stream, ABC):
@@ -57,6 +63,7 @@ class BingAdsStream(Stream, ABC):
         yield from []
 
     def send_request(self, params: Mapping[str, Any], account_id: str = None) -> Mapping[str, Any]:
+        # with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="yaml"):
         return self.client.request(service_name=self.service_name, account_id=account_id, operation_name=self.operation_name, params=params)
 
     def get_account_id(self, stream_slice: Mapping[str, Any] = None) -> Optional[str]:
@@ -95,9 +102,16 @@ class BingAdsStream(Stream, ABC):
 
 
 class Accounts(BingAdsStream):
+    """
+    Searches for accounts that the current authenticated user can access.
+    API doc: https://docs.microsoft.com/en-us/advertising/customer-management-service/searchaccounts?view=bingads-13
+    Account schema: https://docs.microsoft.com/en-us/advertising/customer-management-service/advertiseraccount?view=bingads-13
+    """
+
     data_field: str = "AdvertiserAccount"
     service_name: str = "CustomerManagementService"
     operation_name: str = "SearchAccounts"
+    additional_fields: str = "TaxCertificate AccountMode"
 
     def next_page_token(self, response: sudsobject.Object, current_page_token: Optional[int]) -> Optional[Mapping[str, Any]]:
         current_page_token = current_page_token or 0
@@ -128,15 +142,20 @@ class Accounts(BingAdsStream):
         return {
             "PageInfo": paging,
             "Predicates": predicates,
-            "ReturnAdditionalFields": "TaxCertificate AccountMode",
+            "ReturnAdditionalFields": self.additional_fields,
         }
 
 
 class Campaigns(BingAdsStream):
+    """
+    Gets the campaigns for all provided accounts.
+    API doc: https://docs.microsoft.com/en-us/advertising/campaign-management-service/getcampaignsbyaccountid?view=bingads-13
+    Campaign schema: https://docs.microsoft.com/en-us/advertising/campaign-management-service/campaign?view=bingads-13
+    """
+
     data_field: str = "Campaign"
     service_name: str = "CampaignManagement"
     operation_name: str = "GetCampaignsByAccountId"
-
     additional_fields: str = " ".join(
         [
             "AdScheduleUseSearcherTimeZone",
@@ -174,6 +193,12 @@ class Campaigns(BingAdsStream):
 
 
 class AdGroups(BingAdsStream):
+    """
+    Gets the ad groups for all provided accounts.
+    API doc: https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadgroupsbycampaignid?view=bingads-13
+    AdGroup schema: https://docs.microsoft.com/en-us/advertising/campaign-management-service/adgroup?view=bingads-13
+    """
+
     data_field: str = "AdGroup"
     service_name: str = "CampaignManagement"
     operation_name: str = "GetAdGroupsByCampaignId"
@@ -202,6 +227,12 @@ class AdGroups(BingAdsStream):
 
 
 class Ads(BingAdsStream):
+    """
+    Retrieves the ads for all provided accounts.
+    API doc: https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadsbyadgroupid?view=bingads-13
+    Ad schema: https://docs.microsoft.com/en-us/advertising/campaign-management-service/ad?view=bingads-13
+    """
+
     data_field: str = "Ad"
     service_name: str = "CampaignManagement"
     operation_name: str = "GetAdsByAdGroupId"
@@ -216,9 +247,7 @@ class Ads(BingAdsStream):
     ) -> MutableMapping[str, Any]:
         return {
             "AdGroupId": stream_slice["ad_group_id"],
-            "AdTypes": {
-                "AdType": self.ad_types
-            },
+            "AdTypes": {"AdType": self.ad_types},
             "ReturnAdditionalFields": self.additional_fields,
         }
 
