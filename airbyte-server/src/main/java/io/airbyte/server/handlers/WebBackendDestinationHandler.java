@@ -26,13 +26,16 @@ package io.airbyte.server.handlers;
 
 import static io.airbyte.api.model.CheckConnectionRead.StatusEnum.SUCCEEDED;
 
+import com.google.api.client.util.Preconditions;
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.DestinationCreate;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationRecreate;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.server.errors.ConnectFailureKnownException;
+import io.airbyte.server.helpers.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import org.slf4j.Logger;
@@ -45,14 +48,21 @@ public class WebBackendDestinationHandler {
   private final DestinationHandler destinationHandler;
 
   private final SchedulerHandler schedulerHandler;
+  private final WorkspaceHelper workspaceHelper;
 
-  public WebBackendDestinationHandler(final DestinationHandler destinationHandler, final SchedulerHandler schedulerHandler) {
+  public WebBackendDestinationHandler(final DestinationHandler destinationHandler,
+                                      final SchedulerHandler schedulerHandler,
+                                      final WorkspaceHelper workspaceHelper) {
     this.destinationHandler = destinationHandler;
     this.schedulerHandler = schedulerHandler;
+    this.workspaceHelper = workspaceHelper;
   }
 
   public DestinationRead webBackendRecreateDestinationAndCheck(DestinationRecreate destinationRecreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
+    Exceptions.toRuntime(() -> Preconditions.checkArgument(
+        workspaceHelper.getWorkspaceForDestinationId(destinationRecreate.getDestinationId()).equals(destinationRecreate.getWorkspaceId())));
+
     final DestinationCreate destinationCreate = new DestinationCreate();
     destinationCreate.setConnectionConfiguration(destinationRecreate.getConnectionConfiguration());
     destinationCreate.setName(destinationRecreate.getName());

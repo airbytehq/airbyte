@@ -25,7 +25,6 @@
 package io.airbyte.server.helpers;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -41,12 +40,9 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.FileSystemConfigPersistence;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.server.converters.SpecFetcher;
-import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -72,10 +68,7 @@ class WorkspaceHelperTest {
     configRepository = new ConfigRepository(new FileSystemConfigPersistence(tmpDir));
     jobPersistence = mock(JobPersistence.class);
 
-    SpecFetcher specFetcher = mock(SpecFetcher.class);
-    when(specFetcher.execute(any())).thenReturn(new ConnectorSpecification().withConnectionSpecification(Jsons.deserialize("{}")));
-
-    workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence, new JsonSchemaValidator(), specFetcher);
+    workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
   }
 
   @Test
