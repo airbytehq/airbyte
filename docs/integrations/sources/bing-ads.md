@@ -63,4 +63,4 @@ Be aware that `refresh token` will expire in 90 days. You need to repeat auth pr
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.0   | 2021-07-18 | []() | Initial release supported core streams (Accounts, Campaigns, Ads, AdGroups) |
+| 0.1.0   | 2021-07-22 | [4911](https://github.com/airbytehq/airbyte/pull/4911) | Initial release supported core streams (Accounts, Campaigns, Ads, AdGroups) |
