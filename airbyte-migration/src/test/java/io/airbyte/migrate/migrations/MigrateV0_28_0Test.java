@@ -104,7 +104,15 @@ public class MigrateV0_28_0Test {
     final Map<ResourceId, List<JsonNode>> outputAsList = MigrationTestUtils
         .collectConsumersToList(outputConsumer);
 
-    assertEquals(expectedOutput, outputAsList);
+    assertExpectedOutput(expectedOutput, outputAsList);
+  }
+
+  private void assertExpectedOutput(Map<ResourceId, List<JsonNode>> expected, Map<ResourceId, List<JsonNode>> actual) {
+    assertEquals(expected.keySet(), actual.keySet());
+    expected.entrySet().forEach(entry -> {
+      assertEquals(entry.getValue(), actual.get(entry.getKey()), String.format("Resources output do not match for %s:", entry.getKey().getName()));
+    });
+    assertEquals(expected, actual);
   }
 
 }

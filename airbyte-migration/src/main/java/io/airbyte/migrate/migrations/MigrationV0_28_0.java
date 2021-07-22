@@ -97,10 +97,12 @@ public class MigrationV0_28_0 extends BaseMigration implements Migration {
       final UUID connectionId = UUID.fromString(r.get("connectionId").asText());
       final UUID sourceId = UUID.fromString(r.get("sourceId").asText());
       connectionIdToSourceId.put(connectionId, sourceId);
-      r.get("operationIds").forEach(operationIdString -> {
-        final UUID operationId = UUID.fromString(operationIdString.asText());
-        operationIdToConnectionId.put(operationId, connectionId);
-      });
+      if (r.hasNonNull("operationIds")) {
+        r.get("operationIds").forEach(operationIdString -> {
+          final UUID operationId = UUID.fromString(operationIdString.asText());
+          operationIdToConnectionId.put(operationId, connectionId);
+        });
+      }
 
       outputData.get(CONNECTION_RESOURCE_ID).accept(r);
     });
