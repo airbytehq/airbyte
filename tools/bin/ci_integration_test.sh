@@ -16,7 +16,7 @@ else
   if [[ "$connector" == *"base-normalization"* ]]; then
     selected_integration_test="base-normalization"
     integrationTestCommand="$(_to_gradle_path "airbyte-integrations/bases/base-normalization" integrationTest)"
-    export SUB_BUILD="NORMALIZATION"
+    export SUB_BUILD="CONNECTORS_BASE"
     ./gradlew --no-daemon --scan airbyteDocker
   elif [[ "$connector" == *"bases"* ]]; then
     connector_name=$(echo $connector | cut -d / -f 2)
