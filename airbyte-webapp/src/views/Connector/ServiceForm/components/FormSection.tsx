@@ -162,13 +162,13 @@ const FormSection: React.FC<{
   skipAppend?: boolean;
 }> = ({ blocks = [], path, skipAppend }) => {
   const sections = useMemo(() => {
-    const bl = [blocks].flat();
+    const flattenedBlocks = [blocks].flat();
 
-    if (bl.some((b) => Number.isInteger(b.order))) {
-      return bl.sort(OrderComparator);
+    if (flattenedBlocks.some((b) => Number.isInteger(b.order))) {
+      return flattenedBlocks.sort(OrderComparator);
     }
 
-    return bl;
+    return flattenedBlocks;
   }, [blocks]);
 
   return (
@@ -208,6 +208,10 @@ const FormSection: React.FC<{
               path={sectionPath}
             />
           );
+        }
+
+        if (formField.const !== undefined) {
+          return null;
         }
 
         return (

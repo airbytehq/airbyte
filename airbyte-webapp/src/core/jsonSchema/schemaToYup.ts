@@ -96,28 +96,30 @@ export const buildYupFormForJsonSchema = (
       }
       break;
     case "object":
-      schema = yup
-        .object()
-        .shape(
-          Object.fromEntries(
-            Object.entries(
-              jsonSchema.properties || {}
-            ).map(([propertyKey, condition]) => [
+      let objectSchema = yup.object();
+
+      const keyEntries = Object.entries(
+        jsonSchema.properties || {}
+      ).map(([propertyKey, condition]) => [
+        propertyKey,
+        typeof condition !== "boolean"
+          ? buildYupFormForJsonSchema(
+              condition,
+              uiConfig,
+              jsonSchema,
               propertyKey,
-              typeof condition !== "boolean"
-                ? buildYupFormForJsonSchema(
-                    condition,
-                    uiConfig,
-                    jsonSchema,
-                    propertyKey,
-                    propertyPath
-                      ? `${propertyPath}.${propertyKey}`
-                      : propertyKey
-                  )
-                : yup.mixed(),
-            ])
-          )
-        );
+              propertyPath ? `${propertyPath}.${propertyKey}` : propertyKey
+            )
+          : yup.mixed(),
+      ]);
+
+      if (keyEntries.length) {
+        objectSchema = objectSchema.shape(Object.fromEntries(keyEntries));
+      } else {
+        objectSchema = objectSchema.default({});
+      }
+
+      schema = objectSchema;
   }
 
   const hasDefault =
@@ -126,6 +128,11 @@ export const buildYupFormForJsonSchema = (
   if (schema && hasDefault) {
     // @ts-ignore can't infer correct type here so lets just use default from json_schema
     schema = schema.default(jsonSchema.default);
+  }
+
+  if (schema && !hasDefault && jsonSchema.const) {
+    // @ts-ignore can't infer correct type here so lets just use default from json_schema
+    schema = schema.default(jsonSchema.const);
   }
 
   if (schema && jsonSchema.enum) {

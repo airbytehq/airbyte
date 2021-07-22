@@ -38,7 +38,14 @@ export const jsonSchemaToUiWidget = (
         if (typeof condition === "boolean") {
           return [];
         }
-        return [condition.title, jsonSchemaToUiWidget(condition, key, path)];
+        return [
+          condition.title,
+          jsonSchemaToUiWidget(
+            { ...condition, type: jsonSchema.type },
+            key,
+            path
+          ),
+        ];
       })
     );
 
@@ -69,9 +76,9 @@ export const jsonSchemaToUiWidget = (
     };
   }
 
-  if (jsonSchema.properties) {
+  if (jsonSchema.type === "object") {
     const properties = Object.entries(
-      jsonSchema.properties
+      jsonSchema.properties || []
     ).map(([k, schema]) =>
       jsonSchemaToUiWidget(schema, k, path ? `${path}.${k}` : k, jsonSchema)
     );
@@ -122,6 +129,7 @@ const pickDefaultFields = (
   description: schema.description,
   pattern: schema.pattern,
   order: schema.order,
+  const: schema.const,
   title: schema.title,
   enum:
     typeof schema.items === "object" &&
