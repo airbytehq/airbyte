@@ -1,8 +1,8 @@
 import { jsonSchemaToUiWidget } from "./schemaToUiWidget";
-import { AirbyteJSONSchema } from "./types";
+import { AirbyteJSONSchemaDefinition } from "./types";
 
 test("should reformat jsonSchema to internal widget representation", () => {
-  const schema: AirbyteJSONSchema = {
+  const schema: AirbyteJSONSchemaDefinition = {
     type: "object",
     required: ["host", "port", "user", "dbname"],
     properties: {
@@ -107,7 +107,7 @@ test("should reformat jsonSchema to internal widget representation", () => {
 });
 
 test("should reformat jsonSchema to internal widget representation with parent schema", () => {
-  const schema: AirbyteJSONSchema = {
+  const schema: AirbyteJSONSchemaDefinition = {
     type: "object",
     title: "Postgres Source Spec",
     required: ["host", "port", "user", "dbname"],
@@ -153,7 +153,7 @@ test("should reformat jsonSchema to internal widget representation with parent s
 });
 
 test("should reformat jsonSchema to internal widget representation when has oneOf", () => {
-  const schema: AirbyteJSONSchema = {
+  const schema: AirbyteJSONSchemaDefinition = {
     type: "object",
     required: ["start_date", "credentials"],
     properties: {

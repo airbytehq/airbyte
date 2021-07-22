@@ -1,5 +1,5 @@
 import { FormBlock } from "core/form/types";
-import { AirbyteJSONSchema, AirbyteJSONSchemaTypeDefinition } from "./types";
+import { AirbyteJSONSchemaDefinition, AirbyteJSONSchema } from "./types";
 
 /**
  * Returns {@link FormBlock} representation of jsonSchema
@@ -13,10 +13,10 @@ import { AirbyteJSONSchema, AirbyteJSONSchemaTypeDefinition } from "./types";
  * @param parentSchema
  */
 export const jsonSchemaToUiWidget = (
-  jsonSchema: AirbyteJSONSchema,
+  jsonSchema: AirbyteJSONSchemaDefinition,
   key = "",
   path: string = key,
-  parentSchema?: AirbyteJSONSchema
+  parentSchema?: AirbyteJSONSchemaDefinition
 ): FormBlock => {
   const isRequired = isKeyRequired(key, parentSchema);
 
@@ -101,7 +101,10 @@ export const jsonSchemaToUiWidget = (
   };
 };
 
-function isKeyRequired(key: string, parentSchema?: AirbyteJSONSchema): boolean {
+function isKeyRequired(
+  key: string,
+  parentSchema?: AirbyteJSONSchemaDefinition
+): boolean {
   const isRequired =
     (typeof parentSchema !== "boolean" &&
       Array.isArray(parentSchema?.required) &&
@@ -112,8 +115,8 @@ function isKeyRequired(key: string, parentSchema?: AirbyteJSONSchema): boolean {
 }
 
 const pickDefaultFields = (
-  schema: AirbyteJSONSchemaTypeDefinition
-): Partial<AirbyteJSONSchemaTypeDefinition> => ({
+  schema: AirbyteJSONSchema
+): Partial<AirbyteJSONSchema> => ({
   default: schema.default,
   examples: schema.examples,
   description: schema.description,
