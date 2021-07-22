@@ -31,7 +31,7 @@
       "is_sandbox": {
         "type": "boolean",
         "description": "Defines whether use the SANDBOX or PRODUCTION environment.",
-        "default": true
+        "default": false
       }
     }
   }
