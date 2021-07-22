@@ -4,7 +4,16 @@ This guide contains instructions on how to setup Python with Gradle within the A
 
 ## Python Connector Development
 
-Before working with connectors written in Python, we recommend running `./gradlew :airbyte-integrations:connectors:<connector directory name>:build` \(e.g. `./gradlew :airbyte-integrations:connectors:source-postgres:build`\) from the root project directory. This will create a `virtualenv` and install dependencies for the connector you want to work on as well as any internal Airbyte python packages it depends on.
+Before working with connectors written in Python, we recommend running 
+```bash
+./gradlew :airbyte-integrations:connectors:<connector directory name>:build
+```
+e.g
+
+```bash
+./gradlew :airbyte-integrations:connectors:source-postgres:build
+```
+from the root project directory. This will create a `virtualenv` and install dependencies for the connector you want to work on as well as any internal Airbyte python packages it depends on.
 
 When iterating on a single connector, you will often iterate by running
 
@@ -21,30 +30,37 @@ This command will:
    2. [isort](https://pypi.org/project/isort/) to sort imports
    3. [Flake8](https://pypi.org/project/flake8/) to check formatting
    4. [MyPy](https://pypi.org/project/mypy/) to check type usage
+ 
+## Formatting/linting
+To format and lint your code before commit you can use the Gradle command above, but for convenience we support [pre-commit](https://pre-commit.com/) tool.
+To use it you need to install it first:
+```bash
+pip install pre-commit
+``` 
+then, to install `pre-commit` as a git hook, run
+```
+pre-commit install
+```
+That's it, `pre-commit` will format/lint the code every time you commit something. You find more information about pre-commit [here](https://pre-commit.com/).
 
+## IDE
 At Airbyte, we use IntelliJ IDEA for development. Although it is possible to develop connectors with any IDE, we typically recommend IntelliJ IDEA or PyCharm, since we actively work towards compatibility.
 
-## Working on a Single Connector
+### Autocompletion
+Install the [Pydantic](https://plugins.jetbrains.com/plugin/12861-pydantic) plugin. This will help autocompletion with some of our internal types.
 
-When iterating on a single connector, the easiest approach is to open PyCharm with the desired connector directory.
+### PyCharm (ItelliJ IDEA)
+The following setup steps are written for PyCharm but should have similar equivalents for IntelliJ IDEA:
 
-You should then open the `Preferences > Project: <your connector> > Python Interpreter` to configure the Project Interpreter using the one that was installed with the requirements of the connector by the `gradle` command: `airbyte-integrations/connectors/your-connector-dir/.venv/bin/python`
-
-## Multi Modules Setup
-
-Our typical development flow is to have one Intellij project for `java` development with `gradle` and a separate Intellij project for python. The following setup steps are written for IntelliJ IDEA but should have similar equivalents for PyCharm:
-
-1. Install the [Pydantic](https://plugins.jetbrains.com/plugin/12861-pydantic) plugin. This will help autocompletion with some of our internal types.
-2. To create the python project, go to `File -> New -> Project...`
-3. Select python.
-4. Select a project name like `airbyte-python` and a directory **outside of** the `airbyte` code root.
-5. Usually you will want to create this project in a new window and not replace the existing window.
-6. Go to `Project Structure > Modules`.
-7. Click the + sign and `New Module`.
-8. Set the content root and module file location to the location of your `airbyte-integrations` directory or a specific subdirectory.
-9. Finish adding the module.
+2. Go to `File -> New -> Project...`
+3. Select `Pure Python`.
+4. Select a project name like `airbyte` and a directory **outside of** the `airbyte` code root.
+5. Go to `Prefferences -> Project -> Python Interpreter`
+6. Find a gear ⚙️ button next to `Python interpreter` dropdown list, click and select `Add`
+7. Select `Virtual Environment -> Existing`
+8. Set the interpreter path to the one that was created by Gradle command, i.e. `airbyte-integrations/connectors/your-connector-dir/.venv/bin/python`.
+9. Wait for PyCharm to finish indexing and loading skeletons from selected virtual environment.
 
 You should now have access to code completion and proper syntax highlighting for python projects.
 
-You can use your default python SDK, but if you want your dependency management to match what will be used in the build process, we recommend creating a Python SDK under `Project Structure > SDKs > + > Virtual Environment > Existing Environment` and setting the interpreter to the python script specified in a location such as `airbyte-integrations/connectors/your-connector-dir/.venv/bin/python`. Once this is done, you can set the module interpreter to this `venv`-based interpreter to make sure imports are working as intended.
-
+If you need to work on another connector you can quickly change the current virtual environment in the bottom toolbar.
