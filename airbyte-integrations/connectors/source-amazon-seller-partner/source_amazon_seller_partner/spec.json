@@ -58,10 +58,7 @@
         "title": "Marketplace",
         "type": "string",
         "description": "Affects the AWS base url to be used.",
-        "enum": [
-          "PRODUCTION",
-          "SANDBOX"
-        ]
+        "enum": ["PRODUCTION", "SANDBOX"]
       },
       "region": {
         "title": "Region",

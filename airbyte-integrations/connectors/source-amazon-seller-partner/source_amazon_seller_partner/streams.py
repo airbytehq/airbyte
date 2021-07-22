@@ -36,13 +36,7 @@ class AspStream(HttpStream, ABC):
     page_size = 100
     data_field = "payload"
 
-    def __init__(
-        self,
-        url_base: str,
-        authenticator: AWSSigV4,
-        access_token_credentials: dict,
-        replication_start_date: str
-    ):
+    def __init__(self, url_base: str, authenticator: AWSSigV4, access_token_credentials: dict, replication_start_date: str):
         self._url_base = url_base
         self._authenticator = authenticator
         self._access_token_credentials = access_token_credentials

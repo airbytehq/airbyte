@@ -30,7 +30,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from source_amazon_seller_partner.auth import AWSSigV4
-from source_amazon_seller_partner.constants import get_marketplaces_enum, AWS_ENV
+from source_amazon_seller_partner.constants import AWS_ENV, get_marketplaces_enum
 from source_amazon_seller_partner.streams import FbaInventoryReports, FlatFileOrdersReports, MerchantListingsReports, Orders
 
 
