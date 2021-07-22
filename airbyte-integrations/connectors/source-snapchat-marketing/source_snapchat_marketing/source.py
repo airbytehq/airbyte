@@ -259,7 +259,6 @@ class Media(IncrementalSnapchatMarketingStream):
     cls_object = AdAccounts
 
 
-# TODO Check why test is failing on campaigns
 class Campaigns(IncrementalSnapchatMarketingStream):
     """ Docs: https://marketingapi.snapchat.com/docs/#get-all-campaigns """
 
