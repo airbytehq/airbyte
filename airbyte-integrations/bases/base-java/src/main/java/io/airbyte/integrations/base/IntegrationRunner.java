@@ -176,7 +176,7 @@ public class IntegrationRunner {
     final Set<String> validationResult = validator.validate(schemaJson, objectJson);
     if (!validationResult.isEmpty()) {
       throw new Exception(String.format("Verification error(s) occurred for %s. Errors: %s ",
-          operationType, validationResult.toString()));
+          operationType, validationResult));
     }
   }
 
