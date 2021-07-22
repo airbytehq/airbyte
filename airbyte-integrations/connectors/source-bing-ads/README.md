@@ -10,6 +10,17 @@ For information about how to use this connector within Airbyte, see [the documen
 
 #### Minimum Python version required `= 3.7.0`
 
+#### Debugging tips
+
+Put this code to the top of `setup.py` file to be able to debug API requests/responses
+
+```python
+import logging
+logging.basicConfig(level=logging.INFO)
+logging.getLogger("suds.client").setLevel(logging.DEBUG)
+logging.getLogger("suds.transport.http").setLevel(logging.DEBUG)
+```
+
 #### Build & Activate Virtual Environment and install dependencies
 From this connector directory, create a virtual environment:
 ```

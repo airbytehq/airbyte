@@ -25,6 +25,7 @@
 from datetime import datetime, timedelta
 from typing import Any, Iterator, Mapping, Optional
 
+from airbyte_cdk.logger import AirbyteLogger
 from bingads.authorization import AuthorizationData, OAuthTokens, OAuthWebAuthCodeGrant
 from bingads.service_client import ServiceClient
 from suds import sudsobject
@@ -33,6 +34,7 @@ from suds import sudsobject
 class Client:
     api_version: int = 13
     refresh_token_safe_delta: int = 10  # in seconds
+    logger: AirbyteLogger = AirbyteLogger()
 
     def __init__(
         self,
@@ -42,7 +44,7 @@ class Client:
         client_secret: str,
         client_id: str,
         refresh_token: str,
-        user_id: str,
+        **kwargs: Mapping[str, Any],
     ) -> None:
 
         if not account_ids:
@@ -68,10 +70,11 @@ class Client:
                 authentication=self.authentication,
             )
 
-        # default authorization data for requests which don't depend on concrete account id
+        # setup default authorization data for requests which don't depend on concrete account id
         self.authorization_data[None] = self.authorization_data[account_ids[0]]
 
     def _get_access_token(self) -> OAuthTokens:
+        self.logger.info("Fetching access token ...")
         return self.authentication.request_oauth_tokens_by_refresh_token(self.refresh_token)
 
     def is_token_expiring(self) -> bool:
@@ -95,13 +98,13 @@ class Client:
         if self.is_token_expiring():
             self.oauth = self._get_access_token()
 
-        service = self.get_service(account_id, service_name)
+        service = self.get_service(service_name=service_name, account_id=account_id)
         return getattr(service, operation_name)(**params)
 
     def get_service(
         self,
+        service_name: str,
         account_id: Optional[str] = None,
-        service_name: str = "CustomerManagementService",
     ) -> ServiceClient:
         return ServiceClient(
             service=service_name,

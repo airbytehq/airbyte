@@ -23,26 +23,18 @@
 #
 
 
-import logging
-
-# import tempfile
-from abc import ABC
+from abc import ABC, abstractproperty
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from source_bing_ads.cache import VcrCache
 from source_bing_ads.client import Client
 from suds import sudsobject
 
-logging.basicConfig(level=logging.INFO)
-logging.getLogger("suds.client").setLevel(logging.DEBUG)
-# logging.getLogger("suds.transport.http").setLevel(logging.DEBUG)
-
-# cache_file = tempfile.NamedTemporaryFile()
-# cache_file.write(b"interactions: []")
-# cache_file.flush()
+cache: VcrCache = VcrCache()
 
 
 class BingAdsStream(Stream, ABC):
@@ -52,6 +44,35 @@ class BingAdsStream(Stream, ABC):
     def __init__(self, client: Client, config: Mapping[str, Any]) -> None:
         self.client = client
         self.config = config
+
+    @abstractproperty
+    def data_field(self) -> str:
+        """
+        Specifies root object name in a stream response
+        """
+        raise NotImplementedError()
+
+    @abstractproperty
+    def service_name(self) -> str:
+        """
+        Specifies bing ads service name for a current stream
+        """
+        raise NotImplementedError()
+
+    @abstractproperty
+    def operation_name(self) -> str:
+        """
+        Specifies operation name to use for a current stream
+        """
+        raise NotImplementedError()
+
+    @abstractproperty
+    def additional_fields(self) -> Optional[str]:
+        """
+        Specifies which additional fields to fetch for a current stream.
+        Expected format: field names separated by space
+        """
+        raise NotImplementedError()
 
     def next_page_token(self, response: sudsobject.Object, **kwargs: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
         return None
@@ -63,8 +84,10 @@ class BingAdsStream(Stream, ABC):
         yield from []
 
     def send_request(self, params: Mapping[str, Any], account_id: str = None) -> Mapping[str, Any]:
-        # with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="yaml"):
-        return self.client.request(service_name=self.service_name, account_id=account_id, operation_name=self.operation_name, params=params)
+        with cache.use_cassette():
+            return self.client.request(
+                service_name=self.service_name, account_id=account_id, operation_name=self.operation_name, params=params
+            )
 
     def get_account_id(self, stream_slice: Mapping[str, Any] = None) -> Optional[str]:
         """
@@ -136,7 +159,7 @@ class Accounts(BingAdsStream):
             ]
         }
 
-        paging = self.client.get_service().factory.create("ns5:Paging")
+        paging = self.client.get_service(service_name=self.service_name).factory.create("ns5:Paging")
         paging.Index = next_page_token or 0
         paging.Size = self.limit
         return {
@@ -268,7 +291,7 @@ class SourceBingAds(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             client = Client(**config)
-            client.get_service().GetAccount(AccountId=config["account_ids"][0])
+            client.get_service(service_name="CustomerManagementService").GetAccount(AccountId=config["account_ids"][0])
         except Exception as error:
             return False, error
 
