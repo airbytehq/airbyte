@@ -7,7 +7,7 @@ terraform {
   }
   backend "s3" {
     bucket = "com-airbyte-terraform-state"
-    key    = "projects/ssh_tunnel_shared/terraform.state"
+    key    = "projects/shared/terraform.state"
     region = "us-east-2"
     dynamodb_table = "terraform-state-lock-dynamo"
   }
