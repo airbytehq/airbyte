@@ -68,7 +68,7 @@ class CartStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = {"count": 100, "sort": "updated_at"}
+        params = {"count": 100}
         if next_page_token:
             params.update(next_page_token)
         return params
@@ -82,6 +82,7 @@ class IncrementalCartStream(CartStream, ABC):
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
         cursor_value = stream_state.get(self.cursor_field) or self._start_date
+        params["sort"] = self.cursor_field
         params[self.cursor_field] = f"gt:{max(cursor_value, self._start_date)}"
         return params
 
