@@ -35,20 +35,6 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
-"""
-TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
-
-This file provides a stubbed example of how to use the Airbyte CDK to develop both a source connector which supports full refresh or and an
-incremental syncs from an HTTP API.
-
-The various TODOs are both implementation hints and steps - fulfilling all the TODOs should be sufficient to implement one basic and one incremental
-stream from a source. This pattern is the same one used by Airbyte internally to implement connectors.
-
-The approach here is not authoritative, and devs are free to use their own judgement.
-
-There are additional required TODOs in the files within the integration_tests folder and the spec.json file.
-"""
-
 # See the get_class_ids function explanation
 auxiliary_id_map = {}
 
@@ -57,7 +43,6 @@ class SnapchatMarketingException(Exception):
     """ Just for formatting the exception as SnapchatMarketing"""
 
 
-# Basic full refresh stream
 class SnapchatMarketingStream(HttpStream, ABC):
     data_field = None
     url_base = "https://adsapi.snapchat.com/v1/"
@@ -107,6 +92,32 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
         yield from stream_slices
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        I see you have a lot of questions to this function. I will try to explain.
+        The problem that it solves is next: records from the streams that used nested ids logic (see the get_class_ids function comments below)
+        can have different, non ordered timestamp in update_at cursor_field and because of they are extracted with slices
+        it is a messy task to make the stream works as incremental. To understand it better the read of nested stream data can be next:
+
+        # Reading the data subset for the ad_account_id_1 - first slice
+        {"updated_at": "2021-07-22T10:32:05.719Z", other_fields}
+        {"updated_at": "2021-07-22T10:47:05.780Z", other_fields}
+        {"updated_at": "2021-07-22T10:42:03.830Z", other_fields}
+        {"updated_at": "2021-07-21T12:20:34.927Z", other_fields}
+        # Reading the data subset for the ad_account_id_2 - second slice
+        {"updated_at": "2021-07-07T07:40:09.531Z", other_fields}
+        {"updated_at": "2021-06-11T08:04:42.202Z", other_fields}
+        {"updated_at": "2021-06-09T13:12:56.350Z", other_fields}
+
+        As you can see the cursor_field (updated_at) values are not ordered and even more - they are descending in some kind
+        The standard logic for incremental cannot be done, because in this case after the first slice
+        the stream_state will be 2021-07-22T10:42:03.830Z, but the second slice data is less then this value, so it will not be yield
+
+        So the next approach was implemented: Until the last slice is processed the stream state remains initial (whenever it is a start_date
+        or the saved stream_state from the state.json), but the maximum value is calculated and saved in class max_state value.
+        When the last slice is processed (we write the class last_slice value while getting the slices) the max_state value is written to stream_state
+        Thus all the slices data are compared to the initial state, but only on the last one we write it to the stream state.
+        This approach gives us the maximum state value of all the records and we exclude the state updates between slice processing
+        """
         if not current_stream_state:
             self.first_run = False
             self.max_state = self.start_date
@@ -122,6 +133,12 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
     def read_records(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
+        """
+        This structure is used to set the class variable current_slice to the current stream slice for the
+        purposes described above.
+        Then all the retrieved records if the stream_state is present are filtered by the cursor_field value compared to the stream state
+        This makes the incremental magic works
+        """
         self.current_slice = stream_slice
         records = super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
         if stream_state:
@@ -142,21 +159,51 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
         :returns: empty list in case no ids of the stream was found or list with {slice_key_name: id}
         """
 
-        # The trick with this code is that all 3 streams are chained:
-        # Organizations -> AdAccounts -> Creatives.
-        # AdAccounts need the organization_id as path variable
+        # The trick with this code is that some streams are chained:
+        # For example Creatives -> AdAccounts -> Organizations.
         # Creatives need the ad_account_id as path variable
+        # AdAccounts need the organization_id as path variable
+        # So organization_ids from Organizations goes as slices to AdAccounts
+        # and after that ad_account_ids from AdAccounts goes as slices to Creatives for path variables
         # So first we must get the AdAccounts, then do the slicing for them
         # and then call the read_records for each slice
+
+        # If the cls_object is None (which means class can be incremental but don't need any slicing with ids)
+        # then just return default [None]
+        if cls_object is None:
+            return [None]
 
         # This auxiliary_id_map is used to prevent the extracting of ids that are used in most streams
         # Instead of running the request to get (for example) AdAccounts for each stream as slices we put them in the dict and
         # return if the same ids are requested in the stream. This saves us a lot of time and requests
-        if cls_object is None:
-            return [None]
-
         if slice_key_name in auxiliary_id_map:
             return auxiliary_id_map[slice_key_name]
+
+        # Some damn logic a?
+        # Relax that has some meaning:
+        # if we want to get just 1 level of parent ids (For example AdAccounts need the organization_ids from Organizations, but
+        # Organizations do not have slices and returns [None] from stream_slices method) this switch goes for else clause and get all the
+        # organization_ids from Organizations and return them as slices
+        # But in case we want to retrieve 2 levels of parent ids (For example we run Creatives stream - it needs the ad_account_ids from AdAccount
+        # and AdAccount need organization_ids from Organizations and first we must get all organization_ids
+        # and for each of them get the ad_account_ids) so switch goes to if claus to get all the nested ids.
+        # Let me visualize this for you:
+        #
+        #          organization_id_1                     organization_id_2
+        #                / \                                   / \
+        #               /   \                                 /   \
+        #              /     \                               /     \
+        #             /       \                             /       \
+        #            /         \                           /         \
+        # ad_account_id_1     ad_account_id_2   ad_account_id_3     ad_account_id_3
+        #
+        # So for the AdAccount slices will be [{'organization_id': organization_id_1}, {'organization_id': organization_id_2}]
+        # And for the Creatives (Media, Ad, AdSquad, etc...) the slices will be
+        # [{'ad_account_id': ad_account_id_1}, {'ad_account_id': ad_account_id_2},
+        #  {'ad_account_id': ad_account_id_3},{'ad_account_id': ad_account_id_4}]
+        #
+        # After getting all the account_ids, they go as slices to Creatives (Media, Ad, AdSquad, etc...)
+        # and are used in the path function as a path variables according to the API docs
 
         cls_stream = cls_object(authenticator=self.authenticator, start_date=self.start_date)
         cls_slices = cls_stream.stream_slices(**kwargs)
@@ -234,6 +281,13 @@ class Adsquads(IncrementalSnapchatMarketingStream):
     cls_object = AdAccounts
 
 
+class Segments(IncrementalSnapchatMarketingStream):
+    """ Docs: https://marketingapi.snapchat.com/docs/#get-all-audience-segments """
+
+    data_field = ["segments", "segment"]
+    cls_object = AdAccounts
+
+
 class SnapchatAdsOauth2Authenticator(Oauth2Authenticator):
     """Request example for API token extraction:
     curl -X POST https://accounts.snapchat.com/login/oauth2/access_token \
@@ -297,4 +351,5 @@ class SourceSnapchatMarketing(AbstractSource):
             Campaigns(**kwargs),
             Ads(**kwargs),
             Adsquads(**kwargs),
+            Segments(**kwargs),
         ]

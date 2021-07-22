@@ -16,5 +16,8 @@
   },
   "adsquads" : {
     "updated_at": "2221-01-01T00:00:00Z"
+  },
+  "segments" : {
+    "updated_at": "2221-01-01T00:00:00Z"
   }
 }
