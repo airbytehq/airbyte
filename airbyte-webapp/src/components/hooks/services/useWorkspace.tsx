@@ -1,6 +1,5 @@
 import { useFetcher, useResource } from "rest-hooks";
 
-import config from "config";
 import WorkspaceResource, { Workspace } from "core/resources/Workspace";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
 import NotificationsResource from "core/resources/Notifications";
@@ -25,8 +24,9 @@ const useWorkspace = (): {
 } => {
   const updateWorkspace = useFetcher(WorkspaceResource.updateShape());
   const tryWebhookUrl = useFetcher(NotificationsResource.tryShape());
+  const { workspaces } = useResource(WorkspaceResource.listShape(), {});
   const workspace = useResource(WorkspaceResource.detailShape(), {
-    workspaceId: config.ui.workspaceId,
+    workspaceId: workspaces[0].workspaceId,
   });
 
   const finishOnboarding = async (skipStep?: string) => {
