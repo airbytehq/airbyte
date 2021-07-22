@@ -153,7 +153,7 @@ class TestBasicRead(BaseTest):
 
     def _validate_expected_records(self, records, expected_records, flags):
         """
-        We expect
+        We expect some records from stream to match expected_records, partially or fully, in exact or any order.
         """
         actual_by_stream = self.group_by_stream(records)
         expected_by_stream = self.group_by_stream(expected_records)
