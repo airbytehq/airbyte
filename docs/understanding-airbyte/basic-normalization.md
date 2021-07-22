@@ -288,5 +288,5 @@ Note that all the choices made by Normalization as described in this documentati
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- | :--- |
-| 0.27.4-alpha | 0.1.37 | 2021-07-21 | [#3947](https://github.com/airbytehq/airbyte/pull/4881/) | Handle `NULL` cursor field values when deduping |
+| 0.27.5-alpha | 0.1.37 | 2021-07-22 | [#3947](https://github.com/airbytehq/airbyte/pull/4881/) | Handle `NULL` cursor field values when deduping |
 | 0.27.2-alpha | 0.1.36 | 2021-07-09 | [#3947](https://github.com/airbytehq/airbyte/pull/4163/) | Enable normalization for MySQL destination |
