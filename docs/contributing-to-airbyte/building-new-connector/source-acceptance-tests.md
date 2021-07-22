@@ -46,11 +46,13 @@ Verifies when a discover operation is run on the connector using the given confi
 ## Test Basic Read
 
 Configuring all streams in the input catalog to full refresh mode verifies that a read operation produces some RECORD messages.
+Each stream should have some data, if you can't guarantee this for particular streams - add them to the `empty_streams` list.
 | Input |  Type| Default | Note |
 |--|--|--|--|
 | `config_path` | string | `secrets/config.json` |Path to a JSON object representing a valid connector configuration|
 | `configured_catalog_path` | string| `integration_tests/configured_catalog.json` |Path to configured catalog|
-| `validate_output_from_all_streams` | boolean | False | Verify that **all** streams have records|
+| `empty_streams` | array | [] |List of streams that might be empty|
+| `validate_schema` | boolean | True |Verify that structure and types of records matches the schema from discovery command|
 | `timeout_seconds` | int | 5*60 |Test execution timeout in seconds|
 | `expect_records` | object |None| Compare produced records with expected records, see details below|
 | `expect_records.path` | string | | File with expected records|
