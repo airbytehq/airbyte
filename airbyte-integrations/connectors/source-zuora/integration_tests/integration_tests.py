@@ -32,7 +32,7 @@ from source_zuora.zuora_client import ZoqlExportClient
 
 
 def _config() -> Mapping[str, Any]:
-    """ 
+    """
     Get the config from /test_input
     """
     with open("secrets/config.json", "r") as f:
@@ -40,15 +40,15 @@ def _config() -> Mapping[str, Any]:
 
 
 class TestClient:
-    """ 
+    """
     Make instance of the ZoqlExportClient using input config.json
     """
+
     def client(config: Dict = _config()):
         auth_client = ZuoraAuthenticator(config["is_sandbox"])
         authenticator = auth_client.generateToken(config["client_id"], config["client_secret"]).get("header")
         zuora_client = ZoqlExportClient(authenticator=authenticator, url_base=auth_client.endpoint, **config)
         return zuora_client
-
 
 
 # Output example from ZoqlExportClient.zuora_get_json_schema
@@ -180,5 +180,3 @@ def test_get_data_with_date_slice():
 
     test_data = list(TestClient.client().get_data_with_date_slice(**test_args))
     assert True if len(test_data) > 0 else False
-
-
