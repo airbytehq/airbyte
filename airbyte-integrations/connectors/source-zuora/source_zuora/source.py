@@ -38,7 +38,7 @@ from .zuora_errors import ZOQLQueryCannotProcessObject, ZOQLQueryFieldCannotReso
 
 class ZuoraStream(Stream, ABC):
     # Define primary key
-    primary_key = "id" 
+    primary_key = "id"
 
     def __init__(self, api: ZoqlExportClient):
         self.api = api
@@ -73,7 +73,7 @@ class ZuoraStream(Stream, ABC):
         return stream_state.get(self.cursor_field, stream_state.get(self.alt_cursor_field)) if stream_state else self.api.start_date
 
     def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        
+
         # if stream_state is missing, we will use the start-date from config for a full refresh
         stream_state = self.get_stream_state(stream_state)
         args = {"q_type": "select", "obj": self.name, "start_date": stream_state, "window_days": self.window_in_days}
@@ -117,7 +117,6 @@ class SourceZuora(AbstractSource):
         else:
             return False, auth["status"]
 
-
     def streams(self, config: Mapping[str, Any]) -> List[ZuoraStream]:
         """
         Mapping a input config of the user input configuration as defined in the connector spec.
@@ -130,14 +129,15 @@ class SourceZuora(AbstractSource):
 
         # Making instance of Zuora API Client
         zuora_client = ZoqlExportClient(
-            authenticator=authenticator, 
-            url_base=auth_client.endpoint, 
+            authenticator=authenticator,
+            url_base=auth_client.endpoint,
             **config,
         )
 
         # List available objects (streams) names from Zuora
-        zuora_stream_names = ["account", "subscription", "invoicehistory"]
-        # zuora_stream_names = zuora_client.zuora_list_streams()
+        # zuora_stream_names = ["orderlineitem"]
+        zuora_stream_names = zuora_client.zuora_list_streams()
+        # print(zuora_stream_names)
         streams: List[ZuoraStream] = []
         for stream_name in zuora_stream_names:
             # construct IncrementalZuoraStream sub-class for each stream_name
@@ -146,4 +146,4 @@ class SourceZuora(AbstractSource):
             stream_instance = stream_class(zuora_client)
             streams.append(stream_instance)
 
-        return streams    
+        return streams

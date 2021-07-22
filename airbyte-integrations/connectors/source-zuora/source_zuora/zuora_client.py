@@ -52,12 +52,13 @@ class ZoqlExportClient:
         self.client_id = config["client_id"]
         self.client_secret = config["client_secret"]
         self.is_sandbox = config["is_sandbox"]
-        self.retry_max = 3 # Max number of retries for make_request method
- 
+        self.retry_max = 3  # Max number of retries for make_request method
+
     def make_request(self, method: str = "GET", url: str = None, payload: Dict = None) -> requests.Response:
         """
         try/except request wraper with handling errors
         """
+
         retry = 0
         while retry <= self.retry_max:
             try:
@@ -76,15 +77,17 @@ class ZoqlExportClient:
         self, q_type: str = "select", obj: str = None, date_field: str = None, start_date: str = None, end_date: str = None
     ) -> Dict:
         """
-        Make the query for dependent methods like: 
+        Make the query for dependent methods like:
         submit_job, check_job_status, zuora_list_streams, zuora_get_json_schema
         """
         # Define base query parameters
         base_query = {"compression": "NONE", "output": {"target": "S3"}, "outputFormat": "JSON"}
 
         if q_type == "select":
-            end_date = pendulum.now().to_datetime_string() if end_date is None else end_date
-            base_query["query"] = f"select * from {obj} where {date_field} >= TIMESTAMP '{start_date}' and {date_field} <= TIMESTAMP '{end_date}'"
+            end_date = self.to_datetime_str(pendulum.now().astimezone()) if not end_date else end_date
+            base_query[
+                "query"
+            ] = f"select * from {obj} where {date_field} >= TIMESTAMP '{start_date}' and {date_field} <= TIMESTAMP '{end_date}'"
         elif q_type == "describe":
             base_query["query"] = f"DESCRIBE {obj}"
         elif q_type == "show_tables":
@@ -143,7 +146,6 @@ class ZoqlExportClient:
         """
 
         query = self.make_query(q_type, obj, date_field, start_date, end_date)
-        self.logger.info(f"{query}")
         submit = self.submit_job(query)
         check = self.check_job_status(submit)
         get = self.get_job_data(check)
@@ -156,27 +158,28 @@ class ZoqlExportClient:
         Wraper for get_data using date-slices as pages, to overcome:
         rate limits, data-job size limits, data-job performance issues on the server side.
         """
+
         # Parsing input dates
         start: datetime = pendulum.parse(start_date)
         # If there is no `end_date` as input - use now()
         end: datetime = pendulum.parse(end_date).astimezone() if end_date else pendulum.now().astimezone()
         # Get n of date-slices
         n_slices = self.get_n_slices(start, end, window_days)
-        
+
         # initiating slice_start/end for date slice
         slice_start: datetime = start
         # if slice_end is bigger than the input end_date, switch to the end_date
-        slice_end: datetime = min(start+timedelta(days=window_days), end)
+        slice_end: datetime = min(start + timedelta(days=window_days), end)
 
         while n_slices > 0:
             yield from self.get_data(q_type, obj, date_field, self.to_datetime_str(slice_start), self.to_datetime_str(slice_end))
             slice_start = slice_end
-            slice_end = min(slice_end+timedelta(days=window_days), end)
+            slice_end = min(slice_end + timedelta(days=window_days), end)
             n_slices -= 1
-    
+
     @staticmethod
     def to_datetime_str(date: datetime) -> str:
-        """ 
+        """
         The output from this method should be formated as follows:
         :: "YYYY-mm-dd HH:mm:ss Z"
         :: example: '2021-07-15 07:45:55 -07:00'
@@ -196,7 +199,7 @@ class ZoqlExportClient:
         """
         Takes the List of Dict from raw_schema with Zuora Data Types,
         converts Zuora DataTypes to JSONSchema Types
-        Outputs the Dict that could be set inside of 
+        Outputs the Dict that could be set inside of
         ::properties of json_schema.
         """
 
@@ -219,7 +222,7 @@ class ZoqlExportClient:
         return casted_schema_types
 
     def zuora_get_json_schema(self, obj: str) -> Dict:
-        """ 
+        """
         Pull out the Zuora Object's (stream) raw data-types,
         converts them into JsonSchema types,
         outputs the ready to go ::properties entries for the stream.
@@ -231,7 +234,7 @@ class ZoqlExportClient:
         return self.convert_schema_types(raw_schema)
 
     def zuora_list_streams(self) -> List:
-        """ 
+        """
         Get the list of Zuora Objects (streams) from Zuora account
         """
 
