@@ -21,13 +21,35 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+import contextlib
 import errno
 import json
 from pathlib import Path
-from typing import TextIO, Optional, Dict
+from typing import TextIO, Optional, Dict, Iterator, List
 
 import paramiko
 import smart_open
+
+
+@contextlib.contextmanager
+def sftp_client(
+    host: str,
+    port: int,
+    username: str,
+    password: str,
+) -> Iterator[paramiko.SFTPClient]:
+    with paramiko.SSHClient() as client:
+        client.load_system_host_keys()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(
+            host,
+            port,
+            username=username,
+            password=password,
+            look_for_keys=False,
+        )
+        sftp = client.open_sftp()
+        yield sftp
 
 
 class SftpClient:
@@ -57,11 +79,14 @@ class SftpClient:
         return f"sftp://{self.username}:{self.password}@{self.host}:{self.port}/{self.file_path}"
 
     def _open(self) -> TextIO:
-        # Explicitly turn off ssh keys stored in ~/.ssh
-        transport_params = {"connect_kwargs": {"look_for_keys": False}}
-
         uri = self._get_uri()
-        return smart_open.open(uri, transport_params=transport_params, mode="a")
+        return smart_open.open(uri, mode="a+")
+
+    @property
+    def file(self):
+        if self._file is None:
+            self.open()
+        return self._file
 
     def close(self):
         if self._file:
@@ -74,23 +99,19 @@ class SftpClient:
         return self
 
     def write(self, record: Dict) -> None:
-        if self._file is None:
-            self.open()
         text = json.dumps(record)
-        self._file.write(f"{text}\n")
+        self.file.write(f"{text}\n")
+
+    def read_data(self) -> List[Dict]:
+        pos = self.file.tell()
+        self.file.seek(0)
+        lines = self.file.readlines()
+        self.file.seek(pos)
+        data = [json.loads(line.strip()) for line in lines]
+        return data
 
     def delete(self) -> None:
-        with paramiko.SSHClient() as client:
-            client.load_system_host_keys()
-            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            client.connect(
-                self.host,
-                self.port,
-                username=self.username,
-                password=self.password,
-                look_for_keys=False,
-            )
-            sftp = client.open_sftp()
+        with sftp_client(self.host, self.port, self.username, self.password) as sftp:
             try:
                 sftp.remove(str(self.file_path))
             except IOError as err:
