@@ -24,7 +24,7 @@ Run the following command in project root:
 BUILD_VERSION=$(cat .env | grep VERSION | awk -F"=" '{print $2}')
 
 # Build the migration bundle file
-./gradlew airbyte-migration:build
+SUB_BUILD=PLATFORM ./gradlew airbyte-migration:build
 
 # Extract the bundle file
 tar xf ./airbyte-migration/build/distributions/airbyte-migration-${BUILD_VERSION}.tar --strip-components=1

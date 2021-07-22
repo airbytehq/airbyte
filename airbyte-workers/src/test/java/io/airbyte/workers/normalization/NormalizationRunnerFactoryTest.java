@@ -28,8 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
-import io.airbyte.workers.normalization.DefaultNormalizationRunner.DestinationType;
 import io.airbyte.workers.process.ProcessFactory;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -44,15 +44,11 @@ class NormalizationRunnerFactoryTest {
 
   @Test
   void testMappings() {
-    assertEquals(DestinationType.BIGQUERY,
-        ((DefaultNormalizationRunner) NormalizationRunnerFactory.create(
-            "airbyte/destination-bigquery:0.1.0", processFactory)).getDestinationType());
-    assertEquals(DestinationType.POSTGRES,
-        ((DefaultNormalizationRunner) NormalizationRunnerFactory.create(
-            "airbyte/destination-postgres:0.1.0", processFactory)).getDestinationType());
-    assertEquals(DestinationType.SNOWFLAKE,
-        ((DefaultNormalizationRunner) NormalizationRunnerFactory.create(
-            "airbyte/destination-snowflake:0.1.0", processFactory)).getDestinationType());
+    for (Map.Entry<String, DefaultNormalizationRunner.DestinationType> entry : NormalizationRunnerFactory.NORMALIZATION_MAPPING.entrySet()) {
+      assertEquals(entry.getValue(),
+          ((DefaultNormalizationRunner) NormalizationRunnerFactory.create(
+              String.format("%s:0.1.0", entry.getKey()), processFactory)).getDestinationType());
+    }
     assertThrows(IllegalStateException.class,
         () -> NormalizationRunnerFactory.create("airbyte/destination-csv:0.1.0", processFactory));
   }

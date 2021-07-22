@@ -26,7 +26,7 @@ package io.airbyte.server.handlers;
 
 import io.airbyte.api.model.LogsRequestBody;
 import io.airbyte.config.Configs;
-import io.airbyte.config.helpers.LogHelpers;
+import io.airbyte.config.helpers.LogClientSingleton;
 import java.io.File;
 
 /**
@@ -38,10 +38,10 @@ public class LogsHandler {
   public File getLogs(Configs configs, LogsRequestBody logsRequestBody) {
     switch (logsRequestBody.getLogType()) {
       case SERVER -> {
-        return LogHelpers.getServerLogFile(configs);
+        return LogClientSingleton.getServerLogFile(configs);
       }
       case SCHEDULER -> {
-        return LogHelpers.getSchedulerLogFile(configs);
+        return LogClientSingleton.getSchedulerLogFile(configs);
       }
       default -> throw new IllegalStateException("Unexpected value: " + logsRequestBody.getLogType());
     }

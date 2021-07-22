@@ -38,6 +38,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+/**
+ * TODO Introduce a locking mechanism so that no DB operation is allowed when automatic migration is
+ * running
+ */
 public interface JobPersistence {
 
   Job getJob(long jobId) throws IOException;
@@ -183,5 +187,12 @@ public interface JobPersistence {
    *        version in the Database.
    */
   void importDatabase(String airbyteVersion, Map<DatabaseSchema, Stream<JsonNode>> data) throws IOException;
+
+  /**
+   * Purges job history while ensuring that the latest saved-state information is maintained.
+   *
+   * @throws IOException
+   */
+  void purgeJobHistory();
 
 }
