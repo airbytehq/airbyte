@@ -28,15 +28,17 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.google.common.util.concurrent.UncheckedExecutionException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.OperatorNormalization;
+import io.airbyte.config.OperatorNormalization.Option;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.FileSystemConfigPersistence;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -49,12 +51,46 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class WorkspaceHelperTest {
+
+  private static final UUID WORKSPACE_ID = UUID.randomUUID();
+  private static final UUID SOURCE_DEFINITION_ID = UUID.randomUUID();
+  private static final UUID SOURCE_ID = UUID.randomUUID();
+  private static final UUID DEST_DEFINITION_ID = UUID.randomUUID();
+  private static final UUID DEST_ID = UUID.randomUUID();
+  private static final UUID CONNECTION_ID = UUID.randomUUID();
+  private static final UUID OPERATION_ID = UUID.randomUUID();
+  private static final StandardSourceDefinition SOURCE_DEF = new StandardSourceDefinition().withSourceDefinitionId(SOURCE_DEFINITION_ID);
+  private static final SourceConnection SOURCE = new SourceConnection()
+      .withSourceId(SOURCE_ID)
+      .withSourceDefinitionId(SOURCE_DEFINITION_ID)
+      .withWorkspaceId(WORKSPACE_ID)
+      .withConfiguration(Jsons.deserialize("{}"))
+      .withName("source")
+      .withTombstone(false);
+  private static final StandardDestinationDefinition DEST_DEF = new StandardDestinationDefinition().withDestinationDefinitionId(DEST_DEFINITION_ID);
+  private static final DestinationConnection DEST = new DestinationConnection()
+      .withDestinationId(DEST_ID)
+      .withDestinationDefinitionId(DEST_DEFINITION_ID)
+      .withWorkspaceId(WORKSPACE_ID)
+      .withConfiguration(Jsons.deserialize("{}"))
+      .withName("dest")
+      .withTombstone(false);
+  private static final StandardSync CONNECTION = new StandardSync()
+      .withConnectionId(CONNECTION_ID)
+      .withSourceId(SOURCE_ID)
+      .withDestinationId(DEST_ID).withCatalog(new ConfiguredAirbyteCatalog().withStreams(new ArrayList<>()))
+      .withManual(true);
+  private static final StandardSyncOperation OPERATION = new StandardSyncOperation()
+      .withOperationId(OPERATION_ID)
+      .withWorkspaceId(WORKSPACE_ID)
+      .withName("the new normal")
+      .withOperatorNormalization(new OperatorNormalization().withOption(Option.BASIC))
+      .withTombstone(false);
 
   Path tmpDir;
   ConfigRepository configRepository;
@@ -62,7 +98,7 @@ class WorkspaceHelperTest {
   WorkspaceHelper workspaceHelper;
 
   @BeforeEach
-  public void setup() throws IOException {
+  public void setup() throws IOException, JsonValidationException {
     tmpDir = Files.createTempDirectory("workspace_helper_test_" + RandomStringUtils.randomAlphabetic(5));
 
     configRepository = new ConfigRepository(new FileSystemConfigPersistence(tmpDir));
@@ -73,130 +109,96 @@ class WorkspaceHelperTest {
 
   @Test
   public void testObjectsThatDoNotExist() {
-    assertThrows(ExecutionException.class, () -> workspaceHelper.getWorkspaceForSourceId(UUID.randomUUID()));
-    assertThrows(ExecutionException.class, () -> workspaceHelper.getWorkspaceForDestinationId(UUID.randomUUID()));
-    assertThrows(ExecutionException.class, () -> workspaceHelper.getWorkspaceForConnectionId(UUID.randomUUID()));
-    assertThrows(ExecutionException.class, () -> workspaceHelper.getWorkspaceForConnection(UUID.randomUUID(), UUID.randomUUID()));
-    assertThrows(UncheckedExecutionException.class, () -> workspaceHelper.getWorkspaceForJobId(0L));
-    // todo: add operationId check
+    assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForSourceId(UUID.randomUUID()));
+    assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForDestinationId(UUID.randomUUID()));
+    assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForConnectionId(UUID.randomUUID()));
+    assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForConnection(UUID.randomUUID(), UUID.randomUUID()));
+    assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForOperationId(UUID.randomUUID()));
+    assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForJobId(0L));
   }
 
   @Test
-  public void testSource() throws IOException, ExecutionException, JsonValidationException {
-    UUID source = UUID.randomUUID();
-    UUID workspace = UUID.randomUUID();
+  public void testSource() throws IOException, JsonValidationException {
+    configRepository.writeStandardSource(SOURCE_DEF);
+    configRepository.writeSourceConnection(SOURCE);
 
-    UUID sourceDefinition = UUID.randomUUID();
-    configRepository.writeStandardSource(new StandardSourceDefinition().withSourceDefinitionId(sourceDefinition));
-
-    SourceConnection sourceConnection = new SourceConnection()
-        .withSourceId(source)
-        .withSourceDefinitionId(sourceDefinition)
-        .withWorkspaceId(workspace)
-        .withConfiguration(Jsons.deserialize("{}"))
-        .withName("source")
-        .withTombstone(false);
-
-    configRepository.writeSourceConnection(sourceConnection);
-    UUID retrievedWorkspace = workspaceHelper.getWorkspaceForSourceId(source);
-
-    assertEquals(workspace, retrievedWorkspace);
+    final UUID retrievedWorkspace = workspaceHelper.getWorkspaceForSourceId(SOURCE_ID);
+    assertEquals(WORKSPACE_ID, retrievedWorkspace);
 
     // check that caching is working
-    configRepository.writeSourceConnection(sourceConnection.withWorkspaceId(UUID.randomUUID()));
-    UUID retrievedWorkspaceAfterUpdate = workspaceHelper.getWorkspaceForSourceId(source);
-    assertEquals(workspace, retrievedWorkspaceAfterUpdate);
+    configRepository.writeSourceConnection(Jsons.clone(SOURCE).withWorkspaceId(UUID.randomUUID()));
+    final UUID retrievedWorkspaceAfterUpdate = workspaceHelper.getWorkspaceForSourceId(SOURCE_ID);
+    assertEquals(WORKSPACE_ID, retrievedWorkspaceAfterUpdate);
   }
 
   @Test
-  public void testDestination() throws IOException, ExecutionException, JsonValidationException {
-    UUID destination = UUID.randomUUID();
-    UUID workspace = UUID.randomUUID();
+  public void testDestination() throws IOException, JsonValidationException {
+    configRepository.writeStandardDestinationDefinition(DEST_DEF);
+    configRepository.writeDestinationConnection(DEST);
 
-    UUID destinationDefinition = UUID.randomUUID();
-    configRepository.writeStandardDestinationDefinition(new StandardDestinationDefinition().withDestinationDefinitionId(destinationDefinition));
-
-    DestinationConnection destinationConnection = new DestinationConnection()
-        .withDestinationId(destination)
-        .withDestinationDefinitionId(destinationDefinition)
-        .withWorkspaceId(workspace)
-        .withConfiguration(Jsons.deserialize("{}"))
-        .withName("dest")
-        .withTombstone(false);
-
-    configRepository.writeDestinationConnection(destinationConnection);
-    UUID retrievedWorkspace = workspaceHelper.getWorkspaceForDestinationId(destination);
-
-    assertEquals(workspace, retrievedWorkspace);
+    final UUID retrievedWorkspace = workspaceHelper.getWorkspaceForDestinationId(DEST_ID);
+    assertEquals(WORKSPACE_ID, retrievedWorkspace);
 
     // check that caching is working
-    configRepository.writeDestinationConnection(destinationConnection.withWorkspaceId(UUID.randomUUID()));
-    UUID retrievedWorkspaceAfterUpdate = workspaceHelper.getWorkspaceForDestinationId(destination);
-    assertEquals(workspace, retrievedWorkspaceAfterUpdate);
+    configRepository.writeDestinationConnection(Jsons.clone(DEST).withWorkspaceId(UUID.randomUUID()));
+    final UUID retrievedWorkspaceAfterUpdate = workspaceHelper.getWorkspaceForDestinationId(DEST_ID);
+    assertEquals(WORKSPACE_ID, retrievedWorkspaceAfterUpdate);
   }
 
   @Test
-  public void testConnectionAndJobs() throws IOException, ExecutionException, JsonValidationException {
-    UUID workspace = UUID.randomUUID();
-
-    // set up source
-    UUID source = UUID.randomUUID();
-
-    UUID sourceDefinition = UUID.randomUUID();
-    configRepository.writeStandardSource(new StandardSourceDefinition().withSourceDefinitionId(sourceDefinition));
-
-    SourceConnection sourceConnection = new SourceConnection()
-        .withSourceId(source)
-        .withSourceDefinitionId(sourceDefinition)
-        .withWorkspaceId(workspace)
-        .withConfiguration(Jsons.deserialize("{}"))
-        .withName("source")
-        .withTombstone(false);
-
-    configRepository.writeSourceConnection(sourceConnection);
-
-    // set up destination
-    UUID destination = UUID.randomUUID();
-
-    UUID destinationDefinition = UUID.randomUUID();
-    configRepository.writeStandardDestinationDefinition(new StandardDestinationDefinition().withDestinationDefinitionId(destinationDefinition));
-
-    DestinationConnection destinationConnection = new DestinationConnection()
-        .withDestinationId(destination)
-        .withDestinationDefinitionId(destinationDefinition)
-        .withWorkspaceId(workspace)
-        .withConfiguration(Jsons.deserialize("{}"))
-        .withName("dest")
-        .withTombstone(false);
-
-    configRepository.writeDestinationConnection(destinationConnection);
+  public void testConnection() throws IOException, JsonValidationException {
+    configRepository.writeStandardSource(SOURCE_DEF);
+    configRepository.writeSourceConnection(SOURCE);
+    configRepository.writeStandardDestinationDefinition(DEST_DEF);
+    configRepository.writeDestinationConnection(DEST);
 
     // set up connection
-    UUID connection = UUID.randomUUID();
-    configRepository.writeStandardSync(new StandardSync().withManual(true).withConnectionId(connection).withSourceId(source)
-        .withDestinationId(destination).withCatalog(new ConfiguredAirbyteCatalog().withStreams(new ArrayList<>())));
+    configRepository.writeStandardSync(CONNECTION);
 
     // test retrieving by connection id
-    UUID retrievedWorkspace = workspaceHelper.getWorkspaceForConnectionId(connection);
-    assertEquals(workspace, retrievedWorkspace);
+    final UUID retrievedWorkspace = workspaceHelper.getWorkspaceForConnectionId(CONNECTION_ID);
+    assertEquals(WORKSPACE_ID, retrievedWorkspace);
 
     // test retrieving by source and destination ids
-    UUID retrievedWorkspaceBySourceAndDestination = workspaceHelper.getWorkspaceForConnectionId(connection);
-    assertEquals(workspace, retrievedWorkspaceBySourceAndDestination);
+    final UUID retrievedWorkspaceBySourceAndDestination = workspaceHelper.getWorkspaceForConnectionId(CONNECTION_ID);
+    assertEquals(WORKSPACE_ID, retrievedWorkspaceBySourceAndDestination);
 
     // check that caching is working
-    UUID newWorkspace = UUID.randomUUID();
-    configRepository.writeSourceConnection(sourceConnection.withWorkspaceId(newWorkspace));
-    configRepository.writeDestinationConnection(destinationConnection.withWorkspaceId(newWorkspace));
-    UUID retrievedWorkspaceAfterUpdate = workspaceHelper.getWorkspaceForDestinationId(destination);
-    assertEquals(workspace, retrievedWorkspaceAfterUpdate);
+    final UUID newWorkspace = UUID.randomUUID();
+    configRepository.writeSourceConnection(Jsons.clone(SOURCE).withWorkspaceId(newWorkspace));
+    configRepository.writeDestinationConnection(Jsons.clone(DEST).withWorkspaceId(newWorkspace));
+    final UUID retrievedWorkspaceAfterUpdate = workspaceHelper.getWorkspaceForDestinationId(DEST_ID);
+    assertEquals(WORKSPACE_ID, retrievedWorkspaceAfterUpdate);
+  }
+
+  @Test
+  public void testOperation() throws IOException, JsonValidationException {
+    configRepository.writeStandardSyncOperation(OPERATION);
+
+    // test retrieving by connection id
+    final UUID retrievedWorkspace = workspaceHelper.getWorkspaceForOperationId(OPERATION_ID);
+    assertEquals(WORKSPACE_ID, retrievedWorkspace);
+
+    // check that caching is working
+    configRepository.writeStandardSyncOperation(Jsons.clone(OPERATION).withWorkspaceId(UUID.randomUUID()));
+    final UUID retrievedWorkspaceAfterUpdate = workspaceHelper.getWorkspaceForOperationId(OPERATION_ID);
+    assertEquals(WORKSPACE_ID, retrievedWorkspaceAfterUpdate);
+  }
+
+  @Test
+  public void testConnectionAndJobs() throws IOException, JsonValidationException {
+    configRepository.writeStandardSource(SOURCE_DEF);
+    configRepository.writeSourceConnection(SOURCE);
+    configRepository.writeStandardDestinationDefinition(DEST_DEF);
+    configRepository.writeDestinationConnection(DEST);
+    configRepository.writeStandardSync(CONNECTION);
 
     // test jobs
-    long jobId = 123;
-    Job job = new Job(
+    final long jobId = 123;
+    final Job job = new Job(
         jobId,
         JobConfig.ConfigType.SYNC,
-        connection.toString(),
+        CONNECTION_ID.toString(),
         new JobConfig().withConfigType(JobConfig.ConfigType.SYNC).withSync(new JobSyncConfig()),
         new ArrayList<>(),
         JobStatus.PENDING,
@@ -205,8 +207,8 @@ class WorkspaceHelperTest {
         System.currentTimeMillis());
     when(jobPersistence.getJob(jobId)).thenReturn(job);
 
-    UUID jobWorkspace = workspaceHelper.getWorkspaceForJobId(jobId);
-    assertEquals(workspace, jobWorkspace);
+    final UUID jobWorkspace = workspaceHelper.getWorkspaceForJobId(jobId);
+    assertEquals(WORKSPACE_ID, jobWorkspace);
   }
 
 }

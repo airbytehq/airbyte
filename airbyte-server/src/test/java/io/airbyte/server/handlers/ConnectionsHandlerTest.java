@@ -24,8 +24,9 @@
 
 package io.airbyte.server.handlers;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -45,13 +46,20 @@ import io.airbyte.api.model.NamespaceDefinitionType;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.*;
+import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.DataType;
+import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.Schedule;
+import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.server.helpers.ConnectionHelpers;
-import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.server.helpers.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerUtils;
@@ -59,7 +67,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
@@ -87,7 +94,7 @@ class ConnectionsHandlerTest {
 
   @SuppressWarnings("unchecked")
   @BeforeEach
-  void setUp() throws IOException, JsonValidationException, ConfigNotFoundException, ExecutionException {
+  void setUp() throws IOException, JsonValidationException, ConfigNotFoundException {
     workspaceId = UUID.randomUUID();
     sourceDefinitionId = UUID.randomUUID();
     sourceId = UUID.randomUUID();
@@ -172,37 +179,33 @@ class ConnectionsHandlerTest {
   }
 
   @Test
-  void testValidateConnectionCreateSourceAndDestinationInDifferenceWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
-    final DestinationConnection destinationFromDifferentWorkspace = Jsons.clone(destination);
-    destinationFromDifferentWorkspace.setWorkspaceId(UUID.randomUUID());
-    when(configRepository.getDestinationConnection(destinationId)).thenReturn(destinationFromDifferentWorkspace);
+  void testValidateConnectionCreateSourceAndDestinationInDifferenceWorkspace() {
+    when(workspaceHelper.getWorkspaceForDestinationId(destinationId)).thenReturn(UUID.randomUUID());
 
     final ConnectionCreate connectionCreate = new ConnectionCreate()
         .sourceId(standardSync.getSourceId())
         .destinationId(standardSync.getDestinationId());
 
-    assertThrows(IllegalStateException.class, () -> connectionsHandler.createConnection(connectionCreate));
+    assertThrows(IllegalArgumentException.class, () -> connectionsHandler.createConnection(connectionCreate));
   }
 
   @Test
-  void testValidateConnectionCreateOperationInDifferentWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardSyncOperation operation = Jsons.clone(standardSyncOperation);
-    operation.setWorkspaceId(UUID.randomUUID());
-    when(configRepository.getStandardSyncOperation(operationId)).thenReturn(operation);
+  void testValidateConnectionCreateOperationInDifferentWorkspace() {
+    when(workspaceHelper.getWorkspaceForOperationId(operationId)).thenReturn(UUID.randomUUID());
 
     final ConnectionCreate connectionCreate = new ConnectionCreate()
         .sourceId(standardSync.getSourceId())
         .destinationId(standardSync.getDestinationId())
         .operationIds(Collections.singletonList(operationId));
 
-    assertThrows(IllegalStateException.class, () -> connectionsHandler.createConnection(connectionCreate));
+    assertThrows(IllegalArgumentException.class, () -> connectionsHandler.createConnection(connectionCreate));
   }
 
   @Test
   void testCreateConnectionWithBadDefinitionIds() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(uuidGenerator.get()).thenReturn(standardSync.getConnectionId());
-    UUID sourceDefinitionIdBad = UUID.randomUUID();
-    UUID destinationDefinitionIdBad = UUID.randomUUID();
+    UUID sourceIdBad = UUID.randomUUID();
+    UUID destinationIdBad = UUID.randomUUID();
 
     final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
         .withName("source-test")
@@ -214,15 +217,15 @@ class ConnectionsHandlerTest {
     when(configRepository.getSourceDefinitionFromConnection(standardSync.getConnectionId())).thenReturn(sourceDefinition);
     when(configRepository.getDestinationDefinitionFromConnection(standardSync.getConnectionId())).thenReturn(destinationDefinition);
 
-    when(configRepository.getSourceConnection(sourceDefinitionIdBad))
-        .thenThrow(new ConfigNotFoundException(ConfigSchema.SOURCE_CONNECTION, sourceDefinitionIdBad));
-    when(configRepository.getDestinationConnection(destinationDefinitionIdBad))
-        .thenThrow(new ConfigNotFoundException(ConfigSchema.DESTINATION_CONNECTION, destinationDefinitionIdBad));
+    when(configRepository.getSourceConnection(sourceIdBad))
+        .thenThrow(new ConfigNotFoundException(ConfigSchema.SOURCE_CONNECTION, sourceIdBad));
+    when(configRepository.getDestinationConnection(destinationIdBad))
+        .thenThrow(new ConfigNotFoundException(ConfigSchema.DESTINATION_CONNECTION, destinationIdBad));
 
     final AirbyteCatalog catalog = ConnectionHelpers.generateBasicApiCatalog();
 
     final ConnectionCreate connectionCreateBadSource = new ConnectionCreate()
-        .sourceId(sourceDefinitionIdBad)
+        .sourceId(sourceIdBad)
         .destinationId(standardSync.getDestinationId())
         .operationIds(standardSync.getOperationIds())
         .name("presto to hudi")
@@ -237,7 +240,7 @@ class ConnectionsHandlerTest {
 
     final ConnectionCreate connectionCreateBadDestination = new ConnectionCreate()
         .sourceId(standardSync.getSourceId())
-        .destinationId(destinationDefinitionIdBad)
+        .destinationId(destinationIdBad)
         .operationIds(standardSync.getOperationIds())
         .name("presto to hudi")
         .namespaceDefinition(NamespaceDefinitionType.SOURCE)
@@ -306,17 +309,14 @@ class ConnectionsHandlerTest {
 
   @Test
   void testValidateConnectionUpdateOperationInDifferentWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardSyncOperation operation = Jsons.clone(standardSyncOperation);
-    operation.setWorkspaceId(UUID.randomUUID());
-    when(configRepository.getStandardSyncOperation(operationId)).thenReturn(operation);
-    when(configRepository.getStandardSync(standardSync.getConnectionId()))
-        .thenReturn(standardSync);
+    when(workspaceHelper.getWorkspaceForOperationId(operationId)).thenReturn(UUID.randomUUID());
+    when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
 
     final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
         .connectionId(standardSync.getConnectionId())
         .operationIds(Collections.singletonList(operationId));
 
-    assertThrows(IllegalStateException.class, () -> connectionsHandler.updateConnection(connectionUpdate));
+    assertThrows(IllegalArgumentException.class, () -> connectionsHandler.updateConnection(connectionUpdate));
   }
 
   @Test
@@ -379,7 +379,7 @@ class ConnectionsHandlerTest {
   }
 
   @Test
-  void failOnUnmatchedWorkspacesInCreate() throws ExecutionException, JsonValidationException, ConfigNotFoundException, IOException {
+  void failOnUnmatchedWorkspacesInCreate() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(workspaceHelper.getWorkspaceForSourceId(standardSync.getSourceId())).thenReturn(UUID.randomUUID());
     when(workspaceHelper.getWorkspaceForDestinationId(standardSync.getDestinationId())).thenReturn(UUID.randomUUID());
 

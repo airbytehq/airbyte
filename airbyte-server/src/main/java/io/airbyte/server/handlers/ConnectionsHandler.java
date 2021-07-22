@@ -40,12 +40,9 @@ import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.ResourceRequirements;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
-import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
@@ -88,12 +85,10 @@ public class ConnectionsHandler {
   }
 
   private void validateWorkspace(UUID sourceId, UUID destinationId, Set<UUID> operationIds) {
-    Exceptions.toRuntime(() -> {
-      final UUID sourceWorkspace = workspaceHelper.getWorkspaceForSourceId(sourceId);
-      final UUID destinationWorkspace = workspaceHelper.getWorkspaceForDestinationId(destinationId);
-      Preconditions.checkArgument(sourceWorkspace.equals(destinationWorkspace), "Source and destination must belong to the same workspace!");
+    final UUID sourceWorkspace = workspaceHelper.getWorkspaceForSourceId(sourceId);
+    final UUID destinationWorkspace = workspaceHelper.getWorkspaceForDestinationId(destinationId);
 
-    Preconditions.checkState(
+    Preconditions.checkArgument(
         sourceWorkspace.equals(destinationWorkspace),
         String.format(
             "Source and destination do not belong to the same workspace. Source id: %s, Source workspace id: %s, Destination id: %s, Destination workspace id: %s",
@@ -104,7 +99,7 @@ public class ConnectionsHandler {
 
     for (UUID operationId : operationIds) {
       final UUID operationWorkspace = workspaceHelper.getWorkspaceForOperationId(operationId);
-      Preconditions.checkState(
+      Preconditions.checkArgument(
           sourceWorkspace.equals(operationWorkspace),
           String.format(
               "Operation and connection do not belong to the same workspace. Workspace id: %s, Operation id: %s, Operation workspace id: %s",
@@ -112,10 +107,12 @@ public class ConnectionsHandler {
               operationId,
               operationWorkspace));
     }
-    });
   }
 
   public ConnectionRead createConnection(ConnectionCreate connectionCreate) throws JsonValidationException, IOException, ConfigNotFoundException {
+    // Validate source and destination
+    configRepository.getSourceConnection(connectionCreate.getSourceId());
+    configRepository.getDestinationConnection(connectionCreate.getDestinationId());
     validateWorkspace(connectionCreate.getSourceId(), connectionCreate.getDestinationId(), new HashSet<>(connectionCreate.getOperationIds()));
 
     final UUID connectionId = uuidGenerator.get();
@@ -158,10 +155,6 @@ public class ConnectionsHandler {
     } else {
       standardSync.withManual(true);
     }
-
-    // Validate source and destination
-    configRepository.getSourceConnection(connectionCreate.getSourceId());
-    configRepository.getDestinationConnection(connectionCreate.getDestinationId());
 
     configRepository.writeStandardSync(standardSync);
 

@@ -106,4 +106,5 @@ public class MigrateV0_28_0Test {
 
     assertEquals(expectedOutput, outputAsList);
   }
+
 }
