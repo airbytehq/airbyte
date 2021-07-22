@@ -40,6 +40,18 @@ from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, Hubsp
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
 
+VALID_JSON_SCHEMA_TYPES = {"string", "integer", "number", "boolean", "object", "array", "bit"}
+
+KNOWN_CONVERTIBLE_SCHEMA_TYPES = {
+    "bool": "boolean",
+    "enumeration": "string",
+    "date": "string",
+    "date-time": "string",
+    "datetime": "string",
+    "json": "object",
+    "phone_number": "string",
+}
+
 
 def retry_connection_handler(**kwargs):
     """Retry helper, log each attempt"""
@@ -303,8 +315,11 @@ class Stream(ABC):
         data = self._api.get(f"/properties/v2/{self.entity}/properties")
         for row in data:
             field_type = row["type"]
-            if field_type in ["enumeration", "date", "date-time"]:
-                field_type = "string"
+            if field_type not in VALID_JSON_SCHEMA_TYPES:
+                field_type = KNOWN_CONVERTIBLE_SCHEMA_TYPES.get(field_type) or None
+                if not field_type:
+                    logger.warn(f"Unsupported type {field_type} converted to string")
+                    field_type = "string"
             props[row["name"]] = {"type": field_type}
 
         return props
