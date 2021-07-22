@@ -152,6 +152,7 @@ subprojects {
 
     repositories {
         mavenCentral()
+        // TODO(Issue-4915): Remove this once fix has been merged into upstream library.
         maven {
             name 'GcsRepository'
             url 'gcs://airbyte-test-public-bucket/'
