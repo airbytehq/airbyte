@@ -6,42 +6,27 @@ interface AirbyteJSONSchemaProps extends JSONSchema7 {
   order?: number;
 }
 
-/**
- * Extends type y replacing all Types with ExtendedType
- */
-type ExtendedRecursiveType<Type, ExtendedType extends Type> = {
-  [Property in keyof ExtendedType]: ExtendedType[Property] extends Type
-    ? ExtendedType
-    : ExtendedType[Property] extends {
-        [key: string]: Type;
-      }
-    ? {
-        [key: string]: ExtendedRecursiveType<Type, ExtendedType>;
-      }
-    : ExtendedType[Property];
-};
-
-// /**
-//  * Remaps all {@link JSONSchema7} to Airbyte Json schema
-//  */
-// export type AirbyteJSONSchemaTypeDefinition = ExtendedRecursiveType<
-//   JSONSchema7Definition,
-//   AirbyteJSONSchemaProps
-// >;
+type JsonSchemaRequired = Required<JSONSchema7>;
 
 /**
  * Remaps all {@link JSONSchema7} to Airbyte Json schema
  */
 export type AirbyteJSONSchemaTypeDefinition = {
-  [Property in keyof JSONSchema7]: JSONSchema7[Property] extends JSONSchema7Definition
+  [Property in keyof JsonSchemaRequired]+?: JsonSchemaRequired[Property] extends JSONSchema7Definition
     ? AirbyteJSONSchemaTypeDefinition
-    : JSONSchema7[Property] extends boolean
+    : JsonSchemaRequired[Property] extends boolean
     ? boolean
-    : JSONSchema7[Property] extends {
+    : JsonSchemaRequired[Property] extends Array<JSONSchema7Definition>
+    ? AirbyteJSONSchemaTypeDefinition[]
+    : Property extends "properties"
+    ? {
         [key: string]: AirbyteJSONSchemaTypeDefinition;
       }
-    ? AirbyteJSONSchemaTypeDefinition
-    : JSONSchema7[Property];
+    : JsonSchemaRequired[Property] extends
+        | JSONSchema7Definition
+        | JSONSchema7Definition[]
+    ? AirbyteJSONSchemaTypeDefinition | AirbyteJSONSchemaTypeDefinition[]
+    : JsonSchemaRequired[Property];
 } &
   AirbyteJSONSchemaProps;
 
