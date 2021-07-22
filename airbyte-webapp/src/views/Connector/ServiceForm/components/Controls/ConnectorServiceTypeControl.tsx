@@ -1,11 +1,17 @@
 import React, { useCallback, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useField } from "formik";
+import { components } from "react-select";
+import { MenuListComponentProps } from "react-select/src/components/Menu";
 import styled from "styled-components";
 
-import List from "react-widgets/lib/List";
-
-import { ControlLabels, DropDown, DropDownRow, ImageBlock } from "components";
+import {
+  ControlLabels,
+  defaultDataItemSort,
+  DropDown,
+  DropDownRow,
+  ImageBlock,
+} from "components";
 
 import { FormBaseItem } from "core/form/types";
 import { SourceDefinition } from "core/resources/SourceDefinition";
@@ -13,6 +19,7 @@ import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import { isSourceDefinition } from "core/domain/connector/source";
 
 import Instruction from "./Instruction";
+import { IDataItem } from "components/base/DropDown/components/Option";
 
 const BottomElement = styled.div`
   background: ${(props) => props.theme.greyColro0};
@@ -31,17 +38,22 @@ const Block = styled.div`
   }
 `;
 
-const ConnectorList = React.forwardRef(
-  ({ onClick, ...listProps }: { onClick: () => void }, ref) => (
-    <>
-      <List ref={ref} {...listProps} />
-      <BottomElement>
-        <Block onClick={onClick}>
-          <FormattedMessage id="connector.requestConnectorBlock" />
-        </Block>
-      </BottomElement>
-    </>
-  )
+type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>;
+
+const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({
+  children,
+  ...props
+}) => (
+  <>
+    <components.MenuList {...props}>{children}</components.MenuList>
+    <BottomElement>
+      <Block
+        onClick={props.selectProps.selectProps.onOpenRequestConnectorModal}
+      >
+        <FormattedMessage id="connector.requestConnectorBlock" />
+      </Block>
+    </BottomElement>
+  </>
 );
 
 const DropdownLabels = styled(ControlLabels)`
@@ -74,13 +86,13 @@ const ConnectorServiceTypeControl: React.FC<{
     () =>
       availableServices
         .map((item: SourceDefinition | DestinationDefinition) => ({
-          text: item.name,
+          label: item.name,
           value: isSourceDefinition(item)
             ? item.sourceDefinitionId
             : item.destinationDefinitionId,
           img: <ImageBlock img={item.icon} />,
         }))
-        .sort(DropDownRow.defaultDataItemSort),
+        .sort(defaultDataItemSort),
     [availableServices]
   );
 
@@ -96,10 +108,12 @@ const ConnectorServiceTypeControl: React.FC<{
   );
 
   const handleSelect = useCallback(
-    (item: DropDownRow.IDataItem) => {
-      setValue(item.value);
-      if (onChangeServiceType) {
-        onChangeServiceType(item.value);
+    (item: DropDownRow.IDataItem | null) => {
+      if (item) {
+        setValue(item.value);
+        if (onChangeServiceType) {
+          onChangeServiceType(item.value);
+        }
       }
     },
     [setValue, onChangeServiceType]
@@ -114,18 +128,17 @@ const ConnectorServiceTypeControl: React.FC<{
       >
         <DropDown
           {...field}
-          listComponent={ConnectorList}
-          listProps={{ onClick: onOpenRequestConnectorModal }}
+          components={{
+            MenuList: ConnectorList,
+          }}
+          selectProps={{ onOpenRequestConnectorModal }}
           error={!!fieldMeta.error && fieldMeta.touched}
-          disabled={isEditMode && !allowChangeConnector}
-          hasFilter
+          isDisabled={isEditMode && !allowChangeConnector}
+          isSearchable
           placeholder={formatMessage({
             id: "form.selectConnector",
           })}
-          filterPlaceholder={formatMessage({
-            id: "form.searchName",
-          })}
-          data={sortedDropDownData}
+          options={sortedDropDownData}
           onChange={handleSelect}
         />
       </DropdownLabels>

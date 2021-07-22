@@ -10,6 +10,7 @@ import en from "locales/en.json";
 export type RenderOptions = {
   // optionally pass in a history object to control routes in the test
   history?: History;
+  container?: HTMLElement;
 };
 
 type WrapperProps = {
