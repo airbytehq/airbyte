@@ -1,4 +1,4 @@
-# Founding Account Executive
+# Revenue Product Manager
 
 ## **About Airbyte**
 
@@ -10,21 +10,21 @@ We raised a total of $31.2M by some of the world's [top investors](./#our-invest
 
 ## **Description**
 
-As our first sales hire, you’ll work closely with our co-founders and our head of lead generation to help us build, execute, and iterate on our go-to-market playbook. You will build customer excitement, close inbound leads, and at the same time identify and document patterns to build the foundational sales enablement resources for the future sales team. You will also work hand in hand with our head of lead generation on outbound strategy, generating pipeline, and use learnings to improve and scale our sales organization. 
+You’ll work closely with our co-founders and our head of lead generation to help us build, execute, and iterate on our go-to-market playbook. You will build customer excitement, close inbound leads, and at the same time identify and document patterns to build the foundational sales enablement resources for the future sales team. You will also work hand in hand with our head of lead generation on outbound strategy, generating pipeline, and use learnings to improve and scale our sales organization. 
 
-You’ll operate as a core member of our sales team and play an integral role in future hiring, product, and overall strategy, with the opportunity to see significant upward mobility in Airbyte if the fit is strong. We’re looking for someone that’s just as excited about building something as they are about closing big deals.
+You’ll operate as a core member of our revenue team and play an integral role in future hiring, product, and overall strategy, with the opportunity to see significant upward mobility in Airbyte if the fit is strong. We’re looking for someone that’s just as excited about building something as they are about closing big deals.
 
 ## **What you will do here**
 
-* Manage full sales cycle from lead qualification and prospecting to close for target accounts, including sales ops and enablement resources and tools that you will help define.
 * Identify and develop the playbook to sell to scale-up and mid-market companies who have data engineers in the IT sector at first. You will be selling to people all across the data team, from data engineers to the CTO/CIO. 
+* * Manage full sales cycle from lead qualification and prospecting to close for target accounts, including sales ops and enablement resources and tools that you will help define.
 * Work closely with lead generation to iterate on strategy, content, messaging, potential channels.
 * Help define the recruiting strategy, quotas, and sales compensation model for the future sales team.
 
 
 ## **What we’re looking for**
 
-* 3+ years of sales experience in B2B SaaS with a record of high performance
+* 3+ years of go-to-market experience in B2B SaaS with a record of high performance
 * Excellent communication skills - you write a great email and give an excellent demo
 * Energy, grit, and flexibility needed to thrive in a constantly changing work environment
 * An innate ability to self-start, prioritize, and creatively problem-solve
