@@ -1,6 +1,8 @@
 # Sftp Json Destination
 
-This is the repository for the Sftp Json destination connector, written in Python.
+This is the repository for the SFTP JSON destination connector, written in Python.
+Data received by this destination will be written to a JSON lines file at the path and filename supplied in the configuration.
+
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/destinations/sftp-json).
 
 ## Local development

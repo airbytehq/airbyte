@@ -90,6 +90,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Google Pubsub](./destinations/pubsub.md)| Alpha |
 |[Local CSV](./destinations/local-csv.md)| Certified |
 |[Local JSON](./destinations/local-json.md)| Certified |
+|[SFTP JSON](./destinations/sftp-json.md)| Alpha |
 |[MeiliSearch](./destinations/meilisearch.md)| Beta |
 |[MySQL](./destinations/mysql.md)| Alpha |
 |[Oracle](./destinations/oracle.md)| Alpha |

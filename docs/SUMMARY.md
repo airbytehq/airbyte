@@ -104,6 +104,7 @@
     * [Google PubSub](integrations/destinations/pubsub.md)
     * [Local CSV](integrations/destinations/local-csv.md)
     * [Local JSON](integrations/destinations/local-json.md)
+    * [SFTP JSON](integrations/destinations/sftp-json.md)
     * [MeiliSearch](integrations/destinations/meilisearch.md)
     * [MSSQL](integrations/destinations/mssql.md)
     * [MySQL](integrations/destinations/mysql.md)
