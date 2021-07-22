@@ -49,6 +49,9 @@ The approach here is not authoritative, and devs are free to use their own judge
 There are additional required TODOs in the files within the integration_tests folder and the spec.json file.
 """
 
+# See the get_class_ids function explanation
+auxiliary_id_map = {}
+
 
 class SnapchatMarketingException(Exception):
     """ Just for formatting the exception as SnapchatMarketing"""
@@ -59,7 +62,6 @@ class SnapchatMarketingStream(HttpStream, ABC):
     data_field = None
     url_base = "https://adsapi.snapchat.com/v1/"
     primary_key = "id"
-    items_per_page_limit = 1000
 
     def __init__(self, start_date, **kwargs):
         super().__init__(**kwargs)
@@ -73,14 +75,7 @@ class SnapchatMarketingStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params_payload = {}
-        if next_page_token:
-            params_payload.update(next_page_token)
-
-        if self.items_per_page_limit:
-            params_payload["limit"] = self.items_per_page_limit
-
-        return params_payload
+        return next_page_token if next_page_token else {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if isinstance(self.data_field, list) and len(self.data_field) == 2:
@@ -94,26 +89,44 @@ class SnapchatMarketingStream(HttpStream, ABC):
 
 
 class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
-    state_checkpoint_interval = SnapchatMarketingStream.items_per_page_limit
     cursor_field = "updated_at"
     data_field = None
     cls_object = None
     slice_key_name = "ad_account_id"
 
+    last_slice = None
+    current_slice = None
+    first_run = True
+    max_state = None
+
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        yield from self.get_class_ids(self.cls_object, self.slice_key_name, **kwargs)
+        stream_slices = self.get_class_ids(self.cls_object, self.slice_key_name, **kwargs)
+        if stream_slices:
+            self.last_slice = stream_slices[-1]
+
+        yield from stream_slices
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        if current_stream_state is not None and self.cursor_field in current_stream_state:
-            return {self.cursor_field: max(current_stream_state[self.cursor_field], latest_record[self.cursor_field])}
-        else:
+        if not current_stream_state:
+            self.first_run = False
+            self.max_state = self.start_date
             return {self.cursor_field: self.start_date}
+        elif self.first_run and current_stream_state:
+            self.first_run = False
+            self.max_state = current_stream_state[self.cursor_field]
+            return {self.cursor_field: current_stream_state[self.cursor_field]}
+        else:
+            self.max_state = max(self.max_state, latest_record[self.cursor_field])
+            return {self.cursor_field: self.max_state if self.current_slice == self.last_slice else current_stream_state[self.cursor_field]}
 
-    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        records = super().read_records(**kwargs)
+    def read_records(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+        self.current_slice = stream_slice
+        records = super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
         if stream_state:
             for record in records:
-                if record[self.cursor_field] >= stream_state.get(self.cursor_field):
+                if record[self.cursor_field] > stream_state.get(self.cursor_field):
                     yield record
         else:
             yield from records
@@ -122,11 +135,11 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
         return f"adaccounts/{stream_slice[self.slice_key_name]}/{self.data_field[0]}"
 
     # TODO Make unittest for this function
-    def get_class_ids(self, cls_object, slice_key_name: str, **kwargs) -> Iterable:
+    def get_class_ids(self, cls_object, slice_key_name: str, **kwargs) -> List:
         """This auxiliary function is to help retrieving the ids from another stream
         :param cls_object: The stream class from what we need to retrieve ids
         :param slice_key_name: The key in result slices generator
-        :returns: empty generator in case no ids of the stream was found or generator with {slice_key_name: id}
+        :returns: empty list in case no ids of the stream was found or list with {slice_key_name: id}
         """
 
         # The trick with this code is that all 3 streams are chained:
@@ -135,6 +148,15 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
         # Creatives need the ad_account_id as path variable
         # So first we must get the AdAccounts, then do the slicing for them
         # and then call the read_records for each slice
+
+        # This auxiliary_id_map is used to prevent the extracting of ids that are used in most streams
+        # Instead of running the request to get (for example) AdAccounts for each stream as slices we put them in the dict and
+        # return if the same ids are requested in the stream. This saves us a lot of time and requests
+        if cls_object is None:
+            return [None]
+
+        if slice_key_name in auxiliary_id_map:
+            return auxiliary_id_map[slice_key_name]
 
         cls_stream = cls_object(authenticator=self.authenticator, start_date=self.start_date)
         cls_slices = cls_stream.stream_slices(**kwargs)
@@ -149,10 +171,11 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
 
         if not cls_ids:
             self.logger.error(f"No {slice_key_name}s found. {cls_object.__name__} cannot be extracted without {slice_key_name}.")
-            yield from []
+            return []
 
-        for cls_id in cls_ids:
-            yield {slice_key_name: cls_id}
+        result = [{slice_key_name: cls_id} for cls_id in cls_ids]
+        auxiliary_id_map[slice_key_name] = result
+        return result
 
 
 class Organizations(SnapchatMarketingStream):
@@ -187,6 +210,7 @@ class Media(IncrementalSnapchatMarketingStream):
 
     data_field = ["media", "media"]
     cls_object = AdAccounts
+
 
 # TODO Check why test is failing on campaigns
 class Campaigns(IncrementalSnapchatMarketingStream):

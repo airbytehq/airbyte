@@ -10,9 +10,6 @@
     "created_at": {
       "type": ["null", "string"]
     },
-    "name": {
-      "type": ["null", "string"]
-    },
     "ad_account_id": {
       "type": ["null", "string"]
     },
@@ -28,19 +25,15 @@
     "download_link": {
       "type": ["null", "string"]
     },
+    "duration_in_seconds": {
+      "type": ["null", "number"],
+      "multipleOf": 1e-10
+    },
     "image_metadata": {
-      "type": ["null", "object"],
-      "properties": {
-        "height_px": {
-          "type": ["null", "integer"]
-        },
-        "width_px": {
-          "type": ["null", "integer"]
-        },
-        "image_format": {
-          "type": ["null", "string"]
-        }
-      }
+      "type": ["null", "object"]
+    },
+    "video_metadata": {
+      "type": ["null", "object"]
     },
     "file_size_in_bytes": {
       "type": ["null", "integer"]
@@ -52,6 +45,9 @@
       "type": ["null", "string"]
     },
     "visibility": {
+      "type": ["null", "string"]
+    },
+    "name": {
       "type": ["null", "string"]
     }
   }
