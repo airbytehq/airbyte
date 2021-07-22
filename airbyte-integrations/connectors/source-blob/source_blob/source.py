@@ -36,24 +36,22 @@ class SourceBlob(AbstractSource, ABC):
 
     @property
     @abstractmethod
-    def stream_class(self) -> str:
+    def stream_class(self) -> type:
         """TODO docstring"""
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
         This method checks two things:
             - That the credentials provided in config are valid for access.
-            - That the path provided in config is valid to be globbed.
+            - That the path pattern(s) provided in config are valid to be matched against.
         """
         found_a_file = False
         try:
             for filepath in self.stream_class.filepath_iterator(logger, config.get("provider")):
+                found_a_file = True
                 for path_pattern in config.get("path_patterns"):
                     fnmatch(filepath, path_pattern)  # test that matching on the pattern doesn't error
-                    found_a_file = True
-                    break  # just find first file then break, no need to search all here
-                if found_a_file:
-                    break
+                break  # just need first file here to test connection and valid patterns
 
         except Exception as e:
             logger.error(format_exc())
@@ -75,5 +73,5 @@ class SourceBlobS3(SourceBlob):
     """TODO docstring"""
 
     @property
-    def stream_class(self) -> str:
+    def stream_class(self) -> type:
         return IncrementalFileStreamS3

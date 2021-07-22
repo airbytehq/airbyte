@@ -74,13 +74,13 @@ class FileReader(ABC):
             for json_type, pyarrow_types in map.items():
                 if str_typ.lower() == json_type:
                     return getattr(pa, pyarrow_types[0]).__call__()  # better way might be necessary when we decide to handle more type complexity
-            logger.warn(f"JSON type '{str_typ}' is unknown, falling back to default conversion to large_string")
+            logger.debug(f"JSON type '{str_typ}' is not mapped, falling back to default conversion to large_string")
             return pa.large_string()
         else:
             for json_type, pyarrow_types in map.items():
                 if any([str_typ.startswith(pa_type) for pa_type in pyarrow_types]):
                     return json_type
-            logger.warn(f"PyArrow type '{str_typ}' is unknown, falling back to default conversion to string")
+            logger.debug(f"PyArrow type '{str_typ}' is not mapped, falling back to default conversion to string")
             return "string"  # default type if unspecified in map
 
     @staticmethod

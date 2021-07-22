@@ -32,12 +32,14 @@ from traceback import format_exc
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from fnmatch import fnmatch
 from smart_open.s3 import _list_bucket
-from jsonschema import Draft4Validator, SchemaError
 from .fileclient import FileClient, FileClientS3
 from .filereader import FileReaderCsv
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources.streams import Stream
+
+
+JSON_TYPES = ["string", "number", "integer", "object", "array", "boolean", "null"]
 
 
 class ConfigurationError(Exception):
@@ -71,14 +73,12 @@ class FileStream(Stream, ABC):
                 error_msg = f"Failed to parse schema {repr(err)}\n{schema}\n{format_exc()}"
                 self.logger.error(error_msg)
                 raise ConfigurationError(error_msg) from err
-            try:
-                Draft4Validator.check_schema(self._schema)
-            except SchemaError as err:
-                error_msg = f"Schema is not a valid JSON schema {repr(err)}\n{schema}\n{format_exc()}"
-                self.logger.error(error_msg)
-                raise ConfigurationError(error_msg) from err
-            self.logger.info(f"initial schema state: {self._schema}")
-            # TODO: we could still have an 'invalid' schema after this, should we handle that explicitly?
+            # enforce all keys and values are of type string as required (i.e. no nesting)
+            if not all([isinstance(k, str) and isinstance(v, str) for k,v in self._schema.items()]):
+                raise ConfigurationError("Invalid schema provided, all column names and datatypes must be in string format")
+            # enforce all values (datatypes) are valid JsonSchema datatypes
+            if not all([datatype in JSON_TYPES for datatype in self._schema.values()]):
+                raise ConfigurationError(f"Invalid schema provided, datatypes must each be one of {JSON_TYPES}")
         self.fileclient_cache = None
         self.master_schema = None
 
@@ -88,15 +88,15 @@ class FileStream(Stream, ABC):
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        return None  # TODO: do we want to implement something here?
+        return None
 
     @property
-    def filereader_class(self) -> str:
+    def filereader_class(self) -> type:
         return self.format_filereader_map[self._format.get("filetype")]
 
     @property
     @abstractmethod
-    def fileclient_class(self) -> str:
+    def fileclient_class(self) -> type:
         """TODO docstring"""
 
     @staticmethod
@@ -172,7 +172,8 @@ class FileStream(Stream, ABC):
                         # if not, then the read will error anyway
                         if col in self._schema.keys():
                             self.logger.warn(f"Detected mismatched datatype on column '{col}', in file '{fileclient.url}'. "
-                                             + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'.")
+                                             + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'. "
+                                             + f"Airbyte will attempt to coerce this to {master_schema[col]} on read.")
                         # else we're inferring the schema (or at least this column) from scratch and therefore throw an error on mismatching datatypes
                         else:
                             raise RuntimeError(
@@ -340,7 +341,7 @@ class IncrementalFileStream(FileStream, ABC):
                     "last_modified": last_mod,
                     "fileclient": fileclient
                 })
-                # update our prev_file_last_mod to this one for next iteration
+                # update our prev_file_last_mod to the current one for next iteration
                 prev_file_last_mod = last_mod
 
             # now yield the final stream_slice. This is required because our loop only yields the slice previous to its current iteration.
@@ -352,7 +353,7 @@ class IncrementalFileStreamS3(IncrementalFileStream):
     """TODO docstring"""
 
     @property
-    def fileclient_class(self) -> str:
+    def fileclient_class(self) -> type:
         return FileClientS3
 
     @staticmethod

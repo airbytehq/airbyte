@@ -30,7 +30,8 @@
               },
               "aws_access_key_id": {
                 "type": "string",
-                "description": "In order to access private Buckets stored on AWS S3, this connector would need credentials with the proper permissions. If accessing publicly available data, this field is not necessary."
+                "description": "In order to access private Buckets stored on AWS S3, this connector would need credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
+                "airbyte_secret": true
               },
               "aws_secret_access_key": {
                 "type": "string",
@@ -61,32 +62,37 @@
               },
               "delimiter": {
                 "type": "string",
+                "default": ",",
                 "description": "leave blank to default to , (comma)"
               },
               "quote_char": {
                 "type": "string",
+                "default": "\"",
                 "description": "leave blank to default to <strong>\"</strong> (double quote)"
               },
               "double_quote": {
                 "type": "boolean",
-                "description": "Whether two quotes in a quoted CSV value denote a single quote in the data. Leave blank to default to True",
-                "default": true
+                "default": true,
+                "description": "Whether two quotes in a quoted CSV value denote a single quote in the data. Leave blank to default to True"
               },
               "escape_char": {
-                "type": "string",
+                "type": ["null", "string"],
+                "default": null,
                 "description": "The character used for escaping special characters. Leave blank to disallow escape character"
               },
               "newlines_in_values": {
                 "type": "boolean",
+                "default": false,
                 "description": "Whether newline characters are allowed in CSV values. Leave blank to default to False",
-                "default": false
               },
               "encoding": {
-                "type": "string",
+                "type": ["null", "string"],
+                "default": null,
                 "description": "leave blank to default to <strong>UTF-8</strong> (see <a href=\"https://docs.python.org/3/library/codecs.html#standard-encodings\" target=\"_blank\">list of python encodings</a>)."
               },
               "additional_reader_options": {
                 "type": "string",
+                "default": "{}",
                 "description": "Add a valid JSON string here to provide additional options to the csv reader (see details <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.ConvertOptions.html#pyarrow.csv.ConvertOptions\" target=\"_blank\">here</a>)",
                 "examples": ["{\"timestamp_parsers\": [\"%m/%d/%Y %H:%M\", \"%Y/%m/%d %H:%M\"], \"strings_can_be_null\": true, \"null_values\": [\"NA\", \"NULL\"]}"]
               }
@@ -100,6 +106,7 @@
       },
       "schema" : {
         "type": "string",
+        "default": "{}",
         "description": "TODO: explain how this works. Ensure this is a simple mapping of column:type. Complex types are allowed but will be coerced to String in current implementation. Must use double-quotes!!! (<a href=\"https://json-schema.org/understanding-json-schema/reference/type.html\" target=\"_blank\">JSON Schema</a>)",
         "examples": ["{\"column_1\": \"number\", \"column_2\": \"string\", \"column_3\": \"array\", \"column_4\": \"object\", \"column_5\": \"boolean\"}"]
       }

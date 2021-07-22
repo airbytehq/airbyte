@@ -22,6 +22,8 @@
 
 
 from abc import ABC, abstractmethod
+import os
+from pathlib import Path
 import pyarrow as pa
 import pytest
 from source_blob.filereader import FileReader, FileReaderCsv
@@ -29,7 +31,8 @@ from airbyte_cdk import AirbyteLogger
 from typing import List, Mapping, Any
 
 
-logger = AirbyteLogger()
+LOGGER = AirbyteLogger()
+SAMPLE_DIRECTORY = Path(__file__).resolve().parent.parent.joinpath("sample_files/")
 
 
 class TestFileReaderStatics():
@@ -48,7 +51,7 @@ class TestFileReaderStatics():
     )
     def test_json_type_to_pyarrow_type(self, input_json_type, output_pyarrow_type):
         # Json -> PyArrow direction
-        logger.info(f"asserting that JSON type '{input_json_type}' converts to PyArrow type '{output_pyarrow_type}'...")
+        LOGGER.info(f"asserting that JSON type '{input_json_type}' converts to PyArrow type '{output_pyarrow_type}'...")
         assert FileReader.json_type_to_pyarrow_type(input_json_type) == output_pyarrow_type
 
     @pytest.mark.parametrize(  # testing all datatypes as laid out here: https://arrow.apache.org/docs/python/api/datatypes.html
@@ -66,10 +69,9 @@ class TestFileReaderStatics():
         ]
     )
     def test_json_type_to_pyarrow_type_reverse(self, input_pyarrow_types, output_json_type):
-
         # PyArrow -> Json direction (reverse=True)
         for typ in input_pyarrow_types:
-            logger.info(f"asserting that PyArrow type '{typ}' converts to JSON type '{output_json_type}'...")
+            LOGGER.info(f"asserting that PyArrow type '{typ}' converts to JSON type '{output_json_type}'...")
             assert FileReader.json_type_to_pyarrow_type(typ, reverse=True) == output_json_type
 
     @pytest.mark.parametrize(  # if expecting fail, put pyarrow_schema as None
@@ -82,19 +84,37 @@ class TestFileReaderStatics():
             ({"single_column": "object"}, {"single_column": pa.large_string()}),
             ({}, {}),
             ({"a": "NOT A REAL TYPE", "b": "another fake type"}, {"a": pa.large_string(), "b": pa.large_string()}),
-            (["string", "object"], None)  # wrong input type
+            (["string", "object"], None)  # bad input type
         ]
     )
     def test_json_schema_to_pyarrow_schema(self, json_schema, pyarrow_schema):
         # Json -> PyArrow direction
-        print(pyarrow_schema)
         if pyarrow_schema is not None:
             assert FileReader.json_schema_to_pyarrow_schema(json_schema) == pyarrow_schema
         else:
             with pytest.raises(Exception) as e_info:
                 FileReader.json_schema_to_pyarrow_schema(json_schema)
 
+    @pytest.mark.parametrize(  # if expecting fail, put json_schema as None
+        "pyarrow_schema, json_schema", 
+        [
+            (
+                {"a": pa.utf8(), "b": pa.float16(), "c": pa.uint32(), "d": pa.map_(pa.string(), pa.float32()), "e": pa.bool_(), "f": pa.date64()}, 
+                {"a": "string", "b": "number", "c": "integer", "d": "string", "e": "boolean", "f": "string"}
+            ),
+            ({"single_column": pa.int32()}, {"single_column": "integer"}),
+            ({}, {}),
+            ({"a": "NOT A REAL TYPE", "b": "another fake type"}, {"a": "string", "b": "string"}),
+            (["string", "object"], None)  # bad input type
+        ]
+    )
+    def test_json_schema_to_pyarrow_schema_reverse(self, pyarrow_schema, json_schema):
         # PyArrow -> Json direction (reverse=True)
+        if json_schema is not None:
+            assert FileReader.json_schema_to_pyarrow_schema(pyarrow_schema, reverse=True) == json_schema
+        else:
+            with pytest.raises(Exception) as e_info:
+                FileReader.json_schema_to_pyarrow_schema(pyarrow_schema, reverse=True)
 
 
 class AbstractTestFileReader(ABC):
@@ -105,14 +125,36 @@ class AbstractTestFileReader(ABC):
     def test_files(self) -> List[Mapping[str,Any]]:
         """ return a list of test_file dicts in structure:
             [
-                {"filereader": FileReaderCsv(format, master_schema), "filepath": "...", "num_records": 5, "inferred_schema": {...}},
-                {"filereader": FileReaderCsv(format, master_schema), "filepath": "...", "num_records": 16, "inferred_schema": {...}}
+                {"filereader": FileReaderCsv(format, master_schema), "filepath": "...", "num_records": 5, "inferred_schema": {...}, line_checks:{}, fails: []},
+                {"filereader": FileReaderCsv(format, master_schema), "filepath": "...", "num_records": 16, "inferred_schema": {...}, line_checks:{}, fails: []}
             ]
+            note: line_checks index is 1-based to align with row numbers
         """
+
+    def _get_readmode(self, test_name, test_file):
+        LOGGER.info(f"testing {test_name}() with {test_file.get('test_alias', test_file['filepath'].split('/')[-1])} ...")
+        return "rb" if test_file["filereader"].is_binary else "r"
 
     def test_get_inferred_schema(self):
         for test_file in self.test_files:
-            assert test_file("filereader").get_inferred_schema(test_file['filepath']) == test_file["inferred_schema"]
+            with open(test_file["filepath"], self._get_readmode("get_inferred_schema", test_file)) as f:
+                if "test_get_inferred_schema" in test_file['fails']:
+                    with pytest.raises(Exception) as e_info:
+                        test_file["filereader"].get_inferred_schema(f)
+                else:
+                    assert test_file["filereader"].get_inferred_schema(f) == test_file["inferred_schema"]
+
+    def test_stream_records(self):
+        for test_file in self.test_files:
+            with open(test_file["filepath"], self._get_readmode("stream_records", test_file)) as f:
+                if "test_stream_records" in test_file['fails']:
+                    with pytest.raises(Exception) as e_info:
+                        [print(r) for r in test_file["filereader"].stream_records(f)]
+                else:
+                    records = [r for r in test_file["filereader"].stream_records(f)]
+                    assert len(records) == test_file['num_records']
+                    for index, expected_record in test_file['line_checks'].items():
+                        assert records[index-1] == expected_record
 
 
 class TestFileReaderCsv(AbstractTestFileReader):
@@ -121,12 +163,100 @@ class TestFileReaderCsv(AbstractTestFileReader):
     def test_files(self) -> List[Mapping[str,Any]]:
         return [
             {
-                "filereader": FileReaderCsv(format={"filetype": "csv"}),
-                "filepath": "...",
-                "num_records": 5,
-                "inferred_schema": {}
+                # basic 'normal' test
+                "filereader": FileReaderCsv(
+                    format={"filetype": "csv"}, 
+                    master_schema={'id': 'integer', 'name': 'string', 'valid': 'boolean', 'code': 'integer', 'degrees': 'number', 'birthday': 'string', 'last_seen': 'string'}),
+                "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/test_file_1.csv"),
+                "num_records": 8,
+                "inferred_schema": {'id': 'integer', 'name': 'string', 'valid': 'boolean', 'code': 'integer', 'degrees': 'number', 'birthday': 'string', 'last_seen': 'string'},
+                "line_checks":{},
+                "fails": []
+            },
+            {
+                # tests custom CSV parameters (odd delimiter, quote_char, escape_char & newlines in values in the file)
+                "test_alias": "custom csv parameters",
+                "filereader": FileReaderCsv(
+                    format={"filetype": "csv", "delimiter":"^", "quote_char":"|", "escape_char":"!", "newlines_in_values":True}, 
+                    master_schema={'id': 'integer', 'name': 'string', 'valid': 'boolean', 'code': 'integer', 'degrees': 'number', 'birthday': 'string', 'last_seen': 'string'}),
+                "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/test_file_2_params.csv"),
+                "num_records": 8,
+                "inferred_schema": {'id': 'integer', 'name': 'string', 'valid': 'boolean', 'code': 'integer', 'degrees': 'number', 'birthday': 'string', 'last_seen': 'string'},
+                "line_checks":{},
+                "fails": []
+            },
+            {
+                # tests encoding: Big5
+                "test_alias": "encoding: Big5",
+                "filereader": FileReaderCsv(
+                    format={"filetype": "csv", "encoding": "big5"}, 
+                    master_schema={'id': 'integer', 'name': 'string', 'valid': 'boolean'}),
+                "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/test_file_3_enc_Big5.csv"),
+                "num_records": 8,
+                "inferred_schema": {'id': 'integer', 'name': 'string', 'valid': 'boolean'},
+                "line_checks":{3: {"id":3, "name": "變形金剛，偽裝的機器人", "valid":False,}},
+                "fails": []
+            },
+            {
+                # tests encoding: Arabic (Windows 1256)
+                "test_alias": "encoding: Arabic (Windows 1256)",
+                "filereader": FileReaderCsv(
+                    format={"filetype": "csv", "encoding": "windows-1256"}, 
+                    master_schema={'id': 'integer', 'notes': 'string', 'valid': 'boolean'}),
+                "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/test_file_4_enc_Arabic.csv"),
+                "num_records": 2,
+                "inferred_schema": {'id': 'integer', 'notes': 'string', 'valid': 'boolean'},
+                "line_checks":{1: {"id":1, "notes": "البايت الجوي هو الأفضل", "valid":False,}},
+                "fails": []
+            },
+            # TODO: this is currently failing. Isolated it down to using an opened file object rather than letting pyarrow open
+            # compression might actually work in live use-cases because of the use of smart_open which handles compression (untested)
+            # {
+            #     # tests compression: gzip
+            #     "filereader": FileReaderCsv(
+            #         format={"filetype": "csv"}, 
+            #         master_schema={'id': 'integer', 'name': 'string', 'valid': 'boolean', 'code': 'integer', 'degrees': 'number', 'birthday': 'string', 'last_seen': 'string'}),
+            #     "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/test_file_5.csv.gz"),
+            #     "num_records": 8,
+            #     "inferred_schema": {'id': 'integer', 'name': 'string', 'valid': 'boolean', 'code': 'integer', 'degrees': 'number', 'birthday': 'string', 'last_seen': 'string'},
+            #     "line_checks":{7: {"id":7,"name":"xZhh1Kyl","valid":False,"code":10,"degrees":-9.2,"birthday":"2021-07-14","last_seen":"2021-07-14 15:30:09.225145"}},
+            #     "fails": []
+            # },
+            {
+                # tests extra columns in master schema
+                "test_alias": "extra columns in master schema",
+                "filereader": FileReaderCsv(
+                    format={"filetype": "csv"}, 
+                    master_schema={'EXTRA_COLUMN_1': 'boolean', 'EXTRA_COLUMN_2': 'number', 'id': 'integer', 'name': 'string', 'valid': 'boolean', 'code': 'integer', 'degrees': 'number', 'birthday': 'string', 'last_seen': 'string'}),
+                "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/test_file_1.csv"),
+                "num_records": 8,
+                "inferred_schema": {'id': 'integer', 'name': 'string', 'valid': 'boolean', 'code': 'integer', 'degrees': 'number', 'birthday': 'string', 'last_seen': 'string'},
+                "line_checks":{},
+                "fails": []
+            },
+            {
+                # tests missing columns in master schema
+                # TODO: maybe this should fail read_records, but it does pick up all the columns from file despite missing from master schema
+                "test_alias": "missing columns in master schema",
+                "filereader": FileReaderCsv(
+                    format={"filetype": "csv"}, 
+                    master_schema={'id': 'integer', 'name': 'string'}),
+                "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/test_file_1.csv"),
+                "num_records": 8,
+                "inferred_schema": {'id': 'integer', 'name': 'string', 'valid': 'boolean', 'code': 'integer', 'degrees': 'number', 'birthday': 'string', 'last_seen': 'string'},
+                "line_checks":{},
+                "fails": []
+            },
+            {
+                # tests empty file, SHOULD FAIL INFER & STREAM RECORDS
+                "test_alias": "empty csv file",
+                "filereader": FileReaderCsv(
+                    format={"filetype": "csv"}, 
+                    master_schema={}),
+                "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/test_file_6_empty.csv"),
+                "num_records": 0,
+                "inferred_schema": {},
+                "line_checks":{},
+                "fails": ["test_get_inferred_schema", "test_stream_records"]
             }
         ]
-
-    def filereader_class(self):
-        return FileReaderCsv
