@@ -22,69 +22,65 @@
 # SOFTWARE.
 #
 
+from typing import Any, List, Mapping, Tuple
 
-import json
-from typing import Any, Generator, Mapping, MutableMapping
-
+import boto3
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import (
-    AirbyteCatalog,
-    AirbyteConnectionStatus,
-    AirbyteMessage,
-    ConfiguredAirbyteCatalog,
-    ConfiguredAirbyteStream,
-    Status,
-    SyncMode,
-)
-from airbyte_cdk.sources import Source
-
-from .client import BaseClient
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams import Stream
+from source_amazon_seller_partner.auth import AWSSigV4
+from source_amazon_seller_partner.constants import get_marketplaces_enum, AWS_ENV
+from source_amazon_seller_partner.streams import FbaInventoryReports, FlatFileOrdersReports, MerchantListingsReports, Orders
 
 
-class SourceAmazonSellerPartner(Source):
+class SourceAmazonSellerPartner(AbstractSource):
+    marketplace_values = get_marketplaces_enum(AWS_ENV.PRODUCTION).US
 
-    client_class = BaseClient
+    def _get_stream_kwargs(self, config: Mapping[str, Any]):
+        self.marketplace_values = getattr(get_marketplaces_enum(getattr(AWS_ENV, config["aws_env"])), config["region"])
 
-    def _get_client(self, config: Mapping):
-        client = self.client_class(**config)
-        return client
+        boto3_client = boto3.client("sts", aws_access_key_id=config["aws_access_key"], aws_secret_access_key=config["aws_secret_key"])
+        role = boto3_client.assume_role(RoleArn=config["role_arn"], RoleSessionName="guid")
+        role_creds = role["Credentials"]
+        auth = AWSSigV4(
+            "execute-api",
+            aws_access_key_id=role_creds.get("AccessKeyId"),
+            aws_secret_access_key=role_creds.get("SecretAccessKey"),
+            region=self.marketplace_values.region,
+            aws_session_token=role_creds.get("SessionToken"),
+        )
+        stream_kwargs = {
+            "url_base": self.marketplace_values.endpoint,
+            "authenticator": auth,
+            "access_token_credentials": {
+                "client_id": config["lwa_app_id"],
+                "client_secret": config["lwa_client_secret"],
+                "refresh_token": config["refresh_token"],
+            },
+            "replication_start_date": config["replication_start_date"],
+        }
+        return stream_kwargs
 
-    def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
-        client = self._get_client(config)
-        logger.info("Checking access to Amazon SP-API")
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
-            client.check_connection()
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-        except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
+            stream_kwargs = self._get_stream_kwargs(config)
+            merchant_listings_reports_gen = MerchantListingsReports(**stream_kwargs).read_records(sync_mode=SyncMode.full_refresh)
+            next(merchant_listings_reports_gen)
+            return True, None
+        except Exception as error:
+            return False, f"Unable to connect to Amazon Seller API with the provided credentials - {repr(error)}"
 
-    def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
-        client = self._get_client(config)
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        """
+        :param config: A Mapping of the user input configuration as defined in the connector spec.
+        """
 
-        return AirbyteCatalog(streams=client.get_streams())
-
-    def read(
-        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
-    ) -> Generator[AirbyteMessage, None, None]:
-        client = self._get_client(config)
-
-        logger.info("Starting syncing Amazon Seller API")
-        for configured_stream in catalog.streams:
-            yield from self._read_record(logger=logger, client=client, configured_stream=configured_stream, state=state)
-
-        logger.info("Finished syncing Amazon Seller API")
-
-    @staticmethod
-    def _read_record(
-        logger: AirbyteLogger, client: BaseClient, configured_stream: ConfiguredAirbyteStream, state: MutableMapping[str, Any]
-    ) -> Generator[AirbyteMessage, None, None]:
-        stream_name = configured_stream.stream.name
-        is_report = client._amazon_client.is_report(stream_name)
-
-        if configured_stream.sync_mode == SyncMode.full_refresh:
-            state.pop(stream_name, None)
-
-        if is_report:
-            yield from client.read_reports(logger, stream_name, state)
-        else:
-            yield from client.read_stream(logger, stream_name, state)
+        stream_kwargs = self._get_stream_kwargs(config)
+        streams = [
+            MerchantListingsReports(**stream_kwargs),
+            FlatFileOrdersReports(**stream_kwargs),
+            FbaInventoryReports(**stream_kwargs),
+            Orders(marketplace_ids=self.marketplace_values.marketplace_id, **stream_kwargs),
+        ]
+        return streams

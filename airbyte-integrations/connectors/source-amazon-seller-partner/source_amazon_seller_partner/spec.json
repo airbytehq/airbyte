@@ -5,21 +5,24 @@
     "title": "Amazon Seller Partner Spec",
     "type": "object",
     "required": [
-      "start_date",
+      "replication_start_date",
       "refresh_token",
       "lwa_app_id",
       "lwa_client_secret",
       "aws_access_key",
       "aws_secret_key",
-      "role_arn"
+      "role_arn",
+      "aws_env",
+      "region"
     ],
     "additionalProperties": false,
     "properties": {
-      "start_date": {
-        "title": "Start Date",
+      "replication_start_date": {
+        "title": "Replication Start Date",
         "type": "string",
-        "description": "UTC date in the format 2017-01-25. Any data before this date will not be replicated.",
-        "examples": ["2017-01-25"]
+        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "examples": ["2017-01-25T00:00:00Z"]
       },
       "refresh_token": {
         "title": "Refresh Token",
@@ -51,37 +54,42 @@
         "type": "string",
         "description": "The role’s arn (needs permission to “Assume Role” STS)"
       },
-      "seller_id": {
-        "title": "Seller ID",
-        "type": "string",
-        "description": "Amazon doesn't return seller_id in the response thus seller_id is added to each row as an identifier. Note: It is not used in querying the data."
-      },
-      "marketplace": {
+      "aws_env": {
         "title": "Marketplace",
         "type": "string",
-        "description": "The marketplace from which you'd like to pull data.",
+        "description": "Affects the AWS base url to be used.",
         "enum": [
-          "Australia",
-          "Brazil",
-          "Canada",
-          "Egypt",
-          "France",
-          "Germany",
-          "India",
-          "Italy",
-          "Japan",
-          "Mexico",
-          "Netherlands",
-          "Poland",
-          "Singapore",
-          "Spain",
-          "Sweden",
-          "Turkey",
-          "UAE",
+          "PRODUCTION",
+          "SANDBOX"
+        ]
+      },
+      "region": {
+        "title": "Region",
+        "type": "string",
+        "description": "The region from which you'd like to pull data.",
+        "enum": [
+          "AE",
+          "DE",
+          "PL",
+          "EG",
+          "ES",
+          "FR",
+          "GB",
+          "IN",
+          "IT",
+          "NL",
+          "SA",
+          "SE",
+          "TR",
           "UK",
-          "USA"
-        ],
-        "$comment": "https://github.com/amzn/selling-partner-api-docs/blob/main/guides/en-US/developer-guide/SellingPartnerApiDeveloperGuide.md#marketplaceid-values"
+          "AU",
+          "JP",
+          "SG",
+          "US",
+          "BR",
+          "CA",
+          "MX"
+        ]
       }
     }
   }

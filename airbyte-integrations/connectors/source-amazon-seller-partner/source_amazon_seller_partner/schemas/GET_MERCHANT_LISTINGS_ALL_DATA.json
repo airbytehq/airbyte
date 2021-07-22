@@ -1,44 +1,46 @@
 {
-  "seller-sku": {
-    "type": ["null", "string"]
-  },
-  "asin1": {
-    "type": ["null", "string"]
-  },
-  "item-name": {
-    "type": ["null", "string"]
-  },
-  "item-description": {
-    "type": ["null", "string"]
-  },
-  "listing-id": {
-    "type": ["null", "string"]
-  },
-  "price": {
-    "type": ["null", "integer"]
-  },
-  "quantity": {
-    "type": ["null", "integer"]
-  },
-  "open-date": {
-    "type": ["null", "string"]
-  },
-  "product-id-type": {
-    "type": ["null", "integer"]
-  },
-  "item-note": {
-    "type": ["null", "string"]
-  },
-  "item-condition": {
-    "type": ["null", "integer"]
-  },
-  "product-id": {
-    "type": ["null", "string"]
-  },
-  "pending-quantity": {
-    "type": ["null", "integer"]
-  },
-  "fulfillment-channel": {
-    "type": ["null", "string"]
+  "title": "Get Merchant Listings Reports",
+  "description": "Get Merchant Listings All Data Reports",
+  "type": ["null", "object"],
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "reportType": {
+      "type": ["null", "string"]
+    },
+    "processingEndTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "processingStatus": {
+      "type": ["null", "string"]
+    },
+    "marketplaceIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "reportDocumentId": {
+      "type": ["null", "string"]
+    },
+    "reportId": {
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "createdTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "processingStartTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "dataStartTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
   }
 }
