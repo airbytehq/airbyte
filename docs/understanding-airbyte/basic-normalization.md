@@ -286,6 +286,12 @@ Note that all the choices made by Normalization as described in this documentati
 
 ### airbyte-integration/bases/base-normalization
 
+Note that Basic Normalization is packaged in a docker image `airbyte/normalization`.
+This image is tied to and released along with a specific Airbyte version.
+It is not configurable independently like it is possible to do with connectors (source & destinations)
+
+Therefore, in order to "upgrade" to the desired normalization version, you need to use the corresponding Airbyte version that it's being released in:
+
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- | :--- |
 | 0.27.5-alpha | 0.1.37 | 2021-07-22 | [#3947](https://github.com/airbytehq/airbyte/pull/4881/) | Handle `NULL` cursor field values when deduping |
