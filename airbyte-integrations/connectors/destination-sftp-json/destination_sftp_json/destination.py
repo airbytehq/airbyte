@@ -99,10 +99,9 @@ class DestinationSftpJson(Destination):
         try:
             # Verify write access by attempting to write then delete
             filename = str(uuid.uuid4())
-            destination_path = "/tmp"
-            writer = SftpClient(
-                **{**config, "destination_path": destination_path, "filename": filename}
-            )
+            # Can't override destination_path because we cannot assume we have write
+            # access anywhere else
+            writer = SftpClient(**{**config, "filename": filename})
             writer.write({"value": "_airbyte_connection_check"})
             writer.delete()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
