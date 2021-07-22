@@ -31,8 +31,6 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
 import java.nio.file.Path;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.function.Consumer;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +43,6 @@ public class KubeProcessFactory implements ProcessFactory {
   private final ApiClient officialClient;
   private final KubernetesClient fabricClient;
   private final String kubeHeartbeatUrl;
-  private final BlockingQueue<Integer> workerPorts;
 
   /**
    * @param namespace kubernetes namespace where spawned pods will live
@@ -58,13 +55,11 @@ public class KubeProcessFactory implements ProcessFactory {
   public KubeProcessFactory(String namespace,
                             ApiClient officialClient,
                             KubernetesClient fabricClient,
-                            String kubeHeartbeatUrl,
-                            BlockingQueue<Integer> workerPorts) {
+                            String kubeHeartbeatUrl) {
     this.namespace = namespace;
     this.officialClient = officialClient;
     this.fabricClient = fabricClient;
     this.kubeHeartbeatUrl = kubeHeartbeatUrl;
-    this.workerPorts = workerPorts;
   }
 
   @Override
@@ -80,27 +75,18 @@ public class KubeProcessFactory implements ProcessFactory {
       throws WorkerException {
     try {
       // used to differentiate source and destination processes with the same id and attempt
+
       final String podName = createPodName(imageName, jobId, attempt);
 
-      final int stdoutLocalPort = workerPorts.take();
+      final int stdoutLocalPort = KubePortManagerSingleton.take();
       LOGGER.info("{} stdoutLocalPort = {}", podName, stdoutLocalPort);
 
-      final int stderrLocalPort = workerPorts.take();
+      final int stderrLocalPort = KubePortManagerSingleton.take();
       LOGGER.info("{} stderrLocalPort = {}", podName, stderrLocalPort);
-
-      final Consumer<Integer> portReleaser = port -> {
-        if (!workerPorts.contains(port)) {
-          workerPorts.add(port);
-          LOGGER.info("{} releasing: {}", podName, port);
-        } else {
-          LOGGER.info("{} skipping releasing: {}", podName, port);
-        }
-      };
 
       return new KubePodProcess(
           officialClient,
           fabricClient,
-          portReleaser,
           podName,
           namespace,
           imageName,
