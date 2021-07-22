@@ -30,6 +30,10 @@ from google.ads.googleads.v8.services.types.google_ads_service import GoogleAdsR
 from proto.marshal.collections import Repeated, RepeatedComposite
 
 REPORT_MAPPING = {
+    "account_performance_report": "campaign",
+    "display_topics_performance": "topic_view",
+    "display_keyword_performance": "display_keyword_view",
+    "shopping_performance": "shopping_performance_view",
     "ad_group_ad_report": "ad_group_ad",
     "accounts": "customer",
     "campaigns": "campaign",
@@ -57,8 +61,7 @@ class GoogleAds:
 
     @staticmethod
     def get_fields_from_schema(schema: Mapping[str, Any]) -> List[str]:
-        properties = schema.get("properties")
-        return [*properties]
+        return schema["parameters"]
 
     @staticmethod
     def convert_schema_into_query(

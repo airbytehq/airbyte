@@ -30,7 +30,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
 from .google_ads import GoogleAds
-from .streams import Accounts, AdGroupAdReport, AdGroupAds, AdGroups, Campaigns
+from .streams import Accounts, DisplayTopicsPerformance, DisplayKeywordPerformance, ShoppingPerformance, AdGroupAdReport, AdGroupAds, AdGroups, Campaigns
 
 
 class SourceGoogleAds(AbstractSource):
@@ -48,6 +48,9 @@ class SourceGoogleAds(AbstractSource):
             api=google_api, conversion_window_days=config["conversion_window_days"], start_date=config["start_date"]
         )
         return [
+            DisplayTopicsPerformance(**incremental_stream_config),
+            DisplayKeywordPerformance(**incremental_stream_config),
+            ShoppingPerformance(**incremental_stream_config),
             AdGroupAdReport(**incremental_stream_config),
             AdGroupAds(api=google_api),
             AdGroups(api=google_api),

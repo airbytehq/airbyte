@@ -28,6 +28,7 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 import pendulum
 from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.v8.services.services.google_ads_service.pagers import SearchPager
+from google.protobuf import json_format
 from jsonschema import validate
 
 from .google_ads import GoogleAds
@@ -68,7 +69,7 @@ class GoogleAdsStream(Stream, ABC):
 
     def parse_response(self, response: SearchPager) -> Iterable[Mapping]:
         for result in response:
-            record = self.google_ads_client.parse_single_result(self.get_json_schema(), result)
+            record = json_format.MessageToDict(result._pb)
             validate(instance=record, schema=self.get_json_schema())
             yield record
 
@@ -125,6 +126,37 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
             schema=self.get_json_schema(), report_name=self.name, from_date=start_date, to_date=end_date, cursor_field=self.cursor_field
         )
         return query
+
+
+class DisplayTopicsPerformance(IncrementalGoogleAdsStream):
+    cursor = "segments.date"
+    cursor_field = "segments_date"
+    primary_key = None
+
+    def get_query(self, stream_slice: Mapping[str, Any] = None, fields: Mapping[str, Any] = None) -> str:
+        start_date, end_date = self.get_date_params(stream_slice, self.cursor_field)
+        query = GoogleAds.convert_schema_into_query(
+            schema=fields, report_name=self.name, from_date=start_date, to_date=end_date, cursor_field=self.cursor
+        )
+        return query
+
+    def parse_response(self, response: SearchPager) -> Iterable[Mapping]:
+        for result in response:
+            yield json_format.MessageToDict(result._pb)
+
+    def read_records(self, sync_mode, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        from .stream_configs import STREAMS
+        schema = {"properties": STREAMS[self.name]}
+        response = self.google_ads_client.send_request(self.get_query(stream_slice, schema))
+        yield from self.parse_response(response)
+
+
+class DisplayKeywordPerformance(DisplayTopicsPerformance):
+    pass
+
+
+class ShoppingPerformance(DisplayTopicsPerformance):
+    pass
 
 
 class AdGroupAdReport(IncrementalGoogleAdsStream):

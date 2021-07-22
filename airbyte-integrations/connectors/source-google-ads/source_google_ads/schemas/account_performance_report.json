@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "customer.currency_code": {
+      "type": ["null", "string"]
+    },
+    "customer.descriptive_name": {
+      "type": ["null", "string"]
+    },
+    "metrics.average_cost": {
+      "type": ["null", "string"]
+    },
+    "metrics.average_cpc": {
+      "type": ["null", "string"]
+    },
+    "metrics.average_cpe": {
+      "type": ["null", "string"]
+    },
+    "metrics.average_cpm": {
+      "type": ["null", "string"]
+    },
+    "metrics.average_cpv": {
+      "type": ["null", "string"]
+    },
+    "metrics.conversions_value": {
+      "type": ["null", "string"]
+    },
+    "metrics.conversions": {
+      "type": ["null", "string"]
+    },
+    "metrics.cost_micros": {
+      "type": ["null", "string"]
+    },
+    "metrics.cost_per_all_conversions": {
+      "type": ["null", "string"]
+    },
+    "metrics.cost_per_conversion": {
+      "type": ["null", "string"]
+    },
+    "metrics.cross_device_conversions": {
+      "type": ["null", "string"]
+    },
+    "metrics.ctr": {
+      "type": ["null", "string"]
+    },
+    "segments.date": {
+      "type": ["null", "string"]
+    }
+  }
+}
