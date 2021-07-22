@@ -11,7 +11,8 @@ This Source is capable of syncing the following core Streams:
 
 * [Accounts](https://docs.microsoft.com/en-us/advertising/customer-management-service/searchaccounts?view=bingads-13)
 * [Campaigns](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getcampaignsbyaccountid?view=bingads-13)
-
+* [AdGroups](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadgroupsbycampaignid?view=bingads-13)
+* [Ads](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadsbyadgroupid?view=bingads-13)
 
 
 ### Data type mapping
@@ -19,7 +20,7 @@ This Source is capable of syncing the following core Streams:
 | Integration Type | Airbyte Type | Notes |
 | :--- | :--- | :--- |
 | `string` | `string` |  |
-| `number` | `integer` |  |
+| `number` | `number` |  |
 | `array` | `array` |  |
 | `object` | `object` |  |
 
@@ -55,11 +56,11 @@ API limits number of requests for all Microsoft Advertising clients. You can fin
 
 Full authentication process described [here](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#access-token)
 
-Be aware that `refresh token` will expire in 90 days. You need to repeat auth process to get thr new one `refresh token`
+Be aware that `refresh token` will expire in 90 days. You need to repeat auth process to get the new one `refresh token`
 
 
 ## Changelog
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.0   | 2021-07-18 | []() | Initial release |
+| 0.1.0   | 2021-07-18 | []() | Initial release supported core streams (Accounts, Campaigns, Ads, AdGroups) |

@@ -42,46 +42,49 @@
       "type": ["null", "string"]
     },
     "ratings": {
-      "type": "object",
-      "properties": {
-        "rating_score": {
-          "type": ["null", "integer"]
-        },
-        "rating_message": {
-          "type": ["null", "string"]
-        },
-        "rating_type": {
-          "type": ["null", "string"]
-        },
-        "rating_created_timestamp": {
-          "type": ["null", "integer"]
-        },
-        "rating_offered_timestamp": {
-          "type": ["null", "integer"]
-        },
-        "rating_status": {
-          "type": ["null", "string"]
-        },
-        "rating_language": {
-          "type": ["null", "string"]
-        },
-        "rating_modified_timestamp": {
-          "type": ["null", "integer"]
-        },
-        "rating_rated_timestamp": {
-          "type": ["null", "integer"]
-        },
-        "rating_scheduled_timestamp": {
-          "type": ["null", "integer"]
-        },
-        "rating_scheduled_for_timestamp": {
-          "type": ["null", "integer"]
-        },
-        "rating_unscheduled_timestamp": {
-          "type": ["null", "integer"]
-        },
-        "rating_cancelled_timestamp": {
-          "type": ["null", "integer"]
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "rating_score": {
+            "type": ["null", "integer"]
+          },
+          "rating_message": {
+            "type": ["null", "string"]
+          },
+          "rating_type": {
+            "type": ["null", "string"]
+          },
+          "rating_created_timestamp": {
+            "type": ["null", "integer"]
+          },
+          "rating_offered_timestamp": {
+            "type": ["null", "integer"]
+          },
+          "rating_status": {
+            "type": ["null", "string"]
+          },
+          "rating_language": {
+            "type": ["null", "string"]
+          },
+          "rating_modified_timestamp": {
+            "type": ["null", "integer"]
+          },
+          "rating_rated_timestamp": {
+            "type": ["null", "integer"]
+          },
+          "rating_scheduled_timestamp": {
+            "type": ["null", "integer"]
+          },
+          "rating_scheduled_for_timestamp": {
+            "type": ["null", "integer"]
+          },
+          "rating_unscheduled_timestamp": {
+            "type": ["null", "integer"]
+          },
+          "rating_cancelled_timestamp": {
+            "type": ["null", "integer"]
+          }
         }
       }
     },

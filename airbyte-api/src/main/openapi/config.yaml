@@ -19,7 +19,7 @@ info:
       * Adding fields to request or response bodies.
       * Adding new HTTP endpoints.
 
-  version: "1.0.0-oas3"
+  version: "1.0.0"
   title: Airbyte Configuration API
   contact:
     email: contact@airbyte.io
@@ -76,7 +76,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/WorkspaceRead"
         "422":
-          $ref: "#/components/responses/ExceptionOccurred"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/workspaces/delete:
     post:
       tags:
