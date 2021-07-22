@@ -7,11 +7,11 @@ select
     {{ adapter.quote('date') }} as _airbyte_start_at,
     lag({{ adapter.quote('date') }}) over (
         partition by id
-        order by {{ adapter.quote('date') }} desc, _airbyte_emitted_at desc
+        order by {{ adapter.quote('date') }} is null asc, {{ adapter.quote('date') }} desc, _airbyte_emitted_at desc
     ) as _airbyte_end_at,
     lag({{ adapter.quote('date') }}) over (
         partition by id
-        order by {{ adapter.quote('date') }} desc, _airbyte_emitted_at desc
+        order by {{ adapter.quote('date') }} is null asc, {{ adapter.quote('date') }} desc, _airbyte_emitted_at desc
     ) is null as _airbyte_active_row,
     _airbyte_emitted_at,
     _airbyte_nested_strea__nto_long_names_hashid
