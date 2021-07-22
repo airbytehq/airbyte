@@ -13,14 +13,14 @@ gradleEnterprise {
 
 rootProject.name = 'airbyte'
 
-// SUB_BUILD is an enum of <blank>, PLATFORM, CONNECTORS_BASE. Blank is equivalent to all.
+// SUB_BUILD is an enum of <blank>, PLATFORM, CONNECTORS_BASE, NORMALIZATION. Blank is equivalent to all.
 if(!System.getenv().containsKey("SUB_BUILD")) {
     println("Building all of Airbyte.")
 } else {
     def subBuild = System.getenv().get("SUB_BUILD")
     println("Building Airbyte Sub Build: " + subBuild)
-    if(subBuild != "PLATFORM" && subBuild != "CONNECTORS_BASE") {
-        throw new IllegalArgumentException(String.format("%s is invalid. Must be unset or PLATFORM or CONNECTORS_BASE", subBuild))
+    if(subBuild != "PLATFORM" && subBuild != "CONNECTORS_BASE" && subBuild != "NORMALIZATION") {
+        throw new IllegalArgumentException(String.format("%s is invalid. Must be unset or PLATFORM or CONNECTORS_BASE or NORMALIZATION", subBuild))
     }
 }
 
@@ -68,6 +68,24 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
     include ':airbyte-integrations:connectors:destination-e2e-test'
     include ':airbyte-integrations:connectors:destination-jdbc'
     include ':airbyte-integrations:connectors:source-e2e-test'
+    include ':tools:code-generator'
+}
+
+// normalization
+if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "NORMALIZATION") {
+    include ':airbyte-integrations:bases:airbyte-protocol'
+    include ':airbyte-integrations:bases:base'
+    include ':airbyte-integrations:bases:base-java'
+    include ':airbyte-integrations:bases:base-normalization'
+
+    // Needed by normalization integration tests
+    include ':airbyte-integrations:connectors:destination-bigquery'
+    include ':airbyte-integrations:connectors:destination-jdbc'
+    include ':airbyte-integrations:connectors:destination-mysql'
+    include ':airbyte-integrations:connectors:destination-postgres'
+    include ':airbyte-integrations:connectors:destination-redshift'
+    include ':airbyte-integrations:connectors:destination-snowflake'
+    include ':airbyte-integrations:bases:standard-destination-test'
     include ':tools:code-generator'
 }
 
