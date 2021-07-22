@@ -34,30 +34,35 @@
 - sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   name: GitHub
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.1.1
-  documentationUrl: https://hub.docker.com/r/airbyte/source-github
+  dockerImageTag: 0.1.2
+  documentationUrl: https://docs.airbyte.io/integrations/sources/github
   icon: github.svg
 - sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   name: Microsoft SQL Server (MSSQL)
   dockerRepository: airbyte/source-mssql
-  dockerImageTag: 0.3.2
+  dockerImageTag: 0.3.3
   documentationUrl: https://hub.docker.com/r/airbyte/source-mssql
   icon: mssql.svg
+- sourceDefinitionId: d8286229-c680-4063-8c59-23b9b391c700
+  name: Pipedrive
+  dockerRepository: airbyte/source-pipedrive
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-pipedrive
 - sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   name: Postgres
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 0.3.5
+  dockerImageTag: 0.3.7
   documentationUrl: https://hub.docker.com/r/airbyte/source-postgres
   icon: postgresql.svg
 - sourceDefinitionId: 9fa5862c-da7c-11eb-8d19-0242ac130003
   name: Cockroachdb
-  dockerRepository: airbyte/source-postgres
+  dockerRepository: airbyte/source-cockroachdb
   dockerImageTag: 0.1.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-cockroachdb
 - sourceDefinitionId: af6d50ee-dddf-4126-a8ee-7faee990774f
   name: PostHog
   dockerRepository: airbyte/source-posthog
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/posthog
 - sourceDefinitionId: cd42861b-01fc-4658-a8ab-5d11d0510f01
   name: Recurly
@@ -68,7 +73,7 @@
 - sourceDefinitionId: fbb5fbe2-16ad-4cf4-af7d-ff9d9c316c87
   name: Sendgrid
   dockerRepository: airbyte/source-sendgrid
-  dockerImageTag: 0.2.4
+  dockerImageTag: 0.2.6
   documentationUrl: https://hub.docker.com/r/airbyte/source-sendgrid
   icon: sendgrid.svg
 - sourceDefinitionId: 9e0556f4-69df-4522-a3fb-03264d36b348
@@ -86,7 +91,7 @@
 - sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   name: MySQL
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 0.3.9
+  dockerImageTag: 0.4.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/mysql
   icon: mysql.svg
 - sourceDefinitionId: 2470e835-feaf-4db6-96f3-70fd645acc77
@@ -98,7 +103,7 @@
 - sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   name: Stripe
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 0.1.13
+  dockerImageTag: 0.1.14
   documentationUrl: https://hub.docker.com/r/airbyte/source-stripe
   icon: stripe.svg
 - sourceDefinitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
@@ -116,7 +121,7 @@
 - sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   name: Facebook Marketing
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.13
+  dockerImageTag: 0.2.14
   documentationUrl: https://hub.docker.com/r/airbyte/source-facebook-marketing
   icon: facebook.svg
 - sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
@@ -133,7 +138,7 @@
 - sourceDefinitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
   name: Shopify
   dockerRepository: airbyte/source-shopify
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/sources/shopify
 - sourceDefinitionId: 9845d17a-45f1-4070-8a60-50914b1c8e2b
   name: HTTP Request
@@ -184,18 +189,24 @@
   icon: zendesk.svg
 - sourceDefinitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
   name: Intercom
-  dockerRepository: airbyte/source-intercom-singer
-  dockerImageTag: 0.2.3
-  documentationUrl: https://hub.docker.com/r/airbyte/source-intercom-singer
+  dockerRepository: airbyte/source-intercom
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-intercom
   icon: intercom.svg
 - sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
   name: Jira
   dockerRepository: airbyte/source-jira
-  dockerImageTag: 0.2.6
+  dockerImageTag: 0.2.7
   documentationUrl: https://hub.docker.com/r/airbyte/source-jira
   icon: jira.svg
-- sourceDefinitionId: 859e501d-2b67-471f-91bb-1c801414d28f
+- sourceDefinitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
   name: Mixpanel
+  dockerRepository: airbyte/source-mixpanel
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-mixpanel
+  icon: mixpanel.svg
+- sourceDefinitionId: 859e501d-2b67-471f-91bb-1c801414d28f
+  name: Mixpanel Singer
   dockerRepository: airbyte/source-mixpanel-singer
   dockerImageTag: 0.2.4
   documentationUrl: https://hub.docker.com/r/airbyte/source-mixpanel-singer
@@ -239,7 +250,7 @@
 - sourceDefinitionId: 487b930d-7f6a-43ce-8bac-46e6b2de0a55
   name: Mongo DB
   dockerRepository: airbyte/source-mongodb
-  dockerImageTag: 0.3.2
+  dockerImageTag: 0.3.3
   documentationUrl: https://hub.docker.com/r/airbyte/source-mongodb
   icon: mongodb.svg
 - sourceDefinitionId: d19ae824-e289-4b14-995a-0632eb46d246
@@ -250,7 +261,7 @@
 - sourceDefinitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
   name: Instagram
   dockerRepository: airbyte/source-instagram
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.7
   documentationUrl: https://hub.docker.com/r/airbyte/source-instagram
 - sourceDefinitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
   name: Gitlab
@@ -335,7 +346,7 @@
 - sourceDefinitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
   name: Slack
   dockerRepository: airbyte/source-slack
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   documentationUrl: https://hub.docker.com/repository/docker/airbyte/source-slack
   icon: slack.svg
 - sourceDefinitionId: 6ff047c0-f5d5-4ce5-8c81-204a830fa7e1
@@ -343,6 +354,11 @@
   dockerRepository: airbyte/source-aws-cloudtrail
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/aws-cloudtrail
+- sourceDefinitionId: c4cfaeda-c757-489a-8aba-859fb08b6970
+  name: US Census
+  dockerRepository: airbyte/source-us-census
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/us-census
 - sourceDefinitionId: 1d4fdb25-64fc-4569-92da-fcdca79a8372
   name: Okta
   dockerRepository: airbyte/source-okta
@@ -356,8 +372,13 @@
 - sourceDefinitionId: 77225a51-cd15-4a13-af02-65816bd0ecf4
   name: Square
   dockerRepository: airbyte/source-square
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/square
+- sourceDefinitionId: 325e0640-e7b3-4e24-b823-3361008f603f
+  name: Zendesk Sunshine
+  dockerRepository: airbyte/source-zendesk-sunshine
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/zendesk-sunshine
 - sourceDefinitionId: d913b0f2-cc51-4e55-a44c-8ba1697b9239
   name: Paypal Transaction
   dockerRepository: airbyte/source-paypal-transaction
@@ -368,3 +389,13 @@
   dockerRepository: airbyte/source-datascope
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/datascope
+- sourceDefinitionId: 0b5c867e-1b12-4d02-ab74-97b2184ff6d7
+  name: Dixa
+  dockerRepository: airbyte/source-dixa
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/dixa
+- sourceDefinitionId: e7eff203-90bf-43e5-a240-19ea3056c474
+  name: Typeform
+  dockerRepository: airbyte/source-typeform
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/typeform
