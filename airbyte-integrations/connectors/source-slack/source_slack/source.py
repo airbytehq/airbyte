@@ -21,6 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+
 import copy
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
@@ -169,8 +170,8 @@ class IncrementalMessageStream(SlackStream, ABC):
         params.update(**stream_slice)
         return params
 
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        for record in super().parse_response(response, stream_slice, stream_state, **kwargs):
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        for record in super().parse_response(response, **kwargs):
             record[self.sub_primary_key_1] = stream_slice.get("channel", "")
             record[self.cursor_field] = float(record[self.sub_primary_key_2])
             yield record
@@ -261,7 +262,7 @@ class Threads(IncrementalMessageStream):
         to really 100% make sure no one can edit the state during the run.
         """
 
-        initial_state = copy.deepcopy(stream_state)
+        initial_state = copy.deepcopy(stream_state) or {}
 
         for record in super().read_records(stream_state=stream_state, **kwargs):
             if record.get(self.cursor_field, 0) >= initial_state.get(self.cursor_field, 0):
