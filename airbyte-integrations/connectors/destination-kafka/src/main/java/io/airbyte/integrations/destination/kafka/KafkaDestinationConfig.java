@@ -26,10 +26,9 @@ package io.airbyte.integrations.destination.kafka;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.json.Jsons;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import io.airbyte.commons.json.Jsons;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -102,11 +101,10 @@ public class KafkaDestinationConfig {
     LOGGER.info("Kafka protocol config: {}", protocolConfig.toString());
     final KafkaProtocol protocol = KafkaProtocol.valueOf(protocolConfig.get("security_protocol").asText().toUpperCase());
     final ImmutableMap.Builder<String, Object> builder = ImmutableMap.<String, Object>builder()
-      .put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, protocol.toString());
+        .put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, protocol.toString());
 
     switch (protocol) {
-      case PLAINTEXT -> {
-      }
+      case PLAINTEXT -> {}
       case SASL_SSL, SASL_PLAINTEXT -> {
         builder.put(SaslConfigs.SASL_JAAS_CONFIG, config.get("sasl_jaas_config").asText());
         builder.put(SaslConfigs.SASL_MECHANISM, config.get("sasl_mechanism").asText());

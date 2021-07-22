@@ -74,7 +74,11 @@
           },
           {
             "title": "SASL PLAINTEXT",
-            "required": ["security_protocol", "sasl_mechanism", "sasl_jaas_config"],
+            "required": [
+              "security_protocol",
+              "sasl_mechanism",
+              "sasl_jaas_config"
+            ],
             "properties": {
               "security_protocol": {
                 "type": "string",
@@ -99,7 +103,11 @@
           },
           {
             "title": "SASL SSL",
-            "required": ["security_protocol", "sasl_mechanism", "sasl_jaas_config"],
+            "required": [
+              "security_protocol",
+              "sasl_mechanism",
+              "sasl_jaas_config"
+            ],
             "properties": {
               "security_protocol": {
                 "type": "string",
