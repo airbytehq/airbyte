@@ -14,11 +14,11 @@ select
     _airbyte_emitted_at as _airbyte_start_at,
     lag(_airbyte_emitted_at) over (
         partition by id
-        order by _airbyte_emitted_at desc, _airbyte_emitted_at desc
+        order by _airbyte_emitted_at is null asc, _airbyte_emitted_at desc, _airbyte_emitted_at desc
     ) as _airbyte_end_at,
     lag(_airbyte_emitted_at) over (
         partition by id
-        order by _airbyte_emitted_at desc, _airbyte_emitted_at desc, _ab_cdc_updated_at desc
+        order by _airbyte_emitted_at is null asc, _airbyte_emitted_at desc, _airbyte_emitted_at desc, _ab_cdc_updated_at desc
     ) is null and _ab_cdc_deleted_at is null as _airbyte_active_row,
     _airbyte_emitted_at,
     _airbyte_dedup_cdc_excluded_hashid
