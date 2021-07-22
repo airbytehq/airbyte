@@ -74,13 +74,12 @@ public class BigQuerySourceAcceptanceTest extends SourceAcceptanceTest {
         .put(CONFIG_PROJECT_ID, projectId)
         .put(CONFIG_CREDS, credentialsJsonString)
         .put(CONFIG_DATASET_ID, datasetId)
-        .put(CONFIG_DATASET_LOCATION, datasetLocation)
         .build());
 
     database = new BigQueryDatabase(config.get(CONFIG_PROJECT_ID).asText(), credentialsJsonString);
 
     final DatasetInfo datasetInfo =
-        DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).setLocation(config.get(CONFIG_DATASET_LOCATION).asText()).build();
+        DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).setLocation(datasetLocation).build();
     dataset = database.getBigQuery().create(datasetInfo);
 
     database.execute("CREATE TABLE " + datasetId + ".id_and_name(id INT64, name STRING);");

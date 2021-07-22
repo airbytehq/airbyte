@@ -26,7 +26,6 @@ package io.airbyte.integrations.source.bigquery;
 
 import static io.airbyte.integrations.source.bigquery.BigQuerySource.CONFIG_CREDS;
 import static io.airbyte.integrations.source.bigquery.BigQuerySource.CONFIG_DATASET_ID;
-import static io.airbyte.integrations.source.bigquery.BigQuerySource.CONFIG_DATASET_LOCATION;
 import static io.airbyte.integrations.source.bigquery.BigQuerySource.CONFIG_PROJECT_ID;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -92,13 +91,12 @@ public class BigQuerySourceComprehensiveTest extends SourceComprehensiveTest {
         .put(CONFIG_PROJECT_ID, projectId)
         .put(CONFIG_CREDS, credentialsJsonString)
         .put(CONFIG_DATASET_ID, datasetId)
-        .put(CONFIG_DATASET_LOCATION, datasetLocation)
         .build());
 
     database = new TempBigQueryJoolDatabaseImpl(config.get(CONFIG_PROJECT_ID).asText(), credentialsJsonString);
 
     final DatasetInfo datasetInfo =
-        DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).setLocation(config.get(CONFIG_DATASET_LOCATION).asText()).build();
+        DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).setLocation(datasetLocation).build();
     dataset = database.getRealDatabase().getBigQuery().create(datasetInfo);
 
     return database;
