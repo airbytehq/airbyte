@@ -256,6 +256,7 @@ class DbtIntegrationTest(object):
                         "PASS=",  # DBT Summary
                         "Nothing to do.",  # When no schema/data tests are setup
                         "Configuration paths exist in your dbt_project.yml",  # When no cte / view are generated
+                        "6Error loading config file: .dockercfg: $HOME is not defined", # ignore warning
                     ]:
                         if except_clause in str_line:
                             is_exception = True
