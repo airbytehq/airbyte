@@ -42,9 +42,11 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.helpers.DestinationDefinitionHelpers;
 import io.airbyte.server.helpers.DestinationHelpers;
+import io.airbyte.server.helpers.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,19 +58,23 @@ public class WebBackendDestinationHandlerTest {
 
   private DestinationHandler destinationHandler;
   private SchedulerHandler schedulerHandler;
+  private WorkspaceHelper workspaceHelper;
 
   private DestinationRead destinationRead;
 
   @BeforeEach
-  public void setup() throws IOException {
+  public void setup() throws IOException, ExecutionException {
     destinationHandler = mock(DestinationHandler.class);
     schedulerHandler = mock(SchedulerHandler.class);
-    wbDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler);
+    workspaceHelper = mock(WorkspaceHelper.class);
+    wbDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler, workspaceHelper);
 
     final StandardDestinationDefinition standardDestinationDefinition = DestinationDefinitionHelpers.generateDestination();
     DestinationConnection destination =
         DestinationHelpers.generateDestination(UUID.randomUUID());
     destinationRead = DestinationHelpers.getDestinationRead(destination, standardDestinationDefinition);
+
+    when(workspaceHelper.getWorkspaceForDestinationId(destinationRead.getDestinationId())).thenReturn(destinationRead.getWorkspaceId());
   }
 
   @Test
@@ -141,6 +147,45 @@ public class WebBackendDestinationHandlerTest {
     Assertions.assertThrows(KnownException.class,
         () -> wbDestinationHandler.webBackendRecreateDestinationAndCheck(destinationRecreate));
     verify(destinationHandler, times(1)).deleteDestination(Mockito.eq(newDestinationId));
+  }
+
+  @Test
+  public void testUnmatchedWorkspaces() throws ExecutionException, IOException, JsonValidationException, ConfigNotFoundException {
+    when(workspaceHelper.getWorkspaceForDestinationId(destinationRead.getDestinationId())).thenReturn(UUID.randomUUID());
+
+    DestinationCreate destinationCreate = new DestinationCreate();
+    destinationCreate.setName(destinationRead.getName());
+    destinationCreate.setConnectionConfiguration(destinationRead.getConnectionConfiguration());
+    destinationCreate.setWorkspaceId(destinationRead.getWorkspaceId());
+    destinationCreate.setDestinationDefinitionId(destinationRead.getDestinationDefinitionId());
+
+    DestinationRead newDestination = DestinationHelpers
+        .getDestinationRead(DestinationHelpers.generateDestination(UUID.randomUUID()), DestinationDefinitionHelpers
+            .generateDestination());
+
+    when(destinationHandler.createDestination(destinationCreate)).thenReturn(newDestination);
+
+    DestinationIdRequestBody newDestinationId = new DestinationIdRequestBody();
+    newDestinationId.setDestinationId(newDestination.getDestinationId());
+
+    CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
+    checkConnectionRead.setStatus(StatusEnum.SUCCEEDED);
+
+    when(schedulerHandler.checkDestinationConnectionFromDestinationId(newDestinationId)).thenReturn(checkConnectionRead);
+
+    DestinationRecreate destinationRecreate = new DestinationRecreate();
+    destinationRecreate.setName(destinationRead.getName());
+    destinationRecreate.setConnectionConfiguration(destinationRead.getConnectionConfiguration());
+    destinationRecreate.setWorkspaceId(destinationRead.getWorkspaceId());
+    destinationRecreate.setDestinationId(destinationRead.getDestinationId());
+    destinationRecreate.setDestinationDefinitionId(destinationRead.getDestinationDefinitionId());
+
+    DestinationIdRequestBody oldDestinationIdBody = new DestinationIdRequestBody();
+    oldDestinationIdBody.setDestinationId(destinationRead.getDestinationId());
+
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      wbDestinationHandler.webBackendRecreateDestinationAndCheck(destinationRecreate);
+    });
   }
 
 }
