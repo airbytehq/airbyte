@@ -96,6 +96,12 @@ class SnapchatMarketingStream(HttpStream, ABC):
 class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
     state_checkpoint_interval = SnapchatMarketingStream.items_per_page_limit
     cursor_field = "updated_at"
+    data_field = None
+    cls_object = None
+    slice_key_name = "ad_account_id"
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from self.get_class_ids(self.cls_object, self.slice_key_name, **kwargs)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         if current_stream_state is not None and self.cursor_field in current_stream_state:
@@ -112,6 +118,42 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
         else:
             yield from records
 
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"adaccounts/{stream_slice[self.slice_key_name]}/{self.data_field[0]}"
+
+    # TODO Make unittest for this function
+    def get_class_ids(self, cls_object, slice_key_name: str, **kwargs) -> Iterable:
+        """This auxiliary function is to help retrieving the ids from another stream
+        :param cls_object: The stream class from what we need to retrieve ids
+        :param slice_key_name: The key in result slices generator
+        :returns: empty generator in case no ids of the stream was found or generator with {slice_key_name: id}
+        """
+
+        # The trick with this code is that all 3 streams are chained:
+        # Organizations -> AdAccounts -> Creatives.
+        # AdAccounts need the organization_id as path variable
+        # Creatives need the ad_account_id as path variable
+        # So first we must get the AdAccounts, then do the slicing for them
+        # and then call the read_records for each slice
+
+        cls_stream = cls_object(authenticator=self.authenticator, start_date=self.start_date)
+        cls_slices = cls_stream.stream_slices(**kwargs)
+        cls_ids = []
+
+        if cls_slices != [None]:
+            for cls_slice in cls_slices:
+                cls_records = cls_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=cls_slice)
+                cls_ids += [cls_record["id"] for cls_record in cls_records]
+        else:
+            cls_ids = [cls_record["id"] for cls_record in cls_stream.read_records(sync_mode=SyncMode.full_refresh)]
+
+        if not cls_ids:
+            self.logger.error(f"No {slice_key_name}s found. {cls_object.__name__} cannot be extracted without {slice_key_name}.")
+            yield from []
+
+        for cls_id in cls_ids:
+            yield {slice_key_name: cls_id}
+
 
 class Organizations(SnapchatMarketingStream):
     """ Docs: https://marketingapi.snapchat.com/docs/#organizations """
@@ -126,58 +168,46 @@ class AdAccounts(IncrementalSnapchatMarketingStream):
     """ Docs: https://marketingapi.snapchat.com/docs/#get-all-ad-accounts """
 
     data_field = ["adaccounts", "adaccount"]
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        organizations_stream = Organizations(authenticator=self.authenticator, start_date=self.start_date)
-        organizations_records = organizations_stream.read_records(sync_mode=SyncMode.full_refresh)
-        organization_ids = [organization["id"] for organization in organizations_records]
-
-        if not organization_ids:
-            self.logger.error(
-                "No organizations found. Ad Accounts cannot be extracted without organizations. "
-                "Check https://marketingapi.snapchat.com/docs/#get-all-ad-accounts"
-            )
-            yield from []
-
-        for organization_id in organization_ids:
-            yield {"organization_id": organization_id}
+    cls_object = Organizations
+    slice_key_name = "organization_id"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return "organizations/{}/adaccounts".format(stream_slice["organization_id"])
+        return f"organizations/{stream_slice['organization_id']}/adaccounts"
 
 
 class Creatives(IncrementalSnapchatMarketingStream):
     """ Docs: https://marketingapi.snapchat.com/docs/#get-all-creatives """
 
     data_field = ["creatives", "creative"]
+    cls_object = AdAccounts
 
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        # The trick with this code is that all 3 streams are chained:
-        # Organizations -> AdAccounts -> Creatives.
-        # AdAccounts need the organization_id as path variable
-        # Creatives need the ad_account_id as path variable
-        # So first we must get the AdAccounts, then do the slicing for them
-        # and then call the read_records for each slice
 
-        ad_accounts_stream = AdAccounts(authenticator=self.authenticator, start_date=self.start_date)
-        ad_accounts_slices = ad_accounts_stream.stream_slices(**kwargs)
-        ad_account_ids = []
-        for ad_accounts_slice in ad_accounts_slices:
-            ad_accounts_records = ad_accounts_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=ad_accounts_slice)
-            ad_account_ids += [ad_account["id"] for ad_account in ad_accounts_records]
+class Media(IncrementalSnapchatMarketingStream):
+    """ Docs: https://marketingapi.snapchat.com/docs/#get-all-media """
 
-        if not ad_account_ids:
-            self.logger.error(
-                "No ad_accounts found. Creatives cannot be extracted without organizations. "
-                "Check https://marketingapi.snapchat.com/docs/#get-all-creatives"
-            )
-            yield from []
+    data_field = ["media", "media"]
+    cls_object = AdAccounts
 
-        for ad_account_id in ad_account_ids:
-            yield {"ad_account_id": ad_account_id}
+# TODO Check why test is failing on campaigns
+class Campaigns(IncrementalSnapchatMarketingStream):
+    """ Docs: https://marketingapi.snapchat.com/docs/#get-all-campaigns """
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return "adaccounts/{}/creatives".format(stream_slice["ad_account_id"])
+    data_field = ["campaigns", "campaign"]
+    cls_object = AdAccounts
+
+
+class Ads(IncrementalSnapchatMarketingStream):
+    """ Docs: https://marketingapi.snapchat.com/docs/#get-all-ads-under-an-ad-account """
+
+    data_field = ["ads", "ad"]
+    cls_object = AdAccounts
+
+
+class Adsquads(IncrementalSnapchatMarketingStream):
+    """ Docs: https://marketingapi.snapchat.com/docs/#get-all-ad-squads-under-an-ad-account """
+
+    data_field = ["adsquads", "adsquad"]
+    cls_object = AdAccounts
 
 
 class SnapchatAdsOauth2Authenticator(Oauth2Authenticator):
@@ -197,24 +227,21 @@ class SnapchatAdsOauth2Authenticator(Oauth2Authenticator):
             refresh_token=config["refresh_token"],
         )
 
-    # def refresh_access_token(self) -> Tuple[str, int]:
-    #     """
-    #     returns a tuple of (access_token, token_lifespan_in_seconds)
-    #     """
-    #     response_json = None
-    #     try:
-    #         response = requests.request(method="POST", url=self.token_refresh_endpoint, data=self.get_refresh_request_body())
-    #         response_json = response.json()
-    #         response.raise_for_status()
-    #         return response_json["access_token"], response_json["expires_in"]
-    #     except requests.exceptions.RequestException as e:
-    #         # if response_json and "error" in response_json:
-    #         #     raise Exception(
-    #         #         "Error refreshing access token. Error: {}; Error details: {}; Exception: {}".format(
-    #         #             response_json["error"], response_json["error_description"], e
-    #         #         )
-    #         #     ) from e
-    #         raise Exception(f"Error refreshing access token: {e}") from e
+    def refresh_access_token(self) -> Tuple[str, int]:
+        response_json = None
+        try:
+            response = requests.request(method="POST", url=self.token_refresh_endpoint, data=self.get_refresh_request_body())
+            response_json = response.json()
+            response.raise_for_status()
+            return response_json["access_token"], response_json["expires_in"]
+        except requests.exceptions.RequestException as e:
+            if response_json and "error" in response_json:
+                raise Exception(
+                    "Error refreshing access token. Error: {}; Error details: {}; Exception: {}".format(
+                        response_json["error"], response_json["error_description"], e
+                    )
+                ) from e
+            raise Exception(f"Error refreshing access token: {e}") from e
 
 
 # Source
@@ -238,4 +265,12 @@ class SourceSnapchatMarketing(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = SnapchatAdsOauth2Authenticator(config)
         kwargs = {"authenticator": auth, "start_date": config["start_date"]}
-        return [Organizations(**kwargs), AdAccounts(**kwargs), Creatives(**kwargs)]
+        return [
+            Organizations(**kwargs),
+            AdAccounts(**kwargs),
+            Creatives(**kwargs),
+            Media(**kwargs),
+            Campaigns(**kwargs),
+            Ads(**kwargs),
+            Adsquads(**kwargs),
+        ]

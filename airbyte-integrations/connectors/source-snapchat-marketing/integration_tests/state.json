@@ -1,8 +1,20 @@
 {
   "ad_accounts" : {
-    "updated_at": "2021-07-01T00:00:00Z"
+    "updated_at": "2020-01-01T00:00:00Z"
   },
   "creatives" : {
-    "updated_at": "2021-07-01T00:00:00Z"
+    "updated_at": "2020-01-01T00:00:00Z"
+  },
+  "media" : {
+    "updated_at": "2020-01-01T00:00:00Z"
+  },
+  "campaigns" : {
+    "updated_at": "2020-01-01T00:00:00Z"
+  },
+  "ads" : {
+    "updated_at": "2020-01-01T00:00:00Z"
+  },
+  "adsquads" : {
+    "updated_at": "2020-01-01T00:00:00Z"
   }
 }

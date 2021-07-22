@@ -19,15 +19,10 @@
         "airbyte_secret": true
       },
       "refresh_token": {
-        "title": "API Key Refresh Token",
+        "title": "API Refresh Token",
         "type": "string",
         "description": "Refresh Token to get next api key after expiration. Is given with API Key",
         "airbyte_secret": true
-      },
-      "redirect_uri": {
-        "title": "Redirect URI",
-        "type": "string",
-        "description": "Required by Snapchat API for getting and refreshing tokens"
       },
       "start_date": {
         "title": "Start Date",

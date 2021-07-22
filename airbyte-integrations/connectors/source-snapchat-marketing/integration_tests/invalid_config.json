@@ -2,6 +2,5 @@
   "client_id": "invalid_client_id",
   "secret": "invalid_client_secret",
   "refresh_token": "invalid_refresh_token",
-  "redirect_uri": "https://airbyte.integration.com/auth",
   "start_date": "1970-01-01"
 }
