@@ -109,3 +109,9 @@ following parameters on the Kafka destination (though many of these are optional
 More info about this can be found in the [Kafka producer configs documentation site](https://kafka.apache.org/documentation/#producerconfigs).
 
 *NOTE*: Some configurations for SSL are not available yet.
+
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.1.0   | 2021-07-21 | [3746](https://github.com/airbytehq/airbyte/pull/3746) | Initial Release |
