@@ -68,14 +68,12 @@ class GoogleAds:
         fields = GoogleAds.get_fields_from_schema(schema)
         fields = ",\n".join(fields)
 
-        query_template = "SELECT {fields} FROM {from_category} "
-        substitute_params = dict(fields=fields, from_category=from_category)
+        query_template = f"SELECT {fields} FROM {from_category} "
 
         if cursor_field:
-            query_template += "WHERE {cursor_field} > '{from_date}' AND {cursor_field} < '{to_date}' ORDER BY {cursor_field}"
-            substitute_params.update(dict(from_date=from_date, to_date=to_date, cursor_field=cursor_field))
+            query_template += f"WHERE {cursor_field} > '{from_date}' AND {cursor_field} < '{to_date}' ORDER BY {cursor_field}"
 
-        return query_template.format(**substitute_params)
+        return query_template
 
     @staticmethod
     def get_field_value(field_value: GoogleAdsRow, field: str) -> str:
@@ -137,6 +135,9 @@ class GoogleAds:
         # 2. We have no way to get data on absolutely all entities to test.
         #
         # To prevent JSON from throwing an error during deserialization, we made such a hack.
+        # For example:
+        # 1. ad_group_ad.ad.responsive_display_ad.long_headline - type AdTextAsset (https://developers.google.com/google-ads/api/reference/rpc/v6/AdTextAsset?hl=en).
+        # 2. ad_group_ad.ad.legacy_app_install_ad - type LegacyAppInstallAdInfo (https://developers.google.com/google-ads/api/reference/rpc/v7/LegacyAppInstallAdInfo?hl=en).
         if not (isinstance(field_value, (list, int, float, str, bool, dict)) or field_value is None):
             field_value = str(field_value)
 

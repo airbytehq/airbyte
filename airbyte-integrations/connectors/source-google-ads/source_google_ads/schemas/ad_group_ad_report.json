@@ -235,11 +235,17 @@
     "ad_group_ad.ad.final_mobile_urls": {
       "description": "CreativeFinalMobileUrls",
       "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      },
       "title": "ad_group_ad.ad.final_mobile_urls"
     },
     "ad_group_ad.ad.final_urls": {
       "description": "CreativeFinalUrls",
       "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      },
       "title": "ad_group_ad.ad.final_urls"
     },
     "ad_group_ad.ad.tracking_url_template": {
@@ -250,6 +256,9 @@
     "ad_group_ad.ad.url_custom_parameters": {
       "description": "CreativeUrlCustomParameters",
       "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      },
       "title": "ad_group_ad.ad.url_custom_parameters"
     },
     "metrics.cross_device_conversions": {
@@ -465,6 +474,9 @@
     "metrics.interaction_event_types": {
       "description": "InteractionTypes",
       "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      },
       "title": "metrics.interaction_event_types"
     },
     "metrics.interactions": {
@@ -530,6 +542,9 @@
     "ad_group_ad.ad.responsive_display_ad.descriptions": {
       "description": "MultiAssetResponsiveDisplayAdDescriptions",
       "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      },
       "title": "ad_group_ad.ad.responsive_display_ad.descriptions"
     },
     "ad_group_ad.ad.responsive_display_ad.price_prefix": {
@@ -550,16 +565,25 @@
     "ad_group_ad.ad.responsive_display_ad.headlines": {
       "description": "MultiAssetResponsiveDisplayAdHeadlines",
       "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      },
       "title": "ad_group_ad.ad.responsive_display_ad.headlines"
     },
     "ad_group_ad.ad.responsive_display_ad.logo_images": {
       "description": "MultiAssetResponsiveDisplayAdLandscapeLogoImages",
       "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      },
       "title": "ad_group_ad.ad.responsive_display_ad.logo_images"
     },
     "ad_group_ad.ad.responsive_display_ad.square_logo_images": {
       "description": "MultiAssetResponsiveDisplayAdLogoImages",
       "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      },
       "title": "ad_group_ad.ad.responsive_display_ad.square_logo_images"
     },
     "ad_group_ad.ad.responsive_display_ad.long_headline": {
@@ -575,16 +599,25 @@
     "ad_group_ad.ad.responsive_display_ad.marketing_images": {
       "description": "MultiAssetResponsiveDisplayAdMarketingImages",
       "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      },
       "title": "ad_group_ad.ad.responsive_display_ad.marketing_images"
     },
     "ad_group_ad.ad.responsive_display_ad.square_marketing_images": {
       "description": "MultiAssetResponsiveDisplayAdSquareMarketingImages",
       "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      },
       "title": "ad_group_ad.ad.responsive_display_ad.square_marketing_images"
     },
     "ad_group_ad.ad.responsive_display_ad.youtube_videos": {
       "description": "MultiAssetResponsiveDisplayAdYouTubeVideos",
       "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      },
       "title": "ad_group_ad.ad.responsive_display_ad.youtube_videos"
     },
     "ad_group_ad.ad.expanded_text_ad.path1": {
@@ -620,11 +653,17 @@
     "ad_group_ad.ad.responsive_search_ad.descriptions": {
       "description": "ResponsiveSearchAdDescriptions",
       "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      },
       "title": "ad_group_ad.ad.responsive_search_ad.descriptions"
     },
     "ad_group_ad.ad.responsive_search_ad.headlines": {
       "description": "ResponsiveSearchAdHeadlines",
       "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      },
       "title": "ad_group_ad.ad.responsive_search_ad.headlines"
     },
     "ad_group_ad.ad.responsive_search_ad.path1": {
@@ -660,21 +699,33 @@
     "ad_group_ad.ad.app_ad.descriptions": {
       "description": "UniversalAppAdDescriptions",
       "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      },
       "title": "ad_group_ad.ad.app_ad.descriptions"
     },
     "ad_group_ad.ad.app_ad.headlines": {
       "description": "UniversalAppAdHeadlines",
       "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      },
       "title": "ad_group_ad.ad.app_ad.headlines"
     },
     "ad_group_ad.ad.app_ad.html5_media_bundles": {
       "description": "UniversalAppAdHtml5MediaBundles",
       "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      },
       "title": "ad_group_ad.ad.app_ad.html5_media_bundles"
     },
     "ad_group_ad.ad.app_ad.images": {
       "description": "UniversalAppAdImages",
       "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      },
       "title": "ad_group_ad.ad.app_ad.images"
     },
     "ad_group_ad.ad.app_ad.mandatory_ad_text": {
@@ -685,6 +736,9 @@
     "ad_group_ad.ad.app_ad.youtube_videos": {
       "description": "UniversalAppAdYouTubeVideos",
       "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      },
       "title": "ad_group_ad.ad.app_ad.youtube_videos"
     },
     "metrics.value_per_all_conversions": {

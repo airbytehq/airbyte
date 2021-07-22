@@ -36,7 +36,10 @@
       "type": ["null", "string"]
     },
     "ad_group.excluded_parent_asset_field_types": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group.explorer_auto_optimizer_setting.opt_in": {
       "type": ["null", "boolean"]
@@ -48,7 +51,10 @@
       "type": ["null", "integer"]
     },
     "ad_group.labels": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group.name": {
       "type": ["null", "string"]
@@ -72,7 +78,10 @@
       "type": ["null", "number"]
     },
     "ad_group.targeting_setting.target_restrictions": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group.tracking_url_template": {
       "type": ["null", "string"]
@@ -81,7 +90,10 @@
       "type": ["null", "string"]
     },
     "ad_group.url_custom_parameters": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     }
   }
 }

@@ -6,34 +6,61 @@
       "type": ["null", "boolean"]
     },
     "ad_group_ad.ad.app_ad.descriptions": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.app_ad.headlines": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.app_ad.html5_media_bundles": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.app_ad.images": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.app_ad.mandatory_ad_text": {
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.app_ad.youtube_videos": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.app_engagement_ad.descriptions": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.app_engagement_ad.headlines": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.app_engagement_ad.images": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.app_engagement_ad.videos": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.call_ad.business_name": {
       "type": ["null", "string"]
@@ -117,16 +144,25 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.final_app_urls": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.final_mobile_urls": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.final_url_suffix": {
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.final_urls": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.gmail_ad.header_image": {
       "type": ["null", "string"]
@@ -150,10 +186,16 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.gmail_ad.product_images": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.gmail_ad.product_videos": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.gmail_ad.teaser.business_name": {
       "type": ["null", "string"]
@@ -246,19 +288,34 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.local_ad.call_to_actions": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.local_ad.descriptions": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.local_ad.headlines": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.local_ad.logo_images": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.local_ad.marketing_images": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.local_ad.path1": {
       "type": ["null", "string"]
@@ -267,7 +324,10 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.local_ad.videos": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.name": {
       "type": ["null", "string"]
@@ -294,16 +354,25 @@
       "type": ["null", "boolean"]
     },
     "ad_group_ad.ad.responsive_display_ad.descriptions": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.responsive_display_ad.format_setting": {
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.headlines": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.responsive_display_ad.logo_images": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.responsive_display_ad.long_headline": {
       "type": ["null", "string"]
@@ -312,7 +381,10 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.marketing_images": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.responsive_display_ad.price_prefix": {
       "type": ["null", "string"]
@@ -321,19 +393,34 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.square_logo_images": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.responsive_display_ad.square_marketing_images": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.responsive_display_ad.youtube_videos": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.responsive_search_ad.descriptions": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.responsive_search_ad.headlines": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.responsive_search_ad.path1": {
       "type": ["null", "string"]
@@ -351,10 +438,16 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.smart_campaign_ad.descriptions": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.smart_campaign_ad.headlines": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.system_managed_resource_source": {
       "type": ["null", "string"]
@@ -375,10 +468,16 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.url_collections": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.url_custom_parameters": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.video_ad.bumper.companion_banner": {
       "type": ["null", "string"]
@@ -414,22 +513,40 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.video_responsive_ad.call_to_actions": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.video_responsive_ad.companion_banners": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.video_responsive_ad.descriptions": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.video_responsive_ad.headlines": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.video_responsive_ad.long_headlines": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.video_responsive_ad.videos": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad_group": {
       "type": ["null", "string"]
@@ -438,13 +555,19 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.labels": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.policy_summary.approval_status": {
       "type": ["null", "string"]
     },
     "ad_group_ad.policy_summary.policy_topic_entries": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.policy_summary.review_status": {
       "type": ["null", "string"]
