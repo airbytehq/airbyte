@@ -95,9 +95,7 @@ jobs:
           GOOGLE_CLOUD_STORAGE_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
 
       - name: Build
-        run: ./tools/bin/setup_gcs_creds.sh && GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcs.json" SUB_BUILD=CONNECTORS_BASE ./gradlew build --scan
-        env:
-          GOOGLE_CLOUD_STORAGE_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
+        run: GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcs.json" SUB_BUILD=CONNECTORS_BASE ./gradlew build --scan
 
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
