@@ -45,3 +45,48 @@ resource "aws_route_table_association" "dbtunnel-route-assoc-public-subnet-1"{
     route_table_id = "${aws_route_table.dbtunnel-public-route.id}"
 }
 
+
+resource "aws_subnet" "main-subnet-private-dbtunnel-2a" {
+    vpc_id = data.aws_vpc.main.id
+    cidr_block = "10.0.41.0/24"
+    map_public_ip_on_launch = "false"
+    availability_zone = "us-east-2a"
+    tags = {
+        Name = "private-dbtunnel-2a"
+    }
+}
+resource "aws_subnet" "main-subnet-private-dbtunnel-2b" {
+    vpc_id = data.aws_vpc.main.id
+    cidr_block = "10.0.42.0/24"
+    map_public_ip_on_launch = "false"
+    availability_zone = "us-east-2b"
+    tags = {
+        Name = "private-dbtunnel-2b"
+    }
+}
+
+resource "aws_route_table" "dbtunnel-private-route" {
+    vpc_id = data.aws_vpc.main.id
+
+    route {
+        //associated subnet can reach everywhere
+        cidr_block = "0.0.0.0/0"
+        //uses this to reach internet
+        gateway_id = data.aws_internet_gateway.default.id
+    }
+   
+    tags = {
+        Name = "dbtunnel-private-route"
+    }
+}
+
+resource "aws_route_table_association" "dbtunnel-route-assoc-private-subnet-1"{
+    subnet_id = "${aws_subnet.main-subnet-private-dbtunnel-2a.id}"
+    route_table_id = "${aws_route_table.dbtunnel-private-route.id}"
+}
+
+resource "aws_route_table_association" "dbtunnel-route-assoc-private-subnet-2"{
+    subnet_id = "${aws_subnet.main-subnet-private-dbtunnel-2b.id}"
+    route_table_id = "${aws_route_table.dbtunnel-private-route.id}"
+}
+
