@@ -545,9 +545,6 @@ jobs:
           sudo apt-get install socat
 
       - name: Set up Cloud SDK
-#        env:
-#          USER: root
-#          HOME: /home/runner
         uses: google-github-actions/setup-gcloud@master
         with:
           project_id: ${{ secrets.GKE_TEST_PROJECT_ID }}
@@ -561,9 +558,7 @@ jobs:
           credentials: ${{ secrets.GKE_TEST_SA_KEY }}
           cluster_name: kube-acceptance-test-cluster
           location: us-central1-c
-#
-#      - run: |-
-#          gcloud container clusters get-credentials "kube-acceptance-test-cluster" --zone "us-central1-c"
+
       - name: Install kubectl
         run: |-
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"

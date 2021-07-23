@@ -37,7 +37,7 @@ function findAndDeleteTag () {
     if [ $(curl --fail -LI --request GET 'https://hub.docker.com/v2/repositories/airbyte/'$1'/tags/'$TAG'/' --header 'Authorization: JWT '$2'' -o /dev/null -w '%{http_code}\n' -s) == "200" ];
     then
         echo "FOUND TAG" $TAG "in repository" $1 ",DELETING IT"
-#        curl --request DELETE 'https://hub.docker.com/v2/repositories/airbyte/'$1'/tags/'$TAG'/' --header 'Authorization: JWT '$2'';
+        curl --request DELETE 'https://hub.docker.com/v2/repositories/airbyte/'$1'/tags/'$TAG'/' --header 'Authorization: JWT '$2'';
     else
       echo "NOT FOUND TAG" $TAG "in repository" $1;
     fi
