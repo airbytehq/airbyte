@@ -82,8 +82,7 @@ class SlackStream(HttpStream, ABC):
 
         Rate Limits Docs: https://api.slack.com/docs/rate-limits#web"""
 
-        if response.status_code == 429:
-            return int(response.headers.get("Retry-After", 0))
+        return int(response.headers.get("Retry-After", 0))
 
     @property
     @abstractmethod
