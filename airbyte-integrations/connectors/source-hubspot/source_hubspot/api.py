@@ -27,7 +27,7 @@ import sys
 import time
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
-from functools import partial, cached_property
+from functools import partial, lru_cache
 from http import HTTPStatus
 from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
@@ -305,7 +305,8 @@ class Stream(ABC):
 
         yield from self._filter_dynamic_fields(self._filter_old_records(self._transform(self._read(getter, params))))
 
-    @cached_property
+    @property
+    @lru_cache
     def properties(self) -> Mapping[str, Any]:
         """Some entities has dynamic set of properties, so we trying to resolve those at runtime"""
         if not self.entity:
