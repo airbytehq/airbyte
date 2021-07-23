@@ -584,7 +584,7 @@ jobs:
 #            HOME: /home/runner
              DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           run: |
-            ./tools/bin/acceptance_test_kube_gke.sh
+            ./tools/bin/gke-kube-acceptance-test/acceptance_test_kube_gke.sh
     # In case of self-hosted EC2 errors, remove this block.
     stop-gke-kube-acceptance-test-runner:
       name: Stop GKE Kube Acceptance Test EC2 Runner
