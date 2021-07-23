@@ -25,15 +25,19 @@ const EmailForm = styled(Form)`
   position: relative;
 `;
 
-const Success = styled.div`
+const Response = styled.div`
   font-size: 13px;
   color: ${({ theme }) => theme.successColor};
   position: absolute;
   bottom: -19px;
 `;
 
-const Error = styled(Success)`
+const Error = styled(Response)`
   color: ${({ theme }) => theme.dangerColor};
+`;
+
+const Success = styled.div`
+  color: ${({ theme }) => theme.successColor};
 `;
 
 const accountValidationSchema = yup.object().shape({

@@ -118,6 +118,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   @Override
   public void close() throws Exception {
     if (sourceProcess == null) {
+      LOGGER.debug("Source process already exited");
       return;
     }
 

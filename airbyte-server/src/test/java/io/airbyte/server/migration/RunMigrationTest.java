@@ -117,7 +117,7 @@ public class RunMigrationTest {
     }
   }
 
-  private void assertPreMigrationConfigs(Path configRoot, JobPersistence jobPersistence) throws IOException, JsonValidationException {
+  private void assertPreMigrationConfigs(Path configRoot, JobPersistence jobPersistence) throws Exception {
     assertDatabaseVersion(jobPersistence, INITIAL_VERSION);
     ConfigRepository configRepository = new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot));
     Map<String, StandardSourceDefinition> sourceDefinitionsBeforeMigration = configRepository.listStandardSources().stream()
@@ -132,7 +132,7 @@ public class RunMigrationTest {
     assertEquals(versionFromDb.get(), version);
   }
 
-  private void assertPostMigrationConfigs(Path importRoot) throws IOException, JsonValidationException, ConfigNotFoundException {
+  private void assertPostMigrationConfigs(Path importRoot) throws Exception {
     final ConfigRepository configRepository = new ConfigRepository(FileSystemConfigPersistence.createWithValidation(importRoot));
     final StandardSyncOperation standardSyncOperation = assertSyncOperations(configRepository);
     assertStandardSyncs(configRepository, standardSyncOperation);
@@ -293,7 +293,7 @@ public class RunMigrationTest {
     }
   }
 
-  private void runMigration(JobPersistence jobPersistence, Path configRoot) throws IOException {
+  private void runMigration(JobPersistence jobPersistence, Path configRoot) throws Exception {
     try (RunMigration runMigration = new RunMigration(
         INITIAL_VERSION,
         jobPersistence,
