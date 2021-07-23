@@ -696,10 +696,10 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   /**
-   * We create tables with IDENTITY PRIMARY KEY columns named 'id' that will generate
-   * auto-incremented ID for each new record. When importing batch of records from outside of the DB,
-   * we need to update Postgres Internal state to continue auto-incrementing from the latest value or
-   * we would risk to violate primary key constraints by inserting new records with duplicate ids.
+   * We create tables with IDENTITY PRIMARY KEY columns named 'id' that will generate auto-incremented
+   * ID for each new record. When importing batch of records from outside of the DB, we need to update
+   * Postgres Internal state to continue auto-incrementing from the latest value or we would risk to
+   * violate primary key constraints by inserting new records with duplicate ids.
    *
    * This function reset such Identity states (called SQL Sequence objects).
    */

@@ -35,7 +35,6 @@ import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import java.util.Optional;
 import java.util.function.Function;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -25,14 +25,8 @@
 package io.airbyte.config.persistence;
 
 import static io.airbyte.db.database.AirbyteConfigsTable.AIRBYTE_CONFIGS;
-import static io.airbyte.db.database.AirbyteConfigsTable.CONFIG_BLOB;
-import static io.airbyte.db.database.AirbyteConfigsTable.CONFIG_ID;
-import static io.airbyte.db.database.AirbyteConfigsTable.CONFIG_TYPE;
-import static io.airbyte.db.database.AirbyteConfigsTable.CREATED_AT;
-import static io.airbyte.db.database.AirbyteConfigsTable.UPDATED_AT;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.count;
-import static org.jooq.impl.DSL.select;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -45,12 +39,9 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.db.Database;
 import io.airbyte.db.database.ConfigsDatabaseInstance;
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
-import org.jooq.JSONB;
 import org.jooq.Record1;
 import org.jooq.Result;
 import org.junit.jupiter.api.AfterAll;

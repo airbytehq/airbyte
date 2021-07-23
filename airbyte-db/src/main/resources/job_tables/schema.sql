@@ -79,5 +79,5 @@ CREATE
     VALUES(
         'server_uuid',
         uuid_generate_v4()
-    )
-    ON CONFLICT DO NOTHING;
+    ) ON
+    CONFLICT DO NOTHING;

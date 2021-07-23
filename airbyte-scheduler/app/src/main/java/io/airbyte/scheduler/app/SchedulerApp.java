@@ -37,7 +37,6 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigPersistenceBuilder;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
 import io.airbyte.db.database.JobsDatabaseInstance;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.models.Job;
@@ -209,7 +208,7 @@ public class SchedulerApp {
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
         configs.getDatabaseUrl())
-        .get();
+            .get();
 
     final ProcessFactory processFactory = getProcessBuilderFactory(configs);
 
