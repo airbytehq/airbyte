@@ -368,7 +368,7 @@ jobs:
 
       # TODO(Issue-4915): Remove this once fix has been merged into upstream library. Rely on caching and only load credentials once.
       - name: Build Platform Docker Images
-        run: GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcs.json" SUB_BUILD=PLATFORM ./gradlew --no-daemon composebuild --scan
+        run: ./tools/bin/setup_gcs_creds.sh && GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcs.json" SUB_BUILD=PLATFORM ./gradlew --no-daemon composebuild --scan
         env:
           GOOGLE_CLOUD_STORAGE_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
 
