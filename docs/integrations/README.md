@@ -87,7 +87,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | Connector | Grade |
 |----|----|
 |[BigQuery](./destinations/bigquery.md)| Certified |
-|[Google Cloud Storage (GCS)](./destinations/s3.md)| Alpha |
+|[Google Cloud Storage (GCS)](./destinations/gcs.md)| Alpha |
 |[Google Pubsub](./destinations/pubsub.md)| Alpha |
 |[Kafka](./destinations/kafka.md)| Alpha |
 |[Local CSV](./destinations/local-csv.md)| Certified |
