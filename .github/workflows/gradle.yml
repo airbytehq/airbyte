@@ -247,30 +247,12 @@ jobs:
       #      - name: Get Docker Space
       #        run: docker run --rm busybox df -h
 
-      - name: Image Cleanup
-        run: ./tools/bin/clean_images.sh
-
-      - name: Build Platform Docker Images
-        if: success() && github.ref == 'refs/heads/master'
-        run: GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcs.json" ./gradlew composeBuild --scan
-        env:
-          GIT_REVISION: ${{ github.sha }}
-
       # make sure these always run before pushing platform docker images
       - name: Run End-to-End Acceptance Tests
-        if: success() && github.ref == 'refs/heads/master'
         run: ./tools/bin/acceptance_test.sh
 
       - name: Automatic Migration Acceptance Test
         run: MIGRATION_TEST_VERSION=$(grep VERSION .env | tr  -d "VERSION=") SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan -i
-
-      - name: Push Platform Docker Images
-        if: success() && github.ref == 'refs/heads/master'
-        run: |
-          docker login -u airbytebot -p ${DOCKER_PASSWORD}
-          VERSION=dev docker-compose -f docker-compose.build.yaml push
-        env:
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Slack Notification - Failure
         if: failure() && github.ref == 'refs/heads/master'
