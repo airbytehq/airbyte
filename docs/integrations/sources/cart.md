@@ -39,7 +39,9 @@ The Cart api has some request limitation. See [this](https://developers.cart.com
 
 ### Requirements
 
-* Cart access_token
+* AmeriCommerce account
+* Admin access
+* Access Token
 
 ### Setup guide
 
