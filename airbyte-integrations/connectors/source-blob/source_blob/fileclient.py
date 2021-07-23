@@ -27,10 +27,13 @@ from datetime import datetime
 import json
 import traceback
 from boto3 import session as boto3session
+import boto3
 import smart_open
 from azure.storage.blob import BlobServiceClient
 from botocore import UNSIGNED
 from botocore.config import Config
+from botocore.client import Config as ClientConfig
+from botocore.exceptions import NoCredentialsError
 from google.cloud.storage import Client as GCSClient
 from google.oauth2 import service_account
 from airbyte_cdk.logger import AirbyteLogger
@@ -111,8 +114,16 @@ class FileClientS3(FileClient):
     @_Decorators.init_boto_session
     def last_modified(self) -> datetime:
         """ TODO docstring """
-        obj = self._boto_s3_resource.Object(self._provider.get('bucket'), self._url)
-        return obj.last_modified
+        bucket = self._provider.get("bucket")
+        try:
+            obj = self._boto_s3_resource.Object(bucket, self._url)
+            return obj.last_modified
+        # For some reason, this standard method above doesn't work for public files with no credentials so fall back on below
+        except NoCredentialsError as nce:
+            if self.use_aws_account(self._provider):  # we don't expect this error if using credentials so throw it
+                raise nce
+            else:
+                return boto3.client("s3", config=ClientConfig(signature_version=UNSIGNED)).head_object(Bucket=bucket, Key=self._url)['LastModified']
 
     @staticmethod
     def use_aws_account(provider: dict) -> bool:
@@ -129,10 +140,8 @@ class FileClientS3(FileClient):
             aws_secret_access_key = self._provider.get("aws_secret_access_key", "")
             result = smart_open.open(f"s3://{aws_access_key_id}:{aws_secret_access_key}@{bucket}/{self._url}", mode=mode)
         else:
-            config = Config(signature_version=UNSIGNED)
-            params = {
-                "resource_kwargs": {"config": config},
-            }
+            config = ClientConfig(signature_version=UNSIGNED)
+            params = {'client': boto3.client('s3', config=config)}
             result = smart_open.open(f"s3://{bucket}/{self._url}", transport_params=params, mode=mode)
         return result
 

@@ -31,7 +31,9 @@ from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optio
 from traceback import format_exc
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from fnmatch import fnmatch
-from smart_open.s3 import _list_bucket
+from boto3 import session as boto3session
+from botocore import UNSIGNED
+from botocore.config import Config
 from .fileclient import FileClient, FileClientS3
 from .filereader import FileReaderCsv
 
@@ -111,12 +113,12 @@ class FileStream(Stream, ABC):
         """
         TODO docstring
         This needs to yield the 'url' to use in FileClient(). This is possibly better described as blob or file path. e.g.
-            For AWS: f"{self.storage_scheme}{aws_access_key_id}:{aws_secret_access_key}@{self.url}" <- self.url is what we want to yield here
+            For AWS: f"s3://{aws_access_key_id}:{aws_secret_access_key}@{self._url}" <- self._url is what we want to yield here
         """
 
-    def pattern_matched_filepath_iterator(self) -> Iterator[str]:
+    def pattern_matched_filepath_iterator(self, filepaths:Iterable[str]) -> Iterator[str]:
         """ TODO docstring """
-        for filepath in self.filepath_iterator(self.logger, self._provider):
+        for filepath in filepaths:
             for path_pattern in self._path_patterns:
                 if fnmatch(filepath, path_pattern):
                     yield filepath
@@ -133,7 +135,10 @@ class FileStream(Stream, ABC):
             # use concurrent future threads to parallelise grabbing last_modified from all the files
             # TODO: don't hardcode max_workers like this
             with concurrent.futures.ThreadPoolExecutor(max_workers=64) as executor:
-                futures = {executor.submit(get_fileclient_with_lastmod, fp): fp for fp in self.pattern_matched_filepath_iterator()}
+                futures = {
+                    executor.submit(get_fileclient_with_lastmod, fp): 
+                        fp for fp in self.pattern_matched_filepath_iterator(self.filepath_iterator(self.logger, self._provider))
+                }
                 for future in concurrent.futures.as_completed(futures):
                     fileclients.append(future.result())  # this will failfast on any errors
 
@@ -151,6 +156,8 @@ class FileStream(Stream, ABC):
             return_schema = self._get_master_schema()
 
         return_schema[self.ab_additional_col] = "object"
+        return_schema[self.ab_last_mod_col] = "string"
+        return_schema[self.ab_file_name_col] = "string"
         return return_schema
 
     def _get_master_schema(self):
@@ -177,13 +184,13 @@ class FileStream(Stream, ABC):
                         # this is to allow more leniency as we may be able to coerce this datatype mismatch on read according to provided schema state
                         # if not, then the read will error anyway
                         if col in self._schema.keys():
-                            self.logger.warn(f"Detected mismatched datatype on column '{col}', in file '{fileclient.url}'. "
+                            self.logger.warn(f"Detected mismatched datatype on column '{col}', in file '{fileclient._url}'. "
                                              + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'. "
                                              + f"Airbyte will attempt to coerce this to {master_schema[col]} on read.")
                         # else we're inferring the schema (or at least this column) from scratch and therefore throw an error on mismatching datatypes
                         else:
                             raise RuntimeError(
-                                f"Detected mismatched datatype on column '{col}', in file '{fileclient.url}'. "
+                                f"Detected mismatched datatype on column '{col}', in file '{fileclient._url}'. "
                                 + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'."
                             )
 
@@ -211,7 +218,7 @@ class FileStream(Stream, ABC):
         # and then incrementing the cursor per each complete batch
         for last_mod, fileclient in self.time_ordered_fileclient_iterator():
             yield [{
-                "unique_url": fileclient.url,
+                "unique_url": fileclient._url,
                 "last_modified": last_mod,
                 "fileclient": fileclient
             }]
@@ -341,7 +348,7 @@ class IncrementalFileStream(FileStream, ABC):
                     stream_slice.clear()
                 # now we either have an empty stream_slice or a stream_slice that this file shares a last modified with, so append it
                 stream_slice.append({
-                    "unique_url": fileclient.url,
+                    "unique_url": fileclient._url,
                     "last_modified": last_mod,
                     "fileclient": fileclient
                 })
@@ -361,9 +368,51 @@ class IncrementalFileStreamS3(IncrementalFileStream):
         return FileClientS3
 
     @staticmethod
+    def _list_bucket(provider:Mapping[str,Any], prefix: str='', accept_key=lambda k: True) -> Iterator[str]:
+        """[summary]
+
+        :param provider: [description]
+        :type provider: Mapping[str,Any]
+        :param prefix: [description], defaults to ''
+        :type prefix: str, optional
+        :param accept_key: [description], defaults to lambda k:True
+        :type accept_key: [type], optional
+        :yield: [description]
+        :rtype: Iterator[str]
+        """
+        if FileClientS3.use_aws_account(provider):
+            session = boto3session.Session(aws_access_key_id=provider["aws_access_key_id"], aws_secret_access_key=provider["aws_secret_access_key"])
+            client = session.client('s3')
+        else:
+            session = boto3session.Session()
+            client = session.client('s3', config=Config(signature_version=UNSIGNED))
+        
+        ctoken = None
+        while True:
+            # list_objects_v2 doesn't like a None value for ContinuationToken
+            # so we don't set it if we don't have one.
+            if ctoken:
+                kwargs = dict(Bucket=provider['bucket'], Prefix=prefix, ContinuationToken=ctoken)
+            else:
+                kwargs = dict(Bucket=provider['bucket'], Prefix=prefix)
+            response = client.list_objects_v2(**kwargs)
+            try:
+                content = response['Contents']
+            except KeyError:
+                pass
+            else:
+                for c in content:
+                    key = c['Key']
+                    if accept_key(key):
+                        yield key
+            ctoken = response.get('NextContinuationToken', None)
+            if not ctoken:
+                break
+
+    @staticmethod
     def filepath_iterator(logger: AirbyteLogger, provider: dict) -> Tuple[bool, Optional[Any]]:
 
-        prefix = provider["path_prefix"]
+        prefix = provider.get("path_prefix")
         if prefix is None:
             prefix = ""
 
@@ -372,10 +421,9 @@ class IncrementalFileStreamS3(IncrementalFileStream):
 
         # TODO: use FileClientS3.use_aws_account to check if we're using public or private bucket
         #   then make this work for public as well
-
-        for blob in _list_bucket(bucket_name=provider['bucket'],
-                                 aws_access_key_id=provider["aws_access_key_id"],
-                                 aws_secret_access_key=provider["aws_secret_access_key"],
-                                 prefix=prefix,
-                                 accept_key=lambda k: not k.endswith('/')):  # filter out 'folders', we just want actual blobs
+        for blob in IncrementalFileStreamS3._list_bucket(
+            provider=provider,
+            prefix=prefix,
+            accept_key=lambda k: not k.endswith('/') # filter out 'folders', we just want actual blobs
+        ): 
             yield blob

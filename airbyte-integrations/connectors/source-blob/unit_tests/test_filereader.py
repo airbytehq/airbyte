@@ -32,7 +32,7 @@ from typing import List, Mapping, Any
 
 
 LOGGER = AirbyteLogger()
-SAMPLE_DIRECTORY = Path(__file__).resolve().parent.parent.joinpath("sample_files/")
+SAMPLE_DIRECTORY = Path(__file__).resolve().parent.joinpath("sample_files/")
 
 
 class TestFileReaderStatics():
