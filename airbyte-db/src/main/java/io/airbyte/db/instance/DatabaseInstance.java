@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db.database;
+package io.airbyte.db.instance;
 
 import static org.jooq.impl.DSL.select;
 
@@ -33,9 +33,9 @@ import org.jooq.DSLContext;
 public interface DatabaseInstance {
 
   /**
-   * Get a database that is ready to be used.
+   * Get a database that has been initialized and is ready to use.
    */
-  Database get();
+  Database getInitialized();
 
   /**
    * Get an empty database and initialize it.

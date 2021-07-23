@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.db.Database;
-import io.airbyte.db.database.JobsDatabaseInstance;
+import io.airbyte.db.instance.JobsDatabaseInstance;
 import io.airbyte.scheduler.persistence.DatabaseSchema;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;

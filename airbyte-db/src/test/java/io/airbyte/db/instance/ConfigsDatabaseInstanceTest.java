@@ -22,14 +22,14 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db.database;
+package io.airbyte.db.instance;
 
-import static io.airbyte.db.database.AirbyteConfigsTable.AIRBYTE_CONFIGS;
-import static io.airbyte.db.database.AirbyteConfigsTable.CONFIG_BLOB;
-import static io.airbyte.db.database.AirbyteConfigsTable.CONFIG_ID;
-import static io.airbyte.db.database.AirbyteConfigsTable.CONFIG_TYPE;
-import static io.airbyte.db.database.AirbyteConfigsTable.CREATED_AT;
-import static io.airbyte.db.database.AirbyteConfigsTable.UPDATED_AT;
+import static io.airbyte.db.instance.AirbyteConfigsTable.AIRBYTE_CONFIGS;
+import static io.airbyte.db.instance.AirbyteConfigsTable.CONFIG_BLOB;
+import static io.airbyte.db.instance.AirbyteConfigsTable.CONFIG_ID;
+import static io.airbyte.db.instance.AirbyteConfigsTable.CONFIG_TYPE;
+import static io.airbyte.db.instance.AirbyteConfigsTable.CREATED_AT;
+import static io.airbyte.db.instance.AirbyteConfigsTable.UPDATED_AT;
 import static org.jooq.impl.DSL.select;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -89,7 +89,7 @@ class ConfigsDatabaseInstanceTest {
   public void testGet() throws Exception {
     // when the database has been initialized and loaded with data (in setup method), the get method
     // should return the database
-    database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).get();
+    database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getInitialized();
     // check table
     database.query(ctx -> ctx.fetchExists(select().from(AIRBYTE_CONFIGS)));
   }

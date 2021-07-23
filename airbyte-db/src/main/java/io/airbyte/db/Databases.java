@@ -24,8 +24,6 @@
 
 package io.airbyte.db;
 
-import static org.jooq.impl.DSL.select;
-
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.bigquery.BigQueryDatabase;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
@@ -42,24 +40,6 @@ import org.slf4j.LoggerFactory;
 public class Databases {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Databases.class);
-
-  public static final Function<Database, Boolean> IS_CONFIG_DATABASE_CONNECTED = database -> {
-    try {
-      LOGGER.info("Testing config database connection...");
-      return database.query(ctx -> ctx.fetchExists(select().from("information_schema.tables")));
-    } catch (Exception e) {
-      LOGGER.info("Unsuccessful connection to config database", e);
-      return false;
-    }
-  };
-  public static final Function<Database, Boolean> IS_CONFIG_DATABASE_LOADED_WITH_DATA = database -> {
-    try {
-      LOGGER.info("Testing if airbyte_configs has been created...");
-      return database.query(ctx -> ctx.fetchExists(select().from("airbyte_configs")));
-    } catch (Exception e) {
-      return false;
-    }
-  };
 
   public static Database createPostgresDatabase(String username, String password, String jdbcConnectionString) {
     return createDatabase(username, password, jdbcConnectionString, "org.postgresql.Driver", SQLDialect.POSTGRES);

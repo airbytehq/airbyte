@@ -27,7 +27,7 @@ package io.airbyte.db;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.airbyte.db.database.JobsDatabaseInstance;
+import io.airbyte.db.instance.JobsDatabaseInstance;
 import java.sql.SQLException;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterAll;

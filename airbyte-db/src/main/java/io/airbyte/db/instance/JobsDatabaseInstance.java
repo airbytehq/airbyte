@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db.database;
+package io.airbyte.db.instance;
 
 import static org.jooq.impl.DSL.select;
 
@@ -84,7 +84,7 @@ public class JobsDatabaseInstance implements DatabaseInstance {
   }
 
   @Override
-  public Database get() {
+  public Database getInitialized() {
     // When we don't need to setup the database, it means the database is initialized
     // somewhere else, and it is considered ready only when data has been loaded into it.
     return Databases.createPostgresDatabaseWithRetry(

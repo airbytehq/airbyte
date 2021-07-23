@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db.database;
+package io.airbyte.db.instance;
 
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.table;

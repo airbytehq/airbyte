@@ -54,10 +54,6 @@ public class ExceptionWrappingDatabase implements AutoCloseable {
     }
   }
 
-  public Database getDatabase() {
-    return database;
-  }
-
   @Override
   public void close() throws Exception {
     database.close();

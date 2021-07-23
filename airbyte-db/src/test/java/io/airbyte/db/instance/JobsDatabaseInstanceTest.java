@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db.database;
+package io.airbyte.db.instance;
 
 import static org.jooq.impl.DSL.select;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -70,7 +70,7 @@ class JobsDatabaseInstanceTest {
   public void testGet() throws Exception {
     // when the database has been initialized and loaded with data (in setup method), the get method
     // should return the database
-    database = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).get();
+    database = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getInitialized();
     // check table
     database.query(ctx -> ctx.fetchExists(select().from("airbyte_metadata")));
   }

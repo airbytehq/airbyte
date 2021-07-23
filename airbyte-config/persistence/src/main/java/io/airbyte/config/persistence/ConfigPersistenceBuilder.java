@@ -26,7 +26,7 @@ package io.airbyte.config.persistence;
 
 import io.airbyte.config.Configs;
 import io.airbyte.db.Database;
-import io.airbyte.db.database.ConfigsDatabaseInstance;
+import io.airbyte.db.instance.ConfigsDatabaseInstance;
 import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,7 +116,7 @@ public class ConfigPersistenceBuilder {
           configs.getConfigDatabaseUser(),
           configs.getConfigDatabasePassword(),
           configs.getConfigDatabaseUrl())
-              .get();
+              .getInitialized();
       dbConfigPersistence = new DatabaseConfigPersistence(database);
     }
 
