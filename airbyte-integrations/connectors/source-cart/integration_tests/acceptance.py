@@ -23,14 +23,12 @@
 #
 
 
-from setuptools import find_packages, setup
+import pytest
 
-setup(
-    name="source_slack",
-    description="Source implementation for Slack.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=["airbyte-cdk", "pytest==6.1.2", "slack_sdk==3.4.2", "pendulum>=2,<3"],
-    package_data={"": ["*.json"]},
-)
+pytest_plugins = ("source_acceptance_test.plugin",)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def connector_setup():
+    """ This fixture is a placeholder for external resources that acceptance test might require."""
+    yield

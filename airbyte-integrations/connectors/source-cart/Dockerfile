@@ -3,18 +3,14 @@ FROM python:3.7-slim
 # Bash is installed for more convenient debugging.
 RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 
-ENV CODE_PATH="source_slack"
-ENV WORKDIR=/airbyte/integration_code
-
-WORKDIR $WORKDIR
-COPY $CODE_PATH ./$CODE_PATH
-COPY setup.py ./
+WORKDIR /airbyte/integration_code
+COPY source_cart ./source_cart
 COPY main.py ./
-
+COPY setup.py ./
 RUN pip install .
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.1.9
-LABEL io.airbyte.name=airbyte/source-slack
+LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.name=airbyte/source-cart

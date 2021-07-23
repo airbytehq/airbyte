@@ -23,14 +23,11 @@
 #
 
 
-from setuptools import find_packages, setup
+import sys
 
-setup(
-    name="source_slack",
-    description="Source implementation for Slack.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=["airbyte-cdk", "pytest==6.1.2", "slack_sdk==3.4.2", "pendulum>=2,<3"],
-    package_data={"": ["*.json"]},
-)
+from airbyte_cdk.entrypoint import launch
+from source_cart import SourceCart
+
+if __name__ == "__main__":
+    source = SourceCart()
+    launch(source, sys.argv[1:])
