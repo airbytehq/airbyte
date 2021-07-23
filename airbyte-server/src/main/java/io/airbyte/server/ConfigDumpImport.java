@@ -301,8 +301,7 @@ public class ConfigDumpImport {
     }
   }
 
-  private <T> void validateJson(final T config, final ConfigSchema configType)
-      throws JsonValidationException {
+  private <T> void validateJson(final T config, final ConfigSchema configType) throws JsonValidationException {
     JsonNode schema = JsonSchemaValidator.getSchema(configType.getFile());
     jsonSchemaValidator.ensure(schema, Jsons.jsonNode(config));
   }

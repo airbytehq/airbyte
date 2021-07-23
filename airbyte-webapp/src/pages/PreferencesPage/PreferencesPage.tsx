@@ -1,13 +1,13 @@
 import React, { useEffect } from "react";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
-import { PageViewContainer } from "../../components/CenteredPageComponents";
+import { PageViewContainer } from "components/CenteredPageComponents";
 import { H1 } from "components";
 import { PreferencesForm } from "views/Settings/PreferencesForm";
-import useWorkspace from "components/hooks/services/useWorkspace";
-import styled from "styled-components";
 import HeadTitle from "components/HeadTitle";
 import { useAnalytics } from "components/hooks/useAnalytics";
+import useWorkspace from "components/hooks/services/useWorkspace";
 
 const Title = styled(H1)`
   margin-bottom: 47px;
@@ -19,7 +19,7 @@ const PreferencesPage: React.FC = () => {
     analyticsService,
   ]);
 
-  const { setInitialSetupConfig, workspace } = useWorkspace();
+  const { setInitialSetupConfig } = useWorkspace();
 
   const onSubmit = async (data: {
     email: string;
@@ -30,7 +30,6 @@ const PreferencesPage: React.FC = () => {
     await setInitialSetupConfig(data);
 
     analyticsService.track("Specified Preferences", {
-      user_id: workspace.workspaceId,
       email: data.email,
       anonymized: data.anonymousDataCollection,
       subscribed_newsletter: data.news,
