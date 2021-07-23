@@ -153,7 +153,7 @@ subprojects {
     repositories {
         mavenCentral()
         maven {
-            url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
+            url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
         }
     }
 
