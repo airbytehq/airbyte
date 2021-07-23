@@ -23,6 +23,7 @@ import { DestinationDefinitionSpecification } from "core/resources/DestinationDe
 import { Connection, ScheduleProperties } from "core/resources/Connection";
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
 import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
+import config from "config";
 
 type FormikConnectionFormValues = {
   schedule?: ScheduleProperties | null;
@@ -45,6 +46,7 @@ const SUPPORTED_MODES: [SyncMode, DestinationSyncMode][] = [
 
 const DEFAULT_TRANSFORMATION: Transformation = {
   name: "My dbt transformations",
+  workspaceId: config.ui.workspaceId,
   operatorConfiguration: {
     operatorType: OperatorType.Dbt,
     dbt: {
@@ -157,6 +159,7 @@ function mapFormPropsToOperation(
       } else {
         newOperations.push({
           name: "Normalization",
+          workspaceId: config.ui.workspaceId,
           operatorConfiguration: {
             operatorType: OperatorType.Normalization,
             normalization: {
