@@ -113,7 +113,7 @@ public class MigrationAcceptanceTest {
     Set<String> logsToExpect = new HashSet<>();
     logsToExpect.add("Version: 0.17.0-alpha");
 
-    DockerComposeContainer dockerComposeContainer = new DockerComposeContainer(firstRun)
+    final DockerComposeContainer dockerComposeContainer = new DockerComposeContainer(firstRun)
         .withLogConsumer("server", logConsumerForServer(logsToExpect))
         .withEnv(environmentVariables);
     try {
@@ -122,8 +122,7 @@ public class MigrationAcceptanceTest {
        * {@link org.testcontainers.containers.DockerComposeContainer#stop()} method also deletes the
        * volume but we dont want to delete the volume to test the automatic migration
        */
-      CustomDockerComposeContainer customDockerComposeContainer = new CustomDockerComposeContainer(
-          dockerComposeContainer);
+      final CustomDockerComposeContainer customDockerComposeContainer = new CustomDockerComposeContainer(dockerComposeContainer);
 
       customDockerComposeContainer.start();
 
