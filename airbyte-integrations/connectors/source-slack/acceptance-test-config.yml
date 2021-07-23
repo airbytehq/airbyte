@@ -12,13 +12,13 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/full_refresh_catalog.json"
-      validate_output_from_all_streams: yes
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       timeout_seconds: 3600
       cursor_paths:
         channel_messages: ["float_ts"]
+        threads: ["float_ts"]
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/full_refresh_catalog.json"
