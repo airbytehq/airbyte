@@ -97,7 +97,7 @@ public class MigrationAcceptanceTest {
           logs.remove(keyToRemove);
         }
 
-        LOGGER.info(log.trim());
+        LOGGER.info(log);
       }
     };
   }
