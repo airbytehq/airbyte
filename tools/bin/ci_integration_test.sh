@@ -9,9 +9,6 @@ set -e
 connector="$1"
 all_integration_tests=$(./gradlew integrationTest --dry-run | grep 'integrationTest SKIPPED' | cut -d: -f 4)
 
-
-export GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcs.json"
-
 if [[ "$connector" == "all" ]] ; then
   echo "Running: ./gradlew --no-daemon --scan integrationTest"
   ./gradlew --no-daemon --scan integrationTest
