@@ -221,7 +221,7 @@ jobs:
         run: python3 -m pip install virtualenv==16.7.9 --user
 
       - name: Format
-        run: ./tools/bin/setup_gcs_creds.sh && env | grep GOOGLE && SUB_BUILD=PLATFORM ./gradlew format --scan --info --stacktrace
+        run: ./tools/bin/setup_gcs_creds.sh && GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcs.json" SUB_BUILD=PLATFORM ./gradlew format --scan --info --stacktrace
         env:
           GOOGLE_CLOUD_STORAGE_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
 
