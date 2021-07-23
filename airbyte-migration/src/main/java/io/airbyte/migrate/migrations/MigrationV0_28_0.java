@@ -43,10 +43,8 @@ public class MigrationV0_28_0 extends BaseMigration implements Migration {
   private static final UUID DEFAULT_WORKSPACE_ID = UUID.fromString("5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6");
 
   private static final ResourceId CONNECTION_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
-  private static final ResourceId SOURCE_RESOURCE_ID = ResourceId
-      .fromConstantCase(ResourceType.CONFIG, "SOURCE_CONNECTION");
-  private static final ResourceId OPERATION_RESOURCE_ID = ResourceId
-      .fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC_OPERATION");
+  private static final ResourceId SOURCE_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "SOURCE_CONNECTION");
+  private static final ResourceId OPERATION_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC_OPERATION");
 
   private static final String MIGRATION_VERSION = "0.28.0-alpha";
   @VisibleForTesting
@@ -62,7 +60,7 @@ public class MigrationV0_28_0 extends BaseMigration implements Migration {
     return MIGRATION_VERSION;
   }
 
-  private static final Path RESOURCE_PATH = Path.of("migrations/migrationV0_28_0/");
+  private static final Path RESOURCE_PATH = Path.of("migrations/migrationV0_28_0/airbyte_config");
 
   @Override
   public Map<ResourceId, JsonNode> getOutputSchema() {
