@@ -3,11 +3,11 @@ import { Redirect, Route, Switch } from "react-router-dom";
 import { NetworkErrorBoundary as ErrorBoundary } from "rest-hooks";
 
 import { Routes } from "../routes";
-import LoadingPage from "../../components/LoadingPage";
+import LoadingPage from "components/LoadingPage";
+import ConnectionPage from "pages/ConnectionPage";
 import AllSourcesPage from "./pages/AllSourcesPage";
 import CreateSourcePage from "./pages/CreateSourcePage";
 import SourceItemPage from "./pages/SourceItemPage";
-import ConnectionPage from "../ConnectionPage";
 
 const FallbackRootRedirector = () => <Redirect to={Routes.Root} />;
 
