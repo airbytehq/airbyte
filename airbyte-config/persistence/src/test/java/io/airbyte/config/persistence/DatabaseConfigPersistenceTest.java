@@ -24,12 +24,12 @@
 
 package io.airbyte.config.persistence;
 
-import static io.airbyte.config.persistence.AirbyteConfigsTable.AIRBYTE_CONFIGS;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.CONFIG_BLOB;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.CONFIG_ID;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.CONFIG_TYPE;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.CREATED_AT;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.UPDATED_AT;
+import static io.airbyte.db.database.AirbyteConfigsTable.AIRBYTE_CONFIGS;
+import static io.airbyte.db.database.AirbyteConfigsTable.CONFIG_BLOB;
+import static io.airbyte.db.database.AirbyteConfigsTable.CONFIG_ID;
+import static io.airbyte.db.database.AirbyteConfigsTable.CONFIG_TYPE;
+import static io.airbyte.db.database.AirbyteConfigsTable.CREATED_AT;
+import static io.airbyte.db.database.AirbyteConfigsTable.UPDATED_AT;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.count;
 import static org.jooq.impl.DSL.select;
@@ -91,19 +91,6 @@ public class DatabaseConfigPersistenceTest extends BaseTest {
   @AfterEach
   void tearDown() throws Exception {
     database.close();
-  }
-
-  @Test
-  public void testInitialize() throws Exception {
-    // check table
-    database.query(ctx -> ctx.fetchExists(select().from(AIRBYTE_CONFIGS)));
-    // check columns (if any of the column does not exist, the query will throw exception)
-    database.query(ctx -> ctx.fetchExists(select().from(AIRBYTE_CONFIGS).where(CONFIG_ID.eq("ID"))));
-    database.query(ctx -> ctx.fetchExists(select().from(AIRBYTE_CONFIGS).where(CONFIG_TYPE.eq("TYPE"))));
-    database.query(ctx -> ctx.fetchExists(select().from(AIRBYTE_CONFIGS).where(CONFIG_BLOB.eq(JSONB.valueOf("{}")))));
-    Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(System.currentTimeMillis()));
-    database.query(ctx -> ctx.fetchExists(select().from(AIRBYTE_CONFIGS).where(CREATED_AT.eq(timestamp))));
-    database.query(ctx -> ctx.fetchExists(select().from(AIRBYTE_CONFIGS).where(UPDATED_AT.eq(timestamp))));
   }
 
   @Test

@@ -1,5 +1,8 @@
 package io.airbyte.db.database;
 
+import static io.airbyte.db.database.AirbyteConfigsTable.AIRBYTE_CONFIGS;
+import static org.jooq.impl.DSL.asterisk;
+import static org.jooq.impl.DSL.count;
 import static org.jooq.impl.DSL.select;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -15,22 +18,6 @@ import org.slf4j.LoggerFactory;
 public class ConfigsDatabaseInstance implements DatabaseInstance {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigsDatabaseInstance.class);
-  private static final Function<Database, Boolean> IS_CONFIGS_DATABASE_CONNECTED = database -> {
-    try {
-      LOGGER.info("Testing configs database connection...");
-      return database.query(ctx -> ctx.fetchExists(select().from("information_schema.tables")));
-    } catch (Exception e) {
-      return false;
-    }
-  };
-  private static final Function<Database, Boolean> IS_CONFIGS_DATABASE_READY = database -> {
-    try {
-      LOGGER.info("Testing if airbyte_configs has been created...");
-      return database.query(ctx -> ctx.fetchExists(select().from("airbyte_configs")));
-    } catch (Exception e) {
-      return false;
-    }
-  };
 
   private final String username;
   private final String password;
@@ -59,11 +46,19 @@ public class ConfigsDatabaseInstance implements DatabaseInstance {
   public Database get() {
     // When we don't need to setup the database, it means the database is initialized
     // somewhere else, and it is considered ready only when data has been loaded into it.
+    Function<Database, Boolean> isConfigsDatabaseReady = database -> {
+      try {
+        LOGGER.info("Testing if airbyte_configs has been created and seeded...");
+        return database.query(ctx -> ctx.fetchExists(select().from("airbyte_configs")));
+      } catch (Exception e) {
+        return false;
+      }
+    };
     return Databases.createPostgresDatabaseWithRetry(
         username,
         password,
         connectionString,
-        IS_CONFIGS_DATABASE_READY);
+        isConfigsDatabaseReady);
   }
 
   @Override
@@ -71,15 +66,24 @@ public class ConfigsDatabaseInstance implements DatabaseInstance {
     // When we need to setup the database, it means the database will be initialized after
     // we connect to the database. So the database itself is considered ready as long as
     // the connection is alive.
+    Function<Database, Boolean> isConfigsDatabaseConnected = database -> {
+      try {
+        LOGGER.info("Testing configs database connection...");
+        return database.query(ctx -> ctx.fetchExists(select().from("information_schema.tables")));
+      } catch (Exception e) {
+        return false;
+      }
+    };
     Database database = Databases.createPostgresDatabaseWithRetry(
         username,
         password,
         connectionString,
-        IS_CONFIGS_DATABASE_CONNECTED);
+        isConfigsDatabaseConnected);
 
     new ExceptionWrappingDatabase(database).transaction(ctx -> {
       boolean hasConfigsTable = DatabaseInstance.hasTable(ctx, "airbyte_configs");
       if (hasConfigsTable) {
+        LOGGER.info("Configs database has been initialized");
         return null;
       }
       LOGGER.info("Configs database has not been initialized; initializing tables with schema: {}", schema);

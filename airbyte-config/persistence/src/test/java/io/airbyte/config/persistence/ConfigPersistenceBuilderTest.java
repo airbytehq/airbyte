@@ -24,13 +24,13 @@
 
 package io.airbyte.config.persistence;
 
-import static io.airbyte.config.persistence.AirbyteConfigsTable.AIRBYTE_CONFIGS;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.AIRBYTE_CONFIGS_TABLE_SCHEMA;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.CONFIG_BLOB;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.CONFIG_ID;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.CONFIG_TYPE;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.CREATED_AT;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.UPDATED_AT;
+import static io.airbyte.db.database.AirbyteConfigsTable.AIRBYTE_CONFIGS;
+import static io.airbyte.db.database.AirbyteConfigsTable.AIRBYTE_CONFIGS_TABLE_SCHEMA;
+import static io.airbyte.db.database.AirbyteConfigsTable.CONFIG_BLOB;
+import static io.airbyte.db.database.AirbyteConfigsTable.CONFIG_ID;
+import static io.airbyte.db.database.AirbyteConfigsTable.CONFIG_TYPE;
+import static io.airbyte.db.database.AirbyteConfigsTable.CREATED_AT;
+import static io.airbyte.db.database.AirbyteConfigsTable.UPDATED_AT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;

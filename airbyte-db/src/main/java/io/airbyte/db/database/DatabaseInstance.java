@@ -8,8 +8,14 @@ import org.jooq.DSLContext;
 
 public interface DatabaseInstance {
 
+  /**
+   * Get a database that is ready to be used.
+   */
   Database get();
 
+  /**
+   * Get an empty database and initialize it.
+   */
   Database getAndInitialize() throws IOException;
 
   static boolean hasTable(DSLContext ctx, String tableName) {

@@ -88,6 +88,7 @@ public class JobsDatabaseInstance implements DatabaseInstance {
           DatabaseInstance.hasTable(ctx, "jobs") &&
           DatabaseInstance.hasTable(ctx, "attempts");
       if (hasTables) {
+        LOGGER.info("Jobs database has been initialized");
         return null;
       }
       LOGGER.info("Jobs database has not been initialized; initializing tables with schema: {}", schema);

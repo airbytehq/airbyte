@@ -105,9 +105,6 @@ public class ConfigPersistenceBuilder {
 
     DatabaseConfigPersistence dbConfigPersistence;
     if (setupDatabase) {
-      // When we need to setup the database, it means the database will be initialized after
-      // we connect to the database. So the database itself is considered ready as long as
-      // the connection is alive.
       Database database = new ConfigsDatabaseInstance(
           configs.getConfigDatabaseUser(),
           configs.getConfigDatabasePassword(),
@@ -116,13 +113,11 @@ public class ConfigPersistenceBuilder {
       dbConfigPersistence = new DatabaseConfigPersistence(database)
           .loadData(seedConfigPersistence);
     } else {
-      // When we don't need to setup the database, it means the database is initialized
-      // somewhere else, and it is considered ready only when data has been loaded into it.
-      Database database = Databases.createPostgresDatabaseWithRetry(
+      Database database = new ConfigsDatabaseInstance(
           configs.getConfigDatabaseUser(),
           configs.getConfigDatabasePassword(),
-          configs.getConfigDatabaseUrl(),
-          Databases.IS_CONFIG_DATABASE_LOADED_WITH_DATA);
+          configs.getConfigDatabaseUrl())
+          .get();
       dbConfigPersistence = new DatabaseConfigPersistence(database);
     }
 
