@@ -16,8 +16,12 @@ docker login -u airbytebot -p $DOCKER_PASSWORD
 VERSION=$TAG ./gradlew composeBuild
 VERSION=$TAG docker-compose -f docker-compose.build.yaml push
 
-sed -i .bak 's/default/'$NAMESPACE'/g' kube/overlays/dev/kustomization.yaml
-sed -i .bak 's/dev/'$TAG'/g' kube/overlays/dev/kustomization.yaml
+# For running on Mac
+#sed -i .bak 's/default/'$NAMESPACE'/g' kube/overlays/dev/kustomization.yaml
+#sed -i .bak 's/dev/'$TAG'/g' kube/overlays/dev/kustomization.yaml
+
+sed -i 's/default/'$NAMESPACE'/g' kube/overlays/dev/kustomization.yaml
+sed -i 's/dev/'$TAG'/g' kube/overlays/dev/kustomization.yaml
 
 kubectl create namespace $NAMESPACE
 kubectl config set-context --current --namespace=$NAMESPACE
