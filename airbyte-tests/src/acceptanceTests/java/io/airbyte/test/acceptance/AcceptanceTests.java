@@ -38,6 +38,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
+import com.google.common.io.Resources;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.JobsApi;
 import io.airbyte.api.client.invoker.ApiClient;
@@ -92,9 +93,14 @@ import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -136,9 +142,10 @@ import org.testcontainers.utility.MountableFile;
 public class AcceptanceTests {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AcceptanceTests.class);
-
+  private static final Charset UTF8 = StandardCharsets.UTF_8;
   private static final boolean IS_KUBE = System.getenv().containsKey("KUBE");
   private static final boolean IS_MINIKUBE = System.getenv().containsKey("IS_MINIKUBE");
+  private static final boolean IS_GKE = System.getenv().containsKey("IS_GKE");
 
   private static final String OUTPUT_NAMESPACE_PREFIX = "output_namespace_";
   private static final String OUTPUT_NAMESPACE = OUTPUT_NAMESPACE_PREFIX + "${SOURCE_NAMESPACE}";
@@ -163,19 +170,26 @@ public class AcceptanceTests {
 
   @BeforeAll
   public static void init() {
-    sourcePsql = new PostgreSQLContainer("postgres:13-alpine")
-        .withUsername(SOURCE_USERNAME)
-        .withPassword(SOURCE_PASSWORD);
-    sourcePsql.start();
+    if (!IS_GKE) {
+      sourcePsql = new PostgreSQLContainer("postgres:13-alpine")
+          .withUsername(SOURCE_USERNAME)
+          .withPassword(SOURCE_PASSWORD);
+      sourcePsql.start();
+    }
   }
 
   @AfterAll
   public static void end() {
-    sourcePsql.stop();
+    if (IS_GKE && !IS_KUBE) {
+      throw new RuntimeException("KUBE Flag should also be enabled if GKE flag is enabled");
+    }
+    if (!IS_GKE) {
+      sourcePsql.stop();
+    }
   }
 
   @BeforeEach
-  public void setup() throws ApiException {
+  public void setup() throws ApiException, URISyntaxException, SQLException, IOException {
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
             .setHost("localhost")
@@ -191,9 +205,10 @@ public class AcceptanceTests {
             .destinationDefinitionId(UUID.fromString("25c5221d-dce2-4163-ade9-739ef790f503")));
     LOGGER.info("pg source definition: {}", sourceDef.getDockerImageTag());
     LOGGER.info("pg destination definition: {}", destinationDef.getDockerImageTag());
-
-    destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
-    destinationPsql.start();
+    if (!IS_GKE) {
+      destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
+      destinationPsql.start();
+    }
 
     sourceIds = Lists.newArrayList();
     connectionIds = Lists.newArrayList();
@@ -201,13 +216,28 @@ public class AcceptanceTests {
     operationIds = Lists.newArrayList();
 
     // seed database.
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
+    if (IS_GKE) {
+      final Database database = getSourceDatabase();
+      final Path path = Path.of(Resources.getResource("postgres_init.sql").toURI());
+      StringBuilder query = new StringBuilder();
+      for (String line : java.nio.file.Files.readAllLines(path, UTF8)) {
+        if (line != null && !line.isEmpty()) {
+          query.append(line);
+        }
+      }
+      database.query(context -> context.execute(query.toString()));
+    } else {
+      PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
+    }
   }
 
   @AfterEach
   public void tearDown() throws ApiException, SQLException {
-    clearDbData(sourcePsql);
-    destinationPsql.stop();
+    clearSourceDbData();
+    clearDestinationDbData();
+    if (!IS_GKE) {
+      destinationPsql.stop();
+    }
 
     for (UUID sourceId : sourceIds) {
       deleteSource(sourceId);
@@ -402,7 +432,7 @@ public class AcceptanceTests {
 
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
-    assertSourceAndDestinationDbInSync(sourcePsql, false);
+    assertSourceAndDestinationDbInSync(false);
   }
 
   @Test
@@ -435,10 +465,10 @@ public class AcceptanceTests {
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
     LOGGER.info("state after sync 1: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
-    assertSourceAndDestinationDbInSync(sourcePsql, false);
+    assertSourceAndDestinationDbInSync(false);
 
     // add new records and run again.
-    final Database source = getDatabase(sourcePsql);
+    final Database source = getSourceDatabase();
     // get contents of source before mutating records.
     final List<JsonNode> expectedRecords = retrieveSourceRecords(source, STREAM_NAME);
     expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "geralt").build()));
@@ -470,7 +500,7 @@ public class AcceptanceTests {
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead3.getJob());
     LOGGER.info("state after sync 3: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
-    assertSourceAndDestinationDbInSync(sourcePsql, false);
+    assertSourceAndDestinationDbInSync(false);
   }
 
   @Test
@@ -497,7 +527,7 @@ public class AcceptanceTests {
     // if the wait isn't long enough, failures say "Connection refused" because the assert kills the
     // syncs in progress
     sleep(Duration.ofMinutes(4).toMillis());
-    assertSourceAndDestinationDbInSync(sourcePsql, false);
+    assertSourceAndDestinationDbInSync(false);
   }
 
   @Test
@@ -522,7 +552,7 @@ public class AcceptanceTests {
 
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
-    assertSourceAndDestinationDbInSync(sourcePsql, false);
+    assertSourceAndDestinationDbInSync(false);
   }
 
   @Test
@@ -547,7 +577,7 @@ public class AcceptanceTests {
 
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
-    assertSourceAndDestinationDbInSync(sourcePsql, false);
+    assertSourceAndDestinationDbInSync(false);
   }
 
   @Test
@@ -575,10 +605,10 @@ public class AcceptanceTests {
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
 
-    assertSourceAndDestinationDbInSync(sourcePsql, true);
+    assertSourceAndDestinationDbInSync(true);
 
     // add new records and run again.
-    final Database source = getDatabase(sourcePsql);
+    final Database source = getSourceDatabase();
     final List<JsonNode> expectedRawRecords = retrieveSourceRecords(source, STREAM_NAME);
     expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "sherif").build()));
     expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 7).put(COLUMN_NAME, "chris").build()));
@@ -774,12 +804,12 @@ public class AcceptanceTests {
     return apiClient.getSourceApi().discoverSchemaForSource(new SourceIdRequestBody().sourceId(sourceId)).getCatalog();
   }
 
-  private void assertSourceAndDestinationDbInSync(PostgreSQLContainer sourceDb, boolean withScdTable) throws Exception {
-    final Database source = getDatabase(sourceDb);
+  private void assertSourceAndDestinationDbInSync(boolean withScdTable) throws Exception {
+    final Database source = getSourceDatabase();
 
     final Set<SchemaTableNamePair> sourceTables = listAllTables(source);
     final Set<SchemaTableNamePair> sourceTablesWithRawTablesAdded = addAirbyteGeneratedTables(withScdTable, sourceTables);
-    final Database destination = getDatabase(destinationPsql);
+    final Database destination = getDestinationDatabase();
     final Set<SchemaTableNamePair> destinationTables = listAllTables(destination);
     assertEquals(sourceTablesWithRawTablesAdded, destinationTables,
         String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceTables, destinationTables));
@@ -788,6 +818,20 @@ public class AcceptanceTests {
       final List<JsonNode> sourceRecords = retrieveSourceRecords(source, pair.getFullyQualifiedTableName());
       assertRawDestinationContains(sourceRecords, pair);
     }
+  }
+
+  private Database getSourceDatabase() {
+    if (IS_KUBE && IS_GKE) {
+      return GKEPostgresConfig.getSourceDatabase();
+    }
+    return getDatabase(sourcePsql);
+  }
+
+  private Database getDestinationDatabase() {
+    if (IS_KUBE && IS_GKE) {
+      return GKEPostgresConfig.getDestinationDatabase();
+    }
+    return getDatabase(destinationPsql);
   }
 
   private Database getDatabase(PostgreSQLContainer db) {
@@ -841,7 +885,7 @@ public class AcceptanceTests {
   }
 
   private void assertNormalizedDestinationContains(final List<JsonNode> sourceRecords) throws Exception {
-    final Database destination = getDatabase(destinationPsql);
+    final Database destination = getDestinationDatabase();
     final String finalDestinationTable = String.format("%spublic.%s%s", OUTPUT_NAMESPACE_PREFIX, OUTPUT_STREAM_PREFIX, STREAM_NAME.replace(".", "_"));
     final List<JsonNode> destinationRecords = retrieveSourceRecords(destination, finalDestinationTable);
 
@@ -943,7 +987,7 @@ public class AcceptanceTests {
   }
 
   private List<JsonNode> retrieveRawDestinationRecords(SchemaTableNamePair pair) throws Exception {
-    final Database destination = getDatabase(destinationPsql);
+    final Database destination = getDestinationDatabase();
     final Set<SchemaTableNamePair> namePairs = listAllTables(destination);
 
     final String rawStreamName = String.format("_airbyte_raw_%s%s", OUTPUT_STREAM_PREFIX, pair.tableName.replace(".", "_"));
@@ -954,55 +998,56 @@ public class AcceptanceTests {
   }
 
   private JsonNode getSourceDbConfig() {
-    return getDbConfig(sourcePsql);
+    return getDbConfig(sourcePsql, false, false, Type.SOURCE);
   }
 
   private JsonNode getDestinationDbConfig() {
-    return getDbConfig(destinationPsql, false, true);
+    return getDbConfig(destinationPsql, false, true, Type.DESTINATION);
   }
 
   private JsonNode getDestinationDbConfigWithHiddenPassword() {
-    return getDbConfig(destinationPsql, true, true);
+    return getDbConfig(destinationPsql, true, true, Type.DESTINATION);
   }
 
-  private JsonNode getDbConfig(PostgreSQLContainer psql) {
-    return getDbConfig(psql, false, false);
-  }
-
-  private JsonNode getDbConfig(PostgreSQLContainer psql, boolean hiddenPassword, boolean withSchema) {
+  private JsonNode getDbConfig(PostgreSQLContainer psql, boolean hiddenPassword, boolean withSchema, Type connectorType) {
     try {
-      final Map<Object, Object> dbConfig = new HashMap<>();
-
-      // don't use psql.getHost() directly since the ip we need differs depending on environment
-      if (IS_KUBE) {
-        if (IS_MINIKUBE) {
-          // used with minikube driver=none instance
-          dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress());
-        } else {
-          // used on a single node with docker driver
-          dbConfig.put("host", "host.docker.internal");
-        }
-      } else {
-        dbConfig.put("host", "localhost");
-      }
-
-      if (hiddenPassword) {
-        dbConfig.put("password", "**********");
-      } else {
-        dbConfig.put("password", psql.getPassword());
-      }
-
-      dbConfig.put("port", psql.getFirstMappedPort());
-      dbConfig.put("database", psql.getDatabaseName());
-      dbConfig.put("username", psql.getUsername());
-
-      if (withSchema) {
-        dbConfig.put("schema", "public");
-      }
+      final Map<Object, Object> dbConfig = (IS_KUBE && IS_GKE) ? GKEPostgresConfig.dbConfig(connectorType, hiddenPassword, withSchema)
+          : localConfig(psql, hiddenPassword, withSchema);
       return Jsons.jsonNode(dbConfig);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private Map<Object, Object> localConfig(PostgreSQLContainer psql, boolean hiddenPassword, boolean withSchema) throws UnknownHostException {
+    final Map<Object, Object> dbConfig = new HashMap<>();
+    // don't use psql.getHost() directly since the ip we need differs depending on environment
+    if (IS_KUBE) {
+      if (IS_MINIKUBE) {
+        // used with minikube driver=none instance
+        dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress());
+      } else {
+        // used on a single node with docker driver
+        dbConfig.put("host", "host.docker.internal");
+      }
+    } else {
+      dbConfig.put("host", "localhost");
+    }
+
+    if (hiddenPassword) {
+      dbConfig.put("password", "**********");
+    } else {
+      dbConfig.put("password", psql.getPassword());
+    }
+
+    dbConfig.put("port", psql.getFirstMappedPort());
+    dbConfig.put("database", psql.getDatabaseName());
+    dbConfig.put("username", psql.getUsername());
+
+    if (withSchema) {
+      dbConfig.put("schema", "public");
+    }
+    return dbConfig;
   }
 
   private SourceRead createPostgresSource() throws ApiException {
@@ -1032,11 +1077,19 @@ public class AcceptanceTests {
         .getSourceDefinitionId();
   }
 
-  private void clearDbData(PostgreSQLContainer db) throws SQLException {
-    final Database database = getDatabase(db);
+  private void clearSourceDbData() throws SQLException {
+    final Database database = getSourceDatabase();
     final Set<SchemaTableNamePair> pairs = listAllTables(database);
     for (SchemaTableNamePair pair : pairs) {
-      database.query(context -> context.execute(String.format("DELETE FROM %s.%s", pair.schemaName, pair.tableName)));
+      database.query(context -> context.execute(String.format("DROP TABLE %s.%s", pair.schemaName, pair.tableName)));
+    }
+  }
+
+  private void clearDestinationDbData() throws SQLException {
+    final Database database = getDestinationDatabase();
+    final Set<SchemaTableNamePair> pairs = listAllTables(database);
+    for (SchemaTableNamePair pair : pairs) {
+      database.query(context -> context.execute(String.format("DROP TABLE %s.%s", pair.schemaName, pair.tableName)));
     }
   }
 
@@ -1092,6 +1145,11 @@ public class AcceptanceTests {
       sleep(1000);
     }
     return connectionState;
+  }
+
+  public enum Type {
+    SOURCE,
+    DESTINATION
   }
 
 }
