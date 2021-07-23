@@ -9,10 +9,10 @@ You can choose if this connector will copy only the new or updated data, or all 
 
 This Source is capable of syncing the following core Streams:
 
-* [CustomersCart](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1customers/get) (Incremental)
-* [Orders](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1orders/get) (Incremental)
-* [OrderPayments](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1order_payments/get) (Incremental)
-* [Products](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1products/get) (Incremental)
+* [CustomersCart](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1customers/get)
+* [Orders](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1orders/get)
+* [OrderPayments](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1order_payments/get)
+* [Products](https://developers.cart.com/docs/rest-api/restapi.json/paths/~1products/get)
 
 ### Data type mapping
 
