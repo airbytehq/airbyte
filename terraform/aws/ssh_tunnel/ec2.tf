@@ -33,15 +33,18 @@ resource "aws_instance" "dbtunnel-bastion" {
   }
 }
 
+# We're using this for connector testing for now since dns isn't ready.
 resource "aws_eip" "dbtunnel-eip" {
   vpc = true
   instance = aws_instance.dbtunnel-bastion.id
 }
 
+# TODO: This zone isn't publically resolveable so this ended up not working out right.
 data "aws_route53_zone" "selected" {
   name         = "dev.dataline.io."
 }
 
+# TODO: This zone isn't publically resolveable so this ended up not working out right.
 resource "aws_route53_record" "proxy_cname" {
   name    = "dbtunnel-bastion.${data.aws_route53_zone.selected.name}"
   type    = "A"
@@ -49,5 +52,4 @@ resource "aws_route53_record" "proxy_cname" {
   ttl     = "300"
   records = [aws_instance.dbtunnel-bastion.public_ip]
 }
-
 
