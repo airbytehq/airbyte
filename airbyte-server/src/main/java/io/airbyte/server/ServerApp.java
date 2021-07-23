@@ -161,7 +161,7 @@ public class ServerApp implements ServerRunnable {
     }
   }
 
-  public static ServerRunnable getServer(ServerFactory.Api apiFactory) throws Exception {
+  public static ServerRunnable getServer(ServerFactory apiFactory) throws Exception {
     final Configs configs = new EnvConfigs();
 
     MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, LogClientSingleton.getServerLogsRoot(configs).toString());
