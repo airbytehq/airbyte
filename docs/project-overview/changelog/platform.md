@@ -6,6 +6,18 @@ description: Be sure to not miss out on new features and improvements!
 
 This is the changelog for Airbyte Platform. For our connector changelog, please visit our [Connector Changelog](connectors.md) page.
 
+## [07-22-2021 - 0.28.0](https://github.com/airbytehq/airbyte/releases/tag/v0.28.0-alpha)
+* Acceptance test dependencies fixed.
+
+## [07-22-2021 - 0.27.5](https://github.com/airbytehq/airbyte/releases/tag/v0.27.5-alpha)
+* Fixed unreliable logging on Kubernetes deployments.
+* Introduced pre-commit to auto-format files on commits.
+
+## [07-21-2021 - 0.27.4](https://github.com/airbytehq/airbyte/releases/tag/v0.27.4-alpha)
+* Config persistence is now migrated to the internal Airbyte database.
+* Source connector ports now properly close when deployed on Kubernetes.
+* Missing dependencies added that allow acceptance tests to run.
+
 ## [07-15-2021 - 0.27.3](https://github.com/airbytehq/airbyte/releases/tag/v0.27.3-alpha)
 * Fixed some minor API spec errors.
 
