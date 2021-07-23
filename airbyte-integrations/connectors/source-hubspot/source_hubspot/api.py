@@ -27,7 +27,7 @@ import sys
 import time
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
-from functools import partial
+from functools import partial, cached_property
 from http import HTTPStatus
 from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
@@ -40,16 +40,16 @@ from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, Hubsp
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
 
-VALID_JSON_SCHEMA_TYPES = {"string", "integer", "number", "boolean", "object", "array", "bit"}
+VALID_JSON_SCHEMA_TYPES = {"string", "integer", "number", "boolean", "object", "array"}
 
 KNOWN_CONVERTIBLE_SCHEMA_TYPES = {
-    "bool": "boolean",
-    "enumeration": "string",
-    "date": "string",
-    "date-time": "string",
-    "datetime": "string",
-    "json": "object",
-    "phone_number": "string",
+    "bool": ("boolean", None),
+    "enumeration": ("string", None),
+    "date": ("string", "date-time"),
+    "date-time": ("string", "date-time"),
+    "datetime": ("string", "date-time"),
+    "json": ("string", None),
+    "phone_number": ("string", None),
 }
 
 
@@ -305,7 +305,7 @@ class Stream(ABC):
 
         yield from self._filter_dynamic_fields(self._filter_old_records(self._transform(self._read(getter, params))))
 
-    @property
+    @cached_property
     def properties(self) -> Mapping[str, Any]:
         """Some entities has dynamic set of properties, so we trying to resolve those at runtime"""
         if not self.entity:
@@ -313,14 +313,27 @@ class Stream(ABC):
 
         props = {}
         data = self._api.get(f"/properties/v2/{self.entity}/properties")
+
         for row in data:
+
             field_type = row["type"]
-            if field_type not in VALID_JSON_SCHEMA_TYPES:
-                field_type = KNOWN_CONVERTIBLE_SCHEMA_TYPES.get(field_type) or None
+
+            if field_type in VALID_JSON_SCHEMA_TYPES:
+                field_props = {"type": field_type}
+            else:
+                field_type, field_format = KNOWN_CONVERTIBLE_SCHEMA_TYPES.get(field_type) or (None, None)
+
                 if not field_type:
-                    logger.warn(f"Unsupported type {field_type} converted to string")
-                    field_type = "string"
-            props[row["name"]] = {"type": field_type}
+                    logger.warn(f"Unsupported type {field_type} found")
+
+                field_props = {
+                    "type": field_type,
+                }
+
+                if field_format:
+                    field_props["format"] = field_format
+
+            props[row["name"]] = field_props
 
         return props
 
