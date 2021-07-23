@@ -1,5 +1,8 @@
 #!/bin/bash -e
 
+# Apply security patches
+sudo yum update -y
+
 # Create a non-root user for use by the airbyte connectors.
 sudo adduser airbyte -m
 sudo su - airbyte bash -c "mkdir ~/.ssh && chmod 700 ~/.ssh && touch ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
