@@ -221,13 +221,17 @@ jobs:
         run: python3 -m pip install virtualenv==16.7.9 --user
 
       - name: Format
-        run: SUB_BUILD=PLATFORM ./gradlew format --scan --info --stacktrace
+        run: ./tools/bin/setup_gcs_cred.sh && SUB_BUILD=PLATFORM ./gradlew format --scan --info --stacktrace
+        env:
+          GOOGLE_CLOUD_STORAGE_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
 
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
 
       - name: Build
-        run: SUB_BUILD=PLATFORM ./gradlew build --scan
+        run: ./tools/bin/setup_gcs_cred.sh && SUB_BUILD=PLATFORM ./gradlew build --scan
+        env:
+          GOOGLE_CLOUD_STORAGE_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
 
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
