@@ -1,11 +1,12 @@
-import { JSONSchema7 } from "json-schema";
 import * as yup from "yup";
+
 import { buildYupFormForJsonSchema } from "./schemaToYup";
+import { AirbyteJSONSchema } from "./types";
 
 // Note: We have to check yup schema with JSON.stringify
 // as exactly same objects throw now equality due to `Received: serializes to the same string` error
 test("should build schema for simple case", () => {
-  const schema: JSONSchema7 = {
+  const schema: AirbyteJSONSchema = {
     type: "object",
     title: "Postgres Source Spec",
     required: ["host", "port", "user", "dbname", "is_field_no_default"],

@@ -12,6 +12,7 @@ import { PropertySection } from "./PropertySection";
 import { useServiceForm } from "../serviceFormContext";
 import GroupControls from "components/GroupControls";
 import { naturalComparator } from "utils/objects";
+import { IDataItem } from "components/base/DropDown/components/Option";
 
 function OrderComparator(a: FormBlock, b: FormBlock): number {
   const aIsNumber = Number.isInteger(a.order);
@@ -60,8 +61,7 @@ const ConditionSection: React.FC<{
     [formField.conditions]
   );
   const onOptionChange = useCallback(
-    (selectedItem: any) =>
-      selectedItem &&
+    (selectedItem: IDataItem) =>
       setUiWidgetsInfo(formField.path, {
         selectedItem: selectedItem.value,
       }),
@@ -160,15 +160,15 @@ const FormSection: React.FC<{
   blocks: FormBlock[] | FormBlock;
   path?: string;
   skipAppend?: boolean;
-}> = ({ blocks, path, skipAppend }) => {
+}> = ({ blocks = [], path, skipAppend }) => {
   const sections = useMemo(() => {
-    const bl = [blocks].flat();
+    const flattenedBlocks = [blocks].flat();
 
-    if (bl.some((b) => Number.isInteger(b.order))) {
-      return bl.sort(OrderComparator);
+    if (flattenedBlocks.some((b) => Number.isInteger(b.order))) {
+      return flattenedBlocks.sort(OrderComparator);
     }
 
-    return bl;
+    return flattenedBlocks;
   }, [blocks]);
 
   return (
@@ -208,6 +208,10 @@ const FormSection: React.FC<{
               path={sectionPath}
             />
           );
+        }
+
+        if (formField.const !== undefined) {
+          return null;
         }
 
         return (
