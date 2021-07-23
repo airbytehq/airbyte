@@ -36,9 +36,6 @@ from google.oauth2 import service_account
 from airbyte_cdk.logger import AirbyteLogger
 
 
-# NOTE: this is based off the URLFile class from source-file's client.py
-
-
 class ConfigurationError(Exception):
     """Client mis-configured"""
 
@@ -66,40 +63,6 @@ class FileClient(ABC):
 
     @property
     @abstractmethod
-    def url(self) -> str:
-        """Convert URL to remove the URL prefix (scheme)
-        :return: the corresponding URL without URL prefix / scheme
-        """
-
-    @property
-    def fullurl(self):
-        return f"{self.storage_scheme}{self.url}"
-
-    @property
-    @abstractmethod
-    def storage_scheme(self) -> str:
-        """Convert Storage Names to the proper URL Prefix
-        :return: the corresponding URL prefix / scheme
-        """
-        # storage_name = self._provider["storage"].upper()
-        # parse_result = urlparse(self._url)
-        # if storage_name == "HTTPS":
-        #     return "https://"
-        # elif storage_name == "SSH" or storage_name == "SCP":
-        #     return "scp://"
-        # elif storage_name == "SFTP":
-        #     return "sftp://"
-        # elif storage_name == "WEBHDFS":
-        #     return "webhdfs://"
-        # elif storage_name == "LOCAL":
-        #     return "file://"
-        # elif parse_result.scheme:
-        #     return parse_result.scheme
-        # self.logger.error(f"Unknown Storage provider in: {self.fullurl}")
-        # return ""
-
-    @property
-    @abstractmethod
     def last_modified(self) -> datetime:
         """ TODO Docstring """
 
@@ -116,26 +79,6 @@ class FileClient(ABC):
     @abstractmethod
     def _open(self, binary):
         """TODO docstring"""
-        # mode = "rb" if binary else "r"
-        # storage = self.storage_scheme
-        # url = self._url
-        # if storage == "webhdfs://":
-        #     host = self._provider["host"]
-        #     port = self._provider["port"]
-        #     return smart_open.open(f"webhdfs://{host}:{port}/{url}", mode=mode)
-        # elif storage in ("ssh://", "scp://", "sftp://"):
-        #     user = self._provider["user"]
-        #     host = self._provider["host"]
-        #     port = self._provider.get("port", 22)
-        #     # Explicitly turn off ssh keys stored in ~/.ssh
-        #     transport_params = {"connect_kwargs": {"look_for_keys": False}}
-        #     if "password" in self._provider:
-        #         password = self._provider["password"]
-        #         uri = f"{storage}{user}:{password}@{host}:{port}/{url}"
-        #     else:
-        #         uri = f"{storage}{user}@{host}:{port}/{url}"
-        #     return smart_open.open(uri, transport_params=transport_params, mode=mode)
-        # return smart_open.open(self.fullurl, mode=mode)
 
 
 class FileClientS3(FileClient):
@@ -165,15 +108,6 @@ class FileClientS3(FileClient):
             return inner
 
     @property
-    def storage_scheme(self) -> str:
-        return "s3://"
-
-    @property
-    def url(self) -> str:
-        bucket = self._provider.get("bucket")
-        return f"{bucket}/{self._url}"
-
-    @property
     @_Decorators.init_boto_session
     def last_modified(self) -> datetime:
         """ TODO docstring """
@@ -184,31 +118,28 @@ class FileClientS3(FileClient):
     def use_aws_account(provider: dict) -> bool:
         aws_access_key_id = provider.get("aws_access_key_id")
         aws_secret_access_key = provider.get("aws_secret_access_key")
-        return aws_access_key_id and aws_secret_access_key
+        return True if (aws_access_key_id is not None and aws_secret_access_key is not None) else False
 
     def _open(self, binary):
         """ TODO docstring """
         mode = "rb" if binary else "r"
+        bucket = self._provider.get("bucket")
         if self.use_aws_account(self._provider):
             aws_access_key_id = self._provider.get("aws_access_key_id", "")
             aws_secret_access_key = self._provider.get("aws_secret_access_key", "")
-            result = smart_open.open(f"{self.storage_scheme}{aws_access_key_id}:{aws_secret_access_key}@{self.url}", mode=mode)
+            result = smart_open.open(f"s3://{aws_access_key_id}:{aws_secret_access_key}@{bucket}/{self._url}", mode=mode)
         else:
             config = Config(signature_version=UNSIGNED)
             params = {
                 "resource_kwargs": {"config": config},
             }
-            result = smart_open.open(self.full_url, transport_params=params, mode=mode)
+            result = smart_open.open(f"s3://{bucket}/{self._url}", transport_params=params, mode=mode)
         return result
 
 
 # NOTE: Not Implemented yet
 class FileClientGCS(FileClient):
     """TODO docstring"""
-
-    @property
-    def storage_scheme(self) -> str:
-        return "gs://"
 
     # TODO: last_modified property
 
@@ -229,7 +160,7 @@ class FileClientGCS(FileClient):
             client = GCSClient(credentials=credentials, project=credentials._project_id)
         else:
             client = GCSClient.create_anonymous_client()
-        file_to_close = smart_open.open(self.full_url, transport_params=dict(client=client), mode=mode)
+        file_to_close = smart_open.open(f"gs://{self._url}", transport_params=dict(client=client), mode=mode)
 
         return file_to_close
 
@@ -237,10 +168,6 @@ class FileClientGCS(FileClient):
 # NOTE: Not Implemented yet
 class FileClientAzure(FileClient):
     """TODO docstring"""
-
-    @property
-    def storage_scheme(self) -> str:
-        return "azure://"
 
     # TODO: last_modified property
 
@@ -259,5 +186,5 @@ class FileClientAzure(FileClient):
             # assuming anonymous public read access given no credential
             client = BlobServiceClient(account_url=storage_acc_url)
 
-        result = smart_open.open(f"{self.storage_scheme}{self._url}", transport_params=dict(client=client), mode=mode)
+        result = smart_open.open(f"azure://{self._url}", transport_params=dict(client=client), mode=mode)
         return result

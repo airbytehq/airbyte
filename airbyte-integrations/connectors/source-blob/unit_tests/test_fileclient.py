@@ -20,6 +20,33 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from abc import ABC, abstractmethod
+import pytest
+from source_blob.fileclient import FileClientS3
+from airbyte_cdk import AirbyteLogger
 
-def test_example_method():
-    assert True
+
+LOGGER = AirbyteLogger()
+
+
+class AbstractTestFileClient(ABC):
+    """ Prefix this class with Abstract so the tests don't run here but only in the children """
+    # there are no suitable abstract unit tests for FileClient presently but leaving this structure in place for future
+
+
+class TestFileClientS3(AbstractTestFileClient):
+
+    @pytest.mark.parametrize(  # passing in full provider to emulate real usage (dummy values are unused by func)
+        "provider, return_true", 
+        [
+            ({"storage": "S3", "bucket": "dummy", "aws_access_key_id": "id", "aws_secret_access_key": "key", "path_prefix": "dummy"}, True),
+            ({"storage": "S3", "bucket": "dummy", "aws_access_key_id": None, "aws_secret_access_key": None, "path_prefix": "dummy"}, False),
+            ({"storage": "S3", "bucket": "dummy", "path_prefix": "dummy"}, False),
+            ({"storage": "S3", "bucket": "dummy", "aws_access_key_id": "id", "aws_secret_access_key": None, "path_prefix": "dummy"}, False),
+            ({"storage": "S3", "bucket": "dummy", "aws_access_key_id": None, "aws_secret_access_key": "key", "path_prefix": "dummy"}, False),
+            ({"storage": "S3", "bucket": "dummy", "aws_access_key_id": "id", "path_prefix": "dummy"}, False),
+            ({"storage": "S3", "bucket": "dummy", "aws_secret_access_key": "key", "path_prefix": "dummy"}, False)
+        ]
+    )
+    def test_use_aws_account(self, provider, return_true):
+        assert FileClientS3.use_aws_account(provider) is return_true

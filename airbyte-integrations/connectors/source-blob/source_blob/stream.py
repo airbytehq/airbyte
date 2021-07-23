@@ -67,20 +67,26 @@ class FileStream(Stream, ABC):
         self._format = format
         self._schema = {}
         if schema:
-            try:
-                self._schema = json.loads(schema)
-            except json.decoder.JSONDecodeError as err:
-                error_msg = f"Failed to parse schema {repr(err)}\n{schema}\n{format_exc()}"
-                self.logger.error(error_msg)
-                raise ConfigurationError(error_msg) from err
-            # enforce all keys and values are of type string as required (i.e. no nesting)
-            if not all([isinstance(k, str) and isinstance(v, str) for k,v in self._schema.items()]):
-                raise ConfigurationError("Invalid schema provided, all column names and datatypes must be in string format")
-            # enforce all values (datatypes) are valid JsonSchema datatypes
-            if not all([datatype in JSON_TYPES for datatype in self._schema.values()]):
-                raise ConfigurationError(f"Invalid schema provided, datatypes must each be one of {JSON_TYPES}")
+            self._schema = self._init_schema(schema)
         self.fileclient_cache = None
         self.master_schema = None
+
+    @staticmethod
+    def _init_schema(schema: str) -> Mapping[str,str]:
+        """TODO: docstring"""
+        try:
+            py_schema = json.loads(schema)
+        except json.decoder.JSONDecodeError as err:
+            error_msg = f"Failed to parse schema {repr(err)}\n{schema}\n{format_exc()}"
+            raise ConfigurationError(error_msg) from err
+        # enforce all keys and values are of type string as required (i.e. no nesting)
+        if not all([isinstance(k, str) and isinstance(v, str) for k,v in py_schema.items()]):
+            raise ConfigurationError("Invalid schema provided, all column names and datatypes must be in string format")
+        # enforce all values (datatypes) are valid JsonSchema datatypes
+        if not all([datatype in JSON_TYPES for datatype in py_schema.values()]):
+            raise ConfigurationError(f"Invalid schema provided, datatypes must each be one of {JSON_TYPES}")
+        
+        return py_schema
 
     @property
     def name(self) -> str:
@@ -210,28 +216,26 @@ class FileStream(Stream, ABC):
                 "fileclient": fileclient
             }]
 
-    def _match_target_schema(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def _match_target_schema(self, record: Mapping[str, Any], target_columns: List) -> Mapping[str, Any]:
         """TODO docstring"""
-        target_columns = self.get_json_schema().keys()
-
         # check if we're already matching to avoid unnecessary iteration
         if set(list(record.keys()) + [self.ab_additional_col]) == set(target_columns):
             record[self.ab_additional_col] = {}
             return record
-
-        for c in target_columns - [self.ab_additional_col]:
+        # missing columns
+        for c in [col for col in target_columns if col != self.ab_additional_col]:
             if c not in record.keys():
                 record[c] = None
-
+        # additional columns
         record[self.ab_additional_col] = {c: deepcopy(record[c]) for c in record.keys() if c not in target_columns}
         for c in record[self.ab_additional_col].keys():
             del record[c]
 
         return record
 
-    def _add_airbyte_system_columns(self, record: Mapping[str, Any], airbyte_system_info: Mapping[str, Any]) -> Mapping[str, Any]:
+    def _add_extra_fields_from_map(self, record: Mapping[str, Any], extra_map: Mapping[str, Any]) -> Mapping[str, Any]:
         """TODO docstring"""
-        for key, value in airbyte_system_info.items():
+        for key, value in extra_map.items():
             record[key] = value
         return record
 
@@ -252,8 +256,8 @@ class FileStream(Stream, ABC):
             with file_info['fileclient'].open(file_reader.is_binary) as f:
                 # TODO: make this more efficient than mutating every record one-by-one as they stream
                 for record in file_reader.stream_records(f):
-                    schema_matched_record = self._match_target_schema(record)
-                    complete_record = self._add_airbyte_system_columns(
+                    schema_matched_record = self._match_target_schema(record, list(self.get_json_schema().keys()))
+                    complete_record = self._add_extra_fields_from_map(
                         schema_matched_record,
                         {self.ab_last_mod_col: datetime.strftime(file_info['last_modified'], self.datetime_format_string),
                          self.ab_file_name_col: file_info['unique_url']})
