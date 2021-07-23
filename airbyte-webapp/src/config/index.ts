@@ -49,9 +49,9 @@ const config: Config = {
   ui: {
     technicalSupport: `${BASE_DOCS_LINK}/troubleshooting/on-deploying`,
     helpLink: "https://airbyte.io/community",
-    updateLink: "https://docs.airbyte.io/upgrading-airbyte",
+    updateLink: `${BASE_DOCS_LINK}/upgrading-airbyte`,
     slackLink: "https://slack.airbyte.io",
-    docsLink: "https://docs.airbyte.io",
+    docsLink: BASE_DOCS_LINK,
     configurationArchiveLink: `${BASE_DOCS_LINK}/tutorials/upgrading-airbyte`,
     normalizationLink: `${BASE_DOCS_LINK}/understanding-airbyte/connections#airbyte-basic-normalization`,
     namespaceLink: `${BASE_DOCS_LINK}/understanding-airbyte/namespaces`,
