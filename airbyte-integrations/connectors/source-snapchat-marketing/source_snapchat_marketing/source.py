@@ -44,9 +44,18 @@ class SnapchatMarketingException(Exception):
 
 
 class SnapchatMarketingStream(HttpStream, ABC):
-    data_field = None
+    # The default value that is returned by stream_slices if there is no slice found: [None]
+    default_stream_slices_return_value = [None]
     url_base = "https://adsapi.snapchat.com/v1/"
     primary_key = "id"
+
+    @property
+    def response_root_name(self):
+        return self.__class__.__name__.lower()
+
+    @property
+    def response_item_name(self):
+        return self.response_root_name[:-1]
 
     def __init__(self, start_date, **kwargs):
         super().__init__(**kwargs)
@@ -63,20 +72,14 @@ class SnapchatMarketingStream(HttpStream, ABC):
         return next_page_token if next_page_token else {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if isinstance(self.data_field, list) and len(self.data_field) == 2:
-            json_response = response.json().get(self.data_field[0])
-            for resp in json_response:
-                yield resp.get(self.data_field[1])
-        else:
-            error_text = f"Cannot parse response. Data field unrecognized: {self.data_field}"
-            self.logger.error(error_text)
-            raise SnapchatMarketingException(error_text)
+        json_response = response.json().get(self.response_root_name)
+        for resp in json_response:
+            yield resp.get(self.response_item_name)
 
 
 class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
     cursor_field = "updated_at"
-    data_field = None
-    cls_object = None
+    superior_cls = None
     slice_key_name = "ad_account_id"
 
     last_slice = None
@@ -85,7 +88,7 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
     max_state = None
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        stream_slices = self.get_class_ids(self.cls_object, self.slice_key_name, **kwargs)
+        stream_slices = self.get_class_ids(self.superior_cls, self.slice_key_name, **kwargs)
         if stream_slices:
             self.last_slice = stream_slices[-1]
 
@@ -149,12 +152,12 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
             yield from records
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"adaccounts/{stream_slice[self.slice_key_name]}/{self.data_field[0]}"
+        return f"adaccounts/{stream_slice[self.slice_key_name]}/{self.response_root_name}"
 
     # TODO Make unittest for this function
-    def get_class_ids(self, cls_object, slice_key_name: str, **kwargs) -> List:
+    def get_class_ids(self, superior_cls, slice_key_name: str, **kwargs) -> List:
         """This auxiliary function is to help retrieving the ids from another stream
-        :param cls_object: The stream class from what we need to retrieve ids
+        :param superior_cls: The stream class from what we need to retrieve ids
         :param slice_key_name: The key in result slices generator
         :returns: empty list in case no ids of the stream was found or list with {slice_key_name: id}
         """
@@ -168,10 +171,10 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
         # So first we must get the AdAccounts, then do the slicing for them
         # and then call the read_records for each slice
 
-        # If the cls_object is None (which means class can be incremental but don't need any slicing with ids)
-        # then just return default [None]
-        if cls_object is None:
-            return [None]
+        # If the superior_cls is None (which means class can be incremental but don't need any slicing with ids)
+        # then just return default_stream_slices_return_value (which is [None])
+        if superior_cls is None:
+            return self.default_stream_slices_return_value
 
         # This auxiliary_id_map is used to prevent the extracting of ids that are used in most streams
         # Instead of running the request to get (for example) AdAccounts for each stream as slices we put them in the dict and
@@ -189,13 +192,10 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
         # and for each of them get the ad_account_ids) so switch goes to if claus to get all the nested ids.
         # Let me visualize this for you:
         #
-        #          organization_id_1                     organization_id_2
-        #                / \                                   / \
-        #               /   \                                 /   \
-        #              /     \                               /     \
-        #             /       \                             /       \
-        #            /         \                           /         \
-        # ad_account_id_1     ad_account_id_2   ad_account_id_3     ad_account_id_3
+        #           organization_id_1                      organization_id_2
+        #                 / \                                    / \
+        #                /   \                                  /   \
+        # ad_account_id_1     ad_account_id_2    ad_account_id_3     ad_account_id_4
         #
         # So for the AdAccount slices will be [{'organization_id': organization_id_1}, {'organization_id': organization_id_2}]
         # And for the Creatives (Media, Ad, AdSquad, etc...) the slices will be
@@ -205,11 +205,11 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
         # After getting all the account_ids, they go as slices to Creatives (Media, Ad, AdSquad, etc...)
         # and are used in the path function as a path variables according to the API docs
 
-        cls_stream = cls_object(authenticator=self.authenticator, start_date=self.start_date)
+        cls_stream = superior_cls(authenticator=self.authenticator, start_date=self.start_date)
         cls_slices = cls_stream.stream_slices(**kwargs)
         cls_ids = []
 
-        if cls_slices != [None]:
+        if cls_slices != self.default_stream_slices_return_value:
             for cls_slice in cls_slices:
                 cls_records = cls_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=cls_slice)
                 cls_ids += [cls_record["id"] for cls_record in cls_records]
@@ -217,7 +217,7 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
             cls_ids = [cls_record["id"] for cls_record in cls_stream.read_records(sync_mode=SyncMode.full_refresh)]
 
         if not cls_ids:
-            self.logger.error(f"No {slice_key_name}s found. {cls_object.__name__} cannot be extracted without {slice_key_name}.")
+            self.logger.error(f"No {slice_key_name}s found. {superior_cls.__name__} cannot be extracted without {slice_key_name}.")
             return []
 
         result = [{slice_key_name: cls_id} for cls_id in cls_ids]
@@ -228,8 +228,6 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
 class Organizations(SnapchatMarketingStream):
     """ Docs: https://marketingapi.snapchat.com/docs/#organizations """
 
-    data_field = ["organizations", "organization"]
-
     def path(self, **kwargs) -> str:
         return "me/organizations"
 
@@ -237,8 +235,7 @@ class Organizations(SnapchatMarketingStream):
 class AdAccounts(IncrementalSnapchatMarketingStream):
     """ Docs: https://marketingapi.snapchat.com/docs/#get-all-ad-accounts """
 
-    data_field = ["adaccounts", "adaccount"]
-    cls_object = Organizations
+    superior_cls = Organizations
     slice_key_name = "organization_id"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -248,43 +245,41 @@ class AdAccounts(IncrementalSnapchatMarketingStream):
 class Creatives(IncrementalSnapchatMarketingStream):
     """ Docs: https://marketingapi.snapchat.com/docs/#get-all-creatives """
 
-    data_field = ["creatives", "creative"]
-    cls_object = AdAccounts
+    superior_cls = AdAccounts
 
 
 class Media(IncrementalSnapchatMarketingStream):
     """ Docs: https://marketingapi.snapchat.com/docs/#get-all-media """
 
-    data_field = ["media", "media"]
-    cls_object = AdAccounts
+    superior_cls = AdAccounts
+
+    @property
+    def response_item_name(self):
+        return self.response_root_name
 
 
 class Campaigns(IncrementalSnapchatMarketingStream):
     """ Docs: https://marketingapi.snapchat.com/docs/#get-all-campaigns """
 
-    data_field = ["campaigns", "campaign"]
-    cls_object = AdAccounts
+    superior_cls = AdAccounts
 
 
 class Ads(IncrementalSnapchatMarketingStream):
     """ Docs: https://marketingapi.snapchat.com/docs/#get-all-ads-under-an-ad-account """
 
-    data_field = ["ads", "ad"]
-    cls_object = AdAccounts
+    superior_cls = AdAccounts
 
 
 class Adsquads(IncrementalSnapchatMarketingStream):
     """ Docs: https://marketingapi.snapchat.com/docs/#get-all-ad-squads-under-an-ad-account """
 
-    data_field = ["adsquads", "adsquad"]
-    cls_object = AdAccounts
+    superior_cls = AdAccounts
 
 
 class Segments(IncrementalSnapchatMarketingStream):
     """ Docs: https://marketingapi.snapchat.com/docs/#get-all-audience-segments """
 
-    data_field = ["segments", "segment"]
-    cls_object = AdAccounts
+    superior_cls = AdAccounts
 
 
 class SnapchatAdsOauth2Authenticator(Oauth2Authenticator):
@@ -300,7 +295,7 @@ class SnapchatAdsOauth2Authenticator(Oauth2Authenticator):
         super().__init__(
             token_refresh_endpoint="https://accounts.snapchat.com/login/oauth2/access_token",
             client_id=config["client_id"],
-            client_secret=config["secret"],
+            client_secret=config["client_secret"],
             refresh_token=config["refresh_token"],
         )
 
@@ -323,14 +318,14 @@ class SnapchatAdsOauth2Authenticator(Oauth2Authenticator):
 
 # Source
 class SourceSnapchatMarketing(AbstractSource):
+    """Source Snapchat Marketing helps to retrieve the different Ad data from Snapchat business account"""
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
 
         try:
             auth = SnapchatAdsOauth2Authenticator(config)
-
             token = auth.get_access_token()
-
-            url = "https://adsapi.snapchat.com/v1/me"
+            url = f"{SnapchatMarketingStream.url_base}me"
 
             session = requests.get(url, headers={"Authorization": "Bearer {}".format(token)})
             session.raise_for_status()
@@ -343,12 +338,12 @@ class SourceSnapchatMarketing(AbstractSource):
         auth = SnapchatAdsOauth2Authenticator(config)
         kwargs = {"authenticator": auth, "start_date": config["start_date"]}
         return [
-            Organizations(**kwargs),
             AdAccounts(**kwargs),
-            Creatives(**kwargs),
-            Media(**kwargs),
-            Campaigns(**kwargs),
             Ads(**kwargs),
             Adsquads(**kwargs),
+            Campaigns(**kwargs),
+            Creatives(**kwargs),
+            Media(**kwargs),
+            Organizations(**kwargs),
             Segments(**kwargs),
         ]

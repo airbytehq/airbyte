@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Snapchat Marketing Spec",
     "type": "object",
-    "required": ["client_id", "secret"],
+    "required": ["client_id", "client_secret", "refresh_token"],
     "additionalProperties": false,
     "properties": {
       "client_id": {
@@ -12,7 +12,7 @@
         "type": "string",
         "description": "The Snapchat Client ID for API credentials."
       },
-      "secret": {
+      "client_secret": {
         "title": "Client Secret",
         "type": "string",
         "description": "The Client Secret for a given Client ID.",
