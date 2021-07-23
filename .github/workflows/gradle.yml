@@ -578,11 +578,11 @@ jobs:
 #            curl -sfLo kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/v3.1.0/kustomize_3.1.0_linux_amd64
 #            chmod u+x ./kustomize
 
-        - name: Run Kubernetes End-to-End Acceptance Tests on GKE
+        - name: Run End-to-End Acceptance Tests on GKE
           env:
-#            USER: root
-#            HOME: /home/runner
-             DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+            USER: root
+            HOME: /home/runner
+            DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           run: |
             ./tools/bin/gke-kube-acceptance-test/acceptance_test_kube_gke.sh
     # In case of self-hosted EC2 errors, remove this block.
