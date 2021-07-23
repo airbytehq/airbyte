@@ -33,7 +33,6 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from .streams import UserSettingsStream, generate_stream_classes
 
 STREAMS = generate_stream_classes()
-# from .streams import Users, Groups, Organizations, Tickets, generate_stream_classes
 
 
 class BasicApiTokenAuthenticator(TokenAuthenticator):
@@ -47,6 +46,10 @@ class BasicApiTokenAuthenticator(TokenAuthenticator):
 
 
 class SourceZendeskSupport(AbstractSource):
+    """Source Zendesk Support fetch data from Zendesk CRM that builds customer
+    support and sales software which aims for quick implementation and adaptation at scale.
+    """
+
     def get_authenticator(self, config):
         if config["auth_method"].get("email") and config["auth_method"].get("api_token"):
             return BasicApiTokenAuthenticator(config["auth_method"]["email"], config["auth_method"]["api_token"]), None
@@ -78,9 +81,7 @@ class SourceZendeskSupport(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        TODO: Replace the streams below with your own streams.
-
+        """Returns relevant a list of available streams
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         auth, err = self.get_authenticator(config)

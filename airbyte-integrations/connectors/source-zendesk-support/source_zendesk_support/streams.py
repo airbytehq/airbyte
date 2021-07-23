@@ -407,6 +407,9 @@ ENTITY_NAMES = {
     "sla_policies": CustomSlaPoliciesStream,
 }
 
+#  sort it alphabetically
+ENTITY_NAMES = {k: ENTITY_NAMES[k] for k in sorted(ENTITY_NAMES.keys())}
+
 
 def generate_stream_classes():
     """generates target stream classes with necessary class names"""
