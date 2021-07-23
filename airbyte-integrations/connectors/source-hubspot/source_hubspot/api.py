@@ -40,7 +40,14 @@ from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, Hubsp
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
 
-VALID_JSON_SCHEMA_TYPES = {"string", "integer", "number", "boolean", "object", "array"}
+VALID_JSON_SCHEMA_TYPES = {
+    "string",
+    "integer",
+    "number",
+    "boolean",
+    "object",
+    "array",
+}
 
 KNOWN_CONVERTIBLE_SCHEMA_TYPES = {
     "bool": ("boolean", None),
@@ -305,6 +312,28 @@ class Stream(ABC):
 
         yield from self._filter_dynamic_fields(self._filter_old_records(self._transform(self._read(getter, params))))
 
+    @staticmethod
+    def _get_field_props(field_type: str) -> Mapping[str, str]:
+
+        if field_type in VALID_JSON_SCHEMA_TYPES:
+            return {
+                "type": field_type,
+            }
+
+        converted_type, field_format = KNOWN_CONVERTIBLE_SCHEMA_TYPES.get(field_type) or (None, None)
+
+        if not converted_type:
+            logger.warn(f"Unsupported type {field_type} found")
+
+        field_props = {
+            "type": converted_type or field_type,
+        }
+
+        if field_format:
+            field_props["format"] = field_format
+
+        return field_props
+
     @property
     @lru_cache
     def properties(self) -> Mapping[str, Any]:
@@ -314,27 +343,8 @@ class Stream(ABC):
 
         props = {}
         data = self._api.get(f"/properties/v2/{self.entity}/properties")
-
         for row in data:
-
-            field_type = row["type"]
-
-            if field_type in VALID_JSON_SCHEMA_TYPES:
-                field_props = {"type": field_type}
-            else:
-                field_type, field_format = KNOWN_CONVERTIBLE_SCHEMA_TYPES.get(field_type) or (None, None)
-
-                if not field_type:
-                    logger.warn(f"Unsupported type {field_type} found")
-
-                field_props = {
-                    "type": field_type,
-                }
-
-                if field_format:
-                    field_props["format"] = field_format
-
-            props[row["name"]] = field_props
+            props[row["name"]] = self._get_field_props(row["type"])
 
         return props
 
