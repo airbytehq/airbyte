@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.13
+Replace `validate_output_from_all_streams` with `empty_streams` param: https://github.com/airbytehq/airbyte/pull/4897
+
 ## 0.1.12
 Improve error message when data mismatches schema: https://github.com/airbytehq/airbyte/pull/4753
 
