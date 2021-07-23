@@ -28,7 +28,6 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 import pendulum
 from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.v8.services.services.google_ads_service.pagers import SearchPager
-from jsonschema import validate
 
 from .google_ads import GoogleAds
 
@@ -68,9 +67,7 @@ class GoogleAdsStream(Stream, ABC):
 
     def parse_response(self, response: SearchPager) -> Iterable[Mapping]:
         for result in response:
-            record = self.google_ads_client.parse_single_result(self.get_json_schema(), result)
-            validate(instance=record, schema=self.get_json_schema())
-            yield record
+            yield self.google_ads_client.parse_single_result(self.get_json_schema(), result)
 
     def read_records(self, sync_mode, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         response = self.google_ads_client.send_request(self.get_query(stream_slice))
@@ -130,37 +127,68 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         return query
 
 
-class AccountPerformanceReport(IncrementalGoogleAdsStream):
-    pass
-
-
-class DisplayTopicsPerformanceReport(IncrementalGoogleAdsStream):
-    pass
-
-
-class DisplayKeywordPerformanceReport(IncrementalGoogleAdsStream):
-    pass
-
-
-class ShoppingPerformanceReport(IncrementalGoogleAdsStream):
-    pass
-
-
-class AdGroupAdReport(IncrementalGoogleAdsStream):
-    pass
-
-
 class Accounts(GoogleAdsStream):
+    """
+    Accounts stream: https://developers.google.com/google-ads/api/fields/v8/customer
+    """
+
     primary_key = "customer.id"
 
 
 class Campaigns(GoogleAdsStream):
+    """
+    Campaigns stream: https://developers.google.com/google-ads/api/fields/v8/campaign
+    """
+
     primary_key = "campaign.id"
 
 
 class AdGroups(GoogleAdsStream):
+    """
+    AdGroups stream: https://developers.google.com/google-ads/api/fields/v8/ad_group
+    """
+
     primary_key = "ad_group.id"
 
 
 class AdGroupAds(GoogleAdsStream):
+    """
+    AdGroups stream: https://developers.google.com/google-ads/api/fields/v8/ad_group_ad
+    """
+
     primary_key = "ad_group_ad.ad.id"
+
+
+class AccountPerformanceReport(IncrementalGoogleAdsStream):
+    """
+    AccountPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v8/customer
+    Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance
+    """
+
+
+class AdGroupAdReport(IncrementalGoogleAdsStream):
+    """
+    AdGroupAdReport stream: https://developers.google.com/google-ads/api/fields/v8/ad_group_ad
+    Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#ad_performance
+    """
+
+
+class DisplayKeywordPerformanceReport(IncrementalGoogleAdsStream):
+    """
+    DisplayKeywordPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v8/display_keyword_view
+    Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#display_keyword_performance
+    """
+
+
+class DisplayTopicsPerformanceReport(IncrementalGoogleAdsStream):
+    """
+    DisplayTopicsPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v8/topic_view
+    Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#display_topics_performance
+    """
+
+
+class ShoppingPerformanceReport(IncrementalGoogleAdsStream):
+    """
+    ShoppingPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v8/shopping_performance_view
+    Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance
+    """

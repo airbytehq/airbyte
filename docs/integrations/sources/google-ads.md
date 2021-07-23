@@ -12,11 +12,18 @@ This source can sync data for the [Google Ads](https://developers.google.com/goo
 
 This source is capable of syncing the following streams:
 
+*Main streams*:
 * [accounts](https://developers.google.com/google-ads/api/fields/v8/customer)
-* [ad_group_ad_report](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad)
 * [ad_group_ads](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad)
 * [ad_groups](https://developers.google.com/google-ads/api/fields/v8/ad_group)
 * [campaigns](https://developers.google.com/google-ads/api/fields/v8/campaign)
+
+*Report streams*
+* [account_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance)
+* [ad_group_ad_report](https://developers.google.com/google-ads/api/docs/migration/mapping#ad_performance)
+* [display_keyword_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_keyword_performance)
+* [display_topics_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_topics_performance)
+* [shopping_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance)
 
 ### Features
 
