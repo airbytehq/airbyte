@@ -1,33 +1,42 @@
 import { useFetcher, useResource } from "rest-hooks";
 
 import WorkspaceResource, { Workspace } from "core/resources/Workspace";
-import NotificationsResource from "core/resources/Notifications";
+import NotificationsResource, {
+  Notifications,
+} from "core/resources/Notifications";
 import { useAnalytics } from "../useAnalytics";
+
+const useCurrentWorkspace = (): Workspace => {
+  const { workspaces } = useResource(WorkspaceResource.listShape(), {});
+
+  const workspace = useResource(WorkspaceResource.detailShape(), {
+    workspaceId: workspaces[0].workspaceId,
+  });
+
+  return workspace;
+};
 
 const useWorkspace = (): {
   workspace: Workspace;
-  setInitialSetupConfig: (data: {
-    email: string;
-    anonymousDataCollection: boolean;
-    news: boolean;
-    securityUpdates: boolean;
-  }) => Promise<void>;
   updatePreferences: (data: {
     email?: string;
     anonymousDataCollection: boolean;
     news: boolean;
     securityUpdates: boolean;
-  }) => Promise<void>;
-  updateWebhook: (data: { webhook: string }) => Promise<void>;
+  }) => Promise<Workspace>;
+  updateWebhook: (data: { webhook: string }) => Promise<Workspace>;
+  testWebhook: (webhook: string) => Promise<Notifications>;
+  setInitialSetupConfig: (data: {
+    email: string;
+    anonymousDataCollection: boolean;
+    news: boolean;
+    securityUpdates: boolean;
+  }) => Promise<Workspace>;
   finishOnboarding: (skipStep?: string) => Promise<void>;
-  testWebhook: (webhook: string) => Promise<void>;
 } => {
   const updateWorkspace = useFetcher(WorkspaceResource.updateShape());
   const tryWebhookUrl = useFetcher(NotificationsResource.tryShape());
-  const { workspaces } = useResource(WorkspaceResource.listShape(), {});
-  const workspace = useResource(WorkspaceResource.detailShape(), {
-    workspaceId: workspaces[0].workspaceId,
-  });
+  const workspace = useCurrentWorkspace();
 
   const analyticsService = useAnalytics();
 
@@ -56,7 +65,7 @@ const useWorkspace = (): {
     anonymousDataCollection: boolean;
     news: boolean;
     securityUpdates: boolean;
-  }) => {
+  }) =>
     await updateWorkspace(
       {},
       {
@@ -66,14 +75,13 @@ const useWorkspace = (): {
         ...data,
       }
     );
-  };
 
   const updatePreferences = async (data: {
     email?: string;
     anonymousDataCollection: boolean;
     news: boolean;
     securityUpdates: boolean;
-  }) => {
+  }) =>
     await updateWorkspace(
       {},
       {
@@ -84,9 +92,8 @@ const useWorkspace = (): {
         ...data,
       }
     );
-  };
 
-  const testWebhook = async (webhook: string) => {
+  const testWebhook = async (webhook: string) =>
     await tryWebhookUrl(
       {
         notificationType: "slack",
@@ -96,9 +103,8 @@ const useWorkspace = (): {
       },
       {}
     );
-  };
 
-  const updateWebhook = async (data: { webhook: string }) => {
+  const updateWebhook = async (data: { webhook: string }) =>
     await updateWorkspace(
       {},
       {
@@ -118,7 +124,6 @@ const useWorkspace = (): {
         ],
       }
     );
-  };
 
   return {
     workspace,
@@ -130,4 +135,5 @@ const useWorkspace = (): {
   };
 };
 
+export { useCurrentWorkspace };
 export default useWorkspace;

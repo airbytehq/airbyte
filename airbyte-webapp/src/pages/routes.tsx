@@ -23,7 +23,6 @@ import useRouter from "components/hooks/useRouterHook";
 import useWorkspace from "components/hooks/services/useWorkspace";
 import { useNotificationService } from "components/hooks/services/Notification/NotificationService";
 import { useApiHealthPoll } from "components/hooks/services/Health";
-import useOpenReplay from "../components/hooks/useOpenReplay";
 import { useAnalytics } from "components/hooks/useAnalytics";
 
 export enum Routes {
@@ -161,17 +160,8 @@ const OnboardingsRoutes = () => {
 
 export const Routing: React.FC = () => {
   useApiHealthPoll(config.healthCheckInterval);
-  const analyticsService = useAnalytics();
-  const tracker = useOpenReplay(config.openreplay.projectKey);
 
   const { workspace } = useWorkspace();
-
-  useEffect(() => {
-    if (workspace) {
-      analyticsService.identify(workspace.customerId);
-      tracker.setUserID(workspace.customerId);
-    }
-  }, [analyticsService, tracker, workspace]);
 
   const { formatMessage } = useIntl();
 

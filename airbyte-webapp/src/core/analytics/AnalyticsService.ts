@@ -1,5 +1,3 @@
-import * as FullStory from "@fullstory/browser";
-
 import { SegmentAnalytics } from "./types";
 
 export class AnalyticsService {
@@ -24,7 +22,6 @@ export class AnalyticsService {
 
   identify = (userId: string, traits: Record<string, unknown> = {}): void => {
     this.getSegmentAnalytics()?.identify?.(userId, traits);
-    FullStory.identify(userId);
   };
 
   group = (

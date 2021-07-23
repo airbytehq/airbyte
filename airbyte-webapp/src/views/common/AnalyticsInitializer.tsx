@@ -1,24 +1,52 @@
-import React from "react";
-import useSegment from "components/hooks/useSegment";
+import React, { useEffect } from "react";
+import * as FullStory from "@fullstory/browser";
+
 import config from "config";
 import useFullStory from "components/hooks/useFullStory";
-import AnalyticsServiceProvider from "components/hooks/useAnalytics";
+import AnalyticsServiceProvider, {
+  useAnalytics,
+} from "components/hooks/useAnalytics";
 import useOpenReplay from "components/hooks/useOpenReplay";
-import useWorkspace from "components/hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "components/hooks/services/useWorkspace";
+
+function WithAnalytics({
+  customerId,
+}: {
+  customerId: string;
+  workspaceId?: string;
+}) {
+  const analyticsService = useAnalytics();
+
+  useEffect(() => {
+    analyticsService.identify(customerId);
+  }, [analyticsService, customerId]);
+
+  const tracker = useOpenReplay(config.openreplay.projectKey);
+  useEffect(() => {
+    tracker.setUserID(customerId);
+  }, [tracker, customerId]);
+
+  const initializedFullstory = useFullStory(config.fullstory);
+  useEffect(() => {
+    if (initializedFullstory) {
+      FullStory.identify(customerId);
+    }
+  }, [initializedFullstory, customerId]);
+
+  return null;
+}
 
 const AnalyticsInitializer: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  useSegment(config.segment.token);
-  useFullStory(config.fullstory);
-  useOpenReplay(config.openreplay.projectKey);
+  const workspace = useCurrentWorkspace();
 
-  const { workspace } = useWorkspace();
   return (
     <AnalyticsServiceProvider
       userId={workspace.workspaceId}
       version={config.version}
     >
+      <WithAnalytics customerId={workspace.customerId} />
       {children}
     </AnalyticsServiceProvider>
   );

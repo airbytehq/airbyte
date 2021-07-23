@@ -11,7 +11,7 @@ import { Routing } from "./pages/routes";
 import LoadingPage from "./components/LoadingPage";
 import ApiErrorBoundary from "./components/ApiErrorBoundary";
 import NotificationService from "components/hooks/services/Notification";
-import { AnalyticsInitializer } from "./views/common/AnalyticsInitializer";
+import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
 
 const App: React.FC = () => {
   return (
