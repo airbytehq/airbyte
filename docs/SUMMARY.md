@@ -33,6 +33,7 @@
     * [Asana](integrations/sources/asana.md)
     * [AWS CloudTrail](integrations/sources/aws-cloudtrail.md)
     * [Braintree](integrations/sources/braintree.md)
+    * [Cart](integrations/sources/cart.md)
     * [ClickHouse](integrations/sources/clickhouse.md)
     * [CockroachDB](integrations/sources/cockroachdb.md)
     * [Db2](integrations/sources/db2.md)
