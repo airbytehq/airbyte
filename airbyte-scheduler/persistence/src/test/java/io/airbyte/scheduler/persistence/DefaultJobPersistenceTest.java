@@ -48,7 +48,7 @@ import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.database.JobsDatabaseInstance;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.Job;
@@ -85,7 +85,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.MountableFile;
 
 @DisplayName("DefaultJobPersistance")
 class DefaultJobPersistenceTest {
@@ -113,16 +112,12 @@ class DefaultJobPersistenceTest {
   private JobPersistence jobPersistence;
 
   @BeforeAll
-  public static void dbSetup() throws Exception {
+  public static void dbSetup() {
     container = new PostgreSQLContainer<>("postgres:13-alpine")
         .withDatabaseName("airbyte")
         .withUsername("docker")
         .withPassword("docker");
     container.start();
-
-    container.copyFileToContainer(MountableFile.forClasspathResource("schema.sql"), "/etc/init.sql");
-    // execInContainer uses Docker's EXEC so it needs to be split up like this
-    container.execInContainer("psql", "-d", "airbyte", "-U", "docker", "-a", "-f", "/etc/init.sql");
   }
 
   @AfterAll
@@ -162,7 +157,7 @@ class DefaultJobPersistenceTest {
   @SuppressWarnings("unchecked")
   @BeforeEach
   public void setup() throws Exception {
-    database = Databases.createPostgresDatabase(container.getUsername(), container.getPassword(), container.getJdbcUrl());
+    database = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
     resetDb();
 
     timeSupplier = mock(Supplier.class);

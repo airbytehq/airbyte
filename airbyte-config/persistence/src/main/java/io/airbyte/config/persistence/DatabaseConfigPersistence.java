@@ -68,25 +68,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   /**
-   * Initialize the database by creating the {@code airbyte_configs} table.
-   */
-  public DatabaseConfigPersistence initialize(String schema) throws IOException {
-    database.transaction(ctx -> {
-      boolean hasConfigsTable = ctx.fetchExists(select()
-          .from("information_schema.tables")
-          .where("table_name = 'airbyte_configs'"));
-      if (hasConfigsTable) {
-        return null;
-      }
-      LOGGER.info("Config database has not been initialized");
-      LOGGER.info("Creating tables with schema: {}", schema);
-      ctx.execute(schema);
-      return null;
-    });
-    return this;
-  }
-
-  /**
    * Populate the {@code airbyte_configs} table with configs from the seed persistence. Only do so if
    * the table is empty. Otherwise, we assume that it has been populated.
    */

@@ -1,7 +1,7 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
 title: Jobs
-description: representation of a jobs record as created in schema.sql
+description: representation of a jobs record in the configs database
 type: object
 required:
   - id

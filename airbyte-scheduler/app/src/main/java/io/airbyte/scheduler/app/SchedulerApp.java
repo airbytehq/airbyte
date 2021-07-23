@@ -38,6 +38,7 @@ import io.airbyte.config.persistence.ConfigPersistenceBuilder;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.db.database.JobsDatabaseInstance;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
@@ -204,11 +205,11 @@ public class SchedulerApp {
     LOGGER.info("temporalHost = " + temporalHost);
 
     LOGGER.info("Creating Job DB connection pool...");
-    final Database jobDatabase = Databases.createPostgresDatabaseWithRetry(
+    final Database jobDatabase = new JobsDatabaseInstance(
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
-        configs.getDatabaseUrl(),
-        Databases.IS_JOB_DATABASE_READY);
+        configs.getDatabaseUrl())
+        .get();
 
     final ProcessFactory processFactory = getProcessBuilderFactory(configs);
 

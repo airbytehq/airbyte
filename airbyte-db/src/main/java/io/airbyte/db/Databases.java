@@ -35,6 +35,7 @@ import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import java.util.Optional;
 import java.util.function.Function;
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,16 +44,6 @@ public class Databases {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Databases.class);
 
-  // The Job Database is initialized by SQL script, which writes a server UUID at the end.
-  // So this database is ready when the server UUID record is present.
-  public static final Function<Database, Boolean> IS_JOB_DATABASE_READY = database -> {
-    try {
-      Optional<String> uuid = ServerUuid.get(database);
-      return uuid.isPresent();
-    } catch (Exception e) {
-      return false;
-    }
-  };
   public static final Function<Database, Boolean> IS_CONFIG_DATABASE_CONNECTED = database -> {
     try {
       LOGGER.info("Testing config database connection...");

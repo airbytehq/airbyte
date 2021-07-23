@@ -1,12 +1,13 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-title: Jobs
-description: representation of a jobs record as created in schema.sql
+title: Attempts
+description: representation of a attempts record in the jobs database
 type: object
 required:
   - id
-  - scope
-  - config
+  - job_id
+  - attempt_number
+  - log_path
   - status
   - created_at
   - updated_at
@@ -14,22 +15,23 @@ additionalProperties: false
 properties:
   id:
     type: number
-  scope:
+  job_id:
+    type: number
+  attempt_number:
+    type: number
+  log_path:
     type: string
-  config_type:
-    type: string
-  config:
-    type: object
+  output:
+    type: ["null", object]
   status:
     type: string
   created_at:
     # todo should be datetime.
     type: string
     description: Integration specific blob. Must be a valid JSON string.
-  started_at:
-    # todo should be datetime.
-    type: ["null", string]
-    description: Integration specific blob. Must be a valid JSON string.
   updated_at:
     # todo should be datetime.
     type: string
+  ended_at:
+    # todo should be datetime.
+    type: ["null", string]

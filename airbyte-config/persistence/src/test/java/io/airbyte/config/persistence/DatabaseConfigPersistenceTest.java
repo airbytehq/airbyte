@@ -25,7 +25,6 @@
 package io.airbyte.config.persistence;
 
 import static io.airbyte.config.persistence.AirbyteConfigsTable.AIRBYTE_CONFIGS;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.AIRBYTE_CONFIGS_TABLE_SCHEMA;
 import static io.airbyte.config.persistence.AirbyteConfigsTable.CONFIG_BLOB;
 import static io.airbyte.config.persistence.AirbyteConfigsTable.CONFIG_ID;
 import static io.airbyte.config.persistence.AirbyteConfigsTable.CONFIG_TYPE;
@@ -35,19 +34,17 @@ import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.count;
 import static org.jooq.impl.DSL.select;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.database.ConfigsDatabaseInstance;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
@@ -56,7 +53,6 @@ import java.util.stream.Stream;
 import org.jooq.JSONB;
 import org.jooq.Record1;
 import org.jooq.Result;
-import org.jooq.exception.DataAccessException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -87,9 +83,8 @@ public class DatabaseConfigPersistenceTest extends BaseTest {
 
   @BeforeEach
   public void setup() throws Exception {
-    database = Databases.createPostgresDatabase(container.getUsername(), container.getPassword(), container.getJdbcUrl());
+    database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
     configPersistence = new DatabaseConfigPersistence(database);
-    configPersistence.initialize(MoreResources.readResource(AIRBYTE_CONFIGS_TABLE_SCHEMA));
     database.query(ctx -> ctx.execute("TRUNCATE TABLE airbyte_configs"));
   }
 
@@ -109,12 +104,6 @@ public class DatabaseConfigPersistenceTest extends BaseTest {
     Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(System.currentTimeMillis()));
     database.query(ctx -> ctx.fetchExists(select().from(AIRBYTE_CONFIGS).where(CREATED_AT.eq(timestamp))));
     database.query(ctx -> ctx.fetchExists(select().from(AIRBYTE_CONFIGS).where(UPDATED_AT.eq(timestamp))));
-
-    // when the airbyte_configs has been created, calling initialize again will not change anything
-    String testSchema = "CREATE TABLE IF NOT EXISTS airbyte_test_configs(id BIGINT PRIMARY KEY);";
-    configPersistence.initialize(testSchema);
-    // the airbyte_test_configs table does not exist
-    assertThrows(DataAccessException.class, () -> database.query(ctx -> ctx.fetchExists(select().from("airbyte_test_configs"))));
   }
 
   @Test

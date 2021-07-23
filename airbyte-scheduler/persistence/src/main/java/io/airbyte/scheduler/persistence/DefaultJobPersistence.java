@@ -24,6 +24,8 @@
 
 package io.airbyte.scheduler.persistence;
 
+import static org.jooq.impl.DSL.select;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -658,7 +660,7 @@ public class DefaultJobPersistence implements JobPersistence {
     final Table<Record> tableSql = getTable(schema, tableName);
     final Table<Record> backupTableSql = getTable(backupSchema, tableName);
     ctx.dropTableIfExists(backupTableSql).execute();
-    ctx.createTable(backupTableSql).as(DSL.select(DSL.asterisk()).from(tableSql)).withData().execute();
+    ctx.createTable(backupTableSql).as(select(DSL.asterisk()).from(tableSql)).withData().execute();
     ctx.truncateTable(tableSql).restartIdentity().execute();
   }
 
@@ -694,7 +696,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   /**
-   * In schema.sql, we create tables with IDENTITY PRIMARY KEY columns named 'id' that will generate
+   * We create tables with IDENTITY PRIMARY KEY columns named 'id' that will generate
    * auto-incremented ID for each new record. When importing batch of records from outside of the DB,
    * we need to update Postgres Internal state to continue auto-incrementing from the latest value or
    * we would risk to violate primary key constraints by inserting new records with duplicate ids.
