@@ -24,11 +24,20 @@
 
 package io.airbyte.config.persistence;
 
+import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.SourceConnection;
 import java.util.UUID;
 
-public class PersistenceConstants {
+// todo (cgardens) - this is just a utility for this PR. will need to figure out the "right" way to
+// do this with jared.
+public class WorkspaceFinder {
 
-  // for MVP we only support one workspace per deployment and we hard code its id.
-  public static final UUID DEFAULT_WORKSPACE_ID = UUID.fromString("5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6");
+  public static UUID getWorkspaceForSourceId(SourceConnection source) {
+    return source.getWorkspaceId();
+  }
+
+  public static UUID getWorkspaceForDestination(DestinationConnection destination) {
+    return destination.getWorkspaceId();
+  }
 
 }

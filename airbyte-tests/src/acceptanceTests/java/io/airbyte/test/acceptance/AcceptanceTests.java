@@ -908,7 +908,8 @@ public class AcceptanceTests {
         .operatorType(OperatorType.NORMALIZATION).normalization(new OperatorNormalization().option(
             OptionEnum.BASIC));
 
-    OperationCreate operationCreate = new OperationCreate()
+    final OperationCreate operationCreate = new OperationCreate()
+        .workspaceId(PersistenceConstants.DEFAULT_WORKSPACE_ID)
         .name("AccTestDestination-" + UUID.randomUUID()).operatorConfiguration(normalizationConfig);
 
     OperationRead operation = apiClient.getOperationApi().createOperation(operationCreate);
