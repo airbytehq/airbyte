@@ -137,6 +137,9 @@ public class AcceptanceTests {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AcceptanceTests.class);
 
+  private static final String SOURCE_E2E_TEST_CONNECTOR_VERSION = "0.1.0";
+  private static final String DESTINATION_E2E_TEST_CONNECTOR_VERSION = "0.1.0";
+
   private static final boolean IS_KUBE = System.getenv().containsKey("KUBE");
   private static final boolean IS_MINIKUBE = System.getenv().containsKey("IS_MINIKUBE");
 
@@ -605,14 +608,14 @@ public class AcceptanceTests {
     final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
         .name("E2E Test Source")
         .dockerRepository("airbyte/source-e2e-test")
-        .dockerImageTag("dev")
+        .dockerImageTag(SOURCE_E2E_TEST_CONNECTOR_VERSION)
         .documentationUrl(URI.create("https://example.com")));
 
     final DestinationDefinitionRead destinationDefinition = apiClient.getDestinationDefinitionApi()
         .createDestinationDefinition(new DestinationDefinitionCreate()
             .name("E2E Test Destination")
             .dockerRepository("airbyte/destination-e2e-test")
-            .dockerImageTag("dev")
+            .dockerImageTag(DESTINATION_E2E_TEST_CONNECTOR_VERSION)
             .documentationUrl(URI.create("https://example.com")));
 
     final SourceRead source = createSource(
@@ -705,14 +708,14 @@ public class AcceptanceTests {
     final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
         .name("E2E Test Source")
         .dockerRepository("airbyte/source-e2e-test")
-        .dockerImageTag("dev")
+        .dockerImageTag(SOURCE_E2E_TEST_CONNECTOR_VERSION)
         .documentationUrl(URI.create("https://example.com")));
 
     final DestinationDefinitionRead destinationDefinition = apiClient.getDestinationDefinitionApi()
         .createDestinationDefinition(new DestinationDefinitionCreate()
             .name("E2E Test Destination")
             .dockerRepository("airbyte/destination-e2e-test")
-            .dockerImageTag("dev")
+            .dockerImageTag(DESTINATION_E2E_TEST_CONNECTOR_VERSION)
             .documentationUrl(URI.create("https://example.com")));
 
     final SourceRead source = createSource(
