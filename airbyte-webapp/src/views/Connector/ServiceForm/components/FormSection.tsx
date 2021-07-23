@@ -12,6 +12,7 @@ import { PropertySection } from "./PropertySection";
 import { useServiceForm } from "../serviceFormContext";
 import GroupControls from "components/GroupControls";
 import { naturalComparator } from "utils/objects";
+import { IDataItem } from "components/base/DropDown/components/Option";
 
 function OrderComparator(a: FormBlock, b: FormBlock): number {
   const aIsNumber = Number.isInteger(a.order);
@@ -60,8 +61,7 @@ const ConditionSection: React.FC<{
     [formField.conditions]
   );
   const onOptionChange = useCallback(
-    (selectedItem: any) =>
-      selectedItem &&
+    (selectedItem: IDataItem) =>
       setUiWidgetsInfo(formField.path, {
         selectedItem: selectedItem.value,
       }),

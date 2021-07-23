@@ -100,8 +100,8 @@ export const jsonSchemaToUiWidget = (
     path: path || key,
     fieldKey: key,
     isRequired,
-    isSecret: jsonSchema.airbyte_secret,
-    multiline: jsonSchema.multiline,
+    isSecret: !!jsonSchema.airbyte_secret,
+    multiline: !!jsonSchema.multiline,
     type:
       (Array.isArray(jsonSchema.type) ? jsonSchema.type[0] : jsonSchema.type) ??
       "null",
@@ -121,20 +121,36 @@ function isKeyRequired(
   return isRequired;
 }
 
+const defaultFields: Array<keyof AirbyteJSONSchema> = [
+  "default",
+  "examples",
+  "description",
+  "pattern",
+  "order",
+  "const",
+  "title",
+];
+
 const pickDefaultFields = (
   schema: AirbyteJSONSchema
-): Partial<AirbyteJSONSchema> => ({
-  default: schema.default,
-  examples: schema.examples,
-  description: schema.description,
-  pattern: schema.pattern,
-  order: schema.order,
-  const: schema.const,
-  title: schema.title,
-  enum:
+): Partial<AirbyteJSONSchema> => {
+  const partialSchema: Partial<AirbyteJSONSchema> = {
+    ...Object.fromEntries(
+      Object.entries(schema).filter(([k]) =>
+        defaultFields.includes(k as keyof AirbyteJSONSchema)
+      )
+    ),
+  };
+
+  if (
     typeof schema.items === "object" &&
     !Array.isArray(schema.items) &&
     schema.items.enum
-      ? schema.items.enum
-      : schema.enum,
-});
+  ) {
+    partialSchema.enum = schema.items.enum;
+  } else if (schema.enum) {
+    partialSchema.enum = schema.enum;
+  }
+
+  return partialSchema;
+};
