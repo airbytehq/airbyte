@@ -2,6 +2,6 @@
 !Dockerfile
 !Dockerfile.test
 !main.py
-!source_blob
+!source_s3
 !setup.py
 !secrets

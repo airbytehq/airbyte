@@ -28,14 +28,13 @@ import time
 import json
 import boto3
 from botocore.errorfactory import ClientError
-from botocore import UNSIGNED
-from botocore.config import Config
 from pathlib import Path
 from uuid import uuid4
-from typing import Dict, Iterator, List, Mapping
+from typing import Iterator, List, Mapping
 
 import pytest
-from source_blob.stream import FileStream, IncrementalFileStreamS3
+from source_files_abstract.stream import FileStream
+from source_s3.stream import IncrementalFileStreamS3
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 
@@ -66,7 +65,6 @@ class AbstractTestIncrementalFileStream(ABC):
     @abstractmethod
     def stream_class(self) -> type:
         """
-
         :return: provider specific FileStream class (e.g. IncrementalFileStreamS3)
         :rtype: type
         """
@@ -74,16 +72,16 @@ class AbstractTestIncrementalFileStream(ABC):
     @property
     @abstractmethod
     def credentials(self) -> Mapping:
-        """ These will be added automatically to the provider property
+        """
+        These will be added automatically to the provider property
 
         :return: mapping of provider specific credentials
         :rtype: Mapping
         """
 
     @abstractmethod
-    def provider(self, bucket_name) -> Mapping:
+    def provider(self, bucket_name: str) -> Mapping:
         """
-
         :return: provider specific provider dict as described in spec.json (leave out credentials, they will be added automatically)
         :rtype: Mapping
         """
@@ -91,8 +89,9 @@ class AbstractTestIncrementalFileStream(ABC):
     @abstractmethod
     def cloud_files(self, cloud_bucket_name: str, credentials: Mapping, files_to_upload: List, private: bool=True) -> Iterator[str]:
         """
+        See S3 for example what the override of this needs to achieve.
 
-        :param cloud_bucket_name: [description]
+        :param cloud_bucket_name: name of bucket (or equivalent)
         :type cloud_bucket_name: str
         :param credentials: mapping of provider specific credentials
         :type credentials: Mapping
@@ -106,11 +105,13 @@ class AbstractTestIncrementalFileStream(ABC):
     
     @abstractmethod
     def teardown_infra(self, cloud_bucket_name: str, credentials: Mapping):
-        """[summary]
+        """
+        Provider-specific logic to tidy up any cloud resources.
+        See S3 for example.
 
-        :param cloud_bucket_name: [description]
+        :param cloud_bucket_name: bucket (or equivalent) name
         :type cloud_bucket_name: str
-        :param credentials: [description]
+        :param credentials: mapping of provider specific credentials
         :type credentials: Mapping
         """
 
@@ -181,7 +182,7 @@ class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
         with open(filename) as json_file:
             return json.load(json_file)
 
-    def provider(self, bucket_name) -> Mapping:
+    def provider(self, bucket_name: str) -> Mapping:
         return {"storage": "S3", "bucket": bucket_name}
 
     def _s3_connect(self, credentials: Mapping):
@@ -197,7 +198,6 @@ class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
         )
 
     def cloud_files(self, cloud_bucket_name: str, credentials: Mapping, files_to_upload: List, private: bool=True) -> Iterator[str]:
-        """"""
         self._s3_connect(credentials)
         region = "eu-west-3"
         location = {"LocationConstraint": region}

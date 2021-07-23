@@ -21,40 +21,12 @@
 # SOFTWARE.
 
 
-from setuptools import find_packages, setup
+from source_files_abstract import SourceFilesAbstract
+from .stream import IncrementalFileStreamS3
 
-MAIN_REQUIREMENTS = [
-    'airbyte-cdk',
-    'beautifulsoup4==4.9.3',
-    'gcsfs==0.7.1',
-    'genson==1.2.2',
-    'google-cloud-storage==1.35.0',
-    'html5lib==1.1',
-    'jsonschema==2.6.0',
-    'lxml==4.6.3',
-    'openpyxl==3.0.6',
-    'pandas==1.3.0',
-    'paramiko==2.7.2',
-    'pyarrow==4.0.1',
-    's3fs==0.4.2',
-    'smart-open[all]==5.1.0',
-    'xlrd==2.0.1'
-]
 
-TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-    "source-acceptance-test",
-]
+class SourceS3(SourceFilesAbstract):
 
-setup(
-    name="source_blob",
-    description="Source implementation for Blob.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
-    extras_require={
-        "tests": TEST_REQUIREMENTS,
-    },
-)
+    @property
+    def stream_class(self) -> type:
+        return IncrementalFileStreamS3

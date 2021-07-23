@@ -22,7 +22,7 @@
 
 from abc import ABC, abstractmethod
 import pytest
-from source_blob.fileclient import FileClientS3
+from source_s3.fileclient import FileClientS3
 from airbyte_cdk import AirbyteLogger
 
 

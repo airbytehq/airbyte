@@ -22,6 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .source import SourceBlobS3
+from .source import SourceS3
 
-__all__ = ["SourceBlobS3"]
+__all__ = ["SourceS3"]

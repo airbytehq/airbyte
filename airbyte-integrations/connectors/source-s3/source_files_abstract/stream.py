@@ -31,10 +31,7 @@ from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optio
 from traceback import format_exc
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from fnmatch import fnmatch
-from boto3 import session as boto3session
-from botocore import UNSIGNED
-from botocore.config import Config
-from .fileclient import FileClient, FileClientS3
+from .fileclient import FileClient
 from .filereader import FileReaderCsv
 
 from airbyte_cdk.logger import AirbyteLogger
@@ -133,7 +130,7 @@ class FileStream(Stream, ABC):
     @abstractmethod
     def fileclient_class(self) -> type:
         """
-        [REQUIRED] Override this to point to the relevant provider-specific fileclient class e.g. FileClientS3
+        Override this to point to the relevant provider-specific fileclient class e.g. FileClientS3
 
         :raises RuntimeError: if undeclared by child class
         :return: reference to relevant class
@@ -144,7 +141,8 @@ class FileStream(Stream, ABC):
     @abstractmethod
     def filepath_iterator(logger: AirbyteLogger, provider: dict) -> Iterator[str]:
         """
-        [REQUIRED] Override this to supply the 'url' to use in FileClient(). This is possibly better described as blob or file path.
+        Provider-specific method to iterate through bucket/container/etc. and yield each full filepath.
+        This should supply the 'url' to use in FileClient(). This is possibly better described as blob or file path.
             e.g. for AWS: f"s3://{aws_access_key_id}:{aws_secret_access_key}@{self._url}" <- self._url is what we want to yield here
 
         :param logger: instance of AirbyteLogger to use as this is a staticmethod
@@ -276,7 +274,8 @@ class FileStream(Stream, ABC):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         This builds full-refresh stream_slices regardless of sync_mode param.
-        Incremental stream_slices are implemented in the IncrementalFileStream child class
+        1 file == 1 stream_slice.
+        Incremental stream_slices are implemented in the IncrementalFileStream child class.
         """
         
         # TODO: this could be optimised via concurrent reads, however we'd lose chronology and need to deal with knock-ons of that
@@ -292,7 +291,7 @@ class FileStream(Stream, ABC):
     def _match_target_schema(self, record: Mapping[str, Any], target_columns: List) -> Mapping[str, Any]:
         """
         This method handles missing or additional fields in each record, according to the provided target_columns.
-        All missing fields are added with None as value
+        All missing fields are added, with a value of None (null)
         All additional fields are packed into the _airbyte_additional_properties object column
         We start off with a check to see if we're already lined up to target in order to avoid unnecessary iterations (useful if many columns)
 
@@ -320,7 +319,16 @@ class FileStream(Stream, ABC):
         return record
 
     def _add_extra_fields_from_map(self, record: Mapping[str, Any], extra_map: Mapping[str, Any]) -> Mapping[str, Any]:
-        """TODO docstring"""
+        """
+        Simple method to take a mapping of columns:values and add them to the provided record
+
+        :param record: json-like representation of a data row {column:value}
+        :type record: Mapping[str, Any]
+        :param extra_map: map of additional columns and values to add
+        :type extra_map: Mapping[str, Any]
+        :return: mutated record with additional fields
+        :rtype: Mapping[str, Any]
+        """
         for key, value in extra_map.items():
             record[key] = value
         return record
@@ -333,7 +341,9 @@ class FileStream(Stream, ABC):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
-        TODO docstring
+        Uses provider-relevant FileClient to open file and then iterates through stream_records() using format-relevant FileReader.
+        Records are mutated on the fly using _match_target_schema() and _add_extra_fields_from_map() to achieve desired final schema.
+        Since this is called per stream_slice, this method works for both full_refresh and incremental so sync_mode is ignored.
         """
         file_reader = self.filereader_class(self._format, self._get_master_schema())
 
@@ -352,9 +362,6 @@ class FileStream(Stream, ABC):
 
 
 class IncrementalFileStream(FileStream, ABC):
-    """
-    TODO docstring
-    """
 
     # TODO: ideally want to checkpoint after every file or stream slice rather than N records
     state_checkpoint_interval = None
@@ -365,18 +372,16 @@ class IncrementalFileStream(FileStream, ABC):
     @property
     def cursor_field(self) -> str:
         """
-        :return str: The name of the cursor field.
+        :return: The name of the cursor field.
+        :rtype: str
         """
         return self.ab_last_mod_col
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
-        Override to extract state from the latest record. Needed to implement incremental sync.
-
         Inspects the latest record extracted from the data source and the current state object and return an updated state object.
-
-        For example: if the state object is based on created_at timestamp, and the current state is {'created_at': 10}, and the latest_record is
-        {'name': 'octavia', 'created_at': 20 } then this method would return {'created_at': 20} to indicate state should be updated to this object.
+        In the case where current_stream_state is null, we default to 1970-01-01 in order to pick up all files present.
+        We also save the schema into the state here so that we can use it on future incremental batches, allowing for additional/missing columns.
 
         :param current_stream_state: The stream's current state object
         :param latest_record: The latest record extracted from the stream
@@ -397,7 +402,13 @@ class IncrementalFileStream(FileStream, ABC):
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
-        TODO docstring
+        Builds either full_refresh or incremental stream_slices based on sync_mode.
+        An incremental stream_slice is a group of all files with the exact same last_modified timestamp.
+        This ensures we only update the cursor state to a given timestamp after ALL files with that timestamp have been successfully read.
+
+        Slight nuance: as we iterate through time_ordered_fileclient_iterator(), 
+        we yield the stream_slice containing file(s) up to and EXcluding the file on the current iteration.
+        The stream_slice is then cleared (if we yielded it) and this iteration's file appended to the (next) stream_slice
         """
         if sync_mode.value == "full_refresh":
             yield from super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
@@ -413,7 +424,7 @@ class IncrementalFileStream(FileStream, ABC):
             stream_slice = []
 
             for last_mod, fileclient in self.time_ordered_fileclient_iterator():
-                # skip this file if not needed in this incremental
+                # skip this file if last_mod is earlier than our cursor value from state
                 if (
                     stream_state is not None
                     and self.cursor_field in stream_state.keys()
@@ -437,72 +448,3 @@ class IncrementalFileStream(FileStream, ABC):
             # now yield the final stream_slice. This is required because our loop only yields the slice previous to its current iteration.
             if len(stream_slice) > 0:
                 yield stream_slice
-
-
-class IncrementalFileStreamS3(IncrementalFileStream):
-    """TODO docstring"""
-
-    @property
-    def fileclient_class(self) -> type:
-        return FileClientS3
-
-    @staticmethod
-    def _list_bucket(provider:Mapping[str,Any], prefix: str="", accept_key=lambda k: True) -> Iterator[str]:
-        """[summary]
-
-        :param provider: [description]
-        :type provider: Mapping[str,Any]
-        :param prefix: [description], defaults to ''
-        :type prefix: str, optional
-        :param accept_key: [description], defaults to lambda k:True
-        :type accept_key: [type], optional
-        :yield: [description]
-        :rtype: Iterator[str]
-        """
-        if FileClientS3.use_aws_account(provider):
-            session = boto3session.Session(aws_access_key_id=provider["aws_access_key_id"], aws_secret_access_key=provider["aws_secret_access_key"])
-            client = session.client('s3')
-        else:
-            session = boto3session.Session()
-            client = session.client('s3', config=Config(signature_version=UNSIGNED))
-        
-        ctoken = None
-        while True:
-            # list_objects_v2 doesn't like a None value for ContinuationToken
-            # so we don't set it if we don't have one.
-            if ctoken:
-                kwargs = dict(Bucket=provider['bucket'], Prefix=prefix, ContinuationToken=ctoken)
-            else:
-                kwargs = dict(Bucket=provider['bucket'], Prefix=prefix)
-            response = client.list_objects_v2(**kwargs)
-            try:
-                content = response['Contents']
-            except KeyError:
-                pass
-            else:
-                for c in content:
-                    key = c['Key']
-                    if accept_key(key):
-                        yield key
-            ctoken = response.get('NextContinuationToken', None)
-            if not ctoken:
-                break
-
-    @staticmethod
-    def filepath_iterator(logger: AirbyteLogger, provider: dict) -> Tuple[bool, Optional[Any]]:
-
-        prefix = provider.get("path_prefix")
-        if prefix is None:
-            prefix = ""
-
-        msg = f"Iterating S3 bucket '{provider['bucket']}'"
-        logger.info(msg + f" with prefix: '{prefix}' " if prefix != "" else msg)
-
-        # TODO: use FileClientS3.use_aws_account to check if we're using public or private bucket
-        #   then make this work for public as well
-        for blob in IncrementalFileStreamS3._list_bucket(
-            provider=provider,
-            prefix=prefix,
-            accept_key=lambda k: not k.endswith('/') # filter out 'folders', we just want actual blobs
-        ): 
-            yield blob

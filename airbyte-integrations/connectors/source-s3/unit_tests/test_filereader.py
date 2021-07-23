@@ -26,7 +26,7 @@ import os
 from pathlib import Path
 import pyarrow as pa
 import pytest
-from source_blob.filereader import FileReader, FileReaderCsv
+from source_files_abstract.filereader import FileReader, FileReaderCsv
 from airbyte_cdk import AirbyteLogger
 from typing import List, Mapping, Any
 

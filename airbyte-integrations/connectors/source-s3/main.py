@@ -24,8 +24,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_blob import SourceBlobS3
+from source_s3 import SourceS3
 
 if __name__ == "__main__":
-    source = SourceBlobS3()
+    source = SourceS3()
     launch(source, sys.argv[1:])
