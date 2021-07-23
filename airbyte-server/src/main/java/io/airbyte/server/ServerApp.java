@@ -25,7 +25,6 @@
 package io.airbyte.server;
 
 import io.airbyte.analytics.TrackingClientSingleton;
-import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
@@ -42,12 +41,12 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
 import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
+import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
-import io.airbyte.server.apis.ConfigurationApi;
 import io.airbyte.server.errors.InvalidInputExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonExceptionMapper;
 import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
@@ -61,27 +60,21 @@ import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.ContainerResponseFilter;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-public class ServerApp {
+public class ServerApp implements ServerRunnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
   private static final int PORT = 8001;
@@ -91,24 +84,19 @@ public class ServerApp {
    * wouldn't run
    */
   private static final AirbyteVersion KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION = new AirbyteVersion("0.26.5-alpha");
-  private final ConfigRepository configRepository;
-  private final JobPersistence jobPersistence;
-  private final Configs configs;
-  private final Set<ContainerRequestFilter> requestFilters;
-  private final Set<ContainerResponseFilter> responseFilters;
+  private final String airbyteVersion;
+  private final Set<Class<?>> customComponentClasses;
+  private final Set<Object> customComponents;
 
-  public ServerApp(final ConfigRepository configRepository,
-                   final JobPersistence jobPersistence,
-                   final Configs configs,
-                   final Set<ContainerRequestFilter> requestFilters,
-                   final Set<ContainerResponseFilter> responseFilters) {
-    this.configRepository = configRepository;
-    this.jobPersistence = jobPersistence;
-    this.configs = configs;
-    this.requestFilters = requestFilters;
-    this.responseFilters = responseFilters;
+  public ServerApp(final String airbyteVersion,
+                   final Set<Class<?>> customComponentClasses,
+                   final Set<Object> customComponents) {
+    this.airbyteVersion = airbyteVersion;
+    this.customComponentClasses = customComponentClasses;
+    this.customComponents = customComponents;
   }
 
+  @Override
   public void start() throws Exception {
     TrackingClientSingleton.get().identify();
 
@@ -118,38 +106,9 @@ public class ServerApp {
 
     Map<String, String> mdc = MDC.getCopyOfContextMap();
 
-    ConfigurationApiFactory.setSchedulerJobClient(new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence)));
-    final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence);
-    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(configs.getTemporalHost());
-    final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot());
-
-    ConfigurationApiFactory
-        .setSynchronousSchedulerClient(new SpecCachingSynchronousSchedulerClient(new DefaultSynchronousSchedulerClient(temporalClient, jobTracker)));
-    ConfigurationApiFactory.setTemporalService(temporalService);
-    ConfigurationApiFactory.setConfigRepository(configRepository);
-    ConfigurationApiFactory.setJobPersistence(jobPersistence);
-    ConfigurationApiFactory.setConfigs(configs);
-    ConfigurationApiFactory.setArchiveTtlManager(new FileTtlManager(10, TimeUnit.MINUTES, 10));
-    ConfigurationApiFactory.setMdc(mdc);
-
     ResourceConfig rc =
         new ResourceConfig()
-            // request logging
             .register(new RequestLogger(mdc))
-            // api
-            .register(ConfigurationApi.class)
-            .register(
-                new AbstractBinder() {
-
-                  @Override
-                  public void configure() {
-                    bindFactory(ConfigurationApiFactory.class)
-                        .to(ConfigurationApi.class)
-                        .in(RequestScoped.class);
-                  }
-
-                })
-            // exception handling
             .register(InvalidInputExceptionMapper.class)
             .register(InvalidJsonExceptionMapper.class)
             .register(InvalidJsonInputExceptionMapper.class)
@@ -160,9 +119,9 @@ public class ServerApp {
             // https://stackoverflow.com/questions/35669774/jersey-custom-exception-mapper-for-invalid-json-string
             .register(JacksonJaxbJsonProvider.class);
 
-    // add filters
-    requestFilters.forEach(rc::register);
-    responseFilters.forEach(rc::register);
+    // inject custom server functionality
+    customComponentClasses.forEach(rc::register);
+    customComponents.forEach(rc::register);
 
     ServletHolder configServlet = new ServletHolder(new ServletContainer(rc));
 
@@ -172,7 +131,7 @@ public class ServerApp {
 
     server.start();
     final String banner = MoreResources.readResource("banner/banner.txt");
-    LOGGER.info(banner + String.format("Version: %s\n", configs.getAirbyteVersion()));
+    LOGGER.info(banner + String.format("Version: %s\n", airbyteVersion));
     server.join();
   }
 
@@ -202,9 +161,7 @@ public class ServerApp {
     }
   }
 
-  public static void runServer(final Set<ContainerRequestFilter> requestFilters,
-                               final Set<ContainerResponseFilter> responseFilters)
-      throws Exception {
+  public static ServerRunnable getServer(ServerFactory apiFactory) throws Exception {
     final Configs configs = new EnvConfigs();
 
     MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, LogClientSingleton.getServerLogsRoot(configs).toString());
@@ -254,15 +211,29 @@ public class ServerApp {
 
     if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
       LOGGER.info("Starting server...");
-      new ServerApp(configRepository, jobPersistence, configs, requestFilters, responseFilters).start();
+
+      final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence);
+      final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(configs.getTemporalHost());
+      final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot());
+      final SchedulerJobClient schedulerJobClient = new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence));
+      final DefaultSynchronousSchedulerClient syncSchedulerClient = new DefaultSynchronousSchedulerClient(temporalClient, jobTracker);
+      final SpecCachingSynchronousSchedulerClient cachingSchedulerClient = new SpecCachingSynchronousSchedulerClient(syncSchedulerClient);
+
+      return apiFactory.create(
+          schedulerJobClient,
+          cachingSchedulerClient,
+          temporalService,
+          configRepository,
+          jobPersistence,
+          configs);
     } else {
       LOGGER.info("Start serving version mismatch errors. Automatic migration either failed or didn't run");
-      new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.get(), PORT).start();
+      return new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.get(), PORT);
     }
   }
 
   public static void main(String[] args) throws Exception {
-    runServer(Collections.emptySet(), Set.of(new CorsFilter()));
+    getServer(new ServerFactory.Api()).start();
   }
 
   /**
