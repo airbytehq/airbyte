@@ -63,8 +63,7 @@ AWS_SECRET_ACCESS_KEY=
 # Endpoint where Minio is deployed at.
 S3_MINIO_ENDPOINT=
 ```
-The `S3_PATH_STYLE_ACCESS` should remain `true`. Although `S3_LOG_BUCKET_REGION` is used to create the Minio client, it's value is not actually used
-and can remain untouched.
+The `S3_PATH_STYLE_ACCESS` variable should remain `true`. The `S3_LOG_BUCKET_REGION` variable should remain empty.
 
 #### Configuring Custom S3 Log Location
 Replace the following variables in the `.env` file in the `kube/overlays/stable` directory:
