@@ -90,10 +90,14 @@ jobs:
         run: ./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates --scan
 
       - name: Format
-        run: SUB_BUILD=CONNECTORS_BASE ./gradlew format --scan --info --stacktrace
+        run: ./tools/bin/setup_gcs_creds.sh && GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcs.json" SUB_BUILD=CONNECTORS_BASE ./gradlew format --scan --info --stacktrace
+        env:
+          GOOGLE_CLOUD_STORAGE_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
 
       - name: Build
-        run: SUB_BUILD=CONNECTORS_BASE ./gradlew build --scan
+        run: ./tools/bin/setup_gcs_creds.sh && GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcs.json" SUB_BUILD=CONNECTORS_BASE ./gradlew build --scan
+        env:
+          GOOGLE_CLOUD_STORAGE_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
 
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
@@ -229,7 +233,7 @@ jobs:
         run: git status --porcelain && test -z "$(git status --porcelain)"
 
       - name: Build
-        run: ./tools/bin/setup_gcs_creds.sh && SUB_BUILD=PLATFORM ./gradlew build --scan
+        run: ./tools/bin/setup_gcs_creds.sh && GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcs.json" && SUB_BUILD=PLATFORM ./gradlew build --scan
         env:
           GOOGLE_CLOUD_STORAGE_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
 
@@ -250,9 +254,10 @@ jobs:
 
       - name: Build Platform Docker Images
         if: success() && github.ref == 'refs/heads/master'
-        run: SUB_BUILD=PLATFORM ./gradlew composeBuild --scan
+        run: ./tools/bin/setup_gcs_creds.sh && GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcs.json" ./gradlew composeBuild --scan
         env:
           GIT_REVISION: ${{ github.sha }}
+          GOOGLE_CLOUD_STORAGE_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
 
       # make sure these always run before pushing platform docker images
       - name: Run End-to-End Acceptance Tests
@@ -365,7 +370,9 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
 
       - name: Build Platform Docker Images
-        run: SUB_BUILD=PLATFORM ./gradlew --no-daemon composebuild --scan
+        run: ./tools/bin/setup_gcs_creds.sh && GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcs.json" SUB_BUILD=PLATFORM ./gradlew --no-daemon composebuild --scan
+        env:
+          GOOGLE_CLOUD_STORAGE_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
 
       - name: Run End-to-End Frontend Tests
         run: ./tools/bin/e2e_test.sh
@@ -460,7 +467,9 @@ jobs:
           CHANGE_MINIKUBE_NONE_USER: true
 
       - name: Build Platform Docker Images
-        run: SUB_BUILD=PLATFORM ./gradlew composeBuild --scan
+        run: ./tools/bin/setup_gcs_creds.sh && GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcs.json" SUB_BUILD=PLATFORM ./gradlew composeBuild --scan
+        env:
+          GOOGLE_CLOUD_STORAGE_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
 
       - name: Run Logging Tests
         run: ./tools/bin/cloud_storage_logging_test.sh
