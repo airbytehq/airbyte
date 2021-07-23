@@ -28,10 +28,12 @@ import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.models.Job;
@@ -41,13 +43,14 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
-import org.apache.commons.lang3.NotImplementedException;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class WorkspaceHelper {
 
   private final LoadingCache<UUID, UUID> sourceToWorkspaceCache;
   private final LoadingCache<UUID, UUID> destinationToWorkspaceCache;
   private final LoadingCache<UUID, UUID> connectionToWorkspaceCache;
+  private final LoadingCache<UUID, UUID> operationToWorkspaceCache;
   private final LoadingCache<Long, UUID> jobToWorkspaceCache;
 
   public WorkspaceHelper(ConfigRepository configRepository, JobPersistence jobPersistence) {
@@ -55,8 +58,8 @@ public class WorkspaceHelper {
     this.sourceToWorkspaceCache = getExpiringCache(new CacheLoader<>() {
 
       @Override
-      public UUID load(UUID sourceId) throws JsonValidationException, ConfigNotFoundException, IOException {
-        final SourceConnection source = configRepository.getSourceConnection(sourceId);;
+      public UUID load(@NonNull UUID sourceId) throws JsonValidationException, ConfigNotFoundException, IOException {
+        final SourceConnection source = configRepository.getSourceConnection(sourceId);
         return source.getWorkspaceId();
       }
 
@@ -65,7 +68,7 @@ public class WorkspaceHelper {
     this.destinationToWorkspaceCache = getExpiringCache(new CacheLoader<>() {
 
       @Override
-      public UUID load(UUID destinationId) throws JsonValidationException, ConfigNotFoundException, IOException {
+      public UUID load(@NonNull UUID destinationId) throws JsonValidationException, ConfigNotFoundException, IOException {
         final DestinationConnection destination = configRepository.getDestinationConnection(destinationId);
         return destination.getWorkspaceId();
       }
@@ -75,8 +78,8 @@ public class WorkspaceHelper {
     this.connectionToWorkspaceCache = getExpiringCache(new CacheLoader<>() {
 
       @Override
-      public UUID load(UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException, ExecutionException {
-        final StandardSync connection = configRepository.getStandardSync(connectionId);;
+      public UUID load(@NonNull UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException {
+        final StandardSync connection = configRepository.getStandardSync(connectionId);
         final UUID sourceId = connection.getSourceId();
         final UUID destinationId = connection.getDestinationId();
         return getWorkspaceForConnection(sourceId, destinationId);
@@ -84,10 +87,20 @@ public class WorkspaceHelper {
 
     });
 
+    this.operationToWorkspaceCache = getExpiringCache(new CacheLoader<>() {
+
+      @Override
+      public UUID load(@NonNull UUID operationId) throws JsonValidationException, ConfigNotFoundException, IOException {
+        final StandardSyncOperation operation = configRepository.getStandardSyncOperation(operationId);
+        return operation.getWorkspaceId();
+      }
+
+    });
+
     this.jobToWorkspaceCache = getExpiringCache(new CacheLoader<>() {
 
       @Override
-      public UUID load(Long jobId) throws IOException, ExecutionException {
+      public UUID load(@NonNull Long jobId) throws IOException {
         final Job job = jobPersistence.getJob(jobId);
         if (job.getConfigType() == JobConfig.ConfigType.SYNC || job.getConfigType() == JobConfig.ConfigType.RESET_CONNECTION) {
           return getWorkspaceForConnectionId(UUID.fromString(job.getScope()));
@@ -99,32 +112,42 @@ public class WorkspaceHelper {
     });
   }
 
-  public UUID getWorkspaceForSourceId(UUID sourceId) throws ExecutionException {
-    return sourceToWorkspaceCache.get(sourceId);
+  public UUID getWorkspaceForSourceId(UUID sourceId) {
+    return swallowExecutionException(() -> sourceToWorkspaceCache.get(sourceId));
   }
 
-  public UUID getWorkspaceForDestinationId(UUID destinationId) throws ExecutionException {
-    return destinationToWorkspaceCache.get(destinationId);
+  public UUID getWorkspaceForDestinationId(UUID destinationId) {
+    return swallowExecutionException(() -> destinationToWorkspaceCache.get(destinationId));
   }
 
-  public UUID getWorkspaceForJobId(Long jobId) throws IOException, ExecutionException {
-    return jobToWorkspaceCache.get(jobId);
+  public UUID getWorkspaceForJobId(Long jobId) {
+    return swallowExecutionException(() -> jobToWorkspaceCache.get(jobId));
   }
 
-  public UUID getWorkspaceForConnection(UUID sourceId, UUID destinationId) throws ExecutionException {
+  public UUID getWorkspaceForConnection(UUID sourceId, UUID destinationId) {
     final UUID sourceWorkspace = getWorkspaceForSourceId(sourceId);
     final UUID destinationWorkspace = getWorkspaceForDestinationId(destinationId);
 
     Preconditions.checkArgument(Objects.equals(sourceWorkspace, destinationWorkspace), "Source and destination must be from the same workspace!");
-    return sourceWorkspace;
+    return swallowExecutionException(() -> sourceWorkspace);
   }
 
-  public UUID getWorkspaceForConnectionId(UUID connectionId) throws ExecutionException {
-    return connectionToWorkspaceCache.get(connectionId);
+  public UUID getWorkspaceForConnectionId(UUID connectionId) {
+    return swallowExecutionException(() -> connectionToWorkspaceCache.get(connectionId));
   }
 
   public UUID getWorkspaceForOperationId(UUID operationId) {
-    throw new NotImplementedException();
+    return swallowExecutionException(() -> operationToWorkspaceCache.get(operationId));
+  }
+
+  // the ExecutionException is an implementation detail the helper and does not need to be handled by
+  // callers.
+  private static UUID swallowExecutionException(CheckedSupplier<UUID, ExecutionException> supplier) {
+    try {
+      return supplier.get();
+    } catch (ExecutionException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private static <K, V> LoadingCache<K, V> getExpiringCache(CacheLoader<K, V> cacheLoader) {
