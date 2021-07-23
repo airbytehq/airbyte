@@ -49,9 +49,7 @@ class ConfigurationError(Exception):
 
 
 class FileStream(Stream, ABC):
-    """
-    TODO docstring
-    """
+
     format_filereader_map = {
         'csv': FileReaderCsv,
         # 'parquet': FileReaderParquet,
@@ -63,6 +61,18 @@ class FileStream(Stream, ABC):
     datetime_format_string = "%Y-%m-%dT%H:%M:%S%z"
 
     def __init__(self, dataset_name: str, provider: dict, format: dict, path_patterns: List[str], schema: str = None):
+        """
+        :param dataset_name: table name for this stream
+        :type dataset_name: str
+        :param provider: provider specific mapping as described in spec.json
+        :type provider: dict
+        :param format: file format specific mapping as described in spec.json
+        :type format: dict
+        :param path_patterns: list of Unix shell-style patterns for file-matching
+        :type path_patterns: List[str]
+        :param schema: JSON-syntax user provided schema, defaults to None
+        :type schema: str, optional
+        """
         self.dataset_name = dataset_name
         self._path_patterns = path_patterns
         self._provider = provider
@@ -75,7 +85,20 @@ class FileStream(Stream, ABC):
 
     @staticmethod
     def _init_schema(schema: str) -> Mapping[str,str]:
-        """TODO: docstring"""
+        """
+        If the user provided a schema, we run this method to convert to a python dict and verify it
+        This verifies:
+            - that the provided string is valid JSON
+            - that it is a key:value map with no nested values (objects or arrays)
+            - that all values in the map correspond to a JsonSchema datatype
+        If this passes, we are confident that the user-provided schema is valid and will work as expected with the rest of the code
+
+        :param schema: JSON-syntax user provided schema
+        :type schema: str
+        :raises ConfigurationError: if any of the verification steps above fail
+        :return: the input schema (json string) as a python dict 
+        :rtype: Mapping[str,str]
+        """
         try:
             py_schema = json.loads(schema)
         except json.decoder.JSONDecodeError as err:
@@ -100,33 +123,63 @@ class FileStream(Stream, ABC):
 
     @property
     def filereader_class(self) -> type:
+        """
+        :return: reference to the relevant filereader class e.g. FileReaderCsv
+        :rtype: type
+        """
         return self.format_filereader_map[self._format.get("filetype")]
 
     @property
     @abstractmethod
     def fileclient_class(self) -> type:
-        """TODO docstring"""
+        """
+        [REQUIRED] Override this to point to the relevant provider-specific fileclient class e.g. FileClientS3
+
+        :raises RuntimeError: if undeclared by child class
+        :return: reference to relevant class
+        :rtype: type
+        """
 
     @staticmethod
     @abstractmethod
     def filepath_iterator(logger: AirbyteLogger, provider: dict) -> Iterator[str]:
         """
-        TODO docstring
-        This needs to yield the 'url' to use in FileClient(). This is possibly better described as blob or file path. e.g.
-            For AWS: f"s3://{aws_access_key_id}:{aws_secret_access_key}@{self._url}" <- self._url is what we want to yield here
+        [REQUIRED] Override this to supply the 'url' to use in FileClient(). This is possibly better described as blob or file path.
+            e.g. for AWS: f"s3://{aws_access_key_id}:{aws_secret_access_key}@{self._url}" <- self._url is what we want to yield here
+
+        :param logger: instance of AirbyteLogger to use as this is a staticmethod
+        :type logger: AirbyteLogger
+        :param provider: provider specific mapping as described in spec.json
+        :type provider: dict
+        :yield: url filepath to use in FileClient()
+        :rtype: Iterator[str]
         """
 
     def pattern_matched_filepath_iterator(self, filepaths:Iterable[str]) -> Iterator[str]:
-        """ TODO docstring """
+        """
+        iterates through iterable filepaths and yields only those filepaths that match user-provided path patterns
+
+        :param filepaths: filepath_iterator(), this is a param rather than method reference in order to unit test this
+        :type filepaths: Iterable[str]
+        :yield: url filepath to use in FileClient(), if matching on user-provided path patterns
+        :rtype: Iterator[str]
+        """
         for filepath in filepaths:
             for path_pattern in self._path_patterns:
                 if fnmatch(filepath, path_pattern):
                     yield filepath
 
     def time_ordered_fileclient_iterator(self) -> Iterable[Tuple[datetime, FileClient]]:
-        """TODO docstring"""
+        """
+        Iterates through pattern_matched_filepath_iterator(), acquiring last_modified property of each file to return in time ascending order.
+        Uses concurrent.futures to thread this asynchronously in order to improve performance when there are many files (network I/O)
+        Caches results after first run of method to avoid repeating network calls as this is used more than once 
 
-        def get_fileclient_with_lastmod(filepath) -> Tuple[datetime, FileClient]:
+        :return: list of tuples in format ({last modified date}, {FileClient object})
+        :rtype: Iterable[Tuple[datetime, FileClient]]
+        """
+
+        def get_fileclient_with_lastmod(filepath: str) -> Tuple[datetime, FileClient]:
             fc = self.fileclient_class(filepath, self._provider)
             return (fc.last_modified, fc)
 
@@ -148,7 +201,8 @@ class FileStream(Stream, ABC):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """
-        TODO docstring
+        :return: A dict of the JSON schema representing this stream.
+        :rtype: Mapping[str, Any]
         """
         if self._schema != {}:
             return_schema = deepcopy(self._schema)
@@ -160,9 +214,20 @@ class FileStream(Stream, ABC):
         return_schema[self.ab_file_name_col] = "string"
         return return_schema
 
-    def _get_master_schema(self):
-        """ TODO docstring """
-        # TODO: maybe implement a 'lazy' mode that skips schema checking to improve performance (user beware)
+    def _get_master_schema(self) -> Mapping[str, Any]:
+        """
+        In order to auto-infer a schema across many files and/or allow for additional properties (columns),
+            we need to determine the superset of schemas across all relevant files.
+        This method iterates through time_ordered_fileclient_iterator() obtaining the inferred schema (process implemented per file format),
+            to build up this superset schema (master_schema).
+        This runs datatype checks to Warn or Error if we find incompatible schemas (e.g. same column is 'date' in one file but 'float' in another).
+        This caches the master_schema after first run in order to avoid repeated compute and network calls to infer schema on all files.
+
+        :raises RuntimeError: if we find datatype mismatches between files or between a file and schema state (provided or from previous inc. batch)
+        :return: A dict of the JSON schema representing this stream.
+        :rtype: Mapping[str, Any]
+        """
+        # TODO: could implement a (user-beware) 'lazy' mode that skips schema checking to improve performance
         if self.master_schema is None:
             master_schema = deepcopy(self._schema)
 
@@ -210,9 +275,10 @@ class FileStream(Stream, ABC):
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
-        TODO docstring
-        This enacts full_refresh style regardless of sync_mode, incremental achieved via incremental child classes
+        This builds full-refresh stream_slices regardless of sync_mode param.
+        Incremental stream_slices are implemented in the IncrementalFileStream child class
         """
+        
         # TODO: this could be optimised via concurrent reads, however we'd lose chronology and need to deal with knock-ons of that
         # we could do this concurrently both full and incremental by running batches in parallel
         # and then incrementing the cursor per each complete batch
@@ -224,17 +290,30 @@ class FileStream(Stream, ABC):
             }]
 
     def _match_target_schema(self, record: Mapping[str, Any], target_columns: List) -> Mapping[str, Any]:
-        """TODO docstring"""
+        """
+        This method handles missing or additional fields in each record, according to the provided target_columns.
+        All missing fields are added with None as value
+        All additional fields are packed into the _airbyte_additional_properties object column
+        We start off with a check to see if we're already lined up to target in order to avoid unnecessary iterations (useful if many columns)
+
+        :param record: json-like representation of a data row {column:value}
+        :type record: Mapping[str, Any]
+        :param target_columns: list of column names to mutate this record into (obtained via self.get_json_schema().keys() as of now)
+        :type target_columns: List
+        :return: mutated record with columns lining up to target_columns
+        :rtype: Mapping[str, Any]
+        """
+        compare_columns = [c for c in target_columns if c not in [self.ab_last_mod_col, self.ab_file_name_col]]
         # check if we're already matching to avoid unnecessary iteration
-        if set(list(record.keys()) + [self.ab_additional_col]) == set(target_columns):
+        if set(list(record.keys()) + [self.ab_additional_col]) == set(compare_columns):
             record[self.ab_additional_col] = {}
             return record
         # missing columns
-        for c in [col for col in target_columns if col != self.ab_additional_col]:
+        for c in [col for col in compare_columns if col != self.ab_additional_col]:
             if c not in record.keys():
                 record[c] = None
         # additional columns
-        record[self.ab_additional_col] = {c: deepcopy(record[c]) for c in record.keys() if c not in target_columns}
+        record[self.ab_additional_col] = {c: deepcopy(record[c]) for c in record.keys() if c not in compare_columns}
         for c in record[self.ab_additional_col].keys():
             del record[c]
 
@@ -368,7 +447,7 @@ class IncrementalFileStreamS3(IncrementalFileStream):
         return FileClientS3
 
     @staticmethod
-    def _list_bucket(provider:Mapping[str,Any], prefix: str='', accept_key=lambda k: True) -> Iterator[str]:
+    def _list_bucket(provider:Mapping[str,Any], prefix: str="", accept_key=lambda k: True) -> Iterator[str]:
         """[summary]
 
         :param provider: [description]
