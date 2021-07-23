@@ -1,20 +1,15 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "$schema": "http://json-schema.org/schema#",
   "properties": {
+    "description": {
+      "type": "string"
+    },
     "id": {
-      "type": "string",
-      "description": "The ID of the issue type screen scheme."
+      "type": "string"
     },
     "name": {
-      "type": "string",
-      "description": "The name of the issue type screen scheme."
-    },
-    "description": {
-      "type": "string",
-      "description": "The description of the issue type screen scheme."
+      "type": "string"
     }
   },
-  "additionalProperties": false,
-  "description": "Details of an issue type screen scheme."
+  "type": "object"
 }

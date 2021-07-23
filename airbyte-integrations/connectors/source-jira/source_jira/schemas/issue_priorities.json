@@ -1,32 +1,24 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "$schema": "http://json-schema.org/schema#",
   "properties": {
-    "self": {
-      "type": "string",
-      "description": "The URL of the issue priority."
-    },
-    "statusColor": {
-      "type": "string",
-      "description": "The color used to indicate the issue priority."
-    },
     "description": {
-      "type": "string",
-      "description": "The description of the issue priority."
+      "type": "string"
     },
     "iconUrl": {
-      "type": "string",
-      "description": "The URL of the icon for the issue priority."
-    },
-    "name": {
-      "type": "string",
-      "description": "The name of the issue priority."
+      "type": "string"
     },
     "id": {
-      "type": "string",
-      "description": "The ID of the issue priority."
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "self": {
+      "type": "string"
+    },
+    "statusColor": {
+      "type": "string"
     }
   },
-  "additionalProperties": true,
-  "description": "An issue priority."
+  "type": "object"
 }
