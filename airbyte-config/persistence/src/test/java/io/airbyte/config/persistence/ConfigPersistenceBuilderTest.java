@@ -25,7 +25,6 @@
 package io.airbyte.config.persistence;
 
 import static io.airbyte.db.instance.AirbyteConfigsTable.AIRBYTE_CONFIGS;
-import static io.airbyte.db.instance.AirbyteConfigsTable.AIRBYTE_CONFIGS_TABLE_SCHEMA;
 import static io.airbyte.db.instance.AirbyteConfigsTable.CONFIG_BLOB;
 import static io.airbyte.db.instance.AirbyteConfigsTable.CONFIG_ID;
 import static io.airbyte.db.instance.AirbyteConfigsTable.CONFIG_TYPE;
@@ -40,12 +39,11 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.instance.ConfigsDatabaseInstance;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -92,8 +90,8 @@ class ConfigPersistenceBuilderTest extends BaseTest {
 
   @BeforeEach
   public void setup() throws Exception {
-    database = Databases.createPostgresDatabase(container.getUsername(), container.getPassword(), container.getJdbcUrl());
-    database.transaction(ctx -> ctx.execute("DROP TABLE IF EXISTS airbyte_configs"));
+    database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    database.transaction(ctx -> ctx.execute("TRUNCATE TABLE airbyte_configs"));
   }
 
   @AfterEach
@@ -130,10 +128,8 @@ class ConfigPersistenceBuilderTest extends BaseTest {
   @Test
   public void testCreateDbPersistenceWithoutSetupDatabase() throws Exception {
     // Initialize the database with one config.
-    String schema = MoreResources.readResource(AIRBYTE_CONFIGS_TABLE_SCHEMA);
     Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(System.currentTimeMillis()));
     database.transaction(ctx -> {
-      ctx.execute(schema);
       ctx.insertInto(AIRBYTE_CONFIGS)
           .set(CONFIG_ID, SOURCE_GITHUB.getSourceDefinitionId().toString())
           .set(CONFIG_TYPE, ConfigSchema.STANDARD_SOURCE_DEFINITION.name())
