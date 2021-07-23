@@ -31,6 +31,7 @@ resource "aws_instance" "dbtunnel-bastion" {
   tags = {
     Name = "dbtunnel-bastion"
   }
+
 }
 
 # We're using this for connector testing for now since dns isn't ready.
