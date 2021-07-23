@@ -32,8 +32,8 @@ from proto.marshal.collections import Repeated, RepeatedComposite
 REPORT_MAPPING = {
     "account_performance_report": "customer",
     "display_topics_performance_report": "topic_view",
-    "display_keyword_performance": "display_keyword_view",
-    "shopping_performance": "shopping_performance_view",
+    "display_keyword_performance_report": "display_keyword_view",
+    "shopping_performance_report": "shopping_performance_view",
     "ad_group_ad_report": "ad_group_ad",
     "accounts": "customer",
     "campaigns": "campaign",

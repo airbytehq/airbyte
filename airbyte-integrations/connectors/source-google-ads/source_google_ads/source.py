@@ -30,7 +30,17 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
 from .google_ads import GoogleAds
-from .streams import Accounts, AccountPerformanceReport, DisplayTopicsPerformance, DisplayKeywordPerformance, ShoppingPerformance, AdGroupAdReport, AdGroupAds, AdGroups, Campaigns
+from .streams import (
+    AccountPerformanceReport,
+    Accounts,
+    AdGroupAdReport,
+    AdGroupAds,
+    AdGroups,
+    Campaigns,
+    DisplayKeywordPerformanceReport,
+    DisplayTopicsPerformanceReport,
+    ShoppingPerformanceReport,
+)
 
 
 class SourceGoogleAds(AbstractSource):
@@ -49,9 +59,9 @@ class SourceGoogleAds(AbstractSource):
         )
         return [
             AccountPerformanceReport(**incremental_stream_config),
-            DisplayTopicsPerformance(**incremental_stream_config),
-            DisplayKeywordPerformance(**incremental_stream_config),
-            ShoppingPerformance(**incremental_stream_config),
+            DisplayTopicsPerformanceReport(**incremental_stream_config),
+            DisplayKeywordPerformanceReport(**incremental_stream_config),
+            ShoppingPerformanceReport(**incremental_stream_config),
             AdGroupAdReport(**incremental_stream_config),
             AdGroupAds(api=google_api),
             AdGroups(api=google_api),

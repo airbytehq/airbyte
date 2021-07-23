@@ -28,7 +28,6 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 import pendulum
 from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.v8.services.services.google_ads_service.pagers import SearchPager
-from google.protobuf import json_format
 from jsonschema import validate
 
 from .google_ads import GoogleAds
@@ -135,15 +134,15 @@ class AccountPerformanceReport(IncrementalGoogleAdsStream):
     pass
 
 
-class DisplayTopicsPerformance(IncrementalGoogleAdsStream):
+class DisplayTopicsPerformanceReport(IncrementalGoogleAdsStream):
     pass
 
 
-class DisplayKeywordPerformance(IncrementalGoogleAdsStream):
+class DisplayKeywordPerformanceReport(IncrementalGoogleAdsStream):
     pass
 
 
-class ShoppingPerformance(IncrementalGoogleAdsStream):
+class ShoppingPerformanceReport(IncrementalGoogleAdsStream):
     pass
 
 
