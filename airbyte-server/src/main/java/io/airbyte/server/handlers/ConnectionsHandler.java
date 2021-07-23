@@ -25,6 +25,7 @@
 package io.airbyte.server.handlers;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
@@ -40,6 +41,7 @@ import io.airbyte.api.model.ResourceRequirements;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -50,6 +52,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.server.converters.CatalogConverter;
+import io.airbyte.server.helpers.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
@@ -67,18 +70,26 @@ public class ConnectionsHandler {
 
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidGenerator;
+  private final WorkspaceHelper workspaceHelper;
 
   @VisibleForTesting
-  ConnectionsHandler(final ConfigRepository configRepository, final Supplier<UUID> uuidGenerator) {
+  ConnectionsHandler(final ConfigRepository configRepository, final Supplier<UUID> uuidGenerator, final WorkspaceHelper workspaceHelper) {
     this.configRepository = configRepository;
     this.uuidGenerator = uuidGenerator;
+    this.workspaceHelper = workspaceHelper;
   }
 
-  public ConnectionsHandler(final ConfigRepository configRepository) {
-    this(configRepository, UUID::randomUUID);
+  public ConnectionsHandler(final ConfigRepository configRepository, final WorkspaceHelper workspaceHelper) {
+    this(configRepository, UUID::randomUUID, workspaceHelper);
   }
 
   public ConnectionRead createConnection(ConnectionCreate connectionCreate) throws JsonValidationException, IOException, ConfigNotFoundException {
+    Exceptions.toRuntime(() -> {
+      final UUID sourceWorkspace = workspaceHelper.getWorkspaceForSourceId(connectionCreate.getSourceId());
+      final UUID destinationWorkspace = workspaceHelper.getWorkspaceForDestinationId(connectionCreate.getDestinationId());
+      Preconditions.checkArgument(sourceWorkspace.equals(destinationWorkspace), "Source and destination must belong to the same workspace!");
+    });
+
     final UUID connectionId = uuidGenerator.get();
 
     // persist sync

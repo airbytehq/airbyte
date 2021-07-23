@@ -123,6 +123,52 @@ def primary_keys_for_records(streams, records):
 
 @pytest.mark.default_timeout(5 * 60)
 class TestBasicRead(BaseTest):
+    @staticmethod
+    def _validate_schema(records, configured_catalog):
+        """
+        Check if data type and structure in records matches the one in json_schema of the stream in catalog
+        """
+        bar = "-" * 80
+        streams_errors = verify_records_schema(records, configured_catalog)
+        for stream_name, errors in streams_errors.items():
+            errors = map(str, errors.values())
+            str_errors = f"\n{bar}\n".join(errors)
+            logging.error(f"The {stream_name} stream has the following schema errors:\n{str_errors}")
+
+        if streams_errors:
+            pytest.fail(f"Please check your json_schema in selected streams {tuple(streams_errors.keys())}.")
+
+    def _validate_empty_streams(self, records, configured_catalog, allowed_empty_streams):
+        """
+        Only certain streams allowed to be empty
+        """
+        counter = Counter(record.stream for record in records)
+
+        all_streams = set(stream.stream.name for stream in configured_catalog.streams)
+        streams_with_records = set(counter.keys())
+        streams_without_records = all_streams - streams_with_records
+
+        streams_without_records = streams_without_records - allowed_empty_streams
+        assert not streams_without_records, f"All streams should return some records, streams without records: {streams_without_records}"
+
+    def _validate_expected_records(self, records, expected_records, flags):
+        """
+        We expect some records from stream to match expected_records, partially or fully, in exact or any order.
+        """
+        actual_by_stream = self.group_by_stream(records)
+        expected_by_stream = self.group_by_stream(expected_records)
+        for stream_name, expected in expected_by_stream.items():
+            actual = actual_by_stream.get(stream_name, [])
+
+            self.compare_records(
+                stream_name=stream_name,
+                actual=actual,
+                expected=expected,
+                extra_fields=flags.extra_fields,
+                exact_order=flags.exact_order,
+                extra_records=flags.extra_records,
+            )
+
     def test_read(
         self,
         connector_config,
@@ -133,23 +179,13 @@ class TestBasicRead(BaseTest):
     ):
         output = docker_runner.call_read(connector_config, configured_catalog)
         records = [message.record for message in output if message.type == Type.RECORD]
-        counter = Counter(record.stream for record in records)
-
-        if inputs.validate_schema:
-            streams_with_errors = set()
-            for record, errors in verify_records_schema(records, configured_catalog):
-                if record.stream not in streams_with_errors:
-                    logging.error(f"The {record.stream} stream has the following schema errors: {errors}")
-                    streams_with_errors.add(record.stream)
-
-            if streams_with_errors:
-                pytest.fail(f"Please check your json_schema in selected streams {streams_with_errors}.")
-
-        all_streams = set(stream.stream.name for stream in configured_catalog.streams)
-        streams_with_records = set(counter.keys())
-        streams_without_records = all_streams - streams_with_records
 
         assert records, "At least one record should be read using provided catalog"
+
+        if inputs.validate_schema:
+            self._validate_schema(records=records, configured_catalog=configured_catalog)
+
+        self._validate_empty_streams(records=records, configured_catalog=configured_catalog, allowed_empty_streams=inputs.empty_streams)
 
         for pks, record in primary_keys_for_records(streams=configured_catalog.streams, records=records):
             for pk_path, pk_value in pks.items():
@@ -157,25 +193,8 @@ class TestBasicRead(BaseTest):
                     f"Primary key subkeys {repr(pk_path)} " f"have null values or not present in {record.stream} stream records."
                 )
 
-        if inputs.validate_output_from_all_streams:
-            assert (
-                not streams_without_records
-            ), f"All streams should return some records, streams without records: {streams_without_records}"
-
         if expected_records:
-            actual_by_stream = self.group_by_stream(records)
-            expected_by_stream = self.group_by_stream(expected_records)
-            for stream_name, expected in expected_by_stream.items():
-                actual = actual_by_stream.get(stream_name, [])
-
-                self.compare_records(
-                    stream_name=stream_name,
-                    actual=actual,
-                    expected=expected,
-                    extra_fields=inputs.expect_records.extra_fields,
-                    exact_order=inputs.expect_records.exact_order,
-                    extra_records=inputs.expect_records.extra_records,
-                )
+            self._validate_expected_records(records=records, expected_records=expected_records, flags=inputs.expect_records)
 
     @staticmethod
     def remove_extra_fields(record: Any, spec: Any) -> Any:
