@@ -108,12 +108,12 @@ public class WorkerUtils {
                                        final Duration checkHeartbeatDuration,
                                        final Duration forcedShutdownDuration,
                                        final BiConsumer<Process, Duration> forceShutdown) {
-
     while (process.isAlive() && heartbeatMonitor.isBeating()) {
       try {
         if (new EnvConfigs().getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
           LOGGER.debug("Gently closing process {} with heartbeat..", process.info().commandLine().get());
         }
+
         process.waitFor(checkHeartbeatDuration.toMillis(), TimeUnit.MILLISECONDS);
       } catch (InterruptedException e) {
         LOGGER.error("Exception while waiting for process to finish", e);
@@ -125,6 +125,7 @@ public class WorkerUtils {
         if (new EnvConfigs().getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
           LOGGER.debug("Gently closing process {} without heartbeat..", process.info().commandLine().get());
         }
+
         process.waitFor(gracefulShutdownDuration.toMillis(), TimeUnit.MILLISECONDS);
       } catch (InterruptedException e) {
         LOGGER.error("Exception during grace period for process to finish. This can happen when cancelling jobs.");
@@ -136,6 +137,7 @@ public class WorkerUtils {
       if (new EnvConfigs().getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
         LOGGER.debug("Force shutdown process {}..", process.info().commandLine().get());
       }
+
       forceShutdown.accept(process, forcedShutdownDuration);
     }
   }

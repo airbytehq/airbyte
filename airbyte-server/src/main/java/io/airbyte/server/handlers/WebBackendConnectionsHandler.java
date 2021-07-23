@@ -40,14 +40,12 @@ import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.JobConfigType;
-import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobRead;
 import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.JobStatus;
 import io.airbyte.api.model.JobWithAttemptsRead;
 import io.airbyte.api.model.OperationCreate;
-import io.airbyte.api.model.OperationCreateOrUpdate;
 import io.airbyte.api.model.OperationReadList;
 import io.airbyte.api.model.OperationUpdate;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
@@ -58,6 +56,7 @@ import io.airbyte.api.model.WebBackendConnectionRead;
 import io.airbyte.api.model.WebBackendConnectionReadList;
 import io.airbyte.api.model.WebBackendConnectionRequestBody;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
+import io.airbyte.api.model.WebBackendOperationCreateOrUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
@@ -260,7 +259,7 @@ public class WebBackendConnectionsHandler {
       ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId());
 
       // wait for this to execute
-      JobInfoRead resetJob = schedulerHandler.resetConnection(connectionId);
+      schedulerHandler.resetConnection(connectionId);
 
       // just create the job
       schedulerHandler.syncConnection(connectionId);
@@ -279,8 +278,8 @@ public class WebBackendConnectionsHandler {
 
   private List<UUID> updateOperations(WebBackendConnectionUpdate webBackendConnectionUpdate)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final ConnectionRead connectionRead =
-        connectionsHandler.getConnection(new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId()));
+    final ConnectionRead connectionRead = connectionsHandler
+        .getConnection(new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId()));
     final List<UUID> originalOperationIds = new ArrayList<>(connectionRead.getOperationIds());
     final List<UUID> operationIds = new ArrayList<>();
     for (var operationCreateOrUpdate : webBackendConnectionUpdate.getOperations()) {
@@ -298,7 +297,7 @@ public class WebBackendConnectionsHandler {
   }
 
   @VisibleForTesting
-  protected static OperationCreate toOperationCreate(OperationCreateOrUpdate operationCreateOrUpdate) {
+  protected static OperationCreate toOperationCreate(WebBackendOperationCreateOrUpdate operationCreateOrUpdate) {
     OperationCreate operationCreate = new OperationCreate();
 
     operationCreate.name(operationCreateOrUpdate.getName());
@@ -308,7 +307,7 @@ public class WebBackendConnectionsHandler {
   }
 
   @VisibleForTesting
-  protected static OperationUpdate toOperationUpdate(OperationCreateOrUpdate operationCreateOrUpdate) {
+  protected static OperationUpdate toOperationUpdate(WebBackendOperationCreateOrUpdate operationCreateOrUpdate) {
     OperationUpdate operationUpdate = new OperationUpdate();
 
     operationUpdate.operationId(operationCreateOrUpdate.getOperationId());

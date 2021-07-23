@@ -45,7 +45,10 @@
       "type": ["null", "number"]
     },
     "customer.pay_per_conversion_eligibility_failure_reasons": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "customer.remarketing_setting.google_global_site_tag": {
       "type": ["null", "string"]

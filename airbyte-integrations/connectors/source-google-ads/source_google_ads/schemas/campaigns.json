@@ -42,7 +42,10 @@
       "type": ["null", "string"]
     },
     "campaign.dynamic_search_ads_setting.feeds": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "campaign.dynamic_search_ads_setting.language_code": {
       "type": ["null", "string"]
@@ -54,7 +57,10 @@
       "type": ["null", "string"]
     },
     "campaign.excluded_parent_asset_field_types": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "campaign.experiment_type": {
       "type": ["null", "string"]
@@ -63,7 +69,10 @@
       "type": ["null", "string"]
     },
     "campaign.frequency_caps": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "campaign.geo_target_type_setting.negative_geo_target_type": {
       "type": ["null", "string"]
@@ -78,7 +87,10 @@
       "type": ["null", "integer"]
     },
     "campaign.labels": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "campaign.local_campaign_setting.location_source_type": {
       "type": ["null", "string"]
@@ -114,7 +126,10 @@
       "type": ["null", "boolean"]
     },
     "campaign.optimization_goal_setting.optimization_goal_types": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "campaign.optimization_score": {
       "type": ["null", "number"]
@@ -135,7 +150,10 @@
       "type": ["null", "string"]
     },
     "campaign.selective_optimization.conversion_actions": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "campaign.serving_status": {
       "type": ["null", "string"]
@@ -195,7 +213,10 @@
       "type": ["null", "integer"]
     },
     "campaign.targeting_setting.target_restrictions": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "campaign.tracking_setting.tracking_url": {
       "type": ["null", "string"]
@@ -204,7 +225,10 @@
       "type": ["null", "string"]
     },
     "campaign.url_custom_parameters": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "campaign.vanity_pharma.vanity_pharma_display_url_mode": {
       "type": ["null", "string"]

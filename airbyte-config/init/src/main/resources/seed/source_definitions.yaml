@@ -23,7 +23,7 @@
 - sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   name: Google Ads
   dockerRepository: airbyte/source-google-ads
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://hub.docker.com/r/airbyte/source-google-ads
 - sourceDefinitionId: fdc8b827-3257-4b33-83cc-106d234c34d4
   name: Google Adwords (Deprecated)
@@ -46,7 +46,7 @@
 - sourceDefinitionId: d8286229-c680-4063-8c59-23b9b391c700
   name: Pipedrive
   dockerRepository: airbyte/source-pipedrive
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-pipedrive
 - sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   name: Postgres
@@ -250,7 +250,7 @@
 - sourceDefinitionId: 487b930d-7f6a-43ce-8bac-46e6b2de0a55
   name: Mongo DB
   dockerRepository: airbyte/source-mongodb
-  dockerImageTag: 0.3.2
+  dockerImageTag: 0.3.3
   documentationUrl: https://hub.docker.com/r/airbyte/source-mongodb
   icon: mongodb.svg
 - sourceDefinitionId: d19ae824-e289-4b14-995a-0632eb46d246
@@ -346,7 +346,7 @@
 - sourceDefinitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
   name: Slack
   dockerRepository: airbyte/source-slack
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.9
   documentationUrl: https://hub.docker.com/repository/docker/airbyte/source-slack
   icon: slack.svg
 - sourceDefinitionId: 6ff047c0-f5d5-4ce5-8c81-204a830fa7e1
@@ -394,3 +394,8 @@
   dockerRepository: airbyte/source-typeform
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/typeform
+- sourceDefinitionId: bb1a6d31-6879-4819-a2bd-3eed299ea8e2
+  name: Cart
+  dockerRepository: airbyte/source-cart
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/cart
