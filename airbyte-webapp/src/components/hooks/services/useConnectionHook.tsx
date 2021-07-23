@@ -1,10 +1,13 @@
 import { useCallback } from "react";
-import { useResource, useFetcher } from "rest-hooks";
+import { useFetcher, useResource } from "rest-hooks";
 
 import FrequencyConfig from "config/FrequencyConfig.json";
-
-import { AnalyticsService } from "core/analytics/AnalyticsService";
-import { connectionService, Connection } from "core/domain/connection";
+import {
+  Connection,
+  ConnectionConfiguration,
+  ConnectionNamespaceDefinition,
+  connectionService,
+} from "core/domain/connection";
 
 import ConnectionResource, {
   ScheduleProperties,
@@ -16,12 +19,9 @@ import { Routes } from "pages/routes";
 import useRouter from "../useRouterHook";
 import { Destination } from "core/resources/Destination";
 import useWorkspace from "./useWorkspace";
-import {
-  ConnectionConfiguration,
-  ConnectionNamespaceDefinition,
-} from "core/domain/connection";
 import { Operation } from "core/domain/connection/operation";
 import { equal } from "utils/objects";
+import { useAnalytics } from "components/hooks/useAnalytics";
 
 export type ValuesProps = {
   schedule: ScheduleProperties | null;
@@ -90,6 +90,7 @@ const useConnection = (): {
 } => {
   const { push } = useRouter();
   const { finishOnboarding, workspace } = useWorkspace();
+  const analyticsService = useAnalytics();
 
   const createConnectionResource = useFetcher(ConnectionResource.createShape());
   const updateConnectionResource = useFetcher(ConnectionResource.updateShape());
@@ -136,7 +137,7 @@ const useConnection = (): {
         equal(item.config, values.schedule)
       );
 
-      AnalyticsService.track("New Connection - Action", {
+      analyticsService.track("New Connection - Action", {
         action: "Set up connection",
         frequency: frequencyData?.text,
         connector_source_definition: source?.sourceName,

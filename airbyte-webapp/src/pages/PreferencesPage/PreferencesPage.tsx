@@ -4,19 +4,20 @@ import { FormattedMessage } from "react-intl";
 import { PageViewContainer } from "../../components/CenteredPageComponents";
 import { H1 } from "components";
 import { PreferencesForm } from "views/Settings/PreferencesForm";
-import { AnalyticsService } from "../../core/analytics/AnalyticsService";
 import useWorkspace from "components/hooks/services/useWorkspace";
 import styled from "styled-components";
 import HeadTitle from "components/HeadTitle";
+import { useAnalytics } from "components/hooks/useAnalytics";
 
 const Title = styled(H1)`
   margin-bottom: 47px;
 `;
 
 const PreferencesPage: React.FC = () => {
-  useEffect(() => {
-    AnalyticsService.page("Preferences Page");
-  }, []);
+  const analyticsService = useAnalytics();
+  useEffect(() => analyticsService.page("Preferences Page"), [
+    analyticsService,
+  ]);
 
   const { setInitialSetupConfig, workspace } = useWorkspace();
 
@@ -28,7 +29,7 @@ const PreferencesPage: React.FC = () => {
   }) => {
     await setInitialSetupConfig(data);
 
-    AnalyticsService.track("Specified Preferences", {
+    analyticsService.track("Specified Preferences", {
       user_id: workspace.workspaceId,
       email: data.email,
       anonymized: data.anonymousDataCollection,

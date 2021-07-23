@@ -23,7 +23,6 @@ type Config = {
     configurationArchiveLink: string;
     namespaceLink: string;
     normalizationLink: string;
-    workspaceId: string;
     tutorialLink: string;
     technicalSupport: string;
   };
@@ -57,7 +56,6 @@ const config: Config = {
     namespaceLink: `${BASE_DOCS_LINK}/understanding-airbyte/namespaces`,
     tutorialLink:
       "https://www.youtube.com/watch?v=Rcpt5SVsMpk&feature=emb_logo",
-    workspaceId: "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6",
   },
   segment: {
     token:

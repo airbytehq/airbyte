@@ -3,7 +3,6 @@ import { useFetcher, useResource } from "rest-hooks";
 import { useStatefulResource } from "@rest-hooks/legacy";
 
 import SourceResource, { Source } from "core/resources/Source";
-import { AnalyticsService } from "core/analytics/AnalyticsService";
 import { Routes } from "pages/routes";
 import useRouter from "../useRouterHook";
 import ConnectionResource, { Connection } from "core/resources/Connection";
@@ -13,6 +12,7 @@ import SourceDefinitionSpecificationResource, {
 import SchedulerResource, { Scheduler } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import useWorkspace from "./useWorkspace";
+import { useAnalytics } from "../useAnalytics";
 
 type ValuesProps = {
   name: string;
@@ -73,6 +73,7 @@ const useSource = (): SourceService => {
   const { push } = useRouter();
   const { workspace } = useWorkspace();
   const createSourcesImplementation = useFetcher(SourceResource.createShape());
+  const analyticsService = useAnalytics();
 
   const sourceCheckConnectionShape = useFetcher(
     SchedulerResource.sourceCheckConnectionShape()
@@ -92,7 +93,7 @@ const useSource = (): SourceService => {
     values,
     sourceConnector,
   }) => {
-    AnalyticsService.track("New Source - Action", {
+    analyticsService.track("New Source - Action", {
       action: "Test a connector",
       connector_source: sourceConnector?.name,
       connector_source_id: sourceConnector?.sourceDefinitionId,
@@ -123,7 +124,7 @@ const useSource = (): SourceService => {
           ],
         ]
       );
-      AnalyticsService.track("New Source - Action", {
+      analyticsService.track("New Source - Action", {
         action: "Tested connector - success",
         connector_source: sourceConnector?.name,
         connector_source_id: sourceConnector?.sourceDefinitionId,
@@ -131,7 +132,7 @@ const useSource = (): SourceService => {
 
       return result;
     } catch (e) {
-      AnalyticsService.track("New Source - Action", {
+      analyticsService.track("New Source - Action", {
         action: "Tested connector - failure",
         connector_source: sourceConnector?.name,
         connector_source_id: sourceConnector?.sourceDefinitionId,
@@ -221,7 +222,7 @@ const useSource = (): SourceService => {
       sourceId: source.sourceId,
     });
 
-    AnalyticsService.track("Source - Action", {
+    analyticsService.track("Source - Action", {
       action: "Delete source",
       connector_source: source.sourceName,
       connector_source_id: source.sourceDefinitionId,

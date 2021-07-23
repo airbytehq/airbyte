@@ -3,11 +3,10 @@ import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
 import { Button, MainPageWithScroll } from "components";
-import { Routes } from "../../../routes";
+import { Routes } from "pages/routes";
 import PageTitle from "components/PageTitle";
 import useRouter from "components/hooks/useRouterHook";
 import SourcesTable from "./components/SourcesTable";
-import config from "config";
 import SourceResource from "core/resources/Source";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";

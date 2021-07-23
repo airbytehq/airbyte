@@ -1,8 +1,8 @@
 import { useFetcher, useResource } from "rest-hooks";
 
 import WorkspaceResource, { Workspace } from "core/resources/Workspace";
-import { AnalyticsService } from "core/analytics/AnalyticsService";
 import NotificationsResource from "core/resources/Notifications";
+import { useAnalytics } from "../useAnalytics";
 
 const useWorkspace = (): {
   workspace: Workspace;
@@ -29,9 +29,11 @@ const useWorkspace = (): {
     workspaceId: workspaces[0].workspaceId,
   });
 
+  const analyticsService = useAnalytics();
+
   const finishOnboarding = async (skipStep?: string) => {
     if (skipStep) {
-      AnalyticsService.track("Skip Onboarding", {
+      analyticsService.track("Skip Onboarding", {
         step: skipStep,
       });
     }

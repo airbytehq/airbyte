@@ -3,7 +3,6 @@ import { useFetcher, useResource } from "rest-hooks";
 import { useStatefulResource } from "@rest-hooks/legacy";
 
 import DestinationResource, { Destination } from "core/resources/Destination";
-import { AnalyticsService } from "core/analytics/AnalyticsService";
 import ConnectionResource, { Connection } from "core/resources/Connection";
 import { Routes } from "pages/routes";
 import useRouter from "../useRouterHook";
@@ -13,6 +12,7 @@ import DestinationDefinitionSpecificationResource, {
 import SchedulerResource, { Scheduler } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import useWorkspace from "./useWorkspace";
+import { useAnalytics } from "components/hooks/useAnalytics";
 
 type ValuesProps = {
   name: string;
@@ -99,6 +99,7 @@ type DestinationService = {
 const useDestination = (): DestinationService => {
   const { push } = useRouter();
   const { workspace } = useWorkspace();
+  const analyticsService = useAnalytics();
   const createDestinationsImplementation = useFetcher(
     DestinationResource.createShape()
   );
@@ -126,7 +127,7 @@ const useDestination = (): DestinationService => {
     values: ValuesProps;
     destinationConnector?: ConnectorProps;
   }) => {
-    AnalyticsService.track("New Destination - Action", {
+    analyticsService.track("New Destination - Action", {
       action: "Test a connector",
       connector_destination: destinationConnector?.name,
       connector_destination_definition_id:
@@ -166,7 +167,7 @@ const useDestination = (): DestinationService => {
         ]
       );
 
-      AnalyticsService.track("New Destination - Action", {
+      analyticsService.track("New Destination - Action", {
         action: "Tested connector - success",
         connector_destination: destinationConnector?.name,
         connector_destination_definition_id:
@@ -175,7 +176,7 @@ const useDestination = (): DestinationService => {
 
       return result;
     } catch (e) {
-      AnalyticsService.track("New Destination - Action", {
+      analyticsService.track("New Destination - Action", {
         action: "Tested connector - failure",
         connector_destination: destinationConnector?.name,
         connector_destination_definition_id:
