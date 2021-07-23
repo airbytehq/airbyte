@@ -23,7 +23,7 @@
 #
 
 import urllib.parse
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
@@ -41,6 +41,11 @@ class CartStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return f"https://{self.store_name}/api/v1/"
+
+    @property
+    @abstractmethod
+    def data_field() -> str:
+        """ Field of the response containing data"""
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
