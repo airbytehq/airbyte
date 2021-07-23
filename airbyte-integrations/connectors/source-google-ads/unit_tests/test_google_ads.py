@@ -118,9 +118,7 @@ def test_get_fields_from_schema():
 
 def test_convert_schema_into_query():
     report_name = "ad_group_ad_report"
-    query = (
-        "SELECT segment.date FROM ad_group_ad WHERE segments.date > '2020-01-01' AND segments.date < '2020-03-01' ORDER BY segments.date"
-    )
+    query = "SELECT segment.date FROM ad_group_ad WHERE segments.date > '2020-01-01' AND segments.date < '2020-03-01' ORDER BY segments.date ASC"
     response = GoogleAds.convert_schema_into_query(SAMPLE_SCHEMA, report_name, "2020-01-01", "2020-03-01", "segments.date")
     assert response == query
 
