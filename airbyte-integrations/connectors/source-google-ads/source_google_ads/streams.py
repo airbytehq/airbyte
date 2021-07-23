@@ -69,7 +69,7 @@ class GoogleAdsStream(Stream, ABC):
 
     def parse_response(self, response: SearchPager) -> Iterable[Mapping]:
         for result in response:
-            record = json_format.MessageToDict(result._pb)
+            record = self.google_ads_client.parse_single_result(self.get_json_schema(), result)
             validate(instance=record, schema=self.get_json_schema())
             yield record
 
@@ -79,6 +79,9 @@ class GoogleAdsStream(Stream, ABC):
 
 
 class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
+    cursor_field = "segments.date"
+    primary_key = None
+
     def __init__(self, start_date: str, conversion_window_days: int, **kwargs):
         self.conversion_window_days = conversion_window_days
         self._start_date = start_date
@@ -128,40 +131,24 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         return query
 
 
-class DisplayTopicsPerformance(IncrementalGoogleAdsStream):
-    cursor = "segments.date"
-    cursor_field = "segments_date"
-    primary_key = None
-
-    def get_query(self, stream_slice: Mapping[str, Any] = None, fields: Mapping[str, Any] = None) -> str:
-        start_date, end_date = self.get_date_params(stream_slice, self.cursor_field)
-        query = GoogleAds.convert_schema_into_query(
-            schema=fields, report_name=self.name, from_date=start_date, to_date=end_date, cursor_field=self.cursor
-        )
-        return query
-
-    def parse_response(self, response: SearchPager) -> Iterable[Mapping]:
-        for result in response:
-            yield json_format.MessageToDict(result._pb)
-
-    def read_records(self, sync_mode, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        from .stream_configs import STREAMS
-        schema = {"properties": STREAMS[self.name]}
-        response = self.google_ads_client.send_request(self.get_query(stream_slice, schema))
-        yield from self.parse_response(response)
-
-
-class DisplayKeywordPerformance(DisplayTopicsPerformance):
+class AccountPerformanceReport(IncrementalGoogleAdsStream):
     pass
 
 
-class ShoppingPerformance(DisplayTopicsPerformance):
+class DisplayTopicsPerformance(IncrementalGoogleAdsStream):
+    pass
+
+
+class DisplayKeywordPerformance(IncrementalGoogleAdsStream):
+    pass
+
+
+class ShoppingPerformance(IncrementalGoogleAdsStream):
     pass
 
 
 class AdGroupAdReport(IncrementalGoogleAdsStream):
-    cursor_field = "segments.date"
-    primary_key = None
+    pass
 
 
 class Accounts(GoogleAdsStream):
