@@ -56,6 +56,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Okta](./sources/okta.md)| Beta |
 |[Oracle DB](./sources/oracle.md)| Certified |
 |[PayPal Transaction](./sources/paypal-transaction.md)| Beta |
+|[Pipedrive](./sources/pipedrive.md)| Alpha |
 |[Plaid](./sources/plaid.md)| Alpha |
 |[PokéAPI](./sources/pokeapi.md)| Beta |
 |[Postgres](./sources/postgres.md)| Certified |
@@ -75,6 +76,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[SurveyMonkey](./sources/surveymonkey.md)| Beta |
 |[Tempo](./sources/tempo.md)| Beta |
 |[Twilio](./sources/twilio.md)| Beta |
+|[US Census](./sources/us-census.md)| Alpha |
 |[Zendesk Chat](./sources/zendesk-chat.md)| Certified |
 |[Zendesk Sunshine](./sources/zendesk-sunshine.md)| Beta |
 |[Zendesk Support](./sources/zendesk-support.md)| Certified |
@@ -85,7 +87,9 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | Connector | Grade |
 |----|----|
 |[BigQuery](./destinations/bigquery.md)| Certified |
+|[Google Cloud Storage (GCS)](./destinations/s3.md)| Alpha |
 |[Google Pubsub](./destinations/pubsub.md)| Alpha |
+|[Kafka](./destinations/kafka.md)| Alpha |
 |[Local CSV](./destinations/local-csv.md)| Certified |
 |[Local JSON](./destinations/local-json.md)| Certified |
 |[MeiliSearch](./destinations/meilisearch.md)| Beta |

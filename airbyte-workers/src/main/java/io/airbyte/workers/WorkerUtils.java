@@ -25,6 +25,7 @@
 package io.airbyte.workers;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSyncInput;
@@ -41,6 +42,7 @@ import java.util.function.BiConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// TODO:(Issue-4824): Figure out how to log Docker process information.
 public class WorkerUtils {
 
   public static final ResourceRequirements DEFAULT_RESOURCE_REQUIREMENTS = initResourceRequirements();
@@ -52,8 +54,14 @@ public class WorkerUtils {
       return;
     }
 
+    if (new EnvConfigs().getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
+      LOGGER.debug("Gently closing process {}", process.info().commandLine().get());
+    }
+
     try {
-      process.waitFor(timeout, timeUnit);
+      if (process.isAlive()) {
+        process.waitFor(timeout, timeUnit);
+      }
     } catch (InterruptedException e) {
       LOGGER.error("Exception while while waiting for process to finish", e);
     }
@@ -100,9 +108,12 @@ public class WorkerUtils {
                                        final Duration checkHeartbeatDuration,
                                        final Duration forcedShutdownDuration,
                                        final BiConsumer<Process, Duration> forceShutdown) {
-
     while (process.isAlive() && heartbeatMonitor.isBeating()) {
       try {
+        if (new EnvConfigs().getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
+          LOGGER.debug("Gently closing process {} with heartbeat..", process.info().commandLine().get());
+        }
+
         process.waitFor(checkHeartbeatDuration.toMillis(), TimeUnit.MILLISECONDS);
       } catch (InterruptedException e) {
         LOGGER.error("Exception while waiting for process to finish", e);
@@ -111,6 +122,10 @@ public class WorkerUtils {
 
     if (process.isAlive()) {
       try {
+        if (new EnvConfigs().getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
+          LOGGER.debug("Gently closing process {} without heartbeat..", process.info().commandLine().get());
+        }
+
         process.waitFor(gracefulShutdownDuration.toMillis(), TimeUnit.MILLISECONDS);
       } catch (InterruptedException e) {
         LOGGER.error("Exception during grace period for process to finish. This can happen when cancelling jobs.");
@@ -119,6 +134,10 @@ public class WorkerUtils {
 
     // if we were unable to exist gracefully, force shutdown...
     if (process.isAlive()) {
+      if (new EnvConfigs().getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
+        LOGGER.debug("Force shutdown process {}..", process.info().commandLine().get());
+      }
+
       forceShutdown.accept(process, forcedShutdownDuration);
     }
   }
@@ -133,7 +152,7 @@ public class WorkerUtils {
       LOGGER.error("Exception while while killing the process", e);
     }
     if (process.isAlive()) {
-      LOGGER.error("Couldn't kill the process. You might have a zombie ({})", process.info().commandLine());
+      LOGGER.error("Couldn't kill the process. You might have a zombie process.");
     }
   }
 
