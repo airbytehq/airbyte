@@ -2,7 +2,7 @@
 
 ## Sync overview
 
-This source can sync data for the [Cart API](https://developers.cart.com/docs/rest-api/docs/README.md). All streams we support are Incremental sync.
+This source can sync data for the [Cart API](https://developers.cart.com/docs/rest-api/docs/README.md). It supports both Full Refresh and Incremental sync for all streams.
 You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
 ### Output schema
