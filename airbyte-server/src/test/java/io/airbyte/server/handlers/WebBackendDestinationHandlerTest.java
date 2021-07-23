@@ -46,7 +46,6 @@ import io.airbyte.server.helpers.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -63,7 +62,7 @@ public class WebBackendDestinationHandlerTest {
   private DestinationRead destinationRead;
 
   @BeforeEach
-  public void setup() throws IOException, ExecutionException {
+  public void setup() throws IOException {
     destinationHandler = mock(DestinationHandler.class);
     schedulerHandler = mock(SchedulerHandler.class);
     workspaceHelper = mock(WorkspaceHelper.class);
@@ -150,7 +149,7 @@ public class WebBackendDestinationHandlerTest {
   }
 
   @Test
-  public void testUnmatchedWorkspaces() throws ExecutionException, IOException, JsonValidationException, ConfigNotFoundException {
+  public void testUnmatchedWorkspaces() throws IOException, JsonValidationException, ConfigNotFoundException {
     when(workspaceHelper.getWorkspaceForDestinationId(destinationRead.getDestinationId())).thenReturn(UUID.randomUUID());
 
     DestinationCreate destinationCreate = new DestinationCreate();

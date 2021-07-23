@@ -46,7 +46,6 @@ import io.airbyte.server.helpers.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -63,7 +62,7 @@ public class WebBackendSourceHandlerTest {
   private SourceRead sourceRead;
 
   @BeforeEach
-  public void setup() throws IOException, ExecutionException {
+  public void setup() throws IOException {
     sourceHandler = mock(SourceHandler.class);
     schedulerHandler = mock(SchedulerHandler.class);
     workspaceHelper = mock(WorkspaceHelper.class);
@@ -115,8 +114,7 @@ public class WebBackendSourceHandlerTest {
   }
 
   @Test
-  public void testRecreateDeletesNewCreatedSourceWhenFails()
-      throws JsonValidationException, IOException, ConfigNotFoundException, ExecutionException {
+  public void testRecreateDeletesNewCreatedSourceWhenFails() throws JsonValidationException, IOException, ConfigNotFoundException {
     SourceCreate sourceCreate = new SourceCreate();
     sourceCreate.setName(sourceRead.getName());
     sourceCreate.setConnectionConfiguration(sourceRead.getConnectionConfiguration());
@@ -149,7 +147,7 @@ public class WebBackendSourceHandlerTest {
   }
 
   @Test
-  public void testUnmatchedWorkspaces() throws ExecutionException, IOException, JsonValidationException, ConfigNotFoundException {
+  public void testUnmatchedWorkspaces() throws IOException, JsonValidationException, ConfigNotFoundException {
     when(workspaceHelper.getWorkspaceForSourceId(sourceRead.getSourceId())).thenReturn(UUID.randomUUID());
 
     SourceCreate sourceCreate = new SourceCreate();

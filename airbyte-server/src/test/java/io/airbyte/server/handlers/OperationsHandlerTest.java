@@ -72,6 +72,7 @@ class OperationsHandlerTest {
 
     operationsHandler = new OperationsHandler(configRepository, uuidGenerator);
     standardSyncOperation = new StandardSyncOperation()
+        .withWorkspaceId(UUID.randomUUID())
         .withOperationId(UUID.randomUUID())
         .withName("presto to hudi")
         .withOperatorType(io.airbyte.config.StandardSyncOperation.OperatorType.NORMALIZATION)
@@ -87,6 +88,7 @@ class OperationsHandlerTest {
     when(configRepository.getStandardSyncOperation(standardSyncOperation.getOperationId())).thenReturn(standardSyncOperation);
 
     final OperationCreate operationCreate = new OperationCreate()
+        .workspaceId(standardSyncOperation.getWorkspaceId())
         .name(standardSyncOperation.getName())
         .operatorConfiguration(new OperatorConfiguration()
             .operatorType(OperatorType.NORMALIZATION)
@@ -95,6 +97,7 @@ class OperationsHandlerTest {
     final OperationRead actualOperationRead = operationsHandler.createOperation(operationCreate);
 
     final OperationRead expectedOperationRead = new OperationRead()
+        .workspaceId(standardSyncOperation.getWorkspaceId())
         .operationId(standardSyncOperation.getOperationId())
         .name(standardSyncOperation.getName())
         .operatorConfiguration(new OperatorConfiguration()
@@ -120,6 +123,7 @@ class OperationsHandlerTest {
                 .dbtArguments("--full-refresh")));
 
     final StandardSyncOperation updatedStandardSyncOperation = new StandardSyncOperation()
+        .withWorkspaceId(standardSyncOperation.getWorkspaceId())
         .withOperationId(standardSyncOperation.getOperationId())
         .withName(standardSyncOperation.getName())
         .withOperatorType(io.airbyte.config.StandardSyncOperation.OperatorType.DBT)
@@ -137,6 +141,7 @@ class OperationsHandlerTest {
     final OperationRead actualOperationRead = operationsHandler.updateOperation(operationUpdate);
 
     final OperationRead expectedOperationRead = new OperationRead()
+        .workspaceId(standardSyncOperation.getWorkspaceId())
         .operationId(standardSyncOperation.getOperationId())
         .name(standardSyncOperation.getName())
         .operatorConfiguration(new OperatorConfiguration()
@@ -166,6 +171,7 @@ class OperationsHandlerTest {
 
   private OperationRead generateOperationRead() {
     return new OperationRead()
+        .workspaceId(standardSyncOperation.getWorkspaceId())
         .operationId(standardSyncOperation.getOperationId())
         .name(standardSyncOperation.getName())
         .operatorConfiguration(new OperatorConfiguration()

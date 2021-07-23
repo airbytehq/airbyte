@@ -952,7 +952,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/OperationCreateOrUpdate"
+              $ref: "#/components/schemas/OperatorConfiguration"
         required: true
       responses:
         "200":
@@ -2074,7 +2074,7 @@ components:
             operations:
               type: array
               items:
-                $ref: "#/components/schemas/OperationCreateOrUpdate"
+                $ref: "#/components/schemas/WebBackendOperationCreateOrUpdate"
     ConnectionRead:
       type: object
       required:
@@ -2173,7 +2173,10 @@ components:
       required:
         - name
         - operatorConfiguration
+        - workspaceId
       properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
         name:
           type: string
         operatorConfiguration:
@@ -2191,7 +2194,7 @@ components:
           type: string
         operatorConfiguration:
           $ref: "#/components/schemas/OperatorConfiguration"
-    OperationCreateOrUpdate:
+    WebBackendOperationCreateOrUpdate:
       type: object
       required:
         - name
@@ -2209,7 +2212,10 @@ components:
         - operationId
         - name
         - operatorConfiguration
+        - workspaceId
       properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
         operationId:
           $ref: "#/components/schemas/OperationId"
         name:

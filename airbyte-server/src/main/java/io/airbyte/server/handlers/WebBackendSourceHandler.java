@@ -32,7 +32,6 @@ import io.airbyte.api.model.SourceCreate;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceRecreate;
-import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.server.errors.ConnectFailureKnownException;
 import io.airbyte.server.helpers.WorkspaceHelper;
@@ -58,8 +57,7 @@ public class WebBackendSourceHandler {
 
   public SourceRead webBackendRecreateSourceAndCheck(SourceRecreate sourceRecreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    Exceptions.toRuntime(() -> Preconditions
-        .checkArgument(workspaceHelper.getWorkspaceForSourceId(sourceRecreate.getSourceId()).equals(sourceRecreate.getWorkspaceId())));
+    Preconditions.checkArgument(workspaceHelper.getWorkspaceForSourceId(sourceRecreate.getSourceId()).equals(sourceRecreate.getWorkspaceId()));
 
     final SourceCreate sourceCreate = new SourceCreate();
     sourceCreate.setConnectionConfiguration(sourceRecreate.getConnectionConfiguration());

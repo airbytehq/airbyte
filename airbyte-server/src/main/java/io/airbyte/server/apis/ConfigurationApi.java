@@ -55,11 +55,11 @@ import io.airbyte.api.model.LogsRequestBody;
 import io.airbyte.api.model.Notification;
 import io.airbyte.api.model.NotificationRead;
 import io.airbyte.api.model.OperationCreate;
-import io.airbyte.api.model.OperationCreateOrUpdate;
 import io.airbyte.api.model.OperationIdRequestBody;
 import io.airbyte.api.model.OperationRead;
 import io.airbyte.api.model.OperationReadList;
 import io.airbyte.api.model.OperationUpdate;
+import io.airbyte.api.model.OperatorConfiguration;
 import io.airbyte.api.model.SlugRequestBody;
 import io.airbyte.api.model.SourceCoreConfig;
 import io.airbyte.api.model.SourceCreate;
@@ -425,8 +425,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   // Operations
 
   @Override
-  public CheckOperationRead checkOperation(OperationCreateOrUpdate operationCreateOrUpdate) {
-    return execute(() -> operationsHandler.checkOperation(operationCreateOrUpdate));
+  public CheckOperationRead checkOperation(OperatorConfiguration operatorConfiguration) {
+    return execute(() -> operationsHandler.checkOperation(operatorConfiguration));
   }
 
   @Override

@@ -24,8 +24,6 @@
 
 package io.airbyte.migrate.migrations;
 
-import static io.airbyte.migrate.migrations.MigrationV0_24_0.STANDARD_SYNC_RESOURCE_ID;
-import static io.airbyte.migrate.migrations.MigrationV0_24_0.STANDARD_SYNC_SCHEDULE_RESOURCE_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -35,11 +33,11 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.ListConsumer;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.yaml.Yamls;
-import io.airbyte.migrate.Migration;
 import io.airbyte.migrate.MigrationTestUtils;
 import io.airbyte.migrate.MigrationUtils;
 import io.airbyte.migrate.Migrations;
 import io.airbyte.migrate.ResourceId;
+import io.airbyte.migrate.ResourceType;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -49,16 +47,16 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.Test;
 
-public class MigrateV0_24_0Test {
+public class MigrateV0_28_0Test {
 
-  /**
-   * The test resource directory is named differently from the main resource directory (with the extra
-   * "Test" suffix). If their names are the same, the main one will somehow be overridden by the test
-   * one. Consequently, {@link MigrationV0_24_0} cannot correctly get the new standard sync file and
-   * resolve the output schema.
-   */
-  private static final String INPUT_CONFIG_PATH = "migrations/migrationV0_24_0Test/input_config";
-  private static final String OUTPUT_CONFIG_PATH = "migrations/migrationV0_24_0Test/output_config";
+  private static final String INPUT_CONFIG_PATH = "migrations/migrationV0_28_0/input_config";
+  private static final String OUTPUT_CONFIG_PATH = "migrations/migrationV0_28_0/output_config";
+
+  private static final ResourceId CONNECTION_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
+  private static final ResourceId SOURCE_RESOURCE_ID = ResourceId
+      .fromConstantCase(ResourceType.CONFIG, "SOURCE_CONNECTION");
+  private static final ResourceId OPERATION_RESOURCE_ID = ResourceId
+      .fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC_OPERATION");
 
   private Stream<JsonNode> getResourceStream(String resourcePath) throws IOException {
     final ArrayNode nodeArray = (ArrayNode) Yamls
@@ -69,33 +67,52 @@ public class MigrateV0_24_0Test {
 
   @Test
   void testMigration() throws IOException {
-    final Migration migration = Migrations.MIGRATIONS
+    final MigrationV0_28_0 migration = (MigrationV0_28_0) Migrations.MIGRATIONS
         .stream()
-        .filter(m -> m instanceof MigrationV0_24_0)
+        .filter(m -> m instanceof MigrationV0_28_0)
         .findAny()
         .orElse(null);
     assertNotNull(migration);
 
     final Map<ResourceId, Stream<JsonNode>> inputConfigs = ImmutableMap.of(
-        STANDARD_SYNC_RESOURCE_ID,
+        CONNECTION_RESOURCE_ID,
         getResourceStream(INPUT_CONFIG_PATH + "/STANDARD_SYNC.yaml"),
-        STANDARD_SYNC_SCHEDULE_RESOURCE_ID,
-        getResourceStream(INPUT_CONFIG_PATH + "/STANDARD_SYNC_SCHEDULE.yaml"));
+        SOURCE_RESOURCE_ID,
+        getResourceStream(INPUT_CONFIG_PATH + "/SOURCE_CONNECTION.yaml"),
+        OPERATION_RESOURCE_ID,
+        getResourceStream(INPUT_CONFIG_PATH + "/STANDARD_SYNC_OPERATION.yaml"));
 
     final Map<ResourceId, ListConsumer<JsonNode>> outputConsumer = MigrationTestUtils
         .createOutputConsumer(migration.getOutputSchema().keySet());
+
     migration.migrate(inputConfigs, MigrationUtils.mapRecordConsumerToConsumer(outputConsumer));
 
-    final Map<ResourceId, List<JsonNode>> expectedOutputOverrides = ImmutableMap
-        .of(STANDARD_SYNC_RESOURCE_ID,
-            getResourceStream(OUTPUT_CONFIG_PATH + "/STANDARD_SYNC.yaml")
-                .collect(Collectors.toList()));
+    final Map<ResourceId, List<JsonNode>> expectedOutputOverrides = ImmutableMap.of(
+        CONNECTION_RESOURCE_ID,
+        getResourceStream(INPUT_CONFIG_PATH + "/STANDARD_SYNC.yaml")
+            .collect(Collectors.toList()),
+        SOURCE_RESOURCE_ID,
+        getResourceStream(INPUT_CONFIG_PATH + "/SOURCE_CONNECTION.yaml")
+            .collect(Collectors.toList()),
+        OPERATION_RESOURCE_ID,
+        getResourceStream(OUTPUT_CONFIG_PATH + "/STANDARD_SYNC_OPERATION.yaml")
+            .collect(Collectors.toList()));
+
     final Map<ResourceId, List<JsonNode>> expectedOutput = MigrationTestUtils
         .createExpectedOutput(migration.getOutputSchema().keySet(), expectedOutputOverrides);
 
     final Map<ResourceId, List<JsonNode>> outputAsList = MigrationTestUtils
         .collectConsumersToList(outputConsumer);
-    assertEquals(expectedOutput, outputAsList);
+
+    assertExpectedOutput(expectedOutput, outputAsList);
+  }
+
+  private void assertExpectedOutput(Map<ResourceId, List<JsonNode>> expected, Map<ResourceId, List<JsonNode>> actual) {
+    assertEquals(expected.keySet(), actual.keySet());
+    expected.entrySet().forEach(entry -> {
+      assertEquals(entry.getValue(), actual.get(entry.getKey()), String.format("Resources output do not match for %s:", entry.getKey().getName()));
+    });
+    assertEquals(expected, actual);
   }
 
 }
