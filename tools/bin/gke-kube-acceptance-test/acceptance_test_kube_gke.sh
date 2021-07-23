@@ -5,6 +5,7 @@ set -e
 . tools/lib/lib.sh
 
 assert_root
+kubectl --help
 
 NAMESPACE=$(openssl rand -hex 12)
 echo "Namespace" $NAMESPACE
