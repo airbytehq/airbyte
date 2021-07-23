@@ -25,6 +25,7 @@ import { getIcon } from "utils/imageUtils";
 import ImageBlock from "components/ImageBlock";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import HeadTitle from "components/HeadTitle";
+import { DropDownRow } from "components";
 
 const DestinationItemPage: React.FC = () => {
   const { query, push } = useRouter<{ id: string }>();
@@ -80,7 +81,7 @@ const DestinationItemPage: React.FC = () => {
           (sd) => sd.sourceDefinitionId === item.sourceDefinitionId
         );
         return {
-          text: item.name,
+          label: item.name,
           value: item.sourceId,
           img: <ImageBlock img={sourceDef?.icon} />,
         };
@@ -88,7 +89,7 @@ const DestinationItemPage: React.FC = () => {
     [sources, sourceDefinitions]
   );
 
-  const onSelect = (data: { value: string }) => {
+  const onSelect = (data: DropDownRow.IDataItem) => {
     if (data.value === "create-new-item") {
       push({
         pathname: `${Routes.Destination}${Routes.ConnectionNew}`,
