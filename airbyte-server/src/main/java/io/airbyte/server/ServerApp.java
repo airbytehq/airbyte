@@ -139,7 +139,7 @@ public class ServerApp implements ServerRunnable {
 
   private static void createDeploymentIfNoneExists(final JobPersistence jobPersistence) throws IOException {
     final Optional<UUID> deploymentOptional = jobPersistence.getDeployment();
-      if (deploymentOptional.isPresent()) {
+    if (deploymentOptional.isPresent()) {
       LOGGER.info("running deployment: {}", deploymentOptional.get());
     } else {
       final UUID deploymentId = UUID.randomUUID();
