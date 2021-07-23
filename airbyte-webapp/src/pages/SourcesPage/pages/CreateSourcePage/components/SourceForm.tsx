@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import ContentCard from "components/ContentCard";
-import ServiceForm from "components/ServiceForm";
+import ServiceForm from "views/Connector/ServiceForm";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
 import useRouter from "components/hooks/useRouterHook";
 import { useSourceDefinitionSpecificationLoad } from "components/hooks/services/useSourceHook";

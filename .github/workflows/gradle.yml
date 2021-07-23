@@ -23,7 +23,7 @@ jobs:
           aws-region: us-east-2
       - name: Start EC2 Runner
         id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2
+        uses: machulav/ec2-github-runner@v2.2.1
         with:
           mode: start
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
@@ -89,11 +89,14 @@ jobs:
       - name: Generate Template scaffold
         run: ./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates --scan
 
+      # TODO(Issue-4915): Remove this once fix has been merged into upstream library. Rely on caching and only load credentials once.
       - name: Format
-        run: SUB_BUILD=CONNECTORS_BASE ./gradlew format --scan --info --stacktrace
+        run: ./tools/bin/setup_gcs_creds.sh && GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcs.json" SUB_BUILD=CONNECTORS_BASE ./gradlew format --scan --info --stacktrace
+        env:
+          GOOGLE_CLOUD_STORAGE_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
 
       - name: Build
-        run: SUB_BUILD=CONNECTORS_BASE ./gradlew build --scan
+        run: GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcs.json" SUB_BUILD=CONNECTORS_BASE ./gradlew build --scan
 
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
@@ -133,7 +136,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2.1.0
+        uses: machulav/ec2-github-runner@v2.2.1
         with:
           mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
@@ -157,7 +160,7 @@ jobs:
           aws-region: us-east-2
       - name: Start EC2 Runner
         id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2.2.0
+        uses: machulav/ec2-github-runner@v2.2.1
         with:
           mode: start
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
@@ -220,14 +223,17 @@ jobs:
       - name: Install Pyenv
         run: python3 -m pip install virtualenv==16.7.9 --user
 
+      # TODO(Issue-4915): Remove this once fix has been merged into upstream library. Rely on caching and only load credentials once.
       - name: Format
-        run: SUB_BUILD=PLATFORM ./gradlew format --scan --info --stacktrace
+        run: ./tools/bin/setup_gcs_creds.sh && GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcs.json" SUB_BUILD=PLATFORM ./gradlew format --scan --info --stacktrace
+        env:
+          GOOGLE_CLOUD_STORAGE_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
 
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
 
       - name: Build
-        run: SUB_BUILD=PLATFORM ./gradlew build --scan
+        run: GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcs.json" && SUB_BUILD=PLATFORM ./gradlew build --scan
 
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
@@ -246,7 +252,7 @@ jobs:
 
       - name: Build Platform Docker Images
         if: success() && github.ref == 'refs/heads/master'
-        run: SUB_BUILD=PLATFORM ./gradlew composeBuild --scan
+        run: GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcs.json" ./gradlew composeBuild --scan
         env:
           GIT_REVISION: ${{ github.sha }}
 
@@ -301,7 +307,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2
+        uses: machulav/ec2-github-runner@v2.2.1
         with:
           mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
@@ -326,7 +332,7 @@ jobs:
           aws-region: us-east-2
       - name: Start EC2 Runner
         id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2
+        uses: machulav/ec2-github-runner@v2.2.1
         with:
           mode: start
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
@@ -360,8 +366,11 @@ jobs:
       - name: Install Cypress Test Dependencies
         run: sudo apt-get update && sudo apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
 
+      # TODO(Issue-4915): Remove this once fix has been merged into upstream library. Rely on caching and only load credentials once.
       - name: Build Platform Docker Images
-        run: SUB_BUILD=PLATFORM ./gradlew --no-daemon composebuild --scan
+        run: ./tools/bin/setup_gcs_creds.sh && GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcs.json" SUB_BUILD=PLATFORM ./gradlew --no-daemon composebuild --scan
+        env:
+          GOOGLE_CLOUD_STORAGE_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
 
       - name: Run End-to-End Frontend Tests
         run: ./tools/bin/e2e_test.sh
@@ -381,7 +390,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2
+        uses: machulav/ec2-github-runner@v2.2.1
         with:
           mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
@@ -406,7 +415,7 @@ jobs:
           aws-region: us-east-2
       - name: Start EC2 runner
         id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2
+        uses: machulav/ec2-github-runner@v2.2.1
         with:
           mode: start
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
@@ -455,8 +464,11 @@ jobs:
           HOME: /home/runner
           CHANGE_MINIKUBE_NONE_USER: true
 
+      # TODO(Issue-4915): Remove this once fix has been merged into upstream library. Rely on caching and only load credentials once.
       - name: Build Platform Docker Images
-        run: SUB_BUILD=PLATFORM ./gradlew composeBuild --scan
+        run: ./tools/bin/setup_gcs_creds.sh && GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcs.json" SUB_BUILD=PLATFORM ./gradlew composeBuild --scan
+        env:
+          GOOGLE_CLOUD_STORAGE_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
 
       - name: Run Logging Tests
         run: ./tools/bin/cloud_storage_logging_test.sh
@@ -487,7 +499,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2
+        uses: machulav/ec2-github-runner@v2.2.1
         with:
           mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}

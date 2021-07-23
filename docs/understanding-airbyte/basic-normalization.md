@@ -53,7 +53,9 @@ Airbyte places the json blob version of your data in a table called `_airbyte_ra
 ## Destinations that Support Basic Normalization
 
 * [BigQuery](../integrations/destinations/bigquery.md)
-* [MySQL](../integrations/destinations/mysql.md) (MySQL 8.0 only)
+* [MySQL](../integrations/destinations/mysql.md)
+  * The server must support the `WITH` keyword.
+  * Require MySQL >= 8.0, or MariaDB >= 10.2.1.
 * [Postgres](../integrations/destinations/postgres.md)
 * [Snowflake](../integrations/destinations/snowflake.md)
 * [Redshift](../integrations/destinations/redshift.md)
@@ -279,3 +281,18 @@ Note that all the choices made by Normalization as described in this documentati
 * to build a [custom SQL view](../operator-guides/transformation-and-normalization/transformations-with-sql.md) with your own naming conventions
 * to export, edit and run [custom dbt normalization](../operator-guides/transformation-and-normalization/transformations-with-dbt.md) yourself
 * or further, you can configure the use of a custom dbt project within Airbyte by following [this guide](../operator-guides/transformation-and-normalization/transformations-with-airbyte.md).
+
+## CHANGELOG
+
+### airbyte-integration/bases/base-normalization
+
+Note that Basic Normalization is packaged in a docker image `airbyte/normalization`.
+This image is tied to and released along with a specific Airbyte version.
+It is not configurable independently like it is possible to do with connectors (source & destinations)
+
+Therefore, in order to "upgrade" to the desired normalization version, you need to use the corresponding Airbyte version that it's being released in:
+
+| Airbyte Version | Normalization Version | Date | Pull Request | Subject |
+| :--- | :---  | :--- | :--- | :--- |
+| 0.27.5-alpha | 0.1.37 | 2021-07-22 | [#3947](https://github.com/airbytehq/airbyte/pull/4881/) | Handle `NULL` cursor field values when deduping |
+| 0.27.2-alpha | 0.1.36 | 2021-07-09 | [#3947](https://github.com/airbytehq/airbyte/pull/4163/) | Enable normalization for MySQL destination |
