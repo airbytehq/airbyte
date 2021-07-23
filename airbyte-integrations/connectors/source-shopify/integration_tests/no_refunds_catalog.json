@@ -2670,8 +2670,7 @@
                     "type": ["null", "integer"]
                   },
                   "price": {
-                    "type": ["null", "number"],
-                    "multipleOf": 1e-10
+                    "type": ["null", "string"]
                   },
                   "image_id": {
                     "type": ["null", "integer"]
@@ -2707,8 +2706,7 @@
                     "type": ["null", "string"]
                   },
                   "compare_at_price": {
-                    "type": ["null", "number"],
-                    "multipleOf": 1e-10
+                    "type": ["null", "string"]
                   },
                   "updated_at": {
                     "type": ["null", "string"],

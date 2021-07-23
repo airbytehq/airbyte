@@ -328,9 +328,8 @@
           "price": {
             "type": [
               "null",
-              "number"
-            ],
-            "multipleOf": 1e-10
+              "string"
+            ]
           },
           "image_id": {
             "type": [
@@ -401,9 +400,8 @@
           "compare_at_price": {
             "type": [
               "null",
-              "number"
-            ],
-            "multipleOf": 1e-10
+              "string"
+            ]
           },
           "updated_at": {
             "type": [
