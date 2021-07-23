@@ -28,6 +28,7 @@ resource "aws_db_instance" "default" {
   availability_zone    = "us-east-2a"
   engine               = "postgres"
   engine_version       = "12.6"
+  identifier           = "tunnel-dev"
   instance_class       = "db.t3.small"
   db_subnet_group_name = aws_db_subnet_group.default.name
   name                 = "airbyte"
