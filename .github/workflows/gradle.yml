@@ -254,14 +254,6 @@ jobs:
       - name: Automatic Migration Acceptance Test
         run: MIGRATION_TEST_VERSION=$(grep VERSION .env | tr  -d "VERSION=") SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan -i
 
-      - name: Push Platform Docker Images
-        if: success() && github.ref == 'refs/heads/master'
-        run: |
-          docker login -u airbytebot -p ${DOCKER_PASSWORD}
-          VERSION=dev docker-compose -f docker-compose.build.yaml push
-        env:
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-
       - name: Slack Notification - Failure
         if: failure() && github.ref == 'refs/heads/master'
         uses: rtCamp/action-slack-notify@master
