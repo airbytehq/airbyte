@@ -204,7 +204,7 @@ font-style: italic;
 </div>
     <div class="app-desc">More information: <a href="https://openapi-generator.tech">https://openapi-generator.tech</a></div>
     <div class="app-desc">Contact Info: <a href="contact@airbyte.io">contact@airbyte.io</a></div>
-    <div class="app-desc">Version: 1.0.0-oas3</div>
+    <div class="app-desc">Version: 1.0.0</div>
     <div class="app-desc">BasePath:/api</div>
     <div class="license-info">MIT</div>
     <div class="license-url">https://opensource.org/licenses/MIT</div>
@@ -331,6 +331,7 @@ font-style: italic;
   <li><a href="#deleteWorkspace"><code><span class="http-method">post</span> /v1/workspaces/delete</code></a></li>
   <li><a href="#getWorkspace"><code><span class="http-method">post</span> /v1/workspaces/get</code></a></li>
   <li><a href="#getWorkspaceBySlug"><code><span class="http-method">post</span> /v1/workspaces/get_by_slug</code></a></li>
+  <li><a href="#listWorkspaces"><code><span class="http-method">post</span> /v1/workspaces/list</code></a></li>
   <li><a href="#updateWorkspace"><code><span class="http-method">post</span> /v1/workspaces/update</code></a></li>
   </ul>
 
@@ -4952,8 +4953,8 @@ font-style: italic;
     Successful operation
         <a href="#WorkspaceRead">WorkspaceRead</a>
     <h4 class="field-label">422</h4>
-    
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="deleteWorkspace"/>
@@ -5156,6 +5157,86 @@ font-style: italic;
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="listWorkspaces"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/workspaces/list</code></pre></div>
+    <div class="method-summary">List all workspaces registered in the current Airbyte deployment (<span class="nickname">listWorkspaces</span>)</div>
+    <div class="method-notes"></div>
+
+
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#WorkspaceReadList">WorkspaceReadList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "workspaces" : [ {
+    "displaySetupWizard" : true,
+    "news" : true,
+    "initialSetupComplete" : true,
+    "anonymousDataCollection" : true,
+    "customerId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "name" : "name",
+    "email" : "email",
+    "slug" : "slug",
+    "securityUpdates" : true,
+    "notifications" : [ {
+      "slackConfiguration" : {
+        "webhook" : "webhook"
+      }
+    }, {
+      "slackConfiguration" : {
+        "webhook" : "webhook"
+      }
+    } ],
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  }, {
+    "displaySetupWizard" : true,
+    "news" : true,
+    "initialSetupComplete" : true,
+    "anonymousDataCollection" : true,
+    "customerId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "name" : "name",
+    "email" : "email",
+    "slug" : "slug",
+    "securityUpdates" : true,
+    "notifications" : [ {
+      "slackConfiguration" : {
+        "webhook" : "webhook"
+      }
+    }, {
+      "slackConfiguration" : {
+        "webhook" : "webhook"
+      }
+    } ],
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#WorkspaceReadList">WorkspaceReadList</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="updateWorkspace"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -5332,6 +5413,7 @@ font-style: italic;
     <li><a href="#WorkspaceCreate"><code>WorkspaceCreate</code> - </a></li>
     <li><a href="#WorkspaceIdRequestBody"><code>WorkspaceIdRequestBody</code> - </a></li>
     <li><a href="#WorkspaceRead"><code>WorkspaceRead</code> - </a></li>
+    <li><a href="#WorkspaceReadList"><code>WorkspaceReadList</code> - </a></li>
     <li><a href="#WorkspaceUpdate"><code>WorkspaceUpdate</code> - </a></li>
   </ol>
 
@@ -6209,6 +6291,13 @@ font-style: italic;
 <div class="param">news (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">securityUpdates (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">notifications (optional)</div><div class="param-desc"><span class="param-type"><a href="#Notification">array[Notification]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WorkspaceReadList"><code>WorkspaceReadList</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaces </div><div class="param-desc"><span class="param-type"><a href="#WorkspaceRead">array[WorkspaceRead]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

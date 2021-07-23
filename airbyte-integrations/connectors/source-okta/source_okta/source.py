@@ -23,7 +23,6 @@
 #
 
 
-import re
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib import parse
@@ -51,13 +50,21 @@ class OktaStream(HttpStream, ABC):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         # Follow the next page cursor
         # https://developer.okta.com/docs/reference/api-overview/#pagination
-        link_regex = r'<(.+?)>; rel="(.+?)"[,\s]*'
-        raw_links = response.headers["link"]
-        for link, cursor_type in re.findall(link_regex, raw_links):
-            if cursor_type == "next":
-                parsed_link = parse.urlparse(link)
-                query_params = dict(parse.parse_qsl(parsed_link.query))
-                return query_params
+        links = response.links
+        if "next" in links:
+            next_url = links["next"]["url"]
+            parsed_link = parse.urlparse(next_url)
+            query_params = dict(parse.parse_qsl(parsed_link.query))
+
+            # Typically, the absence of the "next" link header indicates there are more pages to read
+            # However, some streams contain the "next" link header even when there are no more pages to read
+            # See https://developer.okta.com/docs/reference/api-overview/#link-header
+            if "self" in links:
+                if links["self"]["url"] == next_url:
+                    return None
+
+            return query_params
+
         return None
 
     def request_params(

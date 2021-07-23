@@ -117,11 +117,7 @@ public class ConfigDumpImport {
         // 1. Unzip source
         Archives.extractArchive(archive.toPath(), sourceRoot);
 
-        // 2. Set DB version
-        LOGGER.info("Setting the DB Airbyte version to : " + targetVersion);
-        postgresPersistence.setVersion(targetVersion);
-
-        // 3. dry run
+        // 2. dry run
         try {
           checkImport(sourceRoot);
         } catch (Exception e) {
@@ -130,11 +126,18 @@ public class ConfigDumpImport {
           throw e;
         }
 
-        // 4. Import Postgres content
+        // 3. Import Postgres content
         importDatabaseFromArchive(sourceRoot, targetVersion);
 
-        // 5. Import Configs
+        // 4. Import Configs
         importConfigsFromArchive(sourceRoot, false);
+
+        // 5. Set DB version
+        LOGGER.info("Setting the DB Airbyte version to : " + targetVersion);
+        postgresPersistence.setVersion(targetVersion);
+
+        // 6. check db version
+        checkDBVersion(targetVersion);
         result = new ImportRead().status(StatusEnum.SUCCEEDED);
       } finally {
         FileUtils.deleteDirectory(sourceRoot.toFile());
@@ -164,7 +167,6 @@ public class ConfigDumpImport {
               "Please upgrade your Airbyte Archive, see more at https://docs.airbyte.io/tutorials/upgrading-airbyte\n",
               importVersion, targetVersion));
     }
-    checkDBVersion(targetVersion);
     importConfigsFromArchive(tempFolder, true);
   }
 

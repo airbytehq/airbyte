@@ -5,6 +5,8 @@
 {"type": "RECORD", "record": {"stream": "exchange_rate", "emitted_at": 1602637989400, "data": { "id": 2, "currency": "EUR", "date": "2020-09-01T00:00:00Z", "NZD": 2.43, "HKD@spéçiäl & characters": 8, "HKD_special___characters": "column name collision?", "USD": 10.16}}}
 {"type": "RECORD", "record": {"stream": "exchange_rate", "emitted_at": 1602637990700, "data": { "id": 1, "currency": "USD", "date": "2020-09-01T00:00:00Z", "NZD": 1.14, "HKD@spéçiäl & characters": 10.5, "HKD_special___characters": "column name collision?"}}}
 {"type": "RECORD", "record": {"stream": "exchange_rate", "emitted_at": 1602637990800, "data": { "id": 2, "currency": "EUR", "date": "2020-09-01T00:00:00Z", "NZD": 2.43, "HKD@spéçiäl & characters": 5.4, "HKD_special___characters": "column name collision?"}}}
+{"type": "RECORD", "record": {"stream": "exchange_rate", "emitted_at": 1602637990900, "data": { "id": 3, "currency": "GBP", "NZD": 3.14, "HKD@spéçiäl & characters": 9.2, "HKD_special___characters": "column name collision?"}}}
+{"type": "RECORD", "record": {"stream": "exchange_rate", "emitted_at": 1602637991000, "data": { "id": 2, "currency": "EUR", "NZD": 3.89, "HKD@spéçiäl & characters": 7.02, "HKD_special___characters": "column name collision?"}}}
 
 {"type": "RECORD", "record": {"stream": "dedup_exchange_rate", "emitted_at": 1602637589000, "data": { "id": 1, "currency": "USD", "date": "2020-08-29T00:00:00Z", "NZD": 1.14, "HKD@spéçiäl & characters": 2.13, "HKD_special___characters": "column name collision?"}}}
 {"type": "RECORD", "record": {"stream": "dedup_exchange_rate", "emitted_at": 1602637689100, "data": { "id": 1, "currency": "USD", "date": "2020-08-30T00:00:00Z", "NZD": 1.14, "HKD@spéçiäl & characters": 7.15, "HKD_special___characters": "column name collision?"}}}
@@ -13,10 +15,11 @@
 {"type": "RECORD", "record": {"stream": "dedup_exchange_rate", "emitted_at": 1602637989400, "data": { "id": 2, "currency": "EUR", "date": "2020-09-01T00:00:00Z", "NZD": 2.43, "HKD@spéçiäl & characters": 8, "HKD_special___characters": "column name collision?", "USD": 10.16}}}
 {"type": "RECORD", "record": {"stream": "dedup_exchange_rate", "emitted_at": 1602637990700, "data": { "id": 1, "currency": "USD", "date": "2020-09-01T00:00:00Z", "NZD": 1.14, "HKD@spéçiäl & characters": 10.5, "HKD_special___characters": "column name collision?"}}}
 {"type": "RECORD", "record": {"stream": "dedup_exchange_rate", "emitted_at": 1602637990800, "data": { "id": 2, "currency": "EUR", "date": "2020-09-01T00:00:00Z", "NZD": 2.43, "HKD@spéçiäl & characters": 5.4, "HKD_special___characters": "column name collision?"}}}
+{"type": "RECORD", "record": {"stream": "dedup_exchange_rate", "emitted_at": 1602637990900, "data": { "id": 3, "currency": "GBP", "NZD": 3.14, "HKD@spéçiäl & characters": 9.2, "HKD_special___characters": "column name collision?"}}}
+{"type": "RECORD", "record": {"stream": "dedup_exchange_rate", "emitted_at": 1602637991000, "data": { "id": 2, "currency": "EUR", "NZD": 3.89, "HKD@spéçiäl & characters": 7.02, "HKD_special___characters": "column name collision?"}}}
 
 {"type": "RECORD", "record": {"stream": "nested_stream_with_complex_columns_resulting_into_long_names", "emitted_at": 1602638599000, "data": { "id": 4.2, "date": "2020-08-29T00:00:00Z", "partition": { "double_array_data": [[ { "id": "EUR" } ]], "DATA": [ {"currency": "EUR" } ] } }}}
 {"type": "RECORD", "record": {"stream": "nested_stream_with_complex_columns_resulting_into_long_names", "emitted_at": 1602638599100, "data": { "id": "test record", "date": "2020-08-31T00:00:00Z", "partition": { "double_array_data": [[ { "id": "USD" } ], [ { "id": "GBP" } ]], "DATA": [ {"currency": "EUR" } ]} }}}
-
 
 {"type":"RECORD","record":{"stream":"dedup_cdc_excluded","data":{"id":1,"name":"mazda","_ab_cdc_updated_at":1623849130530,"_ab_cdc_lsn":26971624,"_ab_cdc_deleted_at":null},"emitted_at":1623859926}}
 {"type":"RECORD","record":{"stream":"dedup_cdc_excluded","data":{"id":2,"name":"toyata","_ab_cdc_updated_at":1623849130549,"_ab_cdc_lsn":26971624,"_ab_cdc_deleted_at":null},"emitted_at":1623859926}}

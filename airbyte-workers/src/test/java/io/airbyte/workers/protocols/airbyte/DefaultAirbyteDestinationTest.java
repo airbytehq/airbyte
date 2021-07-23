@@ -26,8 +26,6 @@ package io.airbyte.workers.protocols.airbyte;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -139,7 +137,7 @@ class DefaultAirbyteDestinationTest {
       }
     });
 
-    verify(process).waitFor(anyLong(), any());
+    verify(process).exitValue();
   }
 
   @Test
@@ -152,6 +150,16 @@ class DefaultAirbyteDestinationTest {
     when(process.isAlive()).thenReturn(false);
     destination.close();
     verify(outputStream).close();
+  }
+
+  @Test
+  public void testNonzeroExitCodeThrowsException() throws Exception {
+    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher);
+    destination.start(DESTINATION_CONFIG, jobRoot);
+
+    when(process.isAlive()).thenReturn(false);
+    when(process.exitValue()).thenReturn(1);
+    Assertions.assertThrows(WorkerException.class, destination::close);
   }
 
 }

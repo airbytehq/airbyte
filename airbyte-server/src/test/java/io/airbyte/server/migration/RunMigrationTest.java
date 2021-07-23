@@ -70,6 +70,8 @@ public class RunMigrationTest {
 
   private static final String INITIAL_VERSION = "0.17.0-alpha";
   private static final String TARGET_VERSION = Migrations.MIGRATIONS.get(Migrations.MIGRATIONS.size() - 1).getVersion();
+  private static final String DEPRECATED_SOURCE_DEFINITION_NOT_BEING_USED = "d2147be5-fa36-4936-977e-f031affa5895";
+  private static final String DEPRECATED_SOURCE_DEFINITION_BEING_USED = "4eb22946-2a79-4d20-a3e6-effd234613c3";
   private List<File> resourceToBeCleanedUp;
 
   @BeforeEach
@@ -103,7 +105,7 @@ public class RunMigrationTest {
       FileUtils.copyDirectory(dummyDataSource.toFile(), configRoot.toFile());
       resourceToBeCleanedUp.add(configRoot.toFile());
       final JobPersistence jobPersistence = getJobPersistence(stubAirbyteDB.getDatabase(), file, INITIAL_VERSION);
-      assertDatabaseVersion(jobPersistence, INITIAL_VERSION);
+      assertPreMigrationConfigs(configRoot, jobPersistence);
 
       runMigration(jobPersistence, configRoot);
 
@@ -115,13 +117,22 @@ public class RunMigrationTest {
     }
   }
 
+  private void assertPreMigrationConfigs(Path configRoot, JobPersistence jobPersistence) throws Exception {
+    assertDatabaseVersion(jobPersistence, INITIAL_VERSION);
+    ConfigRepository configRepository = new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot));
+    Map<String, StandardSourceDefinition> sourceDefinitionsBeforeMigration = configRepository.listStandardSources().stream()
+        .collect(Collectors.toMap(c -> c.getSourceDefinitionId().toString(), c -> c));
+    assertTrue(sourceDefinitionsBeforeMigration.containsKey(DEPRECATED_SOURCE_DEFINITION_NOT_BEING_USED));
+    assertTrue(sourceDefinitionsBeforeMigration.containsKey(DEPRECATED_SOURCE_DEFINITION_BEING_USED));
+  }
+
   private void assertDatabaseVersion(JobPersistence jobPersistence, String version) throws IOException {
     final Optional<String> versionFromDb = jobPersistence.getVersion();
     assertTrue(versionFromDb.isPresent());
     assertEquals(versionFromDb.get(), version);
   }
 
-  private void assertPostMigrationConfigs(Path importRoot) throws IOException, JsonValidationException, ConfigNotFoundException {
+  private void assertPostMigrationConfigs(Path importRoot) throws Exception {
     final ConfigRepository configRepository = new ConfigRepository(FileSystemConfigPersistence.createWithValidation(importRoot));
     final StandardSyncOperation standardSyncOperation = assertSyncOperations(configRepository);
     assertStandardSyncs(configRepository, standardSyncOperation);
@@ -137,12 +148,22 @@ public class RunMigrationTest {
         .stream()
         .collect(Collectors.toMap(c -> c.getSourceDefinitionId().toString(), c -> c));
     assertTrue(sourceDefinitions.size() >= 59);
+    // the definition is not present in latest seeds so it should be deleted
+    assertFalse(sourceDefinitions.containsKey(DEPRECATED_SOURCE_DEFINITION_NOT_BEING_USED));
+    // the definition is not present in latest seeds but it was being used as a connection so it should
+    // not be deleted
+    assertTrue(sourceDefinitions.containsKey(DEPRECATED_SOURCE_DEFINITION_BEING_USED));
+
     final StandardSourceDefinition mysqlDefinition = sourceDefinitions.get("435bb9a5-7887-4809-aa58-28c27df0d7ad");
     assertEquals("0.2.0", mysqlDefinition.getDockerImageTag());
     assertEquals("MySQL", mysqlDefinition.getName());
 
     final StandardSourceDefinition postgresDefinition = sourceDefinitions.get("decd338e-5647-4c0b-adf4-da0e75f5a750");
-    assertTrue(postgresDefinition.getDockerImageTag().compareTo("0.3.4") >= 0);
+    String[] tagBrokenAsArray = postgresDefinition.getDockerImageTag().replace(".", ",").split(",");
+    assertEquals(3, tagBrokenAsArray.length);
+    assertTrue(Integer.parseInt(tagBrokenAsArray[0]) >= 0);
+    assertTrue(Integer.parseInt(tagBrokenAsArray[1]) >= 3);
+    assertTrue(Integer.parseInt(tagBrokenAsArray[2]) >= 4);
     assertTrue(postgresDefinition.getName().contains("Postgres"));
   }
 
@@ -161,7 +182,11 @@ public class RunMigrationTest {
     assertEquals("0.2.0", localCsvDefinition.getDockerImageTag());
 
     final StandardDestinationDefinition snowflakeDefinition = sourceDefinitions.get("424892c4-daac-4491-b35d-c6688ba547ba");
-    assertTrue(snowflakeDefinition.getDockerImageTag().compareTo("0.3.9") >= 0);
+    String[] tagBrokenAsArray = snowflakeDefinition.getDockerImageTag().replace(".", ",").split(",");
+    assertEquals(3, tagBrokenAsArray.length);
+    assertTrue(Integer.parseInt(tagBrokenAsArray[0]) >= 0);
+    assertTrue(Integer.parseInt(tagBrokenAsArray[1]) >= 3);
+    assertTrue(Integer.parseInt(tagBrokenAsArray[2]) >= 9);
     assertTrue(snowflakeDefinition.getName().contains("Snowflake"));
   }
 
@@ -210,18 +235,21 @@ public class RunMigrationTest {
   }
 
   private void assertSources(ConfigRepository configRepository) throws JsonValidationException, IOException {
-    final List<SourceConnection> sourceConnections = configRepository.listSourceConnection();
-    assertEquals(sourceConnections.size(), 1);
-    final SourceConnection sourceConnection = sourceConnections.get(0);
-    assertEquals(sourceConnection.getName(), "MySQL localhost");
-    assertEquals(sourceConnection.getSourceDefinitionId().toString(), "435bb9a5-7887-4809-aa58-28c27df0d7ad");
-    assertEquals(sourceConnection.getWorkspaceId().toString(), "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6");
-    assertEquals(sourceConnection.getSourceId().toString(), "28ffee2b-372a-4f72-9b95-8ed56a8b99c5");
-    assertEquals(sourceConnection.getConfiguration().get("username").asText(), "root");
-    assertEquals(sourceConnection.getConfiguration().get("password").asText(), "password");
-    assertEquals(sourceConnection.getConfiguration().get("database").asText(), "localhost_test");
-    assertEquals(sourceConnection.getConfiguration().get("port").asInt(), 3306);
-    assertEquals(sourceConnection.getConfiguration().get("host").asText(), "host.docker.internal");
+    final Map<String, SourceConnection> sources = configRepository.listSourceConnection().stream()
+        .collect(Collectors.toMap(sourceConnection -> sourceConnection.getSourceId().toString(), sourceConnection -> sourceConnection));
+    assertEquals(sources.size(), 2);
+    final SourceConnection mysqlConnection = sources.get("28ffee2b-372a-4f72-9b95-8ed56a8b99c5");
+    assertEquals(mysqlConnection.getName(), "MySQL localhost");
+    assertEquals(mysqlConnection.getSourceDefinitionId().toString(), "435bb9a5-7887-4809-aa58-28c27df0d7ad");
+    assertEquals(mysqlConnection.getWorkspaceId().toString(), "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6");
+    assertEquals(mysqlConnection.getSourceId().toString(), "28ffee2b-372a-4f72-9b95-8ed56a8b99c5");
+    assertEquals(mysqlConnection.getConfiguration().get("username").asText(), "root");
+    assertEquals(mysqlConnection.getConfiguration().get("password").asText(), "password");
+    assertEquals(mysqlConnection.getConfiguration().get("database").asText(), "localhost_test");
+    assertEquals(mysqlConnection.getConfiguration().get("port").asInt(), 3306);
+    assertEquals(mysqlConnection.getConfiguration().get("host").asText(), "host.docker.internal");
+    assertTrue(sources.containsKey("e48cae1a-1f5c-42cc-9ec1-a44ff7fb4969"));
+
   }
 
   private void assertWorkspace(ConfigRepository configRepository) throws JsonValidationException, IOException {
@@ -265,7 +293,7 @@ public class RunMigrationTest {
     }
   }
 
-  private void runMigration(JobPersistence jobPersistence, Path configRoot) throws IOException {
+  private void runMigration(JobPersistence jobPersistence, Path configRoot) throws Exception {
     try (RunMigration runMigration = new RunMigration(
         INITIAL_VERSION,
         jobPersistence,

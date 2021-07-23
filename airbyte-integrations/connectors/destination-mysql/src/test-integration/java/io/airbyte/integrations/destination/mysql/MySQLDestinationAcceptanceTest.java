@@ -24,14 +24,26 @@
 
 package io.airbyte.integrations.destination.mysql;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.sql.SQLException;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.JSONFormat;
@@ -45,7 +57,7 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
   private MySQLContainer<?> db;
-  private ExtendedNameTransformer namingResolver = new MySQLNameTransformer();
+  private final ExtendedNameTransformer namingResolver = new MySQLNameTransformer();
 
   @Override
   protected String getImageName() {
@@ -59,6 +71,11 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected boolean implementsNamespaces() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportsNormalization() {
     return true;
   }
 
@@ -124,6 +141,25 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
+  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception {
+    String tableName = namingResolver.getIdentifier(streamName);
+    String schema = namingResolver.getIdentifier(namespace);
+    return retrieveRecordsFromTable(tableName, schema);
+  }
+
+  @Override
+  protected List<String> resolveIdentifier(String identifier) {
+    final List<String> result = new ArrayList<>();
+    final String resolved = namingResolver.getIdentifier(identifier);
+    result.add(identifier);
+    result.add(resolved);
+    if (!resolved.startsWith("\"")) {
+      result.add(resolved.toLowerCase());
+    }
+    return result;
+  }
+
+  @Override
   protected void setup(TestDestinationEnv testEnv) {
     db = new MySQLContainer<>("mysql:8.0");
     db.start();
@@ -141,7 +177,7 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   private void grantCorrectPermissions() {
-    executeQuery("GRANT CREATE, INSERT, SELECT, DROP ON *.* TO " + db.getUsername() + "@'%';");
+    executeQuery("GRANT ALTER, CREATE, INSERT, SELECT, DROP ON *.* TO " + db.getUsername() + "@'%';");
   }
 
   private void executeQuery(String query) {
@@ -170,8 +206,68 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   @Test
+  public void testCustomDbtTransformations() throws Exception {
+    // We need to create view for testing custom dbt transformations
+    executeQuery("GRANT CREATE VIEW ON *.* TO " + db.getUsername() + "@'%';");
+    // overrides test with a no-op until https://github.com/dbt-labs/jaffle_shop/pull/8 is merged
+    // super.testCustomDbtTransformations();
+  }
+
+  @Test
+  public void testJsonSync() throws Exception {
+    final String catalogAsText = "{\n"
+        + "  \"streams\": [\n"
+        + "    {\n"
+        + "      \"name\": \"exchange_rate\",\n"
+        + "      \"json_schema\": {\n"
+        + "        \"properties\": {\n"
+        + "          \"id\": {\n"
+        + "            \"type\": \"integer\"\n"
+        + "          },\n"
+        + "          \"data\": {\n"
+        + "            \"type\": \"string\"\n"
+        + "          }"
+        + "        }\n"
+        + "      }\n"
+        + "    }\n"
+        + "  ]\n"
+        + "}\n";
+
+    final AirbyteCatalog catalog = Jsons.deserialize(catalogAsText, AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final List<AirbyteMessage> messages = Lists.newArrayList(
+        new AirbyteMessage()
+            .withType(Type.RECORD)
+            .withRecord(new AirbyteRecordMessage()
+                .withStream(catalog.getStreams().get(0).getName())
+                .withEmittedAt(Instant.now().toEpochMilli())
+                .withData(Jsons.jsonNode(ImmutableMap.builder()
+                    .put("id", 1)
+                    .put("data", "{\"name\":\"Conferência Faturamento - Custo - Taxas - Margem - Resumo ano inicial até -2\",\"description\":null}")
+                    .build()))),
+        new AirbyteMessage()
+            .withType(Type.STATE)
+            .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))));
+
+    final JsonNode config = getConfig();
+    final String defaultSchema = getDefaultSchema(config);
+    runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
+    retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
+  }
+
+  @Override
+  @Test
   public void testLineBreakCharacters() {
     // overrides test with a no-op until we handle full UTF-8 in the destination
+  }
+
+  protected void assertSameValue(JsonNode expectedValue, JsonNode actualValue) {
+    if (expectedValue.isBoolean()) {
+      // Boolean in MySQL are stored as TINYINT (0 or 1) so we force them to boolean values here
+      assertEquals(expectedValue.asBoolean(), actualValue.asBoolean());
+    } else {
+      assertEquals(expectedValue, actualValue);
+    }
   }
 
 }
