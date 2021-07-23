@@ -434,48 +434,105 @@
               "type": ["null", "string"]
             },
             "via": {
+              "type": ["null", "object"],
               "properties": {
+                "channel": {
+                  "type": ["null", "string"]
+                },
                 "source": {
+                  "type": ["null", "object"],
                   "properties": {
                     "from": {
+                      "type": ["null", "object"],
                       "properties": {
                         "name": {
                           "type": ["null", "string"]
+                        },
+                        "address": {
+                          "type": ["null", "string"]
+                        },
+                        "original_recipients": {
+                          "type": ["null", "array"],
+                          "items": {
+                            "type": ["null", "string"]
+                          }
                         },
                         "ticket_id": {
                           "type": ["null", "integer"]
                         },
-                        "address": {
-                          "type": ["null", "string"]
-                        },
                         "subject": {
                           "type": ["null", "string"]
+                        },
+                        "id": {
+                          "type": ["null", "integer"]
+                        },
+                        "title": {
+                          "type": ["null", "string"]
+                        },
+                        "deleted": {
+                          "type": ["null", "boolean"]
+                        },
+                        "revision_id": {
+                          "type": ["null", "integer"]
+                        },
+                        "topic_id": {
+                          "type": ["null", "integer"]
+                        },
+                        "topic_name": {
+                          "type": ["null", "string"]
+                        },
+                        "profile_url": {
+                          "type": ["null", "string"]
+                        },
+                        "username": {
+                          "type": ["null", "string"]
+                        },
+                        "phone": {
+                          "type": ["null", "string"]
+                        },
+                        "formatted_phone": {
+                          "type": ["null", "string"]
+                        },
+                        "facebook_id": {
+                          "type": ["null", "string"]
                         }
-                      },
-                      "type": ["null", "object"]
+                      }
                     },
                     "to": {
+                      "type": ["null", "object"],
                       "properties": {
+                        "name": {
+                          "type": ["null", "string"]
+                        },
                         "address": {
                           "type": ["null", "string"]
                         },
-                        "name": {
+                        "email_ccs": {
+                          "type": ["null", "string"]
+                        },
+                        "profile_url": {
+                          "type": ["null", "string"]
+                        },
+                        "username": {
+                          "type": ["null", "string"]
+                        },
+                        "phone": {
+                          "type": ["null", "string"]
+                        },
+                        "formatted_phone": {
+                          "type": ["null", "string"]
+                        },
+                        "facebook_id": {
                           "type": ["null", "string"]
                         }
-                      },
-                      "type": ["null", "object"]
+                      }
                     },
                     "rel": {
                       "type": ["null", "string"]
                     }
-                  },
-                  "type": ["null", "object"]
-                },
-                "channel": {
-                  "type": ["null", "string"]
+                  }
                 }
-              },
-              "type": ["null", "object"]
+              }
             },
             "ticket_form_id": {
               "type": ["null", "integer"]
