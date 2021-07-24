@@ -141,7 +141,7 @@ def test_make_query_select():
         "start_date": test_start_date,
         "end_date": test_end_date,
     }
-    
+
     test_expected_query_output = {
         "compression": "NONE",
         "output": {"target": "S3"},
