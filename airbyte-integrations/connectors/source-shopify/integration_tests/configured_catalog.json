@@ -2515,8 +2515,7 @@
                     "type": ["null", "integer"]
                   },
                   "price": {
-                    "type": ["null", "number"],
-                    "multipleOf": 1e-10
+                    "type": ["null", "string"]
                   },
                   "image_id": {
                     "type": ["null", "integer"]
@@ -2552,8 +2551,7 @@
                     "type": ["null", "string"]
                   },
                   "compare_at_price": {
-                    "type": ["null", "number"],
-                    "multipleOf": 1e-10
+                    "type": ["null", "string"]
                   },
                   "updated_at": {
                     "type": ["null", "string"],
@@ -2564,6 +2562,28 @@
                   },
                   "old_inventory_quantity": {
                     "type": ["null", "integer"]
+                  },
+                  "presentment_prices": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "price": {
+                          "type": ["null", "object"],
+                          "properties": {
+                            "amount": {
+                              "type": ["null", "string"]
+                            },
+                            "currency_code": {
+                              "type": ["null", "string"]
+                            }
+                          }
+                        },
+                        "compare_at_price": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
                   },
                   "requires_shipping": {
                     "type": ["null", "boolean"]

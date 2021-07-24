@@ -61,6 +61,7 @@ Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-ap
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.11  | 2021-07-23 | [4943](https://github.com/airbytehq/airbyte/pull/4943) | Fix products schema up to API 2021-07 |
 | 0.1.10  | 2021-07-19 | [4830](https://github.com/airbytehq/airbyte/pull/4830) | Fix for streams json schemas, upgrade to API version 2021-07 |
 | 0.1.9   | 2021-07-04 | [4472](https://github.com/airbytehq/airbyte/pull/4472) | Incremental sync is now using updated_at instead of since_id by default |
 | 0.1.8   | 2021-06-29 | [4121](https://github.com/airbytehq/airbyte/pull/4121) | Add draft orders stream |
