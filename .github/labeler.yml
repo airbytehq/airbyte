@@ -2,10 +2,6 @@ area/frontend:
   - airbyte-webapp/*
   - airbyte-webapp/**/*
 
-area/api:
-  - airbyte-api/*
-  - airbyte-api/**/*
-
 area/core:
   - airbyte-server/*
   - airbyte-server/**/*
@@ -21,9 +17,13 @@ area/worker:
   - airbyte-workers/**/*
 
 area/connectors:
-  - airbyte-integrations/connectors/*
-  - airbyte-integrations/connectors/**/*
-  - airbyte-integrations/builds.md
+  - any: [
+    'airbyte-integrations/bases/**/*',
+    'airbyte-integrations/connectors/**/*',
+    'airbyte-integrations/builds.md',
+    '!airbyte-integrations/bases/base-normalization/*',
+    '!airbyte-integrations/bases/base-normalization/**/*'
+  ]
 
 area/documentation:
   - docs/*
