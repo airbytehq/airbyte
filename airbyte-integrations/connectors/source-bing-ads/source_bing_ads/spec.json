@@ -5,49 +5,49 @@
     "title": "Bing Ads Spec",
     "type": "object",
     "required": [
-      "refresh_token",
-      "developer_token",
-      "client_secret",
+      "account_ids",
       "client_id",
+      "client_secret",
       "customer_id",
-      "user_id",
-      "account_ids"
+      "developer_token",
+      "refresh_token",
+      "user_id"
     ],
     "additionalProperties": false,
     "properties": {
-      "refresh_token": {
-        "type": "string",
-        "description": "The long-lived Refresh token received via grant_type=refresh_token request.",
-        "airbyte_secret": true
-      },
-      "developer_token": {
-        "type": "string",
-        "description": "Developer token associated with user.",
-        "airbyte_secret": true
-      },
-      "client_secret": {
-        "type": "string",
-        "description": "Secret of your Microsoft Advertising client application.",
-        "airbyte_secret": true
-      },
-      "client_id": {
-        "type": "string",
-        "description": "ID of your Microsoft Advertising client application."
-      },
-      "customer_id": {
-        "type": "string",
-        "description": "User's customer ID."
-      },
-      "user_id": {
-        "type": "string",
-        "description": "Unique user identifier."
-      },
       "account_ids": {
         "type": "array",
         "description": "List of accounts from which data will be fetched.",
         "items": {
           "type": "string"
         }
+      },
+      "client_id": {
+        "type": "string",
+        "description": "ID of your Microsoft Advertising client application."
+      },
+      "client_secret": {
+        "type": "string",
+        "description": "Secret of your Microsoft Advertising client application.",
+        "airbyte_secret": true
+      },
+      "customer_id": {
+        "type": "string",
+        "description": "User's customer ID."
+      },
+      "developer_token": {
+        "type": "string",
+        "description": "Developer token associated with user.",
+        "airbyte_secret": true
+      },
+      "refresh_token": {
+        "type": "string",
+        "description": "The long-lived Refresh token received via grant_type=refresh_token request.",
+        "airbyte_secret": true
+      },
+      "user_id": {
+        "type": "string",
+        "description": "Unique user identifier."
       }
     }
   }

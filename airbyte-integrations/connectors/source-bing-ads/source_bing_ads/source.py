@@ -288,6 +288,10 @@ class Ads(BingAdsStream):
 
 
 class SourceBingAds(AbstractSource):
+    """
+    Source implementation of Bing Ads API. Fetches advertising data from accounts
+    """
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             client = Client(**config)
@@ -299,4 +303,4 @@ class SourceBingAds(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         client = Client(**config)
-        return [Accounts(client, config), Campaigns(client, config), AdGroups(client, config), Ads(client, config)]
+        return [Accounts(client, config), AdGroups(client, config), Ads(client, config), Campaigns(client, config)]
