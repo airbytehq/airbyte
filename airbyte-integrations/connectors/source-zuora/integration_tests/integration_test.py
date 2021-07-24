@@ -152,33 +152,3 @@ def test_make_query_select():
     test_query = TestClient.client().make_query(**test_args)
     assert test_query == test_expected_query_output
 
-
-def test_get_data_with_date_slice():
-    """
-    Test to get data from the ACCOUNT stream
-
-    :: ! IF THIS TEST IS FAILING DURING THE BULD STAGE, CHECK THE 'start_date' input argument !
-
-        :: ' test_args ' is the representation of arguments that must be supplied as input
-
-        We iterate over the generator object, so the list() function is used as placeholder in this test
-        With this test we are testing the set of methods working together as far as ' get_data_with_date_slice() '
-        is a wraper for the following methods:
-
-        ::  ' get_data() ', ' submit_job() ', ' check_job_status() ', ' get_job_data() '
-
-    :: ! IF THIS TEST IS FAILING DURING THE BULD STAGE, CHECK THE 'start_date' input argument !
-    """
-
-    test_args = {
-        "q_type": "select",
-        "obj": test_stream,
-        "date_field": test_date_field,
-        # "start_date": "2018-01-01",
-        "start_date": pendulum.now().subtract(years=1).to_date_string(),
-        "window_days": 300,
-    }
-    print(test_args)
-
-    test_data = TestClient.client().get_data_with_date_slice(**test_args)
-    assert True if len(list(test_data)) > 0 else False

@@ -146,7 +146,6 @@ class ZoqlExportClient:
         """
 
         query = self.make_query(q_type, obj, date_field, start_date, end_date)
-        self.logger.info(f"{query}")
         submit = self.submit_job(query)
         check = self.check_job_status(submit)
         get = self.get_job_data(check)
@@ -164,21 +163,14 @@ class ZoqlExportClient:
         start = pendulum.parse(start_date).astimezone()
         # If there is no `end_date` as input - use now()
         end = pendulum.parse(end_date).astimezone() if end_date else pendulum.now().astimezone()
-        # Get n of date-slices
-        n_slices = self.get_n_slices(start, end, window_days)
-        print(f"slices: \n{n_slices}\n")
         # initiating slice_start/end for date slice
         slice_start = start
         # if slice_end is bigger than the input end_date, switch to the end_date
         slice_end = min(start.add(days=window_days), end)
-        while n_slices > 0:
+        while slice_start < end:
             yield from self.get_data(q_type, obj, date_field, self.to_datetime_str(slice_start), self.to_datetime_str(slice_end))
             slice_start = slice_end
             slice_end = min(slice_end.add(days=window_days), end)
-            print(f"slice: \n{n_slices}")
-            print(f"start: \n{self.to_datetime_str(slice_start)}")
-            print(f"end: \n{self.to_datetime_str(slice_end)}\n")
-            n_slices -= 1
 
     @staticmethod
     def to_datetime_str(date: datetime) -> str:
@@ -189,14 +181,6 @@ class ZoqlExportClient:
         """
         return f"{date.to_datetime_string()} {date.strftime('%Z')}"
 
-    @staticmethod
-    def get_n_slices(start_date: datetime, end_date: datetime, window_days: int) -> int:
-        """
-        Get n of date-slices needed to fetch the data.
-        Case where we have 1 sec difference between start and end dates would produce 0 slices, so return 1 instead
-        """
-        d = pendulum.period(start_date, end_date).in_days()
-        return 1 if ceil(d / window_days) <= 0 else ceil(d / window_days)
 
     def convert_schema_types(self, schema: List[Dict]) -> Dict:
         """
