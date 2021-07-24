@@ -109,7 +109,7 @@ public class MigrationAcceptanceTest {
     logsToExpect.add("Version: 0.17.0-alpha");
 
     final AirbyteTestContainer airbyteTestContainer =
-        new AirbyteTestContainer.Builder(new File(Resources.getResource("docker-compose-migration-test-first-run.yaml").toURI()))
+        new AirbyteTestContainer.Builder(new File(Resources.getResource("docker-compose-migration-test-0-17-0-alpha.yaml").toURI()))
             .setEnv(environmentVariables)
             .setLogListener("server", logConsumerForServer(logsToExpect))
             .build();
