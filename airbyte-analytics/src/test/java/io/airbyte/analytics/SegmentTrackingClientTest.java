@@ -33,6 +33,7 @@ import com.google.common.collect.ImmutableMap;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.messages.IdentifyMessage;
 import com.segment.analytics.messages.TrackMessage;
+import io.airbyte.analytics.Deployment.DeploymentMode;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import java.util.Map;
 import java.util.UUID;
@@ -44,6 +45,7 @@ import org.mockito.ArgumentCaptor;
 class SegmentTrackingClientTest {
 
   private static final String AIRBYTE_VERSION = "dev";
+  private static final Deployment DEPLOYMENT = new Deployment(DeploymentMode.OSS, UUID.randomUUID(), WorkerEnvironment.DOCKER);
   private static final String EMAIL = "a@airbyte.io";
   private static final TrackingIdentity identity = new TrackingIdentity(AIRBYTE_VERSION, UUID.randomUUID(), EMAIL, false, false, true);
 
@@ -56,7 +58,7 @@ class SegmentTrackingClientTest {
   void setup() {
     analytics = mock(Analytics.class);
     roleSupplier = mock(Supplier.class);
-    segmentTrackingClient = new SegmentTrackingClient(() -> identity, WorkerEnvironment.DOCKER, null, analytics);
+    segmentTrackingClient = new SegmentTrackingClient(() -> identity, DEPLOYMENT, null, analytics);
   }
 
   @SuppressWarnings("OptionalGetWithoutIsPresent")
@@ -71,7 +73,9 @@ class SegmentTrackingClientTest {
     verify(analytics).enqueue(mockBuilder.capture());
     final IdentifyMessage actual = mockBuilder.getValue().build();
     final Map<String, Object> expectedTraits = ImmutableMap.<String, Object>builder()
-        .put("deployment_env", WorkerEnvironment.DOCKER)
+        .put("deployment_env", DEPLOYMENT.getDeploymentEnv())
+        .put("deployment_mode", DEPLOYMENT.getDeploymentMode())
+        .put("deployment_id", DEPLOYMENT.getDeploymentId())
         .put("airbyte_version", AIRBYTE_VERSION)
         .put("email", identity.getEmail().get())
         .put("anonymized", identity.isAnonymousDataCollection())
@@ -84,7 +88,7 @@ class SegmentTrackingClientTest {
 
   @Test
   void testIdentifyWithRole() {
-    segmentTrackingClient = new SegmentTrackingClient(() -> identity, WorkerEnvironment.DOCKER, "role", analytics);
+    segmentTrackingClient = new SegmentTrackingClient(() -> identity, DEPLOYMENT, "role", analytics);
     // equals is not defined on MessageBuilder, so we need to use ArgumentCaptor to inspect each field
     // manually.
     ArgumentCaptor<IdentifyMessage.Builder> mockBuilder = ArgumentCaptor.forClass(IdentifyMessage.Builder.class);
@@ -95,7 +99,9 @@ class SegmentTrackingClientTest {
     verify(analytics).enqueue(mockBuilder.capture());
     final IdentifyMessage actual = mockBuilder.getValue().build();
     final Map<String, Object> expectedTraits = ImmutableMap.<String, Object>builder()
-        .put("deployment_env", WorkerEnvironment.DOCKER)
+        .put("deployment_env", DEPLOYMENT.getDeploymentEnv())
+        .put("deployment_mode", DEPLOYMENT.getDeploymentMode())
+        .put("deployment_id", DEPLOYMENT.getDeploymentId())
         .put("airbyte_version", AIRBYTE_VERSION)
         .put("email", identity.getEmail().get())
         .put("anonymized", identity.isAnonymousDataCollection())
