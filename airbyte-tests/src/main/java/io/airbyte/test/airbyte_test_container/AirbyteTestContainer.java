@@ -34,7 +34,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -45,6 +47,7 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.containers.SocatContainer;
 import org.testcontainers.containers.output.OutputFrame;
 
 public class AirbyteTestContainer {
@@ -55,7 +58,7 @@ public class AirbyteTestContainer {
   private final Map<String, String> env;
   private final Map<String, Consumer<String>> customConsumers;
 
-  private CustomDockerComposeContainer dockerComposeContainer;
+  private DockerComposeContainer dockerComposeContainer;
 
   public AirbyteTestContainer(final File dockerComposeFile,
                               final Map<String, String> env,
@@ -68,16 +71,15 @@ public class AirbyteTestContainer {
   @SuppressWarnings({"unchecked", "rawtypes"})
   public void start() throws IOException, InterruptedException {
     final File cleanedDockerComposeFile = prepareDockerComposeFile(dockerComposeFile);
-    final DockerComposeContainer dockerComposeContainerInternal = new DockerComposeContainer(cleanedDockerComposeFile).withEnv(env);
-    serviceLogConsumer(dockerComposeContainerInternal, "init");
-    serviceLogConsumer(dockerComposeContainerInternal, "db");
-    serviceLogConsumer(dockerComposeContainerInternal, "seed");
-    serviceLogConsumer(dockerComposeContainerInternal, "scheduler");
-    serviceLogConsumer(dockerComposeContainerInternal, "server");
-    serviceLogConsumer(dockerComposeContainerInternal, "webapp");
-    serviceLogConsumer(dockerComposeContainerInternal, "airbyte-temporal");
+    dockerComposeContainer = new DockerComposeContainer(cleanedDockerComposeFile).withEnv(env);
+    serviceLogConsumer(dockerComposeContainer, "init");
+    serviceLogConsumer(dockerComposeContainer, "db");
+    serviceLogConsumer(dockerComposeContainer, "seed");
+    serviceLogConsumer(dockerComposeContainer, "scheduler");
+    serviceLogConsumer(dockerComposeContainer, "server");
+    serviceLogConsumer(dockerComposeContainer, "webapp");
+    serviceLogConsumer(dockerComposeContainer, "airbyte-temporal");
 
-    dockerComposeContainer = new CustomDockerComposeContainer(dockerComposeContainerInternal);
     dockerComposeContainer.start();
 
     waitForAirbyte();
@@ -115,6 +117,8 @@ public class AirbyteTestContainer {
 
   @SuppressWarnings("BusyWait")
   private static void waitForAirbyte() throws InterruptedException {
+    // todo (cgardens) - assumes port 8001 which is misleading since we can start airbyte on other
+    // ports. need to make this configurable.
     final AirbyteApiClient apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
             .setHost("localhost")
@@ -164,19 +168,56 @@ public class AirbyteTestContainer {
     };
   }
 
+  /**
+   * This stop method will delete any underlying volumes for the docker compose setup.
+   */
   public void stop() {
     if (dockerComposeContainer != null) {
       dockerComposeContainer.stop();
     }
   }
 
+  /**
+   * This method is hacked from {@link org.testcontainers.containers.DockerComposeContainer#stop()} We
+   * needed to do this to avoid removing the volumes when the container is stopped so that the data
+   * persists and can be tested against in the second run
+   */
   public void stopRetainVolumes() {
-    if (dockerComposeContainer != null) {
-      try {
-        dockerComposeContainer.stopRetainVolumes();
-      } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-        throw new RuntimeException(e);
-      }
+    if (dockerComposeContainer == null) {
+      return;
+    }
+
+    try {
+      stopRetainVolumesInternal();
+    } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException | NoSuchFieldException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @SuppressWarnings("DuplicatedCode")
+  private void stopRetainVolumesInternal() throws InvocationTargetException, IllegalAccessException, NoSuchMethodException, NoSuchFieldException {
+    final Class<? extends DockerComposeContainer> dockerComposeContainerClass = dockerComposeContainer.getClass();
+    try {
+      final Field ambassadorContainerField = dockerComposeContainerClass.getDeclaredField("ambassadorContainer");
+      ambassadorContainerField.setAccessible(true);
+      final SocatContainer ambassadorContainer = (SocatContainer) ambassadorContainerField.get(dockerComposeContainer);
+      ambassadorContainer.stop();
+
+      final String cmd = "down ";
+
+      final Method runWithComposeMethod = dockerComposeContainerClass.getDeclaredMethod("runWithCompose", String.class);
+      runWithComposeMethod.setAccessible(true);
+      runWithComposeMethod.invoke(dockerComposeContainer, cmd);
+
+    } finally {
+      final Field projectField = dockerComposeContainerClass.getDeclaredField("project");
+      projectField.setAccessible(true);
+
+      final Method randomProjectId = dockerComposeContainerClass.getDeclaredMethod("randomProjectId");
+      randomProjectId.setAccessible(true);
+      final String newProjectValue = (String) randomProjectId.invoke(dockerComposeContainer);
+
+      projectField.set(dockerComposeContainer, newProjectValue);
     }
   }
 
