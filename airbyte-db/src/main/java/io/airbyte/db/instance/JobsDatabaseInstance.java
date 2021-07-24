@@ -42,7 +42,7 @@ public class JobsDatabaseInstance extends BaseDatabaseInstance implements Databa
 
   private static final String DATABASE_NAME = "jobs";
   private static final Set<String> TABLE_NAMES = ImmutableSet.of("jobs", "attempts", "airbyte_metadata");
-  private static final String SCHEMA_PATH = "job_tables/schema.sql";
+  private static final String SCHEMA_PATH = String.format("%s_database/schema.sql", DATABASE_NAME);
   private static final Function<Database, Boolean> IS_JOBS_DATABASE_READY = database -> {
     try {
       LOGGER.info("Testing if jobs database is ready...");

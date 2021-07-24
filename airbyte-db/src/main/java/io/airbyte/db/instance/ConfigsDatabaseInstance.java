@@ -40,7 +40,7 @@ public class ConfigsDatabaseInstance extends BaseDatabaseInstance implements Dat
 
   private static final String DATABASE_NAME = "configs";
   private static final Set<String> TABLE_NAMES = ImmutableSet.of("airbyte_configs");
-  private static final String SCHEMA_PATH = "config_tables/schema.sql";
+  private static final String SCHEMA_PATH = String.format("%s_database/schema.sql", DATABASE_NAME);
   private static final Function<Database, Boolean> IS_CONFIGS_DATABASE_READY = database -> {
     try {
       LOGGER.info("Testing if airbyte_configs has been created and seeded...");
