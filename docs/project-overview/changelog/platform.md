@@ -197,7 +197,7 @@ This is the changelog for Airbyte Platform. For our connector changelog, please 
 * Support Import / Export of Airbyte Data in the Admin section of the UI
 * Bug fixes:
   * If Airbyte is closed during a sync the running job is not marked as failed
-  * Airbyte should fail when instance version doesn't match data version
+  * Airbyte should fail when deployment version doesn't match data version
   * Upgrade Airbyte Version without losing existing configuration / data
 
 ## [0.12-alpha](https://github.com/airbytehq/airbyte/milestone/14?closed=1) - Released 01/20/2021
