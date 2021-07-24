@@ -26,6 +26,7 @@ package io.airbyte.server;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.api.model.ImportRead;
@@ -42,6 +43,7 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.scheduler.persistence.DatabaseSchema;
+import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -318,7 +320,13 @@ public class ConfigDumpImport {
       final Map<DatabaseSchema, Stream<JsonNode>> data = new HashMap<>();
       for (DatabaseSchema tableType : DatabaseSchema.values()) {
         final Path tablePath = buildTablePath(storageRoot, tableType.name());
-        data.put(tableType, readTableFromArchive(tableType, tablePath));
+        Stream<JsonNode> tableStream = readTableFromArchive(tableType, tablePath);
+
+        if (tableType == DatabaseSchema.AIRBYTE_METADATA) {
+          tableStream = replaceDeploymentMetadata(postgresPersistence, tableStream);
+        }
+
+        data.put(tableType, tableStream);
       }
       postgresPersistence.importDatabase(airbyteVersion, data);
       LOGGER.info("Successful upgrade of airbyte postgres database from archive");
@@ -327,6 +335,36 @@ public class ConfigDumpImport {
       postgresPersistence.setVersion(initialVersion);
       throw e;
     }
+  }
+
+  /**
+   * The deployment concept is specific to the environment that Airbyte is running in (not the data
+   * being imported). Thus, if there is a deployment in the imported data, we filter it out. In
+   * addition, before running the import, we look up the current deployment id, and make sure that
+   * that id is inserted when we run the import.
+   *
+   * @param postgresPersistence - database that we are importing into.
+   * @param metadataTableStream - stream of records to be imported into the metadata table.
+   * @return modified stream with old deployment id removed and correct deployment id inserted.
+   * @throws IOException - you never know when you IO.
+   */
+  private static Stream<JsonNode> replaceDeploymentMetadata(JobPersistence postgresPersistence,
+                                                            Stream<JsonNode> metadataTableStream)
+      throws IOException {
+    // filter out the deployment record from the import data, if it exists.
+    Stream<JsonNode> stream = metadataTableStream
+        .filter(record -> record.get(DefaultJobPersistence.METADATA_KEY_COL).asText().equals(DatabaseSchema.AIRBYTE_METADATA.toString()));
+
+    // insert the current deployment id, if it exists.
+    final Optional<UUID> deploymentOptional = postgresPersistence.getDeployment();
+    if (deploymentOptional.isPresent()) {
+      final JsonNode deploymentRecord = Jsons.jsonNode(ImmutableMap.<String, String>builder()
+          .put(DefaultJobPersistence.METADATA_KEY_COL, DefaultJobPersistence.DEPLOYMENT_ID_KEY)
+          .put(DefaultJobPersistence.METADATA_VAL_COL, deploymentOptional.get().toString())
+          .build());
+      stream = Streams.concat(stream, Stream.of(deploymentRecord));
+    }
+    return stream;
   }
 
   protected static Path buildTablePath(final Path storageRoot, final String tableName) {
