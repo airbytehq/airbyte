@@ -146,6 +146,7 @@ class ZoqlExportClient:
         """
 
         query = self.make_query(q_type, obj, date_field, start_date, end_date)
+        self.logger.info(f"{query}")
         submit = self.submit_job(query)
         check = self.check_job_status(submit)
         get = self.get_job_data(check)
@@ -160,20 +161,20 @@ class ZoqlExportClient:
         """
 
         # Parsing input dates
-        start: datetime = pendulum.parse(start_date)
+        start = pendulum.parse(start_date).astimezone()
         # If there is no `end_date` as input - use now()
-        end: datetime = pendulum.parse(end_date).astimezone() if end_date else pendulum.now().astimezone()
+        end = pendulum.parse(end_date).astimezone() if end_date else pendulum.now().astimezone()
         # Get n of date-slices
         n_slices = self.get_n_slices(start, end, window_days)
-
+        print(f"slices: \n{n_slices}\n")
         # initiating slice_start/end for date slice
-        slice_start: datetime = start
+        slice_start = start
         # if slice_end is bigger than the input end_date, switch to the end_date
-        slice_end: datetime = min(start + timedelta(days=window_days), end)
+        slice_end = min(start.add(days=window_days), end)
         while n_slices > 0:
             yield from self.get_data(q_type, obj, date_field, self.to_datetime_str(slice_start), self.to_datetime_str(slice_end))
             slice_start = slice_end
-            slice_end = min(slice_end + timedelta(days=window_days), end)
+            slice_end = min(slice_end.add(days=window_days), end)
             print(f"slice: \n{n_slices}")
             print(f"start: \n{self.to_datetime_str(slice_start)}")
             print(f"end: \n{self.to_datetime_str(slice_end)}\n")

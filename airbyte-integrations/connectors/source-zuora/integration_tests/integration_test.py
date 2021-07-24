@@ -141,6 +141,7 @@ def test_make_query_select():
         "start_date": test_start_date,
         "end_date": test_end_date,
     }
+    
     test_expected_query_output = {
         "compression": "NONE",
         "output": {"target": "S3"},
@@ -173,10 +174,11 @@ def test_get_data_with_date_slice():
         "q_type": "select",
         "obj": test_stream,
         "date_field": test_date_field,
-        "start_date": "2018-01-01",
-        # "start_date": (pendulum.now() - timedelta(days=364)).to_date_string(),
+        # "start_date": "2018-01-01",
+        "start_date": pendulum.now().subtract(years=1).to_date_string(),
         "window_days": 300,
     }
+    print(test_args)
 
-    test_data = list(TestClient.client().get_data_with_date_slice(**test_args))
-    assert True if len(test_data) > 0 else False
+    test_data = TestClient.client().get_data_with_date_slice(**test_args)
+    assert True if len(list(test_data)) > 0 else False
