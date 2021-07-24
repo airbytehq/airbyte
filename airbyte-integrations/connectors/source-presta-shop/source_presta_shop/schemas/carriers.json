@@ -39,7 +39,7 @@
       "type": "string"
     },
     "shipping_method": {
-      "type": "string"
+      "type": ["string", "integer"]
     },
     "max_width": {
       "type": "string"

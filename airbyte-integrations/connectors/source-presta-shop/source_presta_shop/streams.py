@@ -27,6 +27,7 @@ from datetime import datetime
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
+
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
@@ -36,50 +37,57 @@ class PrestaShopStream(HttpStream, ABC):
     """
 
     primary_key = "id"
-    data_key = None
-    limit = 50
+    page_size = 50
 
     def __init__(self, url: str, **kwargs):
         super(PrestaShopStream, self).__init__(**kwargs)
         self._url = url
-        self._offset = 0
-        self._has_next_page = False
+        self._current_page = 0
 
     @property
     def url_base(self) -> str:
         return f"{self._url}/api/"
 
+    @property
+    def data_key(self):
+        return self.name
+
+    def request_headers(self, **kwargs) -> Mapping[str, Any]:
+        headers = super(PrestaShopStream, self).request_headers(**kwargs)
+        return {**headers, "Output-Format": "JSON"}
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return self._has_next_page
+        if self._current_page and self._current_page % self.page_size == 0:
+            return {"limit": f"{self._current_page},{self.page_size}"}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        base_params = {"output_format": "JSON", "display": "full", "limit": ",".join([str(self._offset), str(self.limit)])}
-        return base_params
+        params = {"display": "full", "limit": self.page_size}
+        if next_page_token:
+            params.update(next_page_token)
+
+        return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
-        data_key = self.data_key if self.data_key else self.name
         # pagination can be implemented via limit parameter
         # https://devdocs.prestashop.com/1.7/webservice/tutorials/advanced-use/additional-list-parameters/#limit-parameter
         # when records exist API returns dict, in another case empty list
         if isinstance(response_json, dict):
-            records = response_json.get(data_key, [])
+            records = response_json.get(self.data_key, [])
             # as API response doesn't contain next_page parameter, we can only check records count to set offset
-            record_count = len(records)
-            self._has_next_page = record_count != 0
-            self._offset += record_count
+            self._current_page += len(records)
             yield from records
         else:
-            self._has_next_page = False
+            self._current_page = 0
 
 
 class IncrementalPrestaShopStream(PrestaShopStream, ABC):
     cursor_field = "date_upd"
 
-    def __init__(self, url: str, **kwargs):
-        super(IncrementalPrestaShopStream, self).__init__(url, **kwargs)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self._end_date = datetime.now()
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -96,10 +104,11 @@ class IncrementalPrestaShopStream(PrestaShopStream, ABC):
             params["filter[date_upd]"] = f"[{start_date},{self._end_date}]"
         params["date"] = 1
         params["sort"] = f"[{self.cursor_field}_ASC]"
+        print(params)
         return params
 
 
-class Addresses(IncrementalPrestaShopStream):
+class Addresses(PrestaShopStream):
     """
     The Customer, Manufacturer and Customer addresses
     https://devdocs.prestashop.com/1.7/webservice/resources/addresses/

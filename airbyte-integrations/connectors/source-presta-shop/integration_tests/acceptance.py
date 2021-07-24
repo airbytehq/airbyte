@@ -22,13 +22,45 @@
 # SOFTWARE.
 #
 
+import json
+import subprocess
+from pathlib import Path
 
 import pytest
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3 import Retry
 
+HERE = Path(__file__).parent.absolute()
 pytest_plugins = ("source_acceptance_test.plugin",)
 
 
+def is_webservice_ready(ip, port):
+    """Wait for the api from my_api_service to become responsive"""
+    request_session = requests.Session()
+    retries = Retry(total=5, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
+    request_session.mount("http://", HTTPAdapter(max_retries=retries))
+    request_session.get(f"http://{ip}:{port}/")
+
+    return True
+
+
+@pytest.fixture(name="create_config", scope="session")
+def create_config_fixture():
+    secrets_path = HERE.parent / "secrets"
+    secrets_path.mkdir(exist_ok=True)
+    config_filename = str(secrets_path / "config.json")
+
+    config = {"url": "http://localhost:8080", "access_key": "59662QEPFNCJ3KFL3VCT5VNQ4NHVUF4Y"}
+
+    with open(config_filename, "w+") as fp:
+        json.dump(obj=config, fp=fp)
+
+
 @pytest.fixture(scope="session", autouse=True)
-def connector_setup():
+def connector_setup(create_config):
     """ This fixture is a placeholder for external resources that acceptance test might require."""
+    filename = str(HERE / "docker-compose.yaml")
+    subprocess.check_call(["docker-compose", "-f", filename, "up", "-d"])
     yield
+    subprocess.check_call(["docker-compose", "-f", filename, "down", "-v"])

@@ -24,7 +24,7 @@
       "type": "string"
     },
     "id_default_combination": {
-      "type": "integer"
+      "type": ["integer", "string"]
     },
     "id_tax_rules_group": {
       "type": "string"
@@ -33,7 +33,7 @@
       "type": "string"
     },
     "manufacturer_name": {
-      "type": "boolean"
+      "type": ["string", "boolean"]
     },
     "quantity": {
       "type": "string"
@@ -248,9 +248,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             }
           ]
         },

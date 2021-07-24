@@ -22,7 +22,6 @@
 # SOFTWARE.
 #
 
-
 from base64 import b64encode
 from typing import Any, List, Mapping, Tuple
 
@@ -99,73 +98,70 @@ class SourcePrestaShop(AbstractSource):
         return authenticator
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        try:
-            authenticator = self.get_authenticator(config)
-            args = {"authenticator": authenticator, "url": config["url"]}
-            shops = Shops(**args).read_records(sync_mode=SyncMode.full_refresh)
-            next(shops)
-            return True, None
-        except Exception as error:
-            return False, error
+        authenticator = self.get_authenticator(config)
+        shops = Shops(authenticator=authenticator, url=config["url"]).read_records(sync_mode=SyncMode.full_refresh)
+        next(shops)
+        return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self.get_authenticator(config)
-        args = {"authenticator": authenticator, "url": config["url"]}
-        return [
-            Addresses(**args),
-            Carriers(**args),
-            CartRules(**args),
-            Carts(**args),
-            Categories(**args),
-            Combinations(**args),
-            Configurations(**args),
-            Contacts(**args),
-            ContentManagementSystem(**args),
-            Countries(**args),
-            Currencies(**args),
-            CustomerMessages(**args),
-            CustomerThreads(**args),
-            Customers(**args),
-            Deliveries(**args),
-            Employees(**args),
-            Groups(**args),
-            Guests(**args),
-            ImageTypes(**args),
-            Languages(**args),
-            Manufacturers(**args),
-            Messages(**args),
-            OrderCarriers(**args),
-            OrderDetails(**args),
-            OrderHistories(**args),
-            OrderInvoices(**args),
-            OrderPayments(**args),
-            OrderSlip(**args),
-            OrderStates(**args),
-            Orders(**args),
-            PriceRanges(**args),
-            ProductCustomizationFields(**args),
-            ProductFeatureValues(**args),
-            ProductFeatures(**args),
-            ProductOptionValues(**args),
-            ProductOptions(**args),
-            ProductSuppliers(**args),
-            Products(**args),
-            ShopGroups(**args),
-            ShopUrls(**args),
-            Shops(**args),
-            SpecificPriceRules(**args),
-            SpecificPrices(**args),
-            States(**args),
-            StockAvailables(**args),
-            StockMovementReasons(**args),
-            StockMovements(**args),
-            Stores(**args),
-            Suppliers(**args),
-            Tags(**args),
-            TaxRuleGroups(**args),
-            TaxRules(**args),
-            Taxes(**args),
-            TranslatedConfigurations(**args),
-            WeightRanges(**args),
-            Zones(**args),
+        stream_classes = [
+            Addresses,
+            Carriers,
+            CartRules,
+            Carts,
+            Categories,
+            Combinations,
+            Configurations,
+            Contacts,
+            ContentManagementSystem,
+            Countries,
+            Currencies,
+            CustomerMessages,
+            CustomerThreads,
+            Customers,
+            Deliveries,
+            Employees,
+            Groups,
+            Guests,
+            ImageTypes,
+            Languages,
+            Manufacturers,
+            Messages,
+            OrderCarriers,
+            OrderDetails,
+            OrderHistories,
+            OrderInvoices,
+            OrderPayments,
+            OrderSlip,
+            OrderStates,
+            Orders,
+            PriceRanges,
+            ProductCustomizationFields,
+            ProductFeatureValues,
+            ProductFeatures,
+            ProductOptionValues,
+            ProductOptions,
+            ProductSuppliers,
+            Products,
+            ShopGroups,
+            ShopUrls,
+            Shops,
+            SpecificPriceRules,
+            SpecificPrices,
+            States,
+            StockAvailables,
+            StockMovementReasons,
+            StockMovements,
+            Stores,
+            Suppliers,
+            Tags,
+            TaxRuleGroups,
+            TaxRules,
+            Taxes,
+            TranslatedConfigurations,
+            WeightRanges,
+            Zones,
         ]
+
+        return [cls(authenticator=authenticator, url=config["url"]) for cls in stream_classes]
