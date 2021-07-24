@@ -35,10 +35,15 @@ configurations {
 }
 
 dependencies {
+    implementation project(':airbyte-api')
+
+    implementation 'org.testcontainers:testcontainers:1.15.3'
+
     acceptanceTestsImplementation project(':airbyte-api')
     acceptanceTestsImplementation project(':airbyte-commons')
     acceptanceTestsImplementation project(':airbyte-config:persistence')
     acceptanceTestsImplementation project(':airbyte-db')
+    acceptanceTestsImplementation project(':airbyte-tests')
     acceptanceTestsImplementation project(':airbyte-test-utils')
 
     acceptanceTestsImplementation 'com.fasterxml.jackson.core:jackson-databind'
@@ -49,20 +54,23 @@ dependencies {
 
     automaticMigrationAcceptanceTestImplementation project(':airbyte-api')
     automaticMigrationAcceptanceTestImplementation project(':airbyte-commons')
+    automaticMigrationAcceptanceTestImplementation project(':airbyte-tests')
+
     automaticMigrationAcceptanceTestImplementation 'org.testcontainers:testcontainers:1.15.3'
 }
 
 // test should run using the current version of the docker compose configuration.
-task copyComposeFile1(type: Copy) {
+task copyComposeFileForAcceptanceTests(type: Copy) {
     from "${rootDir}/docker-compose.yaml"
     into "${sourceSets.acceptanceTests.output.resourcesDir}"
 }
-task copyComposeFile2(type: Copy) {
+task copyComposeFileForMigrationAcceptanceTests(type: Copy) {
     from "${rootDir}/docker-compose.yaml"
     into "${sourceSets.automaticMigrationAcceptanceTest.output.resourcesDir}"
 }
-assemble.dependsOn(project.tasks.copyComposeFile1)
-assemble.dependsOn(project.tasks.copyComposeFile2)
+
+assemble.dependsOn(project.tasks.copyComposeFileForAcceptanceTests)
+assemble.dependsOn(project.tasks.copyComposeFileForMigrationAcceptanceTests)
 
 task acceptanceTests(type: Test) {
     testClassesDirs += sourceSets.acceptanceTests.output.classesDirs
