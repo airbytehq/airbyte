@@ -2718,6 +2718,28 @@
                   "old_inventory_quantity": {
                     "type": ["null", "integer"]
                   },
+                  "presentment_prices": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "price": {
+                          "type": ["null", "object"],
+                          "properties": {
+                            "amount": {
+                              "type": ["null", "string"]
+                            },
+                            "currency_code": {
+                              "type": ["null", "string"]
+                            }
+                          }
+                        },
+                        "compare_at_price": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  },
                   "requires_shipping": {
                     "type": ["null", "boolean"]
                   },
