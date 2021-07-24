@@ -103,15 +103,11 @@ public class ConfigDumpExport {
     }
   }
 
-  private void writeTableToArchive(final Path tablePath, final Stream<JsonNode> tableStream)
-      throws Exception {
+  private void writeTableToArchive(final Path tablePath, final Stream<JsonNode> tableStream) throws Exception {
     Files.createDirectories(tablePath.getParent());
-    final BufferedWriter recordOutputWriter = new BufferedWriter(
-        new FileWriter(tablePath.toFile()));
+    final BufferedWriter recordOutputWriter = new BufferedWriter(new FileWriter(tablePath.toFile()));
     final CloseableConsumer<JsonNode> recordConsumer = Yamls.listWriter(recordOutputWriter);
-    tableStream.forEach(row -> Exceptions.toRuntime(() -> {
-      recordConsumer.accept(row);
-    }));
+    tableStream.forEach(row -> Exceptions.toRuntime(() -> recordConsumer.accept(row)));
     recordConsumer.close();
   }
 

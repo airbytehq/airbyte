@@ -220,7 +220,7 @@ See [Upgrading K8s](../operator-guides/upgrading-airbyte.md).
 
 ### Resizing Volumes
 To resize a volume, change the `.spec.resources.requests.storage` value. After re-applying, the mount should be extended if that operation is supported
-for your type of mount. For a production instance, it's useful to track the usage of volumes to ensure they don't run out of space.
+for your type of mount. For a production deployment, it's useful to track the usage of volumes to ensure they don't run out of space.
 
 ### Copy Files To/From Volumes
 See the documentation for [`kubectl cp`](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#cp).

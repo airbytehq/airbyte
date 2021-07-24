@@ -46,7 +46,7 @@
 - sourceDefinitionId: d8286229-c680-4063-8c59-23b9b391c700
   name: Pipedrive
   dockerRepository: airbyte/source-pipedrive
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-pipedrive
 - sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   name: Postgres
