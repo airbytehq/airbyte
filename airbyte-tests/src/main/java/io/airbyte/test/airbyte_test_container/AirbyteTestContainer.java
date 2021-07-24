@@ -56,16 +56,16 @@ public class AirbyteTestContainer {
 
   private final File dockerComposeFile;
   private final Map<String, String> env;
-  private final Map<String, Consumer<String>> customConsumers;
+  private final Map<String, Consumer<String>> customServiceLogListeners;
 
-  private DockerComposeContainer dockerComposeContainer;
+  private DockerComposeContainer<?> dockerComposeContainer;
 
   public AirbyteTestContainer(final File dockerComposeFile,
                               final Map<String, String> env,
-                              final Map<String, Consumer<String>> customConsumers) {
+                              final Map<String, Consumer<String>> customServiceLogListeners) {
     this.dockerComposeFile = dockerComposeFile;
     this.env = env;
-    this.customConsumers = customConsumers;
+    this.customServiceLogListeners = customServiceLogListeners;
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
@@ -127,7 +127,7 @@ public class AirbyteTestContainer {
 
     final HealthApi healthApi = apiClient.getHealthApi();
 
-    ApiException lastException = null;
+    ApiException lastException;
     int i = 0;
     while (true) {
       try {
@@ -146,7 +146,7 @@ public class AirbyteTestContainer {
   }
 
   private void serviceLogConsumer(DockerComposeContainer<?> composeContainer, String service) {
-    composeContainer.withLogConsumer(service, logConsumer(customConsumers.get(service)));
+    composeContainer.withLogConsumer(service, logConsumer(customServiceLogListeners.get(service)));
   }
 
   /**
@@ -194,7 +194,7 @@ public class AirbyteTestContainer {
     }
   }
 
-  @SuppressWarnings("DuplicatedCode")
+  @SuppressWarnings("rawtypes")
   private void stopRetainVolumesInternal() throws InvocationTargetException, IllegalAccessException, NoSuchMethodException, NoSuchFieldException {
     final Class<? extends DockerComposeContainer> dockerComposeContainerClass = dockerComposeContainer.getClass();
     try {

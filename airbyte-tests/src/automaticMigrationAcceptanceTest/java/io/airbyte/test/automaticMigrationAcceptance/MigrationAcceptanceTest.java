@@ -141,6 +141,7 @@ public class MigrationAcceptanceTest {
 
     final AirbyteTestContainer airbyteTestContainer = new AirbyteTestContainer.Builder(new File(Resources.getResource("docker-compose.yaml").toURI()))
         .setEnv(ENV_FILE)
+        // override to use test mounts.
         .setEnvVariable("DATA_DOCKER_MOUNT", "airbyte_data_migration_test")
         .setEnvVariable("DB_DOCKER_MOUNT", "airbyte_db_migration_test")
         .setEnvVariable("WORKSPACE_DOCKER_MOUNT", "airbyte_workspace_migration_test")

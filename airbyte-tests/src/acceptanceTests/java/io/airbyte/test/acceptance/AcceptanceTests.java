@@ -98,6 +98,7 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -143,6 +144,10 @@ public class AcceptanceTests {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AcceptanceTests.class);
 
+  @SuppressWarnings("UnstableApiUsage")
+  private static final URL DOCKER_COMPOSE_FILE_URL = Resources.getResource("docker-compose.yaml");
+  private static final File ENV_FILE = Path.of(System.getProperty("user.dir")).getParent().resolve(".env").toFile();
+
   private static final String SOURCE_E2E_TEST_CONNECTOR_VERSION = "0.1.0";
   private static final String DESTINATION_E2E_TEST_CONNECTOR_VERSION = "0.1.0";
 
@@ -171,7 +176,6 @@ public class AcceptanceTests {
   private List<UUID> destinationIds;
   private List<UUID> operationIds;
 
-  @SuppressWarnings("UnstableApiUsage")
   @BeforeAll
   public static void init() throws URISyntaxException, IOException, InterruptedException {
     sourcePsql = new PostgreSQLContainer("postgres:13-alpine")
@@ -182,10 +186,16 @@ public class AcceptanceTests {
     // by default use airbyte deployment governed by a test container.
     if (System.getenv("USE_EXTERNAL_DEPLOYMENT") == null || System.getenv("USE_EXTERNAL_DEPLOYMENT").equals("FALSE")) {
       LOGGER.info("Using deployment of airbyte managed by test containers.");
-      airbyteTestContainer = new AirbyteTestContainer.Builder(new File(Resources.getResource("docker-compose.yaml").toURI()))
-          .setEnv(Path.of(System.getProperty("user.dir")).getParent().resolve(".env").toFile())
+      airbyteTestContainer = new AirbyteTestContainer.Builder(new File(DOCKER_COMPOSE_FILE_URL.toURI()))
+          .setEnv(ENV_FILE)
           // override env VERSION to use dev to test current build of airbyte.
           .setEnvVariable("VERSION", "dev")
+          // override to use test mounts.
+          .setEnvVariable("DATA_DOCKER_MOUNT", "airbyte_data_migration_test")
+          .setEnvVariable("DB_DOCKER_MOUNT", "airbyte_db_migration_test")
+          .setEnvVariable("WORKSPACE_DOCKER_MOUNT", "airbyte_workspace_migration_test")
+          .setEnvVariable("LOCAL_ROOT", "/tmp/airbyte_local_migration_test")
+          .setEnvVariable("LOCAL_DOCKER_MOUNT", "/tmp/airbyte_local_migration_test")
           .build();
       airbyteTestContainer.start();
     } else {
