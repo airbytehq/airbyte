@@ -170,11 +170,13 @@ class ZoqlExportClient:
         slice_start: datetime = start
         # if slice_end is bigger than the input end_date, switch to the end_date
         slice_end: datetime = min(start + timedelta(days=window_days), end)
-
         while n_slices > 0:
             yield from self.get_data(q_type, obj, date_field, self.to_datetime_str(slice_start), self.to_datetime_str(slice_end))
             slice_start = slice_end
             slice_end = min(slice_end + timedelta(days=window_days), end)
+            print(f"slice: \n{n_slices}")
+            print(f"start: \n{self.to_datetime_str(slice_start)}")
+            print(f"end: \n{self.to_datetime_str(slice_end)}\n")
             n_slices -= 1
 
     @staticmethod

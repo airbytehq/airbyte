@@ -174,7 +174,8 @@ def test_get_data_with_date_slice():
         "q_type": "select",
         "obj": test_stream,
         "date_field": test_date_field,
-        "start_date": (pendulum.now() - timedelta(days=364)).to_date_string(),
+        "start_date": "2018-01-01",
+        # "start_date": (pendulum.now() - timedelta(days=364)).to_date_string(),
         "window_days": 300,
     }
 
