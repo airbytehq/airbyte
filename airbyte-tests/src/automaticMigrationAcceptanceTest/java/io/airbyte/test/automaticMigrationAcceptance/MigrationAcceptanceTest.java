@@ -97,7 +97,7 @@ public class MigrationAcceptanceTest {
           logs.remove(keyToRemove);
         }
 
-        LOGGER.info(log);
+        LOGGER.info(log.replace("\n", ""));
       }
     };
   }
@@ -143,14 +143,11 @@ public class MigrationAcceptanceTest {
     return AirbyteVersion.versionWithoutPatch(targetVersion).getVersion();
   }
 
-  private void secondRun(String targetVersion)
-      throws URISyntaxException, InterruptedException, ApiException {
+  private void secondRun(String targetVersion) throws URISyntaxException, InterruptedException, ApiException {
 
     Map<String, String> environmentVariables = getEnvironmentVariables(targetVersion);
-    final File secondRun = Path
-        .of(Resources.getResource("docker-compose-migration-test-second-run.yaml")
-            .toURI())
-        .toFile();
+    // todo still can't find this file for some reas?>!?!!
+    final File secondRun = Path.of(Resources.getResource("docker-compose.yaml").toURI()).toFile();
 
     Set<String> logsToExpect = new HashSet<>();
     logsToExpect.add("Version: " + targetVersion);
@@ -255,9 +252,7 @@ public class MigrationAcceptanceTest {
     assertTrue(foundSnowflakeDestinationDefintion);
   }
 
-  private void assertConnectionInformation(ApiClient apiClient,
-                                           WorkspaceIdRequestBody workspaceIdRequestBody)
-      throws ApiException {
+  private void assertConnectionInformation(ApiClient apiClient, WorkspaceIdRequestBody workspaceIdRequestBody) throws ApiException {
     ConnectionApi connectionApi = new ConnectionApi(apiClient);
     List<ConnectionRead> connections = connectionApi
         .listConnectionsForWorkspace(workspaceIdRequestBody).getConnections();
@@ -316,7 +311,7 @@ public class MigrationAcceptanceTest {
   }
 
   private void healthCheck(ApiClient apiClient) throws ApiException {
-    HealthApi healthApi = new HealthApi(apiClient);
+    final HealthApi healthApi = new HealthApi(apiClient);
     try {
       HealthCheckRead healthCheck = healthApi.getHealthCheck();
       assertTrue(healthCheck.getDb());
@@ -326,7 +321,7 @@ public class MigrationAcceptanceTest {
   }
 
   private ApiClient getApiClient() {
-    ApiClient apiClient = new ApiClient().setScheme("http")
+    final ApiClient apiClient = new ApiClient().setScheme("http")
         .setHost("localhost")
         .setPort(7001)
         .setBasePath("/api");

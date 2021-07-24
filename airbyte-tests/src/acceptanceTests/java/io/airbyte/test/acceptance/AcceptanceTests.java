@@ -34,11 +34,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.api.client.util.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.common.io.Files;
+import com.google.common.io.Resources;
 import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.HealthApi;
 import io.airbyte.api.client.JobsApi;
 import io.airbyte.api.client.invoker.ApiClient;
 import io.airbyte.api.client.invoker.ApiException;
@@ -92,9 +95,19 @@ import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import io.github.cdimascio.dotenv.Dotenv;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -103,9 +116,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import org.apache.commons.io.FileUtils;
 import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Result;
@@ -120,7 +137,9 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.utility.MountableFile;
 
 @SuppressWarnings("rawtypes")
@@ -164,12 +183,109 @@ public class AcceptanceTests {
   private List<UUID> destinationIds;
   private List<UUID> operationIds;
 
+  @SuppressWarnings("unchecked")
   @BeforeAll
-  public static void init() {
+  public static void init() throws URISyntaxException, IOException, InterruptedException {
+    final Path maybeProjectRoot = Path.of(System.getProperty("user.dir")).getParent().resolve(".env");
+    LOGGER.info("Searching for environment in {}", maybeProjectRoot);
+    Preconditions.checkArgument(maybeProjectRoot.toFile().exists(), "could not find docker compose environment");
+
     sourcePsql = new PostgreSQLContainer("postgres:13-alpine")
         .withUsername(SOURCE_USERNAME)
         .withPassword(SOURCE_PASSWORD);
     sourcePsql.start();
+
+    final Properties prop = new Properties();
+    prop.load(new FileInputStream(maybeProjectRoot.toFile()));
+    final Map<String, String> propsAsMap = Maps.fromProperties(prop);
+
+    final File dockerComposeFile = Path.of(Resources.getResource("docker-compose.yaml").toURI()).toFile();
+    final File cleanedDockerComposeFile = Files.createTempFile(Path.of("/tmp"), "docker_compose", "acceptance_test").toFile();
+
+    try(final Scanner scanner = new Scanner(dockerComposeFile)) {
+      try(final FileWriter fileWriter = new FileWriter(cleanedDockerComposeFile)) {
+        while(scanner.hasNextLine()) {
+          final String s = scanner.nextLine();
+          if(s.contains("container_name")) {
+            continue;
+          }
+          fileWriter.write(s);
+          fileWriter.write('\n');
+        }
+      }
+    }
+
+    // need to filter out container name :palm:
+    final DockerComposeContainer dockerComposeContainer = new DockerComposeContainer(cleanedDockerComposeFile)
+        .withLogConsumer("server", logConsumerForServer())
+//        .withEnv(propsAsMap);
+        .withEnv(getEnvironmentVariables("0.28.0-alpha"));
+
+    dockerComposeContainer.start();
+
+    waitForAirbyte();
+  }
+
+  private static void waitForAirbyte() throws InterruptedException {
+    final AirbyteApiClient apiClient = new AirbyteApiClient(
+        new ApiClient().setScheme("http")
+            .setHost("localhost")
+            .setPort(8001)
+            .setBasePath("/api"));
+
+    final HealthApi healthApi = apiClient.getHealthApi();
+
+    int i = 10;
+    while(true) {
+      try {
+        healthApi.getHealthCheck();
+      } catch (ApiException e) {
+        LOGGER.info("airbyte not ready yet.", e);
+      }
+      if(i == 0) {
+        throw new IllegalStateException("Airbyte took too long to start");
+      }
+      Thread.sleep(5000);
+      i--;
+    }
+  }
+
+  private static Map<String, String> getEnvironmentVariables(String version) {
+    Map<String, String> env = new HashMap<>();
+    env.put("VERSION", version);
+    env.put("DATABASE_USER", "docker");
+    env.put("DATABASE_PASSWORD", "docker");
+    env.put("DATABASE_DB", "airbyte");
+    env.put("CONFIG_ROOT", "/data");
+    env.put("WORKSPACE_ROOT", "/tmp/workspace");
+    env.put("DATA_DOCKER_MOUNT", "airbyte_data_migration_test");
+    env.put("DB_DOCKER_MOUNT", "airbyte_db_migration_test");
+    env.put("WORKSPACE_DOCKER_MOUNT", "airbyte_workspace_migration_test");
+    env.put("LOCAL_ROOT", "/tmp/airbyte_local_migration_test");
+    env.put("LOCAL_DOCKER_MOUNT", "/tmp/airbyte_local_migration_test");
+    env.put("TRACKING_STRATEGY", "logging");
+    env.put("HACK_LOCAL_ROOT_PARENT", "/tmp");
+    env.put("WEBAPP_URL", "http://localhost:7000/");
+    env.put("API_URL", "http://localhost:7001/api/v1/");
+    env.put("TEMPORAL_HOST", "airbyte-temporal:7233");
+    env.put("INTERNAL_API_HOST", "airbyte-server:7001");
+    env.put("S3_LOG_BUCKET", "");
+    env.put("S3_LOG_BUCKET_REGION", "");
+    env.put("AWS_ACCESS_KEY_ID", "");
+    env.put("AWS_SECRET_ACCESS_KEY", "");
+    env.put("GCP_STORAGE_BUCKET", "");
+    return env;
+  }
+
+
+  private static Consumer<OutputFrame> logConsumerForServer() {
+    return c -> {
+      if (c != null && c.getBytes() != null) {
+        String log = new String(c.getBytes());
+
+        LOGGER.info(log.replace("\n", ""));
+      }
+    };
   }
 
   @AfterAll
@@ -681,8 +797,10 @@ public class AcceptanceTests {
                                  matches = "true")
   public void testRedactionOfSensitiveRequestBodies() throws Exception {
     // check that the source password is not present in the logs
-    final List<String> serverLogLines = Files.readLines(
-        apiClient.getLogsApi().getLogs(new LogsRequestBody().logType(LogType.SERVER)), Charset.defaultCharset());
+    final List<String> serverLogLines = Files.readAllLines(
+        apiClient.getLogsApi().getLogs(new LogsRequestBody().logType(LogType.SERVER)).toPath(),
+        Charset.defaultCharset()
+    );
 
     assertTrue(serverLogLines.size() > 0);
 
