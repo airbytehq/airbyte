@@ -162,14 +162,26 @@ public interface JobPersistence {
   /// ARCHIVE
 
   /**
-   * Returns the AirbyteVersion stored in the database
+   * Returns the AirbyteVersion.
    */
   Optional<String> getVersion() throws IOException;
 
   /**
-   * Set the database to @param AirbyteVersion
+   * Set the airbyte version
    */
   void setVersion(String airbyteVersion) throws IOException;
+
+  /**
+   * Returns a deployment UUID.
+   */
+  Optional<UUID> getDeployment() throws IOException;
+  // a deployment references a setup of airbyte. it is created the first time the docker compose or
+  // K8s is ready.
+
+  /**
+   * Set deployment id. If one is already set, the new value is ignored.
+   */
+  void setDeployment(UUID uuid) throws IOException;
 
   /**
    * Export all SQL tables from @param schema into streams of JsonNode objects. This returns a Map of

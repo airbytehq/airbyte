@@ -36,7 +36,7 @@ Note: We will rely on docker commands that we've gone over as part of another [T
 
 ## \(Optional\) Configure some Covid \(data\) source and Postgres destinations
 
-If you have sources and destinations already setup on your instance, you can skip to the next section.
+If you have sources and destinations already setup on your deployment, you can skip to the next section.
 
 For the sake of this tutorial, let's create some source and destination as an example that we can refer to afterward. We'll be using a file accessible from a public API, so you can easily reproduce this setup:
 

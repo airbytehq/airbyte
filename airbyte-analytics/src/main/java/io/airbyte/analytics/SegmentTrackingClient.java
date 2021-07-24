@@ -30,8 +30,6 @@ import com.segment.analytics.Analytics;
 import com.segment.analytics.messages.AliasMessage;
 import com.segment.analytics.messages.IdentifyMessage;
 import com.segment.analytics.messages.TrackMessage;
-import io.airbyte.config.Configs;
-import io.airbyte.config.Configs.WorkerEnvironment;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,24 +44,26 @@ public class SegmentTrackingClient implements TrackingClient {
   // Analytics is threadsafe.
   private final Analytics analytics;
   private final Supplier<TrackingIdentity> identitySupplier;
+  private final Deployment deployment;
   private final String airbyteRole;
-  private final WorkerEnvironment deploymentEnvironment;
 
   @VisibleForTesting
   SegmentTrackingClient(final Supplier<TrackingIdentity> identitySupplier,
-                        final Configs.WorkerEnvironment deploymentEnvironment,
+                        final Deployment deployment,
+
                         final String airbyteRole,
                         final Analytics analytics) {
     this.identitySupplier = identitySupplier;
-    this.deploymentEnvironment = deploymentEnvironment;
+    this.deployment = deployment;
     this.analytics = analytics;
     this.airbyteRole = airbyteRole;
   }
 
   public SegmentTrackingClient(final Supplier<TrackingIdentity> identitySupplier,
-                               final Configs.WorkerEnvironment deploymentEnvironment,
+                               final Deployment deployment,
+
                                final String airbyteRole) {
-    this(identitySupplier, deploymentEnvironment, airbyteRole, Analytics.builder(SEGMENT_WRITE_KEY).build());
+    this(identitySupplier, deployment, airbyteRole, Analytics.builder(SEGMENT_WRITE_KEY).build());
   }
 
   @Override
@@ -73,7 +73,9 @@ public class SegmentTrackingClient implements TrackingClient {
 
     // deployment
     identityMetadata.put(AIRBYTE_VERSION_KEY, trackingIdentity.getAirbyteVersion());
-    identityMetadata.put("deployment_env", deploymentEnvironment);
+    identityMetadata.put("deployment_mode", deployment.getDeploymentMode());
+    identityMetadata.put("deployment_env", deployment.getDeploymentEnv());
+    identityMetadata.put("deployment_id", deployment.getDeploymentId());
 
     // workspace (includes info that in the future we would store in an organization)
     identityMetadata.put("anonymized", trackingIdentity.isAnonymousDataCollection());

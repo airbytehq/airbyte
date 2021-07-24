@@ -93,7 +93,7 @@ public class RunMigrationTest {
   }
 
   @Test
-  public void testRunMigration() {
+  public void testRunMigration() throws Exception {
     try (StubAirbyteDB stubAirbyteDB = new StubAirbyteDB()) {
       final File file = Path
           .of(Resources.getResource("migration/03a4c904-c91d-447f-ab59-27a43b52c2fd.gz").toURI())
@@ -112,8 +112,6 @@ public class RunMigrationTest {
       assertDatabaseVersion(jobPersistence, TARGET_VERSION);
       assertPostMigrationConfigs(configRoot);
       FileUtils.deleteDirectory(configRoot.toFile());
-    } catch (Exception e) {
-      throw new RuntimeException(e);
     }
   }
 

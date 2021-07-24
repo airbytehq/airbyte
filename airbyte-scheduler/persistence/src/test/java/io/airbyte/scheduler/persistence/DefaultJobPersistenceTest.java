@@ -180,6 +180,7 @@ class DefaultJobPersistenceTest {
     // todo (cgardens) - truncate whole db.
     database.query(ctx -> ctx.execute("TRUNCATE TABLE jobs"));
     database.query(ctx -> ctx.execute("TRUNCATE TABLE attempts"));
+    database.query(ctx -> ctx.execute("TRUNCATE TABLE airbyte_metadata"));
   }
 
   private Result<Record> getJobRecord(long jobId) throws SQLException {
@@ -340,6 +341,48 @@ class DefaultJobPersistenceTest {
   private long createJobAt(Instant created_at) throws IOException {
     when(timeSupplier.get()).thenReturn(created_at);
     return jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+  }
+
+  @Nested
+  class GetAndSetVersion {
+
+    @Test
+    void testSetVersion() throws IOException {
+      final String version = UUID.randomUUID().toString();
+      jobPersistence.setVersion(version);
+      assertEquals(version, jobPersistence.getVersion().orElseThrow());
+    }
+
+    @Test
+    void testSetVersionReplacesExistingId() throws IOException {
+      final String deploymentId1 = UUID.randomUUID().toString();
+      final String deploymentId2 = UUID.randomUUID().toString();
+      jobPersistence.setVersion(deploymentId1);
+      jobPersistence.setVersion(deploymentId2);
+      assertEquals(deploymentId2, jobPersistence.getVersion().orElseThrow());
+    }
+
+  }
+
+  @Nested
+  class GetAndSetDeployment {
+
+    @Test
+    void testSetDeployment() throws IOException {
+      final UUID deploymentId = UUID.randomUUID();
+      jobPersistence.setDeployment(deploymentId);
+      assertEquals(deploymentId, jobPersistence.getDeployment().orElseThrow());
+    }
+
+    @Test
+    void testSetDeploymentIdDoesNotReplaceExistingId() throws IOException {
+      final UUID deploymentId1 = UUID.randomUUID();
+      final UUID deploymentId2 = UUID.randomUUID();
+      jobPersistence.setDeployment(deploymentId1);
+      jobPersistence.setDeployment(deploymentId2);
+      assertEquals(deploymentId1, jobPersistence.getDeployment().orElseThrow());
+    }
+
   }
 
   @Nested

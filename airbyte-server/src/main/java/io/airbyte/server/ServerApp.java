@@ -24,6 +24,8 @@
 
 package io.airbyte.server;
 
+import io.airbyte.analytics.Deployment;
+import io.airbyte.analytics.Deployment.DeploymentMode;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
@@ -100,13 +102,13 @@ public class ServerApp implements ServerRunnable {
   public void start() throws Exception {
     TrackingClientSingleton.get().identify();
 
-    Server server = new Server(PORT);
+    final Server server = new Server(PORT);
 
-    ServletContextHandler handler = new ServletContextHandler();
+    final ServletContextHandler handler = new ServletContextHandler();
 
-    Map<String, String> mdc = MDC.getCopyOfContextMap();
+    final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
-    ResourceConfig rc =
+    final ResourceConfig rc =
         new ResourceConfig()
             .register(new RequestLogger(mdc))
             .register(InvalidInputExceptionMapper.class)
@@ -133,6 +135,17 @@ public class ServerApp implements ServerRunnable {
     final String banner = MoreResources.readResource("banner/banner.txt");
     LOGGER.info(banner + String.format("Version: %s\n", airbyteVersion));
     server.join();
+  }
+
+  private static void createDeploymentIfNoneExists(final JobPersistence jobPersistence) throws IOException {
+    final Optional<UUID> deploymentOptional = jobPersistence.getDeployment();
+    if (deploymentOptional.isPresent()) {
+      LOGGER.info("running deployment: {}", deploymentOptional.get());
+    } else {
+      final UUID deploymentId = UUID.randomUUID();
+      jobPersistence.setDeployment(deploymentId);
+      LOGGER.info("created deployment: {}", deploymentId);
+    }
   }
 
   private static void setCustomerIdIfNotSet(final ConfigRepository configRepository) throws InterruptedException {
@@ -174,13 +187,6 @@ public class ServerApp implements ServerRunnable {
     // tracking we can associate all action with the correct anonymous id.
     setCustomerIdIfNotSet(configRepository);
 
-    TrackingClientSingleton.initialize(
-        configs.getTrackingStrategy(),
-        WorkerEnvironment.DOCKER,
-        configs.getAirbyteRole(),
-        configs.getAirbyteVersion(),
-        configRepository);
-
     LOGGER.info("Creating Scheduler persistence...");
     final Database jobDatabase = Databases.createPostgresDatabaseWithRetry(
         configs.getDatabaseUser(),
@@ -188,6 +194,15 @@ public class ServerApp implements ServerRunnable {
         configs.getDatabaseUrl(),
         Databases.IS_JOB_DATABASE_READY);
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
+
+    createDeploymentIfNoneExists(jobPersistence);
+
+    TrackingClientSingleton.initialize(
+        configs.getTrackingStrategy(),
+        new Deployment(DeploymentMode.OSS, jobPersistence.getDeployment().orElseThrow(), configs.getWorkerEnvironment()),
+        configs.getAirbyteRole(),
+        configs.getAirbyteVersion(),
+        configRepository);
 
     final String airbyteVersion = configs.getAirbyteVersion();
     if (jobPersistence.getVersion().isEmpty()) {
@@ -228,7 +243,7 @@ public class ServerApp implements ServerRunnable {
           configs);
     } else {
       LOGGER.info("Start serving version mismatch errors. Automatic migration either failed or didn't run");
-      return new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.get(), PORT);
+      return new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.orElseThrow(), PORT);
     }
   }
 
