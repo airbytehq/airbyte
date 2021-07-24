@@ -56,13 +56,13 @@ public class TrackingClientSingleton {
   }
 
   public static void initialize(final Configs.TrackingStrategy trackingStrategy,
-                                final Configs.WorkerEnvironment deploymentEnvironment,
+                                final Deployment deployment,
                                 final String airbyteRole,
                                 final String airbyteVersion,
                                 final ConfigRepository configRepository) {
     initialize(createTrackingClient(
         trackingStrategy,
-        deploymentEnvironment,
+        deployment,
         airbyteRole,
         () -> getTrackingIdentity(configRepository, airbyteVersion)));
   }
@@ -98,7 +98,8 @@ public class TrackingClientSingleton {
    * Creates a tracking client that uses the appropriate strategy from an identity supplier.
    *
    * @param trackingStrategy - what type of tracker we want to use.
-   * @param deploymentEnvironment - the environment that airbyte is running in.
+   * @param deployment - deployment tracking info. static because it should not change once the
+   *        instance is running.
    * @param airbyteRole
    * @param trackingIdentitySupplier - how we get the identity of the user. we have a supplier,
    *        because we if the identity updates over time (which happens during initial setup), we
@@ -107,11 +108,11 @@ public class TrackingClientSingleton {
    */
   @VisibleForTesting
   static TrackingClient createTrackingClient(final Configs.TrackingStrategy trackingStrategy,
-                                             final Configs.WorkerEnvironment deploymentEnvironment,
+                                             final Deployment deployment,
                                              final String airbyteRole,
                                              final Supplier<TrackingIdentity> trackingIdentitySupplier) {
     return switch (trackingStrategy) {
-      case SEGMENT -> new SegmentTrackingClient(trackingIdentitySupplier, deploymentEnvironment, airbyteRole);
+      case SEGMENT -> new SegmentTrackingClient(trackingIdentitySupplier, deployment, airbyteRole);
       case LOGGING -> new LoggingTrackingClient(trackingIdentitySupplier);
       default -> throw new IllegalStateException("unrecognized tracking strategy");
     };

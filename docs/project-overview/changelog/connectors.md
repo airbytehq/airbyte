@@ -10,6 +10,33 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on.
 
+## 7/23/2021
+
+New source:
+* [**Pipedrive**](https://docs.airbyte.io/integrations/sources/us-census)
+* [**US Census**](https://docs.airbyte.io/integrations/sources/pipedrive)
+* [**BigQuery**](https://docs.airbyte.io/integrations/sources/bigquery)
+
+
+New destination:
+* [**Google Cloud Storage**](https://docs.airbyte.io/integrations/destinations/gcs)
+* [**Kafka**](https://docs.airbyte.io/integrations/destinations/kafka)
+
+New Features:
+* **Java Connectors**: Now have config validators for check, discover, read, and write calls
+* **Stripe** source: All subscription types are returnable (including expired and canceled ones).
+* **Mixpanel** source: Migrated to the CDK.
+* **Intercom** source: Migrated to the CDK.
+* **Google Ads** source: Now supports the `Campaigns`, `Ads`, `AdGroups`, and `Accounts` streams.
+
+Bug Fixes:
+* **Facebook** source: Improved rate limit management
+* **Instagram** source: Now supports old format for state and automatically updates it to the new format.
+* **Sendgrid** source: Now gracefully handles malformed responses from API.
+* **Jira** source: Fixed dbt failing to normalize schema for the labels stream.
+* **MySQL** destination: Does not fail anymore with columns that contain JSON data.
+* **Slack** source: Now does not fail stream slicing on reading threads.
+
 ## 7/16/2021
 3 new sources:
 * [**Zendesk Sunshine**](https://docs.airbyte.io/integrations/sources/zendesk-sunshine)
