@@ -22,7 +22,8 @@ images:
 
 configMapGenerator:
   - name: airbyte-env
-    env: .env
+    envs:
+      - .env
 
 patchesStrategicMerge:
   - set-resource-limits.yaml
