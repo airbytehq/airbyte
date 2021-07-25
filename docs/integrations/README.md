@@ -18,6 +18,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Asana](./sources/asana.md) | Beta |
 |[AWS CloudTrail](./sources/aws-cloudtrail.md)| Beta |
 |[Braintree](./sources/braintree.md)| Alpha |
+|[Cart](./sources/cart.md)| Beta |
 |[ClickHouse](./sources/clickhouse.md)| Beta |
 |[CockroachDB](./sources/cockroachdb.md)| Beta |
 |[Db2](./sources/db2.md)| Beta |
@@ -86,8 +87,9 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | Connector | Grade |
 |----|----|
 |[BigQuery](./destinations/bigquery.md)| Certified |
-|[Google Cloud Storage (GCS)](./destinations/s3.md)| Alpha |
+|[Google Cloud Storage (GCS)](./destinations/gcs.md)| Alpha |
 |[Google Pubsub](./destinations/pubsub.md)| Alpha |
+|[Kafka](./destinations/kafka.md)| Alpha |
 |[Local CSV](./destinations/local-csv.md)| Certified |
 |[Local JSON](./destinations/local-json.md)| Certified |
 |[MeiliSearch](./destinations/meilisearch.md)| Beta |
