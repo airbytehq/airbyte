@@ -67,11 +67,10 @@ public class KubeLoggingConfigTest {
     var fullLogPath = randPath + "/logs.log/";
     // The same env vars that log4j2 uses to determine where to publish to
     var logs = LogClientSingleton.getJobLogFile(new EnvConfigs(), Path.of(fullLogPath));
+    var logsLine = Strings.join(logs, " ");
 
-    for (int i = 0; i < logs.size(); i++) {
-      var logStr = toLog.get(i);
-      var logLine = logs.get(i);
-      assertTrue(logLine.contains(logStr));
+    for (String l: toLog) {
+      assertTrue(logsLine.contains(l));
     }
   }
 
