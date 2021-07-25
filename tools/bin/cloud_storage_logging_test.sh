@@ -50,7 +50,7 @@ export GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcs.json"
 export GCP_STORAGE_BUCKET=airbyte-kube-integration-logging-test
 
 echo "Running logging to GCS test.."
-SUB_BUILD=PLATFORM ./gradlew :airbyte-config:models:log4j2IntegrationTest  --scan
+SUB_BUILD=PLATFORM ./gradlew cleanTest :airbyte-config:models:log4j2IntegrationTest  --scan
 
 echo "Starting Minio service.."
 docker run -d -p 9000:9000 --name minio \
@@ -72,4 +72,4 @@ export GOOGLE_APPLICATION_CREDENTIALS=
 export GCP_STORAGE_BUCKET=
 
 echo "Running logging to Minio test.."
-SUB_BUILD=PLATFORM ./gradlew :airbyte-config:models:log4j2IntegrationTest  --scan
+SUB_BUILD=PLATFORM ./gradlew cleanTest :airbyte-config:models:log4j2IntegrationTest --scan
