@@ -57,7 +57,10 @@ class PrestaShopStream(HttpStream, ABC):
         return {**headers, "Output-Format": "JSON"}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if self._current_page and self._current_page % self.page_size == 0:
+        response_json = response.json()
+        if not response_json:
+            return None
+        if self._current_page % self.page_size == 0:
             return {"limit": f"{self._current_page},{self.page_size}"}
 
     def request_params(
@@ -79,8 +82,6 @@ class PrestaShopStream(HttpStream, ABC):
             # as API response doesn't contain next_page parameter, we can only check records count to set offset
             self._current_page += len(records)
             yield from records
-        else:
-            self._current_page = 0
 
 
 class IncrementalPrestaShopStream(PrestaShopStream, ABC):
@@ -103,12 +104,13 @@ class IncrementalPrestaShopStream(PrestaShopStream, ABC):
         if start_date:
             params[f"filter[{self.cursor_field}]"] = f"[{start_date},{self._end_date}]"
         params["date"] = 1  # needed to filter by dates
-        params["sort"] = f"[{self.cursor_field}_ASC]"
+        # sort by PK as well just in case cursor_fields are equal to not mess up pagination
+        params["sort"] = f"[{self.cursor_field}_ASC,{self.primary_key}_ASC]"
 
         return params
 
 
-class Addresses(PrestaShopStream):
+class Addresses(IncrementalPrestaShopStream):
     """
     The Customer, Manufacturer and Customer addresses
     https://devdocs.prestashop.com/1.7/webservice/resources/addresses/
@@ -168,7 +170,7 @@ class Combinations(PrestaShopStream):
         return "combinations"
 
 
-class Configurations(PrestaShopStream):
+class Configurations(IncrementalPrestaShopStream):
     """
     Shop configuration, used to store miscellaneous parameters from the shop
     (maintenance, multi shop, email settings, …)
@@ -269,7 +271,7 @@ class Employees(PrestaShopStream):
         return "employees"
 
 
-class Groups(PrestaShopStream):
+class Groups(IncrementalPrestaShopStream):
     """
     The customer’s groups
     https://devdocs.prestashop.com/1.7/webservice/resources/groups/

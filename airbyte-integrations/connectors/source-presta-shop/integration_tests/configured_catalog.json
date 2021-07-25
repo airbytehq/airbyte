@@ -4,13 +4,13 @@
       "stream": {
         "name": "addresses",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": null,
-        "default_cursor_field": null,
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date_upd"],
         "source_defined_primary_key": [["id"]],
         "namespace": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null,
       "destination_sync_mode": "append",
       "primary_key": null
@@ -40,7 +40,7 @@
         "source_defined_primary_key": [["id"]],
         "namespace": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null,
       "destination_sync_mode": "append",
       "primary_key": null
@@ -55,7 +55,7 @@
         "source_defined_primary_key": [["id"]],
         "namespace": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null,
       "destination_sync_mode": "append",
       "primary_key": null
@@ -70,7 +70,7 @@
         "source_defined_primary_key": [["id"]],
         "namespace": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null,
       "destination_sync_mode": "append",
       "primary_key": null
@@ -175,7 +175,7 @@
         "source_defined_primary_key": [["id"]],
         "namespace": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null,
       "destination_sync_mode": "append",
       "primary_key": null
@@ -190,7 +190,7 @@
         "source_defined_primary_key": [["id"]],
         "namespace": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null,
       "destination_sync_mode": "append",
       "primary_key": null
@@ -205,7 +205,7 @@
         "source_defined_primary_key": [["id"]],
         "namespace": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null,
       "destination_sync_mode": "append",
       "primary_key": null
@@ -310,7 +310,7 @@
         "source_defined_primary_key": [["id"]],
         "namespace": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null,
       "destination_sync_mode": "append",
       "primary_key": null
@@ -325,7 +325,7 @@
         "source_defined_primary_key": [["id"]],
         "namespace": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null,
       "destination_sync_mode": "append",
       "primary_key": null
@@ -340,7 +340,7 @@
         "source_defined_primary_key": [["id"]],
         "namespace": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null,
       "destination_sync_mode": "append",
       "primary_key": null
@@ -370,7 +370,7 @@
         "source_defined_primary_key": [["id"]],
         "namespace": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null,
       "destination_sync_mode": "append",
       "primary_key": null
@@ -385,7 +385,7 @@
         "source_defined_primary_key": [["id"]],
         "namespace": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null,
       "destination_sync_mode": "append",
       "primary_key": null
@@ -400,7 +400,7 @@
         "source_defined_primary_key": [["id"]],
         "namespace": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null,
       "destination_sync_mode": "append",
       "primary_key": null
@@ -415,7 +415,7 @@
         "source_defined_primary_key": [["id"]],
         "namespace": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null,
       "destination_sync_mode": "append",
       "primary_key": null
@@ -445,7 +445,7 @@
         "source_defined_primary_key": [["id"]],
         "namespace": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null,
       "destination_sync_mode": "append",
       "primary_key": null
@@ -565,7 +565,7 @@
         "source_defined_primary_key": [["id"]],
         "namespace": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null,
       "destination_sync_mode": "append",
       "primary_key": null
@@ -685,7 +685,7 @@
         "source_defined_primary_key": [["id"]],
         "namespace": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null,
       "destination_sync_mode": "append",
       "primary_key": null
@@ -700,7 +700,7 @@
         "source_defined_primary_key": [["id"]],
         "namespace": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null,
       "destination_sync_mode": "append",
       "primary_key": null
@@ -715,7 +715,7 @@
         "source_defined_primary_key": [["id"]],
         "namespace": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null,
       "destination_sync_mode": "append",
       "primary_key": null
@@ -730,7 +730,7 @@
         "source_defined_primary_key": [["id"]],
         "namespace": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null,
       "destination_sync_mode": "append",
       "primary_key": null
@@ -760,7 +760,7 @@
         "source_defined_primary_key": [["id"]],
         "namespace": null
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": null,
       "destination_sync_mode": "append",
       "primary_key": null
