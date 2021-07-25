@@ -69,7 +69,7 @@ public class KubeLoggingConfigTest {
     var logs = LogClientSingleton.getJobLogFile(new EnvConfigs(), Path.of(fullLogPath));
     var logsLine = Strings.join(logs, " ");
 
-    for (String l: toLog) {
+    for (String l : toLog) {
       assertTrue(logsLine.contains(l));
     }
   }
