@@ -50,6 +50,12 @@ import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.SocatContainer;
 import org.testcontainers.containers.output.OutputFrame;
 
+/**
+ * The goal of this class is to make it easy to run the Airbyte docker-compose configuration from
+ * test containers. This helps me it easy to stop the test container without deleting the volumes
+ * { @link AirbyteTestContainer#stopRetainVolumes() }. It waits for Airbyte to be ready. It also
+ * handles the nuances of configuring the Airbyte docker-compose configuration in test containers.
+ */
 public class AirbyteTestContainer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteTestContainer.class);
@@ -68,6 +74,10 @@ public class AirbyteTestContainer {
     this.customServiceLogListeners = customServiceLogListeners;
   }
 
+  /**
+   * Starts Airbyte docker-compose configuration. Will block until the server is reachable or it times
+   * outs.
+   */
   @SuppressWarnings({"unchecked", "rawtypes"})
   public void start() throws IOException, InterruptedException {
     final File cleanedDockerComposeFile = prepareDockerComposeFile(dockerComposeFile);
@@ -254,7 +264,7 @@ public class AirbyteTestContainer {
     }
 
     public AirbyteTestContainer build() {
-      // override .env file version.
+      // override .env file so that we never report to segment while testing.
       env.put("TRACKING_STRATEGY", "logging");
 
       LOGGER.info("Using env: {}", env);

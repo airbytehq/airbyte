@@ -184,7 +184,7 @@ public class AcceptanceTests {
     sourcePsql.start();
 
     // by default use airbyte deployment governed by a test container.
-    if (System.getenv("USE_EXTERNAL_DEPLOYMENT") == null || System.getenv("USE_EXTERNAL_DEPLOYMENT").equals("FALSE")) {
+    if (System.getenv("USE_EXTERNAL_DEPLOYMENT") == null || !System.getenv("USE_EXTERNAL_DEPLOYMENT").equalsIgnoreCase("true")) {
       LOGGER.info("Using deployment of airbyte managed by test containers.");
       airbyteTestContainer = new AirbyteTestContainer.Builder(new File(DOCKER_COMPOSE_FILE_URL.toURI()))
           .setEnv(ENV_FILE)
