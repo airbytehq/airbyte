@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.JobsDatabaseInstance;
-import io.airbyte.scheduler.persistence.DatabaseSchema;
+import io.airbyte.db.schema.JobsDatabaseSchema;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
@@ -72,7 +72,7 @@ public class DatabaseArchiverTest {
 
   @Test
   void testUnknownTableExport() throws Exception {
-    // Create a table that is not declared in DatabaseSchema
+    // Create a table that is not declared in JobsDatabaseSchema
     database.query(ctx -> {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), updated_at DATE);");
       ctx.fetch(
@@ -112,7 +112,7 @@ public class DatabaseArchiverTest {
   void testPartialDatabaseImport() throws Exception {
     final Path tempFolder = Files.createTempDirectory(TEMP_PREFIX);
     databaseArchiver.exportDatabaseToArchive(tempFolder);
-    Files.delete(DatabaseArchiver.buildTablePath(tempFolder.toRealPath(), DatabaseSchema.ATTEMPTS.name()));
+    Files.delete(DatabaseArchiver.buildTablePath(tempFolder.toRealPath(), JobsDatabaseSchema.ATTEMPTS.name()));
     assertThrows(RuntimeException.class, () -> databaseArchiver.importDatabaseFromArchive(tempFolder, "test"));
   }
 

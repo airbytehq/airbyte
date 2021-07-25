@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler.persistence;
+package io.airbyte.db.schema;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.JsonSchemas;
@@ -39,7 +39,7 @@ import java.util.stream.Stream;
  *
  * This enum maps the table names to the yaml file where the Json Schema is stored.
  */
-public enum DatabaseSchema {
+public enum JobsDatabaseSchema {
 
   // Attempts
   ATTEMPTS("Attempts.yaml"),
@@ -50,11 +50,11 @@ public enum DatabaseSchema {
   // AirbyteMetadata
   AIRBYTE_METADATA("AirbyteMetadata.yaml");
 
-  static final Path KNOWN_SCHEMAS_ROOT = JsonSchemas.prepareSchemas("jobs_database", DatabaseSchema.class);
+  static final Path KNOWN_SCHEMAS_ROOT = JsonSchemas.prepareSchemas("jobs_database", JobsDatabaseSchema.class);
 
   private final String schemaFilename;
 
-  DatabaseSchema(final String schemaFilename) {
+  JobsDatabaseSchema(final String schemaFilename) {
     this.schemaFilename = schemaFilename;
   }
 
@@ -67,7 +67,7 @@ public enum DatabaseSchema {
   }
 
   public static List<String> getLowerCaseTableNames() {
-    return Stream.of(DatabaseSchema.values()).map(Enum::name).map(String::toLowerCase).collect(Collectors.toList());
+    return Stream.of(JobsDatabaseSchema.values()).map(Enum::name).map(String::toLowerCase).collect(Collectors.toList());
   }
 
 }

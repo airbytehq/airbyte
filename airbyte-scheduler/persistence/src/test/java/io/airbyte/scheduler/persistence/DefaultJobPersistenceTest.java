@@ -49,6 +49,7 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.JobsDatabaseInstance;
+import io.airbyte.db.schema.JobsDatabaseSchema;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.Job;
@@ -276,12 +277,12 @@ class DefaultJobPersistenceTest {
     final int attemptNumber1 = jobPersistence.createAttempt(jobId, secondAttemptLogPath);
     jobPersistence.succeedAttempt(jobId, attemptNumber1);
 
-    final Map<DatabaseSchema, Stream<JsonNode>> inputStreams = jobPersistence.exportDatabase();
+    final Map<JobsDatabaseSchema, Stream<JsonNode>> inputStreams = jobPersistence.exportDatabase();
 
     // Collect streams to memory for temporary storage
-    final Map<DatabaseSchema, List<JsonNode>> tempData = new HashMap<>();
-    final Map<DatabaseSchema, Stream<JsonNode>> outputStreams = new HashMap<>();
-    for (Entry<DatabaseSchema, Stream<JsonNode>> entry : inputStreams.entrySet()) {
+    final Map<JobsDatabaseSchema, List<JsonNode>> tempData = new HashMap<>();
+    final Map<JobsDatabaseSchema, Stream<JsonNode>> outputStreams = new HashMap<>();
+    for (Entry<JobsDatabaseSchema, Stream<JsonNode>> entry : inputStreams.entrySet()) {
       final List<JsonNode> tableData = entry.getValue().collect(Collectors.toList());
       tempData.put(entry.getKey(), tableData);
       outputStreams.put(entry.getKey(), tableData.stream());
@@ -317,7 +318,7 @@ class DefaultJobPersistenceTest {
     jobPersistence.succeedAttempt(jobId, attemptNumber1);
     final JsonSchemaValidator jsonSchemaValidator = new JsonSchemaValidator();
 
-    final Map<DatabaseSchema, Stream<JsonNode>> inputStreams = jobPersistence.exportDatabase();
+    final Map<JobsDatabaseSchema, Stream<JsonNode>> inputStreams = jobPersistence.exportDatabase();
     inputStreams.forEach((tableSchema, tableStream) -> {
       final String tableName = tableSchema.name();
       final JsonNode schema = tableSchema.toJsonNode();

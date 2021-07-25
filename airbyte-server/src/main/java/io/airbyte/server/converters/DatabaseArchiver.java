@@ -31,7 +31,7 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.yaml.Yamls;
-import io.airbyte.scheduler.persistence.DatabaseSchema;
+import io.airbyte.db.schema.JobsDatabaseSchema;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -69,9 +69,9 @@ public class DatabaseArchiver {
    * Serializes each internal Airbyte Database table into a single archive file stored in YAML.
    */
   public void exportDatabaseToArchive(final Path storageRoot) throws Exception {
-    final Map<DatabaseSchema, Stream<JsonNode>> tables = persistence.exportDatabase();
+    final Map<JobsDatabaseSchema, Stream<JsonNode>> tables = persistence.exportDatabase();
     Files.createDirectories(storageRoot.resolve(DB_FOLDER_NAME));
-    for (final DatabaseSchema tableSchema : DatabaseSchema.values()) {
+    for (final JobsDatabaseSchema tableSchema : JobsDatabaseSchema.values()) {
       final Path tablePath = buildTablePath(storageRoot, tableSchema.name());
       if (tables.containsKey(tableSchema)) {
         writeTableToArchive(tableSchema, tablePath, tables.get(tableSchema));
@@ -83,7 +83,7 @@ public class DatabaseArchiver {
     LOGGER.debug("Successful export of airbyte database");
   }
 
-  private void writeTableToArchive(final DatabaseSchema tableSchema, final Path tablePath, final Stream<JsonNode> tableStream) throws Exception {
+  private void writeTableToArchive(final JobsDatabaseSchema tableSchema, final Path tablePath, final Stream<JsonNode> tableStream) throws Exception {
     Files.createDirectories(tablePath.getParent());
     final BufferedWriter recordOutputWriter = new BufferedWriter(new FileWriter(tablePath.toFile()));
     final CloseableConsumer<JsonNode> recordConsumer = Yamls.listWriter(recordOutputWriter);
@@ -111,8 +111,8 @@ public class DatabaseArchiver {
    * objects will be validated against the current version of Airbyte server's JSON Schema.
    */
   public void importDatabaseFromArchive(final Path storageRoot, final String airbyteVersion) throws IOException {
-    final Map<DatabaseSchema, Stream<JsonNode>> data = new HashMap<>();
-    for (DatabaseSchema tableType : DatabaseSchema.values()) {
+    final Map<JobsDatabaseSchema, Stream<JsonNode>> data = new HashMap<>();
+    for (JobsDatabaseSchema tableType : JobsDatabaseSchema.values()) {
       final Path tablePath = buildTablePath(storageRoot, tableType.name());
       data.put(tableType, readTableFromArchive(tableType, tablePath));
     }
@@ -120,7 +120,7 @@ public class DatabaseArchiver {
     LOGGER.debug("Successful upgrade of airbyte database from archive");
   }
 
-  private Stream<JsonNode> readTableFromArchive(final DatabaseSchema tableSchema, final Path tablePath) throws FileNotFoundException {
+  private Stream<JsonNode> readTableFromArchive(final JobsDatabaseSchema tableSchema, final Path tablePath) throws FileNotFoundException {
     final JsonNode schema = tableSchema.toJsonNode();
     if (schema != null) {
       return MoreStreams.toStream(Yamls.deserialize(IOs.readFile(tablePath)).elements())
