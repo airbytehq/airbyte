@@ -58,7 +58,7 @@ chmod +x minio
 
 export MINIO_ROOT_USER=minio
 export MINIO_ROOT_PASSWORD=miniostorage
-./minio server /tmp/desktop
+./minio server /tmp/desktop &
 
 echo "Setting Minio configuration.."
 export AWS_ACCESS_KEY_ID=minio
