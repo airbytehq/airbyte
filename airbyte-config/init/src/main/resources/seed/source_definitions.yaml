@@ -22,8 +22,8 @@
   icon: file.svg
 - sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   name: Google Ads
-  dockerRepository: airbyte/source-google-ads
-  dockerImageTag: 0.1.3
+  dockerRepository: blotout/source-google-ads
+  dockerImageTag: 0.1.0
   documentationUrl: https://hub.docker.com/r/airbyte/source-google-ads
 - sourceDefinitionId: fdc8b827-3257-4b33-83cc-106d234c34d4
   name: Google Adwords (Deprecated)

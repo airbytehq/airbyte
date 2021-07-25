@@ -30,7 +30,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
 from .google_ads import GoogleAds
-from .streams import Accounts, AdGroupAdReport, AdGroupAds, AdGroups, Campaigns
+from .streams import Accounts, AdGroupAdReport, AdGroupAds, AdGroups, Campaigns, ClickView
 
 
 class SourceGoogleAds(AbstractSource):
@@ -53,4 +53,5 @@ class SourceGoogleAds(AbstractSource):
             AdGroups(api=google_api),
             Accounts(api=google_api),
             Campaigns(api=google_api),
+            ClickView(**incremental_stream_config)
         ]

@@ -28,6 +28,7 @@ from typing import Any, List, Mapping
 from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.v8.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
 from proto.marshal.collections import Repeated, RepeatedComposite
+import pendulum
 
 REPORT_MAPPING = {
     "ad_group_ad_report": "ad_group_ad",
@@ -35,6 +36,7 @@ REPORT_MAPPING = {
     "campaigns": "campaign",
     "ad_groups": "ad_group",
     "ad_group_ads": "ad_group_ad",
+    "click_view": "click_view"
 }
 
 
@@ -62,7 +64,8 @@ class GoogleAds:
 
     @staticmethod
     def convert_schema_into_query(
-        schema: Mapping[str, Any], report_name: str, from_date: str = None, to_date: str = None, cursor_field: str = None
+            schema: Mapping[str, Any], report_name: str, from_date: str = None, to_date: str = None,
+            cursor_field: str = None
     ) -> str:
         from_category = REPORT_MAPPING[report_name]
         fields = GoogleAds.get_fields_from_schema(schema)
@@ -71,7 +74,14 @@ class GoogleAds:
         query_template = f"SELECT {fields} FROM {from_category} "
 
         if cursor_field:
-            query_template += f"WHERE {cursor_field} > '{from_date}' AND {cursor_field} < '{to_date}' ORDER BY {cursor_field} ASC"
+            if from_category == 'click_view':
+                # Queries including ClickView must have a filter limiting the results to one day.
+                from_date = pendulum.parse(from_date)
+                to_date = from_date.add(days=1).to_date_string()
+                from_date = from_date.to_date_string()
+                query_template += f"WHERE {cursor_field} > '{from_date}' AND {cursor_field} <= '{to_date}' ORDER BY {cursor_field} ASC"
+            else:
+                query_template += f"WHERE {cursor_field} > '{from_date}' AND {cursor_field} < '{to_date}' ORDER BY {cursor_field} ASC"
 
         return query_template
 
