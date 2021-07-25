@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from abc import ABC, abstractmethod
+
 import pytest
 from source_s3.fileclient import FileClientS3
 from airbyte_cdk import AirbyteLogger
@@ -29,12 +29,7 @@ from airbyte_cdk import AirbyteLogger
 LOGGER = AirbyteLogger()
 
 
-class AbstractTestFileClient(ABC):
-    """ Prefix this class with Abstract so the tests don't run here but only in the children """
-    # there are no suitable abstract unit tests for FileClient presently but leaving this structure in place for future
-
-
-class TestFileClientS3(AbstractTestFileClient):
+class TestFileClientS3():
 
     @pytest.mark.parametrize(  # passing in full provider to emulate real usage (dummy values are unused by func)
         "provider, return_true", 
