@@ -30,8 +30,8 @@ from uuid import uuid4
 from typing import Iterator, List, Mapping
 
 import pytest
-from source_files_abstract.stream import FileStream, IncrementalFileStream
-from source_files_abstract.filereader import FileReaderCsv
+from source_s3.source_files_abstract.stream import FileStream, IncrementalFileStream
+from source_s3.source_files_abstract.filereader import FileReaderCsv
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 
@@ -144,25 +144,26 @@ class AbstractTestIncrementalFileStream(ABC):
             fs = self.stream_class("dataset_name", provider, format, path_patterns, str_user_schema)
             LOGGER.info(f"Testing stream_records() in SyncMode:{sync_mode.value}")
 
-            assert fs.get_json_schema() == full_expected_schema  # check we return correct schema from get_json_schema()
+            assert fs._get_schema_map() == full_expected_schema  # check we return correct schema from get_json_schema()
 
             records = []
             for stream_slice in fs.stream_slices(sync_mode=sync_mode, stream_state=current_state):
-                # we need to do this in order to work out which extra columns (if any) we expect in this stream_slice
-                expected_columns = []
-                for file_dict in stream_slice:
-                    file_reader = FileReaderCsv(format)  # TODO: if we ever test other filetypes in these tests this will need fixing
-                    with file_dict['fileclient'].open(file_reader.is_binary) as f:
-                        expected_columns.extend(list(file_reader.get_inferred_schema(f).keys()))
-                expected_columns = set(expected_columns)  # de-dupe
-                    
-                for record in fs.read_records(sync_mode, stream_slice=stream_slice):
-                    # check actual record values match expected schema
-                    assert all([
-                        isinstance(record[col], JSONTYPE_TO_PYTHONTYPE[typ]) or record[col] is None
-                        for col,typ in full_expected_schema.items()
-                    ])  
-                    records.append(record)
+                if stream_slice is not None:
+                    # we need to do this in order to work out which extra columns (if any) we expect in this stream_slice
+                    expected_columns = []
+                    for file_dict in stream_slice:
+                        file_reader = FileReaderCsv(format)  # TODO: if we ever test other filetypes in these tests this will need fixing
+                        with file_dict['fileclient'].open(file_reader.is_binary) as f:
+                            expected_columns.extend(list(file_reader.get_inferred_schema(f).keys()))
+                    expected_columns = set(expected_columns)  # de-dupe
+                        
+                    for record in fs.read_records(sync_mode, stream_slice=stream_slice):
+                        # check actual record values match expected schema
+                        assert all([
+                            isinstance(record[col], JSONTYPE_TO_PYTHONTYPE[typ]) or record[col] is None
+                            for col,typ in full_expected_schema.items()
+                        ])  
+                        records.append(record)
             
             assert all([len(r.keys()) == total_num_columns for r in records])
             assert len(records) == num_records

@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 
-from source_files_abstract import SourceFilesAbstract
+from .source_files_abstract import SourceFilesAbstract
 from .stream import IncrementalFileStreamS3
 
 

@@ -31,7 +31,7 @@ from botocore import UNSIGNED
 from botocore.config import Config
 from botocore.client import Config as ClientConfig
 from botocore.exceptions import NoCredentialsError
-from source_files_abstract.fileclient import FileClient
+from .source_files_abstract.fileclient import FileClient
 
 
 class FileClientS3(FileClient):

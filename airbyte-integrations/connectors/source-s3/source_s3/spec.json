@@ -1,11 +1,11 @@
 {
-  "documentationUrl": "https://docsurl.com",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/s3",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Blob Source Spec",
+    "title": "S3 Source Spec",
     "type": "object",
     "additionalProperties": false,
-    "required": ["dataset_name", "provider", "format", "path"],
+    "required": ["dataset_name", "provider", "format", "path_patterns"],
     "properties": {
       "dataset_name": {
         "type": "string",
@@ -85,7 +85,7 @@
               "newlines_in_values": {
                 "type": "boolean",
                 "default": false,
-                "description": "Whether newline characters are allowed in CSV values. Leave blank to default to False",
+                "description": "Whether newline characters are allowed in CSV values. Leave blank to default to False"
               },
               "encoding": {
                 "type": ["null", "string"],

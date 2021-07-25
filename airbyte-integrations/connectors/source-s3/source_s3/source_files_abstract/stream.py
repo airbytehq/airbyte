@@ -197,11 +197,7 @@ class FileStream(Stream, ABC):
 
         return self.fileclient_cache
 
-    def get_json_schema(self) -> Mapping[str, Any]:
-        """
-        :return: A dict of the JSON schema representing this stream.
-        :rtype: Mapping[str, Any]
-        """
+    def _get_schema_map(self) -> Mapping[str, Any]:
         if self._schema != {}:
             return_schema = deepcopy(self._schema)
         else:  # we have no provided schema or schema state from a previous incremental run
@@ -211,6 +207,15 @@ class FileStream(Stream, ABC):
         return_schema[self.ab_last_mod_col] = "string"
         return_schema[self.ab_file_name_col] = "string"
         return return_schema
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """
+        :return: the JSON schema representing this stream.
+        :rtype: Mapping[str, Any]
+        """
+        properties = {column:{"type": typ} for column, typ in self._get_schema_map().items()}
+        properties[self.ab_last_mod_col]["format"] = "date-time"
+        return {"type": "object", "properties": properties}
 
     def _get_master_schema(self) -> Mapping[str, Any]:
         """
@@ -287,6 +292,8 @@ class FileStream(Stream, ABC):
                 "last_modified": last_mod,
                 "fileclient": fileclient
             }]
+        # in case we have no files
+        yield from [None]
 
     def _match_target_schema(self, record: Mapping[str, Any], target_columns: List) -> Mapping[str, Any]:
         """
@@ -297,7 +304,7 @@ class FileStream(Stream, ABC):
 
         :param record: json-like representation of a data row {column:value}
         :type record: Mapping[str, Any]
-        :param target_columns: list of column names to mutate this record into (obtained via self.get_json_schema().keys() as of now)
+        :param target_columns: list of column names to mutate this record into (obtained via self._get_schema_map().keys() as of now)
         :type target_columns: List
         :return: mutated record with columns lining up to target_columns
         :rtype: Mapping[str, Any]
@@ -345,6 +352,7 @@ class FileStream(Stream, ABC):
         Records are mutated on the fly using _match_target_schema() and _add_extra_fields_from_map() to achieve desired final schema.
         Since this is called per stream_slice, this method works for both full_refresh and incremental so sync_mode is ignored.
         """
+        stream_slice = stream_slice if stream_slice is not None else []
         file_reader = self.filereader_class(self._format, self._get_master_schema())
 
         # TODO: read all files in a stream_slice concurrently
@@ -352,13 +360,16 @@ class FileStream(Stream, ABC):
             with file_info['fileclient'].open(file_reader.is_binary) as f:
                 # TODO: make this more efficient than mutating every record one-by-one as they stream
                 for record in file_reader.stream_records(f):
-                    schema_matched_record = self._match_target_schema(record, list(self.get_json_schema().keys()))
+                    schema_matched_record = self._match_target_schema(record, list(self._get_schema_map().keys()))
                     complete_record = self._add_extra_fields_from_map(
                         schema_matched_record,
                         {self.ab_last_mod_col: datetime.strftime(file_info['last_modified'], self.datetime_format_string),
                          self.ab_file_name_col: file_info['unique_url']})
                     yield complete_record
         self.logger.info("finished reading a stream slice")
+
+        # Always return an empty generator just in case no records were ever yielded
+        yield from []
 
 
 class IncrementalFileStream(FileStream, ABC):
@@ -390,12 +401,12 @@ class IncrementalFileStream(FileStream, ABC):
         state_dict = {}
         if current_stream_state is not None and self.cursor_field in current_stream_state.keys():
             current_parsed_datetime = datetime.strptime(current_stream_state[self.cursor_field], self.datetime_format_string)
-            latest_record_datetime = datetime.strptime(latest_record[self.cursor_field], self.datetime_format_string)
+            latest_record_datetime = datetime.strptime(latest_record.get(self.cursor_field, "1970-01-01T00:00:00+0000"), self.datetime_format_string)
             state_dict[self.cursor_field] = datetime.strftime(max(current_parsed_datetime, latest_record_datetime), self.datetime_format_string)
         else:
             state_dict[self.cursor_field] = "1970-01-01T00:00:00+0000"
 
-        state_dict["schema"] = self.get_json_schema()
+        state_dict["schema"] = self._get_schema_map()
         return state_dict
 
     def stream_slices(
@@ -448,3 +459,6 @@ class IncrementalFileStream(FileStream, ABC):
             # now yield the final stream_slice. This is required because our loop only yields the slice previous to its current iteration.
             if len(stream_slice) > 0:
                 yield stream_slice
+
+            # in case we have no files
+            yield from [None]

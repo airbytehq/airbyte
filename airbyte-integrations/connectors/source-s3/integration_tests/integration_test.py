@@ -45,9 +45,10 @@ class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
 
     @property
     def credentials(self) -> Mapping:
-        filename = HERE.parent / "secrets/aws.json"
+        filename = HERE.parent / "secrets/config.json"
         with open(filename) as json_file:
-            return json.load(json_file)
+            config = json.load(json_file)
+        return {"aws_access_key_id": config["provider"]["aws_access_key_id"], "aws_secret_access_key": config["provider"]["aws_secret_access_key"]}
 
     def provider(self, bucket_name: str) -> Mapping:
         return {"storage": "S3", "bucket": bucket_name}
@@ -61,7 +62,8 @@ class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
             region_name=region,
         )
         self.s3_resource = boto3.resource(
-            "s3", aws_access_key_id=credentials["aws_access_key_id"], aws_secret_access_key=credentials["aws_secret_access_key"]
+            "s3", aws_access_key_id=credentials["aws_access_key_id"],
+            aws_secret_access_key=credentials["aws_secret_access_key"]
         )
 
     def cloud_files(self, cloud_bucket_name: str, credentials: Mapping, files_to_upload: List, private: bool=True) -> Iterator[str]:

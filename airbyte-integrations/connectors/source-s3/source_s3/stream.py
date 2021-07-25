@@ -26,7 +26,7 @@ from boto3 import session as boto3session
 from botocore import UNSIGNED
 from botocore.config import Config
 from .fileclient import FileClientS3
-from source_files_abstract.stream import IncrementalFileStream
+from .source_files_abstract.stream import IncrementalFileStream
 from airbyte_cdk.logger import AirbyteLogger
 
 

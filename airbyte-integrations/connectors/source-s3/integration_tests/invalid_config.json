@@ -1,3 +1,13 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "dataset_name": "test",
+  "provider": {
+      "storage": "S3",
+      "bucket": "THIS BUCKET DOESN'T EXIST",
+      "aws_access_key_id": "KEY ID",
+      "aws_secret_access_key": "KEY",
+      "path_prefix": ""
+  },
+  "format": {"filetype": "csv"},
+  "path_patterns": ["*"],
+  "schema": "{}"
 }

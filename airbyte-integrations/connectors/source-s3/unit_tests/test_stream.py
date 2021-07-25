@@ -23,7 +23,7 @@
 from abc import ABC, abstractmethod
 import pytest
 from unittest.mock import patch
-from source_files_abstract.stream import FileStream, IncrementalFileStream
+from source_s3.source_files_abstract.stream import FileStream, IncrementalFileStream
 from airbyte_cdk import AirbyteLogger
 
 
@@ -81,7 +81,7 @@ class TestFileStream():
             ),
         ]
     )
-    @patch("source_files_abstract.stream.FileStream.__abstractmethods__", set())  # patching abstractmethods to empty set so we can instantiate ABC to test
+    @patch("source_s3.source_files_abstract.stream.FileStream.__abstractmethods__", set())  # patching abstractmethods to empty set so we can instantiate ABC to test
     def test_match_target_schema(self, target_columns, record, expected_return_record):
         fs = FileStream(dataset_name='dummy', provider={}, format={}, path_patterns=[])
         if expected_return_record is not None:
@@ -110,7 +110,7 @@ class TestFileStream():
             ),
         ]
     )
-    @patch("source_files_abstract.stream.FileStream.__abstractmethods__", set())  # patching abstractmethods to empty set so we can instantiate ABC to test
+    @patch("source_s3.source_files_abstract.stream.FileStream.__abstractmethods__", set())  # patching abstractmethods to empty set so we can instantiate ABC to test
     def test_add_extra_fields_from_map(self, extra_map, record, expected_return_record):
         fs = FileStream(dataset_name='dummy', provider={}, format={}, path_patterns=[])
         if expected_return_record is not None:
@@ -169,7 +169,7 @@ class TestFileStream():
             ),
         ]
     )
-    @patch("source_files_abstract.stream.FileStream.__abstractmethods__", set())  # patching abstractmethods to empty set so we can instantiate ABC to test
+    @patch("source_s3.source_files_abstract.stream.FileStream.__abstractmethods__", set())  # patching abstractmethods to empty set so we can instantiate ABC to test
     def test_pattern_matched_filepath_iterator(self, patterns, filepaths, expected_filepaths):
         fs = FileStream(dataset_name='dummy', provider={}, format={}, path_patterns=patterns)
         assert set([p for p in fs.pattern_matched_filepath_iterator(filepaths)]) == set(expected_filepaths)

@@ -4,18 +4,19 @@
             "stream": {
                 "name": "test",
                 "json_schema": {
-                    "$schema": "http://json-schema.org/draft-07/schema#",
                     "type": "object",
                     "properties": {
-                        "id": "integer",
-                        "name": "string",
-                        "valid": "boolean",
-                        "code": "integer",
-                        "degrees": "number",
-                        "birthday": "string",
-                        "last_seen": "string"
+                        "id": {"type": "integer"},
+                        "name": {"type": "string"},
+                        "valid": {"type": "boolean"},
+                        "_airbyte_additional_properties": {"type": "object"},
+                        "_airbyte_source_file_last_modified": {"type": "string", "format": "date-time"},
+                        "_airbyte_source_file_url": {"type": "string"}
                     }
-                }
+                },
+                "supported_sync_modes": ["incremental", "full_refresh"],
+                "source_defined_cursor": true,
+                "default_cursor_field": ["_airbyte_source_file_last_modified"]
             },
             "sync_mode": "incremental",
             "destination_sync_mode": "append"
