@@ -15,7 +15,7 @@
       "type": "string"
     },
     "ip_registration_newsletter": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "last_passwd_gen": {
       "type": "string"
@@ -39,28 +39,28 @@
       "type": "string"
     },
     "id_gender": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "birthday": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "newsletter": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "optin": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "website": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "company": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "siret": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "ape": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "outstanding_allow_amount": {
       "type": "string"
@@ -98,7 +98,7 @@
       "format": "date-time"
     },
     "reset_password_token": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "reset_password_validity": {
       "type": ["null", "string"],

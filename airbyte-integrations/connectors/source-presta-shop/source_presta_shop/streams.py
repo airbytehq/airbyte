@@ -101,10 +101,10 @@ class IncrementalPrestaShopStream(PrestaShopStream, ABC):
         # for filtering interval operator is used
         # https://devdocs.prestashop.com/1.7/webservice/tutorials/advanced-use/additional-list-parameters/#filter-parameter
         if start_date:
-            params["filter[date_upd]"] = f"[{start_date},{self._end_date}]"
-        params["date"] = 1
+            params[f"filter[{self.cursor_field}]"] = f"[{start_date},{self._end_date}]"
+        params["date"] = 1  # needed to filter by dates
         params["sort"] = f"[{self.cursor_field}_ASC]"
-        print(params)
+
         return params
 
 

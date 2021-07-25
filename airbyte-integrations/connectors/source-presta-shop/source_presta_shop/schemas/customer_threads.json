@@ -27,7 +27,7 @@
       "type": "string"
     },
     "token": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "status": {
       "type": "string"

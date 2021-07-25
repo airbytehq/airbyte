@@ -12,19 +12,19 @@
       "type": "string"
     },
     "ip_address": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "message": {
       "type": "string"
     },
     "file_name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "user_agent": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "private": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "date_add": {
       "type": "string",
@@ -35,7 +35,7 @@
       "format": "date-time"
     },
     "read": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }
