@@ -22,6 +22,9 @@ SUB_BUILD=PLATFORM ./gradlew :airbyte-config:models:logClientsIntegrationTest  -
 # Reset existing configurations and run this for each possible configuration
 # These configurations mirror the configurations documented in https://docs.airbyte.io/deploying-airbyte/on-kubernetes#configure-logs.
 # Some duplication here for clarity.
+export WORKER_ENVIRONMENT=kubernetes
+
+echo "Setting S3 configuration.."
 export AWS_ACCESS_KEY_ID="$(echo "$AWS_S3_INTEGRATION_TEST_CREDS" | jq -r .aws_access_key_id)"
 export AWS_SECRET_ACCESS_KEY="$(echo "$AWS_S3_INTEGRATION_TEST_CREDS" | jq -r .aws_secret_access_key)"
 export S3_LOG_BUCKET=airbyte-kube-integration-logging-test
@@ -35,6 +38,7 @@ export GCP_STORAGE_BUCKET=
 echo "Running logging to S3 test.."
 SUB_BUILD=PLATFORM ./gradlew :airbyte-config:models:log4j2IntegrationTest -i  --scan
 
+echo "Setting GCS configuration.."
 export AWS_ACCESS_KEY_ID=
 export AWS_SECRET_ACCESS_KEY=
 export S3_LOG_BUCKET=
