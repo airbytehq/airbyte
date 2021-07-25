@@ -25,13 +25,12 @@
 package io.airbyte.db.instance;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.ServerUuid;
+import io.airbyte.db.schema.JobsDatabaseSchema;
 import java.io.IOException;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,8 +40,7 @@ public class JobsDatabaseInstance extends BaseDatabaseInstance implements Databa
   private static final Logger LOGGER = LoggerFactory.getLogger(JobsDatabaseInstance.class);
 
   private static final String DATABASE_NAME = "jobs";
-  private static final Set<String> TABLE_NAMES = ImmutableSet.of("jobs", "attempts", "airbyte_metadata");
-  private static final String SCHEMA_PATH = String.format("%s_database/schema.sql", DATABASE_NAME);
+  private static final String SCHEMA_PATH = "jobs_database/schema.sql";
   private static final Function<Database, Boolean> IS_JOBS_DATABASE_READY = database -> {
     try {
       LOGGER.info("Testing if jobs database is ready...");
@@ -55,7 +53,7 @@ public class JobsDatabaseInstance extends BaseDatabaseInstance implements Databa
 
   @VisibleForTesting
   public JobsDatabaseInstance(String username, String password, String connectionString, String schema) {
-    super(username, password, connectionString, schema, DATABASE_NAME, TABLE_NAMES, IS_JOBS_DATABASE_READY);
+    super(username, password, connectionString, schema, DATABASE_NAME, JobsDatabaseSchema.getTableNames(), IS_JOBS_DATABASE_READY);
   }
 
   public JobsDatabaseInstance(String username, String password, String connectionString) throws IOException {

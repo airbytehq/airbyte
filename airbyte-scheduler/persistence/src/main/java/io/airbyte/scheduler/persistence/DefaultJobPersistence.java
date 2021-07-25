@@ -558,7 +558,7 @@ public class DefaultJobPersistence implements JobPersistence {
       return database.query(context -> context.meta().getSchemas(schema).stream()
           .flatMap(s -> context.meta(s).getTables().stream())
           .map(Named::getName)
-          .filter(table -> JobsDatabaseSchema.getLowerCaseTableNames().contains(table.toLowerCase()))
+          .filter(table -> JobsDatabaseSchema.getTableNames().contains(table.toLowerCase()))
           .collect(Collectors.toList()));
     } else {
       return List.of();
@@ -665,7 +665,7 @@ public class DefaultJobPersistence implements JobPersistence {
 
   private static void importTable(DSLContext ctx, final String schema, final JobsDatabaseSchema tableType, final Stream<JsonNode> jsonStream) {
     final Table<Record> tableSql = getTable(schema, tableType.name());
-    final JsonNode jsonSchema = tableType.toJsonNode();
+    final JsonNode jsonSchema = tableType.getTableDefinition();
     if (jsonSchema != null) {
       // Use an ArrayList to mirror the order of columns from the schema file since columns may not be
       // written consistently in the same order in the stream

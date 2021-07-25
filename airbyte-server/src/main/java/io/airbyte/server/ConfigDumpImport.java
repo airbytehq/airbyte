@@ -376,7 +376,7 @@ public class ConfigDumpImport {
   private Stream<JsonNode> readTableFromArchive(final JobsDatabaseSchema tableSchema,
                                                 final Path tablePath)
       throws FileNotFoundException {
-    final JsonNode schema = tableSchema.toJsonNode();
+    final JsonNode schema = tableSchema.getTableDefinition();
     if (schema != null) {
       return MoreStreams.toStream(Yamls.deserialize(IOs.readFile(tablePath)).elements())
           .peek(r -> {
