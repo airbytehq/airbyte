@@ -22,13 +22,14 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db.instance;
+package io.airbyte.db.instance.jobs;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.ServerUuid;
-import io.airbyte.db.schema.JobsDatabaseSchema;
+import io.airbyte.db.instance.BaseDatabaseInstance;
+import io.airbyte.db.instance.DatabaseInstance;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.function.Function;

@@ -40,7 +40,7 @@ import io.airbyte.config.persistence.ConfigPersistenceBuilder;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
-import io.airbyte.db.instance.JobsDatabaseInstance;
+import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
 import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;

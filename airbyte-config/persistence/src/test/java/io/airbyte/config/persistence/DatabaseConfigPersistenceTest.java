@@ -24,7 +24,7 @@
 
 package io.airbyte.config.persistence;
 
-import static io.airbyte.db.instance.AirbyteConfigsTable.AIRBYTE_CONFIGS;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.AIRBYTE_CONFIGS;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.count;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,7 +38,7 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.db.Database;
-import io.airbyte.db.instance.ConfigsDatabaseInstance;
+import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;

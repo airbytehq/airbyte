@@ -26,7 +26,7 @@ package io.airbyte.config.persistence;
 
 import io.airbyte.config.Configs;
 import io.airbyte.db.Database;
-import io.airbyte.db.instance.ConfigsDatabaseInstance;
+import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

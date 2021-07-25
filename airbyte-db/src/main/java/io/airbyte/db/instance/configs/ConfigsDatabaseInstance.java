@@ -22,12 +22,13 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db.instance;
+package io.airbyte.db.instance.configs;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
-import io.airbyte.db.schema.ConfigsDatabaseSchema;
+import io.airbyte.db.instance.BaseDatabaseInstance;
+import io.airbyte.db.instance.DatabaseInstance;
 import java.io.IOException;
 import java.util.function.Function;
 import org.slf4j.Logger;

@@ -31,7 +31,7 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.yaml.Yamls;
-import io.airbyte.db.schema.JobsDatabaseSchema;
+import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;

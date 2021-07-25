@@ -1,4 +1,4 @@
-package io.airbyte.db.schema;
+package io.airbyte.db.instance;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

@@ -24,12 +24,12 @@
 
 package io.airbyte.config.persistence;
 
-import static io.airbyte.db.instance.AirbyteConfigsTable.AIRBYTE_CONFIGS;
-import static io.airbyte.db.instance.AirbyteConfigsTable.CONFIG_BLOB;
-import static io.airbyte.db.instance.AirbyteConfigsTable.CONFIG_ID;
-import static io.airbyte.db.instance.AirbyteConfigsTable.CONFIG_TYPE;
-import static io.airbyte.db.instance.AirbyteConfigsTable.CREATED_AT;
-import static io.airbyte.db.instance.AirbyteConfigsTable.UPDATED_AT;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.AIRBYTE_CONFIGS;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CONFIG_BLOB;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CONFIG_ID;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CONFIG_TYPE;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CREATED_AT;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.UPDATED_AT;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.select;
 

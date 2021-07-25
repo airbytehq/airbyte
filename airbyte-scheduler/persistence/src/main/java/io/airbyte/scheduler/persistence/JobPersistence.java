@@ -27,7 +27,7 @@ package io.airbyte.scheduler.persistence;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.State;
-import io.airbyte.db.schema.JobsDatabaseSchema;
+import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import java.io.IOException;

@@ -29,8 +29,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.db.Database;
-import io.airbyte.db.instance.JobsDatabaseInstance;
-import io.airbyte.db.schema.JobsDatabaseSchema;
+import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
+import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;

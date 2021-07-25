@@ -26,7 +26,7 @@ package io.airbyte.server.migration;
 
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
-import io.airbyte.db.instance.JobsDatabaseInstance;
+import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import java.io.IOException;
 import org.testcontainers.containers.PostgreSQLContainer;
 

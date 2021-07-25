@@ -24,12 +24,12 @@
 
 package io.airbyte.config.persistence;
 
-import static io.airbyte.db.instance.AirbyteConfigsTable.AIRBYTE_CONFIGS;
-import static io.airbyte.db.instance.AirbyteConfigsTable.CONFIG_BLOB;
-import static io.airbyte.db.instance.AirbyteConfigsTable.CONFIG_ID;
-import static io.airbyte.db.instance.AirbyteConfigsTable.CONFIG_TYPE;
-import static io.airbyte.db.instance.AirbyteConfigsTable.CREATED_AT;
-import static io.airbyte.db.instance.AirbyteConfigsTable.UPDATED_AT;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.AIRBYTE_CONFIGS;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CONFIG_BLOB;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CONFIG_ID;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CONFIG_TYPE;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CREATED_AT;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.UPDATED_AT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -43,7 +43,7 @@ import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.db.Database;
-import io.airbyte.db.instance.ConfigsDatabaseInstance;
+import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

@@ -1,7 +1,8 @@
-package io.airbyte.db.schema;
+package io.airbyte.db.instance.configs;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.JsonSchemas;
+import io.airbyte.db.instance.TableSchema;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.io.File;
 import java.nio.file.Path;
