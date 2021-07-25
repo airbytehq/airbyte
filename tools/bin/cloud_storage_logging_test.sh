@@ -51,3 +51,25 @@ export GCP_STORAGE_BUCKET=airbyte-kube-integration-logging-test
 
 echo "Running logging to GCS test.."
 SUB_BUILD=PLATFORM ./gradlew :airbyte-config:models:log4j2IntegrationTest  --scan
+
+echo "Starting Minio service.."
+docker run -d -p 9000:9000 --name minio \
+   -e "MINIO_ACCESS_KEY=minioadmin" \
+   -e "MINIO_SECRET_KEY=minioadmin" \
+   -v /tmp/data:/data \
+   -v /tmp/config:/root/.minio \
+   minio/minio server /data
+
+echo "Setting Minio configuration.."
+export AWS_ACCESS_KEY_ID=minioadmin
+export AWS_SECRET_ACCESS_KEY=minioadmin
+export S3_LOG_BUCKET=airbyte-kube-integration-logging-test
+export S3_LOG_BUCKET_REGION=
+export S3_MINIO_ENDPOINT=http://127.0.0.1:9000/
+export S3_PATH_STYLE_ACCESS=true
+
+export GOOGLE_APPLICATION_CREDENTIALS=
+export GCP_STORAGE_BUCKET=
+
+echo "Running logging to Minio test.."
+SUB_BUILD=PLATFORM ./gradlew :airbyte-config:models:log4j2IntegrationTest  --scan
