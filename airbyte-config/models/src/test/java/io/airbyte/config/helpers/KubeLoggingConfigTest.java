@@ -1,9 +1,36 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.airbyte.config.helpers;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.commons.string.Strings;
 import io.airbyte.config.EnvConfigs;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -13,35 +40,39 @@ import org.slf4j.LoggerFactory;
 public class KubeLoggingConfigTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeLoggingConfigTest.class);
-  private static final String RUN_TEST_ENV_VAR = "TEST_LOGGER";
   // We publish every minute. See log4j2.xml.
   private static final long LOG_PUBLISH_DELAY = 60 * 1000;
 
   /**
-   * Because this test tests our env var set up is compatible with our Log4j2 configuration, we are unable to perform injection, and
-   * instead rely on env vars set in ./tools/bin/cloud_storage_logging_test.sh.
+   * Because this test tests our env var set up is compatible with our Log4j2 configuration, we are
+   * unable to perform injection, and instead rely on env vars set in
+   * ./tools/bin/cloud_storage_logging_test.sh.
    *
-   * This test will fail if certain env vars aren't set, so only run if {@link #RUN_TEST_ENV_VAR} is defined.
+   * This test will fail if certain env vars aren't set.
    */
   @Test
   public void testLoggingConfiguration() throws IOException, InterruptedException {
-    System.out.println("======= log4j2-config tests");
-//    if (System.getenv(RUN_TEST_ENV_VAR) != null) {
-//      var randPath = Path.of(Strings.addRandomSuffix("","", 5));
-//      // This mirror our Log4j2 set up. See log4j2.xml.
-//      LogClientSingleton.setJobMdc(randPath);
-//
-//      LOGGER.info("line 1");
-//      LOGGER.info("line 2");
-//      LOGGER.info("line 3");
-//
-//      // Sleep to make sure the logs appear.
-//      Thread.sleep(LOG_PUBLISH_DELAY);
-//
-//      // The same env vars that log4j2 uses to determine where to publish to
-//      var a = LogClientSingleton.getJobLogFile(new EnvConfigs(), randPath);
-//      System.out.println(a);
-//    }
+    var randPath = Strings.addRandomSuffix("-", "", 5);
+    // This mirrors our Log4j2 set up. See log4j2.xml.
+    LogClientSingleton.setJobMdc(Path.of(randPath));
+
+    var toLog = List.of("line 1", "line 2", "line 3");
+    for (String l : toLog) {
+      LOGGER.info(l);
+    }
+
+    // Sleep to make sure the logs appear.
+    Thread.sleep(LOG_PUBLISH_DELAY);
+
+    var fullLogPath = randPath + "/logs.log/";
+    // The same env vars that log4j2 uses to determine where to publish to
+    var logs = LogClientSingleton.getJobLogFile(new EnvConfigs(), Path.of(fullLogPath));
+
+    for (int i = 0; i < logs.size(); i++) {
+      var logStr = toLog.get(i);
+      var logLine = logs.get(i);
+      assertTrue(logLine.contains(logStr));
+    }
   }
 
 }
