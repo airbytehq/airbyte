@@ -35,8 +35,8 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_presta_shop",
-    description="Source implementation for Presta Shop.",
+    name="source_prestashop",
+    description="Source implementation for PrestaShop.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),

@@ -1,7 +1,7 @@
 # PrestaShop Source
 
 This is the repository for the Presta Shop source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/presta-shop).
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/prestashop).
 
 ## Local development
 
@@ -34,16 +34,16 @@ You can also build the connector in Gradle. This is typically used in CI and not
 
 To build using Gradle, from the Airbyte repository root, run:
 ```
-./gradlew :airbyte-integrations:connectors:source-presta-shop:build
+./gradlew :airbyte-integrations:connectors:source-prestashop:build
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/presta-shop)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_presta_shop/spec.json` file.
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/prestashop)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_prestashop/spec.json` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source presta-shop test creds`
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source prestashop test creds`
 and place them into `secrets/config.json`.
 
 ### Locally running the connector
@@ -59,12 +59,12 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/source-presta-shop:dev
+docker build . -t airbyte/source-prestashop:dev
 ```
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-presta-shop:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-prestashop:airbyteDocker
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.
@@ -72,10 +72,10 @@ the Dockerfile.
 #### Run
 Then run any of the connector commands as follows:
 ```
-docker run --rm airbyte/source-presta-shop:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-presta-shop:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-presta-shop:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-presta-shop:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm airbyte/source-prestashop:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-prestashop:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-prestashop:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-prestashop:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 ## Testing
 Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
@@ -109,11 +109,11 @@ To run your integration tests with docker
 All commands should be run from airbyte project root.
 To run unit tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-presta-shop:unitTest
+./gradlew :airbyte-integrations:connectors:source-prestashop:unitTest
 ```
 To run acceptance and custom integration tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-presta-shop:integrationTest
+./gradlew :airbyte-integrations:connectors:source-prestashop:integrationTest
 ```
 
 ## Dependency Management

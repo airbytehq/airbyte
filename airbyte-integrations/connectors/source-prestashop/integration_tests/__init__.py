@@ -21,13 +21,3 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-
-
-import sys
-
-from airbyte_cdk.entrypoint import launch
-from source_presta_shop import SourcePrestaShop
-
-if __name__ == "__main__":
-    source = SourcePrestaShop()
-    launch(source, sys.argv[1:])

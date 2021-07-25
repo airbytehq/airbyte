@@ -1,6 +1,6 @@
 *
 !Dockerfile
 !main.py
-!source_presta_shop
+!source_prestashop
 !setup.py
 !secrets
