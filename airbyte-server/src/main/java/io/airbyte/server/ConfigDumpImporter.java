@@ -26,8 +26,8 @@ package io.airbyte.server;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.api.model.ImportRead;
