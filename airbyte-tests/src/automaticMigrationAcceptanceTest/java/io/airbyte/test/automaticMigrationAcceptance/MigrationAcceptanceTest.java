@@ -105,10 +105,12 @@ public class MigrationAcceptanceTest {
 
   @SuppressWarnings("UnstableApiUsage")
   private void firstRun() throws Exception {
-    final Map<String, String> environmentVariables = getEnvironmentVariables("0.17.0-alpha");
+    // 0.17.0-alpha-db-patch is specifically built for this test;
+    // it connects to the database with retries to fix flaky connection issue
+    final Map<String, String> environmentVariables = getEnvironmentVariables("0.17.0-alpha-db-patch");
 
     final Set<String> logsToExpect = new HashSet<>();
-    logsToExpect.add("Version: 0.17.0-alpha");
+    logsToExpect.add("Version: 0.17.0-alpha-db-patch");
 
     final AirbyteTestContainer airbyteTestContainer =
         new AirbyteTestContainer.Builder(new File(Resources.getResource("docker-compose-migration-test-0-17-0-alpha.yaml").toURI()))
