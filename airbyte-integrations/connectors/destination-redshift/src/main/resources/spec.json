@@ -9,7 +9,7 @@
     "title": "Redshift Destination Spec",
     "type": "object",
     "required": ["host", "port", "database", "username", "password", "schema"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "host": {
         "description": "Host Endpoint of the Redshift Cluster (must include the cluster-id, region and end with .redshift.amazonaws.com)",

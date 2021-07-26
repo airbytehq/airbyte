@@ -60,3 +60,11 @@ When you apply for a token, you need to mention:
 
 If for any reason the request gets denied, let us know and we will be able to unblock you.
 
+Tokens issued after April 28, 2021 are only given access to the Google Ads API as the AdWords API is no longer available for new users. Thus, this source can only be used if you already have a token issued previously. A new source using the Google Ads API is being built \(see [issue 3457](https://github.com/airbytehq/airbyte/issues/3457) for more information\).
+
+
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.1.2  | 2021-06-25 | [4205](https://github.com/airbytehq/airbyte/pull/4205) | Set up CDK SAT tests. Incremental tests are disabled due to unsupported state structure in current tests: required structure: {stream_name: cursor_value} given {‘bookmarks’: {stream_name: cursor_value}} |

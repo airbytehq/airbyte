@@ -33,6 +33,10 @@ public interface Configs {
 
   String getAirbyteVersion();
 
+  String getAirbyteApiUrl();
+
+  int getAirbyteApiPort();
+
   String getAirbyteVersionOrWarning();
 
   Path getConfigRoot();
@@ -46,6 +50,12 @@ public interface Configs {
   String getDatabasePassword();
 
   String getDatabaseUrl();
+
+  String getConfigDatabaseUser();
+
+  String getConfigDatabasePassword();
+
+  String getConfigDatabaseUrl();
 
   String getWebappUrl();
 
@@ -68,6 +78,34 @@ public interface Configs {
   String getBlotoutBaseUrl();
 
   String getBlotoutAuthEndpoint();
+
+  String getKubeNamespace();
+
+  String getSubmitterNumThreads();
+
+  // Resources
+  String getCpuRequest();
+
+  String getCpuLimit();
+
+  String getMemoryRequest();
+
+  String getMemoryLimit();
+
+  // Logging
+  String getS3LogBucket();
+
+  String getS3LogBucketRegion();
+
+  String getAwsAccessKey();
+
+  String getAwsSecretAccessKey();
+
+  String getS3MinioEndpoint();
+
+  String getGcpStorageBucket();
+
+  String getGoogleApplicationCredentials();
 
   enum TrackingStrategy {
     SEGMENT,

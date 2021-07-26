@@ -130,8 +130,7 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
               Jsons.serialize(configuredCatalog), Jsons.serialize(recordMessage)));
     }
 
-    UUID id = UUID.randomUUID();
-    streamNameAndNamespaceToWriters.get(pair).write(id, recordMessage);
+    streamNameAndNamespaceToWriters.get(pair).write(UUID.randomUUID(), recordMessage);
   }
 
   @Override

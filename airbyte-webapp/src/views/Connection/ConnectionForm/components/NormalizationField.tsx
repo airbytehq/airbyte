@@ -22,12 +22,14 @@ const NormalizationField: React.FC<NormalizationBlockProps> = ({
     <Normalization>
       <LabeledRadioButton
         {...form.getFieldProps("normalization")}
+        id="normalization.raw"
         label={<FormattedMessage id="form.rawData" />}
         value={NormalizationType.RAW}
         checked={field.value === NormalizationType.RAW}
       />
       <LabeledRadioButton
         {...form.getFieldProps("normalization")}
+        id="normalization.basic"
         label={<FormattedMessage id="form.basicNormalization" />}
         value={NormalizationType.BASIC}
         checked={field.value === NormalizationType.BASIC}

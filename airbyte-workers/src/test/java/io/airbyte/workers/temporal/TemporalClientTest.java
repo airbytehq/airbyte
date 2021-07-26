@@ -40,10 +40,10 @@ import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSyncInput;
+import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.WorkerConstants;
 import io.temporal.client.WorkflowClient;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -82,7 +82,7 @@ class TemporalClientTest {
   @BeforeEach
   void setup() throws IOException {
     final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_client_test");
-    logPath = workspaceRoot.resolve(String.valueOf(JOB_ID)).resolve(String.valueOf(ATTEMPT_ID)).resolve(WorkerConstants.LOG_FILENAME);
+    logPath = workspaceRoot.resolve(String.valueOf(JOB_ID)).resolve(String.valueOf(ATTEMPT_ID)).resolve(LogClientSingleton.LOG_FILENAME);
     workflowClient = mock(WorkflowClient.class);
     temporalClient = new TemporalClient(workflowClient, workspaceRoot);
   }

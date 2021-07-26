@@ -1,3 +1,4 @@
+import * as Fullstory from "@fullstory/browser";
 import { SegmentAnalytics } from "core/analytics/types";
 
 declare global {
@@ -5,6 +6,7 @@ declare global {
     TRACKING_STRATEGY?: string;
     PAPERCUPS_STORYTIME?: string;
     FULLSTORY?: string;
+    OPENREPLAY?: string;
     AIRBYTE_VERSION?: string;
     API_URL?: string;
     IS_DEMO?: string;
@@ -15,6 +17,7 @@ declare global {
 type Config = {
   ui: {
     helpLink: string;
+    updateLink: string;
     slackLink: string;
     docsLink: string;
     configurationArchiveLink: string;
@@ -30,27 +33,28 @@ type Config = {
     baseUrl: string;
     enableStorytime: boolean;
   };
-  fullstory: {
-    org: string;
+  openreplay: {
+    projectKey: string;
   };
+  fullstory: Fullstory.SnippetOptions;
   apiUrl: string;
   healthCheckInterval: number;
   isDemo: boolean;
   version?: string;
 };
 
+const BASE_DOCS_LINK = "https://docs.airbyte.io";
+
 const config: Config = {
   ui: {
-    technicalSupport: "https://docs.airbyte.io/troubleshooting/on-deploying",
+    technicalSupport: `${BASE_DOCS_LINK}/troubleshooting/on-deploying`,
     helpLink: "https://airbyte.io/community",
+    updateLink: `${BASE_DOCS_LINK}/upgrading-airbyte`,
     slackLink: "https://slack.airbyte.io",
-    docsLink: "https://docs.airbyte.io",
-    configurationArchiveLink:
-      "https://docs.airbyte.io/tutorials/upgrading-airbyte",
-    normalizationLink:
-      "https://docs.airbyte.io/understanding-airbyte/namespaces.md",
-    namespaceLink:
-      "https://docs.airbyte.io/understanding-airbyte/connections#airbyte-basic-normalization",
+    docsLink: BASE_DOCS_LINK,
+    configurationArchiveLink: `${BASE_DOCS_LINK}/tutorials/upgrading-airbyte`,
+    normalizationLink: `${BASE_DOCS_LINK}/understanding-airbyte/connections#airbyte-basic-normalization`,
+    namespaceLink: `${BASE_DOCS_LINK}/understanding-airbyte/namespaces`,
     tutorialLink:
       "https://www.youtube.com/watch?v=Rcpt5SVsMpk&feature=emb_logo",
     workspaceId: "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6",
@@ -67,8 +71,12 @@ const config: Config = {
     baseUrl: "https://app.papercups.io",
     enableStorytime: window.PAPERCUPS_STORYTIME !== "disabled",
   },
+  openreplay: {
+    projectKey: window.OPENREPLAY !== "disabled" ? "6611843272536134" : "",
+  },
   fullstory: {
-    org: window.FULLSTORY === "disabled" ? "" : "13AXQ4",
+    orgId: "13AXQ4",
+    devMode: window.FULLSTORY === "disabled",
   },
   version: window.AIRBYTE_VERSION,
   apiUrl:

@@ -21,6 +21,7 @@ __pycache__
 .venv
 .mypy_cache
 .ipynb_checkpoints
+.pytest_
 
 # dbt
 profiles.yml
@@ -31,3 +32,7 @@ crash.log
 *.tfstate
 *.tfstate.backup
 *.lock.hcl
+
+# Airflow Demo
+resources/examples/airflow/logs/*
+!resources/examples/airflow/logs/.gitkeep

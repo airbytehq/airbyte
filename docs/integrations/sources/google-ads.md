@@ -12,16 +12,19 @@ This source can sync data for the [Google Ads](https://developers.google.com/goo
 
 This source is capable of syncing the following streams:
 
+* [accounts](https://developers.google.com/google-ads/api/fields/v8/customer)
 * [ad_group_ad_report](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad)
-
+* [ad_group_ads](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad)
+* [ad_groups](https://developers.google.com/google-ads/api/fields/v8/ad_group)
+* [campaigns](https://developers.google.com/google-ads/api/fields/v8/campaign)
 
 ### Features
 
 | Feature | Supported? |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
-| Incremental Sync | Coming soon |
-| Replicate Incremental Deletes | Coming soon |
+| Incremental Sync | Yes |
+| Replicate Incremental Deletes | No |
 | SSL connection | Yes |
 | Namespaces | No |
 
@@ -72,3 +75,10 @@ If for any reason the request gets denied, let us know and we will be able to un
 
 The Google Ads Query Language can query the Google Ads API. Check out [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview)
 
+## CHANGELOG
+
+| Version | Date | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| `0.1.3` | 2021-07-23 | [#4788](https://github.com/airbytehq/airbyte/pull/4788) | Support main streams, fix bug with exception `DATE_RANGE_TOO_NARROW` for incremental streams |
+| `0.1.2` | 2021-07-06 | [#4539](https://github.com/airbytehq/airbyte/pull/4539) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
+| `0.1.1` | 2021-06-23 | [#4288](https://github.com/airbytehq/airbyte/pull/4288) | `Bugfix: Correctly declare required parameters ` |

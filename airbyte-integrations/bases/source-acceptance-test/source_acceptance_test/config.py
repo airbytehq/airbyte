@@ -25,7 +25,7 @@
 
 from enum import Enum
 from pathlib import Path
-from typing import List, Mapping, Optional
+from typing import List, Mapping, Optional, Set
 
 from pydantic import BaseModel, Field, validator
 
@@ -35,6 +35,7 @@ spec_path: str = Field(
     default="secrets/spec.json", description="Path to a JSON object representing the spec expected to be output by this connector"
 )
 configured_catalog_path: str = Field(default="integration_tests/configured_catalog.json", description="Path to configured catalog")
+timeout_seconds: int = Field(default=None, description="Test execution timeout_seconds", ge=0)
 
 
 class BaseConfig(BaseModel):
@@ -44,6 +45,8 @@ class BaseConfig(BaseModel):
 
 class SpecTestConfig(BaseConfig):
     spec_path: str = spec_path
+    config_path: str = config_path
+    timeout_seconds: int = timeout_seconds
 
 
 class ConnectionTestConfig(BaseConfig):
@@ -54,10 +57,12 @@ class ConnectionTestConfig(BaseConfig):
 
     config_path: str = config_path
     status: Status = Field(Status.Succeed, description="Indicate if connection check should succeed with provided config")
+    timeout_seconds: int = timeout_seconds
 
 
 class DiscoveryTestConfig(BaseConfig):
     config_path: str = config_path
+    timeout_seconds: int = timeout_seconds
 
 
 class ExpectedRecordsConfig(BaseModel):
@@ -75,7 +80,7 @@ class ExpectedRecordsConfig(BaseModel):
     def validate_exact_order(cls, exact_order, values):
         if "extra_fields" in values:
             if values["extra_fields"] and not exact_order:
-                raise ValueError("exact_order must by on if extra_fields enabled")
+                raise ValueError("exact_order must be on if extra_fields enabled")
         return exact_order
 
     @validator("extra_records", always=True)
@@ -89,13 +94,16 @@ class ExpectedRecordsConfig(BaseModel):
 class BasicReadTestConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: Optional[str] = configured_catalog_path
-    validate_output_from_all_streams: bool = Field(False, description="Verify that all streams have records")
+    empty_streams: Set[str] = Field(default_factory=set, description="We validate that all streams has records. These are exceptions")
     expect_records: Optional[ExpectedRecordsConfig] = Field(description="Expected records from the read")
+    validate_schema: bool = Field(True, description="Ensure that records match the schema of the corresponding stream")
+    timeout_seconds: int = timeout_seconds
 
 
 class FullRefreshConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: str = configured_catalog_path
+    timeout_seconds: int = timeout_seconds
 
 
 class IncrementalConfig(BaseConfig):
@@ -105,6 +113,7 @@ class IncrementalConfig(BaseConfig):
         description="For each stream, the path of its cursor field in the output state messages."
     )
     future_state_path: Optional[str] = Field(description="Path to a state file with values in far future")
+    timeout_seconds: int = timeout_seconds
 
 
 class TestConfig(BaseConfig):

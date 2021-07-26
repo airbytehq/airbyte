@@ -14,4 +14,6 @@ build:
 	unzip -d /opt/gradle /tmp/gradle-*.zip
 	export GRADLE_HOME=/opt/gradle/gradle-6.7.1
 	export PATH=${GRADLE_HOME}/bin:${PATH}
+	#CORE_ONLY=1 ./gradlew build
 	SUB_BUILD=PLATFORM ./gradlew build
+

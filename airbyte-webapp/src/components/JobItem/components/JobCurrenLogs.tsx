@@ -63,11 +63,7 @@ const JobCurrentLogs: React.FC<IProps> = ({
           fileName={`logs-${id}-${attemptId}`}
         />
       </CenteredDetails>
-      <Logs>
-        {logsText?.logLines.map((item, key) => (
-          <div key={`log-${id}-${key}`}>{item}</div>
-        ))}
-      </Logs>
+      <Logs logsArray={logsText?.logLines} />
     </>
   );
 };

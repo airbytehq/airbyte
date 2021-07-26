@@ -24,6 +24,7 @@ Verify that a spec operation issued to the connector returns a valid spec.
 | Input |  Type| Default | Note |
 |--|--|--|--|
 | `spec_path` | string | `secrets/spec.json` |Path to a JSON object representing the spec expected to be output by this connector |
+| `timeout_seconds` | int | 10 |Test execution timeout in seconds|
 
 ## Test Connection
 Verify that a check operation issued to the connector with the input config file returns a successful response.
@@ -31,6 +32,7 @@ Verify that a check operation issued to the connector with the input config file
 |--|--|--|--|
 | `config_path` | string | `secrets/config.json` |Path to a JSON object representing a valid connector configuration|
 | `status` | `succeed` `failed` `exception`| |Indicate if connection check should succeed with provided config|
+| `timeout_seconds` | int | 30 |Test execution timeout in seconds|
 
 ## Test Discovery
 
@@ -39,15 +41,19 @@ Verifies when a discover operation is run on the connector using the given confi
 |--|--|--|--|
 | `config_path` | string | `secrets/config.json` |Path to a JSON object representing a valid connector configuration|
 | `configured_catalog_path` | string| `integration_tests/configured_catalog.json` |Path to configured catalog|
+| `timeout_seconds` | int | 30 |Test execution timeout in seconds|
 
 ## Test Basic Read
 
 Configuring all streams in the input catalog to full refresh mode verifies that a read operation produces some RECORD messages.
+Each stream should have some data, if you can't guarantee this for particular streams - add them to the `empty_streams` list.
 | Input |  Type| Default | Note |
 |--|--|--|--|
 | `config_path` | string | `secrets/config.json` |Path to a JSON object representing a valid connector configuration|
 | `configured_catalog_path` | string| `integration_tests/configured_catalog.json` |Path to configured catalog|
-| `validate_output_from_all_streams` | boolean | False | Verify that **all** streams have records|
+| `empty_streams` | array | [] |List of streams that might be empty|
+| `validate_schema` | boolean | True |Verify that structure and types of records matches the schema from discovery command|
+| `timeout_seconds` | int | 5*60 |Test execution timeout in seconds|
 | `expect_records` | object |None| Compare produced records with expected records, see details below|
 | `expect_records.path` | string | | File with expected records|
 | `expect_records.extra_fields` | boolean | False | Allow output records to have other fields i.e: expected records are a subset |
@@ -63,6 +69,18 @@ Configuring all streams in the input catalog to full refresh mode verifies that 
 |||x|
 ||||
 
+### Example of `expected_records.txt`:
+In general, the expected_records.json should contain the subset of output of the records of particular stream you need to test.
+The required fields are: `stream, data, emitted_at`
+
+```JSON
+{"stream": "my_stream", "data": {"field_1": "value0", "field_2": "value0", "field_3": null, "field_4": {"is_true": true}, "field_5": 123}, "emitted_at": 1626172757000}
+{"stream": "my_stream", "data": {"field_1": "value1", "field_2": "value1", "field_3": null, "field_4": {"is_true": false}, "field_5": 456}, "emitted_at": 1626172757000}
+{"stream": "my_stream", "data": {"field_1": "value2", "field_2": "value2", "field_3": null, "field_4": {"is_true": true}, "field_5": 678}, "emitted_at": 1626172757000}
+{"stream": "my_stream", "data": {"field_1": "value3", "field_2": "value3", "field_3": null, "field_4": {"is_true": false}, "field_5": 91011}, "emitted_at": 1626172757000}
+
+```
+
 ## Test Full Refresh sync
 ### TestSequentialReads
 
@@ -71,6 +89,7 @@ This test performs two read operations on all streams which support full refresh
 |--|--|--|--|
 | `config_path` | string | `secrets/config.json` |Path to a JSON object representing a valid connector configuration|
 | `configured_catalog_path` | string | `integration_tests/configured_catalog.json` |Path to configured catalog|
+| `timeout_seconds` | int | 20*60 |Test execution timeout in seconds|
 
 ## Test Incremental sync
 ### TestTwoSequentialReads
@@ -79,7 +98,8 @@ This test verifies that all streams in the input catalog which support increment
 |--|--|--|--|
 | `config_path` | string | `secrets/config.json` |Path to a JSON object representing a valid connector configuration|
 | `configured_catalog_path` | string | `integration_tests/configured_catalog.json` |Path to configured catalog|
-| `cursor_paths` | dict | {} | For each stream, the path of its cursor field in the output state messages. If omitted the test will be skipped|
+| `cursor_paths` | dict | {} | For each stream, the path of its cursor field in the output state messages. If omitted the path will be taken from the last piece of path from stream cursor_field.|
+| `timeout_seconds` | int | 20*60 |Test execution timeout in seconds|
 
 ### TestStateWithAbnormallyLargeValues
 
@@ -88,4 +108,5 @@ This test verifies that sync produces no records when run with the STATE with ab
 |--|--|--|--|
 | `config_path` | string | `secrets/config.json` |Path to a JSON object representing a valid connector configuration|
 | `configured_catalog_path` | string | `integration_tests/configured_catalog.json` |Path to configured catalog|
-| `state_path` | string | None |Path to the state file with abnormaly large cursor values|
+| `future_state_path` | string | None |Path to the state file with abnormally large cursor values|
+| `timeout_seconds` | int | 20*60 |Test execution timeout in seconds|

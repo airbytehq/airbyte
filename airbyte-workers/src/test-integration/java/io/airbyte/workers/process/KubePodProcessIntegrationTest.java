@@ -31,8 +31,11 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.WorkerUtils;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.util.Config;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.ServerSocket;
@@ -43,8 +46,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
+import org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,11 +56,10 @@ public class KubePodProcessIntegrationTest {
 
   private static final boolean IS_MINIKUBE = Boolean.parseBoolean(Optional.ofNullable(System.getenv("IS_MINIKUBE")).orElse("false"));
   private List<Integer> openPorts;
-  private List<Integer> openWorkerPorts;
   private int heartbeatPort;
   private String heartbeatUrl;
-  private KubernetesClient kubeClient;
-  private BlockingQueue<Integer> workerPorts;
+  private ApiClient officialClient;
+  private KubernetesClient fabricClient;
   private KubeProcessFactory processFactory;
 
   private static WorkerHeartbeatServer server;
@@ -66,13 +67,14 @@ public class KubePodProcessIntegrationTest {
   @BeforeEach
   public void setup() throws Exception {
     openPorts = new ArrayList<>(getOpenPorts(5));
-    openWorkerPorts = openPorts.subList(1, openPorts.size() - 1);
+    KubePortManagerSingleton.setWorkerPorts(new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
+
     heartbeatPort = openPorts.get(0);
     heartbeatUrl = getHost() + ":" + heartbeatPort;
 
-    kubeClient = new DefaultKubernetesClient();
-    workerPorts = new LinkedBlockingDeque<>(openWorkerPorts);
-    processFactory = new KubeProcessFactory("default", kubeClient, heartbeatUrl, workerPorts);
+    officialClient = Config.defaultClient();
+    fabricClient = new DefaultKubernetesClient();
+    processFactory = new KubeProcessFactory("default", officialClient, fabricClient, heartbeatUrl);
 
     server = new WorkerHeartbeatServer(heartbeatPort);
     server.startBackground();
@@ -86,50 +88,59 @@ public class KubePodProcessIntegrationTest {
   @Test
   public void testSuccessfulSpawning() throws Exception {
     // start a finite process
+    var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
     final Process process = getProcess("echo hi; sleep 1; echo hi2");
     process.waitFor();
 
     // the pod should be dead and in a good state
     assertFalse(process.isAlive());
+    assertEquals(availablePortsBefore, KubePortManagerSingleton.getNumAvailablePorts());
     assertEquals(0, process.exitValue());
   }
 
   @Test
   public void testPipeInEntrypoint() throws Exception {
     // start a process that has a pipe in the entrypoint
+    var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
     final Process process = getProcess("echo hi | cat");
     process.waitFor();
 
     // the pod should be dead and in a good state
     assertFalse(process.isAlive());
+    assertEquals(availablePortsBefore, KubePortManagerSingleton.getNumAvailablePorts());
     assertEquals(0, process.exitValue());
   }
 
   @Test
   public void testExitCodeRetrieval() throws Exception {
     // start a process that requests
+    var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
     final Process process = getProcess("exit 10");
     process.waitFor();
 
     // the pod should be dead with the correct error code
     assertFalse(process.isAlive());
+    assertEquals(availablePortsBefore, KubePortManagerSingleton.getNumAvailablePorts());
     assertEquals(10, process.exitValue());
   }
 
   @Test
   public void testMissingEntrypoint() throws WorkerException, InterruptedException {
     // start a process with an entrypoint that doesn't exist
+    var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
     final Process process = getProcess("ksaiiiasdfjklaslkei");
     process.waitFor();
 
     // the pod should be dead and in an error state
     assertFalse(process.isAlive());
+    assertEquals(availablePortsBefore, KubePortManagerSingleton.getNumAvailablePorts());
     assertEquals(127, process.exitValue());
   }
 
   @Test
   public void testKillingWithoutHeartbeat() throws Exception {
     // start an infinite process
+    var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
     final Process process = getProcess("while true; do echo hi; sleep 1; done");
 
     // kill the heartbeat server
@@ -140,18 +151,35 @@ public class KubePodProcessIntegrationTest {
 
     // the pod should be dead and in an error state
     assertFalse(process.isAlive());
+    assertEquals(availablePortsBefore, KubePortManagerSingleton.getNumAvailablePorts());
     assertNotEquals(0, process.exitValue());
   }
 
+  private static String getRandomFile(int lines) {
+    var sb = new StringBuilder();
+    for (int i = 0; i < lines; i++) {
+      sb.append(RandomStringUtils.randomAlphabetic(100));
+      sb.append("\n");
+    }
+    return sb.toString();
+  }
+
   private Process getProcess(String entrypoint) throws WorkerException {
+    // these files aren't used for anything, it's just to check for exceptions when uploading
+    var files = ImmutableMap.of(
+        "file0", "fixed str",
+        "file1", getRandomFile(1),
+        "file2", getRandomFile(100),
+        "file3", getRandomFile(1000));
+
     return processFactory.create(
         "some-id",
         0,
         Path.of("/tmp/job-root"),
         "busybox:latest",
         false,
-        ImmutableMap.of(),
-        entrypoint);
+        files,
+        entrypoint, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
   }
 
   private static Set<Integer> getOpenPorts(int count) {

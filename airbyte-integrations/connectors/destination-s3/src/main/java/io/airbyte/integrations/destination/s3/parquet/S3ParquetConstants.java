@@ -36,8 +36,4 @@ public class S3ParquetConstants {
   public static final int DEFAULT_DICTIONARY_PAGE_SIZE_KB = 1024;
   public static final boolean DEFAULT_DICTIONARY_ENCODING = true;
 
-  // Field name with special character
-  public static final String DOC_KEY_VALUE_DELIMITER = ":";
-  public static final String DOC_KEY_ORIGINAL_NAME = "_airbyte_original_name";
-
 }

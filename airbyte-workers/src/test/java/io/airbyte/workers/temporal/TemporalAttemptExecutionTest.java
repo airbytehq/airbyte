@@ -40,7 +40,7 @@ import io.temporal.internal.common.CheckedExceptionWrapper;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.stubbing.Answer;
@@ -54,7 +54,7 @@ class TemporalAttemptExecutionTest {
   private Path jobRoot;
 
   private CheckedSupplier<Worker<String, String>, Exception> execution;
-  private BiConsumer<Path, String> mdcSetter;
+  private Consumer<Path> mdcSetter;
 
   private TemporalAttemptExecution<String, String> attemptExecution;
 
@@ -65,7 +65,7 @@ class TemporalAttemptExecutionTest {
     jobRoot = workspaceRoot.resolve(JOB_ID).resolve(String.valueOf(ATTEMPT_ID));
 
     execution = mock(CheckedSupplier.class);
-    mdcSetter = mock(BiConsumer.class);
+    mdcSetter = mock(Consumer.class);
     final CheckedConsumer<Path, IOException> jobRootDirCreator = Files::createDirectories;
 
     attemptExecution = new TemporalAttemptExecution<>(
@@ -91,7 +91,7 @@ class TemporalAttemptExecutionTest {
     assertEquals(expected, actual);
 
     verify(execution).get();
-    verify(mdcSetter, atLeast(2)).accept(jobRoot, JOB_ID);
+    verify(mdcSetter, atLeast(2)).accept(jobRoot);
   }
 
   @Test
@@ -102,7 +102,7 @@ class TemporalAttemptExecutionTest {
     assertEquals(IOException.class, CheckedExceptionWrapper.unwrap(actualException).getClass());
 
     verify(execution).get();
-    verify(mdcSetter).accept(jobRoot, JOB_ID);
+    verify(mdcSetter).accept(jobRoot);
   }
 
   @Test
@@ -112,7 +112,7 @@ class TemporalAttemptExecutionTest {
     assertThrows(IllegalArgumentException.class, () -> attemptExecution.get());
 
     verify(execution).get();
-    verify(mdcSetter).accept(jobRoot, JOB_ID);
+    verify(mdcSetter).accept(jobRoot);
   }
 
 }

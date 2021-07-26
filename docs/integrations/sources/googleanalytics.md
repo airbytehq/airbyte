@@ -27,8 +27,8 @@ Please reach out to us on Slack or [create an issue](https://github.com/airbyteh
 | Feature | Supported? |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
-| Incremental Sync | Coming soon |
-| Replicate Incremental Deletes | Coming soon |
+| Incremental Sync | Yes |
+| Replicate Incremental Deletes | No |
 | SSL connection | Yes |
 | Namespaces | No |
 
@@ -122,3 +122,18 @@ A custom report can contain no more than 10 unique metrics. The default availabl
 * Number of requests per 100 seconds per project: 2,000
 * Number of requests per 100 seconds per user per project: 100 \(can be increased in Google API Console to 1,000\).
 
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.2.5   | 2021-06-15 | [3648](https://github.com/airbytehq/airbyte/pull/3648) | Add filter to removed unused catalog |
+| 0.2.4   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
+| 0.2.3   | 2021-04-03 | [2726](https://github.com/airbytehq/airbyte/pull/2726) | Fix base connector versioning |
+| 0.2.2   | 2021-03-11 | [2302](https://github.com/airbytehq/airbyte/pull/2302) | Support incremental sync |
+| 0.2.0   | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238) | Protocol allows future/unknown properties |
+| 0.1.9   | 2021-03-03 | [2151](https://github.com/airbytehq/airbyte/pull/2151) | Support chunked syncs to avoid sampling |
+| 0.1.8   | 2021-02-18 | [2098](https://github.com/airbytehq/airbyte/pull/2098) | Implement `custom_reports` parameter |
+| 0.1.7   | 2021-02-15 | [2053](https://github.com/airbytehq/airbyte/pull/2053) | Update SingerHelper read method |
+| 0.1.6   | 2021-02-12 | [2056](https://github.com/airbytehq/airbyte/pull/2056) | Update requires fields in specification |
+| 0.1.5   | 2020-12-16 | [1331](https://github.com/airbytehq/airbyte/pull/1331) | Refactor Python base connector |
+| 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file |
