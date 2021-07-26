@@ -62,7 +62,7 @@
               "type": ["null", "object"],
               "properties": {
                 "end": {
-                  "type": ["null", "string"],
+                  "type": ["null", "number"],
                   "format": "date-time"
                 },
                 "coupon": {
