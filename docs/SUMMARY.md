@@ -81,6 +81,7 @@
     * [Recharge](integrations/sources/recharge.md)
     * [Recurly](integrations/sources/recurly.md)
     * [Redshift](integrations/sources/redshift.md)
+    * [S3](integrations/sources/s3.md)
     * [Salesforce](integrations/sources/salesforce.md)
     * [Sendgrid](integrations/sources/sendgrid.md)
     * [Shopify](integrations/sources/shopify.md)

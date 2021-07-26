@@ -99,6 +99,8 @@
 
  Redshift   [![source-redshift](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-redshift%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-redshift) 
 
+ S3   [![source-s3](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-s3%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-s3)
+
  Salesforce   [![source-salesforce-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-salesforce-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-salesforce-singer) 
 
  Sendgrid   [![source-sendgrid](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-sendgrid%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-sendgrid) 

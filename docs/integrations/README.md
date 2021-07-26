@@ -65,6 +65,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Recharge](./sources/recharge.md)| Beta |
 |[Recurly](./sources/recurly.md)| Beta |
 |[Redshift](./sources/redshift.md)| Certified |
+|[S3](./sources/s3.md)| Alpha |
 |[Salesforce](./sources/salesforce.md)| Certified |
 |[Sendgrid](./sources/sendgrid.md)| Certified |
 |[Shopify](./sources/shopify.md)| Certified |
