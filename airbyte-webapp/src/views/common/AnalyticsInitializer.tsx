@@ -6,7 +6,7 @@ import useFullStory from "components/hooks/useFullStory";
 import AnalyticsServiceProvider, {
   useAnalytics,
 } from "components/hooks/useAnalytics";
-import useOpenReplay from "components/hooks/useOpenReplay";
+import useTracker from "components/hooks/useOpenReplay";
 import { useCurrentWorkspace } from "components/hooks/services/useWorkspace";
 
 function WithAnalytics({
@@ -21,9 +21,9 @@ function WithAnalytics({
     analyticsService.identify(customerId);
   }, [analyticsService, customerId]);
 
-  const tracker = useOpenReplay(config.openreplay.projectKey);
+  const tracker = useTracker(config.openreplay);
   useEffect(() => {
-    tracker.setUserID(customerId);
+    tracker.userID(customerId);
   }, [tracker, customerId]);
 
   const initializedFullstory = useFullStory(config.fullstory);

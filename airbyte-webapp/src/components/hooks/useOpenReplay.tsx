@@ -1,20 +1,18 @@
 import { useMemo } from "react";
-import OpenReplay from "@openreplay/tracker";
+import Tracker, { Options } from "@asayerio/tracker";
 
-let tracker: OpenReplay | null = null;
+let tracker: Tracker | null = null;
 
-const useOpenReplay = (projectKey: string): OpenReplay => {
+const useTracker = (options: Options): Tracker => {
   return useMemo(() => {
     if (!tracker) {
-      tracker = new OpenReplay({
-        projectKey,
-      });
+      tracker = new Tracker(options);
 
       tracker.start();
     }
 
     return tracker;
-  }, [projectKey]);
+  }, [options]);
 };
 
-export default useOpenReplay;
+export default useTracker;

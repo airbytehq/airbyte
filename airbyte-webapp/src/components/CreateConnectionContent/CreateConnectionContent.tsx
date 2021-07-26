@@ -5,11 +5,11 @@ import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useResource } from "rest-hooks";
 
+import { Button } from "components";
 import LoadingSchema from "components/LoadingSchema";
 import ContentCard from "components/ContentCard";
 import { JobsLogItem } from "components/JobItem";
 import ConnectionForm from "views/Connection/ConnectionForm";
-import { Button } from "components";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 import { Source } from "core/resources/Source";
 import { Destination } from "core/resources/Destination";
@@ -20,7 +20,7 @@ import useConnection, {
 import { useDiscoverSchema } from "components/hooks/services/useSchemaHook";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
-import { IDataItem } from "../base/DropDown/components/Option";
+import { IDataItem } from "components/base/DropDown/components/Option";
 import { useAnalytics } from "components/hooks/useAnalytics";
 
 const SkipButton = styled.div`

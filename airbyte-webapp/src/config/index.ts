@@ -1,5 +1,6 @@
 import * as Fullstory from "@fullstory/browser";
 import { SegmentAnalytics } from "core/analytics/types";
+import { Options } from "@asayerio/tracker";
 
 declare global {
   interface Window {
@@ -13,6 +14,30 @@ declare global {
     analytics: SegmentAnalytics;
   }
 }
+
+const Version = window.AIRBYTE_VERSION;
+
+const OpenReplayConfig: Options = {
+  projectID: window.OPENREPLAY !== "disabled" ? 6611843272536134 : -1,
+  obscureTextEmails: false,
+  obscureInputEmails: false,
+  revID: Version,
+};
+
+const PaperCupsConfig: {
+  accountId: string;
+  baseUrl: string;
+  enableStorytime: boolean;
+} = {
+  accountId: "74560291-451e-4ceb-a802-56706ece528b",
+  baseUrl: "https://app.papercups.io",
+  enableStorytime: window.PAPERCUPS_STORYTIME !== "disabled",
+};
+
+const FullStoryConfig: Fullstory.SnippetOptions = {
+  orgId: "13AXQ4",
+  devMode: window.FULLSTORY === "disabled",
+};
 
 type Config = {
   ui: {
@@ -32,9 +57,7 @@ type Config = {
     baseUrl: string;
     enableStorytime: boolean;
   };
-  openreplay: {
-    projectKey: string;
-  };
+  openreplay: Options;
   fullstory: Fullstory.SnippetOptions;
   apiUrl: string;
   healthCheckInterval: number;
@@ -64,19 +87,10 @@ const config: Config = {
           "6cxNSmQyGSKcATLdJ2pL6WsawkzEMDAN"
         : "",
   },
-  papercups: {
-    accountId: "74560291-451e-4ceb-a802-56706ece528b",
-    baseUrl: "https://app.papercups.io",
-    enableStorytime: window.PAPERCUPS_STORYTIME !== "disabled",
-  },
-  openreplay: {
-    projectKey: window.OPENREPLAY !== "disabled" ? "6611843272536134" : "",
-  },
-  fullstory: {
-    orgId: "13AXQ4",
-    devMode: window.FULLSTORY === "disabled",
-  },
-  version: window.AIRBYTE_VERSION,
+  papercups: PaperCupsConfig,
+  openreplay: OpenReplayConfig,
+  fullstory: FullStoryConfig,
+  version: Version,
   apiUrl:
     window.API_URL ||
     process.env.REACT_APP_API_URL ||
