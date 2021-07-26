@@ -1,7 +1,7 @@
 FROM golang:1.14
 
 ENV GO111MODULE=on
-RUN go get -u github.com/danielgtaylor/restish@4aa30c3f866cf4a551c64ea3d4c6eefea72cf2bc
+RUN go get -u github.com/danielgtaylor/restish@47de8a55eae6c0ab38e35119bef52ccf2837e3b3
 
 ENTRYPOINT ["restish"]
 
