@@ -25,12 +25,24 @@
 
 from setuptools import find_packages, setup
 
+MAIN_REQUIREMENTS = [
+    "tap-quickbooks==1.0.4",
+    "airbyte-cdk",
+]
+
+TEST_REQUIREMENTS = [
+    "pytest~=6.1",
+]
+
 setup(
     name="source_quickbooks_singer",
     description="Source implementation for Quickbooks, built on the Singer tap implementation.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["tap-quickbooks==1.0.4", "airbyte-protocol", "base-singer", "base-python", "pytest==6.1.2"],
+    install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json"]},
+    extras_require={
+        "tests": TEST_REQUIREMENTS,
+    },
 )

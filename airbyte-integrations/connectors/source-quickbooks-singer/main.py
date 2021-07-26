@@ -25,7 +25,7 @@
 
 import sys
 
-from base_python.entrypoint import launch
+from airbyte_cdk.entrypoint import launch
 from source_quickbooks_singer import SourceQuickbooksSinger
 
 if __name__ == "__main__":
