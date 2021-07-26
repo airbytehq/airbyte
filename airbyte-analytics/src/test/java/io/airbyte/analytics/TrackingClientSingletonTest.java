@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.analytics.Deployment.DeploymentMode;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.StandardWorkspace;
@@ -44,7 +45,7 @@ import org.junit.jupiter.api.Test;
 class TrackingClientSingletonTest {
 
   private static final String AIRBYTE_VERSION = "dev";
-
+  private static final Deployment DEPLOYMENT = new Deployment(DeploymentMode.OSS, UUID.randomUUID(), WorkerEnvironment.DOCKER);
   private ConfigRepository configRepository;
 
   @BeforeEach
@@ -59,7 +60,7 @@ class TrackingClientSingletonTest {
     assertTrue(
         TrackingClientSingleton.createTrackingClient(
             Configs.TrackingStrategy.LOGGING,
-            WorkerEnvironment.DOCKER,
+            DEPLOYMENT,
             "role",
             TrackingIdentity::empty) instanceof LoggingTrackingClient);
   }
@@ -69,7 +70,7 @@ class TrackingClientSingletonTest {
     assertTrue(
         TrackingClientSingleton.createTrackingClient(
             Configs.TrackingStrategy.SEGMENT,
-            WorkerEnvironment.DOCKER,
+            DEPLOYMENT,
             "role",
             TrackingIdentity::empty) instanceof SegmentTrackingClient);
   }

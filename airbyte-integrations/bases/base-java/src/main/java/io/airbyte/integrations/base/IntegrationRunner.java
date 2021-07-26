@@ -166,8 +166,7 @@ public class IntegrationRunner {
         if (singerMessageOptional.isPresent()) {
           consumer.accept(singerMessageOptional.get());
         } else {
-          // todo (cgardens) - decide if we want to throw here instead.
-          LOGGER.error(inputString);
+          LOGGER.error("Received invalid message: " + inputString);
         }
       }
     }
@@ -177,7 +176,7 @@ public class IntegrationRunner {
     final Set<String> validationResult = validator.validate(schemaJson, objectJson);
     if (!validationResult.isEmpty()) {
       throw new Exception(String.format("Verification error(s) occurred for %s. Errors: %s ",
-          operationType, validationResult.toString()));
+          operationType, validationResult));
     }
   }
 
