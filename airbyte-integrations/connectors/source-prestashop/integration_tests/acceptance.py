@@ -24,25 +24,13 @@
 
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
-import requests
-from requests.adapters import HTTPAdapter
-from urllib3 import Retry
 
 HERE = Path(__file__).parent.absolute()
 pytest_plugins = ("source_acceptance_test.plugin",)
-
-
-def is_webservice_ready(ip, port):
-    """Wait for the api from my_api_service to become responsive"""
-    request_session = requests.Session()
-    retries = Retry(total=5, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
-    request_session.mount("http://", HTTPAdapter(max_retries=retries))
-    request_session.get(f"http://{ip}:{port}/")
-
-    return True
 
 
 @pytest.fixture(name="create_config", scope="session")
@@ -61,6 +49,7 @@ def create_config_fixture():
 def connector_setup(create_config):
     """ This fixture is a placeholder for external resources that acceptance test might require."""
     filename = str(HERE / "docker-compose.yaml")
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "docker-compose"], stdout=subprocess.DEVNULL)
     subprocess.check_call(["docker-compose", "-f", filename, "up", "-d"])
     yield
     subprocess.check_call(["docker-compose", "-f", filename, "down", "-v"])
