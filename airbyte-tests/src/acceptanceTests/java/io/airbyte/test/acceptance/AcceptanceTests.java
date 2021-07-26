@@ -98,7 +98,6 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -144,9 +143,8 @@ public class AcceptanceTests {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AcceptanceTests.class);
 
-  @SuppressWarnings("UnstableApiUsage")
-  private static final URL DOCKER_COMPOSE_FILE_URL = Resources.getResource("docker-compose.yaml");
-  private static final File ENV_FILE = Path.of(System.getProperty("user.dir")).getParent().resolve(".env").toFile();
+  private static final String DOCKER_COMPOSE_FILE_NAME = "docker-compose.yaml";
+  private static final String ENV_FILE_NAME = ".env";
 
   private static final String SOURCE_E2E_TEST_CONNECTOR_VERSION = "0.1.0";
   private static final String DESTINATION_E2E_TEST_CONNECTOR_VERSION = "0.1.0";
@@ -176,6 +174,7 @@ public class AcceptanceTests {
   private List<UUID> destinationIds;
   private List<UUID> operationIds;
 
+  @SuppressWarnings("UnstableApiUsage")
   @BeforeAll
   public static void init() throws URISyntaxException, IOException, InterruptedException {
     sourcePsql = new PostgreSQLContainer("postgres:13-alpine")
@@ -186,8 +185,9 @@ public class AcceptanceTests {
     // by default use airbyte deployment governed by a test container.
     if (System.getenv("USE_EXTERNAL_DEPLOYMENT") == null || !System.getenv("USE_EXTERNAL_DEPLOYMENT").equalsIgnoreCase("true")) {
       LOGGER.info("Using deployment of airbyte managed by test containers.");
-      airbyteTestContainer = new AirbyteTestContainer.Builder(new File(DOCKER_COMPOSE_FILE_URL.toURI()))
-          .setEnv(ENV_FILE)
+      airbyteTestContainer = new AirbyteTestContainer.Builder(new File(Resources.getResource(DOCKER_COMPOSE_FILE_NAME).toURI()))
+          // assume env file is one directory level up from airbyte-tests.
+          .setEnv(Path.of(System.getProperty("user.dir")).getParent().resolve(ENV_FILE_NAME).toFile())
           // override env VERSION to use dev to test current build of airbyte.
           .setEnvVariable("VERSION", "dev")
           // override to use test mounts.
