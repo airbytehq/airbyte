@@ -82,6 +82,5 @@ All tests are located in the `unit_tests` directory. Run `pytest --cov=airbyte_c
 * Airbyte Java HTTP CDK
 * CDK for Async HTTP endpoints \(request-poll-wait style endpoints\)
 * CDK for other protocols
-* General CDK for Destinations
 * Don't see a feature you need? [Create an issue and let us know how we can help!](https://github.com/airbytehq/airbyte/tree/184dab77ebfbc00c69eea9e34b7db29c79a9e6d1/airbyte-cdk/python/github.com/airbytehq/airbyte/issues/new/choose/README.md)
 
