@@ -52,7 +52,7 @@ import org.testcontainers.containers.output.OutputFrame;
 
 /**
  * The goal of this class is to make it easy to run the Airbyte docker-compose configuration from
- * test containers. This helps me it easy to stop the test container without deleting the volumes
+ * test containers. This helps make it easy to stop the test container without deleting the volumes
  * { @link AirbyteTestContainer#stopRetainVolumes() }. It waits for Airbyte to be ready. It also
  * handles the nuances of configuring the Airbyte docker-compose configuration in test containers.
  */
