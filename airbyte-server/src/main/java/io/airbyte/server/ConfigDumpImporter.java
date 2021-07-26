@@ -44,7 +44,7 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.PersistenceConstants;
-import io.airbyte.scheduler.persistence.DatabaseSchema;
+import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -342,12 +342,12 @@ public class ConfigDumpImporter {
   // Postgres Portion
   public void importDatabaseFromArchive(final Path storageRoot, final String airbyteVersion) throws IOException {
     try {
-      final Map<DatabaseSchema, Stream<JsonNode>> data = new HashMap<>();
-      for (DatabaseSchema tableType : DatabaseSchema.values()) {
+      final Map<JobsDatabaseSchema, Stream<JsonNode>> data = new HashMap<>();
+      for (JobsDatabaseSchema tableType : JobsDatabaseSchema.values()) {
         final Path tablePath = buildTablePath(storageRoot, tableType.name());
         Stream<JsonNode> tableStream = readTableFromArchive(tableType, tablePath);
 
-        if (tableType == DatabaseSchema.AIRBYTE_METADATA) {
+        if (tableType == JobsDatabaseSchema.AIRBYTE_METADATA) {
           tableStream = replaceDeploymentMetadata(postgresPersistence, tableStream);
         }
 
@@ -377,7 +377,7 @@ public class ConfigDumpImporter {
       throws IOException {
     // filter out the deployment record from the import data, if it exists.
     Stream<JsonNode> stream = metadataTableStream
-        .filter(record -> record.get(DefaultJobPersistence.METADATA_KEY_COL).asText().equals(DatabaseSchema.AIRBYTE_METADATA.toString()));
+        .filter(record -> record.get(DefaultJobPersistence.METADATA_KEY_COL).asText().equals(JobsDatabaseSchema.AIRBYTE_METADATA.toString()));
 
     // insert the current deployment id, if it exists.
     final Optional<UUID> deploymentOptional = postgresPersistence.getDeployment();
@@ -397,10 +397,10 @@ public class ConfigDumpImporter {
         .resolve(String.format("%s.yaml", tableName.toUpperCase()));
   }
 
-  private Stream<JsonNode> readTableFromArchive(final DatabaseSchema tableSchema,
+  private Stream<JsonNode> readTableFromArchive(final JobsDatabaseSchema tableSchema,
                                                 final Path tablePath)
       throws FileNotFoundException {
-    final JsonNode schema = tableSchema.toJsonNode();
+    final JsonNode schema = tableSchema.getTableDefinition();
     if (schema != null) {
       return MoreStreams.toStream(Yamls.deserialize(IOs.readFile(tablePath)).elements())
           .peek(r -> {
