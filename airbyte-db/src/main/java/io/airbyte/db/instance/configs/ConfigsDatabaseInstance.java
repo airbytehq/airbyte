@@ -38,7 +38,7 @@ public class ConfigsDatabaseInstance extends BaseDatabaseInstance implements Dat
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigsDatabaseInstance.class);
 
-  private static final String DATABASE_NAME = "configs";
+  private static final String DATABASE_LOGGING_NAME = "airbyte configs";
   private static final String SCHEMA_PATH = "configs_database/schema.sql";
   private static final Function<Database, Boolean> IS_CONFIGS_DATABASE_READY = database -> {
     try {
@@ -51,7 +51,7 @@ public class ConfigsDatabaseInstance extends BaseDatabaseInstance implements Dat
 
   @VisibleForTesting
   public ConfigsDatabaseInstance(String username, String password, String connectionString, String schema) {
-    super(username, password, connectionString, schema, DATABASE_NAME, ConfigsDatabaseSchema.getTableNames(), IS_CONFIGS_DATABASE_READY);
+    super(username, password, connectionString, schema, DATABASE_LOGGING_NAME, ConfigsDatabaseSchema.getTableNames(), IS_CONFIGS_DATABASE_READY);
   }
 
   public ConfigsDatabaseInstance(String username, String password, String connectionString) throws IOException {

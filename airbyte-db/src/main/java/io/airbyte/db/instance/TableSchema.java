@@ -33,6 +33,9 @@ public interface TableSchema {
    */
   String getTableName();
 
+  /**
+   * @return the table definition in JsonSchema
+   */
   JsonNode getTableDefinition();
 
 }

@@ -51,6 +51,8 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
   /**
    * @param connectionString in the format of
    *        jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT/${DATABASE_DB}
+   * @param databaseName this name is only for logging purpose; it may not be the actual database name
+   *        in the server
    */
   protected BaseDatabaseInstance(String username,
                                  String password,

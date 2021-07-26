@@ -40,7 +40,7 @@ public class JobsDatabaseInstance extends BaseDatabaseInstance implements Databa
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JobsDatabaseInstance.class);
 
-  private static final String DATABASE_NAME = "jobs";
+  private static final String DATABASE_LOGGING_NAME = "airbyte jobs";
   private static final String SCHEMA_PATH = "jobs_database/schema.sql";
   private static final Function<Database, Boolean> IS_JOBS_DATABASE_READY = database -> {
     try {
@@ -54,7 +54,7 @@ public class JobsDatabaseInstance extends BaseDatabaseInstance implements Databa
 
   @VisibleForTesting
   public JobsDatabaseInstance(String username, String password, String connectionString, String schema) {
-    super(username, password, connectionString, schema, DATABASE_NAME, JobsDatabaseSchema.getTableNames(), IS_JOBS_DATABASE_READY);
+    super(username, password, connectionString, schema, DATABASE_LOGGING_NAME, JobsDatabaseSchema.getTableNames(), IS_JOBS_DATABASE_READY);
   }
 
   public JobsDatabaseInstance(String username, String password, String connectionString) throws IOException {
