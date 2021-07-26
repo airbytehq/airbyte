@@ -9,10 +9,6 @@ airbytePython {
     moduleDirectory 'source_dixa'
 }
 
-// TODO acceptance tests are disabled in CI pending a Dixa Sandbox: https://github.com/airbytehq/airbyte/issues/4667
-// no-op integration test task
-task("integrationTest")
-
 dependencies {
     implementation files(project(':airbyte-integrations:bases:source-acceptance-test').airbyteDocker.outputs)
     implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)

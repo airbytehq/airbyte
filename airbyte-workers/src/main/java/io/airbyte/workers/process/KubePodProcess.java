@@ -47,6 +47,7 @@ import io.kubernetes.client.openapi.ApiException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ProcessHandle.Info;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -62,7 +63,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 import org.apache.commons.io.output.NullOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -135,7 +135,6 @@ public class KubePodProcess extends Process {
   private Integer returnCode = null;
   private Long lastStatusCheck = null;
 
-  private final Consumer<Integer> portReleaser;
   private final ServerSocket stdoutServerSocket;
   private final int stdoutLocalPort;
   private final ServerSocket stderrServerSocket;
@@ -285,7 +284,6 @@ public class KubePodProcess extends Process {
 
   public KubePodProcess(ApiClient officialClient,
                         KubernetesClient fabricClient,
-                        Consumer<Integer> portReleaser,
                         String podName,
                         String namespace,
                         String image,
@@ -299,7 +297,6 @@ public class KubePodProcess extends Process {
                         final String... args)
       throws IOException, InterruptedException {
     this.fabricClient = fabricClient;
-    this.portReleaser = portReleaser;
     this.stdoutLocalPort = stdoutLocalPort;
     this.stderrLocalPort = stderrLocalPort;
 
@@ -489,15 +486,11 @@ public class KubePodProcess extends Process {
    */
   @Override
   public int waitFor() throws InterruptedException {
-    try {
-      Pod refreshedPod =
-          fabricClient.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName()).get();
-      fabricClient.resource(refreshedPod).waitUntilCondition(this::isTerminal, 10, TimeUnit.DAYS);
-      wasKilled.set(true);
-      return exitValue();
-    } finally {
-      close();
-    }
+    Pod refreshedPod =
+        fabricClient.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName()).get();
+    fabricClient.resource(refreshedPod).waitUntilCondition(this::isTerminal, 10, TimeUnit.DAYS);
+    wasKilled.set(true);
+    return exitValue();
   }
 
   /**
@@ -506,11 +499,7 @@ public class KubePodProcess extends Process {
    */
   @Override
   public boolean waitFor(long timeout, TimeUnit unit) throws InterruptedException {
-    try {
-      return super.waitFor(timeout, unit);
-    } finally {
-      close();
-    }
+    return super.waitFor(timeout, unit);
   }
 
   /**
@@ -528,18 +517,48 @@ public class KubePodProcess extends Process {
     }
   }
 
+  @Override
+  public Info info() {
+    return new KubePodProcessInfo(podDefinition.getMetadata().getName());
+  }
+
   /**
    * Close all open resource in the opposite order of resource creation.
+   *
+   * Null checks exist because certain local Kube clusters (e.g. Docker for Desktop) back this
+   * implementation with OS processes and resources, which are automatically reaped by the OS.
    */
   private void close() {
-    Exceptions.swallow(this.stdin::close);
-    Exceptions.swallow(this.stdout::close);
-    Exceptions.swallow(this.stderr::close);
+    if (this.stdin != null) {
+      Exceptions.swallow(this.stdin::close);
+    }
+    if (this.stdout != null) {
+      Exceptions.swallow(this.stdout::close);
+    }
+    if (this.stderr != null) {
+      Exceptions.swallow(this.stderr::close);
+    }
     Exceptions.swallow(this.stdoutServerSocket::close);
     Exceptions.swallow(this.stderrServerSocket::close);
     Exceptions.swallow(this.executorService::shutdownNow);
-    Exceptions.swallow(() -> portReleaser.accept(stdoutLocalPort));
-    Exceptions.swallow(() -> portReleaser.accept(stderrLocalPort));
+
+    var stdoutPortReleased = KubePortManagerSingleton.offer(stdoutLocalPort);
+    if (!stdoutPortReleased) {
+      LOGGER.warn(
+          "Error while releasing port {} from pod {}. This can cause the scheduler to run out of ports. Ignore this error if running Kubernetes on docker for desktop.",
+          stdoutLocalPort,
+          podDefinition.getMetadata().getName());
+    }
+
+    var stderrPortReleased = KubePortManagerSingleton.offer(stderrLocalPort);
+    if (!stderrPortReleased) {
+      LOGGER.warn(
+          "Error while releasing port {} from pod {}. This can cause the scheduler to run out of ports. Ignore this error if running Kubernetes on docker for desktop",
+          stderrLocalPort,
+          podDefinition.getMetadata().getName());
+    }
+
+    LOGGER.debug("Closed {}", podDefinition.getMetadata().getName());
   }
 
   private boolean isTerminal(Pod pod) {
@@ -600,7 +619,17 @@ public class KubePodProcess extends Process {
 
   @Override
   public int exitValue() {
-    return getReturnCode(podDefinition);
+    // getReturnCode throws IllegalThreadException if the Kube pod has not exited;
+    // close() is only called if the Kube pod has terminated.
+    var returnCode = getReturnCode(podDefinition);
+    // The OS traditionally handles process resource clean up. Therefore an exit code of 0, also
+    // indicates that all kernel resources were shut down.
+    // Because this is a custom implementation, manually close all the resources.
+    // Further, since the local resources are used to talk to Kubernetes resources, shut local resources
+    // down after Kubernetes resources are shut down, regardless of Kube termination status.
+    close();
+    LOGGER.info("Closed all resources for pod {}", podDefinition.getMetadata().getName());
+    return returnCode;
   }
 
   private static ResourceRequirementsBuilder getResourceRequirementsBuilder(ResourceRequirements resourceRequirements) {

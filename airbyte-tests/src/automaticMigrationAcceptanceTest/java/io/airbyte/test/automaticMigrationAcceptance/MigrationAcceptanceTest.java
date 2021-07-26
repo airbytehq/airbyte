@@ -113,7 +113,7 @@ public class MigrationAcceptanceTest {
     Set<String> logsToExpect = new HashSet<>();
     logsToExpect.add("Version: 0.17.0-alpha");
 
-    DockerComposeContainer dockerComposeContainer = new DockerComposeContainer(firstRun)
+    final DockerComposeContainer dockerComposeContainer = new DockerComposeContainer(firstRun)
         .withLogConsumer("server", logConsumerForServer(logsToExpect))
         .withEnv(environmentVariables);
     try {
@@ -122,14 +122,13 @@ public class MigrationAcceptanceTest {
        * {@link org.testcontainers.containers.DockerComposeContainer#stop()} method also deletes the
        * volume but we dont want to delete the volume to test the automatic migration
        */
-      CustomDockerComposeContainer customDockerComposeContainer = new CustomDockerComposeContainer(
-          dockerComposeContainer);
+      final CustomDockerComposeContainer customDockerComposeContainer = new CustomDockerComposeContainer(dockerComposeContainer);
 
       customDockerComposeContainer.start();
 
       Thread.sleep(50000);
 
-      assertTrue(logsToExpect.isEmpty());
+      assertTrue(logsToExpect.isEmpty(), "Missing logs: " + logsToExpect);
       ApiClient apiClient = getApiClient();
       healthCheck(apiClient);
       populateDataForFirstRun(apiClient);
@@ -176,7 +175,7 @@ public class MigrationAcceptanceTest {
       ApiClient apiClient = getApiClient();
       healthCheck(apiClient);
 
-      assertTrue(logsToExpect.isEmpty());
+      assertTrue(logsToExpect.isEmpty(), "Missing logs: " + logsToExpect);
       assertDataFromApi(apiClient);
     } finally {
       dockerComposeContainer.stop();
@@ -318,8 +317,12 @@ public class MigrationAcceptanceTest {
 
   private void healthCheck(ApiClient apiClient) throws ApiException {
     HealthApi healthApi = new HealthApi(apiClient);
-    HealthCheckRead healthCheck = healthApi.getHealthCheck();
-    assertTrue(healthCheck.getDb());
+    try {
+      HealthCheckRead healthCheck = healthApi.getHealthCheck();
+      assertTrue(healthCheck.getDb());
+    } catch (ApiException e) {
+      throw new RuntimeException("Health check failed, usually due to auto migration failure. Please check the logs for details.");
+    }
   }
 
   private ApiClient getApiClient() {

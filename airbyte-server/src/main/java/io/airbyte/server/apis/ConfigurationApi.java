@@ -55,11 +55,11 @@ import io.airbyte.api.model.LogsRequestBody;
 import io.airbyte.api.model.Notification;
 import io.airbyte.api.model.NotificationRead;
 import io.airbyte.api.model.OperationCreate;
-import io.airbyte.api.model.OperationCreateOrUpdate;
 import io.airbyte.api.model.OperationIdRequestBody;
 import io.airbyte.api.model.OperationRead;
 import io.airbyte.api.model.OperationReadList;
 import io.airbyte.api.model.OperationUpdate;
+import io.airbyte.api.model.OperatorConfiguration;
 import io.airbyte.api.model.SlugRequestBody;
 import io.airbyte.api.model.SourceCoreConfig;
 import io.airbyte.api.model.SourceCreate;
@@ -112,6 +112,7 @@ import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WebBackendDestinationHandler;
 import io.airbyte.server.handlers.WebBackendSourceHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
+import io.airbyte.server.helpers.WorkspaceHelper;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -162,8 +163,9 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         jobNotifier,
         temporalService);
     final DockerImageValidator dockerImageValidator = new DockerImageValidator(synchronousSchedulerClient);
+    final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
-    connectionsHandler = new ConnectionsHandler(configRepository);
+    connectionsHandler = new ConnectionsHandler(configRepository, workspaceHelper);
     operationsHandler = new OperationsHandler(configRepository);
     destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
     destinationHandler = new DestinationHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
@@ -177,8 +179,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         jobHistoryHandler,
         schedulerHandler,
         operationsHandler);
-    webBackendSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler);
-    webBackendDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler);
+    webBackendSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler, workspaceHelper);
+    webBackendDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler, workspaceHelper);
     healthCheckHandler = new HealthCheckHandler(configRepository);
     archiveHandler = new ArchiveHandler(configs.getAirbyteVersion(), configRepository, jobPersistence, archiveTtlManager);
     logsHandler = new LogsHandler();
@@ -423,8 +425,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   // Operations
 
   @Override
-  public CheckOperationRead checkOperation(OperationCreateOrUpdate operationCreateOrUpdate) {
-    return execute(() -> operationsHandler.checkOperation(operationCreateOrUpdate));
+  public CheckOperationRead checkOperation(OperatorConfiguration operatorConfiguration) {
+    return execute(() -> operationsHandler.checkOperation(operatorConfiguration));
   }
 
   @Override

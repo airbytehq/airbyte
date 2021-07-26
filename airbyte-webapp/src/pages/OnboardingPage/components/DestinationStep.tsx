@@ -5,7 +5,7 @@ import { useResource } from "rest-hooks";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
 
 import ContentCard from "components/ContentCard";
-import ServiceForm from "components/ServiceForm";
+import ServiceForm from "views/Connector/ServiceForm";
 import ConnectionBlock from "components/ConnectionBlock";
 import { JobsLogItem } from "components/JobItem";
 

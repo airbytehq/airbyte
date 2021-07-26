@@ -23,7 +23,7 @@ jobs:
           aws-region: us-east-2
       - name: Start EC2 Runner
         id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2
+        uses: machulav/ec2-github-runner@v2.2.1
         with:
           mode: start
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
@@ -133,7 +133,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2.1.0
+        uses: machulav/ec2-github-runner@v2.2.1
         with:
           mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
@@ -157,7 +157,7 @@ jobs:
           aws-region: us-east-2
       - name: Start EC2 Runner
         id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2.2.0
+        uses: machulav/ec2-github-runner@v2.2.1
         with:
           mode: start
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
@@ -241,30 +241,12 @@ jobs:
       #      - name: Get Docker Space
       #        run: docker run --rm busybox df -h
 
-      - name: Image Cleanup
-        run: ./tools/bin/clean_images.sh
-
-      - name: Build Platform Docker Images
-        if: success() && github.ref == 'refs/heads/master'
-        run: SUB_BUILD=PLATFORM ./gradlew composeBuild --scan
-        env:
-          GIT_REVISION: ${{ github.sha }}
-
       # make sure these always run before pushing platform docker images
       - name: Run End-to-End Acceptance Tests
-        if: success() && github.ref == 'refs/heads/master'
         run: ./tools/bin/acceptance_test.sh
 
       - name: Automatic Migration Acceptance Test
         run: MIGRATION_TEST_VERSION=$(grep VERSION .env | tr  -d "VERSION=") SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan -i
-
-      - name: Push Platform Docker Images
-        if: success() && github.ref == 'refs/heads/master'
-        run: |
-          docker login -u airbytebot -p ${DOCKER_PASSWORD}
-          VERSION=dev docker-compose -f docker-compose.build.yaml push
-        env:
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Slack Notification - Failure
         if: failure() && github.ref == 'refs/heads/master'
@@ -301,7 +283,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2
+        uses: machulav/ec2-github-runner@v2.2.1
         with:
           mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
@@ -326,7 +308,7 @@ jobs:
           aws-region: us-east-2
       - name: Start EC2 Runner
         id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2
+        uses: machulav/ec2-github-runner@v2.2.1
         with:
           mode: start
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
@@ -381,7 +363,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2
+        uses: machulav/ec2-github-runner@v2.2.1
         with:
           mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
@@ -406,7 +388,7 @@ jobs:
           aws-region: us-east-2
       - name: Start EC2 runner
         id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2
+        uses: machulav/ec2-github-runner@v2.2.1
         with:
           mode: start
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
@@ -487,7 +469,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2
+        uses: machulav/ec2-github-runner@v2.2.1
         with:
           mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
