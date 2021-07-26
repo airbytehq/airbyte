@@ -31,10 +31,12 @@ import io.airbyte.config.EnvConfigs;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 @Tag("log4j2-config")
 public class KubeLoggingConfigTest {
@@ -42,6 +44,15 @@ public class KubeLoggingConfigTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeLoggingConfigTest.class);
   // We publish every minute. See log4j2.xml.
   private static final long LOG_PUBLISH_DELAY = 70 * 1000;
+
+  private String logPath;
+
+  @AfterEach
+  public void cleanUpLogs() {
+    if (logPath != null) {
+      LogClientSingleton.deleteLogs(new EnvConfigs(), logPath);
+    }
+  }
 
   /**
    * Because this test tests our env var set up is compatible with our Log4j2 configuration, we are
@@ -60,13 +71,15 @@ public class KubeLoggingConfigTest {
     for (String l : toLog) {
       LOGGER.info(l);
     }
+    // So we don't publish anything else.
+    MDC.clear();
 
     // Sleep to make sure the logs appear.
     Thread.sleep(LOG_PUBLISH_DELAY);
 
-    var fullLogPath = randPath + "/logs.log/";
+    logPath = randPath + "/logs.log/";
     // The same env vars that log4j2 uses to determine where to publish to
-    var logs = LogClientSingleton.getJobLogFile(new EnvConfigs(), Path.of(fullLogPath));
+    var logs = LogClientSingleton.getJobLogFile(new EnvConfigs(), Path.of(logPath));
     // Each log line is of the form <time-stamp> <log-level> <log-message>. Further, there might be
     // other log lines from the system running. Join all the lines to simplify assertions.
     var logsLine = Strings.join(logs, " ");
