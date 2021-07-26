@@ -27,7 +27,6 @@ package io.airbyte.config.persistence;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
