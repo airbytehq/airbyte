@@ -22,4 +22,4 @@ echo "Waiting for services to begin"
 sleep 10 # TODO need a better way to wait
 
 echo "Running e2e tests via gradle"
-SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests --rerun-tasks --scan
+SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --rerun-tasks --scan

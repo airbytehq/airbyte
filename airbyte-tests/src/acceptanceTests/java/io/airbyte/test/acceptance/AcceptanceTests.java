@@ -37,7 +37,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.common.io.Files;
+import com.google.common.io.Resources;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.JobsApi;
 import io.airbyte.api.client.invoker.ApiClient;
@@ -91,10 +91,16 @@ import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import java.io.File;
+import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -123,7 +129,7 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({"rawtypes", "ConstantConditions"})
 // We order tests such that earlier tests test more basic behavior that is relied upon in later
 // tests.
 // e.g. We test that we can create a destination before we test whether we can sync data to it.
@@ -136,6 +142,10 @@ import org.testcontainers.utility.MountableFile;
 public class AcceptanceTests {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AcceptanceTests.class);
+
+  private static final String DOCKER_COMPOSE_FILE_NAME = "docker-compose.yaml";
+  // assume env file is one directory level up from airbyte-tests.
+  private final static File ENV_FILE = Path.of(System.getProperty("user.dir")).getParent().resolve(".env").toFile();
 
   private static final String SOURCE_E2E_TEST_CONNECTOR_VERSION = "0.1.0";
   private static final String DESTINATION_E2E_TEST_CONNECTOR_VERSION = "0.1.0";
@@ -156,6 +166,7 @@ public class AcceptanceTests {
 
   private static PostgreSQLContainer sourcePsql;
   private static PostgreSQLContainer destinationPsql;
+  private static AirbyteTestContainer airbyteTestContainer;
 
   private AirbyteApiClient apiClient;
 
@@ -164,17 +175,40 @@ public class AcceptanceTests {
   private List<UUID> destinationIds;
   private List<UUID> operationIds;
 
+  @SuppressWarnings("UnstableApiUsage")
   @BeforeAll
-  public static void init() {
+  public static void init() throws URISyntaxException, IOException, InterruptedException {
     sourcePsql = new PostgreSQLContainer("postgres:13-alpine")
         .withUsername(SOURCE_USERNAME)
         .withPassword(SOURCE_PASSWORD);
     sourcePsql.start();
+
+    // by default use airbyte deployment governed by a test container.
+    if (System.getenv("USE_EXTERNAL_DEPLOYMENT") == null || !System.getenv("USE_EXTERNAL_DEPLOYMENT").equalsIgnoreCase("true")) {
+      LOGGER.info("Using deployment of airbyte managed by test containers.");
+      airbyteTestContainer = new AirbyteTestContainer.Builder(new File(Resources.getResource(DOCKER_COMPOSE_FILE_NAME).toURI()))
+          .setEnv(ENV_FILE)
+          // override env VERSION to use dev to test current build of airbyte.
+          .setEnvVariable("VERSION", "dev")
+          // override to use test mounts.
+          .setEnvVariable("DATA_DOCKER_MOUNT", "airbyte_data_migration_test")
+          .setEnvVariable("DB_DOCKER_MOUNT", "airbyte_db_migration_test")
+          .setEnvVariable("WORKSPACE_DOCKER_MOUNT", "airbyte_workspace_migration_test")
+          .setEnvVariable("LOCAL_ROOT", "/tmp/airbyte_local_migration_test")
+          .setEnvVariable("LOCAL_DOCKER_MOUNT", "/tmp/airbyte_local_migration_test")
+          .build();
+      airbyteTestContainer.start();
+    } else {
+      LOGGER.info("Using external deployment of airbyte.");
+    }
   }
 
   @AfterAll
   public static void end() {
     sourcePsql.stop();
+    if (airbyteTestContainer != null) {
+      airbyteTestContainer.stop();
+    }
   }
 
   @BeforeEach
@@ -260,7 +294,7 @@ public class AcceptanceTests {
     final UUID destinationDefId = getDestinationDefId();
     final JsonNode destinationConfig = getDestinationDbConfig();
     final UUID workspaceId = PersistenceConstants.DEFAULT_WORKSPACE_ID;
-    final String name = "AccTestDestinationDb-" + UUID.randomUUID().toString();
+    final String name = "AccTestDestinationDb-" + UUID.randomUUID();
 
     final DestinationRead createdDestination = createDestination(
         name,
@@ -373,12 +407,12 @@ public class AcceptanceTests {
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
     final UUID destinationId = createDestination().getDestinationId();
     final UUID operationId = createOperation().getOperationId();
-    final String name = "test-connection-" + UUID.randomUUID().toString();
+    final String name = "test-connection-" + UUID.randomUUID();
     final ConnectionSchedule schedule = new ConnectionSchedule().timeUnit(MINUTES).units(100L);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
-    final ConnectionRead createdConnection = createConnection(name, sourceId, destinationId, List.of(operationId), catalog, schedule, syncMode);
+    final ConnectionRead createdConnection = createConnection(name, sourceId, destinationId, List.of(operationId), catalog, schedule);
 
     assertEquals(sourceId, createdConnection.getSourceId());
     assertEquals(destinationId, createdConnection.getDestinationId());
@@ -401,7 +435,7 @@ public class AcceptanceTests {
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null, syncMode).getConnectionId();
+        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
@@ -431,7 +465,7 @@ public class AcceptanceTests {
         .cursorField(List.of(COLUMN_ID))
         .destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null, syncMode).getConnectionId();
+        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -492,7 +526,7 @@ public class AcceptanceTests {
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
 
-    createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, connectionSchedule, syncMode);
+    createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, connectionSchedule);
 
     // When a new connection is created, Airbyte might sync it immediately (before the sync interval).
     // Then it will wait the sync interval.
@@ -521,7 +555,7 @@ public class AcceptanceTests {
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null, syncMode).getConnectionId();
+        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
@@ -546,7 +580,7 @@ public class AcceptanceTests {
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null, syncMode).getConnectionId();
+        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
@@ -571,7 +605,7 @@ public class AcceptanceTests {
         .destinationSyncMode(destinationSyncMode)
         .primaryKey(List.of(List.of(COLUMN_NAME))));
     final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null, syncMode).getConnectionId();
+        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
     // sync from start
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
@@ -651,7 +685,7 @@ public class AcceptanceTests {
         .cursorField(List.of(COLUMN_ID))
         .destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null, syncMode).getConnectionId();
+        createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null).getConnectionId();
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -681,8 +715,9 @@ public class AcceptanceTests {
                                  matches = "true")
   public void testRedactionOfSensitiveRequestBodies() throws Exception {
     // check that the source password is not present in the logs
-    final List<String> serverLogLines = Files.readLines(
-        apiClient.getLogsApi().getLogs(new LogsRequestBody().logType(LogType.SERVER)), Charset.defaultCharset());
+    final List<String> serverLogLines = Files.readAllLines(
+        apiClient.getLogsApi().getLogs(new LogsRequestBody().logType(LogType.SERVER)).toPath(),
+        Charset.defaultCharset());
 
     assertTrue(serverLogLines.size() > 0);
 
@@ -742,7 +777,7 @@ public class AcceptanceTests {
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
 
     final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null, SyncMode.FULL_REFRESH)
+        createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
             .getConnectionId();
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
@@ -814,7 +849,7 @@ public class AcceptanceTests {
   }
 
   private Set<SchemaTableNamePair> addAirbyteGeneratedTables(boolean withScdTable, Set<SchemaTableNamePair> sourceTables) {
-    final Set<SchemaTableNamePair> sourceTablesWithRawTablesAdded = sourceTables.stream().flatMap(x -> {
+    return sourceTables.stream().flatMap(x -> {
       final String cleanedNameStream = x.tableName.replace(".", "_");
       final List<SchemaTableNamePair> explodedStreamNames = new ArrayList<>(List.of(
           new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + x.schemaName,
@@ -826,7 +861,6 @@ public class AcceptanceTests {
       }
       return explodedStreamNames.stream();
     }).collect(Collectors.toSet());
-    return sourceTablesWithRawTablesAdded;
   }
 
   private void assertRawDestinationContains(List<JsonNode> sourceRecords, SchemaTableNamePair pair) throws Exception {
@@ -865,8 +899,7 @@ public class AcceptanceTests {
                                           UUID destinationId,
                                           List<UUID> operationIds,
                                           AirbyteCatalog catalog,
-                                          ConnectionSchedule schedule,
-                                          SyncMode syncMode)
+                                          ConnectionSchedule schedule)
       throws ApiException {
     final ConnectionRead connection = apiClient.getConnectionApi().createConnection(
         new ConnectionCreate()
@@ -886,7 +919,7 @@ public class AcceptanceTests {
 
   private DestinationRead createDestination() throws ApiException {
     return createDestination(
-        "AccTestDestination-" + UUID.randomUUID().toString(),
+        "AccTestDestination-" + UUID.randomUUID(),
         PersistenceConstants.DEFAULT_WORKSPACE_ID,
         getDestinationDefId(),
         getDestinationDbConfig());
@@ -1011,7 +1044,7 @@ public class AcceptanceTests {
 
   private SourceRead createPostgresSource() throws ApiException {
     return createSource(
-        "acceptanceTestDb-" + UUID.randomUUID().toString(),
+        "acceptanceTestDb-" + UUID.randomUUID(),
         PersistenceConstants.DEFAULT_WORKSPACE_ID,
         getPostgresSourceDefinitionId(),
         getSourceDbConfig());
@@ -1030,7 +1063,7 @@ public class AcceptanceTests {
   private UUID getPostgresSourceDefinitionId() throws ApiException {
     return apiClient.getSourceDefinitionApi().listSourceDefinitions().getSourceDefinitions()
         .stream()
-        .filter(sourceRead -> sourceRead.getName().toLowerCase().equals("postgres"))
+        .filter(sourceRead -> sourceRead.getName().equalsIgnoreCase("postgres"))
         .findFirst()
         .orElseThrow()
         .getSourceDefinitionId();
@@ -1074,6 +1107,7 @@ public class AcceptanceTests {
     assertEquals(JobStatus.SUCCEEDED, job.getStatus());
   }
 
+  @SuppressWarnings("BusyWait")
   private static JobRead waitForJob(JobsApi jobsApi, JobRead originalJob, Set<JobStatus> jobStatuses) throws InterruptedException, ApiException {
     JobRead job = originalJob;
     int count = 0;
@@ -1087,6 +1121,7 @@ public class AcceptanceTests {
     return job;
   }
 
+  @SuppressWarnings("BusyWait")
   private static ConnectionState waitForConnectionState(AirbyteApiClient apiClient, UUID connectionId) throws ApiException, InterruptedException {
     ConnectionState connectionState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
     int count = 0;
