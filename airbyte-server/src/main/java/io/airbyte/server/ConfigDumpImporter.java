@@ -372,8 +372,8 @@ public class ConfigDumpImporter {
    * @return modified stream with old deployment id removed and correct deployment id inserted.
    * @throws IOException - you never know when you IO.
    */
-  private static Stream<JsonNode> replaceDeploymentMetadata(JobPersistence postgresPersistence,
-                                                            Stream<JsonNode> metadataTableStream)
+  static Stream<JsonNode> replaceDeploymentMetadata(JobPersistence postgresPersistence,
+                                                    Stream<JsonNode> metadataTableStream)
       throws IOException {
     // filter out the deployment record from the import data, if it exists.
     Stream<JsonNode> stream = metadataTableStream
