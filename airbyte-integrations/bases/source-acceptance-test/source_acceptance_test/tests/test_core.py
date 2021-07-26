@@ -23,20 +23,22 @@
 #
 
 import logging
-from collections import Counter, defaultdict
+from collections import Counter
 from functools import reduce
-from typing import Any, List, Mapping, MutableMapping
+from typing import Any, List, Mapping
 
 import pytest
+from jsonschema import validate
+
 from airbyte_cdk.models import AirbyteMessage, ConnectorSpecification, Status, Type
 from docker.errors import ContainerError
-from jsonschema import validate
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, serialize, verify_records_schema
+from source_acceptance_test.utils.common import group_by_stream
 
 
-@pytest.mark.default_timeout(10)
+@pytest.mark.default_timeout(seconds=10)
 class TestSpec(BaseTest):
     def test_match_expected(self, connector_spec: ConnectorSpecification, connector_config: SecretDict, docker_runner: ConnectorRunner):
         output = docker_runner.call_spec()
@@ -69,7 +71,7 @@ class TestSpec(BaseTest):
         """This test should be injected into any docker command it needs to know current config and spec"""
 
 
-@pytest.mark.default_timeout(30)
+@pytest.mark.default_timeout(seconds=30)
 class TestConnection(BaseTest):
     def test_check(self, connector_config, inputs: ConnectionTestConfig, docker_runner: ConnectorRunner):
         if inputs.status == ConnectionTestConfig.Status.Succeed:
@@ -92,7 +94,7 @@ class TestConnection(BaseTest):
             assert "Traceback" in err.value.stderr.decode("utf-8"), "Connector should print exception"
 
 
-@pytest.mark.default_timeout(30)
+@pytest.mark.default_timeout(seconds=30)
 class TestDiscovery(BaseTest):
     def test_discover(self, connector_config, docker_runner: ConnectorRunner):
         output = docker_runner.call_discover(config=connector_config)
@@ -121,7 +123,7 @@ def primary_keys_for_records(streams, records):
             yield pk_values, stream_record
 
 
-@pytest.mark.default_timeout(5 * 60)
+@pytest.mark.default_timeout(minutes=5)
 class TestBasicRead(BaseTest):
     @staticmethod
     def _validate_schema(records, configured_catalog):
@@ -155,8 +157,8 @@ class TestBasicRead(BaseTest):
         """
         We expect some records from stream to match expected_records, partially or fully, in exact or any order.
         """
-        actual_by_stream = self.group_by_stream(records)
-        expected_by_stream = self.group_by_stream(expected_records)
+        actual_by_stream = group_by_stream(records)
+        expected_by_stream = group_by_stream(expected_records)
         for stream_name, expected in expected_by_stream.items():
             actual = actual_by_stream.get(stream_name, [])
 
@@ -232,12 +234,3 @@ class TestBasicRead(BaseTest):
             if not extra_records:
                 extra_actual = set(actual) - set(expected)
                 assert not extra_actual, f"Stream {stream_name}: There are more records than expected, but extra_records is off"
-
-    @staticmethod
-    def group_by_stream(records) -> MutableMapping[str, List[MutableMapping]]:
-        """Group records by a source stream"""
-        result = defaultdict(list)
-        for record in records:
-            result[record.stream].append(record.data)
-
-        return result

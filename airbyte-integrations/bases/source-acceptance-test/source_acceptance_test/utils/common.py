@@ -23,20 +23,20 @@
 #
 
 
-from collections import UserDict
+from collections import UserDict, defaultdict
 from pathlib import Path
-from typing import Iterable, List
+from typing import Iterable, List, MutableMapping
 
 import pytest
+
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, SyncMode
+from source_acceptance_test.config import Config
 from yaml import load
 
 try:
     from yaml import CLoader as Loader
 except ImportError:
     from yaml import Loader
-
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, SyncMode
-from source_acceptance_test.config import Config
 
 
 def load_config(path: str) -> Config:
@@ -85,3 +85,12 @@ class SecretDict(UserDict):
 
     def __repr__(self) -> str:
         return str(self)
+
+
+def group_by_stream(records) -> MutableMapping[str, List[MutableMapping]]:
+    """Group records by a source stream"""
+    result = defaultdict(list)
+    for record in records:
+        result[record.stream].append(record.data)
+
+    return result

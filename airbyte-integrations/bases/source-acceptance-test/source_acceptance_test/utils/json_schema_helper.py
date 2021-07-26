@@ -21,12 +21,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-
-
+from collections import defaultdict
 from functools import reduce
-from typing import Any, List, Mapping, Optional, Set
+from typing import Any, List, Mapping, MutableMapping, Optional, Set
 
 import pendulum
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
 
 
 class CatalogField:
@@ -53,6 +53,9 @@ class CatalogField:
         if self.formats.intersection({"datetime", "date-time", "date"}):
             if value is None and "null" not in self.formats:
                 raise ValueError(f"Invalid field format. Value: {value}. Format: {self.formats}")
+            # handle beautiful MySQL datetime, i.e. NULL datetime
+            if value.startswith("0000-00-00"):
+                value = value.replace("0000-00-00", "0001-01-01")
             return pendulum.parse(value)
         return value
 
@@ -83,3 +86,39 @@ class JsonSchemaHelper:
 
     def field(self, path: List[str]) -> CatalogField:
         return CatalogField(schema=self.get_property(path), path=path)
+
+
+class StreamHelper:
+    def __init__(self, stream: ConfiguredAirbyteStream):
+        self._stream = stream
+        self._json_helper = JsonSchemaHelper(stream.stream.json_schema)
+
+    @property
+    def primary_key(self) -> Optional[List[CatalogField]]:
+        pks = self._stream.primary_key or self._stream.stream.source_defined_primary_key
+        if pks:
+            return [self._json_helper.field(pk) for pk in pks]
+
+    @property
+    def cursor_field(self) -> Optional[CatalogField]:
+        if self._stream.cursor_field:
+            return self._json_helper.field(self._stream.cursor_field)
+
+    @staticmethod
+    def group_by_keys(records: List[MutableMapping[str, Any]], keys: List[CatalogField]):
+        result = defaultdict(list)
+        for record in records:
+            key = tuple([key_field.parse(record) for key_field in keys])
+            result[key].append(record)
+
+        return result
+
+
+class CatalogHelper:
+    def __init__(self, catalog: ConfiguredAirbyteCatalog):
+        self._catalog = catalog
+
+    def stream(self, name: str) -> Optional[StreamHelper]:
+        for s in self._catalog.streams:
+            if s.stream.name == name:
+                return StreamHelper(s)

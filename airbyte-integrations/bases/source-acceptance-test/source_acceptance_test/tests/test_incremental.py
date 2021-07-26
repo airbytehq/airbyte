@@ -28,6 +28,7 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping, Tuple
 
 import pytest
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, Type
 from source_acceptance_test import BaseTest
 from source_acceptance_test.utils import ConnectorRunner, JsonSchemaHelper, filter_output, incremental_only_catalog
@@ -96,7 +97,7 @@ def records_with_state(records, state, stream_mapping, state_cursor_paths) -> It
         yield record_value, state_value
 
 
-@pytest.mark.default_timeout(20 * 60)
+@pytest.mark.default_timeout(minutes=20)
 class TestIncremental(BaseTest):
     def test_two_sequential_reads(self, connector_config, configured_catalog_for_incremental, cursor_paths, docker_runner: ConnectorRunner):
         stream_mapping = {stream.stream.name: stream for stream in configured_catalog_for_incremental.streams}
@@ -128,5 +129,7 @@ class TestIncremental(BaseTest):
         records = filter_output(output, type_=Type.RECORD)
         states = filter_output(output, type_=Type.STATE)
 
-        assert not records, "The sync should produce no records when run with the state with abnormally large values"
+        non_empty_streams = set([record.record.stream for record in records])
+        msg = f"Expected no records when run with the state with abnormally large values. Streams with records: {non_empty_streams}"
+        assert not non_empty_streams, msg
         assert states, "The sync should produce at least one STATE message"

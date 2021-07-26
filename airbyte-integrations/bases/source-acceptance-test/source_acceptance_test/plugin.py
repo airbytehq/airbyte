@@ -29,6 +29,8 @@ from typing import List
 import pytest
 from _pytest.config import Config
 from _pytest.config.argparsing import Parser
+
+import pendulum
 from source_acceptance_test.utils import diff_dicts, load_config
 
 HERE = Path(__file__).parent.absolute()
@@ -40,7 +42,7 @@ def pytest_configure(config):
 
 def pytest_load_initial_conftests(early_config: Config, parser: Parser, args: List[str]):
     """Hook function to add acceptance tests to args"""
-    args.append(str(HERE / "tests"))
+    args.extend(["--pyargs", "source_acceptance_test.tests"])
 
 
 def pytest_addoption(parser):
@@ -106,7 +108,8 @@ def pytest_collection_modifyitems(config, items):
             if test_config.timeout_seconds:
                 item.add_marker(pytest.mark.timeout(test_config.timeout_seconds))
             elif default_timeout:
-                item.add_marker(pytest.mark.timeout(*default_timeout.args))
+                timeout_seconds = pendulum.duration(**default_timeout.kwargs).total_seconds()
+                item.add_marker(pytest.mark.timeout(timeout_seconds))
 
 
 def pytest_assertrepr_compare(config, op, left, right):
