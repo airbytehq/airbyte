@@ -94,7 +94,7 @@ public class BigQueryUtils {
       // Array of primitive
       if (subFields == null || subFields.isEmpty()) {
         fieldValue.getRepeatedValue().forEach(arrayFieldValue -> fillObjectNode(fieldName, fieldType, arrayFieldValue, arrayNode.addObject()));
-      // Array of records
+        // Array of records
       } else {
         for (FieldValue arrayFieldValue : fieldValue.getRepeatedValue()) {
           int count = 0; // named get doesn't work here for some reasons.

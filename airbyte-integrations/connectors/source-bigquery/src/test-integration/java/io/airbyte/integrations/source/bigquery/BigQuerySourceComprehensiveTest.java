@@ -317,7 +317,7 @@ public class BigQuerySourceComprehensiveTest extends SourceComprehensiveTest {
             .addExpectedValues("{\"frst\":\"s\",\"sec\":1,\"obbj\":{\"id_col\":555,\"mega_obbj\":{\"last_col\":\"15:30:00\"}}}")
             .build());
 
-        addDataTypeTestData(
+    addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("array")
             .fullSourceDataType("array<STRUCT<fff String, ggg int64>>")
