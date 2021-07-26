@@ -76,7 +76,7 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
 
   public FileSystemConfigPersistence(final Path storageRoot) {
     this.storageRoot = storageRoot;
-    this.configRoot = Exceptions.toRuntime(() -> Files.createDirectories(storageRoot.resolve(CONFIG_DIR)));
+    this.configRoot = storageRoot.resolve(CONFIG_DIR);
   }
 
   @Override

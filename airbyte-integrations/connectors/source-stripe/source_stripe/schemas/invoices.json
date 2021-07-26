@@ -69,7 +69,7 @@
       "type": ["null", "string"]
     },
     "discounts": {
-      "type": ["null", "array", "object"],
+      "type": ["null", "array"],
       "properties": {
         "end": {
           "type": ["null", "integer"]
