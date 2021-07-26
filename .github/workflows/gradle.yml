@@ -494,6 +494,7 @@ jobs:
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    if: ${{ github.ref == 'refs/heads/master' }} && ${{ github.event == 'schedule' }}
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -516,6 +517,7 @@ jobs:
     needs: start-gke-kube-acceptance-test-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-gke-kube-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
     name: GKE Acceptance Tests (Kube)
+    if: ${{ github.ref == 'refs/heads/master' }} && ${{ github.event == 'schedule' }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
@@ -578,7 +580,7 @@ jobs:
       - start-gke-kube-acceptance-test-runner # required to get output from the start-runner job
       - gke-kube-acceptance-test # required to wait when the main job is done
     runs-on: ubuntu-latest
-    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    if: ${{ github.ref == 'refs/heads/master' }} && ${{ github.event == 'schedule' }} && ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
