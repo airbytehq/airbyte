@@ -144,7 +144,8 @@ public class AcceptanceTests {
   private static final Logger LOGGER = LoggerFactory.getLogger(AcceptanceTests.class);
 
   private static final String DOCKER_COMPOSE_FILE_NAME = "docker-compose.yaml";
-  private static final String ENV_FILE_NAME = ".env";
+  // assume env file is one directory level up from airbyte-tests.
+  private final static File ENV_FILE = Path.of(System.getProperty("user.dir")).getParent().resolve(".env").toFile();
 
   private static final String SOURCE_E2E_TEST_CONNECTOR_VERSION = "0.1.0";
   private static final String DESTINATION_E2E_TEST_CONNECTOR_VERSION = "0.1.0";
@@ -186,8 +187,7 @@ public class AcceptanceTests {
     if (System.getenv("USE_EXTERNAL_DEPLOYMENT") == null || !System.getenv("USE_EXTERNAL_DEPLOYMENT").equalsIgnoreCase("true")) {
       LOGGER.info("Using deployment of airbyte managed by test containers.");
       airbyteTestContainer = new AirbyteTestContainer.Builder(new File(Resources.getResource(DOCKER_COMPOSE_FILE_NAME).toURI()))
-          // assume env file is one directory level up from airbyte-tests.
-          .setEnv(Path.of(System.getProperty("user.dir")).getParent().resolve(ENV_FILE_NAME).toFile())
+          .setEnv(ENV_FILE)
           // override env VERSION to use dev to test current build of airbyte.
           .setEnvVariable("VERSION", "dev")
           // override to use test mounts.
