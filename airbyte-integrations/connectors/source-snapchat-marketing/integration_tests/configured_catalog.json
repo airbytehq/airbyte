@@ -12,7 +12,7 @@
     },
     {
       "stream": {
-        "name": "ad_accounts",
+        "name": "adaccounts",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,

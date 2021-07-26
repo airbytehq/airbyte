@@ -35,26 +35,125 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
-# See the get_class_ids function explanation
+# See the get_depend_on_ids function explanation
+# Long story short - used as cache for ids of higher level streams, that is used
+# as path variables in other streams. And to avoid requesting those ids for every stream
+# we put them to a dict and check if they exist on stream calling
+# The structure be like:
+# {
+#   'Organizations': [
+#       {'organization_id': '7f064d90-52a1-some-uuid'}
+#   ],
+#   'Adaccounts': [
+#       {'ad_account_id': '04214c00-3aa5-some-uuid'},
+#       {'ad_account_id': 'e4cd371b-8de8-some-uuid'}
+#   ]
+# }
+#
 auxiliary_id_map = {}
+
+# The default value that is returned by stream_slices if there is no slice found: [None]
+default_stream_slices_return_value = [None]
 
 
 class SnapchatMarketingException(Exception):
     """ Just for formatting the exception as SnapchatMarketing"""
 
 
+def get_depend_on_ids(depends_on_stream, depends_on_stream_config: Mapping, slice_key_name: str) -> List:
+    """This auxiliary function is to help retrieving the ids from another stream
+
+    :param depends_on_stream: The stream class from what we need to retrieve ids
+    :param depends_on_stream_config: parameters for depends_on_stream class
+    :param slice_key_name: The key in result slices generator
+    :param logger: Logger to log the messages
+    :returns: empty list in case no ids of the stream was found or list with {slice_key_name: id}
+    """
+
+    # The trick with this code is that some streams are chained:
+    # For example Creatives -> AdAccounts -> Organizations.
+    # Creatives need the ad_account_id as path variable
+    # AdAccounts need the organization_id as path variable
+    # So organization_ids from Organizations goes as slices to AdAccounts
+    # and after that ad_account_ids from AdAccounts goes as slices to Creatives for path variables
+    # So first we must get the AdAccounts, then do the slicing for them
+    # and then call the read_records for each slice
+
+    # If the depends_on_stream is None (which means class can be incremental but don't need any slicing with ids)
+    # then just return default_stream_slices_return_value (which is [None])
+    if depends_on_stream is None:
+        return default_stream_slices_return_value
+
+    # This auxiliary_id_map is used to prevent the extracting of ids that are used in most streams
+    # Instead of running the request to get (for example) AdAccounts for each stream as slices we put them in the dict and
+    # return if the same ids are requested in the stream. This saves us a lot of time and requests
+    if depends_on_stream.__name__ in auxiliary_id_map:
+        return auxiliary_id_map[depends_on_stream.__name__]
+
+    # Some damn logic a?
+    # Relax, that has some meaning:
+    # if we want to get just 1 level of parent ids (For example AdAccounts need the organization_ids from Organizations, but
+    # Organizations do not have slices and returns [None] from stream_slices method) this switch goes for else clause and get all the
+    # organization_ids from Organizations and return them as slices
+    # But in case we want to retrieve 2 levels of parent ids (For example we run Creatives stream - it needs the ad_account_ids from AdAccount
+    # and AdAccount need organization_ids from Organizations and first we must get all organization_ids
+    # and for each of them get the ad_account_ids) so switch goes to if claus to get all the nested ids.
+    # Let me visualize this for you:
+    #
+    #           organization_id_1                      organization_id_2
+    #                 / \                                    / \
+    #                /   \                                  /   \
+    # ad_account_id_1     ad_account_id_2    ad_account_id_3     ad_account_id_4
+    #
+    # So for the AdAccount slices will be [{'organization_id': organization_id_1}, {'organization_id': organization_id_2}]
+    # And for the Creatives (Media, Ad, AdSquad, etc...) the slices will be
+    # [{'ad_account_id': ad_account_id_1}, {'ad_account_id': ad_account_id_2},
+    #  {'ad_account_id': ad_account_id_3},{'ad_account_id': ad_account_id_4}]
+    #
+    # After getting all the account_ids, they go as slices to Creatives (Media, Ad, AdSquad, etc...)
+    # and are used in the path function as a path variables according to the API docs
+
+    depend_on_stream = depends_on_stream(**depends_on_stream_config)
+    depend_on_stream_slices = depend_on_stream.stream_slices(sync_mode=SyncMode.full_refresh)
+    depend_on_stream_ids = []
+
+    if depend_on_stream_slices != default_stream_slices_return_value:
+        for depend_on_stream_slice in depend_on_stream_slices:
+            records = depend_on_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=depend_on_stream_slice)
+            depend_on_stream_ids += [{slice_key_name: record["id"]} for record in records]
+    else:
+        depend_on_stream_ids = [{slice_key_name: record["id"]} for record in depend_on_stream.read_records(sync_mode=SyncMode.full_refresh)]
+
+    if not depend_on_stream_ids:
+        return []
+
+    auxiliary_id_map[depends_on_stream.__name__] = depend_on_stream_ids
+    return depend_on_stream_ids
+
+
 class SnapchatMarketingStream(HttpStream, ABC):
-    # The default value that is returned by stream_slices if there is no slice found: [None]
-    default_stream_slices_return_value = [None]
     url_base = "https://adsapi.snapchat.com/v1/"
     primary_key = "id"
 
     @property
     def response_root_name(self):
-        return self.__class__.__name__.lower()
+        """ Using the class name in lower to set the root node for response parsing """
+        return self.name
 
     @property
     def response_item_name(self):
+        """
+        Used as the second level node for response parsing. Usually it is the response_root_name without last char.
+        For example: response_root_name = organizations, so response_item_name = organization
+        The [:-1] removes the last char from response_root_name: organizations -> organization
+         {
+            "organizations": [
+                {
+                    "organization": {....}
+                }
+            ]
+        }
+        """
         return self.response_root_name[:-1]
 
     def __init__(self, start_date, **kwargs):
@@ -69,9 +168,25 @@ class SnapchatMarketingStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        return next_page_token if next_page_token else {}
+        return next_page_token or {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """Response json came like
+        {
+            "organizations": [
+                {
+                    "organization": {
+                        "id": "some uuid",
+                        "updated_at": "2020-12-15T22:35:17.819Z",
+                        "created_at": "2020-12-15T11:13:03.910Z",
+                        ... some_other_json_fields ...
+                    }
+                }
+            ]
+        }
+        So the response_root_name will be "organizations", and the response_item_name will be "organization"
+        Also, the client side filtering for incremental sync is used
+        """
         json_response = response.json().get(self.response_root_name)
         for resp in json_response:
             yield resp.get(self.response_item_name)
@@ -79,25 +194,32 @@ class SnapchatMarketingStream(HttpStream, ABC):
 
 class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
     cursor_field = "updated_at"
-    superior_cls = None
+    depends_on_stream = None
     slice_key_name = "ad_account_id"
 
     last_slice = None
     current_slice = None
     first_run = True
+    initial_state = None
     max_state = None
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        stream_slices = self.get_class_ids(self.superior_cls, self.slice_key_name, **kwargs)
-        if stream_slices:
-            self.last_slice = stream_slices[-1]
+        self.initial_state = kwargs.get("stream_state") or self.start_date
+        self.max_state = self.initial_state
+        depends_on_stream_config = {"authenticator": self.authenticator, "start_date": self.start_date}
+        stream_slices = get_depend_on_ids(self.depends_on_stream, depends_on_stream_config, self.slice_key_name)
 
+        if not stream_slices:
+            self.logger.error(f"No {self.slice_key_name}s found. {self.name} cannot be extracted without {self.slice_key_name}.")
+            yield from []
+
+        self.last_slice = stream_slices[-1]
         yield from stream_slices
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         I see you have a lot of questions to this function. I will try to explain.
-        The problem that it solves is next: records from the streams that used nested ids logic (see the get_class_ids function comments below)
+        The problem that it solves is next: records from the streams that used nested ids logic (see the get_depend_on_ids function comments below)
         can have different, non ordered timestamp in update_at cursor_field and because of they are extracted with slices
         it is a messy task to make the stream works as incremental. To understand it better the read of nested stream data can be next:
 
@@ -121,17 +243,13 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
         Thus all the slices data are compared to the initial state, but only on the last one we write it to the stream state.
         This approach gives us the maximum state value of all the records and we exclude the state updates between slice processing
         """
-        if not current_stream_state:
+
+        if self.first_run:
             self.first_run = False
-            self.max_state = self.start_date
-            return {self.cursor_field: self.start_date}
-        elif self.first_run and current_stream_state:
-            self.first_run = False
-            self.max_state = current_stream_state[self.cursor_field]
-            return {self.cursor_field: current_stream_state[self.cursor_field]}
+            return {self.cursor_field: self.initial_state}
         else:
             self.max_state = max(self.max_state, latest_record[self.cursor_field])
-            return {self.cursor_field: self.max_state if self.current_slice == self.last_slice else current_stream_state[self.cursor_field]}
+            return {self.cursor_field: self.max_state if self.current_slice == self.last_slice else self.initial_state}
 
     def read_records(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
@@ -154,76 +272,6 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"adaccounts/{stream_slice[self.slice_key_name]}/{self.response_root_name}"
 
-    # TODO Make unittest for this function
-    def get_class_ids(self, superior_cls, slice_key_name: str, **kwargs) -> List:
-        """This auxiliary function is to help retrieving the ids from another stream
-        :param superior_cls: The stream class from what we need to retrieve ids
-        :param slice_key_name: The key in result slices generator
-        :returns: empty list in case no ids of the stream was found or list with {slice_key_name: id}
-        """
-
-        # The trick with this code is that some streams are chained:
-        # For example Creatives -> AdAccounts -> Organizations.
-        # Creatives need the ad_account_id as path variable
-        # AdAccounts need the organization_id as path variable
-        # So organization_ids from Organizations goes as slices to AdAccounts
-        # and after that ad_account_ids from AdAccounts goes as slices to Creatives for path variables
-        # So first we must get the AdAccounts, then do the slicing for them
-        # and then call the read_records for each slice
-
-        # If the superior_cls is None (which means class can be incremental but don't need any slicing with ids)
-        # then just return default_stream_slices_return_value (which is [None])
-        if superior_cls is None:
-            return self.default_stream_slices_return_value
-
-        # This auxiliary_id_map is used to prevent the extracting of ids that are used in most streams
-        # Instead of running the request to get (for example) AdAccounts for each stream as slices we put them in the dict and
-        # return if the same ids are requested in the stream. This saves us a lot of time and requests
-        if slice_key_name in auxiliary_id_map:
-            return auxiliary_id_map[slice_key_name]
-
-        # Some damn logic a?
-        # Relax that has some meaning:
-        # if we want to get just 1 level of parent ids (For example AdAccounts need the organization_ids from Organizations, but
-        # Organizations do not have slices and returns [None] from stream_slices method) this switch goes for else clause and get all the
-        # organization_ids from Organizations and return them as slices
-        # But in case we want to retrieve 2 levels of parent ids (For example we run Creatives stream - it needs the ad_account_ids from AdAccount
-        # and AdAccount need organization_ids from Organizations and first we must get all organization_ids
-        # and for each of them get the ad_account_ids) so switch goes to if claus to get all the nested ids.
-        # Let me visualize this for you:
-        #
-        #           organization_id_1                      organization_id_2
-        #                 / \                                    / \
-        #                /   \                                  /   \
-        # ad_account_id_1     ad_account_id_2    ad_account_id_3     ad_account_id_4
-        #
-        # So for the AdAccount slices will be [{'organization_id': organization_id_1}, {'organization_id': organization_id_2}]
-        # And for the Creatives (Media, Ad, AdSquad, etc...) the slices will be
-        # [{'ad_account_id': ad_account_id_1}, {'ad_account_id': ad_account_id_2},
-        #  {'ad_account_id': ad_account_id_3},{'ad_account_id': ad_account_id_4}]
-        #
-        # After getting all the account_ids, they go as slices to Creatives (Media, Ad, AdSquad, etc...)
-        # and are used in the path function as a path variables according to the API docs
-
-        cls_stream = superior_cls(authenticator=self.authenticator, start_date=self.start_date)
-        cls_slices = cls_stream.stream_slices(**kwargs)
-        cls_ids = []
-
-        if cls_slices != self.default_stream_slices_return_value:
-            for cls_slice in cls_slices:
-                cls_records = cls_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=cls_slice)
-                cls_ids += [cls_record["id"] for cls_record in cls_records]
-        else:
-            cls_ids = [cls_record["id"] for cls_record in cls_stream.read_records(sync_mode=SyncMode.full_refresh)]
-
-        if not cls_ids:
-            self.logger.error(f"No {slice_key_name}s found. {superior_cls.__name__} cannot be extracted without {slice_key_name}.")
-            return []
-
-        result = [{slice_key_name: cls_id} for cls_id in cls_ids]
-        auxiliary_id_map[slice_key_name] = result
-        return result
-
 
 class Organizations(SnapchatMarketingStream):
     """ Docs: https://marketingapi.snapchat.com/docs/#organizations """
@@ -232,26 +280,26 @@ class Organizations(SnapchatMarketingStream):
         return "me/organizations"
 
 
-class AdAccounts(IncrementalSnapchatMarketingStream):
+class Adaccounts(IncrementalSnapchatMarketingStream):
     """ Docs: https://marketingapi.snapchat.com/docs/#get-all-ad-accounts """
 
-    superior_cls = Organizations
+    depends_on_stream = Organizations
     slice_key_name = "organization_id"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"organizations/{stream_slice['organization_id']}/adaccounts"
+        return f"organizations/{stream_slice[self.slice_key_name]}/adaccounts"
 
 
 class Creatives(IncrementalSnapchatMarketingStream):
     """ Docs: https://marketingapi.snapchat.com/docs/#get-all-creatives """
 
-    superior_cls = AdAccounts
+    depends_on_stream = Adaccounts
 
 
 class Media(IncrementalSnapchatMarketingStream):
     """ Docs: https://marketingapi.snapchat.com/docs/#get-all-media """
 
-    superior_cls = AdAccounts
+    depends_on_stream = Adaccounts
 
     @property
     def response_item_name(self):
@@ -261,25 +309,25 @@ class Media(IncrementalSnapchatMarketingStream):
 class Campaigns(IncrementalSnapchatMarketingStream):
     """ Docs: https://marketingapi.snapchat.com/docs/#get-all-campaigns """
 
-    superior_cls = AdAccounts
+    depends_on_stream = Adaccounts
 
 
 class Ads(IncrementalSnapchatMarketingStream):
     """ Docs: https://marketingapi.snapchat.com/docs/#get-all-ads-under-an-ad-account """
 
-    superior_cls = AdAccounts
+    depends_on_stream = Adaccounts
 
 
 class Adsquads(IncrementalSnapchatMarketingStream):
     """ Docs: https://marketingapi.snapchat.com/docs/#get-all-ad-squads-under-an-ad-account """
 
-    superior_cls = AdAccounts
+    depends_on_stream = Adaccounts
 
 
 class Segments(IncrementalSnapchatMarketingStream):
     """ Docs: https://marketingapi.snapchat.com/docs/#get-all-audience-segments """
 
-    superior_cls = AdAccounts
+    depends_on_stream = Adaccounts
 
 
 class SnapchatAdsOauth2Authenticator(Oauth2Authenticator):
@@ -338,7 +386,7 @@ class SourceSnapchatMarketing(AbstractSource):
         auth = SnapchatAdsOauth2Authenticator(config)
         kwargs = {"authenticator": auth, "start_date": config["start_date"]}
         return [
-            AdAccounts(**kwargs),
+            Adaccounts(**kwargs),
             Ads(**kwargs),
             Adsquads(**kwargs),
             Campaigns(**kwargs),

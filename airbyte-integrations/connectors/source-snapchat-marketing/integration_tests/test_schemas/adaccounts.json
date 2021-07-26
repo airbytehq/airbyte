@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "ad_accounts",
+        "name": "adaccounts",
         "json_schema": {
           "type": ["null", "object"],
           "properties": {
