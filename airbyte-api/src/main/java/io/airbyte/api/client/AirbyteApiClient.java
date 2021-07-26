@@ -51,6 +51,7 @@ public class AirbyteApiClient {
   private final SourceApi sourceApi;
   private final SourceDefinitionSpecificationApi sourceDefinitionSpecificationApi;
   private final WorkspaceApi workspaceApi;
+  private final HealthApi healthApi;
 
   public AirbyteApiClient(ApiClient apiClient) {
     connectionApi = new ConnectionApi(apiClient);
@@ -64,6 +65,7 @@ public class AirbyteApiClient {
     sourceApi = new SourceApi(apiClient);
     sourceDefinitionSpecificationApi = new SourceDefinitionSpecificationApi(apiClient);
     workspaceApi = new WorkspaceApi(apiClient);
+    healthApi = new HealthApi(apiClient);
   }
 
   public ConnectionApi getConnectionApi() {
@@ -108,6 +110,10 @@ public class AirbyteApiClient {
 
   public OperationApi getOperationApi() {
     return operationApi;
+  }
+
+  public HealthApi getHealthApi() {
+    return healthApi;
   }
 
 }
