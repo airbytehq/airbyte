@@ -24,12 +24,12 @@
 
 package io.airbyte.config.persistence;
 
-import static io.airbyte.config.persistence.AirbyteConfigsTable.AIRBYTE_CONFIGS;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.CONFIG_BLOB;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.CONFIG_ID;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.CONFIG_TYPE;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.CREATED_AT;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.UPDATED_AT;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.AIRBYTE_CONFIGS;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CONFIG_BLOB;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CONFIG_ID;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CONFIG_TYPE;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CREATED_AT;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.UPDATED_AT;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.select;
 
@@ -65,25 +65,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
   public DatabaseConfigPersistence(Database database) {
     this.database = new ExceptionWrappingDatabase(database);
-  }
-
-  /**
-   * Initialize the database by creating the {@code airbyte_configs} table.
-   */
-  public DatabaseConfigPersistence initialize(String schema) throws IOException {
-    database.transaction(ctx -> {
-      boolean hasConfigsTable = ctx.fetchExists(select()
-          .from("information_schema.tables")
-          .where("table_name = 'airbyte_configs'"));
-      if (hasConfigsTable) {
-        return null;
-      }
-      LOGGER.info("Config database has not been initialized");
-      LOGGER.info("Creating tables with schema: {}", schema);
-      ctx.execute(schema);
-      return null;
-    });
-    return this;
   }
 
   /**

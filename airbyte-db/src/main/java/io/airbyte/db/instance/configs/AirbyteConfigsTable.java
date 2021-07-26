@@ -22,44 +22,24 @@
  * SOFTWARE.
  */
 
-package io.airbyte.server.migration;
+package io.airbyte.db.instance.configs;
 
-import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.Database;
-import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
-import java.io.IOException;
-import org.testcontainers.containers.PostgreSQLContainer;
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.table;
 
-public class StubAirbyteDB implements AutoCloseable {
+import java.sql.Timestamp;
+import org.jooq.Field;
+import org.jooq.JSONB;
+import org.jooq.Record;
+import org.jooq.Table;
 
-  private final PostgreSQLContainer<?> container;
-  private final Database database;
+public class AirbyteConfigsTable {
 
-  public Database getDatabase() {
-    return database;
-  }
-
-  public StubAirbyteDB() throws IOException {
-    container =
-        new PostgreSQLContainer<>("postgres:13-alpine")
-            .withDatabaseName("airbyte")
-            .withUsername("docker")
-            .withPassword("docker");
-    container.start();
-
-    String jobsDatabaseSchema = MoreResources.readResource("migration/schema.sql");
-    database = new JobsDatabaseInstance(
-        container.getUsername(),
-        container.getPassword(),
-        container.getJdbcUrl(),
-        jobsDatabaseSchema)
-            .getAndInitialize();
-  }
-
-  @Override
-  public void close() throws Exception {
-    database.close();
-    container.close();
-  }
+  public static final Table<Record> AIRBYTE_CONFIGS = table("airbyte_configs");
+  public static final Field<String> CONFIG_ID = field("config_id", String.class);
+  public static final Field<String> CONFIG_TYPE = field("config_type", String.class);
+  public static final Field<JSONB> CONFIG_BLOB = field("config_blob", JSONB.class);
+  public static final Field<Timestamp> CREATED_AT = field("created_at", Timestamp.class);
+  public static final Field<Timestamp> UPDATED_AT = field("updated_at", Timestamp.class);
 
 }

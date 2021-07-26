@@ -29,8 +29,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
-import io.airbyte.scheduler.persistence.DatabaseSchema;
+import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
+import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
@@ -42,7 +42,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.MountableFile;
 
 public class DatabaseArchiverTest {
 
@@ -53,18 +52,14 @@ public class DatabaseArchiverTest {
   private DatabaseArchiver databaseArchiver;
 
   @BeforeEach
-  void setUp() throws IOException, InterruptedException {
+  void setUp() throws IOException {
     container = new PostgreSQLContainer<>("postgres:13-alpine")
         .withDatabaseName("airbyte")
         .withUsername("docker")
         .withPassword("docker");
     container.start();
 
-    container.copyFileToContainer(MountableFile.forClasspathResource("schema.sql"), "/etc/init.sql");
-    // execInContainer uses Docker's EXEC so it needs to be split up like this
-    container.execInContainer("psql", "-d", "airbyte", "-U", "docker", "-a", "-f", "/etc/init.sql");
-
-    database = Databases.createPostgresDatabase(container.getUsername(), container.getPassword(), container.getJdbcUrl());
+    database = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
     JobPersistence persistence = new DefaultJobPersistence(database);
     databaseArchiver = new DatabaseArchiver(persistence);
   }
@@ -77,7 +72,7 @@ public class DatabaseArchiverTest {
 
   @Test
   void testUnknownTableExport() throws Exception {
-    // Create a table that is not declared in DatabaseSchema
+    // Create a table that is not declared in JobsDatabaseSchema
     database.query(ctx -> {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), updated_at DATE);");
       ctx.fetch(
@@ -117,7 +112,7 @@ public class DatabaseArchiverTest {
   void testPartialDatabaseImport() throws Exception {
     final Path tempFolder = Files.createTempDirectory(TEMP_PREFIX);
     databaseArchiver.exportDatabaseToArchive(tempFolder);
-    Files.delete(DatabaseArchiver.buildTablePath(tempFolder.toRealPath(), DatabaseSchema.ATTEMPTS.name()));
+    Files.delete(DatabaseArchiver.buildTablePath(tempFolder.toRealPath(), JobsDatabaseSchema.ATTEMPTS.name()));
     assertThrows(RuntimeException.class, () -> databaseArchiver.importDatabaseFromArchive(tempFolder, "test"));
   }
 

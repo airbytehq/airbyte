@@ -27,14 +27,13 @@ package io.airbyte.db;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
+import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import java.sql.SQLException;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.MountableFile;
 
 public class TestServerUuid {
 
@@ -42,7 +41,7 @@ public class TestServerUuid {
   private static Database database;
 
   @BeforeAll
-  public static void dbSetup() throws IOException, InterruptedException {
+  public static void dbSetup() throws Exception {
     container =
         new PostgreSQLContainer<>("postgres:13-alpine")
             .withDatabaseName("airbyte")
@@ -50,11 +49,7 @@ public class TestServerUuid {
             .withPassword("docker");
     container.start();
 
-    container.copyFileToContainer(MountableFile.forClasspathResource("schema.sql"), "/etc/init.sql");
-    // execInContainer uses Docker's EXEC so it needs to be split up like this
-    container.execInContainer("psql", "-d", "airbyte", "-U", "docker", "-a", "-f", "/etc/init.sql");
-
-    database = Databases.createPostgresDatabase(container.getUsername(), container.getPassword(), container.getJdbcUrl());
+    database = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
   }
 
   @AfterAll

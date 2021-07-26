@@ -40,7 +40,7 @@ import io.airbyte.config.persistence.ConfigPersistenceBuilder;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
 import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
@@ -188,11 +188,11 @@ public class ServerApp implements ServerRunnable {
     setCustomerIdIfNotSet(configRepository);
 
     LOGGER.info("Creating Scheduler persistence...");
-    final Database jobDatabase = Databases.createPostgresDatabaseWithRetry(
+    final Database jobDatabase = new JobsDatabaseInstance(
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
-        configs.getDatabaseUrl(),
-        Databases.IS_JOB_DATABASE_READY);
+        configs.getDatabaseUrl())
+            .getAndInitialize();
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
 
     createDeploymentIfNoneExists(jobPersistence);

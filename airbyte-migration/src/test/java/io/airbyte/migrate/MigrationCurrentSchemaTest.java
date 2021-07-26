@@ -67,7 +67,7 @@ public class MigrationCurrentSchemaTest {
   void testJobsOfLastMigrationMatchSource() {
     final Map<ResourceId, JsonNode> lastMigrationSchema = getSchemaOfLastMigration(ResourceType.JOB);
     final Map<ResourceId, JsonNode> currentSchema = MigrationUtils.getNameToSchemasFromResourcePath(
-        Path.of("tables"),
+        Path.of("jobs_database"),
         ResourceType.JOB,
         Enums.valuesAsStrings(JobKeys.class));
 

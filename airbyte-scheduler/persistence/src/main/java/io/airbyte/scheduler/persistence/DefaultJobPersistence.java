@@ -42,6 +42,7 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
+import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.Job;
@@ -513,7 +514,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public Map<DatabaseSchema, Stream<JsonNode>> exportDatabase() throws IOException {
+  public Map<JobsDatabaseSchema, Stream<JsonNode>> exportDatabase() throws IOException {
     return exportDatabase(DEFAULT_SCHEMA);
   }
 
@@ -538,12 +539,12 @@ public class DefaultJobPersistence implements JobPersistence {
     return result;
   }
 
-  private Map<DatabaseSchema, Stream<JsonNode>> exportDatabase(final String schema) throws IOException {
+  private Map<JobsDatabaseSchema, Stream<JsonNode>> exportDatabase(final String schema) throws IOException {
     final List<String> tables = listTables(schema);
-    final Map<DatabaseSchema, Stream<JsonNode>> result = new HashMap<>();
+    final Map<JobsDatabaseSchema, Stream<JsonNode>> result = new HashMap<>();
 
     for (final String table : tables) {
-      result.put(DatabaseSchema.valueOf(table.toUpperCase()), exportTable(schema, table));
+      result.put(JobsDatabaseSchema.valueOf(table.toUpperCase()), exportTable(schema, table));
     }
 
     return result;
@@ -557,7 +558,7 @@ public class DefaultJobPersistence implements JobPersistence {
       return database.query(context -> context.meta().getSchemas(schema).stream()
           .flatMap(s -> context.meta(s).getTables().stream())
           .map(Named::getName)
-          .filter(table -> DatabaseSchema.getLowerCaseTableNames().contains(table.toLowerCase()))
+          .filter(table -> JobsDatabaseSchema.getTableNames().contains(table.toLowerCase()))
           .collect(Collectors.toList()));
     } else {
       return List.of();
@@ -621,19 +622,19 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public void importDatabase(final String airbyteVersion, final Map<DatabaseSchema, Stream<JsonNode>> data) throws IOException {
+  public void importDatabase(final String airbyteVersion, final Map<JobsDatabaseSchema, Stream<JsonNode>> data) throws IOException {
     importDatabase(airbyteVersion, DEFAULT_SCHEMA, data, false);
   }
 
   private void importDatabase(final String airbyteVersion,
                               final String targetSchema,
-                              final Map<DatabaseSchema, Stream<JsonNode>> data,
+                              final Map<JobsDatabaseSchema, Stream<JsonNode>> data,
                               boolean incrementalImport)
       throws IOException {
     if (!data.isEmpty()) {
       createSchema(BACKUP_SCHEMA);
       database.transaction(ctx -> {
-        for (final DatabaseSchema tableType : data.keySet()) {
+        for (final JobsDatabaseSchema tableType : data.keySet()) {
           if (!incrementalImport) {
             truncateTable(ctx, targetSchema, tableType.name(), BACKUP_SCHEMA);
           }
@@ -662,9 +663,9 @@ public class DefaultJobPersistence implements JobPersistence {
     ctx.truncateTable(tableSql).restartIdentity().execute();
   }
 
-  private static void importTable(DSLContext ctx, final String schema, final DatabaseSchema tableType, final Stream<JsonNode> jsonStream) {
+  private static void importTable(DSLContext ctx, final String schema, final JobsDatabaseSchema tableType, final Stream<JsonNode> jsonStream) {
     final Table<Record> tableSql = getTable(schema, tableType.name());
-    final JsonNode jsonSchema = tableType.toJsonNode();
+    final JsonNode jsonSchema = tableType.getTableDefinition();
     if (jsonSchema != null) {
       // Use an ArrayList to mirror the order of columns from the schema file since columns may not be
       // written consistently in the same order in the stream
@@ -701,7 +702,7 @@ public class DefaultJobPersistence implements JobPersistence {
    *
    * This function reset such Identity states (called SQL Sequence objects).
    */
-  private static void resetIdentityColumn(final DSLContext ctx, final String schema, final DatabaseSchema tableType) {
+  private static void resetIdentityColumn(final DSLContext ctx, final String schema, final JobsDatabaseSchema tableType) {
     final Result<Record> result = ctx.fetch(String.format("SELECT MAX(id) FROM %s.%s", schema, tableType.name()));
     final Optional<Integer> maxId = result.stream()
         .map(r -> r.get(0, Integer.class))
