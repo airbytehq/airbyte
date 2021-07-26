@@ -17,7 +17,7 @@ Having trouble figuring out how to write a `stream_slices` function or aren't su
 Airbyte recommends using the CDK template generator to develop with the CDK. The template generates
   created all the required scaffolding, with convenient TODOs, allowing developers to truly focus on
   implementing the API.
-  
+
 For tips on useful Python knowledge, see the [Python Concepts](./python-concepts.md) page.   
 
 You can find a complete tutorial for implementing an HTTP source connector in [this tutorial](../tutorials/http_api_source.md)
