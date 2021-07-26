@@ -41,7 +41,7 @@ public class KubeLoggingConfigTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeLoggingConfigTest.class);
   // We publish every minute. See log4j2.xml.
-  private static final long LOG_PUBLISH_DELAY = 60 * 1000;
+  private static final long LOG_PUBLISH_DELAY = 70 * 1000;
 
   /**
    * Because this test tests our env var set up is compatible with our Log4j2 configuration, we are
@@ -67,8 +67,9 @@ public class KubeLoggingConfigTest {
     var fullLogPath = randPath + "/logs.log/";
     // The same env vars that log4j2 uses to determine where to publish to
     var logs = LogClientSingleton.getJobLogFile(new EnvConfigs(), Path.of(fullLogPath));
+    // Each log line is of the form <time-stamp> <log-level> <log-message>. Further, there might be
+    // other log lines from the system running. Join all the lines to simplify assertions.
     var logsLine = Strings.join(logs, " ");
-
     for (String l : toLog) {
       assertTrue(logsLine.contains(l));
     }
