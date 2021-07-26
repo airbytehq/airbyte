@@ -3,7 +3,7 @@ services:
   db:
     image: mariadb
     ports:
-      - '3307:3306'
+      - "3307:3306"
     environment:
       - MYSQL_ROOT_PASSWORD=admin
     volumes:
@@ -14,7 +14,7 @@ services:
   presta_shop:
     image: eugenekulak/airbyte-prestashop:0.1.0
     ports:
-      - '8080:80'
+      - "8080:80"
     environment:
       - DB_SERVER=db
     networks:

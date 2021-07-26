@@ -47,7 +47,7 @@ def create_config_fixture():
 
 @pytest.fixture(scope="session", autouse=True)
 def connector_setup(create_config):
-    """ This fixture is a placeholder for external resources that acceptance test might require."""
+    """This fixture is a placeholder for external resources that acceptance test might require."""
     filename = str(HERE / "docker-compose.yaml")
     subprocess.check_call([sys.executable, "-m", "pip", "install", "docker-compose"], stdout=subprocess.DEVNULL)
     subprocess.check_call(["docker-compose", "-f", filename, "up", "-d"])

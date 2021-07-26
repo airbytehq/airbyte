@@ -27,7 +27,6 @@ from datetime import datetime
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
-
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
