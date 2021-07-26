@@ -27,6 +27,7 @@ package io.airbyte.scheduler.persistence.job_tracker;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
@@ -55,14 +56,28 @@ public class TrackingMetadata {
 
     final int operationCount = standardSync.getOperationIds() != null ? standardSync.getOperationIds().size() : 0;
     metadata.put("operation_count", operationCount);
-    metadata.put("namespace_definition", standardSync.getNamespaceDefinition());
+    if (standardSync.getNamespaceDefinition() != null) {
+      metadata.put("namespace_definition", standardSync.getNamespaceDefinition());
+    }
+
     final boolean isUsingPrefix = standardSync.getPrefix() != null && !standardSync.getPrefix().isBlank();
     metadata.put("table_prefix", isUsingPrefix);
-    if (standardSync.getResourceRequirements() != null) {
-      metadata.put("sync_cpu_request", standardSync.getResourceRequirements().getCpuRequest());
-      metadata.put("sync_cpu_limit", standardSync.getResourceRequirements().getCpuLimit());
-      metadata.put("sync_memory_request", standardSync.getResourceRequirements().getMemoryRequest());
-      metadata.put("sync_memory_limit", standardSync.getResourceRequirements().getMemoryLimit());
+
+    final ResourceRequirements resourceRequirements = standardSync.getResourceRequirements();
+
+    if (resourceRequirements != null) {
+      if (!com.google.common.base.Strings.isNullOrEmpty(resourceRequirements.getCpuRequest())) {
+        metadata.put("sync_cpu_request", resourceRequirements.getCpuRequest());
+      }
+      if (!com.google.common.base.Strings.isNullOrEmpty(resourceRequirements.getCpuLimit())) {
+        metadata.put("sync_cpu_limit", resourceRequirements.getCpuLimit());
+      }
+      if (!com.google.common.base.Strings.isNullOrEmpty(resourceRequirements.getMemoryRequest())) {
+        metadata.put("sync_memory_request", resourceRequirements.getMemoryRequest());
+      }
+      if (!com.google.common.base.Strings.isNullOrEmpty(resourceRequirements.getMemoryLimit())) {
+        metadata.put("sync_memory_limit", resourceRequirements.getMemoryLimit());
+      }
     }
     return metadata.build();
   }
