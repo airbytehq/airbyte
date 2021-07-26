@@ -79,10 +79,7 @@ class AbstractSource(Source, ABC):
         return AirbyteCatalog(streams=streams)
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        """
-        Implements the Check Connection operation from the Airbyte Specification.
-        See https://docs.airbyte.io/architecture/airbyte-specification.
-        """
+        """Implements the Check Connection operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
         try:
             check_succeeded, error = self.check_connection(logger, config)
             if not check_succeeded:
