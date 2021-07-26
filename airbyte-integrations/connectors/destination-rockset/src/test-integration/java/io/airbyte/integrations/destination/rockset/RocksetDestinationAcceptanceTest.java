@@ -24,44 +24,26 @@
 
 package io.airbyte.integrations.destination.rockset;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.api.client.json.Json;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.gson.Gson;
-import com.google.gson.internal.LinkedTreeMap;
 import com.rockset.client.RocksetClient;
 import com.rockset.client.api.QueriesApi;
-import com.rockset.client.model.DeleteCollectionResponse;
-import com.rockset.client.model.DeleteDocumentsRequest;
-import com.rockset.client.model.DeleteDocumentsRequestData;
-import com.rockset.client.model.DeleteDocumentsResponse;
-import com.rockset.client.model.QueryParameter;
 import com.rockset.client.model.QueryRequest;
 import com.rockset.client.model.QueryRequestSql;
-import com.rockset.client.model.QueryResponse;
-import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Response;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testng.collections.Maps;
 import org.testng.collections.Sets;
 
 public class RocksetDestinationAcceptanceTest extends DestinationAcceptanceTest {
@@ -93,50 +75,46 @@ public class RocksetDestinationAcceptanceTest extends DestinationAcceptanceTest 
 
   @Override
   protected List<JsonNode> retrieveRecords(
-      TestDestinationEnv testEnv, String streamName, String namespace, JsonNode streamSchema)
-      throws IOException {
+                                           TestDestinationEnv testEnv,
+                                           String streamName,
+                                           String namespace,
+                                           JsonNode streamSchema)
+      throws Exception {
+
+    String ws = getConfig().get("workspace").asText();
+    RocksetClient client = RocksetUtils.clientFromConfig(getConfig());
+
+    RocksetUtils.createWorkspaceIfNotExists(client, ws);
+    RocksetUtils.createCollectionIfNotExists(client, ws, streamName);
+    RocksetUtils.waitUntilCollectionReady(client, ws, streamName);
+    collectionNames.add(streamName);
+
+    String sqlText = String.format("SELECT * FROM %s.%s;", ws, streamName);
+
+    QueryRequest query =
+      new QueryRequest()
+        .sql(new QueryRequestSql().query(sqlText));
 
     QueriesApi queryClient = new QueriesApi(RocksetUtils.apiClientFromConfig(getConfig()));
+    Response response = queryClient.queryCall(query, null, null).execute();
 
     try {
       // As Rockset is not a transactional database, we have to wait a few seconds to be extra sure
       // that we've given documents enough time to be fully indexed when retrieving records
-      Thread.sleep(10000);
+      Thread.sleep(30000);
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
-    final String tableName = getConfig().get("workspace").textValue() + "." + streamName;
-    collectionNames.add(streamName);
 
-    QueryRequest query =
-        new QueryRequest()
-            .sql(
-                new QueryRequestSql()
-                    // HACK, table names can't be used as params
-                    .query(
-                        //
-                        "SELECT * from "
-                            + tableName
-                            + " ORDER BY "
-                            + streamName
-                            + "._event_time ASC;"));
-
-    try {
-      Response response = queryClient.queryCall(query, null, null).execute();
-      final JsonNode json = mapper.readTree(response.body().string());
-      List<JsonNode> results = Lists.newArrayList(json.get("results").iterator());
-      results =
-          results.stream()
-              // remove rockset added fields
-              .peek(jn -> ((ObjectNode) jn).remove("_id"))
-              .peek(jn -> ((ObjectNode) jn).remove("_event_time"))
-              .collect(Collectors.toList());
-      return results;
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-    return null;
+    JsonNode json = mapper.readTree(response.body().string());
+    List<JsonNode> results = Lists.newArrayList(json.get("results").iterator());
+    results =
+        results.stream()
+            // remove rockset added fields
+            .peek(jn -> ((ObjectNode) jn).remove("_id"))
+            .peek(jn -> ((ObjectNode) jn).remove("_event_time"))
+            .collect(Collectors.toList());
+    return results;
   }
 
   @Override
@@ -150,11 +128,14 @@ public class RocksetDestinationAcceptanceTest extends DestinationAcceptanceTest 
       final RocksetClient client = RocksetUtils.clientFromConfig(getConfig());
       String workspace = getConfig().get("workspace").asText();
       collectionNames.forEach(
-          cn ->
-              Exceptions.toRuntime(
-                  () -> RocksetUtils.deleteAllDocsInCollection(client, workspace, cn)));
+          cn -> Exceptions.toRuntime(
+              () -> {
+                RocksetUtils.deleteCollectionIfExists(client, workspace, cn);
+                RocksetUtils.waitUntilCollectionDeleted(client, workspace, cn);
+              }));
     } catch (IOException e) {
       e.printStackTrace();
     }
   }
+
 }

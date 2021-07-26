@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.airbyte.integrations.destination.rockset;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -7,25 +31,18 @@ import com.rockset.client.ApiException;
 import com.rockset.client.RocksetClient;
 import com.rockset.client.model.Collection;
 import com.rockset.client.model.CreateCollectionRequest;
-import com.rockset.client.model.CreateCollectionResponse;
 import com.rockset.client.model.CreateWorkspaceRequest;
-import com.rockset.client.model.CreateWorkspaceResponse;
-
-import com.rockset.client.model.DeleteCollectionResponse;
 import com.rockset.client.model.DeleteDocumentsRequest;
 import com.rockset.client.model.DeleteDocumentsRequestData;
-import com.rockset.client.model.DeleteDocumentsResponse;
 import com.rockset.client.model.ErrorModel;
 import com.rockset.client.model.GetCollectionResponse;
 import com.rockset.client.model.QueryRequest;
 import com.rockset.client.model.QueryRequestSql;
 import com.rockset.client.model.QueryResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RocksetUtils {
 
@@ -67,7 +84,10 @@ public class RocksetUtils {
 
   // Assumes the workspace exists
   public static void createCollectionIfNotExists(
-      RocksetClient client, String workspace, String cname) throws Exception {
+                                                 RocksetClient client,
+                                                 String workspace,
+                                                 String cname)
+      throws Exception {
     CreateCollectionRequest request = new CreateCollectionRequest().name(cname);
     try {
       client.createCollection(workspace, request);
@@ -84,12 +104,15 @@ public class RocksetUtils {
 
   // Assumes the collection exists
   public static void deleteCollectionIfExists(
-      RocksetClient client, String workspace, String cname) throws Exception {
+                                              RocksetClient client,
+                                              String workspace,
+                                              String cname)
+      throws Exception {
     try {
       client.deleteCollection(workspace, cname);
       LOGGER.info(String.format("Deleted collection %s.%s", workspace, cname));
     } catch (ApiException e) {
-      if (e.getCode() == 400 && e.getErrorModel().getType() == ErrorModel.TypeEnum.NOTFOUND) {
+      if (e.getCode() == 404 && e.getErrorModel().getType() == ErrorModel.TypeEnum.NOTFOUND) {
         LOGGER.info(String.format("Collection %s.%s does not exist", workspace, cname));
         return;
       }
@@ -125,7 +148,7 @@ public class RocksetUtils {
         LOGGER.info(String.format("Collection %s.%s still exists, waiting for deletion to complete", workspace, cname));
         Thread.sleep(5000);
       } catch (ApiException e) {
-        if (e.getCode() == 400 && e.getErrorModel().getType() == ErrorModel.TypeEnum.NOTFOUND) {
+        if (e.getCode() == 404 && e.getErrorModel().getType() == ErrorModel.TypeEnum.NOTFOUND) {
           LOGGER.info(String.format("Collection %s.%s does not exist", workspace, cname));
           return;
         }
@@ -160,25 +183,5 @@ public class RocksetUtils {
         Thread.sleep(5000);
       }
     }
-  }
-
-  public static void deleteAllDocsInCollection(RocksetClient client, String workspace, String cname)
-      throws Exception {
-    List<DeleteDocumentsRequestData> allDocIds =
-        client
-            .query(
-                new QueryRequest()
-                    .sql(
-                        new QueryRequestSql()
-                            // FIX, unescaped params
-                            .query(String.format("select _id from %s.%s", workspace, cname))))
-            .getResults()
-            .stream()
-            .map(x -> (LinkedTreeMap<String, Object>) x)
-            .map(x -> new DeleteDocumentsRequestData().id((String) x.get("_id")))
-            .collect(Collectors.toList());
-
-    DeleteDocumentsRequest req = new DeleteDocumentsRequest().data(allDocIds);
-    client.deleteDocuments(workspace, cname, req);
   }
 }

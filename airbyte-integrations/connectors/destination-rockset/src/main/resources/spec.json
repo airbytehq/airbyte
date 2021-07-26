@@ -6,9 +6,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Rockset Destination Spec",
     "type": "object",
-    "required": [
-      "api_key", "workspace"
-    ],
+    "required": ["api_key", "workspace"],
     "additionalProperties": false,
     "properties": {
       "api_key": {
