@@ -27,6 +27,7 @@ package io.airbyte.config.persistence;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -75,7 +76,7 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
 
   public FileSystemConfigPersistence(final Path storageRoot) {
     this.storageRoot = storageRoot;
-    this.configRoot = storageRoot.resolve(CONFIG_DIR);
+    this.configRoot = Exceptions.toRuntime(() -> Files.createDirectories(storageRoot.resolve(CONFIG_DIR)));
   }
 
   @Override
