@@ -171,7 +171,7 @@ public class SchedulerApp {
     LOGGER.info("workspaceRoot = " + workspaceRoot);
 
     LOGGER.info("Creating DB connection pool...");
-    final Database database = Databases.createPostgresDatabase(
+    final Database database = Databases.createPostgresDatabaseWithRetry(
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
         configs.getDatabaseUrl());
