@@ -56,7 +56,10 @@ public class TrackingMetadata {
 
     final int operationCount = standardSync.getOperationIds() != null ? standardSync.getOperationIds().size() : 0;
     metadata.put("operation_count", operationCount);
-    metadata.put("namespace_definition", standardSync.getNamespaceDefinition());
+    if (standardSync.getNamespaceDefinition() != null) {
+      metadata.put("namespace_definition", standardSync.getNamespaceDefinition());
+    }
+
     final boolean isUsingPrefix = standardSync.getPrefix() != null && !standardSync.getPrefix().isBlank();
     metadata.put("table_prefix", isUsingPrefix);
 
