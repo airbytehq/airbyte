@@ -564,12 +564,6 @@ jobs:
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
-      # Set up kustomize
-#      - name: Set up Kustomize
-#        run: |-
-#          curl -sfLo kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/v3.1.0/kustomize_3.1.0_linux_amd64
-#          chmod u+x ./kustomize
-
       - name: Run End-to-End Acceptance Tests on GKE
         env:
           USER: root
