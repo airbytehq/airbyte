@@ -135,7 +135,7 @@ public class MigrationAcceptanceTest {
   private void secondRun(String targetVersion) throws Exception {
     final Set<String> logsToExpect = new HashSet<>();
     logsToExpect.add("Version: " + targetVersion);
-    logsToExpect.add("Starting migrations. Current version: 0.17.0-alpha, Target version: " + targetVersionWithoutPatch(targetVersion));
+    logsToExpect.add("Starting migrations. Current version: 0.17.0-alpha-db-patch, Target version: " + targetVersionWithoutPatch(targetVersion));
     logsToExpect.add("Migrating from version: 0.17.0-alpha to version 0.18.0-alpha.");
     logsToExpect.add("Migrating from version: 0.18.0-alpha to version 0.19.0-alpha.");
     logsToExpect.add("Migrating from version: 0.19.0-alpha to version 0.20.0-alpha.");
