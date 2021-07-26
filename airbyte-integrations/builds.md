@@ -96,7 +96,7 @@
  Quickbooks   [![source-quickbooks-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-quickbooks-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-quickbooks-singer) 
 
  Recharge   [![source-recharge](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-recharge%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-recharge) 
- 
+
  Recurly   [![source-recurly](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-recurly%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-recurly) 
 
  Redshift   [![source-redshift](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-redshift%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-redshift) 
