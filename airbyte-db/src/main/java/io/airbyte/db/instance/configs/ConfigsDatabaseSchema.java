@@ -22,52 +22,46 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler.persistence;
+package io.airbyte.db.instance.configs;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.JsonSchemas;
+import io.airbyte.db.instance.TableSchema;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.io.File;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * Whenever a new table is created in the Job Airbyte Database, we should also add a corresponding
- * yaml file to validate the content of the table when it is exported/imported in files.
- *
- * This enum maps the table names to the yaml file where the Json Schema is stored.
- */
-public enum DatabaseSchema {
+public enum ConfigsDatabaseSchema implements TableSchema {
 
-  // Attempts
-  ATTEMPTS("Attempts.yaml"),
+  AIRBYTE_CONFIGS("AirbyteConfigs.yaml");
 
-  // Jobs
-  JOBS("Jobs.yaml"),
-
-  // AirbyteMetadata
-  AIRBYTE_METADATA("AirbyteMetadata.yaml");
-
-  static final Path KNOWN_SCHEMAS_ROOT = JsonSchemas.prepareSchemas("tables", DatabaseSchema.class);
+  static final Path SCHEMAS_ROOT = JsonSchemas.prepareSchemas("configs_database", ConfigsDatabaseSchema.class);
 
   private final String schemaFilename;
 
-  DatabaseSchema(final String schemaFilename) {
+  ConfigsDatabaseSchema(String schemaFilename) {
     this.schemaFilename = schemaFilename;
   }
 
-  public File getFile() {
-    return KNOWN_SCHEMAS_ROOT.resolve(schemaFilename).toFile();
+  @Override
+  public String getTableName() {
+    return name().toLowerCase();
   }
 
-  public JsonNode toJsonNode() {
-    return JsonSchemaValidator.getSchema(getFile());
+  @Override
+  public JsonNode getTableDefinition() {
+    File schemaFile = SCHEMAS_ROOT.resolve(schemaFilename).toFile();
+    return JsonSchemaValidator.getSchema(schemaFile);
   }
 
-  public static List<String> getLowerCaseTableNames() {
-    return Stream.of(DatabaseSchema.values()).map(Enum::name).map(String::toLowerCase).collect(Collectors.toList());
+  /**
+   * @return table names in lower case
+   */
+  public static Set<String> getTableNames() {
+    return Stream.of(ConfigsDatabaseSchema.values()).map(ConfigsDatabaseSchema::getTableName).collect(Collectors.toSet());
   }
 
 }
