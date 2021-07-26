@@ -36,6 +36,9 @@ jobs:
     name: "Ensure all required Docker images exist on Dockerhub"
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+
       - name: Check images exist
         run: ./tools/bin/check_images_exist.sh all
 
