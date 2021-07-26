@@ -162,6 +162,11 @@ public class AcceptanceTests {
   private static final String SOURCE_USERNAME = "sourceusername";
   private static final String SOURCE_PASSWORD = "hunter2";
 
+  /**
+   * When the acceptance tests are run against a local instance of docker-compose or KUBE then these
+   * test containers are used. When we run these tests in GKE, we spawn a source and destination
+   * postgres database ane use them for testing.
+   */
   private static PostgreSQLContainer sourcePsql;
   private static PostgreSQLContainer destinationPsql;
 
@@ -174,6 +179,9 @@ public class AcceptanceTests {
 
   @BeforeAll
   public static void init() {
+    if (IS_GKE && !IS_KUBE) {
+      throw new RuntimeException("KUBE Flag should also be enabled if GKE flag is enabled");
+    }
     if (!IS_GKE) {
       sourcePsql = new PostgreSQLContainer("postgres:13-alpine")
           .withUsername(SOURCE_USERNAME)
@@ -184,9 +192,6 @@ public class AcceptanceTests {
 
   @AfterAll
   public static void end() {
-    if (IS_GKE && !IS_KUBE) {
-      throw new RuntimeException("KUBE Flag should also be enabled if GKE flag is enabled");
-    }
     if (!IS_GKE) {
       sourcePsql.stop();
     }
@@ -223,7 +228,7 @@ public class AcceptanceTests {
     if (IS_GKE) {
       final Database database = getSourceDatabase();
       final Path path = Path.of(Resources.getResource("postgres_init.sql").toURI());
-      StringBuilder query = new StringBuilder();
+      final StringBuilder query = new StringBuilder();
       for (String line : java.nio.file.Files.readAllLines(path, UTF8)) {
         if (line != null && !line.isEmpty()) {
           query.append(line);

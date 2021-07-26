@@ -30,6 +30,13 @@ import io.airbyte.test.acceptance.AcceptanceTests.Type;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This class is used to provide information related to the test databases for running the
+ * {@link AcceptanceTests} on GKE. We launch 2 postgres databases in GKE as pods which act as source
+ * and destination and the tests run against them. In order to allow the test instance to connect to
+ * these databases we use port forwarding Refer
+ * tools/bin/gke-kube-acceptance-test/acceptance_test_kube_gke.sh for more info
+ */
 public class GKEPostgresConfig {
 
   private static final String SOURCE_HOST = "postgres-source-svc";
