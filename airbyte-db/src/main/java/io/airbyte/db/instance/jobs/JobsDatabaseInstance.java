@@ -27,11 +27,9 @@ package io.airbyte.db.instance.jobs;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
-import io.airbyte.db.ServerUuid;
 import io.airbyte.db.instance.BaseDatabaseInstance;
 import io.airbyte.db.instance.DatabaseInstance;
 import java.io.IOException;
-import java.util.Optional;
 import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,8 +43,7 @@ public class JobsDatabaseInstance extends BaseDatabaseInstance implements Databa
   private static final Function<Database, Boolean> IS_JOBS_DATABASE_READY = database -> {
     try {
       LOGGER.info("Testing if jobs database is ready...");
-      Optional<String> uuid = ServerUuid.get(database);
-      return uuid.isPresent();
+      return database.query(ctx -> JobsDatabaseSchema.getTableNames().stream().allMatch(table -> hasTable(ctx, table)));
     } catch (Exception e) {
       return false;
     }
