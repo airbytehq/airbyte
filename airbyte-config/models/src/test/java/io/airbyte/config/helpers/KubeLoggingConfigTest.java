@@ -50,7 +50,11 @@ public class KubeLoggingConfigTest {
   @AfterEach
   public void cleanUpLogs() {
     if (logPath != null) {
-      LogClientSingleton.deleteLogs(new EnvConfigs(), logPath);
+      try {
+        LogClientSingleton.deleteLogs(new EnvConfigs(), logPath);
+      } catch (Exception e) {
+        // Ignore Minio delete error.
+      }
     }
   }
 
