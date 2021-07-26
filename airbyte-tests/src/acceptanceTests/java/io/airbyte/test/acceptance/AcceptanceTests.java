@@ -37,7 +37,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.common.io.Files;
 import com.google.common.io.Resources;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.JobsApi;
@@ -747,7 +746,7 @@ public class AcceptanceTests {
                                  matches = "true")
   public void testRedactionOfSensitiveRequestBodies() throws Exception {
     // check that the source password is not present in the logs
-    final List<String> serverLogLines = Files.readAllLines(
+    final List<String> serverLogLines = java.nio.file.Files.readAllLines(
         apiClient.getLogsApi().getLogs(new LogsRequestBody().logType(LogType.SERVER)).toPath(),
         Charset.defaultCharset());
 
