@@ -579,7 +579,7 @@ jobs:
       - start-gke-kube-acceptance-test-runner # required to get output from the start-runner job
       - gke-kube-acceptance-test # required to wait when the main job is done
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' && github.event == 'schedule' && ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    if: needs.start-gke-kube-acceptance-test-runner.result == 'success' ||  needs.start-gke-kube-acceptance-test-runner.result == 'failure' || needs.start-gke-kube-acceptance-test-runner.result == 'cancelled'
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
