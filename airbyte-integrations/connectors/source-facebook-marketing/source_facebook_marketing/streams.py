@@ -29,6 +29,10 @@ from collections import deque
 from datetime import datetime
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Sequence
 
+from facebook_business.adobjects.adreportrun import AdReportRun
+from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
+from facebook_business.exceptions import FacebookRequestError
+
 import backoff
 import pendulum
 from airbyte_cdk.models import SyncMode
@@ -36,9 +40,6 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from cached_property import cached_property
-from facebook_business.adobjects.adreportrun import AdReportRun
-from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
-from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.api import API
 
 from .common import FacebookAPIException, JobTimeoutException, batch, deep_merge, retry_pattern
@@ -295,7 +296,7 @@ class AdsInsights(FBMarketingIncrementalStream):
     MAX_WAIT_TO_START = pendulum.duration(minutes=5)
     MAX_WAIT_TO_FINISH = pendulum.duration(minutes=30)
     MAX_ASYNC_SLEEP = pendulum.duration(minutes=5)
-    MAX_ASYNC_JOBS = 3
+    MAX_ASYNC_JOBS = 10
     INSIGHTS_RETENTION_PERIOD = pendulum.duration(days=37 * 30)
 
     action_breakdowns = ALL_ACTION_BREAKDOWNS
@@ -353,7 +354,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             job = job.api_get()
             job_progress_pct = job["async_percent_completion"]
             job_id = job["report_run_id"]
-            self.logger.info(f"ReportRunId {job_id} is {job_progress_pct}% complete")
+            self.logger.info(f"ReportRunId {job_id} is {job_progress_pct}% complete ({job['async_status']})")
             runtime = pendulum.now() - start_time
 
             if job["async_status"] == "Job Completed":

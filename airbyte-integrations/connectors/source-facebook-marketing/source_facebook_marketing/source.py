@@ -23,12 +23,13 @@
 #
 
 from datetime import datetime
-from typing import Any, List, Mapping, Tuple, Type
+from typing import Any, Iterator, List, Mapping, Tuple, Type
 
-from airbyte_cdk.models import ConnectorSpecification, DestinationSyncMode
+from pydantic import BaseModel, Field
+
+from airbyte_cdk.models import AirbyteMessage, ConnectorSpecification, DestinationSyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from pydantic import BaseModel, Field
 from source_facebook_marketing.api import API
 from source_facebook_marketing.streams import (
     AdCreatives,
@@ -79,6 +80,9 @@ class ConnectorConfig(BaseModel):
 
 
 class SourceFacebookMarketing(AbstractSource):
+    def __init__(self):
+        self._limit_read = 0
+
     def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
 
@@ -104,7 +108,10 @@ class SourceFacebookMarketing(AbstractSource):
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        config: ConnectorConfig = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
+        raw_config = dict(config)
+        self._limit_read = raw_config.pop("_limit", 0)
+
+        config: ConnectorConfig = ConnectorConfig.parse_obj(raw_config)  # FIXME: this will be not need after we fix CDK
         api = API(account_id=config.account_id, access_token=config.access_token)
         insights_args = dict(
             api=api,
@@ -138,3 +145,10 @@ class SourceFacebookMarketing(AbstractSource):
             supported_destination_sync_modes=[DestinationSyncMode.append],
             connectionSpecification=ConnectorConfig.schema(),
         )
+
+    def _read_stream(self, stream_instance: Stream, **kwargs) -> Iterator[AirbyteMessage]:
+        records = super()._read_stream(stream_instance=stream_instance, **kwargs)
+        for num, record in enumerate(records, start=1):
+            yield record
+            if self._limit_read and num >= self._limit_read:
+                break
