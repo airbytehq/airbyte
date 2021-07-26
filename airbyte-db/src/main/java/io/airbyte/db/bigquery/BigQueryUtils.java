@@ -75,25 +75,26 @@ public class BigQueryUtils {
       case DATETIME -> node.put(fieldName, toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATETIME_FORMAT)));
       case TIMESTAMP -> node.put(fieldName, toISO8601String(fieldValue.getTimestampValue() / 1000));
       case TIME -> node.put(fieldName, fieldValue.getStringValue());
+      case ARRAY -> {
+        ArrayNode arrayNode = node.putArray(fieldName);
+        fieldValue.getRepeatedValue().forEach(arrayValue -> fillObjectNode(fieldName, fieldType, arrayValue, arrayNode.addObject()));
+      }
       default -> node.put(fieldName, fieldValue.getStringValue());
     }
   }
 
   private static void setJsonField(Field field, FieldValue fieldValue, ObjectNode node) {
     String fieldName = field.getName();
-    if (fieldValue.getAttribute().equals(Attribute.PRIMITIVE)) {
+    if (fieldValue.getAttribute().equals(Attribute.RECORD)) {
+      ObjectNode newNode = node.putObject(fieldName);
+      field.getSubFields().forEach(recordField -> setJsonField(recordField, fieldValue.getRecordValue().get(recordField.getName()), newNode));
+    }
+    else {
       if (fieldValue.isNull()) {
         node.put(fieldName, (String) null);
       } else {
         fillObjectNode(fieldName, field.getType().getStandardType(), fieldValue, node);
       }
-    } else if (fieldValue.getAttribute().equals(Attribute.REPEATED)) {
-      ArrayNode arrayNode = node.putArray(fieldName);
-      StandardSQLTypeName fieldType = field.getType().getStandardType();
-      fieldValue.getRepeatedValue().forEach(arrayFieldValue -> fillObjectNode(fieldName, fieldType, arrayFieldValue, arrayNode.addObject()));
-    } else if (fieldValue.getAttribute().equals(Attribute.RECORD)) {
-      ObjectNode newNode = node.putObject(fieldName);
-      field.getSubFields().forEach(recordField -> setJsonField(recordField, fieldValue.getRecordValue().get(recordField.getName()), newNode));
     }
   }
 
