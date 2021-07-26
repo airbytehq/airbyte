@@ -372,12 +372,12 @@ public class ConfigDumpImporter {
    * @return modified stream with old deployment id removed and correct deployment id inserted.
    * @throws IOException - you never know when you IO.
    */
-  private static Stream<JsonNode> replaceDeploymentMetadata(JobPersistence postgresPersistence,
-                                                            Stream<JsonNode> metadataTableStream)
+  static Stream<JsonNode> replaceDeploymentMetadata(JobPersistence postgresPersistence,
+                                                    Stream<JsonNode> metadataTableStream)
       throws IOException {
     // filter out the deployment record from the import data, if it exists.
     Stream<JsonNode> stream = metadataTableStream
-        .filter(record -> record.get(DefaultJobPersistence.METADATA_KEY_COL).asText().equals(JobsDatabaseSchema.AIRBYTE_METADATA.toString()));
+        .filter(record -> !record.get(DefaultJobPersistence.METADATA_KEY_COL).asText().equals(DefaultJobPersistence.DEPLOYMENT_ID_KEY));
 
     // insert the current deployment id, if it exists.
     final Optional<UUID> deploymentOptional = postgresPersistence.getDeployment();
