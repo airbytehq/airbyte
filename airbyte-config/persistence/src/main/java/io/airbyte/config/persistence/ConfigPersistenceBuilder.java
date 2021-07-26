@@ -24,12 +24,9 @@
 
 package io.airbyte.config.persistence;
 
-import static io.airbyte.config.persistence.AirbyteConfigsTable.AIRBYTE_CONFIGS_TABLE_SCHEMA;
-
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.Configs;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,25 +104,19 @@ public class ConfigPersistenceBuilder {
 
     DatabaseConfigPersistence dbConfigPersistence;
     if (setupDatabase) {
-      // When we need to setup the database, it means the database will be initialized after
-      // we connect to the database. So the database itself is considered ready as long as
-      // the connection is alive.
-      Database database = Databases.createPostgresDatabaseWithRetry(
+      Database database = new ConfigsDatabaseInstance(
           configs.getConfigDatabaseUser(),
           configs.getConfigDatabasePassword(),
-          configs.getConfigDatabaseUrl(),
-          Databases.IS_CONFIG_DATABASE_CONNECTED);
+          configs.getConfigDatabaseUrl())
+              .getAndInitialize();
       dbConfigPersistence = new DatabaseConfigPersistence(database)
-          .initialize(MoreResources.readResource(AIRBYTE_CONFIGS_TABLE_SCHEMA))
           .loadData(seedConfigPersistence);
     } else {
-      // When we don't need to setup the database, it means the database is initialized
-      // somewhere else, and it is considered ready only when data has been loaded into it.
-      Database database = Databases.createPostgresDatabaseWithRetry(
+      Database database = new ConfigsDatabaseInstance(
           configs.getConfigDatabaseUser(),
           configs.getConfigDatabasePassword(),
-          configs.getConfigDatabaseUrl(),
-          Databases.IS_CONFIG_DATABASE_LOADED_WITH_DATA);
+          configs.getConfigDatabaseUrl())
+              .getInitialized();
       dbConfigPersistence = new DatabaseConfigPersistence(database);
     }
 

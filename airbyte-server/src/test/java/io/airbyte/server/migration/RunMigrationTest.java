@@ -49,7 +49,6 @@ import io.airbyte.migrate.Migrations;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.RunMigration;
-import io.airbyte.server.converters.DatabaseArchiver;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
@@ -93,7 +92,7 @@ public class RunMigrationTest {
   }
 
   @Test
-  public void testRunMigration() {
+  public void testRunMigration() throws Exception {
     try (StubAirbyteDB stubAirbyteDB = new StubAirbyteDB()) {
       final File file = Path
           .of(Resources.getResource("migration/03a4c904-c91d-447f-ab59-27a43b52c2fd.gz").toURI())
@@ -112,8 +111,6 @@ public class RunMigrationTest {
       assertDatabaseVersion(jobPersistence, TARGET_VERSION);
       assertPostMigrationConfigs(configRoot);
       FileUtils.deleteDirectory(configRoot.toFile());
-    } catch (Exception e) {
-      throw new RuntimeException(e);
     }
   }
 
@@ -295,7 +292,6 @@ public class RunMigrationTest {
 
   private void runMigration(JobPersistence jobPersistence, Path configRoot) throws Exception {
     try (RunMigration runMigration = new RunMigration(
-        INITIAL_VERSION,
         jobPersistence,
         new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot)),
         TARGET_VERSION,

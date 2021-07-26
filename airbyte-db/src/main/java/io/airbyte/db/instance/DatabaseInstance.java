@@ -22,26 +22,21 @@
  * SOFTWARE.
  */
 
-package io.airbyte.config.persistence;
+package io.airbyte.db.instance;
 
-import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.table;
+import io.airbyte.db.Database;
+import java.io.IOException;
 
-import java.sql.Timestamp;
-import org.jooq.Field;
-import org.jooq.JSONB;
-import org.jooq.Record;
-import org.jooq.Table;
+public interface DatabaseInstance {
 
-public class AirbyteConfigsTable {
+  /**
+   * Get a database that has been initialized and is ready to use.
+   */
+  Database getInitialized();
 
-  public static final String AIRBYTE_CONFIGS_TABLE_SCHEMA = "airbyte_configs_table.sql";
-
-  public static final Table<Record> AIRBYTE_CONFIGS = table("airbyte_configs");
-  public static final Field<String> CONFIG_ID = field("config_id", String.class);
-  public static final Field<String> CONFIG_TYPE = field("config_type", String.class);
-  public static final Field<JSONB> CONFIG_BLOB = field("config_blob", JSONB.class);
-  public static final Field<Timestamp> CREATED_AT = field("created_at", Timestamp.class);
-  public static final Field<Timestamp> UPDATED_AT = field("updated_at", Timestamp.class);
+  /**
+   * Get an empty database and initialize it.
+   */
+  Database getAndInitialize() throws IOException;
 
 }
