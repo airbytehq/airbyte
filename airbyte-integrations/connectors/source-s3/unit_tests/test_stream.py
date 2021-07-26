@@ -62,22 +62,22 @@ class TestFileStream():
             (  # simple case
                 ["id", "first_name", "last_name"],
                 {"id":"1", "first_name":"Frodo", "last_name":"Baggins"},
-                {"id":"1", "first_name":"Frodo", "last_name":"Baggins", "_airbyte_additional_properties": {}}
+                {"id":"1", "first_name":"Frodo", "last_name":"Baggins", "_ab_additional_properties": {}}
             ),
             (  # additional columns
                 ["id", "first_name", "last_name"],
                 {"id":"1", "first_name":"Frodo", "last_name":"Baggins", "location":"The Shire", "items":["The One Ring", "Sting"]},
-                {"id":"1", "first_name":"Frodo", "last_name":"Baggins", "_airbyte_additional_properties": {"location":"The Shire", "items":["The One Ring", "Sting"]}}
+                {"id":"1", "first_name":"Frodo", "last_name":"Baggins", "_ab_additional_properties": {"location":"The Shire", "items":["The One Ring", "Sting"]}}
             ),
             (  # missing columns
                 ["id", "first_name", "last_name", "location", "items"],
                 {"id":"1", "first_name":"Frodo", "last_name":"Baggins"},
-                {"id":"1", "first_name":"Frodo", "last_name":"Baggins", "location":None, "items":None, "_airbyte_additional_properties": {}}
+                {"id":"1", "first_name":"Frodo", "last_name":"Baggins", "location":None, "items":None, "_ab_additional_properties": {}}
             ),
             (  # additional and missing columns
                 ["id", "first_name", "last_name", "friends", "enemies"],
                 {"id":"1", "first_name":"Frodo", "last_name":"Baggins", "location":"The Shire", "items":["The One Ring", "Sting"]},
-                {"id":"1", "first_name":"Frodo", "last_name":"Baggins", "friends":None, "enemies":None, "_airbyte_additional_properties": {"location":"The Shire", "items":["The One Ring", "Sting"]}}
+                {"id":"1", "first_name":"Frodo", "last_name":"Baggins", "friends":None, "enemies":None, "_ab_additional_properties": {"location":"The Shire", "items":["The One Ring", "Sting"]}}
             ),
         ]
     )

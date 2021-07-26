@@ -153,9 +153,10 @@ class FileReaderCsv(FileReader):
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.ParseOptions.html
         """
+        quote_char = self._format.get("quote_char", False) if self._format.get("quote_char", False) != '' else False
         return pa.csv.ParseOptions(
             delimiter=self._format.get("delimiter", ','),
-            quote_char=self._format.get("quote_char", '"'),
+            quote_char=quote_char,
             double_quote=self._format.get("double_quote", True),
             escape_char=self._format.get("escape_char", False),
             newlines_in_values=self._format.get("newlines_in_values", False)

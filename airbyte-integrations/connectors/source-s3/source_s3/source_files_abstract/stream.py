@@ -52,9 +52,10 @@ class FileStream(Stream, ABC):
         # 'parquet': FileReaderParquet,
         # etc.
     }
-    ab_additional_col = "_airbyte_additional_properties"
-    ab_last_mod_col = "_airbyte_source_file_last_modified"
-    ab_file_name_col = "_airbyte_source_file_url"
+    # TODO: make these user configurable in spec.json
+    ab_additional_col = "_ab_additional_properties"
+    ab_last_mod_col = "_ab_source_file_last_modified"
+    ab_file_name_col = "_ab_source_file_url"
     datetime_format_string = "%Y-%m-%dT%H:%M:%S%z"
 
     def __init__(self, dataset_name: str, provider: dict, format: dict, path_patterns: List[str], schema: str = None):
@@ -79,6 +80,8 @@ class FileStream(Stream, ABC):
             self._schema = self._init_schema(schema)
         self.fileclient_cache = None
         self.master_schema = None
+        self.logger = AirbyteLogger()
+        self.logger.info(f"initialised stream with format: {format}")
 
     @staticmethod
     def _init_schema(schema: str) -> Mapping[str,str]:
@@ -299,7 +302,7 @@ class FileStream(Stream, ABC):
         """
         This method handles missing or additional fields in each record, according to the provided target_columns.
         All missing fields are added, with a value of None (null)
-        All additional fields are packed into the _airbyte_additional_properties object column
+        All additional fields are packed into the _ab_additional_properties object column
         We start off with a check to see if we're already lined up to target in order to avoid unnecessary iterations (useful if many columns)
 
         :param record: json-like representation of a data row {column:value}
