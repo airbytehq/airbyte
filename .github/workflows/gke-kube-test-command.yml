@@ -1,6 +1,7 @@
 name: GKE Kube Acceptance Test
-
 on:
+  schedule:
+    - cron: '0 */6 * * *'
   workflow_dispatch:
     inputs:
       comment-id:
@@ -92,7 +93,7 @@ jobs:
           sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
       - name: Run End-to-End Acceptance Tests on GKE
-        id: gke
+        id: gke-kube-test
         env:
           USER: root
           HOME: /home/runner
