@@ -22,28 +22,18 @@
  * SOFTWARE.
  */
 
-package io.airbyte.config.persistence;
+package io.airbyte.config;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.config.AbstractConfig;
-import io.airbyte.validation.json.JsonValidationException;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
+import java.io.File;
 
-public interface ConfigPersistence {
+public interface AbstractConfig {
 
-  <T> T getConfig(AbstractConfig configType, String configId, Class<T> clazz) throws ConfigNotFoundException, JsonValidationException, IOException;
+  String name();
 
-  <T> List<T> listConfigs(AbstractConfig configType, Class<T> clazz) throws JsonValidationException, IOException;
+  String getIdFieldName();
 
-  <T> void writeConfig(AbstractConfig configType, String configId, T config) throws JsonValidationException, IOException;
+  <T> String getId(T config);
 
-  <T> void deleteConfig(AbstractConfig configType, String configId) throws ConfigNotFoundException, IOException;
-
-  <T> void replaceAllConfigs(Map<AbstractConfig, Stream<T>> configs, boolean dryRun) throws IOException;
-
-  Map<String, Stream<JsonNode>> dumpConfigs() throws IOException;
+  File getFile();
 
 }

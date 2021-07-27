@@ -29,7 +29,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.function.Function;
 
-public enum ConfigSchema {
+public enum ConfigSchema implements AbstractConfig {
 
   // workspace
   STANDARD_WORKSPACE("StandardWorkspace.yaml",
@@ -118,6 +118,7 @@ public enum ConfigSchema {
     throw new RuntimeException("Object: " + object + " is not instance of class " + getClassName().getName());
   }
 
+  @Override
   public String getIdFieldName() {
     return idFieldName;
   }

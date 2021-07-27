@@ -26,7 +26,7 @@ package io.airbyte.config.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.AbstractConfig;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -50,7 +50,7 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> T getConfig(final ConfigSchema configType, final String configId, final Class<T> clazz)
+  public <T> T getConfig(final AbstractConfig configType, final String configId, final Class<T> clazz)
       throws ConfigNotFoundException, JsonValidationException, IOException {
     final T config = decoratedPersistence.getConfig(configType, configId, clazz);
     validateJson(config, configType);
@@ -58,7 +58,7 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> List<T> listConfigs(ConfigSchema configType, Class<T> clazz) throws JsonValidationException, IOException {
+  public <T> List<T> listConfigs(AbstractConfig configType, Class<T> clazz) throws JsonValidationException, IOException {
     final List<T> configs = decoratedPersistence.listConfigs(configType, clazz);
     for (T config : configs) {
       validateJson(config, configType);
@@ -67,13 +67,18 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> void writeConfig(ConfigSchema configType, String configId, T config) throws JsonValidationException, IOException {
+  public <T> void writeConfig(AbstractConfig configType, String configId, T config) throws JsonValidationException, IOException {
     validateJson(Jsons.jsonNode(config), configType);
     decoratedPersistence.writeConfig(configType, configId, config);
   }
 
   @Override
-  public <T> void replaceAllConfigs(final Map<ConfigSchema, Stream<T>> configs, final boolean dryRun) throws IOException {
+  public <T> void deleteConfig(AbstractConfig configType, String configId) throws ConfigNotFoundException, IOException {
+    decoratedPersistence.deleteConfig(configType, configId);
+  }
+
+  @Override
+  public <T> void replaceAllConfigs(final Map<AbstractConfig, Stream<T>> configs, final boolean dryRun) throws IOException {
     // todo (cgardens) need to do validation here.
     decoratedPersistence.replaceAllConfigs(configs, dryRun);
   }
@@ -83,7 +88,7 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
     return decoratedPersistence.dumpConfigs();
   }
 
-  private <T> void validateJson(T config, ConfigSchema configType) throws JsonValidationException {
+  private <T> void validateJson(T config, AbstractConfig configType) throws JsonValidationException {
     JsonNode schema = JsonSchemaValidator.getSchema(configType.getFile());
     schemaValidator.ensure(schema, Jsons.jsonNode(config));
   }

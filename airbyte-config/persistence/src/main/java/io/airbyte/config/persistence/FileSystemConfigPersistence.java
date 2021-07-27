@@ -27,7 +27,7 @@ package io.airbyte.config.persistence;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.AbstractConfig;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -79,7 +79,7 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> T getConfig(final ConfigSchema configType, final String configId, final Class<T> clazz)
+  public <T> T getConfig(final AbstractConfig configType, final String configId, final Class<T> clazz)
       throws ConfigNotFoundException, JsonValidationException, IOException {
     synchronized (lock) {
       return getConfigInternal(configType, configId, clazz);
@@ -87,20 +87,20 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> List<T> listConfigs(ConfigSchema configType, Class<T> clazz) throws JsonValidationException, IOException {
+  public <T> List<T> listConfigs(AbstractConfig configType, Class<T> clazz) throws JsonValidationException, IOException {
     synchronized (lock) {
       return listConfigsInternal(configType, clazz);
     }
   }
 
   @Override
-  public <T> void writeConfig(ConfigSchema configType, String configId, T config) throws IOException {
+  public <T> void writeConfig(AbstractConfig configType, String configId, T config) throws IOException {
     synchronized (lock) {
       writeConfigInternal(configType, configId, config);
     }
   }
 
-  private <T> void writeConfigs(ConfigSchema configType, Stream<T> configs, Path rootOverride) {
+  private <T> void writeConfigs(AbstractConfig configType, Stream<T> configs, Path rootOverride) {
     configs.forEach(config -> {
       String configId = configType.getId(config);
       try {
@@ -160,7 +160,14 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> void replaceAllConfigs(Map<ConfigSchema, Stream<T>> configs, boolean dryRun) throws IOException {
+  public <T> void deleteConfig(AbstractConfig configType, String configId) throws ConfigNotFoundException, IOException {
+    synchronized (lock) {
+      deleteConfigInternal(configType, configId);
+    }
+  }
+
+  @Override
+  public <T> void replaceAllConfigs(Map<AbstractConfig, Stream<T>> configs, boolean dryRun) throws IOException {
     final String oldConfigsDir = "config_deprecated";
     // create a new folder
     final String importDirectory = TMP_DIR + UUID.randomUUID();
@@ -168,7 +175,7 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
     Files.createDirectories(rootOverride);
 
     // write everything
-    for (final Map.Entry<ConfigSchema, Stream<T>> config : configs.entrySet()) {
+    for (final Map.Entry<AbstractConfig, Stream<T>> config : configs.entrySet()) {
       writeConfigs(config.getKey(), config.getValue(), rootOverride);
     }
 
@@ -187,7 +194,7 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
     LOGGER.info("Deleted {}", oldConfigsDir);
   }
 
-  private <T> T getConfigInternal(ConfigSchema configType, String configId, Class<T> clazz)
+  private <T> T getConfigInternal(AbstractConfig configType, String configId, Class<T> clazz)
       throws ConfigNotFoundException, IOException {
     // validate file with schema
     final Path configPath = buildConfigPath(configType, configId, configRoot);
@@ -198,7 +205,7 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
     }
   }
 
-  private <T> List<T> listConfigsInternal(ConfigSchema configType, Class<T> clazz) throws JsonValidationException, IOException {
+  private <T> List<T> listConfigsInternal(AbstractConfig configType, Class<T> clazz) throws JsonValidationException, IOException {
     final Path configTypePath = buildTypePath(configType, configRoot);
     if (!Files.exists(configTypePath)) {
       return Collections.emptyList();
@@ -224,11 +231,11 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
     }
   }
 
-  private <T> void writeConfigInternal(ConfigSchema configType, String configId, T config) throws IOException {
+  private <T> void writeConfigInternal(AbstractConfig configType, String configId, T config) throws IOException {
     writeConfigInternal(configType, configId, config, configRoot);
   }
 
-  private <T> void writeConfigInternal(ConfigSchema configType, String configId, T config, Path storageRoot) throws IOException {
+  private <T> void writeConfigInternal(AbstractConfig configType, String configId, T config, Path storageRoot) throws IOException {
 
     final Path configPath = buildConfigPath(configType, configId, storageRoot);
     Files.createDirectories(configPath.getParent());
@@ -236,11 +243,21 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
     Files.writeString(configPath, Jsons.serialize(config));
   }
 
-  private static Path buildConfigPath(ConfigSchema configType, String configId, Path storageRoot) {
+  private <T> void deleteConfigInternal(AbstractConfig configType, String configId) throws IOException {
+    deleteConfigInternal(configType, configId, configRoot);
+  }
+
+  private <T> void deleteConfigInternal(AbstractConfig configType, String configId, Path storageRoot) throws IOException {
+
+    final Path configPath = buildConfigPath(configType, configId, storageRoot);
+    Files.delete(configPath);
+  }
+
+  private static Path buildConfigPath(AbstractConfig configType, String configId, Path storageRoot) {
     return buildTypePath(configType, storageRoot).resolve(String.format("%s.json", configId));
   }
 
-  private static Path buildTypePath(ConfigSchema configType, Path storageRoot) {
+  private static Path buildTypePath(AbstractConfig configType, Path storageRoot) {
     return storageRoot.resolve(configType.toString());
   }
 
