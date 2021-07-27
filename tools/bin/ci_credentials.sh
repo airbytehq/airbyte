@@ -43,6 +43,8 @@ write_standard_creds base-normalization "$AWS_ORACLE_INTEGRATION_TEST_CREDS" "or
 write_standard_creds source-amazon-seller-partner "$AMAZON_SELLER_PARTNER_TEST_CREDS"
 write_standard_creds source-amplitude "$AMPLITUDE_INTEGRATION_TEST_CREDS"
 write_standard_creds source-apify-dataset "$APIFY_INTEGRATION_TEST_CREDS"
+write_standard_creds source-amazon-ads "$AMAZON_ADS_TEST_CREDS"
+write_standard_creds source-amplitude "$AMPLITUDE_INTEGRATION_TEST_CREDS"
 write_standard_creds source-asana "$SOURCE_ASANA_TEST_CREDS"
 write_standard_creds source-aws-cloudtrail "$SOURCE_AWS_CLOUDTRAIL_CREDS"
 write_standard_creds source-bigquery "$BIGQUERY_TEST_CREDS" "credentials.json"
