@@ -53,6 +53,8 @@ public interface CloudLogs {
    */
   List<String> tailCloudLog(LogConfigs configs, String logPath, int numLines) throws IOException;
 
+  void deleteLogs(LogConfigs configs, String logPath);
+
   /**
    * @return true if no cloud logging configuration is set;
    */
