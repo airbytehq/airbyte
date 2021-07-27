@@ -6,6 +6,9 @@ description: Be sure to not miss out on new features and improvements!
 
 This is the changelog for Airbyte Platform. For our connector changelog, please visit our [Connector Changelog](connectors.md) page.
 
+## [07-26-2021 - 0.28.1](https://github.com/airbytehq/airbyte/releases/tag/v0.28.1-alpha)
+* K8s: Overly-sensitive logs are now silenced.
+
 ## [07-22-2021 - 0.28.0](https://github.com/airbytehq/airbyte/releases/tag/v0.28.0-alpha)
 * Acceptance test dependencies fixed.
 
