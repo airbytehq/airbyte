@@ -93,17 +93,14 @@ jobs:
           sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
       - name: Run End-to-End Acceptance Tests on GKE
+        id: gke-kube-test
         env:
           USER: root
           HOME: /home/runner
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          ACTION_RUN_ID: ${{github.run_id}}
         run: |
           ./tools/bin/gke-kube-acceptance-test/acceptance_test_kube_gke.sh
-
-      - name: gke-kube-test
-        id: gke-kube-test
-        env:
-          ACTION_RUN_ID: ${{github.run_id}}
 
       - name: Add Success Comment
         if: github.event.inputs.comment-id && success()
