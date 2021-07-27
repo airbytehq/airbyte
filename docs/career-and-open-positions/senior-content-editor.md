@@ -1,4 +1,4 @@
-# Senior Technical Content Writer / Editor in Chief
+# Senior Content Editor / Strategist
 
 ## **About Airbyte**
 
@@ -10,31 +10,35 @@ We raised a total of $31.2M by some of the world's [top investors](./#our-invest
 
 ## **Description**
 
-As our team is small and growing, your role as our first technical content writer will be multi-faceted, but will aim toward these goals:
+As senior content editor /  strategist, you will be responsible for: 
  
-* Empower developers and burgeoning contributors to produce solid content
-* Developing and maintaining a clear and concise style guide for all published content
-* Retaining polish on all published content
+* Owning the written content development roadmap for the entire Airbyte experience, to help us take our user experience to the next level with the best content on the market. Content includes thought leadership or technical articles, [recipes](https://airbyte.io/recipes), tutorials, etc. 
+* Overseeing a team of internal and external content developers (contracting company, but also community contributors with our [Write for the community](https://airbyte.io/write-for-the-community) program.
+* Developing and maintaining a clear and concise style guide, SEO optimization and promotion processes for all published content.
 
-Since this role works very closely with the community, you will be directly engaging with authors a lot, who will rely on your rhetorical and grammatical expertise to express their technical findings in the most powerful way possible. Naturally, having technical understanding of the concepts will help you move quickly here.
+This is a highly visible, internal-facing role that will report directly to the Director of Instructional Design. This role is responsible for ensuring operational effectiveness and content quality across our experience. The successful candidate will focus on impact for all content produced, drive optimum operational efficiency, effectiveness, and scale. This role is ideal for an experienced project manager with a passion for open-source and data, and who wants to join a fast-growing startup. Since this role works very closely with the community, you will be directly engaging with authors a lot, who will rely on your rhetorical and grammatical expertise to express their technical findings in the most powerful way possible. Naturally, having technical understanding of the concepts will help you move quickly here.
 
 ## **What you will do here**
 
-* Author engaging technical content.
-* Be the primary editor for our blog and documentation, with support from DevRel.
-* Find and curate topics that would be interesting to our data engineering community.
+* Own roadmap of all written content for Airbyte across all platforms and delivery methods
+* Lead a team of content developers, technical writers, and subject matter experts from our community and contractors
+* Develop systems and processes for regularly gathering, analyzing, and implementing feedback based on key quality metrics that relate to the company’s broader strategic goals
+* Operationalize and formalize ongoing content development processes, systems and tools, and documentation to ensure high quality content is delivered in the most effective and efficient manner possible
+* Find and curate topics based on interest level from our community or SEO potential
 * Optimize our publications for visibility and impact.
 * Maintain our website’s content and connector catalog.
-* Find unique ways to encourage community contribution to documentation.
+* Find unique ways to encourage community contribution to our content and documentation.
 
 ## **What we’re looking for**
 
+* 3+ years of experience working in content development
+* Data-driven mindset, strong business judgment, and proven ability to perform relevant data analyses, draw key insights, and use data to form and execute a strategy
+* Meticulous attention to detail and process-driven
 * Very strong control over the English language, with published examples to back it up.
 * Verbal communication that matches your written expertise.
 * Experience with community management.
 * Strong understanding of ELT/ETL concepts, preferably in an applied role.
-* Experience with SEO.
-* Experience in editing written content.
+* Experience with SEO and content promotion.
 * You share [our values](https://handbook.airbyte.io/company/culture-and-values).
 
 ## **Bonus points**
