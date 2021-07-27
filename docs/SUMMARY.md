@@ -201,7 +201,7 @@
   * [Senior Product Manager](career-and-open-positions/senior-product-manager.md)
   * [Head of Lead Generation](career-and-open-positions/head-of-lead-generation.md)
   * [Revenue Product Manager](career-and-open-positions/revenue-product-manager.md)
-  * [Senior Technical Writer / Editor in Chief](career-and-open-positions/technical-content-writer.md)
+  * [Senior Content Editor / Strategist](career-and-open-positions/senior-content-editor.md)
 * [Troubleshooting](troubleshooting/README.md)
   * [On Deploying](troubleshooting/on-deploying.md)
   * [On Setting up a New Connection](troubleshooting/new-connection.md)
