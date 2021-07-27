@@ -13,7 +13,6 @@ tests:
     - config_path: "secrets/config.json"
       # TODO: permissions error with Workflows stream for Test Account
       configured_catalog_path: "sample_files/configured_catalog_without_workflows.json"
-      validate_output_from_all_streams: yes
 #  incremental: fixme (eugene): '<=' not supported between instances of 'int' and 'str'
 #    - config_path: "secrets/config.json"
 #      configured_catalog_path: "sample_files/configured_catalog.json"
