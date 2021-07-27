@@ -62,7 +62,7 @@ class ZoqlExportClient:
         retry = 0
         while retry <= self.retry_max:
             try:
-                request = requests.request(method=method, url=url, headers=self.authenticator, json=payload)
+                request = requests.request(method=method, url=url, headers=self.token, json=payload)
                 request.raise_for_status()
                 return request
             except requests.exceptions.HTTPError as e:
@@ -101,7 +101,7 @@ class ZoqlExportClient:
         submit_job = self.make_request(method="POST", url=f"{self.url_base}/query/jobs", payload=dq_query)
         return submit_job.json()["data"]["id"]
 
-    def check_job_status(self, dq_job_id: str) -> Dict:
+    def check_job_status(self, dq_job_id: str) -> requests.Response:
         """
         Method to check submited query job for the Zuora using id.
         There could be next statuses: ["completed", "in_progress", "failed", "canceled", "aborted"]
@@ -247,7 +247,7 @@ class ZoqlExportClient:
             # Unauthorised or Invalid Token
             self.logger.error(f"Unauthorised or Expired/Invalid Token, {exception}")
             # Attempt to refresh the token
-            self.authenticator = ZuoraAuthenticator(self.is_sandbox).generateToken(self.client_id, self.client_secret).get("header")
+            self.token = self.authenticator.get_
             self.logger.info("Token is Refreshed")
         else:
             self.logger.fatal(f"Unrecognised Error Occured, please check traceback {exception}")
