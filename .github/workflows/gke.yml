@@ -92,7 +92,7 @@ jobs:
           sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
       - name: Run End-to-End Acceptance Tests on GKE
-        id: gke-kube-test
+        id: gke
         env:
           USER: root
           HOME: /home/runner

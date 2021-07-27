@@ -19,7 +19,7 @@ jobs:
             test
             publish
             publish-cdk
-            gke-kube-test
+            gke
           static-args: |
             ref=${{ steps.getref.outputs.ref }}
             comment-id=${{ github.event.comment.id }}
