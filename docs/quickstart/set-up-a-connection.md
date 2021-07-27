@@ -22,7 +22,7 @@ Now let's verify that this worked:
 cat /tmp/airbyte_local/json_data/_airbyte_raw_pokemon.jsonl
 ```
 
-You should see one line for each day that was replicated.
+You should see a large JSON object with the response from the API, giving you a lot of information about the selected Pokemon.
 
 If you have [`jq`](https://stedolan.github.io/jq/) installed, let's look at some of the data that we have replicated about `charizard`. We'll pull its abilities and weight:
 
