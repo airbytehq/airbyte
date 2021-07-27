@@ -20,9 +20,6 @@ from source_hubspot.api import Stream
 def test_field_type_format_converting(field_type, expected):
     assert Stream._get_field_props(field_type=field_type) == expected
 
-import logging
-from base_python.entrypoint import logger
-
 
 @pytest.mark.parametrize("field_type,expected", [
     ("_unsupported_field_type_", {"type": "_unsupported_field_type_"}),
