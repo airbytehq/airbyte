@@ -107,6 +107,7 @@ public class MigrationAcceptanceTest {
   private void firstRun() throws Exception {
     // 0.17.0-alpha-db-patch is specifically built for this test;
     // it connects to the database with retries to fix flaky connection issue
+    // https://github.com/airbytehq/airbyte/issues/4955
     final Map<String, String> environmentVariables = getEnvironmentVariables("0.17.0-alpha-db-patch");
 
     final Set<String> logsToExpect = new HashSet<>();
