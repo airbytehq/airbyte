@@ -1,12 +1,14 @@
-# Set up a postgres instance for use in running airbyte connector test cases.
+# Sets up a postgres instance for use in running airbyte connector test cases.
 
-# Tell the database what subnet to belong to, so our ssh tunnel testing finds it in the right place.
+
+# Tell the database what subnet to belong to, so it joins the right subnets and is routable from the bastion.
+# AWS insists on a minimum of two availability zones for an RDS instance even if we don't care about high availability.
 resource "aws_db_subnet_group" "default" {
-  name       = "dbtunnel-private-dbsubnet-group"
-  subnet_ids = [aws_subnet.main-subnet-private-dbtunnel-2a.id, aws_subnet.main-subnet-private-dbtunnel-2b.id]
+  name       = "dbtunnel-public-dbsubnet-group"
+  subnet_ids = [aws_subnet.main-subnet-public-dbtunnel.id, aws_subnet.main-subnet-private-dbtunnel.id]
 
   tags = {
-    Name = "dbtunnel-private-dbsubnet-group"
+    Name = "dbtunnel-public-dbsubnet-group"
   }
 }
 
@@ -22,20 +24,22 @@ resource "aws_db_parameter_group" "default" {
   #}
 }
 
-# Create the postgres instance on RDS so it's fully managed and low maintenance
+# Create the postgres instance on RDS so it's fully managed and low maintenance.
+# For now all we care about is testing with postgres.
 resource "aws_db_instance" "default" {
   allocated_storage    = 5
-  availability_zone    = "us-east-2a"
   engine               = "postgres"
   engine_version       = "12.6"
   identifier           = "tunnel-dev"
-  instance_class       = "db.t3.small"
-  db_subnet_group_name = aws_db_subnet_group.default.name
+  instance_class       = var.rds_instance_class
+  db_subnet_group_name = aws_db_subnet_group.default.name 
   name                 = "airbyte"
   username             = "airbyte"
-  password             = chomp(file("secrets/aws_db_instance-master-password"))
+  password             = chomp(file("${path.module}/secrets/aws_db_instance-master-password"))
   parameter_group_name = aws_db_parameter_group.default.name
+  publicly_accessible = false
   skip_final_snapshot  = true
   apply_immediately    = true
+  vpc_security_group_ids = [aws_security_group.dbtunnel-sg.id]
 }
 

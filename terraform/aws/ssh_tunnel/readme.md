@@ -3,9 +3,9 @@
 This directory creates infrastructure for testing ssh tunneling to
 databases for airbyte connectors.  It sets up:
 
-* a public subnet (for a bastion host)
-* a private subnet (for postgres)
-* a security group (for the bastion host)
+* a public subnet (for a bastion host and one postgres AZ)
+* a private subnet (for postgres secondary AZ that aws insists on)
+* two security groups (for the bastion host, for the postgres server)
 * a bastion host reachable from the internet, with ssh tunnel support
 * a user account on the bastion host
 * a postgres database on a private address
