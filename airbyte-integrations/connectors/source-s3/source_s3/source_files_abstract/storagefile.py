@@ -37,7 +37,7 @@ class PermissionsError(Exception):
     """User doesn't have enough permissions"""
 
 
-class FileClient(ABC):
+class StorageFile(ABC):
     def __init__(self, url: str, provider: dict):
         """
         :param url: value yielded by filepath_iterator() in [Incremental]FileStream class. Blob/File path

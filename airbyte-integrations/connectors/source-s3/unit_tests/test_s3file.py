@@ -25,12 +25,12 @@
 
 import pytest
 from airbyte_cdk import AirbyteLogger
-from source_s3.fileclient import FileClientS3
+from source_s3.s3file import S3File
 
 LOGGER = AirbyteLogger()
 
 
-class TestFileClientS3:
+class TestS3File:
     @pytest.mark.parametrize(  # passing in full provider to emulate real usage (dummy values are unused by func)
         "provider, return_true",
         [
@@ -47,4 +47,4 @@ class TestFileClientS3:
         ],
     )
     def test_use_aws_account(self, provider, return_true):
-        assert FileClientS3.use_aws_account(provider) is return_true
+        assert S3File.use_aws_account(provider) is return_true

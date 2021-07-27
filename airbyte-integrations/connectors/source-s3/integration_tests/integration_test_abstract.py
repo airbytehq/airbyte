@@ -32,7 +32,7 @@ from uuid import uuid4
 import pytest
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
-from source_s3.source_files_abstract.filereader import FileReaderCsv
+from source_s3.source_files_abstract.fileformatparser import CsvParser
 from source_s3.source_files_abstract.stream import FileStream
 
 HERE = Path(__file__).resolve().parent
@@ -154,8 +154,8 @@ class AbstractTestIncrementalFileStream(ABC):
                     # we need to do this in order to work out which extra columns (if any) we expect in this stream_slice
                     expected_columns = []
                     for file_dict in stream_slice:
-                        file_reader = FileReaderCsv(format)  # TODO: if we ever test other filetypes in these tests this will need fixing
-                        with file_dict["fileclient"].open(file_reader.is_binary) as f:
+                        file_reader = CsvParser(format)  # TODO: if we ever test other filetypes in these tests this will need fixing
+                        with file_dict["storagefile"].open(file_reader.is_binary) as f:
                             expected_columns.extend(list(file_reader.get_inferred_schema(f).keys()))
                     expected_columns = set(expected_columns)  # de-dupe
 

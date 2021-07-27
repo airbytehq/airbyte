@@ -37,8 +37,8 @@ from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.streams import Stream
 
-from .fileclient import FileClient
-from .filereader import FileReaderCsv
+from .storagefile import StorageFile
+from .fileformatparser import CsvParser
 
 JSON_TYPES = ["string", "number", "integer", "object", "array", "boolean", "null"]
 
@@ -49,9 +49,9 @@ class ConfigurationError(Exception):
 
 class FileStream(Stream, ABC):
 
-    format_filereader_map = {
-        "csv": FileReaderCsv,
-        # 'parquet': FileReaderParquet,
+    fileformatparser_map = {
+        "csv": CsvParser,
+        # 'parquet': ParquetParser,
         # etc.
     }
     # TODO: make these user configurable in spec.json
@@ -81,7 +81,7 @@ class FileStream(Stream, ABC):
         self._schema = {}
         if schema:
             self._schema = self._init_schema(schema)
-        self.fileclient_cache = None
+        self.storagefile_cache = None
         self.master_schema = None
         self.logger = AirbyteLogger()
         self.logger.info(f"initialised stream with format: {format}")
@@ -125,18 +125,18 @@ class FileStream(Stream, ABC):
         return None
 
     @property
-    def filereader_class(self) -> type:
+    def fileformatparser_class(self) -> type:
         """
-        :return: reference to the relevant filereader class e.g. FileReaderCsv
+        :return: reference to the relevant fileformatparser class e.g. CsvParser
         :rtype: type
         """
-        return self.format_filereader_map[self._format.get("filetype")]
+        return self.fileformatparser_map[self._format.get("filetype")]
 
     @property
     @abstractmethod
-    def fileclient_class(self) -> type:
+    def storagefile_class(self) -> type:
         """
-        Override this to point to the relevant provider-specific fileclient class e.g. FileClientS3
+        Override this to point to the relevant provider-specific StorageFile class e.g. S3File
 
         :raises RuntimeError: if undeclared by child class
         :return: reference to relevant class
@@ -148,14 +148,14 @@ class FileStream(Stream, ABC):
     def filepath_iterator(logger: AirbyteLogger, provider: dict) -> Iterator[str]:
         """
         Provider-specific method to iterate through bucket/container/etc. and yield each full filepath.
-        This should supply the 'url' to use in FileClient(). This is possibly better described as blob or file path.
+        This should supply the 'url' to use in StorageFile(). This is possibly better described as blob or file path.
             e.g. for AWS: f"s3://{aws_access_key_id}:{aws_secret_access_key}@{self._url}" <- self._url is what we want to yield here
 
         :param logger: instance of AirbyteLogger to use as this is a staticmethod
         :type logger: AirbyteLogger
         :param provider: provider specific mapping as described in spec.json
         :type provider: dict
-        :yield: url filepath to use in FileClient()
+        :yield: url filepath to use in StorageFile()
         :rtype: Iterator[str]
         """
 
@@ -165,7 +165,7 @@ class FileStream(Stream, ABC):
 
         :param filepaths: filepath_iterator(), this is a param rather than method reference in order to unit test this
         :type filepaths: Iterable[str]
-        :yield: url filepath to use in FileClient(), if matching on user-provided path patterns
+        :yield: url filepath to use in StorageFile(), if matching on user-provided path patterns
         :rtype: Iterator[str]
         """
         for filepath in filepaths:
@@ -173,35 +173,35 @@ class FileStream(Stream, ABC):
                 if fnmatch(filepath, path_pattern):
                     yield filepath
 
-    def time_ordered_fileclient_iterator(self) -> Iterable[Tuple[datetime, FileClient]]:
+    def time_ordered_storagefile_iterator(self) -> Iterable[Tuple[datetime, StorageFile]]:
         """
         Iterates through pattern_matched_filepath_iterator(), acquiring last_modified property of each file to return in time ascending order.
         Uses concurrent.futures to thread this asynchronously in order to improve performance when there are many files (network I/O)
         Caches results after first run of method to avoid repeating network calls as this is used more than once
 
-        :return: list of tuples in format ({last modified date}, {FileClient object})
-        :rtype: Iterable[Tuple[datetime, FileClient]]
+        :return: list of tuples in format ({last modified date}, {StorageFile object})
+        :rtype: Iterable[Tuple[datetime, StorageFile]]
         """
 
-        def get_fileclient_with_lastmod(filepath: str) -> Tuple[datetime, FileClient]:
-            fc = self.fileclient_class(filepath, self._provider)
+        def get_storagefile_with_lastmod(filepath: str) -> Tuple[datetime, StorageFile]:
+            fc = self.storagefile_class(filepath, self._provider)
             return (fc.last_modified, fc)
 
-        if self.fileclient_cache is None:
-            fileclients = []  # list of tuples (datetime, FileClient) which we'll use to sort
+        if self.storagefile_cache is None:
+            storagefiles = []  # list of tuples (datetime, StorageFile) which we'll use to sort
             # use concurrent future threads to parallelise grabbing last_modified from all the files
             # TODO: don't hardcode max_workers like this
             with concurrent.futures.ThreadPoolExecutor(max_workers=64) as executor:
                 futures = {
-                    executor.submit(get_fileclient_with_lastmod, fp): fp
+                    executor.submit(get_storagefile_with_lastmod, fp): fp
                     for fp in self.pattern_matched_filepath_iterator(self.filepath_iterator(self.logger, self._provider))
                 }
                 for future in concurrent.futures.as_completed(futures):
-                    fileclients.append(future.result())  # this will failfast on any errors
+                    storagefiles.append(future.result())  # this will failfast on any errors
 
-            self.fileclient_cache = sorted(fileclients, key=itemgetter(0))
+            self.storagefile_cache = sorted(storagefiles, key=itemgetter(0))
 
-        return self.fileclient_cache
+        return self.storagefile_cache
 
     def _get_schema_map(self) -> Mapping[str, Any]:
         if self._schema != {}:
@@ -231,7 +231,7 @@ class FileStream(Stream, ABC):
         """
         In order to auto-infer a schema across many files and/or allow for additional properties (columns),
             we need to determine the superset of schemas across all relevant files.
-        This method iterates through time_ordered_fileclient_iterator() obtaining the inferred schema (process implemented per file format),
+        This method iterates through time_ordered_storagefile_iterator() obtaining the inferred schema (process implemented per file format),
             to build up this superset schema (master_schema).
         This runs datatype checks to Warn or Error if we find incompatible schemas (e.g. same column is 'date' in one file but 'float' in another).
         This caches the master_schema after first run in order to avoid repeated compute and network calls to infer schema on all files.
@@ -244,10 +244,10 @@ class FileStream(Stream, ABC):
         if self.master_schema is None:
             master_schema = deepcopy(self._schema)
 
-            file_reader = self.filereader_class(self._format)
+            file_reader = self.fileformatparser_class(self._format)
             # time order isn't necessary here but we might as well use this method so we cache the list for later use
-            for _, fileclient in self.time_ordered_fileclient_iterator():
-                with fileclient.open(file_reader.is_binary) as f:
+            for _, storagefile in self.time_ordered_storagefile_iterator():
+                with storagefile.open(file_reader.is_binary) as f:
                     this_schema = file_reader.get_inferred_schema(f)
 
                 if this_schema == master_schema:
@@ -263,14 +263,14 @@ class FileStream(Stream, ABC):
                         # if not, then the read will error anyway
                         if col in self._schema.keys():
                             self.logger.warn(
-                                f"Detected mismatched datatype on column '{col}', in file '{fileclient._url}'. "
+                                f"Detected mismatched datatype on column '{col}', in file '{storagefile._url}'. "
                                 + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'. "
                                 + f"Airbyte will attempt to coerce this to {master_schema[col]} on read."
                             )
                         # else we're inferring the schema (or at least this column) from scratch and therefore throw an error on mismatching datatypes
                         else:
                             raise RuntimeError(
-                                f"Detected mismatched datatype on column '{col}', in file '{fileclient._url}'. "
+                                f"Detected mismatched datatype on column '{col}', in file '{storagefile._url}'. "
                                 + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'."
                             )
 
@@ -298,8 +298,8 @@ class FileStream(Stream, ABC):
         # TODO: this could be optimised via concurrent reads, however we'd lose chronology and need to deal with knock-ons of that
         # we could do this concurrently both full and incremental by running batches in parallel
         # and then incrementing the cursor per each complete batch
-        for last_mod, fileclient in self.time_ordered_fileclient_iterator():
-            yield [{"unique_url": fileclient._url, "last_modified": last_mod, "fileclient": fileclient}]
+        for last_mod, storagefile in self.time_ordered_storagefile_iterator():
+            yield [{"unique_url": storagefile._url, "last_modified": last_mod, "storagefile": storagefile}]
         # in case we have no files
         yield from [None]
 
@@ -356,16 +356,16 @@ class FileStream(Stream, ABC):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
-        Uses provider-relevant FileClient to open file and then iterates through stream_records() using format-relevant FileReader.
+        Uses provider-relevant StorageFile to open file and then iterates through stream_records() using format-relevant FileFormatParser.
         Records are mutated on the fly using _match_target_schema() and _add_extra_fields_from_map() to achieve desired final schema.
         Since this is called per stream_slice, this method works for both full_refresh and incremental so sync_mode is ignored.
         """
         stream_slice = stream_slice if stream_slice is not None else []
-        file_reader = self.filereader_class(self._format, self._get_master_schema())
+        file_reader = self.fileformatparser_class(self._format, self._get_master_schema())
 
         # TODO: read all files in a stream_slice concurrently
         for file_info in stream_slice:
-            with file_info["fileclient"].open(file_reader.is_binary) as f:
+            with file_info["storagefile"].open(file_reader.is_binary) as f:
                 # TODO: make this more efficient than mutating every record one-by-one as they stream
                 for record in file_reader.stream_records(f):
                     schema_matched_record = self._match_target_schema(record, list(self._get_schema_map().keys()))
@@ -388,7 +388,7 @@ class IncrementalFileStream(FileStream, ABC):
     # TODO: ideally want to checkpoint after every file or stream slice rather than N records
     state_checkpoint_interval = None
 
-    # TODO: would be great if we could override time_ordered_fileclient_iterator() here with state awareness
+    # TODO: would be great if we could override time_ordered_storagefile_iterator() here with state awareness
     # this would allow filtering down to only files we need early and avoid unnecessary work
 
     @property
@@ -432,7 +432,7 @@ class IncrementalFileStream(FileStream, ABC):
         An incremental stream_slice is a group of all files with the exact same last_modified timestamp.
         This ensures we only update the cursor state to a given timestamp after ALL files with that timestamp have been successfully read.
 
-        Slight nuance: as we iterate through time_ordered_fileclient_iterator(),
+        Slight nuance: as we iterate through time_ordered_storagefile_iterator(),
         we yield the stream_slice containing file(s) up to and EXcluding the file on the current iteration.
         The stream_slice is then cleared (if we yielded it) and this iteration's file appended to the (next) stream_slice
         """
@@ -449,7 +449,7 @@ class IncrementalFileStream(FileStream, ABC):
             prev_file_last_mod = None  # init variable to hold previous iterations last modified
             stream_slice = []
 
-            for last_mod, fileclient in self.time_ordered_fileclient_iterator():
+            for last_mod, storagefile in self.time_ordered_storagefile_iterator():
                 # skip this file if last_mod is earlier than our cursor value from state
                 if (
                     stream_state is not None
@@ -458,12 +458,12 @@ class IncrementalFileStream(FileStream, ABC):
                 ):
                     continue
 
-                # check if this fileclient belongs in the next slice, if so yield the current slice before this file
+                # check if this storagefile belongs in the next slice, if so yield the current slice before this file
                 if (prev_file_last_mod is not None) and (last_mod != prev_file_last_mod):
                     yield stream_slice
                     stream_slice.clear()
                 # now we either have an empty stream_slice or a stream_slice that this file shares a last modified with, so append it
-                stream_slice.append({"unique_url": fileclient._url, "last_modified": last_mod, "fileclient": fileclient})
+                stream_slice.append({"unique_url": storagefile._url, "last_modified": last_mod, "storagefile": storagefile})
                 # update our prev_file_last_mod to the current one for next iteration
                 prev_file_last_mod = last_mod
 

@@ -31,7 +31,7 @@ from airbyte_cdk.logger import AirbyteLogger
 from pyarrow import csv as pa_csv
 
 
-class FileReader(ABC):
+class FileFormatParser(ABC):
     def __init__(self, format: dict, master_schema: dict = None):
         """
         :param format: file format specific mapping as described in spec.json
@@ -58,7 +58,7 @@ class FileReader(ABC):
         Override this with format-specifc logic to infer the schema of file
         Note: needs to return inferred schema with JsonSchema datatypes
 
-        :param file: file-like object (opened via FileReader)
+        :param file: file-like object (opened via StorageFile)
         :type file: Union[TextIO, BinaryIO]
         :return: mapping of {columns:datatypes} where datatypes are JsonSchema types
         :rtype: dict
@@ -70,7 +70,7 @@ class FileReader(ABC):
         Override this with format-specifc logic to stream each data row from the file as a mapping of {columns:values}
         Note: avoid loading the whole file into memory to avoid OOM breakages
 
-        :param file: file-like object (opened via FileReader)
+        :param file: file-like object (opened via StorageFile)
         :type file: Union[TextIO, BinaryIO]
         :yield: data record as a mapping of {columns:values}
         :rtype: Iterator[Mapping[str,Any]]
@@ -132,12 +132,12 @@ class FileReader(ABC):
         new_schema = {}
 
         for column, json_type in schema.items():
-            new_schema[column] = FileReader.json_type_to_pyarrow_type(json_type, reverse=reverse)
+            new_schema[column] = FileFormatParser.json_type_to_pyarrow_type(json_type, reverse=reverse)
 
         return new_schema
 
 
-class FileReaderCsv(FileReader):
+class CsvParser(FileFormatParser):
     @property
     def is_binary(self):
         return True

@@ -30,14 +30,14 @@ from boto3 import session as boto3session
 from botocore import UNSIGNED
 from botocore.config import Config
 
-from .fileclient import FileClientS3
+from .s3file import S3File
 from .source_files_abstract.stream import IncrementalFileStream
 
 
 class IncrementalFileStreamS3(IncrementalFileStream):
     @property
-    def fileclient_class(self) -> type:
-        return FileClientS3
+    def storagefile_class(self) -> type:
+        return S3File
 
     @staticmethod
     def _list_bucket(provider: Mapping[str, Any], accept_key=lambda k: True) -> Iterator[str]:
@@ -50,7 +50,7 @@ class IncrementalFileStreamS3(IncrementalFileStream):
         :yield: key (name) of each object
         :rtype: Iterator[str]
         """
-        if FileClientS3.use_aws_account(provider):
+        if S3File.use_aws_account(provider):
             session = boto3session.Session(
                 aws_access_key_id=provider["aws_access_key_id"], aws_secret_access_key=provider["aws_secret_access_key"]
             )
@@ -90,7 +90,7 @@ class IncrementalFileStreamS3(IncrementalFileStream):
         :type logger: AirbyteLogger
         :param provider: S3 provider mapping as described in spec.json
         :type provider: dict
-        :yield: url filepath to use in FileClientS3()
+        :yield: url filepath to use in S3File()
         :rtype: Iterator[str]
         """
         prefix = provider.get("path_prefix")
@@ -100,8 +100,6 @@ class IncrementalFileStreamS3(IncrementalFileStream):
         msg = f"Iterating S3 bucket '{provider['bucket']}'"
         logger.info(msg + f" with prefix: '{prefix}' " if prefix != "" else msg)
 
-        # TODO: use FileClientS3.use_aws_account to check if we're using public or private bucket
-        #   then make this work for public as well
         for blob in IncrementalFileStreamS3._list_bucket(
             provider=provider, accept_key=lambda k: not k.endswith("/")  # filter out 'folders', we just want actual blobs
         ):

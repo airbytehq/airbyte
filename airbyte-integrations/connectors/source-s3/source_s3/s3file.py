@@ -33,10 +33,10 @@ from botocore.client import Config as ClientConfig
 from botocore.config import Config
 from botocore.exceptions import NoCredentialsError
 
-from .source_files_abstract.fileclient import FileClient
+from .source_files_abstract.storagefile import StorageFile
 
 
-class FileClientS3(FileClient):
+class S3File(StorageFile):
     class _Decorators:
         @classmethod
         def init_boto_session(cls, func):
