@@ -31,7 +31,7 @@ from typing import Any, List, Mapping
 import pyarrow as pa
 import pytest
 from airbyte_cdk import AirbyteLogger
-from source_s3.source_files_abstract.fileformatparser import FileFormatParser, CsvParser
+from source_s3.source_files_abstract.fileformatparser import CsvParser, FileFormatParser
 
 LOGGER = AirbyteLogger()
 SAMPLE_DIRECTORY = Path(__file__).resolve().parent.joinpath("sample_files/")

@@ -35,12 +35,10 @@ from botocore.client import Config as ClientConfig
 from botocore.config import Config
 from botocore.exceptions import NoCredentialsError
 
-
 from .source_files_abstract.storagefile import StorageFile
 
 
 class S3File(StorageFile):
-
     def __init__(self, url: str, provider: dict):
         super().__init__(url, provider)
         self._setup_boto_session()
@@ -48,7 +46,7 @@ class S3File(StorageFile):
     def _setup_boto_session(self):
         """
         Making a new Session at file level rather than stream level as boto3 sessions are NOT thread-safe.
-        Currently grabbing last_modified across multiple files asynchronously and may implement more multi-threading in future. 
+        Currently grabbing last_modified across multiple files asynchronously and may implement more multi-threading in future.
         See https://boto3.amazonaws.com/v1/documentation/api/latest/guide/resources.html (anchor link broken, scroll to bottom)
         """
         if self.use_aws_account:

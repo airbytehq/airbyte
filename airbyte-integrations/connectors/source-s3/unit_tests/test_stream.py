@@ -57,12 +57,12 @@ class TestFileStream:
             ('{"a": "NOT A REAL DATATYPE", "b": "ANOTHER FAKE DATATYPE"}', None),  # multiple incorrect datatypes
         ],
     )
-    def test_init_schema(self, schema_string, return_schema):
+    def test_parse_user_input_schema(self, schema_string, return_schema):
         if return_schema is not None:
-            assert FileStream._init_schema(schema_string) == return_schema
+            assert FileStream._parse_user_input_schema(schema_string) == return_schema
         else:
             with pytest.raises(Exception) as e_info:
-                FileStream._init_schema(schema_string)
+                FileStream._parse_user_input_schema(schema_string)
                 LOGGER.debug(str(e_info))
 
     @pytest.mark.parametrize(  # set expected_return_record to None for an expected fail

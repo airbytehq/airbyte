@@ -53,7 +53,7 @@ class StorageFile(ABC):
     @abstractmethod
     def open(self, binary: bool) -> Iterator[Union[TextIO, BinaryIO]]:
         """
-        Override this to implement provider-specific logic. 
+        Override this to implement provider-specific logic.
         It should yield exactly one TextIO or BinaryIO, that being the opened file-like object.
         Note: This must work as described in https://docs.python.org/3/library/contextlib.html#contextlib.contextmanager.
         Using contextmanager eliminates need to write all the boilerplate management code in this class.

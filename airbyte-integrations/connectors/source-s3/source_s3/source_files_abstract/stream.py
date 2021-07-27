@@ -37,8 +37,8 @@ from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.streams import Stream
 
-from .storagefile import StorageFile
 from .fileformatparser import CsvParser
+from .storagefile import StorageFile
 
 JSON_TYPES = ["string", "number", "integer", "object", "array", "boolean", "null"]
 
@@ -75,14 +75,14 @@ class FileStream(Stream, ABC):
         self._format = format
         self._schema = {}
         if schema:
-            self._schema = self._init_schema(schema)
-        self.storagefile_cache = None
+            self._schema = self._parse_user_input_schema(schema)
         self.master_schema = None
+        self.storagefile_cache: Optional[List[Tuple[datetime, StorageFile]]] = None
         self.logger = AirbyteLogger()
         self.logger.info(f"initialised stream with format: {format}")
 
     @staticmethod
-    def _init_schema(schema: str) -> Mapping[str, str]:
+    def _parse_user_input_schema(schema: str) -> Mapping[str, str]:
         """
         If the user provided a schema, we run this method to convert to a python dict and verify it
         This verifies:
@@ -172,17 +172,19 @@ class FileStream(Stream, ABC):
             return (fc.last_modified, fc)
 
         if self.storagefile_cache is None:
-            storagefiles = []  # list of tuples (datetime, StorageFile) which we'll use to sort
+            storagefiles = []
             # use concurrent future threads to parallelise grabbing last_modified from all the files
             # TODO: don't hardcode max_workers like this
             with concurrent.futures.ThreadPoolExecutor(max_workers=64) as executor:
-                futures = {
-                    executor.submit(get_storagefile_with_lastmod, fp): fp
-                    for fp in self.pattern_matched_filepath_iterator(self.filepath_iterator(self.logger, self._provider))
-                }
+
+                filepath_gen = self.pattern_matched_filepath_iterator(self.filepath_iterator(self.logger, self._provider))
+
+                futures = [executor.submit(get_storagefile_with_lastmod, fp) for fp in filepath_gen]
+
                 for future in concurrent.futures.as_completed(futures):
                     storagefiles.append(future.result())  # this will failfast on any errors
 
+            # The array storagefiles contain tuples of (last_modified, StorageFile), so sort by last_modified
             self.storagefile_cache = sorted(storagefiles, key=itemgetter(0))
 
         return self.storagefile_cache
