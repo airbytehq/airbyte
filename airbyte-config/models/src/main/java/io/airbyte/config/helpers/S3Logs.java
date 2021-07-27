@@ -38,12 +38,16 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.Delete;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
 
 public class S3Logs implements CloudLogs {
 
@@ -122,6 +126,26 @@ public class S3Logs implements CloudLogs {
 
     LOGGER.debug("Done retrieving S3 logs: {}.", logPath);
     return lines;
+  }
+
+  @Override
+  public void deleteLogs(LogConfigs configs, String logPath) {
+    LOGGER.debug("Deleting logs from S3 path: {}", logPath);
+    createS3ClientIfNotExist(configs);
+
+    var keys = getAscendingObjectKeys(logPath, configs.getS3LogBucket())
+        .stream().map(key -> ObjectIdentifier.builder().key(key).build())
+        .collect(Collectors.toList());
+    Delete del = Delete.builder()
+        .objects(keys)
+        .build();
+    DeleteObjectsRequest multiObjectDeleteRequest = DeleteObjectsRequest.builder()
+        .bucket(configs.getS3LogBucket())
+        .delete(del)
+        .build();
+
+    S3.deleteObjects(multiObjectDeleteRequest);
+    LOGGER.debug("Multiple objects are deleted!");
   }
 
   private static void createS3ClientIfNotExist(LogConfigs configs) {
