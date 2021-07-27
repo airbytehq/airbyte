@@ -99,6 +99,12 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
           ./tools/bin/gke-kube-acceptance-test/acceptance_test_kube_gke.sh
+
+      - name: gke-kube-test
+        id: gke-kube-test
+        env:
+          ACTION_RUN_ID: ${{github.run_id}}
+
       - name: Add Success Comment
         if: github.event.inputs.comment-id && success()
         uses: peter-evans/create-or-update-comment@v1
