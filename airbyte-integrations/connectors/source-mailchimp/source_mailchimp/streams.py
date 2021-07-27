@@ -177,9 +177,8 @@ class EmailActivity(IncrementalMailChimpStream):
         # -> [[{'campaign_id', 'list_id', 'list_is_active', 'email_id', 'email_address', '**activity[i]', '_links'}, ...]]
         data = response_json[self.data_field]
         for item in data:
-            if item.get("activity"):
-                for activity_record in item["activity"]:
-                    new_record = {k: v for k, v in item.items() if k != "activity"}
-                    for k, v in activity_record.items():
-                        new_record[k] = v
-                    yield new_record
+            for activity_record in item.get("activity", []):
+                new_record = {k: v for k, v in item.items() if k != "activity"}
+                for k, v in activity_record.items():
+                    new_record[k] = v
+                yield new_record
