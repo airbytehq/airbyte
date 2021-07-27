@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,29 +20,31 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 import pytest
-from source_s3.fileclient import FileClientS3
 from airbyte_cdk import AirbyteLogger
-
+from source_s3.fileclient import FileClientS3
 
 LOGGER = AirbyteLogger()
 
 
-class TestFileClientS3():
-
+class TestFileClientS3:
     @pytest.mark.parametrize(  # passing in full provider to emulate real usage (dummy values are unused by func)
-        "provider, return_true", 
+        "provider, return_true",
         [
             ({"storage": "S3", "bucket": "dummy", "aws_access_key_id": "id", "aws_secret_access_key": "key", "path_prefix": "dummy"}, True),
             ({"storage": "S3", "bucket": "dummy", "aws_access_key_id": None, "aws_secret_access_key": None, "path_prefix": "dummy"}, False),
             ({"storage": "S3", "bucket": "dummy", "path_prefix": "dummy"}, False),
             ({"storage": "S3", "bucket": "dummy", "aws_access_key_id": "id", "aws_secret_access_key": None, "path_prefix": "dummy"}, False),
-            ({"storage": "S3", "bucket": "dummy", "aws_access_key_id": None, "aws_secret_access_key": "key", "path_prefix": "dummy"}, False),
+            (
+                {"storage": "S3", "bucket": "dummy", "aws_access_key_id": None, "aws_secret_access_key": "key", "path_prefix": "dummy"},
+                False,
+            ),
             ({"storage": "S3", "bucket": "dummy", "aws_access_key_id": "id", "path_prefix": "dummy"}, False),
-            ({"storage": "S3", "bucket": "dummy", "aws_secret_access_key": "key", "path_prefix": "dummy"}, False)
-        ]
+            ({"storage": "S3", "bucket": "dummy", "aws_secret_access_key": "key", "path_prefix": "dummy"}, False),
+        ],
     )
     def test_use_aws_account(self, provider, return_true):
         assert FileClientS3.use_aws_account(provider) is return_true

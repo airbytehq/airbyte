@@ -24,37 +24,40 @@
 
 
 from datetime import datetime
-from boto3 import session as boto3session
+
 import boto3
 import smart_open
+from boto3 import session as boto3session
 from botocore import UNSIGNED
-from botocore.config import Config
 from botocore.client import Config as ClientConfig
+from botocore.config import Config
 from botocore.exceptions import NoCredentialsError
+
 from .source_files_abstract.fileclient import FileClient
 
 
 class FileClientS3(FileClient):
-
-    class _Decorators():
+    class _Decorators:
         @classmethod
         def init_boto_session(cls, func):
             def inner(self, *args, **kwargs):
                 # why we're making a new Session at file level rather than stream level
                 # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/resources.html#multithreading-and-multiprocessing
-                if not hasattr(self, '_boto_session'):
+                if not hasattr(self, "_boto_session"):
                     if self.use_aws_account:
                         self._boto_session = boto3session.Session(
                             aws_access_key_id=self._provider.get("aws_access_key_id"),
-                            aws_secret_access_key=self._provider.get("aws_secret_access_key"))
+                            aws_secret_access_key=self._provider.get("aws_secret_access_key"),
+                        )
                     else:
                         self._boto_session = boto3session.Session()
-                if not hasattr(self, '_boto_s3_resource'):
+                if not hasattr(self, "_boto_s3_resource"):
                     if self.use_aws_account:
-                        self._boto_s3_resource = self._boto_session.resource('s3')
+                        self._boto_s3_resource = self._boto_session.resource("s3")
                     else:
-                        self._boto_s3_resource = self._boto_session.resource('s3', config=Config(signature_version=UNSIGNED))
+                        self._boto_s3_resource = self._boto_session.resource("s3", config=Config(signature_version=UNSIGNED))
                 return func(self, *args, **kwargs)
+
             return inner
 
     @property
@@ -76,7 +79,9 @@ class FileClientS3(FileClient):
             if self.use_aws_account(self._provider):  # we don't expect this error if using credentials so throw it
                 raise nce
             else:
-                return boto3.client("s3", config=ClientConfig(signature_version=UNSIGNED)).head_object(Bucket=bucket, Key=self._url)['LastModified']
+                return boto3.client("s3", config=ClientConfig(signature_version=UNSIGNED)).head_object(Bucket=bucket, Key=self._url)[
+                    "LastModified"
+                ]
 
     @staticmethod
     def use_aws_account(provider: dict) -> bool:
@@ -99,6 +104,6 @@ class FileClientS3(FileClient):
             result = smart_open.open(f"s3://{aws_access_key_id}:{aws_secret_access_key}@{bucket}/{self._url}", mode=mode)
         else:
             config = ClientConfig(signature_version=UNSIGNED)
-            params = {'client': boto3.client('s3', config=config)}
+            params = {"client": boto3.client("s3", config=config)}
             result = smart_open.open(f"s3://{bucket}/{self._url}", transport_params=params, mode=mode)
         return result

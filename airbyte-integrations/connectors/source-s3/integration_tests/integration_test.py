@@ -24,21 +24,20 @@
 
 
 import json
-import boto3
 import time
-from botocore.errorfactory import ClientError
 from typing import Iterator, List, Mapping
 
+import boto3
 from airbyte_cdk.logger import AirbyteLogger
-from .integration_test_abstract import AbstractTestIncrementalFileStream, HERE, SAMPLE_DIR
+from botocore.errorfactory import ClientError
 from source_s3.stream import IncrementalFileStreamS3
 
+from .integration_test_abstract import HERE, SAMPLE_DIR, AbstractTestIncrementalFileStream
 
 LOGGER = AirbyteLogger()
 
 
 class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
-
     @property
     def stream_class(self) -> type:
         return IncrementalFileStreamS3
@@ -48,7 +47,10 @@ class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
         filename = HERE.parent / "secrets/config.json"
         with open(filename) as json_file:
             config = json.load(json_file)
-        return {"aws_access_key_id": config["provider"]["aws_access_key_id"], "aws_secret_access_key": config["provider"]["aws_secret_access_key"]}
+        return {
+            "aws_access_key_id": config["provider"]["aws_access_key_id"],
+            "aws_secret_access_key": config["provider"]["aws_secret_access_key"],
+        }
 
     def provider(self, bucket_name: str) -> Mapping:
         return {"storage": "S3", "bucket": bucket_name}
@@ -62,11 +64,10 @@ class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
             region_name=region,
         )
         self.s3_resource = boto3.resource(
-            "s3", aws_access_key_id=credentials["aws_access_key_id"],
-            aws_secret_access_key=credentials["aws_secret_access_key"]
+            "s3", aws_access_key_id=credentials["aws_access_key_id"], aws_secret_access_key=credentials["aws_secret_access_key"]
         )
 
-    def cloud_files(self, cloud_bucket_name: str, credentials: Mapping, files_to_upload: List, private: bool=True) -> Iterator[str]:
+    def cloud_files(self, cloud_bucket_name: str, credentials: Mapping, files_to_upload: List, private: bool = True) -> Iterator[str]:
         self._s3_connect(credentials)
         region = "eu-west-3"
         location = {"LocationConstraint": region}
@@ -95,16 +96,15 @@ class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
                 ready = True
                 LOGGER.info(f"bucket {bucket_name} initialised")
 
-
         extra_args = {}
         if not private:
-            extra_args = {'ACL': 'public-read'}
+            extra_args = {"ACL": "public-read"}
         for filepath in files_to_upload:
-            upload_path = str(filepath).replace(str(SAMPLE_DIR),'')
+            upload_path = str(filepath).replace(str(SAMPLE_DIR), "")
             upload_path = upload_path[1:] if upload_path[0] == "/" else upload_path
             self.s3_client.upload_file(str(filepath), bucket_name, upload_path, ExtraArgs=extra_args)
             yield f"{bucket_name}/{upload_path}"
-            
+
     def teardown_infra(self, cloud_bucket_name: str, credentials: Mapping):
         self._s3_connect(credentials)
         bucket = self.s3_resource.Bucket(cloud_bucket_name)

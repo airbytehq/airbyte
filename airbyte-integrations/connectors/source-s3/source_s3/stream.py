@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,25 +20,27 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 from typing import Any, Iterator, Mapping
+
+from airbyte_cdk.logger import AirbyteLogger
 from boto3 import session as boto3session
 from botocore import UNSIGNED
 from botocore.config import Config
+
 from .fileclient import FileClientS3
 from .source_files_abstract.stream import IncrementalFileStream
-from airbyte_cdk.logger import AirbyteLogger
 
 
 class IncrementalFileStreamS3(IncrementalFileStream):
-
     @property
     def fileclient_class(self) -> type:
         return FileClientS3
 
     @staticmethod
-    def _list_bucket(provider:Mapping[str,Any], accept_key=lambda k: True) -> Iterator[str]:
+    def _list_bucket(provider: Mapping[str, Any], accept_key=lambda k: True) -> Iterator[str]:
         """
         Wrapper for boto3's list_objects_v2 so we can handle pagination, filter by lambda func and operate with or without credentials
 
@@ -48,31 +51,33 @@ class IncrementalFileStreamS3(IncrementalFileStream):
         :rtype: Iterator[str]
         """
         if FileClientS3.use_aws_account(provider):
-            session = boto3session.Session(aws_access_key_id=provider["aws_access_key_id"], aws_secret_access_key=provider["aws_secret_access_key"])
-            client = session.client('s3')
+            session = boto3session.Session(
+                aws_access_key_id=provider["aws_access_key_id"], aws_secret_access_key=provider["aws_secret_access_key"]
+            )
+            client = session.client("s3")
         else:
             session = boto3session.Session()
-            client = session.client('s3', config=Config(signature_version=UNSIGNED))
-        
+            client = session.client("s3", config=Config(signature_version=UNSIGNED))
+
         ctoken = None
         while True:
             # list_objects_v2 doesn't like a None value for ContinuationToken
             # so we don't set it if we don't have one.
             if ctoken:
-                kwargs = dict(Bucket=provider['bucket'], Prefix=provider.get('path_prefix', ''), ContinuationToken=ctoken)
+                kwargs = dict(Bucket=provider["bucket"], Prefix=provider.get("path_prefix", ""), ContinuationToken=ctoken)
             else:
-                kwargs = dict(Bucket=provider['bucket'], Prefix=provider.get('path_prefix', ''))
+                kwargs = dict(Bucket=provider["bucket"], Prefix=provider.get("path_prefix", ""))
             response = client.list_objects_v2(**kwargs)
             try:
-                content = response['Contents']
+                content = response["Contents"]
             except KeyError:
                 pass
             else:
                 for c in content:
-                    key = c['Key']
+                    key = c["Key"]
                     if accept_key(key):
                         yield key
-            ctoken = response.get('NextContinuationToken', None)
+            ctoken = response.get("NextContinuationToken", None)
             if not ctoken:
                 break
 
@@ -98,7 +103,6 @@ class IncrementalFileStreamS3(IncrementalFileStream):
         # TODO: use FileClientS3.use_aws_account to check if we're using public or private bucket
         #   then make this work for public as well
         for blob in IncrementalFileStreamS3._list_bucket(
-            provider=provider,
-            accept_key=lambda k: not k.endswith('/') # filter out 'folders', we just want actual blobs
-        ): 
+            provider=provider, accept_key=lambda k: not k.endswith("/")  # filter out 'folders', we just want actual blobs
+        ):
             yield blob

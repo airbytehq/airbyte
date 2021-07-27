@@ -6,9 +6,9 @@
                 "json_schema": {
                     "type": "object",
                     "properties": {
-                        "id": {"type": "integer"},
-                        "name": {"type": "string"},
-                        "valid": {"type": "boolean"},
+                        "id": {"type": ["null", "integer"]},
+                        "name": {"type": ["null", "string"]},
+                        "valid": {"type": ["null", "boolean"]},
                         "_ab_additional_properties": {"type": "object"},
                         "_ab_source_file_last_modified": {"type": "string", "format": "date-time"},
                         "_ab_source_file_url": {"type": "string"}

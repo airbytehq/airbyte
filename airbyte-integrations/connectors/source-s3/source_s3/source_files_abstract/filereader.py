@@ -22,17 +22,16 @@
 # SOFTWARE.
 #
 
-from abc import ABC, abstractmethod
 import json
+from abc import ABC, abstractmethod
 from typing import Any, BinaryIO, Iterator, Mapping, TextIO, Union
 
-from airbyte_cdk.logger import AirbyteLogger
 import pyarrow as pa
+from airbyte_cdk.logger import AirbyteLogger
 from pyarrow import csv as pa_csv
 
 
 class FileReader(ABC):
-
     def __init__(self, format: dict, master_schema: dict = None):
         """
         :param format: file format specific mapping as described in spec.json
@@ -41,7 +40,9 @@ class FileReader(ABC):
         :type master_schema: dict, optional
         """
         self._format = format
-        self._master_schema = master_schema  # this may need to be used differently by some formats, pyarrow allows extra columns in csv schema
+        self._master_schema = (
+            master_schema  # this may need to be used differently by some formats, pyarrow allows extra columns in csv schema
+        )
         self.logger = AirbyteLogger()
 
     @property
@@ -64,7 +65,7 @@ class FileReader(ABC):
         """
 
     @abstractmethod
-    def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str,Any]]:
+    def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
         """
         Override this with format-specifc logic to stream each data row from the file as a mapping of {columns:values}
         Note: avoid loading the whole file into memory to avoid OOM breakages
@@ -76,7 +77,7 @@ class FileReader(ABC):
         """
 
     @staticmethod
-    def json_type_to_pyarrow_type(typ: str, reverse: bool=False, logger: AirbyteLogger=AirbyteLogger()) -> str:
+    def json_type_to_pyarrow_type(typ: str, reverse: bool = False, logger: AirbyteLogger = AirbyteLogger()) -> str:
         """
         Converts Json Type to PyArrow types to (or the other way around if reverse=True)
 
@@ -96,14 +97,16 @@ class FileReader(ABC):
             "integer": ("int64", "int8", "int16", "int32", "uint8", "uint16", "uint32", "uint64"),
             "number": ("float64", "float16", "float32", "decimal128", "decimal256", "halffloat", "float", "double"),
             "string": ("large_string", "string"),
-            "object": ("large_string", ),
-            "array": ("large_string", ),
-            "null": ("large_string", )
+            "object": ("large_string",),  # TODO: support object type rather than coercing to string
+            "array": ("large_string",),  # TODO: support array type rather than coercing to string
+            "null": ("large_string",),
         }
         if not reverse:
             for json_type, pyarrow_types in map.items():
                 if str_typ.lower() == json_type:
-                    return getattr(pa, pyarrow_types[0]).__call__()  # better way might be necessary when we decide to handle more type complexity
+                    return getattr(
+                        pa, pyarrow_types[0]
+                    ).__call__()  # better way might be necessary when we decide to handle more type complexity
             logger.debug(f"JSON type '{str_typ}' is not mapped, falling back to default conversion to large_string")
             return pa.large_string()
         else:
@@ -135,7 +138,6 @@ class FileReader(ABC):
 
 
 class FileReaderCsv(FileReader):
-
     @property
     def is_binary(self):
         return True
@@ -144,37 +146,32 @@ class FileReaderCsv(FileReader):
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html
         """
-        return pa.csv.ReadOptions(
-            block_size=10000,
-            encoding=self._format.get("encoding", 'utf8')
-        )
+        return pa.csv.ReadOptions(block_size=10000, encoding=self._format.get("encoding", "utf8"))
 
     def _parse_options(self):
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.ParseOptions.html
         """
-        quote_char = self._format.get("quote_char", False) if self._format.get("quote_char", False) != '' else False
+        quote_char = self._format.get("quote_char", False) if self._format.get("quote_char", False) != "" else False
         return pa.csv.ParseOptions(
-            delimiter=self._format.get("delimiter", ','),
+            delimiter=self._format.get("delimiter", ","),
             quote_char=quote_char,
             double_quote=self._format.get("double_quote", True),
             escape_char=self._format.get("escape_char", False),
-            newlines_in_values=self._format.get("newlines_in_values", False)
+            newlines_in_values=self._format.get("newlines_in_values", False),
         )
 
-    def _convert_options(self, json_schema: Mapping[str, Any]=None):
+    def _convert_options(self, json_schema: Mapping[str, Any] = None):
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.ConvertOptions.html
 
         :param json_schema: if this is passed in, pyarrow will attempt to enforce this schema on read, defaults to None
         :type json_schema: [type], optional
         """
-        check_utf8 = True if self._format.get("encoding", 'utf8').lower().replace("-", "") == 'utf8' else False
+        check_utf8 = True if self._format.get("encoding", "utf8").lower().replace("-", "") == "utf8" else False
         convert_schema = self.json_schema_to_pyarrow_schema(json_schema) if json_schema is not None else None
         return pa.csv.ConvertOptions(
-            check_utf8=check_utf8,
-            column_types=convert_schema,
-            **json.loads(self._format.get("additional_reader_options", '{}'))
+            check_utf8=check_utf8, column_types=convert_schema, **json.loads(self._format.get("additional_reader_options", "{}"))
         )
 
     def get_inferred_schema(self, file: Union[TextIO, BinaryIO]) -> dict:
@@ -186,7 +183,7 @@ class FileReaderCsv(FileReader):
         schema_dict = {field.name: field.type for field in streaming_reader.schema}
         return self.json_schema_to_pyarrow_schema(schema_dict, reverse=True)
 
-    def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str,Any]]:
+    def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html
         PyArrow returns lists of values for each column so we zip() these up into records which we then yield
@@ -196,8 +193,9 @@ class FileReaderCsv(FileReader):
         while still_reading:
             try:
                 batch = streaming_reader.read_next_batch()
+                batch_dict = batch.to_pydict()
             except StopIteration:
                 still_reading = False
             else:
-                for record_values in zip(*[batch.to_pydict()[column.name] for column in batch.schema]):
+                for record_values in zip(*[batch_dict[column.name] for column in batch.schema]):
                     yield {[c.name for c in batch.schema][i]: record_values[i] for i in range(len(batch.schema))}

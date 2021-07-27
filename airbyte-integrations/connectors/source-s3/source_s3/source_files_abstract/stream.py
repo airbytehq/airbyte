@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,24 +20,25 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
+import concurrent
+import json
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from datetime import datetime
-import json
-import concurrent
-from operator import itemgetter
-from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
-from traceback import format_exc
-from airbyte_cdk.models.airbyte_protocol import SyncMode
 from fnmatch import fnmatch
-from .fileclient import FileClient
-from .filereader import FileReaderCsv
+from operator import itemgetter
+from traceback import format_exc
+from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.streams import Stream
 
+from .fileclient import FileClient
+from .filereader import FileReaderCsv
 
 JSON_TYPES = ["string", "number", "integer", "object", "array", "boolean", "null"]
 
@@ -48,7 +50,7 @@ class ConfigurationError(Exception):
 class FileStream(Stream, ABC):
 
     format_filereader_map = {
-        'csv': FileReaderCsv,
+        "csv": FileReaderCsv,
         # 'parquet': FileReaderParquet,
         # etc.
     }
@@ -56,6 +58,7 @@ class FileStream(Stream, ABC):
     ab_additional_col = "_ab_additional_properties"
     ab_last_mod_col = "_ab_source_file_last_modified"
     ab_file_name_col = "_ab_source_file_url"
+    airbyte_columns = [ab_additional_col, ab_last_mod_col, ab_file_name_col]
     datetime_format_string = "%Y-%m-%dT%H:%M:%S%z"
 
     def __init__(self, dataset_name: str, provider: dict, format: dict, path_patterns: List[str], schema: str = None):
@@ -84,7 +87,7 @@ class FileStream(Stream, ABC):
         self.logger.info(f"initialised stream with format: {format}")
 
     @staticmethod
-    def _init_schema(schema: str) -> Mapping[str,str]:
+    def _init_schema(schema: str) -> Mapping[str, str]:
         """
         If the user provided a schema, we run this method to convert to a python dict and verify it
         This verifies:
@@ -96,7 +99,7 @@ class FileStream(Stream, ABC):
         :param schema: JSON-syntax user provided schema
         :type schema: str
         :raises ConfigurationError: if any of the verification steps above fail
-        :return: the input schema (json string) as a python dict 
+        :return: the input schema (json string) as a python dict
         :rtype: Mapping[str,str]
         """
         try:
@@ -105,12 +108,12 @@ class FileStream(Stream, ABC):
             error_msg = f"Failed to parse schema {repr(err)}\n{schema}\n{format_exc()}"
             raise ConfigurationError(error_msg) from err
         # enforce all keys and values are of type string as required (i.e. no nesting)
-        if not all([isinstance(k, str) and isinstance(v, str) for k,v in py_schema.items()]):
+        if not all([isinstance(k, str) and isinstance(v, str) for k, v in py_schema.items()]):
             raise ConfigurationError("Invalid schema provided, all column names and datatypes must be in string format")
         # enforce all values (datatypes) are valid JsonSchema datatypes
         if not all([datatype in JSON_TYPES for datatype in py_schema.values()]):
             raise ConfigurationError(f"Invalid schema provided, datatypes must each be one of {JSON_TYPES}")
-        
+
         return py_schema
 
     @property
@@ -156,7 +159,7 @@ class FileStream(Stream, ABC):
         :rtype: Iterator[str]
         """
 
-    def pattern_matched_filepath_iterator(self, filepaths:Iterable[str]) -> Iterator[str]:
+    def pattern_matched_filepath_iterator(self, filepaths: Iterable[str]) -> Iterator[str]:
         """
         iterates through iterable filepaths and yields only those filepaths that match user-provided path patterns
 
@@ -174,7 +177,7 @@ class FileStream(Stream, ABC):
         """
         Iterates through pattern_matched_filepath_iterator(), acquiring last_modified property of each file to return in time ascending order.
         Uses concurrent.futures to thread this asynchronously in order to improve performance when there are many files (network I/O)
-        Caches results after first run of method to avoid repeating network calls as this is used more than once 
+        Caches results after first run of method to avoid repeating network calls as this is used more than once
 
         :return: list of tuples in format ({last modified date}, {FileClient object})
         :rtype: Iterable[Tuple[datetime, FileClient]]
@@ -190,8 +193,8 @@ class FileStream(Stream, ABC):
             # TODO: don't hardcode max_workers like this
             with concurrent.futures.ThreadPoolExecutor(max_workers=64) as executor:
                 futures = {
-                    executor.submit(get_fileclient_with_lastmod, fp): 
-                        fp for fp in self.pattern_matched_filepath_iterator(self.filepath_iterator(self.logger, self._provider))
+                    executor.submit(get_fileclient_with_lastmod, fp): fp
+                    for fp in self.pattern_matched_filepath_iterator(self.filepath_iterator(self.logger, self._provider))
                 }
                 for future in concurrent.futures.as_completed(futures):
                     fileclients.append(future.result())  # this will failfast on any errors
@@ -216,7 +219,11 @@ class FileStream(Stream, ABC):
         :return: the JSON schema representing this stream.
         :rtype: Mapping[str, Any]
         """
-        properties = {column:{"type": typ} for column, typ in self._get_schema_map().items()}
+        # note: making every non-airbyte column nullable for compatibility
+        # TODO: ensure this behaviour still makes sense as we add new file formats
+        properties = {}
+        for column, typ in self._get_schema_map().items():
+            properties[column] = {"type": ["null", typ]} if column not in self.airbyte_columns else {"type": typ}
         properties[self.ab_last_mod_col]["format"] = "date-time"
         return {"type": "object", "properties": properties}
 
@@ -255,9 +262,11 @@ class FileStream(Stream, ABC):
                         # this is to allow more leniency as we may be able to coerce this datatype mismatch on read according to provided schema state
                         # if not, then the read will error anyway
                         if col in self._schema.keys():
-                            self.logger.warn(f"Detected mismatched datatype on column '{col}', in file '{fileclient._url}'. "
-                                             + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'. "
-                                             + f"Airbyte will attempt to coerce this to {master_schema[col]} on read.")
+                            self.logger.warn(
+                                f"Detected mismatched datatype on column '{col}', in file '{fileclient._url}'. "
+                                + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'. "
+                                + f"Airbyte will attempt to coerce this to {master_schema[col]} on read."
+                            )
                         # else we're inferring the schema (or at least this column) from scratch and therefore throw an error on mismatching datatypes
                         else:
                             raise RuntimeError(
@@ -285,16 +294,12 @@ class FileStream(Stream, ABC):
         1 file == 1 stream_slice.
         Incremental stream_slices are implemented in the IncrementalFileStream child class.
         """
-        
+
         # TODO: this could be optimised via concurrent reads, however we'd lose chronology and need to deal with knock-ons of that
         # we could do this concurrently both full and incremental by running batches in parallel
         # and then incrementing the cursor per each complete batch
         for last_mod, fileclient in self.time_ordered_fileclient_iterator():
-            yield [{
-                "unique_url": fileclient._url,
-                "last_modified": last_mod,
-                "fileclient": fileclient
-            }]
+            yield [{"unique_url": fileclient._url, "last_modified": last_mod, "fileclient": fileclient}]
         # in case we have no files
         yield from [None]
 
@@ -360,14 +365,17 @@ class FileStream(Stream, ABC):
 
         # TODO: read all files in a stream_slice concurrently
         for file_info in stream_slice:
-            with file_info['fileclient'].open(file_reader.is_binary) as f:
+            with file_info["fileclient"].open(file_reader.is_binary) as f:
                 # TODO: make this more efficient than mutating every record one-by-one as they stream
                 for record in file_reader.stream_records(f):
                     schema_matched_record = self._match_target_schema(record, list(self._get_schema_map().keys()))
                     complete_record = self._add_extra_fields_from_map(
                         schema_matched_record,
-                        {self.ab_last_mod_col: datetime.strftime(file_info['last_modified'], self.datetime_format_string),
-                         self.ab_file_name_col: file_info['unique_url']})
+                        {
+                            self.ab_last_mod_col: datetime.strftime(file_info["last_modified"], self.datetime_format_string),
+                            self.ab_file_name_col: file_info["unique_url"],
+                        },
+                    )
                     yield complete_record
         self.logger.info("finished reading a stream slice")
 
@@ -404,8 +412,12 @@ class IncrementalFileStream(FileStream, ABC):
         state_dict = {}
         if current_stream_state is not None and self.cursor_field in current_stream_state.keys():
             current_parsed_datetime = datetime.strptime(current_stream_state[self.cursor_field], self.datetime_format_string)
-            latest_record_datetime = datetime.strptime(latest_record.get(self.cursor_field, "1970-01-01T00:00:00+0000"), self.datetime_format_string)
-            state_dict[self.cursor_field] = datetime.strftime(max(current_parsed_datetime, latest_record_datetime), self.datetime_format_string)
+            latest_record_datetime = datetime.strptime(
+                latest_record.get(self.cursor_field, "1970-01-01T00:00:00+0000"), self.datetime_format_string
+            )
+            state_dict[self.cursor_field] = datetime.strftime(
+                max(current_parsed_datetime, latest_record_datetime), self.datetime_format_string
+            )
         else:
             state_dict[self.cursor_field] = "1970-01-01T00:00:00+0000"
 
@@ -420,7 +432,7 @@ class IncrementalFileStream(FileStream, ABC):
         An incremental stream_slice is a group of all files with the exact same last_modified timestamp.
         This ensures we only update the cursor state to a given timestamp after ALL files with that timestamp have been successfully read.
 
-        Slight nuance: as we iterate through time_ordered_fileclient_iterator(), 
+        Slight nuance: as we iterate through time_ordered_fileclient_iterator(),
         we yield the stream_slice containing file(s) up to and EXcluding the file on the current iteration.
         The stream_slice is then cleared (if we yielded it) and this iteration's file appended to the (next) stream_slice
         """
@@ -431,7 +443,7 @@ class IncrementalFileStream(FileStream, ABC):
             # if necessary and present, let's update this object's schema attribute to the schema stored in state
             # TODO: ideally we could do this on __init__ but I'm not sure that's possible without breaking from cdk style implementation
             if self._schema == {} and stream_state is not None and "schema" in stream_state.keys():
-                self._schema = stream_state['schema']
+                self._schema = stream_state["schema"]
 
             # logic here is to bundle all files with exact same last modified timestamp together in each slice
             prev_file_last_mod = None  # init variable to hold previous iterations last modified
@@ -451,11 +463,7 @@ class IncrementalFileStream(FileStream, ABC):
                     yield stream_slice
                     stream_slice.clear()
                 # now we either have an empty stream_slice or a stream_slice that this file shares a last modified with, so append it
-                stream_slice.append({
-                    "unique_url": fileclient._url,
-                    "last_modified": last_mod,
-                    "fileclient": fileclient
-                })
+                stream_slice.append({"unique_url": fileclient._url, "last_modified": last_mod, "fileclient": fileclient})
                 # update our prev_file_last_mod to the current one for next iteration
                 prev_file_last_mod = last_mod
 

@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,14 +20,15 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    'airbyte-cdk',
-    'pyarrow==4.0.1',
-    'smart-open[s3]==5.1.0',
+    "airbyte-cdk",
+    "pyarrow==4.0.1",
+    "smart-open[s3]==5.1.0",
 ]
 
 TEST_REQUIREMENTS = [

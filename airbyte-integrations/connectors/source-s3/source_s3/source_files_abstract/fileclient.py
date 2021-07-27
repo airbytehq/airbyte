@@ -24,7 +24,8 @@
 
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Union, TextIO, BinaryIO
+from typing import BinaryIO, TextIO, Union
+
 from airbyte_cdk.logger import AirbyteLogger
 
 
@@ -37,7 +38,6 @@ class PermissionsError(Exception):
 
 
 class FileClient(ABC):
-
     def __init__(self, url: str, provider: dict):
         """
         :param url: value yielded by filepath_iterator() in [Incremental]FileStream class. Blob/File path
@@ -65,7 +65,7 @@ class FileClient(ABC):
             self._file.close()
             self._file = None
 
-    def open(self, binary: bool=False):
+    def open(self, binary: bool = False):
         self.close()
         self._file = self._open(binary=binary)
         return self

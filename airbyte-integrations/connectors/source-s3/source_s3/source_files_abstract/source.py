@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,12 +20,13 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 from abc import ABC, abstractmethod
-from typing import Any, List, Mapping, Optional, Tuple
-from traceback import format_exc
 from fnmatch import fnmatch
+from traceback import format_exc
+from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
@@ -32,7 +34,6 @@ from airbyte_cdk.sources.streams import Stream
 
 
 class SourceFilesAbstract(AbstractSource, ABC):
-
     @property
     @abstractmethod
     def stream_class(self) -> type:
@@ -57,7 +58,7 @@ class SourceFilesAbstract(AbstractSource, ABC):
         The error object will be cast to string to display the problem to the user.
         :rtype: Tuple[bool, Optional[Any]]
         """
-        
+
         found_a_file = False
         try:
             for filepath in self.stream_class.filepath_iterator(logger, config.get("provider")):
@@ -80,7 +81,7 @@ class SourceFilesAbstract(AbstractSource, ABC):
         We just have a single stream per source so construct that here
 
         :param config: The user-provided configuration as specified by the source's spec.
-        :type config: Mapping[str, Any] 
+        :type config: Mapping[str, Any]
         :return: A list of the streams in this source connector.
         :rtype: List[Stream]
         """
