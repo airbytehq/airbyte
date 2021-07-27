@@ -77,6 +77,7 @@
     * [PokéAPI](integrations/sources/pokeapi.md)
     * [Postgres](integrations/sources/postgres.md)
     * [PostHog](integrations/sources/posthog.md)
+    * [PrestaShop](integrations/sources/prestashop.md)
     * [Quickbooks](integrations/sources/quickbooks.md)
     * [Recharge](integrations/sources/recharge.md)
     * [Recurly](integrations/sources/recurly.md)

@@ -88,6 +88,8 @@
  Plaid   [![source-plaid](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-plaid%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-plaid) 
 
  Postgres   [![source-postgres](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-postgres%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-postgres) 
+
+ PrestaShop   [![source-prestashop](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-prestashop%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-presta-shop)
  
  CockroachDb   [![source-cockroachdb](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-cockroachdb%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-cockroachdb)
 

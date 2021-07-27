@@ -23,6 +23,6 @@
 #
 
 
-from .source import SourceScaffoldSourceHttp
+from .source import SourcePrestaShop
 
-__all__ = ["SourceScaffoldSourceHttp"]
+__all__ = ["SourcePrestaShop"]
