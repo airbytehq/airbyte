@@ -1,7 +1,6 @@
 name: GKE Kube Acceptance Test
+
 on:
-  schedule:
-    - cron: '0 */6 * * *'
   workflow_dispatch:
     inputs:
       comment-id:
