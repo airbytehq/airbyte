@@ -32,8 +32,6 @@ class Helpers {
         if (project.file(testFilesDirectory).exists()) {
 
             project.projectDir.toPath().resolve(testFilesDirectory).traverse(type: FileType.FILES, nameFilter: ~/(^test_.*|.*_test)\.py$/) { file ->
-                println(file.toAbsolutePath())
-                println("HEY HO")
                 project.task(taskName, type: PythonTask, dependsOn: taskDependencies) {
                     module = "pytest"
                     command = "-s ${testFilesDirectory}"
