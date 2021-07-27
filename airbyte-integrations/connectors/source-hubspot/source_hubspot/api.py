@@ -323,6 +323,7 @@ class Stream(ABC):
         converted_type, field_format = KNOWN_CONVERTIBLE_SCHEMA_TYPES.get(field_type) or (None, None)
 
         if not converted_type:
+            converted_type = "string"
             logger.warn(f"Unsupported type {field_type} found")
 
         field_props = {
