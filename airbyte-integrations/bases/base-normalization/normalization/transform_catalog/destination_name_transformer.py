@@ -146,7 +146,10 @@ class DestinationNameTransformer:
         if truncate:
             result = self.truncate_identifier_name(result)
         if self.needs_quotes(result):
-            result = result.replace('"', '""')
+            if self.destination_type.value != DestinationType.MYSQL.value:
+                result = result.replace('"', '""')
+            else:
+                result = result.replace("`", "_")
             result = result.replace("'", "\\'")
             result = f"adapter.quote('{result}')"
             result = self.__normalize_identifier_case(result, is_quoted=True)
@@ -197,7 +200,12 @@ def transform_standard_naming(input_name: str) -> str:
     result = input_name.strip()
     result = strip_accents(result)
     result = sub(r"\s+", "_", result)
-    result = sub(r"[^a-zA-Z0-9_]", "_", result)
+    result = sub(r"[^a-zA-Z0-9_À-ÿ]", "_", result)
+    return result
+
+
+def transform_json_naming(input_name: str) -> str:
+    result = sub(r"['\"`]", "_", input_name)
     return result
 
 
