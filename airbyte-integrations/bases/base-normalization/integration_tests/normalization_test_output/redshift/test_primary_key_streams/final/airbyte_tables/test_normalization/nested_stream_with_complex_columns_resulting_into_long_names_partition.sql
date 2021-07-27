@@ -13,6 +13,7 @@ select
     _airbyte_nested_stream_with_complex_columns_resulting_into_long_names_hashid,
     json_extract_path_text("partition", 'double_array_data', true) as double_array_data,
     json_extract_path_text("partition", 'DATA', true) as data,
+    json_extract_path_text("partition", 'column_''with"_quotes', true) as "column_'with""_quotes",
     _airbyte_emitted_at
 from "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names"
 where "partition" is not null
@@ -24,6 +25,7 @@ select
     _airbyte_nested_stream_with_complex_columns_resulting_into_long_names_hashid,
     double_array_data,
     data,
+    "column_'with""_quotes",
     _airbyte_emitted_at
 from __dbt__CTE__nested_stream_with_complex_columns_resulting_into_long_names_partition_ab1
 -- partition at nested_stream_with_complex_columns_resulting_into_long_names/partition
@@ -34,7 +36,7 @@ select
     *,
     md5(cast(
     
-    coalesce(cast(_airbyte_nested_stream_with_complex_columns_resulting_into_long_names_hashid as varchar), '') || '-' || coalesce(cast(double_array_data as varchar), '') || '-' || coalesce(cast(data as varchar), '')
+    coalesce(cast(_airbyte_nested_stream_with_complex_columns_resulting_into_long_names_hashid as varchar), '') || '-' || coalesce(cast(double_array_data as varchar), '') || '-' || coalesce(cast(data as varchar), '') || '-' || coalesce(cast("column_'with""_quotes" as varchar), '')
 
  as varchar)) as _airbyte_partition_hashid
 from __dbt__CTE__nested_stream_with_complex_columns_resulting_into_long_names_partition_ab2
@@ -44,6 +46,7 @@ select
     _airbyte_nested_stream_with_complex_columns_resulting_into_long_names_hashid,
     double_array_data,
     data,
+    "column_'with""_quotes",
     _airbyte_emitted_at,
     _airbyte_partition_hashid
 from __dbt__CTE__nested_stream_with_complex_columns_resulting_into_long_names_partition_ab3
