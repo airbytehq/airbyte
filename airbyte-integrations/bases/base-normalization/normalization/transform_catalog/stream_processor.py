@@ -346,6 +346,8 @@ from {{ from_table }}
     @staticmethod
     def extract_json_column(property_name: str, json_column_name: str, definition: Dict, column_name: str) -> str:
         json_path = [property_name]
+        # In some cases, some destination aren't able to parse the JSON blob using the original property name
+        # we make their life easier by using a pre-populated and sanitized column name instead...
         normalized_json_path = [transform_json_naming(property_name)]
         json_extract = jinja_call(f"json_extract({json_column_name}, {json_path}, {normalized_json_path})")
         if "type" in definition:
