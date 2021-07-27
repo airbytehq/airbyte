@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: airbyte-temporal-svc
 spec:
-  type: NodePort
+  type: ClusterIP
   ports:
     - port: 7233
       protocol: TCP
