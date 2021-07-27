@@ -21,8 +21,3 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-
-
-from .source import SourceScaffoldSourceHttp
-
-__all__ = ["SourceScaffoldSourceHttp"]
