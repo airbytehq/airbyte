@@ -2,11 +2,11 @@ name: GKE Kube Acceptance Test
 on:
   schedule:
     - cron: '0 */6 * * *'
-    workflow_dispatch:
-      inputs:
-        comment-id:
-          description: 'The comment-id of the slash command. Used to update the comment with the status.'
-          required: false
+  workflow_dispatch:
+    inputs:
+      comment-id:
+        description: 'The comment-id of the slash command. Used to update the comment with the status.'
+        required: false
 
 jobs:
   start-gke-kube-acceptance-test-runner:
