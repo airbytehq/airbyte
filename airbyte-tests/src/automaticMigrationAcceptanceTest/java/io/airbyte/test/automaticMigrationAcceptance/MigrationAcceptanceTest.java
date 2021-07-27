@@ -105,10 +105,13 @@ public class MigrationAcceptanceTest {
 
   @SuppressWarnings("UnstableApiUsage")
   private void firstRun() throws Exception {
-    final Map<String, String> environmentVariables = getEnvironmentVariables("0.17.0-alpha");
+    // 0.17.0-alpha-db-patch is specifically built for this test;
+    // it connects to the database with retries to fix flaky connection issue
+    // https://github.com/airbytehq/airbyte/issues/4955
+    final Map<String, String> environmentVariables = getEnvironmentVariables("0.17.0-alpha-db-patch");
 
     final Set<String> logsToExpect = new HashSet<>();
-    logsToExpect.add("Version: 0.17.0-alpha");
+    logsToExpect.add("Version: 0.17.0-alpha-db-patch");
 
     final AirbyteTestContainer airbyteTestContainer =
         new AirbyteTestContainer.Builder(new File(Resources.getResource("docker-compose-migration-test-0-17-0-alpha.yaml").toURI()))
@@ -133,7 +136,7 @@ public class MigrationAcceptanceTest {
   private void secondRun(String targetVersion) throws Exception {
     final Set<String> logsToExpect = new HashSet<>();
     logsToExpect.add("Version: " + targetVersion);
-    logsToExpect.add("Starting migrations. Current version: 0.17.0-alpha, Target version: " + targetVersionWithoutPatch(targetVersion));
+    logsToExpect.add("Starting migrations. Current version: 0.17.0-alpha-db-patch, Target version: " + targetVersionWithoutPatch(targetVersion));
     logsToExpect.add("Migrating from version: 0.17.0-alpha to version 0.18.0-alpha.");
     logsToExpect.add("Migrating from version: 0.18.0-alpha to version 0.19.0-alpha.");
     logsToExpect.add("Migrating from version: 0.19.0-alpha to version 0.20.0-alpha.");
