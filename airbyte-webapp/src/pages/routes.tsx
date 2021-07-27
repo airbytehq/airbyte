@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from "react";
+import React, { Suspense, useEffect, useMemo } from "react";
 import {
   BrowserRouter as Router,
   Redirect,
@@ -176,16 +176,18 @@ export const Routing: React.FC = () => {
   }, [workspace]);
 
   const { formatMessage } = useIntl();
-  useNotificationService(
-    config.isDemo
-      ? {
-          id: "demo.message",
-          title: formatMessage({ id: "demo.message.title" }),
-          text: formatMessage({ id: "demo.message.body" }),
-          nonClosable: true,
-        }
-      : undefined
+
+  const demoNotification = useMemo(
+    () => ({
+      id: "demo.message",
+      title: formatMessage({ id: "demo.message.title" }),
+      text: formatMessage({ id: "demo.message.body" }),
+      nonClosable: true,
+    }),
+    [formatMessage]
   );
+
+  useNotificationService(config.isDemo ? demoNotification : undefined);
 
   return (
     <Router>

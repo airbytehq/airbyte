@@ -26,7 +26,6 @@ package io.airbyte.analytics;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.messages.AliasMessage;
 import com.segment.analytics.messages.IdentifyMessage;
@@ -45,39 +44,54 @@ public class SegmentTrackingClient implements TrackingClient {
   // Analytics is threadsafe.
   private final Analytics analytics;
   private final Supplier<TrackingIdentity> identitySupplier;
+  private final Deployment deployment;
   private final String airbyteRole;
 
   @VisibleForTesting
   SegmentTrackingClient(final Supplier<TrackingIdentity> identitySupplier,
+                        final Deployment deployment,
+
                         final String airbyteRole,
                         final Analytics analytics) {
     this.identitySupplier = identitySupplier;
+    this.deployment = deployment;
     this.analytics = analytics;
     this.airbyteRole = airbyteRole;
   }
 
-  public SegmentTrackingClient(final Supplier<TrackingIdentity> identitySupplier, final String airbyteRole) {
-    this(identitySupplier, airbyteRole, Analytics.builder(SEGMENT_WRITE_KEY).build());
+  public SegmentTrackingClient(final Supplier<TrackingIdentity> identitySupplier,
+                               final Deployment deployment,
+
+                               final String airbyteRole) {
+    this(identitySupplier, deployment, airbyteRole, Analytics.builder(SEGMENT_WRITE_KEY).build());
   }
 
   @Override
   public void identify() {
     final TrackingIdentity trackingIdentity = identitySupplier.get();
-    final ImmutableMap.Builder<String, Object> identityMetadataBuilder = ImmutableMap.<String, Object>builder()
-        .put(AIRBYTE_VERSION_KEY, trackingIdentity.getAirbyteVersion())
-        .put("anonymized", trackingIdentity.isAnonymousDataCollection())
-        .put("subscribed_newsletter", trackingIdentity.isNews())
-        .put("subscribed_security", trackingIdentity.isSecurityUpdates());
+    final Map<String, Object> identityMetadata = new HashMap<>();
 
+    // deployment
+    identityMetadata.put(AIRBYTE_VERSION_KEY, trackingIdentity.getAirbyteVersion());
+    identityMetadata.put("deployment_mode", deployment.getDeploymentMode());
+    identityMetadata.put("deployment_env", deployment.getDeploymentEnv());
+    identityMetadata.put("deployment_id", deployment.getDeploymentId());
+
+    // workspace (includes info that in the future we would store in an organization)
+    identityMetadata.put("anonymized", trackingIdentity.isAnonymousDataCollection());
+    identityMetadata.put("subscribed_newsletter", trackingIdentity.isNews());
+    identityMetadata.put("subscribed_security", trackingIdentity.isSecurityUpdates());
+    trackingIdentity.getEmail().ifPresent(email -> identityMetadata.put("email", email));
+
+    // other
     if (!Strings.isNullOrEmpty(airbyteRole)) {
-      identityMetadataBuilder.put(AIRBYTE_ROLE, airbyteRole);
+      identityMetadata.put(AIRBYTE_ROLE, airbyteRole);
     }
 
-    trackingIdentity.getEmail().ifPresent(email -> identityMetadataBuilder.put("email", email));
-
     analytics.enqueue(IdentifyMessage.builder()
+        // user id is scoped by workspace. there is no cross-workspace tracking.
         .userId(trackingIdentity.getCustomerId().toString())
-        .traits(identityMetadataBuilder.build()));
+        .traits(identityMetadata));
   }
 
   @Override

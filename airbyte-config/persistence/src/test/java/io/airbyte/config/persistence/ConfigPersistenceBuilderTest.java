@@ -24,13 +24,12 @@
 
 package io.airbyte.config.persistence;
 
-import static io.airbyte.config.persistence.AirbyteConfigsTable.AIRBYTE_CONFIGS;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.AIRBYTE_CONFIGS_TABLE_SCHEMA;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.CONFIG_BLOB;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.CONFIG_ID;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.CONFIG_TYPE;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.CREATED_AT;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.UPDATED_AT;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.AIRBYTE_CONFIGS;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CONFIG_BLOB;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CONFIG_ID;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CONFIG_TYPE;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CREATED_AT;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.UPDATED_AT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -40,12 +39,11 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -92,8 +90,8 @@ class ConfigPersistenceBuilderTest extends BaseTest {
 
   @BeforeEach
   public void setup() throws Exception {
-    database = Databases.createPostgresDatabase(container.getUsername(), container.getPassword(), container.getJdbcUrl());
-    database.transaction(ctx -> ctx.execute("DROP TABLE IF EXISTS airbyte_configs"));
+    database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    database.transaction(ctx -> ctx.execute("TRUNCATE TABLE airbyte_configs"));
   }
 
   @AfterEach
@@ -130,10 +128,8 @@ class ConfigPersistenceBuilderTest extends BaseTest {
   @Test
   public void testCreateDbPersistenceWithoutSetupDatabase() throws Exception {
     // Initialize the database with one config.
-    String schema = MoreResources.readResource(AIRBYTE_CONFIGS_TABLE_SCHEMA);
     Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(System.currentTimeMillis()));
     database.transaction(ctx -> {
-      ctx.execute(schema);
       ctx.insertInto(AIRBYTE_CONFIGS)
           .set(CONFIG_ID, SOURCE_GITHUB.getSourceDefinitionId().toString())
           .set(CONFIG_TYPE, ConfigSchema.STANDARD_SOURCE_DEFINITION.name())
@@ -155,20 +151,6 @@ class ConfigPersistenceBuilderTest extends BaseTest {
         dbPersistence.dumpConfigs());
   }
 
-  @Test
-  public void testCreateFileSystemConfigPersistence() throws Exception {
-    Path testRoot = Path.of("/tmp/cpf_test_file_system");
-    Path rootPath = Files.createTempDirectory(Files.createDirectories(testRoot), ConfigPersistenceBuilderTest.class.getName());
-    ConfigPersistence seedPersistence = new FileSystemConfigPersistence(rootPath);
-    writeSource(seedPersistence, SOURCE_GITHUB);
-    writeDestination(seedPersistence, DESTINATION_S3);
-
-    when(configs.getConfigRoot()).thenReturn(rootPath);
-
-    ConfigPersistence filePersistence = new ConfigPersistenceBuilder(configs, false).getFileSystemPersistence();
-    assertSameConfigDump(seedPersistence.dumpConfigs(), filePersistence.dumpConfigs());
-  }
-
   /**
    * This test mimics the file -> db config persistence migration process.
    */
@@ -187,10 +169,11 @@ class ConfigPersistenceBuilderTest extends BaseTest {
 
     // first run uses file system config persistence, and adds an extra workspace
     Path testRoot = Path.of("/tmp/cpf_test_migration");
-    Path rootPath = Files.createTempDirectory(Files.createDirectories(testRoot), ConfigPersistenceBuilderTest.class.getName());
-    when(configs.getConfigRoot()).thenReturn(rootPath);
+    Path storageRoot = Files.createTempDirectory(Files.createDirectories(testRoot), ConfigPersistenceBuilderTest.class.getName());
+    Files.createDirectories(storageRoot.resolve(FileSystemConfigPersistence.CONFIG_DIR));
+    when(configs.getConfigRoot()).thenReturn(storageRoot);
 
-    ConfigPersistence filePersistence = new ConfigPersistenceBuilder(configs, false).getFileSystemPersistence();
+    ConfigPersistence filePersistence = FileSystemConfigPersistence.createWithValidation(storageRoot);
 
     filePersistence.replaceAllConfigs(seedConfigs, false);
     filePersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, extraWorkspace.getWorkspaceId().toString(), extraWorkspace);
