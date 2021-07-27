@@ -404,3 +404,8 @@
   dockerRepository: airbyte/source-prestashop
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/prestashop
+- sourceDefinitionId: bfd1ddf8-ae8a-4620-b1d7-55597d2ba08c
+  name: BigQuery
+  dockerRepository: airbyte/source-bigquery
+  dockerImageTag: 0.1.1
+  documentationUrl: https://docs.airbyte.io/integrations/sources/bigquery

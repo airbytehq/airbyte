@@ -17,8 +17,6 @@ dependencies {
     implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-integrations:connectors:source-relational-db')
 
-    //TODO Add jdbc driver import here. Ex: implementation 'com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre14'
-
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'

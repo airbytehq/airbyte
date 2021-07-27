@@ -316,6 +316,26 @@ public class BigQuerySourceComprehensiveTest extends SourceComprehensiveTest {
             .addInsertValues("STRUCT('s' as frst, 1 as sec, STRUCT(555 as id_col, STRUCT(TIME(15, 30, 00) as time) as mega_obbj) as obbj)")
             .addExpectedValues("{\"frst\":\"s\",\"sec\":1,\"obbj\":{\"id_col\":555,\"mega_obbj\":{\"last_col\":\"15:30:00\"}}}")
             .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("array")
+            .fullSourceDataType("array<STRUCT<fff String, ggg int64>>")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .createTablePatternSql(CREATE_SQL_PATTERN)
+            .addInsertValues("[STRUCT('qqq' as fff, 1 as ggg), STRUCT('kkk' as fff, 2 as ggg)]")
+            .addExpectedValues("[{\"fff\":\"qqq\",\"ggg\":1},{\"fff\":\"kkk\",\"ggg\":2}]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("array")
+            .fullSourceDataType("array<STRUCT<fff String, ggg array<STRUCT<ooo String, kkk int64>>>>")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .createTablePatternSql(CREATE_SQL_PATTERN)
+            .addInsertValues("[STRUCT('qqq' as fff, [STRUCT('fff' as ooo, 1 as kkk), STRUCT('hhh' as ooo, 2 as kkk)] as ggg)]")
+            .addExpectedValues("[{\"fff\":\"qqq\",\"ggg\":[{\"ooo\":\"fff\",\"kkk\":1},{\"ooo\":\"hhh\",\"kkk\":2}]}]")
+            .build());
   }
 
   @Override

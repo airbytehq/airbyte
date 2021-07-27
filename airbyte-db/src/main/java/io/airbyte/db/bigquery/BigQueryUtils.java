@@ -90,10 +90,26 @@ public class BigQueryUtils {
     } else if (fieldValue.getAttribute().equals(Attribute.REPEATED)) {
       ArrayNode arrayNode = node.putArray(fieldName);
       StandardSQLTypeName fieldType = field.getType().getStandardType();
-      fieldValue.getRepeatedValue().forEach(arrayFieldValue -> fillObjectNode(fieldName, fieldType, arrayFieldValue, arrayNode.addObject()));
+      FieldList subFields = field.getSubFields();
+      // Array of primitive
+      if (subFields == null || subFields.isEmpty()) {
+        fieldValue.getRepeatedValue().forEach(arrayFieldValue -> fillObjectNode(fieldName, fieldType, arrayFieldValue, arrayNode.addObject()));
+        // Array of records
+      } else {
+        for (FieldValue arrayFieldValue : fieldValue.getRepeatedValue()) {
+          int count = 0; // named get doesn't work here for some reasons.
+          ObjectNode newNode = arrayNode.addObject();
+          for (Field repeatedField : subFields) {
+            setJsonField(repeatedField, arrayFieldValue.getRecordValue().get(count++),
+                newNode);
+          }
+        }
+      }
     } else if (fieldValue.getAttribute().equals(Attribute.RECORD)) {
       ObjectNode newNode = node.putObject(fieldName);
-      field.getSubFields().forEach(recordField -> setJsonField(recordField, fieldValue.getRecordValue().get(recordField.getName()), newNode));
+      field.getSubFields().forEach(recordField -> {
+        setJsonField(recordField, fieldValue.getRecordValue().get(recordField.getName()), newNode);
+      });
     }
   }
 
@@ -113,6 +129,8 @@ public class BigQueryUtils {
       case BOOL -> JsonSchemaPrimitive.BOOLEAN;
       case INT64, FLOAT64, NUMERIC, BIGNUMERIC -> JsonSchemaPrimitive.NUMBER;
       case STRING, BYTES, TIMESTAMP, DATE, TIME, DATETIME -> JsonSchemaPrimitive.STRING;
+      case ARRAY -> JsonSchemaPrimitive.ARRAY;
+      case STRUCT -> JsonSchemaPrimitive.OBJECT;
       default -> JsonSchemaPrimitive.STRING;
     };
   }
