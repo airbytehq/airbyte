@@ -100,6 +100,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
         final BigQueryWriteConfig writer = writeConfigs.get(pair);
         writer.getWriter().write(ByteBuffer.wrap((Jsons.serialize(formatRecord(writer.getSchema(), recordMessage)) + "\n").getBytes(Charsets.UTF_8)));
       } catch (IOException e) {
+        LOGGER.error("Got an error while writing message:" + e.getMessage());
         throw new RuntimeException(e);
       }
     } else {
@@ -121,6 +122,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
   @Override
   public void close(boolean hasFailed) {
+    LOGGER.info("Finishing processes...");
     try {
       writeConfigs.values().parallelStream().forEach(bigQueryWriteConfig -> Exceptions.toRuntime(() -> bigQueryWriteConfig.getWriter().close()));
       writeConfigs.values().forEach(bigQueryWriteConfig -> Exceptions.toRuntime(() -> {
@@ -129,7 +131,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
         }
       }));
       if (!hasFailed) {
-        LOGGER.info("executing on success close procedure.");
+        LOGGER.info("Migration finished with no explicit errors. Coping data from tmp tables to permanent");
         writeConfigs.values()
             .forEach(
                 bigQueryWriteConfig -> copyTable(bigquery, bigQueryWriteConfig.getTmpTable(), bigQueryWriteConfig.getTable(),
@@ -139,7 +141,10 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       }
     } finally {
       // clean up tmp tables;
-      writeConfigs.values().forEach(bigQueryWriteConfig -> bigquery.delete(bigQueryWriteConfig.getTmpTable()));
+      LOGGER.info("Removing tmp tables...");
+      writeConfigs.values()
+          .forEach(bigQueryWriteConfig -> bigquery.delete(bigQueryWriteConfig.getTmpTable()));
+      LOGGER.info("Finishing destination process...completed");
     }
   }
 

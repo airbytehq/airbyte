@@ -78,6 +78,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   static final String CONFIG_PROJECT_ID = "project_id";
   static final String CONFIG_DATASET_LOCATION = "dataset_location";
   static final String CONFIG_CREDS = "credentials_json";
+  static final String BIG_QUERY_CLIENT_CHUNK_SIZE = "big_query_client_buffer_size_mb";
+  final int MiB = 1024 * 1024;
 
   private static final com.google.cloud.bigquery.Schema SCHEMA = com.google.cloud.bigquery.Schema.of(
       Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
@@ -124,6 +126,19 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     } else {
       return "US";
     }
+  }
+
+  // https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html
+  private int getBigQueryClientChunkSize(JsonNode config) {
+    final JsonNode jsonNode = config.get(BIG_QUERY_CLIENT_CHUNK_SIZE);
+    if (jsonNode == null) {
+      throw new IllegalArgumentException("BigQuery client Chunk (buffer) size \"big_query_client_buffer_size_mb\" must be set in config");
+    }
+    int chunkSizeFromConfig = jsonNode.asInt();
+    if (chunkSizeFromConfig <= 0) {
+      throw new IllegalArgumentException("BigQuery client Chunk (buffer) size must be a positive value");
+    }
+    return chunkSizeFromConfig * MiB;
   }
 
   private void createSchemaTable(BigQuery bigquery, String datasetId, String datasetLocation) {
@@ -210,6 +225,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .setFormatOptions(FormatOptions.json()).build(); // new-line delimited json.
 
       final TableDataWriteChannel writer = bigquery.writer(JobId.of(UUID.randomUUID().toString()), writeChannelConfiguration);
+      writer.setChunkSize(getBigQueryClientChunkSize(config));
       final WriteDisposition syncMode = getWriteDisposition(configStream.getDestinationSyncMode());
 
       writeConfigs.put(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
