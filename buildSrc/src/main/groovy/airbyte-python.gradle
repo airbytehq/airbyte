@@ -131,6 +131,9 @@ class AirbytePythonPlugin implements Plugin<Project> {
 
         Helpers.addTestTaskIfTestFilesFound(project, 'unit_tests', 'unitTest', project.installTestReqs)
         Helpers.addTestTaskIfTestFilesFound(project, 'integration_tests', 'customIntegrationTests', project.installTestReqs)
+        if (!project.tasks.findByName('integrationTest')) {
+            project.task('integrationTest')
+        }
         project.integrationTest.dependsOn(project.customIntegrationTests)
 
         if (extension.moduleDirectory) {
