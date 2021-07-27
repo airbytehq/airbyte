@@ -23,6 +23,26 @@
 #
 
 
-from .source import SourceScaffoldSourceHttp
+from setuptools import find_packages, setup
 
-__all__ = ["SourceScaffoldSourceHttp"]
+MAIN_REQUIREMENTS = [
+    "airbyte-cdk",
+]
+
+TEST_REQUIREMENTS = [
+    "pytest~=6.1",
+    "source-acceptance-test",
+]
+
+setup(
+    name="source_prestashop",
+    description="Source implementation for PrestaShop.",
+    author="Airbyte",
+    author_email="contact@airbyte.io",
+    packages=find_packages(),
+    install_requires=MAIN_REQUIREMENTS,
+    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
+    extras_require={
+        "tests": TEST_REQUIREMENTS,
+    },
+)

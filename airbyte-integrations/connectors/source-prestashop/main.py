@@ -23,6 +23,11 @@
 #
 
 
-from .source import SourceScaffoldSourceHttp
+import sys
 
-__all__ = ["SourceScaffoldSourceHttp"]
+from airbyte_cdk.entrypoint import launch
+from source_prestashop import SourcePrestaShop
+
+if __name__ == "__main__":
+    source = SourcePrestaShop()
+    launch(source, sys.argv[1:])

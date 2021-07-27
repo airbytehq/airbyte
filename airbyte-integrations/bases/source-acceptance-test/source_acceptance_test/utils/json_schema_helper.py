@@ -53,6 +53,9 @@ class CatalogField:
         if self.formats.intersection({"datetime", "date-time", "date"}):
             if value is None and "null" not in self.formats:
                 raise ValueError(f"Invalid field format. Value: {value}. Format: {self.formats}")
+            # handle beautiful MySQL datetime, i.e. NULL datetime
+            if value.startswith("0000-00-00"):
+                value = value.replace("0000-00-00", "0001-01-01")
             return pendulum.parse(value)
         return value
 
