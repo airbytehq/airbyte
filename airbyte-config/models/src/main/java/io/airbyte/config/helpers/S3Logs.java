@@ -145,7 +145,7 @@ public class S3Logs implements CloudLogs {
         .build();
 
     S3.deleteObjects(multiObjectDeleteRequest);
-    System.out.println("Multiple objects are deleted!");
+    LOGGER.debug("Multiple objects are deleted!");
   }
 
   private static void createS3ClientIfNotExist(LogConfigs configs) {
