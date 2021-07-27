@@ -10,15 +10,35 @@ The Oracle source does not alter the schema present in your database. Depending 
 
 ### Data type mapping
 
-Oracle data types are mapped to the following data types when synchronizing data:
+Oracle data types are mapped to the following data types when synchronizing data.
+You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-oracle/src/test-integration/java/io/airbyte/integrations/source/oracle/OracleSourceComprehensiveTest.java).
+If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
 | Oracle Type | Resulting Type | Notes |
 | :--- | :--- | :--- |
-| `number` | number |  |
-| `integer` | number |  |
+| `binary_double` | number |  |
+| `binary_float` | number |  |
+| `blob` | string |  |
+| `char` | string |  |
+| `char(3 char)` | string |  |
+| `clob` | string |  |
+| `date` | string |  |
 | `decimal` | number |  |
 | `float` | number |  |
-| everything else | string |  |
+| `float(5)` | number |  |
+| `integer` | number |  |
+| `interval year to month` | string |  |
+| `long raw` | string |  |
+| `number` | number |  |
+| `number(6, 2)` | number |  |
+| `nvarchar(3)` | string |  |
+| `raw` | string |  |
+| `timestamp` | string |  |
+| `timestamp with local time zone` | string |  |
+| `timestamp with time zone` | string |  |
+| `varchar2` | string |  |
+| `varchar2(256)` | string |  |
+| `xmltype` | string |  |
 
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
 

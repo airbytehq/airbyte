@@ -10,19 +10,43 @@ The MSSQL source does not alter the schema present in your database. Depending o
 
 ### Data type mapping
 
-MSSQL data types are mapped to the following data types when synchronizing data:
+MSSQL data types are mapped to the following data types when synchronizing data.
+You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mssql/src/test-integration/java/io/airbyte/integrations/source/mssql/MssqlSourceComprehensiveTest.java).
+If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
 | MSSQL Type | Resulting Type | Notes |
 | :--- | :--- | :--- |
 | `bigint` | number |  |
-| `numeric` | number |  |
+| `binary` | string |  |
 | `bit` | boolean |  |
-| `smallint` | number |  |
+| `char` | string |  |
+| `date` | number |  |
+| `datetime` | string |  |
+| `datetime2` | string |  |
+| `datetimeoffset` | string |  |
 | `decimal` | number |  |
 | `int` | number |  |
-| `tinyint` | number |  |
 | `float` | number |  |
-| everything else | string |  |
+| `geography` | string |  |
+| `geometry` | string |  |
+| `money` | number |  |
+| `numeric` | number |  |
+| `ntext` | string |  |
+| `nvarchar` | string |  |
+| `nvarchar(max)` | string |  |
+| `real` | number |  |
+| `smalldatetime` | string |  |
+| `smallint` | number |  |
+| `smallmoney` | number |  |
+| `sql_variant` | string |  |
+| `uniqueidentifier` | string |  |
+| `text` | string |  |
+| `time` | string |  |
+| `tinyint` | number |  |
+| `varbinary` | string |  |
+| `varchar` | string |  |
+| `varchar(max) COLLATE Latin1_General_100_CI_AI_SC_UTF8` | string |  |
+| `xml` | string |  |
 
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
 
