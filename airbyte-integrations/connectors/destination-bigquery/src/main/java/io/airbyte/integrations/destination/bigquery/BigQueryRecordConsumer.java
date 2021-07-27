@@ -42,6 +42,7 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -112,10 +113,10 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     // use BQ helpers to string-format correctly.
     long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
     final String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
-
+    final JsonNode formattedData = StandardNameTransformer.formatJsonPath(recordMessage.getData());
     return Jsons.jsonNode(ImmutableMap.of(
         JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(),
-        JavaBaseConstants.COLUMN_NAME_DATA, Jsons.serialize(recordMessage.getData()),
+        JavaBaseConstants.COLUMN_NAME_DATA, Jsons.serialize(formattedData),
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT, formattedEmittedAt));
   }
 
