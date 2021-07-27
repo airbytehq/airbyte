@@ -23,27 +23,12 @@
 #
 
 
-from setuptools import find_packages, setup
+import pytest
 
-MAIN_REQUIREMENTS = [
-    "tap-quickbooks @ https://github.com/vitaliizazmic/tap-quickbooks/tarball/vitalii/4292_number_data_types",
-    "airbyte-cdk",
-]
+pytest_plugins = ("source_acceptance_test.plugin",)
 
-TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-    "source-acceptance-test",
-]
 
-setup(
-    name="source_quickbooks_singer",
-    description="Source implementation for Quickbooks, built on the Singer tap implementation.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json"]},
-    extras_require={
-        "tests": TEST_REQUIREMENTS,
-    },
-)
+@pytest.fixture(scope="session", autouse=True)
+def connector_setup():
+    """ This fixture is a placeholder for external resources that acceptance test might require."""
+    yield
