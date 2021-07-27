@@ -25,7 +25,7 @@ class Helpers {
         
         So we use this method to leverage pytest's test discovery rules (https://docs.pytest.org/en/6.2.x/goodpractices.html#conventions-for-python-test-discovery)
         to selectively run pytest based on whether there seem to be test files in that directory. 
-       
+        Namely, if the directory contains a file whose name is test_*.py or *_test.py then it's a test. 
        
         See https://github.com/airbytehq/airbyte/issues/4979 for original context
         """
@@ -36,6 +36,7 @@ class Helpers {
                     module = "pytest"
                     command = "-s ${testFilesDirectory}"
                 }
+                // If a file is found, terminate the traversal, thus causing this task to be declared at most once
                 return FileVisitResult.TERMINATE
             }
         }
