@@ -142,6 +142,7 @@ Please see \(or add\) more at `airbyte-integrations/connectors/source-file/integ
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.2.5   | 2021-07-26 | [4953](https://github.com/airbytehq/airbyte/pull/4953) | Allow non-default port for SFTP type |
 | 0.2.4   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE_ENTRYPOINT for Kubernetes support |
 | 0.2.3   | 2021-06-01 | [3771](https://github.com/airbytehq/airbyte/pull/3771) | Add Azure Storage Blob Files option |
 | 0.2.2   | 2021-04-16 | [2883](https://github.com/airbytehq/airbyte/pull/2883) | Fix CSV discovery memory consumption |

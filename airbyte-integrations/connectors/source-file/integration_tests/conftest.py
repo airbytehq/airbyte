@@ -25,7 +25,9 @@
 
 import json
 import os
+import random
 import socket
+import string
 import tempfile
 import uuid
 from pathlib import Path
@@ -42,6 +44,10 @@ from paramiko.client import AutoAddPolicy, SSHClient
 from paramiko.ssh_exception import SSHException
 
 HERE = Path(__file__).parent.absolute()
+
+
+def random_char(length):
+    return "".join(random.choice(string.ascii_letters) for x in range(length))
 
 
 @pytest.fixture(scope="session")
@@ -196,7 +202,7 @@ def private_aws_file(aws_credentials, cloud_bucket_name, download_gcs_public_dat
 def azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data, public=False):
     acc_url = f"https://{azblob_credentials['storage_account']}.blob.core.windows.net"
     azblob_client = BlobServiceClient(account_url=acc_url, credential=azblob_credentials["shared_key"])
-    container_name = cloud_bucket_name
+    container_name = cloud_bucket_name + random_char(3).lower()
     if public:
         container_name += "public"
     print(f"\nUpload dataset to private azure blob container {container_name}")
