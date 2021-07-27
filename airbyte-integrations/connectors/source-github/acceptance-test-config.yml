@@ -12,12 +12,10 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/small_streams_configured_catalog.json"
-      validate_output_from_all_streams: yes
     # Below streams have too much records and because of it we are getting timeouts and hitting rate limits.
     # That's why we turned them off.
 #    - config_path: "secrets/config.json"
 #      configured_catalog_path: "integration_tests/too_large_streams_configured_catalog.json"
-#      validate_output_from_all_streams: yes
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/incremental_configured_catalog.json"

@@ -69,7 +69,7 @@
       "type": ["null", "string"]
     },
     "discounts": {
-      "type": ["null", "array", "object"],
+      "type": ["null", "array"],
       "properties": {
         "end": {
           "type": ["null", "number"]
@@ -121,7 +121,7 @@
               "type": ["null", "string"]
             },
             "percent_off": {
-              "type": ["null", "integer"]
+              "type": ["null", "number"]
             },
             "created": {
               "type": ["null", "integer"]
