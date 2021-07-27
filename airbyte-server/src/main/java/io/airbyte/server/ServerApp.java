@@ -134,6 +134,8 @@ public class ServerApp {
 
     ResourceConfig rc =
         new ResourceConfig()
+            .register(new CorsFilter())
+            .register(new AuthenticationFilter())
             // request logging
             .register(new RequestLogger(mdc))
             // api
