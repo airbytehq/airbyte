@@ -22,13 +22,13 @@ def test_field_type_format_converting(field_type, expected):
 
 
 @pytest.mark.parametrize("field_type,expected", [
-    ("_unsupported_field_type_", {"type": "_unsupported_field_type_"}),
-    (None, {"type": None}),
-    (1, {"type": 1}),
+    ("_unsupported_field_type_", {"type": "string"}),
+    (None, {"type": "string"}),
+    (1, {"type": "string"}),
 ])
 def test_bad_field_type_converting(field_type, expected, capsys):
 
-    assert Stream._get_field_props(field_type=field_type) == {"type": field_type}
+    assert Stream._get_field_props(field_type=field_type) == expected
 
     logs = capsys.readouterr().out
 
