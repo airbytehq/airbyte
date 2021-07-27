@@ -27,6 +27,13 @@ This Source is capable of syncing the following core Streams:
 * [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
 * [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 
+### Notes
+
+The `created` field is used to organize Incremental streams. Filtration occurs by the date the entity was created, and it is impossible to filter by the update date, since:
+  * The Stripe API allows filtering only by the `created` field for all streams.
+  * There is no such field as `updated`.
+The only alternative way at the moment is to do a Full Refresh sync and filtering client side.
+
 ### Data type mapping
 
 The [Stripe API](https://stripe.com/docs/api) uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
