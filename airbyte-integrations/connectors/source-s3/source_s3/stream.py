@@ -45,10 +45,8 @@ class IncrementalFileStreamS3(IncrementalFileStream):
         Wrapper for boto3's list_objects_v2 so we can handle pagination, filter by lambda func and operate with or without credentials
 
         :param provider: provider specific mapping as described in spec.json
-        :type provider: Mapping[str,Any]
         :param accept_key: lambda function to allow filtering return keys, e.g. lambda k: not k.endswith('/'), defaults to lambda k: True
         :yield: key (name) of each object
-        :rtype: Iterator[str]
         """
         if S3File.use_aws_account(provider):
             session = boto3session.Session(
@@ -87,11 +85,8 @@ class IncrementalFileStreamS3(IncrementalFileStream):
         See _list_bucket() for logic of interacting with S3
 
         :param logger: instance of AirbyteLogger to use as this is a staticmethod
-        :type logger: AirbyteLogger
         :param provider: S3 provider mapping as described in spec.json
-        :type provider: dict
         :yield: url filepath to use in S3File()
-        :rtype: Iterator[str]
         """
         prefix = provider.get("path_prefix")
         if prefix is None:

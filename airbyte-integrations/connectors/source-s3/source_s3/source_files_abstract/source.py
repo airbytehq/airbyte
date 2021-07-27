@@ -39,7 +39,6 @@ class SourceFilesAbstract(AbstractSource, ABC):
     def stream_class(self) -> type:
         """
         :return: reference to the relevant FileStream class e.g. IncrementalFileStreamS3
-        :rtype: type
         """
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
@@ -49,14 +48,11 @@ class SourceFilesAbstract(AbstractSource, ABC):
             - That the path pattern(s) provided in config are valid to be matched against.
 
         :param logger: an instance of AirbyteLogger to use
-        :type logger: AirbyteLogger
         :param config: The user-provided configuration as specified by the source's spec. This usually contains information required to check connection e.g. tokens, secrets and keys etc.
-        :type config: Mapping[str, Any]
         :return: A tuple of (boolean, error). If boolean is true, then the connection check is successful and we can connect to the underlying data
         source using the provided configuration.
         Otherwise, the input config cannot be used to connect to the underlying data source, and the "error" object should describe what went wrong.
         The error object will be cast to string to display the problem to the user.
-        :rtype: Tuple[bool, Optional[Any]]
         """
 
         found_a_file = False
@@ -81,8 +77,6 @@ class SourceFilesAbstract(AbstractSource, ABC):
         We just have a single stream per source so construct that here
 
         :param config: The user-provided configuration as specified by the source's spec.
-        :type config: Mapping[str, Any]
         :return: A list of the streams in this source connector.
-        :rtype: List[Stream]
         """
         return [self.stream_class(**config)]

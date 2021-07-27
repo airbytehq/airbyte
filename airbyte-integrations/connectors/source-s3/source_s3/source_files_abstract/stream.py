@@ -64,15 +64,10 @@ class FileStream(Stream, ABC):
     def __init__(self, dataset_name: str, provider: dict, format: dict, path_patterns: List[str], schema: str = None):
         """
         :param dataset_name: table name for this stream
-        :type dataset_name: str
         :param provider: provider specific mapping as described in spec.json
-        :type provider: dict
         :param format: file format specific mapping as described in spec.json
-        :type format: dict
         :param path_patterns: list of Unix shell-style patterns for file-matching
-        :type path_patterns: List[str]
         :param schema: JSON-syntax user provided schema, defaults to None
-        :type schema: str, optional
         """
         self.dataset_name = dataset_name
         self._path_patterns = path_patterns
@@ -97,10 +92,8 @@ class FileStream(Stream, ABC):
         If this passes, we are confident that the user-provided schema is valid and will work as expected with the rest of the code
 
         :param schema: JSON-syntax user provided schema
-        :type schema: str
         :raises ConfigurationError: if any of the verification steps above fail
         :return: the input schema (json string) as a python dict
-        :rtype: Mapping[str,str]
         """
         try:
             py_schema = json.loads(schema)
@@ -128,7 +121,6 @@ class FileStream(Stream, ABC):
     def fileformatparser_class(self) -> type:
         """
         :return: reference to the relevant fileformatparser class e.g. CsvParser
-        :rtype: type
         """
         return self.fileformatparser_map[self._format.get("filetype")]
 
@@ -138,9 +130,7 @@ class FileStream(Stream, ABC):
         """
         Override this to point to the relevant provider-specific StorageFile class e.g. S3File
 
-        :raises RuntimeError: if undeclared by child class
         :return: reference to relevant class
-        :rtype: type
         """
 
     @staticmethod
@@ -149,14 +139,11 @@ class FileStream(Stream, ABC):
         """
         Provider-specific method to iterate through bucket/container/etc. and yield each full filepath.
         This should supply the 'url' to use in StorageFile(). This is possibly better described as blob or file path.
-            e.g. for AWS: f"s3://{aws_access_key_id}:{aws_secret_access_key}@{self._url}" <- self._url is what we want to yield here
+            e.g. for AWS: f"s3://{aws_access_key_id}:{aws_secret_access_key}@{self.url}" <- self.url is what we want to yield here
 
         :param logger: instance of AirbyteLogger to use as this is a staticmethod
-        :type logger: AirbyteLogger
         :param provider: provider specific mapping as described in spec.json
-        :type provider: dict
         :yield: url filepath to use in StorageFile()
-        :rtype: Iterator[str]
         """
 
     def pattern_matched_filepath_iterator(self, filepaths: Iterable[str]) -> Iterator[str]:
@@ -164,9 +151,7 @@ class FileStream(Stream, ABC):
         iterates through iterable filepaths and yields only those filepaths that match user-provided path patterns
 
         :param filepaths: filepath_iterator(), this is a param rather than method reference in order to unit test this
-        :type filepaths: Iterable[str]
         :yield: url filepath to use in StorageFile(), if matching on user-provided path patterns
-        :rtype: Iterator[str]
         """
         for filepath in filepaths:
             for path_pattern in self._path_patterns:
@@ -179,8 +164,7 @@ class FileStream(Stream, ABC):
         Uses concurrent.futures to thread this asynchronously in order to improve performance when there are many files (network I/O)
         Caches results after first run of method to avoid repeating network calls as this is used more than once
 
-        :return: list of tuples in format ({last modified date}, {StorageFile object})
-        :rtype: Iterable[Tuple[datetime, StorageFile]]
+        :return: list in time-ascending order
         """
 
         def get_storagefile_with_lastmod(filepath: str) -> Tuple[datetime, StorageFile]:
@@ -217,7 +201,6 @@ class FileStream(Stream, ABC):
     def get_json_schema(self) -> Mapping[str, Any]:
         """
         :return: the JSON schema representing this stream.
-        :rtype: Mapping[str, Any]
         """
         # note: making every non-airbyte column nullable for compatibility
         # TODO: ensure this behaviour still makes sense as we add new file formats
@@ -238,7 +221,6 @@ class FileStream(Stream, ABC):
 
         :raises RuntimeError: if we find datatype mismatches between files or between a file and schema state (provided or from previous inc. batch)
         :return: A dict of the JSON schema representing this stream.
-        :rtype: Mapping[str, Any]
         """
         # TODO: could implement a (user-beware) 'lazy' mode that skips schema checking to improve performance
         if self.master_schema is None:
@@ -263,14 +245,14 @@ class FileStream(Stream, ABC):
                         # if not, then the read will error anyway
                         if col in self._schema.keys():
                             self.logger.warn(
-                                f"Detected mismatched datatype on column '{col}', in file '{storagefile._url}'. "
+                                f"Detected mismatched datatype on column '{col}', in file '{storagefile.url}'. "
                                 + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'. "
                                 + f"Airbyte will attempt to coerce this to {master_schema[col]} on read."
                             )
                         # else we're inferring the schema (or at least this column) from scratch and therefore throw an error on mismatching datatypes
                         else:
                             raise RuntimeError(
-                                f"Detected mismatched datatype on column '{col}', in file '{storagefile._url}'. "
+                                f"Detected mismatched datatype on column '{col}', in file '{storagefile.url}'. "
                                 + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'."
                             )
 
@@ -299,7 +281,7 @@ class FileStream(Stream, ABC):
         # we could do this concurrently both full and incremental by running batches in parallel
         # and then incrementing the cursor per each complete batch
         for last_mod, storagefile in self.time_ordered_storagefile_iterator():
-            yield [{"unique_url": storagefile._url, "last_modified": last_mod, "storagefile": storagefile}]
+            yield [{"unique_url": storagefile.url, "last_modified": last_mod, "storagefile": storagefile}]
         # in case we have no files
         yield from [None]
 
@@ -311,11 +293,8 @@ class FileStream(Stream, ABC):
         We start off with a check to see if we're already lined up to target in order to avoid unnecessary iterations (useful if many columns)
 
         :param record: json-like representation of a data row {column:value}
-        :type record: Mapping[str, Any]
         :param target_columns: list of column names to mutate this record into (obtained via self._get_schema_map().keys() as of now)
-        :type target_columns: List
         :return: mutated record with columns lining up to target_columns
-        :rtype: Mapping[str, Any]
         """
         compare_columns = [c for c in target_columns if c not in [self.ab_last_mod_col, self.ab_file_name_col]]
         # check if we're already matching to avoid unnecessary iteration
@@ -338,11 +317,8 @@ class FileStream(Stream, ABC):
         Simple method to take a mapping of columns:values and add them to the provided record
 
         :param record: json-like representation of a data row {column:value}
-        :type record: Mapping[str, Any]
         :param extra_map: map of additional columns and values to add
-        :type extra_map: Mapping[str, Any]
         :return: mutated record with additional fields
-        :rtype: Mapping[str, Any]
         """
         for key, value in extra_map.items():
             record[key] = value
@@ -395,7 +371,6 @@ class IncrementalFileStream(FileStream, ABC):
     def cursor_field(self) -> str:
         """
         :return: The name of the cursor field.
-        :rtype: str
         """
         return self.ab_last_mod_col
 
@@ -463,7 +438,7 @@ class IncrementalFileStream(FileStream, ABC):
                     yield stream_slice
                     stream_slice.clear()
                 # now we either have an empty stream_slice or a stream_slice that this file shares a last modified with, so append it
-                stream_slice.append({"unique_url": storagefile._url, "last_modified": last_mod, "storagefile": storagefile})
+                stream_slice.append({"unique_url": storagefile.url, "last_modified": last_mod, "storagefile": storagefile})
                 # update our prev_file_last_mod to the current one for next iteration
                 prev_file_last_mod = last_mod
 

@@ -35,9 +35,7 @@ class FileFormatParser(ABC):
     def __init__(self, format: dict, master_schema: dict = None):
         """
         :param format: file format specific mapping as described in spec.json
-        :type format: dict
         :param master_schema: superset schema determined from all files, might be unused for some formats, defaults to None
-        :type master_schema: dict, optional
         """
         self._format = format
         self._master_schema = (
@@ -59,9 +57,7 @@ class FileFormatParser(ABC):
         Note: needs to return inferred schema with JsonSchema datatypes
 
         :param file: file-like object (opened via StorageFile)
-        :type file: Union[TextIO, BinaryIO]
         :return: mapping of {columns:datatypes} where datatypes are JsonSchema types
-        :rtype: dict
         """
 
     @abstractmethod
@@ -71,9 +67,7 @@ class FileFormatParser(ABC):
         Note: avoid loading the whole file into memory to avoid OOM breakages
 
         :param file: file-like object (opened via StorageFile)
-        :type file: Union[TextIO, BinaryIO]
         :yield: data record as a mapping of {columns:values}
-        :rtype: Iterator[Mapping[str,Any]]
         """
 
     @staticmethod
@@ -82,13 +76,9 @@ class FileFormatParser(ABC):
         Converts Json Type to PyArrow types to (or the other way around if reverse=True)
 
         :param typ: Json type if reverse is False, else PyArrow type
-        :type typ: str
         :param reverse: switch to True for PyArrow type -> Json type, defaults to False
-        :type reverse: bool, optional
         :param logger: defaults to AirbyteLogger()
-        :type logger: AirbyteLogger, optional
         :return: PyArrow type if reverse is False, else Json type
-        :rtype: str
         """
         str_typ = str(typ)
         # this is a map of airbyte types to pyarrow types. The first list element of the pyarrow types should be the one to use where required.
@@ -123,11 +113,8 @@ class FileFormatParser(ABC):
         This utilises json_type_to_pyarrow_type() to convert each datatype
 
         :param schema: json/pyarrow schema to convert
-        :type schema: Mapping[str, Any]
         :param reverse: switch to True for PyArrow schema -> Json schema, defaults to False
-        :type reverse: bool, optional
         :return: converted schema dict
-        :rtype: Mapping[str, Any]
         """
         new_schema = {}
 
@@ -166,7 +153,6 @@ class CsvParser(FileFormatParser):
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.ConvertOptions.html
 
         :param json_schema: if this is passed in, pyarrow will attempt to enforce this schema on read, defaults to None
-        :type json_schema: [type], optional
         """
         check_utf8 = True if self._format.get("encoding", "utf8").lower().replace("-", "") == "utf8" else False
         convert_schema = self.json_schema_to_pyarrow_schema(json_schema) if json_schema is not None else None
@@ -193,9 +179,15 @@ class CsvParser(FileFormatParser):
         while still_reading:
             try:
                 batch = streaming_reader.read_next_batch()
-                batch_dict = batch.to_pydict()
             except StopIteration:
                 still_reading = False
             else:
-                for record_values in zip(*[batch_dict[column.name] for column in batch.schema]):
-                    yield {[c.name for c in batch.schema][i]: record_values[i] for i in range(len(batch.schema))}
+                batch_dict = batch.to_pydict()
+                batch_columns = [col_info.name for col_info in batch.schema]
+                # this gives us a list of lists where each nested list holds ordered values for a single column
+                # e.g. [ [1,2,3], ["a", "b", "c"], [True, True, False] ]
+                columnwise_record_values = [batch_dict[column] for column in batch_columns]
+                # we zip this to get row-by-row, e.g. [ [1, "a", True], [2, "b", True], [3, "c", False] ]
+                for record_values in zip(*columnwise_record_values):
+                    # create our record of {col: value, col: value} by dict comprehension, iterating through all cols in batch_columns
+                    yield {batch_columns[i]: record_values[i] for i in range(len(batch_columns))}

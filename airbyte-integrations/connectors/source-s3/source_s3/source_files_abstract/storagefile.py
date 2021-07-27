@@ -23,52 +23,22 @@
 #
 
 from abc import ABC, abstractmethod
+from contextlib import contextmanager
 from datetime import datetime
-from typing import BinaryIO, TextIO, Union
+from typing import BinaryIO, Iterator, TextIO, Union
 
 from airbyte_cdk.logger import AirbyteLogger
-
-
-class ConfigurationError(Exception):
-    """Client mis-configured"""
-
-
-class PermissionsError(Exception):
-    """User doesn't have enough permissions"""
 
 
 class StorageFile(ABC):
     def __init__(self, url: str, provider: dict):
         """
-        :param url: value yielded by filepath_iterator() in [Incremental]FileStream class. Blob/File path
-        :type url: str
+        :param url: value yielded by filepath_iterator() in [Incremental]FileStream class. Blob/File path.
         :param provider: provider specific mapping as described in spec.json
-        :type provider: dict
         """
-        self._url = url
+        self.url = url
         self._provider = provider
-        self._file = None
         self.logger = AirbyteLogger()
-
-    def __enter__(self) -> Union[TextIO, BinaryIO]:
-        """
-        :return: file-like object
-        :rtype: Union[TextIO, BinaryIO]
-        """
-        return self._file
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
-
-    def close(self):
-        if self._file:
-            self._file.close()
-            self._file = None
-
-    def open(self, binary: bool = False):
-        self.close()
-        self._file = self._open(binary=binary)
-        return self
 
     @property
     @abstractmethod
@@ -77,14 +47,18 @@ class StorageFile(ABC):
         Override this to implement provider-specific logic
 
         :return: last_modified property of the blob/file
-        :rtype: datetime
         """
 
+    @contextmanager
     @abstractmethod
-    def _open(self, binary: bool):
+    def open(self, binary: bool) -> Iterator[Union[TextIO, BinaryIO]]:
         """
-        Override this to implement provider-specific logic
+        Override this to implement provider-specific logic. 
+        It should yield exactly one TextIO or BinaryIO, that being the opened file-like object.
+        Note: This must work as described in https://docs.python.org/3/library/contextlib.html#contextlib.contextmanager.
+        Using contextmanager eliminates need to write all the boilerplate management code in this class.
+        See S3File() for example implementation.
 
         :param binary: whether or not to open file as binary
-        :type binary: bool
+        :return: file-like object
         """

@@ -61,7 +61,6 @@ class AbstractTestIncrementalFileStream(ABC):
     def stream_class(self) -> type:
         """
         :return: provider specific FileStream class (e.g. IncrementalFileStreamS3)
-        :rtype: type
         """
 
     @property
@@ -71,14 +70,12 @@ class AbstractTestIncrementalFileStream(ABC):
         These will be added automatically to the provider property
 
         :return: mapping of provider specific credentials
-        :rtype: Mapping
         """
 
     @abstractmethod
     def provider(self, bucket_name: str) -> Mapping:
         """
         :return: provider specific provider dict as described in spec.json (leave out credentials, they will be added automatically)
-        :rtype: Mapping
         """
 
     @abstractmethod
@@ -87,15 +84,10 @@ class AbstractTestIncrementalFileStream(ABC):
         See S3 for example what the override of this needs to achieve.
 
         :param cloud_bucket_name: name of bucket (or equivalent)
-        :type cloud_bucket_name: str
         :param credentials: mapping of provider specific credentials
-        :type credentials: Mapping
         :param files_to_upload: list of paths to local files to upload, pass empty list to test zero files case
-        :type files_to_upload: List
         :param private: whether or not to make the files private and require credentials to read, defaults to True
-        :type private: bool, optional
         :yield: url filepath to uploaded file
-        :rtype: Iterator[str]
         """
 
     @abstractmethod
@@ -105,9 +97,7 @@ class AbstractTestIncrementalFileStream(ABC):
         See S3 for example.
 
         :param cloud_bucket_name: bucket (or equivalent) name
-        :type cloud_bucket_name: str
         :param credentials: mapping of provider specific credentials
-        :type credentials: Mapping
         """
 
     def _stream_records_test_logic(

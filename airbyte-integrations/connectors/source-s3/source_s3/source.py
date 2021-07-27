@@ -28,6 +28,4 @@ from .stream import IncrementalFileStreamS3
 
 
 class SourceS3(SourceFilesAbstract):
-    @property
-    def stream_class(self) -> type:
-        return IncrementalFileStreamS3
+    stream_class = IncrementalFileStreamS3
