@@ -17,9 +17,14 @@ Sugar CRM can run on the MySQL, MSSQL, Oracle, or Db2 databases. You can use Air
 * [Oracle](oracle.md)
 
 
-{% hint style="warning" %}
+{% hint style="info" %}
 To use Oracle or DB2, you'll require an Enterprise or Ultimate Sugar subscription. 
 {% endhint %}
+
+{% hint style="info" %}
+Reach out to your service representative or system admin to find the parameters required to connect to the underlying database 
+{% endhint %}
+
 
 
 ### Output schema
