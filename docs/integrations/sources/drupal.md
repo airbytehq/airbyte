@@ -16,5 +16,9 @@ Drupal can run on MySQL, Percona, MariaDb, MSSQL, MongoDB, Postgres, or SQL-Lite
 * [Mongo](mongodb.md)
 * [Postgres](postgres.md)
 
+{% hint style="info" %}
+Reach out to your service representative or system admin to find the parameters required to connect to the underlying database 
+{% endhint %}
+
 ### Output schema
 The schema will be loaded according to the rules of the underlying database's connector.  
