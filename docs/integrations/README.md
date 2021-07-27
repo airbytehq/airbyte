@@ -24,6 +24,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Db2](./sources/db2.md)| Beta |
 |[Dixa](./sources/dixa.md) | Alpha |
 |[Drift](./sources/drift.md)| Beta |
+|[Drupal](./sources/drupal.md)| Beta |
 |[Exchange Rates API](./sources/exchangeratesapi.md)| Certified |
 |[Facebook Marketing](./sources/facebook-marketing.md)| Beta |
 |[Files](./sources/file.md)| Certified |
@@ -46,15 +47,22 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Jira](./sources/jira.md)| Certified |
 |[Looker](./sources/looker.md)| Beta |
 |[Klaviyo](./sources/klaviyo.md)| Beta |
+|[Magento](./sources/magento.md)| Beta |
 |[Mailchimp](./sources/mailchimp.md)| Certified |
 |[Marketo](./sources/marketo.md)| Certified |
 |[Microsoft SQL Server \(MSSQL\)](./sources/mssql.md)| Certified |
+|[Microsoft Dynamics AX](./sources/microsoft-dynamics-ax.md)| Beta |
+|[Microsoft Dynamics Customer Engagement](./sources/microsoft-dynamics-customer-engagement.md)| Beta |
+|[Microsoft Dynamics GP](./sources/microsoft-dynamics-gp.md)| Beta |
+|[Microsoft Dynamics NAV](./sources/microsoft-dynamics-nav.md)| Beta |
 |[Microsoft Teams](./sources/microsoft-teams.md)| Certified |
 |[Mixpanel](./sources/mixpanel.md)| Beta |
 |[Mongo DB](./sources/mongodb.md)| Alpha |
 |[MySQL](./sources/mysql.md)| Certified |
 |[Okta](./sources/okta.md)| Beta |
 |[Oracle DB](./sources/oracle.md)| Certified |
+|[Oracle PeopleSoft](./sources/oracle-peoplesoft.md)| Beta |
+|[Oracle Siebel CRM](./sources/oracle-siebel-crm.md)| Beta |
 |[PayPal Transaction](./sources/paypal-transaction.md)| Beta |
 |[Pipedrive](./sources/pipedrive.md)| Alpha |
 |[Plaid](./sources/plaid.md)| Alpha |
@@ -67,17 +75,23 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Recurly](./sources/recurly.md)| Beta |
 |[Redshift](./sources/redshift.md)| Certified |
 |[Salesforce](./sources/salesforce.md)| Certified |
+|[SAP Business One](./sources/sap-business-one.md)| Beta |
 |[Sendgrid](./sources/sendgrid.md)| Certified |
 |[Shopify](./sources/shopify.md)| Certified |
 |[Slack](./sources/slack.md)| Beta |
+|[Spree Commerce](./sources/spree-commerce.md)| Beta |
 |[Smartsheets](./sources/smartsheets.md)| Beta |
 |[Snowflake](./sources/snowflake.md)| Beta |
 |[Square](./sources/square.md)| Beta |
 |[Stripe](./sources/stripe.md)| Certified |
+|[Sugar CRM](./sources/sugar-crm.md)| Beta |
 |[SurveyMonkey](./sources/surveymonkey.md)| Beta |
 |[Tempo](./sources/tempo.md)| Beta |
 |[Twilio](./sources/twilio.md)| Beta |
 |[US Census](./sources/us-census.md)| Alpha |
+|[WooCommerce](./sources/woo-commerce.md)| Beta |
+|[Wordpress](./sources/wordpress.md)| Beta |
+|[Zencart](./sources/zencart.md)| Beta |
 |[Zendesk Chat](./sources/zendesk-chat.md)| Certified |
 |[Zendesk Sunshine](./sources/zendesk-sunshine.md)| Beta |
 |[Zendesk Support](./sources/zendesk-support.md)| Certified |

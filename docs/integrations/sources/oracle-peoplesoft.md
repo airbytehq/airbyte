@@ -10,5 +10,10 @@ Oracle PeopleSoft can run on the [Oracle, MSSQL, or IBM DB2](https://docs.oracle
 * [MSSQL](./mssql.md)
 * [Oracle](oracle.md)
 
+{% hint style="info" %}
+Reach out to your service representative or system admin to find the parameters required to connect to the underlying database 
+{% endhint %}
+
+
 ### Output schema
 The schema will be loaded according to the rules of the underlying database's connector. Oracle provides ERD diagrams but they are behind a paywall. Contact your Oracle rep to gain access. 
