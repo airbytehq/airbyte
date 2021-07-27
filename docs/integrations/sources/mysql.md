@@ -15,17 +15,28 @@ MySQL data types are mapped to the following data types when synchronizing data:
 | MySQL Type | Resulting Type | Notes |
 | :--- | :--- | :--- |
 | `array` | array |  |
+| `bigint` | number |  |
 | `binary` | string |  |
 | `date` | string |  |
 | `datetime` | string |  |
+| `double` | string |  |
 | `enum` | string |  |
-| `tinyint` | number |  |
-| `smallint` | number |  |
-| `mediumint` | number |  |
 | `int` | number |  |
-| `bigint` | number |  |
+| `int unsigned` | number |  |
+| `int zerofill` | number |  |
+| `mediumint` | number |  |
+| `mediumint zerofill` | number |  |
+| `float` | number |  |
+
+| `smallint` | number |  |
+| `smallint zerofill` | number |  |
+
+
+
 | `numeric` | number |  |
 | `string` | string |  |
+| `tinyint` | number |  |
+
 
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
 
