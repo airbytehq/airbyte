@@ -25,6 +25,8 @@
 package io.airbyte.scheduler.app;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.airbyte.analytics.Deployment;
+import io.airbyte.analytics.Deployment.DeploymentMode;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.commons.version.AirbyteVersion;
@@ -35,7 +37,7 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigPersistenceBuilder;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
@@ -202,11 +204,11 @@ public class SchedulerApp {
     LOGGER.info("temporalHost = " + temporalHost);
 
     LOGGER.info("Creating Job DB connection pool...");
-    final Database jobDatabase = Databases.createPostgresDatabaseWithRetry(
+    final Database jobDatabase = new JobsDatabaseInstance(
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
-        configs.getDatabaseUrl(),
-        Databases.IS_JOB_DATABASE_READY);
+        configs.getDatabaseUrl())
+            .getInitialized();
 
     final ProcessFactory processFactory = getProcessBuilderFactory(configs);
 
@@ -239,13 +241,6 @@ public class SchedulerApp {
           });
     }
 
-    TrackingClientSingleton.initialize(
-        configs.getTrackingStrategy(),
-        configs.getWorkerEnvironment(),
-        configs.getAirbyteRole(),
-        configs.getAirbyteVersion(),
-        configRepository);
-
     Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
     int loopCount = 0;
     while ((airbyteDatabaseVersion.isEmpty() || !AirbyteVersion.isCompatible(configs.getAirbyteVersion(), airbyteDatabaseVersion.get()))
@@ -260,6 +255,15 @@ public class SchedulerApp {
     } else {
       throw new IllegalStateException("Unable to retrieve Airbyte Version, aborting...");
     }
+
+    TrackingClientSingleton.initialize(
+        configs.getTrackingStrategy(),
+        // todo (cgardens) - we need to do the `#runServer` pattern here that we do in `ServerApp` so that
+        // the deployment mode can be set by the cloud version.
+        new Deployment(DeploymentMode.OSS, jobPersistence.getDeployment().orElseThrow(), configs.getWorkerEnvironment()),
+        configs.getAirbyteRole(),
+        configs.getAirbyteVersion(),
+        configRepository);
 
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
     final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot);

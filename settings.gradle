@@ -52,23 +52,6 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
     include ':airbyte-server'
     include ':airbyte-webapp'
     include ':airbyte-tests'
-
-    // acceptance tests
-    include ':airbyte-integrations:bases:airbyte-protocol'
-    include ':airbyte-integrations:bases:base'
-    include ':airbyte-integrations:bases:base-java'
-    include ':airbyte-integrations:bases:base-normalization'
-    include ':airbyte-integrations:bases:standard-destination-test'
-    include ':airbyte-integrations:bases:standard-source-test'
-    include ':airbyte-integrations:bases:debezium'
-    include ':airbyte-integrations:connectors:source-jdbc'
-    include ':airbyte-integrations:connectors:source-postgres'
-    include ':airbyte-integrations:connectors:destination-postgres'
-    include ':airbyte-integrations:connectors:source-relational-db'
-    include ':airbyte-integrations:connectors:destination-e2e-test'
-    include ':airbyte-integrations:connectors:destination-jdbc'
-    include ':airbyte-integrations:connectors:source-e2e-test'
-    include ':tools:code-generator'
 }
 
 // connectors base
@@ -88,6 +71,14 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
     include ':airbyte-integrations:connector-templates:generator'
     include ':airbyte-integrations:bases:debezium'
     include ':tools:code-generator'
+
+    // Needed by normalization integration tests
+    include ':airbyte-integrations:connectors:destination-bigquery'
+    include ':airbyte-integrations:connectors:destination-jdbc'
+    include ':airbyte-integrations:connectors:destination-mysql'
+    include ':airbyte-integrations:connectors:destination-postgres'
+    include ':airbyte-integrations:connectors:destination-redshift'
+    include ':airbyte-integrations:connectors:destination-snowflake'
 }
 
 // connectors

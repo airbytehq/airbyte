@@ -24,7 +24,7 @@
       "type": ["null", "string"]
     },
     "value": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "currency": {
       "type": ["null", "string"]
@@ -164,7 +164,7 @@
       "type": ["null", "string"]
     },
     "weighted_value": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "formatted_weighted_value": {
       "type": ["null", "string"]
