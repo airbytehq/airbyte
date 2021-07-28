@@ -25,7 +25,25 @@ Additionally, you can follow [this tutorial](https://github.com/airbytehq/airbyt
 
 ### Concepts & Documentation
 
-See the [concepts docs](concepts/) for a tour through what the API offers.
+#### Basic Concepts
+
+If you want to learn more about the classes required to implement an Airbyte Source, head to our [basic concepts doc](./basic-concepts.md).
+
+#### Full Refresh Streams
+
+If you have questions or are running into issues creating your first full refresh stream, head over to our [full refresh stream doc](./full-refresh-stream.md). If you have questions about implementing a `path` or `parse_response` function, this doc is for you.
+
+#### Incremental Streams
+
+Having trouble figuring out how to write a `stream_slices` function or aren't sure what a `cursor_field` is? Head to our [incremental stream doc](./incremental-stream.md).
+
+#### Practical Tips
+
+Airbyte recommends using the CDK template generator to develop with the CDK. The template generates created all the required scaffolding, with convenient TODOs, allowing developers to truly focus on implementing the API.
+
+For tips on useful Python knowledge, see the [Python Concepts](./python-concepts.md) page.
+
+You can find a complete tutorial for implementing an HTTP source connector in [this tutorial](../tutorials/cdk-tutorial-python-http)
 
 ### Example Connectors
 

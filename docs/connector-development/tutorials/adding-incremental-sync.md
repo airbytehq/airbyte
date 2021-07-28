@@ -1,4 +1,4 @@
-# Adding Incremental to a Source
+# Adding Incremental Sync to a Source
 
 ## Overview
 

@@ -158,7 +158,7 @@ To implement the `write` Airbyte operation, implement the `getConsumer` method i
 The Postgres destination leverages the `AbstractJdbcDestination` superclass which makes it extremely easy to create a destination for a database or data warehouse if it has a compatible JDBC driver. If the destination you are implementing has a JDBC driver, be sure to check out `AbstractJdbcDestination`. 
 {% endhint %}
 
-For a brief overview on the Airbyte catalog check out [the Beginner's Guide to the Airbyte Catalog](beginners-guide-to-catalog.md).
+For a brief overview on the Airbyte catalog check out [the Beginner's Guide to the Airbyte Catalog](../../understanding-airbyte/beginners-guide-to-catalog.md).
 
 
 ### Step 6: Set up Acceptance Tests

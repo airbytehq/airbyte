@@ -2,7 +2,7 @@
 
 Describing schemas is good and all, but at some point we have to start reading data! So let's get to work. But before, let's describe what we're about to do:
 
-The `HttpStream` superclass, like described in the [concepts documentation](../../concepts/http-streams.md), is facilitating reading data from HTTP endpoints. It contains built-in functions or helpers for:
+The `HttpStream` superclass, like described in the [concepts documentation](../../cdk-python/http-streams.md), is facilitating reading data from HTTP endpoints. It contains built-in functions or helpers for:
 
 * authentication
 * pagination
@@ -176,7 +176,7 @@ We'll implement the `stream_slices` method to return a list of the dates for whi
         return self._chunk_date_range(start_date)
 ```
 
-Each slice will cause an HTTP request to be made to the API. We can then use the information present in the `stream_slice` parameter \(a single element from the list we constructed in `stream_slices` above\) to set other configurations for the outgoing request like `path` or `request_params`. For more info about stream slicing, see [the slicing docs](../../concepts/stream_slices.md).
+Each slice will cause an HTTP request to be made to the API. We can then use the information present in the `stream_slice` parameter \(a single element from the list we constructed in `stream_slices` above\) to set other configurations for the outgoing request like `path` or `request_params`. For more info about stream slicing, see [the slicing docs](../../stream_slices.md).
 
 In order to pull data for a specific date, the Exchange Rates API requires that we pass the date as the path component of the URL. Let's override the `path` method to achieve this:
 
