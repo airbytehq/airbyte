@@ -53,9 +53,11 @@ and choose the relevant template. This will generate a new connector in the `air
 
 Search the generated directory for "TODO"s and follow them to implement your connector. For more detailed walkthroughs and instructions, follow the relevant tutorial:
 
-* [Building a Python source ](tutorials/building-a-python-source.md) 
+* [Speedrun: Building a HTTP source with the CDK](tutorials/cdk-speedrun.md)
+* [Building a HTTP source with the CDK](tutorials/cdk-tutorial-python-http)
+* [Building a Python source](tutorials/building-a-python-source.md) 
 * [Building a Python destination](tutorials/building-a-python-destination.md)
-* [Building a Java destination ](tutorials/building-a-java-destination.md)
+* [Building a Java destination](tutorials/building-a-java-destination.md)
 
 As you implement your connector, make sure to review the [Best Practices for Connector Development](best-practices.md) guide. Following best practices is not a requirement for merging your contribution to Airbyte, but it certainly doesn't hurt ;\)
 
