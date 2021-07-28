@@ -97,6 +97,7 @@
     * [Shopify](integrations/sources/shopify.md)
     * [Slack](integrations/sources/slack.md)
     * [Smartsheets](integrations/sources/smartsheets.md)
+    * [Snapchat Marketing](integrations/sources/snapchat-marketing.md)
     * [Snowflake](integrations/sources/snowflake.md)
     * [Spree Commerce](integrations/sources/spree-commerce.md)
     * [Square](integrations/sources/square.md)
