@@ -34,11 +34,9 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigPersistenceBuilder;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
@@ -100,8 +98,6 @@ public class ServerApp implements ServerRunnable {
 
   @Override
   public void start() throws Exception {
-    TrackingClientSingleton.get().identify();
-
     final Server server = new Server(PORT);
 
     final ServletContextHandler handler = new ServletContextHandler();
@@ -148,30 +144,23 @@ public class ServerApp implements ServerRunnable {
     }
   }
 
-  private static void setCustomerIdIfNotSet(final ConfigRepository configRepository) throws InterruptedException {
-    StandardWorkspace workspace = null;
-
-    // retry until the workspace is available / waits for file config initialization
-    while (workspace == null) {
-      try {
-        workspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true);
-
-        if (workspace.getCustomerId() == null) {
-          final UUID customerId = UUID.randomUUID();
-          LOGGER.info("customerId not set for workspace. Setting it to " + customerId);
-          workspace.setCustomerId(customerId);
-
-          configRepository.writeStandardWorkspace(workspace);
-        } else {
-          LOGGER.info("customerId already set for workspace: " + workspace.getCustomerId());
-        }
-      } catch (ConfigNotFoundException e) {
-        LOGGER.error("Could not find workspace with id: " + PersistenceConstants.DEFAULT_WORKSPACE_ID, e);
-        Thread.sleep(1000);
-      } catch (JsonValidationException | IOException e) {
-        throw new RuntimeException(e);
-      }
+  private static void createWorkspaceIfNoneExists(final ConfigRepository configRepository) throws JsonValidationException, IOException {
+    if (!configRepository.listStandardWorkspaces(true).isEmpty()) {
+      LOGGER.info("workspace already exists for the deployment.");
+      return;
     }
+
+    final UUID workspaceId = UUID.randomUUID();
+    final StandardWorkspace workspace = new StandardWorkspace()
+        .withWorkspaceId(workspaceId)
+        .withCustomerId(UUID.randomUUID())
+        .withName(workspaceId.toString())
+        .withSlug(workspaceId.toString())
+        .withInitialSetupComplete(false)
+        .withDisplaySetupWizard(true)
+        .withTombstone(false);
+    configRepository.writeStandardWorkspace(workspace);
+    TrackingClientSingleton.get().identify(workspaceId);
   }
 
   public static ServerRunnable getServer(ServerFactory apiFactory) throws Exception {
@@ -183,10 +172,6 @@ public class ServerApp implements ServerRunnable {
     final ConfigPersistence configPersistence = ConfigPersistenceBuilder.getAndInitializeDbPersistence(configs);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence);
 
-    // hack: upon installation we need to assign a random customerId so that when
-    // tracking we can associate all action with the correct anonymous id.
-    setCustomerIdIfNotSet(configRepository);
-
     LOGGER.info("Creating Scheduler persistence...");
     final Database jobDatabase = new JobsDatabaseInstance(
         configs.getDatabaseUser(),
@@ -197,12 +182,17 @@ public class ServerApp implements ServerRunnable {
 
     createDeploymentIfNoneExists(jobPersistence);
 
+    // must happen after deployment id is set
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
         new Deployment(DeploymentMode.OSS, jobPersistence.getDeployment().orElseThrow(), configs.getWorkerEnvironment()),
         configs.getAirbyteRole(),
         configs.getAirbyteVersion(),
         configRepository);
+
+    // must happen after the tracking client is initialized.
+    // if no workspace exists, we create one so the user starts out with a place to add configuration.
+    createWorkspaceIfNoneExists(configRepository);
 
     final String airbyteVersion = configs.getAirbyteVersion();
     if (jobPersistence.getVersion().isEmpty()) {

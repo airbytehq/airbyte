@@ -88,26 +88,24 @@ public class DatabaseConfigPersistenceTest extends BaseTest {
 
   @Test
   public void testLoadData() throws Exception {
-    ConfigPersistence seedPersistence = mock(ConfigPersistence.class);
-    Map<String, Stream<JsonNode>> seeds1 = Map.of(
-        ConfigSchema.STANDARD_WORKSPACE.name(), Stream.of(Jsons.jsonNode(DEFAULT_WORKSPACE)),
+    final ConfigPersistence seedPersistence = mock(ConfigPersistence.class);
+    final Map<String, Stream<JsonNode>> seeds1 = Map.of(
+        ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(), Stream.of(Jsons.jsonNode(DESTINATION_SNOWFLAKE)),
         ConfigSchema.STANDARD_SOURCE_DEFINITION.name(), Stream.of(Jsons.jsonNode(SOURCE_GITHUB)));
     when(seedPersistence.dumpConfigs()).thenReturn(seeds1);
 
     configPersistence.loadData(seedPersistence);
     assertRecordCount(2);
-    assertHasWorkspace(DEFAULT_WORKSPACE);
     assertHasSource(SOURCE_GITHUB);
+    assertHasDestination(DESTINATION_SNOWFLAKE);
 
-    Map<String, Stream<JsonNode>> seeds2 = Map.of(
-        ConfigSchema.STANDARD_WORKSPACE.name(), Stream.of(Jsons.jsonNode(DEFAULT_WORKSPACE)),
+    final Map<String, Stream<JsonNode>> seeds2 = Map.of(
         ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(), Stream.of(Jsons.jsonNode(DESTINATION_S3), Jsons.jsonNode(DESTINATION_SNOWFLAKE)));
     when(seedPersistence.dumpConfigs()).thenReturn(seeds2);
 
     // when the database is not empty, calling loadData again will not change anything
     configPersistence.loadData(seedPersistence);
     assertRecordCount(2);
-    assertHasWorkspace(DEFAULT_WORKSPACE);
     assertHasSource(SOURCE_GITHUB);
   }
 
@@ -145,9 +143,7 @@ public class DatabaseConfigPersistenceTest extends BaseTest {
     writeDestination(configPersistence, DESTINATION_S3);
     writeDestination(configPersistence, DESTINATION_SNOWFLAKE);
 
-    Map<AirbyteConfig, Stream<Object>> newConfigs = Map.of(
-        ConfigSchema.STANDARD_WORKSPACE, Stream.of(DEFAULT_WORKSPACE),
-        ConfigSchema.STANDARD_SOURCE_DEFINITION, Stream.of(SOURCE_GITHUB, SOURCE_POSTGRES));
+    final Map<AirbyteConfig, Stream<Object>> newConfigs = Map.of(ConfigSchema.STANDARD_SOURCE_DEFINITION, Stream.of(SOURCE_GITHUB, SOURCE_POSTGRES));
 
     configPersistence.replaceAllConfigs(newConfigs, true);
 
@@ -157,8 +153,7 @@ public class DatabaseConfigPersistenceTest extends BaseTest {
     assertHasDestination(DESTINATION_SNOWFLAKE);
 
     configPersistence.replaceAllConfigs(newConfigs, false);
-    assertRecordCount(3);
-    assertHasWorkspace(DEFAULT_WORKSPACE);
+    assertRecordCount(2);
     assertHasSource(SOURCE_GITHUB);
     assertHasSource(SOURCE_POSTGRES);
   }

@@ -73,7 +73,7 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> void deleteConfig(AirbyteConfig configType, String configId) throws ConfigNotFoundException, IOException {
+  public void deleteConfig(AirbyteConfig configType, String configId) throws ConfigNotFoundException, IOException {
     decoratedPersistence.deleteConfig(configType, configId);
   }
 

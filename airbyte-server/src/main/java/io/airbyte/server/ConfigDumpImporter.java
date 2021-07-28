@@ -44,7 +44,6 @@ import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -96,18 +95,6 @@ public class ConfigDumpImporter {
     this.configRepository = configRepository;
   }
 
-  @VisibleForTesting
-  public Optional<UUID> getCurrentCustomerId() {
-    try {
-      return Optional.of(configRepository
-          .getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true).getCustomerId());
-    } catch (Exception e) {
-      // because this is used for tracking we prefer to log instead of killing the import.
-      LOGGER.error("failed to fetch current customerId.", e);
-      return Optional.empty();
-    }
-  }
-
   public ImportRead importData(String targetVersion, File archive) {
     return importDataInternal(targetVersion, archive, Optional.empty());
   }
@@ -120,7 +107,6 @@ public class ConfigDumpImporter {
   private ImportRead importDataInternal(String targetVersion, File archive, Optional<Path> seedPath) {
     Preconditions.checkNotNull(seedPath);
 
-    final Optional<UUID> previousCustomerIdOptional = getCurrentCustomerId();
     ImportRead result;
     try {
       final Path sourceRoot = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive");
@@ -155,9 +141,7 @@ public class ConfigDumpImporter {
       }
 
       // identify this instance as the new customer id.
-      TrackingClientSingleton.get().identify();
-      // report that the previous customer id is now superseded by the imported one.
-      previousCustomerIdOptional.ifPresent(previousCustomerId -> TrackingClientSingleton.get().alias(previousCustomerId.toString()));
+      configRepository.listStandardWorkspaces(true).forEach(workspace -> TrackingClientSingleton.get().identify(workspace.getWorkspaceId()));
     } catch (IOException | JsonValidationException | RuntimeException e) {
       LOGGER.error("Import failed", e);
       result = new ImportRead().status(StatusEnum.FAILED).reason(e.getMessage());
@@ -207,7 +191,7 @@ public class ConfigDumpImporter {
     } else {
       seed = new HashMap<>();
     }
-    for (String directory : directories) {
+    for (final String directory : directories) {
       final Optional<ConfigSchema> configSchemaOptional = Enums.toEnum(directory.replace(".yaml", ""), ConfigSchema.class);
 
       if (configSchemaOptional.isEmpty()) {

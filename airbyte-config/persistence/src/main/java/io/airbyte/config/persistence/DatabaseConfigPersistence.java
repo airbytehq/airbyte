@@ -171,7 +171,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> void deleteConfig(AirbyteConfig configType, String configId) throws IOException {
+  public void deleteConfig(AirbyteConfig configType, String configId) throws IOException {
     database.transaction(ctx -> {
       boolean isExistingConfig = ctx.fetchExists(select()
           .from(AIRBYTE_CONFIGS)

@@ -93,6 +93,7 @@ import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.BadObjectSchemaKnownException;
 import io.airbyte.server.errors.IdNotFoundKnownException;
@@ -112,7 +113,6 @@ import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WebBackendDestinationHandler;
 import io.airbyte.server.handlers.WebBackendSourceHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
-import io.airbyte.server.helpers.WorkspaceHelper;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -152,7 +152,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     this.temporalService = temporalService;
     final SpecFetcher specFetcher = new SpecFetcher(synchronousSchedulerClient);
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
-    final JobNotifier jobNotifier = new JobNotifier(configs.getWebappUrl(), configRepository);
+    final JobNotifier jobNotifier = new JobNotifier(configs.getWebappUrl(), configRepository, new WorkspaceHelper(configRepository, jobPersistence));
     schedulerHandler = new SchedulerHandler(
         configRepository,
         schedulerJobClient,

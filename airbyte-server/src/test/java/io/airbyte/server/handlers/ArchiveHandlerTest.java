@@ -30,22 +30,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.ImportRead;
 import io.airbyte.api.model.ImportRead.StatusEnum;
 import io.airbyte.commons.io.FileTtlManager;
-import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.server.ConfigDumpExporter;
 import io.airbyte.server.ConfigDumpImporter;
-import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -58,7 +52,6 @@ public class ArchiveHandlerTest {
   private FileTtlManager fileTtlManager;
   private ConfigDumpExporter configDumpExporter;
   private ConfigDumpImporter configDumpImporter;
-  private TrackingClient trackingClient;
 
   @BeforeEach
   void setUp() {
@@ -66,14 +59,12 @@ public class ArchiveHandlerTest {
     fileTtlManager = mock(FileTtlManager.class);
     configDumpExporter = mock(ConfigDumpExporter.class);
     configDumpImporter = mock(ConfigDumpImporter.class);
-    trackingClient = mock(TrackingClient.class);
     archiveHandler = new ArchiveHandler(
         VERSION,
         configRepository,
         fileTtlManager,
         configDumpExporter,
-        configDumpImporter,
-        trackingClient);
+        configDumpImporter);
   }
 
   @Test
@@ -88,19 +79,14 @@ public class ArchiveHandlerTest {
   }
 
   @Test
-  void testImport() throws IOException, JsonValidationException, ConfigNotFoundException {
+  void testImport() throws IOException {
     final File file = Files.createTempFile(Path.of("/tmp"), "dump_file", "dump_file").toFile();
-    final UUID customerId = UUID.randomUUID();
-    when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true))
-        .thenReturn(new StandardWorkspace().withCustomerId(customerId));
 
     assertEquals(new ImportRead().status(StatusEnum.SUCCEEDED), archiveHandler.importData(file));
 
     // make sure it cleans up the file.
     assertFalse(Files.exists(file.toPath()));
 
-    verify(trackingClient).identify();
-    verify(trackingClient).alias(customerId.toString());
     verify(configDumpImporter).importData(VERSION, file);
   }
 

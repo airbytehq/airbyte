@@ -185,7 +185,7 @@ public class WorkspacesHandler {
     configRepository.writeStandardWorkspace(persistedWorkspace);
 
     // after updating email or tracking info, we need to re-identify the instance.
-    TrackingClientSingleton.get().identify();
+    TrackingClientSingleton.get().identify(workspaceId);
 
     return buildWorkspaceReadFromId(workspaceUpdate.getWorkspaceId());
   }
