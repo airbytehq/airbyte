@@ -291,8 +291,6 @@ tasks.withType(AbstractArchiveTask) {
     reproducibleFileOrder = true
 }
 
-println(subprojects.forEach { println(it.getPath()) })
-
 // Configure what Subprojects to publish.
 String[] toPublish = [
         ':airbyte-analytics',
@@ -333,6 +331,8 @@ configure(subprojects.findAll { toPublish.contains(it.getPath()) }) {
                 }
                 url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
             }
+
+            mavenLocal()
         }
     }
 }
