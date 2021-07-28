@@ -28,6 +28,7 @@ import static io.airbyte.db.instance.configs.AirbyteConfigsTable.AIRBYTE_CONFIGS
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.count;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -119,6 +120,23 @@ public class DatabaseConfigPersistenceTest extends BaseTest {
     assertHasDestination(DESTINATION_SNOWFLAKE);
     assertEquals(
         List.of(DESTINATION_SNOWFLAKE, DESTINATION_S3),
+        configPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class));
+  }
+
+  @Test
+  public void testDeleteConfig() throws Exception {
+    writeDestination(configPersistence, DESTINATION_S3);
+    writeDestination(configPersistence, DESTINATION_SNOWFLAKE);
+    assertRecordCount(2);
+    assertHasDestination(DESTINATION_S3);
+    assertHasDestination(DESTINATION_SNOWFLAKE);
+    assertEquals(
+        List.of(DESTINATION_SNOWFLAKE, DESTINATION_S3),
+        configPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class));
+    deleteDestination(configPersistence, DESTINATION_S3);
+    assertThrows(ConfigNotFoundException.class, () -> assertHasDestination(DESTINATION_S3));
+    assertEquals(
+        List.of(DESTINATION_SNOWFLAKE),
         configPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class));
   }
 

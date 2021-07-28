@@ -103,6 +103,7 @@ public enum ConfigSchema implements AbstractConfig {
     this.idFieldName = null;
   }
 
+  @Override
   public File getFile() {
     return KNOWN_SCHEMAS_ROOT.resolve(schemaFilename).toFile();
   }
@@ -111,6 +112,7 @@ public enum ConfigSchema implements AbstractConfig {
     return (Class<T>) className;
   }
 
+  @Override
   public <T> String getId(T object) {
     if (getClassName().isInstance(object)) {
       return ((Function<T, String>) extractId).apply(object);

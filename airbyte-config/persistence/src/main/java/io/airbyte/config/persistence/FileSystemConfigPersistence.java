@@ -236,7 +236,6 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   private <T> void writeConfigInternal(AbstractConfig configType, String configId, T config, Path storageRoot) throws IOException {
-
     final Path configPath = buildConfigPath(configType, configId, storageRoot);
     Files.createDirectories(configPath.getParent());
 
@@ -248,7 +247,6 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   private <T> void deleteConfigInternal(AbstractConfig configType, String configId, Path storageRoot) throws IOException {
-
     final Path configPath = buildConfigPath(configType, configId, storageRoot);
     Files.delete(configPath);
   }
