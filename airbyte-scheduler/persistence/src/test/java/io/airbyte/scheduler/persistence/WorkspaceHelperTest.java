@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.server.helpers;
+package io.airbyte.scheduler.persistence;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -44,7 +44,6 @@ import io.airbyte.config.persistence.FileSystemConfigPersistence;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
-import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -98,7 +97,7 @@ class WorkspaceHelperTest {
   WorkspaceHelper workspaceHelper;
 
   @BeforeEach
-  public void setup() throws IOException, JsonValidationException {
+  public void setup() throws IOException {
     tmpDir = Files.createTempDirectory("workspace_helper_test_" + RandomStringUtils.randomAlphabetic(5));
 
     configRepository = new ConfigRepository(new FileSystemConfigPersistence(tmpDir));
