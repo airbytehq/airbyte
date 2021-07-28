@@ -29,11 +29,8 @@ tests:
       configured_catalog_path: "integration_tests/configured_catalog.json"
 #  incremental:
 #    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/full_configured_catalog.json"
+#      configured_catalog_path: "integration_tests/inc_configured_catalog.json"
 #      future_state_path: "integration_tests/abnormal_state.json"
-#      cursor_paths:
-#        issues: ["created"]
-#        issue_worklogs: ["startedAfter"]
 #  Jira Source has a lot streams. It takes to long to sync them, which caused timeout error
 #  full_refresh:
 #    - config_path: "secrets/config.json"

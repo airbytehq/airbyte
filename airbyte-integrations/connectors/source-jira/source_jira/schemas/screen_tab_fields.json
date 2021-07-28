@@ -1,17 +1,12 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "$schema": "http://json-schema.org/schema#",
   "properties": {
     "id": {
-      "type": "string",
-      "description": "The ID of the screen tab field.",
-      "readOnly": true
+      "type": "string"
     },
     "name": {
-      "type": "string",
-      "description": "The name of the screen tab field. Required on create and update. The maximum length is 255 characters."
+      "type": "string"
     }
   },
-  "additionalProperties": false,
-  "description": "A screen tab field."
+  "type": "object"
 }

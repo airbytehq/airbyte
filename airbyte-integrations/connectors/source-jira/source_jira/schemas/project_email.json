@@ -1,12 +1,9 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "$schema": "http://json-schema.org/schema#",
   "properties": {
     "emailAddress": {
-      "type": "string",
-      "description": "The email address."
+      "type": "string"
     }
   },
-  "additionalProperties": false,
-  "description": "A project's sender email address."
+  "type": "object"
 }

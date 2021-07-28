@@ -1,25 +1,18 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "$schema": "http://json-schema.org/schema#",
   "properties": {
-    "id": {
-      "type": "integer",
-      "description": "The ID of the field configuration.",
-      "format": "int64"
-    },
-    "name": {
-      "type": "string",
-      "description": "The name of the field configuration."
-    },
     "description": {
-      "type": "string",
-      "description": "The description of the field configuration."
+      "type": "string"
+    },
+    "id": {
+      "type": "integer"
     },
     "isDefault": {
-      "type": "boolean",
-      "description": "Whether the field configuration is the default."
+      "type": "boolean"
+    },
+    "name": {
+      "type": "string"
     }
   },
-  "additionalProperties": false,
-  "description": "Details of a field configuration."
+  "type": "object"
 }
