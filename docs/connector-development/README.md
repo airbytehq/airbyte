@@ -10,7 +10,6 @@ To build a new connector in Java or Python, we provide templates so you don't ne
 
 You can build a connector very quickly with the [Airbyte CDK](cdk-python/README.md), which generates 75% of the code required for you.   
 
-
 ## The Airbyte specification
 
 Before building a new connector, review [Airbyte's data protocol specification](../understanding-airbyte/airbyte-specification.md).
