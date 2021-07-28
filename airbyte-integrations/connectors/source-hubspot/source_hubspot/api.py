@@ -27,7 +27,7 @@ import sys
 import time
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
-from functools import partial, lru_cache
+from functools import partial
 from http import HTTPStatus
 from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
@@ -336,7 +336,6 @@ class Stream(ABC):
         return field_props
 
     @property
-    @lru_cache
     def properties(self) -> Mapping[str, Any]:
         """Some entities has dynamic set of properties, so we trying to resolve those at runtime"""
         if not self.entity:
