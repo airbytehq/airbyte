@@ -39,6 +39,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.yaml.Yamls;
+import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
@@ -198,7 +199,7 @@ public class ConfigDumpImporter {
     // STANDARD_SOURCE_DEFINITION and DESTINATION_CONNECTION before STANDARD_DESTINATION_DEFINITION
     // so that we can identify which definitions should not be upgraded to the latest version
     Collections.sort(directories);
-    final Map<ConfigSchema, Stream<T>> data = new LinkedHashMap<>();
+    final Map<AirbyteConfig, Stream<T>> data = new LinkedHashMap<>();
 
     final Map<ConfigSchema, Map<String, T>> seed;
     if (seedPath.isPresent()) {
@@ -330,7 +331,7 @@ public class ConfigDumpImporter {
   }
 
   private <T> void validateJson(final T config, final ConfigSchema configType) throws JsonValidationException {
-    JsonNode schema = JsonSchemaValidator.getSchema(configType.getFile());
+    JsonNode schema = JsonSchemaValidator.getSchema(configType.getConfigSchemaFile());
     jsonSchemaValidator.ensure(schema, Jsons.jsonNode(config));
   }
 

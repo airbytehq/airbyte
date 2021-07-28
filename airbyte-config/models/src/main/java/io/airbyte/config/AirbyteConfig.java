@@ -24,14 +24,28 @@
 
 package io.airbyte.config;
 
-import io.airbyte.validation.json.AbstractSchemaValidator;
-import java.nio.file.Path;
+import java.io.File;
 
-public class AirbyteConfigValidator extends AbstractSchemaValidator<ConfigSchema> {
+/**
+ * This interface represents configuration objects used by Airbyte and Airbyte cloud
+ */
+public interface AirbyteConfig {
 
-  @Override
-  public Path getSchemaPath(ConfigSchema configType) {
-    return configType.getConfigSchemaFile().toPath();
-  }
+  String name();
+
+  /**
+   * @return the name of the field storing the id for the configuration object
+   */
+  String getIdFieldName();
+
+  /**
+   * @return the actual id of the configuration object
+   */
+  <T> String getId(T config);
+
+  /**
+   * @return the path to the yaml file that defines the schema of the configuration object
+   */
+  File getConfigSchemaFile();
 
 }
