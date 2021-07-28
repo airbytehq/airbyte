@@ -107,7 +107,7 @@ class AbstractTestIncrementalFileStream(ABC):
         airbyte_system_columns,
         sync_mode,
         files,
-        path_patterns,
+        path_pattern,
         private,
         num_columns,
         num_records,
@@ -133,7 +133,7 @@ class AbstractTestIncrementalFileStream(ABC):
 
         if not fails:
             print(str_user_schema)
-            fs = self.stream_class("dataset", provider, format, path_patterns, str_user_schema)
+            fs = self.stream_class("dataset", provider, format, path_pattern, str_user_schema)
             LOGGER.info(f"Testing stream_records() in SyncMode:{sync_mode.value}")
 
             assert fs._get_schema_map() == full_expected_schema  # check we return correct schema from get_json_schema()
@@ -173,7 +173,7 @@ class AbstractTestIncrementalFileStream(ABC):
 
         else:
             with pytest.raises(Exception) as e_info:
-                fs = self.stream_class("dataset", provider, format, path_patterns, str_user_schema)
+                fs = self.stream_class("dataset", provider, format, path_pattern, str_user_schema)
                 LOGGER.info(f"Testing EXPECTED FAILURE stream_records() in SyncMode:{sync_mode.value}")
 
                 fs.get_json_schema()
@@ -186,12 +186,12 @@ class AbstractTestIncrementalFileStream(ABC):
                 LOGGER.info(f"Failed as expected, error: {e_info}")
 
     @pytest.mark.parametrize(  # make user_schema None to test auto-inference. Exclude any _airbyte system columns in expected_schema.
-        "files, path_patterns, private, num_columns, num_records, expected_schema, user_schema, incremental, fails",
+        "files, path_pattern, private, num_columns, num_records, expected_schema, user_schema, incremental, fails",
         [
             # single file tests
             (  # public
                 [SAMPLE_DIR.joinpath("simple_test.csv")],
-                ["*"],
+                "**",
                 False,
                 3,
                 8,
@@ -202,7 +202,7 @@ class AbstractTestIncrementalFileStream(ABC):
             ),
             (  # private
                 [SAMPLE_DIR.joinpath("simple_test.csv")],
-                ["*"],
+                "**",
                 True,
                 3,
                 8,
@@ -213,7 +213,7 @@ class AbstractTestIncrementalFileStream(ABC):
             ),
             (  # provided schema exact match to actual schema
                 [SAMPLE_DIR.joinpath("simple_test.csv")],
-                ["*"],
+                "**",
                 True,
                 3,
                 8,
@@ -224,7 +224,7 @@ class AbstractTestIncrementalFileStream(ABC):
             ),
             (  # provided schema not matching datatypes, expect successful coercion
                 [SAMPLE_DIR.joinpath("simple_test.csv")],
-                ["*"],
+                "**",
                 True,
                 3,
                 8,
@@ -235,7 +235,7 @@ class AbstractTestIncrementalFileStream(ABC):
             ),
             (  # provided incompatible schema, expect fail
                 [SAMPLE_DIR.joinpath("simple_test.csv")],
-                ["*"],
+                "**",
                 True,
                 3,
                 8,
@@ -251,7 +251,7 @@ class AbstractTestIncrementalFileStream(ABC):
                     SAMPLE_DIR.joinpath("simple_test_2.csv"),
                     SAMPLE_DIR.joinpath("simple_test_3.csv"),
                 ],
-                ["*"],
+                "**",
                 False,
                 3,
                 17,
@@ -266,7 +266,7 @@ class AbstractTestIncrementalFileStream(ABC):
                     SAMPLE_DIR.joinpath("simple_test_2.csv"),
                     SAMPLE_DIR.joinpath("simple_test_3.csv"),
                 ],
-                ["*"],
+                "**",
                 True,
                 3,
                 17,
@@ -281,7 +281,7 @@ class AbstractTestIncrementalFileStream(ABC):
                     SAMPLE_DIR.joinpath("simple_test_2.csv"),
                     SAMPLE_DIR.joinpath("simple_test_3.csv"),
                 ],
-                ["*"],
+                "**",
                 True,
                 3,
                 17,
@@ -296,7 +296,7 @@ class AbstractTestIncrementalFileStream(ABC):
                     SAMPLE_DIR.joinpath("simple_test_2.csv"),
                     SAMPLE_DIR.joinpath("simple_test_3.csv"),
                 ],
-                ["*"],
+                "**",
                 True,
                 3,
                 17,
@@ -311,7 +311,7 @@ class AbstractTestIncrementalFileStream(ABC):
                     SAMPLE_DIR.joinpath("simple_test_2.csv"),
                     SAMPLE_DIR.joinpath("simple_test_3.csv"),
                 ],
-                ["*"],
+                "**",
                 True,
                 3,
                 17,
@@ -327,7 +327,7 @@ class AbstractTestIncrementalFileStream(ABC):
                     SAMPLE_DIR.joinpath("multi_file_diffschema_1.csv"),
                     SAMPLE_DIR.joinpath("multi_file_diffschema_2.csv"),
                 ],
-                ["*"],
+                "**",
                 True,
                 6,
                 17,
@@ -342,7 +342,7 @@ class AbstractTestIncrementalFileStream(ABC):
                     SAMPLE_DIR.joinpath("multi_file_diffschema_1.csv"),
                     SAMPLE_DIR.joinpath("multi_file_diffschema_2.csv"),
                 ],
-                ["*"],
+                "**",
                 True,
                 3,
                 17,
@@ -359,7 +359,7 @@ class AbstractTestIncrementalFileStream(ABC):
                     SAMPLE_DIR.joinpath("file_to_skip.csv"),
                     SAMPLE_DIR.joinpath("file_to_skip.txt"),
                 ],
-                ["simple*"],
+                "simple*",
                 True,
                 3,
                 11,
@@ -378,7 +378,7 @@ class AbstractTestIncrementalFileStream(ABC):
                     SAMPLE_DIR.joinpath("pattern_match_test/not_this_folder/file_to_skip.csv"),
                     SAMPLE_DIR.joinpath("pattern_match_test/not_this_folder/file_to_skip.txt"),
                 ],
-                ["simple_test*.csv", "pattern_match_test/this_folder/*"],
+                "**/simple*",
                 True,
                 3,
                 19,
@@ -394,7 +394,7 @@ class AbstractTestIncrementalFileStream(ABC):
                     SAMPLE_DIR.joinpath("simple_test_2.csv"),
                     SAMPLE_DIR.joinpath("simple_test_3.csv"),
                 ],
-                ["*"],
+                "**",
                 True,
                 [3, 3, 3],
                 [8, 3, 6],
@@ -409,7 +409,7 @@ class AbstractTestIncrementalFileStream(ABC):
                     SAMPLE_DIR.joinpath("simple_test_2.csv"),
                     SAMPLE_DIR.joinpath("simple_test_3.csv"),
                 ],
-                ["*"],
+                "**",
                 True,
                 [3, 3, 3],
                 [8, 3, 6],
@@ -424,7 +424,7 @@ class AbstractTestIncrementalFileStream(ABC):
                     SAMPLE_DIR.joinpath("multi_file_diffschema_1.csv"),
                     SAMPLE_DIR.joinpath("multi_file_diffschema_2.csv"),
                 ],
-                ["*"],
+                "**",
                 True,
                 [3, 3, 3],
                 [8, 3, 6],
@@ -439,7 +439,7 @@ class AbstractTestIncrementalFileStream(ABC):
                     SAMPLE_DIR.joinpath("multi_file_diffschema_1.csv"),
                     SAMPLE_DIR.joinpath("simple_test.csv"),
                 ],
-                ["*"],
+                "**",
                 True,
                 [5, 5, 5],
                 [6, 3, 8],
@@ -454,7 +454,7 @@ class AbstractTestIncrementalFileStream(ABC):
                     SAMPLE_DIR.joinpath("multi_file_diffschema_1.csv"),
                     SAMPLE_DIR.joinpath("simple_test.csv"),
                 ],
-                ["*"],
+                "**",
                 True,
                 [2, 2, 2],
                 [6, 3, 8],
@@ -468,7 +468,7 @@ class AbstractTestIncrementalFileStream(ABC):
                     SAMPLE_DIR.joinpath("simple_test.csv"),
                     SAMPLE_DIR.joinpath("incompatible_schema.csv"),
                 ],
-                ["*"],
+                "**",
                 True,
                 [3, 3],
                 [8, 8],
@@ -482,7 +482,7 @@ class AbstractTestIncrementalFileStream(ABC):
                     SAMPLE_DIR.joinpath("simple_test.csv"),
                     SAMPLE_DIR.joinpath("incompatible_schema.csv"),
                 ],
-                ["*"],
+                "**",
                 True,
                 [3, 3],
                 [8, 8],
@@ -499,7 +499,7 @@ class AbstractTestIncrementalFileStream(ABC):
         format,
         airbyte_system_columns,
         files,
-        path_patterns,
+        path_pattern,
         private,
         num_columns,
         num_records,
@@ -521,7 +521,7 @@ class AbstractTestIncrementalFileStream(ABC):
                         airbyte_system_columns,
                         sync_mode,
                         files,
-                        path_patterns,
+                        path_pattern,
                         private,
                         num_columns,
                         num_records,
@@ -540,7 +540,7 @@ class AbstractTestIncrementalFileStream(ABC):
                         airbyte_system_columns,
                         SyncMode("incremental"),
                         [files[i]],
-                        path_patterns,
+                        path_pattern,
                         private,
                         num_columns[i],
                         num_records[i],

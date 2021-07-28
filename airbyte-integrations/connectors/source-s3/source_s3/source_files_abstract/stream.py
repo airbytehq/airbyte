@@ -28,7 +28,7 @@ import json
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from datetime import datetime
-from fnmatch import fnmatch
+from wcmatch.glob import SPLIT, globmatch, GLOBSTAR
 from operator import itemgetter
 from traceback import format_exc
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -61,16 +61,16 @@ class FileStream(Stream, ABC):
     airbyte_columns = [ab_additional_col, ab_last_mod_col, ab_file_name_col]
     datetime_format_string = "%Y-%m-%dT%H:%M:%S%z"
 
-    def __init__(self, dataset: str, provider: dict, format: dict, path_patterns: List[str], schema: str = None):
+    def __init__(self, dataset: str, provider: dict, format: dict, path_pattern: str, schema: str = None):
         """
         :param dataset: table name for this stream
         :param provider: provider specific mapping as described in spec.json
         :param format: file format specific mapping as described in spec.json
-        :param path_patterns: list of Unix shell-style patterns for file-matching
+        :param path_pattern: glob-style pattern for file-matching (https://facelessuser.github.io/wcmatch/glob/)
         :param schema: JSON-syntax user provided schema, defaults to None
         """
         self.dataset = dataset
-        self._path_patterns = path_patterns
+        self._path_pattern = path_pattern
         self._provider = provider
         self._format = format
         self._schema = {}
@@ -154,9 +154,8 @@ class FileStream(Stream, ABC):
         :yield: url filepath to use in StorageFile(), if matching on user-provided path patterns
         """
         for filepath in filepaths:
-            for path_pattern in self._path_patterns:
-                if fnmatch(filepath, path_pattern):
-                    yield filepath
+            if globmatch(filepath, self._path_pattern, flags=GLOBSTAR | SPLIT):
+                yield filepath
 
     def time_ordered_storagefile_iterator(self) -> Iterable[Tuple[datetime, StorageFile]]:
         """

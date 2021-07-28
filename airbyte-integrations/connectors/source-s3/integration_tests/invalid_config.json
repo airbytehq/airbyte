@@ -8,6 +8,6 @@
       "path_prefix": ""
   },
   "format": {"filetype": "csv"},
-  "path_patterns": ["*"],
+  "path_pattern": "**",
   "schema": "{}"
 }

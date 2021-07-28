@@ -113,7 +113,7 @@ class TestFileStream:
         "source_s3.source_files_abstract.stream.FileStream.__abstractmethods__", set()
     )  # patching abstractmethods to empty set so we can instantiate ABC to test
     def test_match_target_schema(self, target_columns, record, expected_return_record):
-        fs = FileStream(dataset="dummy", provider={}, format={}, path_patterns=[])
+        fs = FileStream(dataset="dummy", provider={}, format={}, path_pattern=[])
         if expected_return_record is not None:
             assert fs._match_target_schema(record, target_columns) == expected_return_record
         else:
@@ -145,7 +145,7 @@ class TestFileStream:
         "source_s3.source_files_abstract.stream.FileStream.__abstractmethods__", set()
     )  # patching abstractmethods to empty set so we can instantiate ABC to test
     def test_add_extra_fields_from_map(self, extra_map, record, expected_return_record):
-        fs = FileStream(dataset="dummy", provider={}, format={}, path_patterns=[])
+        fs = FileStream(dataset="dummy", provider={}, format={}, path_pattern=[])
         if expected_return_record is not None:
             assert fs._add_extra_fields_from_map(record, extra_map) == expected_return_record
         else:
@@ -157,7 +157,7 @@ class TestFileStream:
         "patterns, filepaths, expected_filepaths",
         [
             (  # 'everything' case
-                ["*"],
+                "**",
                 [
                     "file.csv",
                     "file.parquet",
@@ -178,7 +178,7 @@ class TestFileStream:
                 ],
             ),
             (  # specific filetype only
-                ["*.csv"],
+                "**/*.csv",
                 [
                     "file.csv",
                     "file.parquet",
@@ -191,7 +191,7 @@ class TestFileStream:
                 ["file.csv", "folder/file.csv", "folder/nested/file.csv"],
             ),
             (  # specific filetypes only
-                ["*.csv", "*.parquet"],
+                "**/*.csv|**/*.parquet",
                 [
                     "file.csv",
                     "file.parquet",
@@ -210,8 +210,21 @@ class TestFileStream:
                     "folder/nested/file.parquet",
                 ],
             ),
+            (  # 'everything' only 1 level deep
+                "*/*",
+                [
+                    "file.csv",
+                    "file.parquet",
+                    "folder/file.csv",
+                    "folder/file.parquet",
+                    "folder/nested/file.csv",
+                    "folder/nested/file.parquet",
+                    "a/b/c/d/e/f/file",
+                ],
+                ["folder/file.csv", "folder/file.parquet"],
+            ),
             (  # 'everything' at least 1 level deep
-                ["*/*"],
+                "*/**",
                 [
                     "file.csv",
                     "file.parquet",
@@ -224,7 +237,7 @@ class TestFileStream:
                 ["folder/file.csv", "folder/file.parquet", "folder/nested/file.csv", "folder/nested/file.parquet", "a/b/c/d/e/f/file"],
             ),
             (  # 'everything' at least 3 levels deep
-                ["*/*/*/*"],
+                "*/*/*/**",
                 [
                     "file.csv",
                     "file.parquet",
@@ -237,7 +250,7 @@ class TestFileStream:
                 ["a/b/c/d/e/f/file"],
             ),
             (  # specific filetype at least 1 level deep
-                ["*/*.csv"],
+                "*/**/*.csv",
                 [
                     "file.csv",
                     "file.parquet",
@@ -250,7 +263,7 @@ class TestFileStream:
                 ["folder/file.csv", "folder/nested/file.csv"],
             ),
             (  # 'everything' with specific filename (any filetype)
-                ["file.*", "file", "*/file.*", "*/file"],
+                "**/file.*|**/file",
                 [
                     "NOT_THIS_file.csv",
                     "folder/NOT_THIS_file.csv",
@@ -273,7 +286,7 @@ class TestFileStream:
                 ],
             ),
             (  # specific dir / any dir / specific dir / any file
-                ["folder/*/files/*"],
+                "folder/*/files/*",
                 [
                     "file.csv",
                     "folder/file.csv",
@@ -286,7 +299,7 @@ class TestFileStream:
                 ["folder/abc/files/1", "folder/xyz/files/1"],
             ),
             (  # specific file prefix and filetype, anywhere
-                ["prefix*.csv", "*/prefix*.csv"],
+                "**/prefix*.csv",
                 [
                     "file.csv",
                     "prefix-file.parquet",
@@ -303,5 +316,5 @@ class TestFileStream:
         "source_s3.source_files_abstract.stream.FileStream.__abstractmethods__", set()
     )  # patching abstractmethods to empty set so we can instantiate ABC to test
     def test_pattern_matched_filepath_iterator(self, patterns, filepaths, expected_filepaths):
-        fs = FileStream(dataset="dummy", provider={}, format={}, path_patterns=patterns)
+        fs = FileStream(dataset="dummy", provider={}, format={}, path_pattern=patterns)
         assert set([p for p in fs.pattern_matched_filepath_iterator(filepaths)]) == set(expected_filepaths)

@@ -29,6 +29,7 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk",
     "pyarrow==4.0.1",
     "smart-open[s3]==5.1.0",
+    "wcmatch==8.2"
 ]
 
 TEST_REQUIREMENTS = [

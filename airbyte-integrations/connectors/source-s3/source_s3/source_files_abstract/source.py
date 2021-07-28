@@ -28,15 +28,22 @@ from fnmatch import fnmatch
 from traceback import format_exc
 from typing import Any, List, Mapping, Optional, Tuple
 
-from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from wcmatch.glob import EXTGLOB, GLOBSTAR, SPLIT, globmatch
+
+# ideas on extending this to handle multiple streams:
+# - "dataset" is currently the name of the single table/stream. We could allow comma-split table names in this string for many streams.
+# - "path_pattern" currently uses https://facelessuser.github.io/wcmatch/glob/ to match a single string pattern (can be multiple | separated)
+#   we could change this to a JSON string in format {"stream_name": "pattern(s)"} to allow many streams and match to names in dataset.
+# - "format" I think we'd have to enforce like-for-like formats across streams otherwise the UI would become chaotic imo.
+# - "schema" could become a nested object such as {"stream_name": {schema}} allowing specifying schema for one/all/none/some tables.
 
 
 class SourceFilesAbstract(AbstractSource, ABC):
-
     @property
     @abstractmethod
     def stream_class(self) -> type:
@@ -76,8 +83,8 @@ class SourceFilesAbstract(AbstractSource, ABC):
         try:
             for filepath in self.stream_class.filepath_iterator(logger, config.get("provider")):
                 found_a_file = True
-                for path_pattern in config.get("path_patterns"):
-                    fnmatch(filepath, path_pattern)  # test that matching on the pattern doesn't error
+                # TODO: will need to split config.get("path_pattern") up by stream once supporting multiple streams
+                globmatch(filepath, config.get("path_pattern"), flags=GLOBSTAR | SPLIT) # test that matching on the pattern doesn't error
                 break  # just need first file here to test connection and valid patterns
 
         except Exception as e:
@@ -104,9 +111,9 @@ class SourceFilesAbstract(AbstractSource, ABC):
         required to run this integration.
         """
         # make dummy instance of stream_class in order to get 'supports_incremental' property
-        incremental = self.stream_class(dataset="", provider="", format="", path_patterns="").supports_incremental
+        incremental = self.stream_class(dataset="", provider="", format="", path_pattern="").supports_incremental
 
-        supported_dest_sync_modes = [DestinationSyncMode.overwrite] 
+        supported_dest_sync_modes = [DestinationSyncMode.overwrite]
         if incremental:
             supported_dest_sync_modes.extend([DestinationSyncMode.append, DestinationSyncMode.append_dedup])
 

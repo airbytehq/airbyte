@@ -23,8 +23,10 @@
 #
 
 
-from pydantic import BaseModel, Field
 from typing import Optional
+
+from pydantic import BaseModel, Field
+
 from .source_files_abstract.source import SourceFilesAbstract
 from .source_files_abstract.spec import SourceFilesAbstractSpec
 from .stream import IncrementalFileStreamS3
@@ -32,7 +34,7 @@ from .stream import IncrementalFileStreamS3
 
 class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
     class Config:
-        title="S3 Source Spec"
+        title = "S3 Source Spec"
 
     class S3Provider(BaseModel):
         class Config:
@@ -42,16 +44,16 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
         aws_access_key_id: Optional[str] = Field(
             default=None,
             description="In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
-            airbyte_secret=True
+            airbyte_secret=True,
         )
         aws_secret_access_key: Optional[str] = Field(
             default=None,
             description="In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
-            airbyte_secret=True
+            airbyte_secret=True,
         )
         path_prefix: str = Field(
             default="",
-            description="By providing a path-like prefix (e.g. myFolder/thisTable/) under which all the relevant files sit, we can optimise finding these in S3. This is optional but recommended if your bucket contains many folders/files."
+            description="By providing a path-like prefix (e.g. myFolder/thisTable/) under which all the relevant files sit, we can optimise finding these in S3. This is optional but recommended if your bucket contains many folders/files.",
         )
 
     provider: S3Provider = Field(...)
