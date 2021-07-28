@@ -10,5 +10,5 @@ Airbyte is a self-hosted solution, so it doesn’t bring any security or privacy
 
 ## **How does Airbyte charge?**
 
-We don’t. All connectors are all under the MIT license. If you are curious about the business model we have in mind, please check our [company handbook](https://docs.airbyte.io/company-handbook/company-handbook/business-model).
+We don’t. All connectors are all under the MIT license. If you are curious about the business model we have in mind, please check our [company handbook](https://handbook.airbyte.io/strategy/business-model).
 
