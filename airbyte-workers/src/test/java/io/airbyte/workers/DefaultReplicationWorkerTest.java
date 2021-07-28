@@ -246,7 +246,8 @@ class DefaultReplicationWorkerTest {
 
     // verify output object matches declared json schema spec.
     final Set<String> validate = new JsonSchemaValidator()
-        .validate(Jsons.jsonNode(Jsons.jsonNode(JsonSchemaValidator.getSchema(ConfigSchema.REPLICATION_OUTPUT.getFile()))), Jsons.jsonNode(actual));
+        .validate(Jsons.jsonNode(Jsons.jsonNode(JsonSchemaValidator.getSchema(ConfigSchema.REPLICATION_OUTPUT.getConfigSchemaFile()))),
+            Jsons.jsonNode(actual));
     assertTrue(validate.isEmpty(), "Validation errors: " + Strings.join(validate, ","));
 
     // remove times so we can do the rest of the object <> object comparison.
