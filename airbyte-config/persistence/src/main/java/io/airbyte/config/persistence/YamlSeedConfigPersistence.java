@@ -64,7 +64,7 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
 
   }
 
-  private static final Map<ConfigSchema, SeedConfigType> CONFIG_SCHEMA_MAP = Map.of(
+  private static final Map<AirbyteConfig, SeedConfigType> CONFIG_SCHEMA_MAP = Map.of(
       ConfigSchema.STANDARD_SOURCE_DEFINITION, SeedConfigType.STANDARD_SOURCE_DEFINITION,
       ConfigSchema.STANDARD_DESTINATION_DEFINITION, SeedConfigType.STANDARD_DESTINATION_DEFINITION);
 
@@ -103,7 +103,7 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> List<T> listConfigs(AirbyteConfig configType, Class<T> clazz) throws JsonValidationException, IOException {
+  public <T> List<T> listConfigs(AirbyteConfig configType, Class<T> clazz) {
     final Map<String, JsonNode> configs = allSeedConfigs.get(CONFIG_SCHEMA_MAP.get(configType));
     if (configs == null) {
       throw new UnsupportedOperationException("There is no seed for " + configType.name());
@@ -117,7 +117,7 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> void deleteConfig(AirbyteConfig configType, String configId) throws ConfigNotFoundException, IOException {
+  public void deleteConfig(AirbyteConfig configType, String configId) {
     throw new UnsupportedOperationException("The seed config persistence is read only.");
   }
 
