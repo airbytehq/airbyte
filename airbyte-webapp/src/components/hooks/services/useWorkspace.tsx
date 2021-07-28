@@ -9,11 +9,7 @@ import { useAnalytics } from "../useAnalytics";
 const useCurrentWorkspace = (): Workspace => {
   const { workspaces } = useResource(WorkspaceResource.listShape(), {});
 
-  const workspace = useResource(WorkspaceResource.detailShape(), {
-    workspaceId: workspaces[0].workspaceId,
-  });
-
-  return workspace;
+  return workspaces[0];
 };
 
 const useWorkspace = (): {
@@ -135,5 +131,5 @@ const useWorkspace = (): {
   };
 };
 
-export { useCurrentWorkspace };
+export { useCurrentWorkspace, useWorkspace };
 export default useWorkspace;
