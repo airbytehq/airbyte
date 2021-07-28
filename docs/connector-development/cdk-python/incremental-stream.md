@@ -34,7 +34,7 @@ A Slice object is not typed, and the developer is free to include any informatio
 
 As an example, suppose an API is able to dispense data hourly. If the last sync was exactly 24 hours ago, we can either make an API call retrieving all data at once, or make 24 calls each retrieving an hour's worth of data. In the latter case, the `stream_slices` function, sees that the previous state contains yesterday's timestamp, and returns a list of 24 Slices, each with a different hourly timestamp to be used when creating request. If the stream fails halfway through \(at the 12th slice\), then the next time it starts reading, it will read from the beginning of the 12th slice.
 
-For a more in-depth description of stream slicing, see the [Stream Slices guide](stream_slices.md).
+For a more in-depth description of stream slicing, see the [Stream Slices guide](stream-slices.md).
 
 ## Conclusion
 

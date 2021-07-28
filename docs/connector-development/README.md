@@ -21,7 +21,7 @@ Before building a new connector, review [Airbyte's data protocol specification](
 To add a new connector you need to:
 
 1. Implement & Package your connector in an Airbyte Protocol compliant Docker image
-2. Add integration tests for your connector. At a minimum, all connectors must pass [Airbyte's standard test suite](testing-connectors/testing-connectors.md), but you can also add your own tests. 
+2. Add integration tests for your connector. At a minimum, all connectors must pass [Airbyte's standard test suite](testing-connectors/README.md), but you can also add your own tests. 
 3. Document how to build & test your connector
 4. Publish the Docker image containing the connector
 
@@ -63,7 +63,7 @@ As you implement your connector, make sure to review the [Best Practices for Con
 
 ### 2. Integration tests
 
-At a minimum, your connector must implement the acceptance tests described in [Testing Connectors](testing-connectors/testing-connectors.md)
+At a minimum, your connector must implement the acceptance tests described in [Testing Connectors](testing-connectors/README.md)
 
 **Note:  Acceptance tests are not yet available for Python destination connectors. Coming [soon](https://github.com/airbytehq/airbyte/issues/4698)!**
 
