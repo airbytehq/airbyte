@@ -6,6 +6,6 @@ select
         'id',
         'conflict_stream_name',
     ]) }} as _airbyte_conflict_stream_name_hashid
-from {{ ref('conflict_stream_name_ab2') }} as table_alias
+from {{ ref('conflict_stream_name_ab2') }}
 -- conflict_stream_name
 

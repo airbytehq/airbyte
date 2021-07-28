@@ -13,6 +13,6 @@ select
 ), '')) as 
     string
 ))) as _airbyte_non_nested_stream_without_namespace_resulting_into_long_names_hashid
-from `dataline-integration-testing`._airbyte_test_normalization.`non_nested_stream_without_namespace_resulting_into_long_names_ab2` as table_alias
+from `dataline-integration-testing`._airbyte_test_normalization.`non_nested_stream_without_namespace_resulting_into_long_names_ab2`
 -- non_nested_stream_without_namespace_resulting_into_long_names;
 

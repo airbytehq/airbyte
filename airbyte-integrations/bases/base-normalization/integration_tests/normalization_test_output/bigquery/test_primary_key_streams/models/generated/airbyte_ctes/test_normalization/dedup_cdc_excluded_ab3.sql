@@ -9,6 +9,6 @@ select
         '_ab_cdc_updated_at',
         '_ab_cdc_deleted_at',
     ]) }} as _airbyte_dedup_cdc_excluded_hashid
-from {{ ref('dedup_cdc_excluded_ab2') }} as table_alias
+from {{ ref('dedup_cdc_excluded_ab2') }}
 -- dedup_cdc_excluded
 

@@ -323,7 +323,7 @@ select
     {{ field }},
   {%- endfor %}
     _airbyte_emitted_at
-from {{ from_table }} as {{ table_alias }}
+from {{ from_table }} as table_alias
 {{ unnesting_after_query }}
 {{ sql_table_comment }}
 """
@@ -334,21 +334,22 @@ from {{ from_table }} as {{ table_alias }}
             fields=self.extract_json_columns(column_names),
             from_table=jinja_call(from_table),
             unnesting_after_query=self.unnesting_after_query(),
-            sql_table_comment=self.sql_table_comment(),
-            table_alias=self.table_alias
+            sql_table_comment=self.sql_table_comment()
         )
         return sql
 
     def extract_json_columns(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
         return [
-            StreamProcessor.extract_json_column(field, self.json_column_name, self.properties[field], column_names[field][0], self.table_alias)
+            StreamProcessor.extract_json_column(
+                field, self.json_column_name, self.properties[field], column_names[field][0], self.table_alias
+            )
             for field in column_names
         ]
 
     @staticmethod
     def extract_json_column(property_name: str, json_column_name: str, definition: Dict, column_name: str, table_alias: str) -> str:
         json_path = [property_name]
-        table_alias = f'{table_alias}'
+        table_alias = f"{table_alias}"
         json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path})")
         if "type" in definition:
             if is_array(definition["type"]):
@@ -371,7 +372,7 @@ select
     {{ field }},
   {%- endfor %}
     _airbyte_emitted_at
-from {{ from_table }}
+from {{ from_table }} as table_alias
 {{ sql_table_comment }}
     """
         )
@@ -424,7 +425,7 @@ select
         {{ field }},
       {%- endfor %}
     ]) {{ '}}' }} as {{ hash_id }}
-from {{ from_table }} as {{ table_alias }}
+from {{ from_table }}
 {{ sql_table_comment }}
     """
         )
@@ -434,7 +435,6 @@ from {{ from_table }} as {{ table_alias }}
             hash_id=self.hash_id(),
             from_table=jinja_call(from_table),
             sql_table_comment=self.sql_table_comment(),
-            table_alias=self.table_alias
         )
         return sql
 
@@ -465,7 +465,7 @@ select
     partition by {{ hash_id }}
     order by _airbyte_emitted_at asc
   ) as _airbyte_row_num
-from {{ from_table }} as {{ table_alias }}
+from {{ from_table }}
 {{ sql_table_comment }}
         """
         )
@@ -473,7 +473,7 @@ from {{ from_table }} as {{ table_alias }}
             hash_id=self.hash_id(),
             from_table=jinja_call(from_table),
             sql_table_comment=self.sql_table_comment(include_from_table=True),
-            table_alias=self.table_alias
+            table_alias=self.table_alias,
         )
         return sql
 
@@ -499,7 +499,7 @@ select
     ) is null {{ cdc_active_row }}as _airbyte_active_row,
     _airbyte_emitted_at,
     {{ hash_id }}
-from {{ from_table }} as {{ table_alias }}
+from {{ from_table }}
 {{ sql_table_comment }}
         """
         )
@@ -520,7 +520,7 @@ from {{ from_table }} as {{ table_alias }}
             sql_table_comment=self.sql_table_comment(include_from_table=True),
             cdc_active_row=cdc_active_row_pattern,
             cdc_updated_at_order=cdc_updated_order_pattern,
-            table_alias=self.table_alias
+            table_alias=self.table_alias,
         )
         return sql
 
@@ -577,7 +577,7 @@ select
   {%- endfor %}
     _airbyte_emitted_at,
     {{ hash_id }}
-from {{ from_table }} as {{ table_alias }}
+from {{ from_table }}
 {{ sql_table_comment }}
     """
         )
@@ -587,7 +587,7 @@ from {{ from_table }} as {{ table_alias }}
             hash_id=self.hash_id(),
             from_table=jinja_call(from_table),
             sql_table_comment=self.sql_table_comment(include_from_table=True),
-            table_alias=self.table_alias
+            table_alias=self.table_alias,
         )
         return sql
 
@@ -671,7 +671,6 @@ from {{ from_table }} as {{ table_alias }}
                 return self.name_transformer.normalize_column_name(f"_airbyte_{self.normalized_stream_name()}_{level}_hashid")
 
         return self.name_transformer.normalize_column_name(f"_airbyte_{self.normalized_stream_name()}_hashid")
-
 
     def parent_hash_id(self) -> str:
         if self.parent:

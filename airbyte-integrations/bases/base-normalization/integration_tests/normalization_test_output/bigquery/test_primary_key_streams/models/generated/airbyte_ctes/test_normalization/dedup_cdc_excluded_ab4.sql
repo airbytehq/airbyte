@@ -6,6 +6,6 @@ select
     partition by _airbyte_dedup_cdc_excluded_hashid
     order by _airbyte_emitted_at asc
   ) as _airbyte_row_num
-from {{ ref('dedup_cdc_excluded_ab3') }} as table_alias
+from {{ ref('dedup_cdc_excluded_ab3') }}
 -- dedup_cdc_excluded from {{ source('test_normalization', '_airbyte_raw_dedup_cdc_excluded') }}
 

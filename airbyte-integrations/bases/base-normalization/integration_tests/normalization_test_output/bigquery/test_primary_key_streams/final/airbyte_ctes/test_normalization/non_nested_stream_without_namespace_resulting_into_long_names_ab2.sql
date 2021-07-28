@@ -12,6 +12,6 @@ select
     string
 ) as date,
     _airbyte_emitted_at
-from `dataline-integration-testing`._airbyte_test_normalization.`non_nested_stream_without_namespace_resulting_into_long_names_ab1`
+from `dataline-integration-testing`._airbyte_test_normalization.`non_nested_stream_without_namespace_resulting_into_long_names_ab1` as table_alias
 -- non_nested_stream_without_namespace_resulting_into_long_names;
 

@@ -7,6 +7,6 @@ select
         array_to_string('double_array_data'),
         array_to_string('DATA'),
     ]) }} as _airbyte_partition_hashid
-from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_partition_ab2') }} as table_alias
+from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_partition_ab2') }}
 -- partition at nested_stream_with_complex_columns_resulting_into_long_names/partition
 

@@ -10,6 +10,6 @@ select
     string
 ) as id,
     _airbyte_emitted_at
-from `dataline-integration-testing`._airbyte_test_normalization.`nested_stream_with_complex_columns_resulting_into_long_names_partition_double_array_data_ab1`
+from `dataline-integration-testing`._airbyte_test_normalization.`nested_stream_with_complex_columns_resulting_into_long_names_partition_double_array_data_ab1` as table_alias
 -- double_array_data at nested_stream_with_complex_columns_resulting_into_long_names/partition/double_array_data;
 

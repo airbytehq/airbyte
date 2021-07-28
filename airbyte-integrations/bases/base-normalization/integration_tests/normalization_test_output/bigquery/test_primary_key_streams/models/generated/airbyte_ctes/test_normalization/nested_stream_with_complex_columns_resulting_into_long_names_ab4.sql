@@ -6,6 +6,6 @@ select
     partition by _airbyte_nested_stream_with_complex_columns_resulting_into_long_names_hashid
     order by _airbyte_emitted_at asc
   ) as _airbyte_row_num
-from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_ab3') }} as table_alias
+from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_ab3') }}
 -- nested_stream_with_complex_columns_resulting_into_long_names from {{ source('test_normalization', '_airbyte_raw_nested_stream_with_complex_columns_resulting_into_long_names') }}
 

@@ -13,6 +13,6 @@ select
 ), '')) as 
     string
 ))) as _airbyte_simple_stream_with_namespace_resulting_into_long_names_hashid
-from `dataline-integration-testing`._airbyte_test_normalization_namespace.`simple_stream_with_namespace_resulting_into_long_names_ab2` as table_alias
+from `dataline-integration-testing`._airbyte_test_normalization_namespace.`simple_stream_with_namespace_resulting_into_long_names_ab2`
 -- simple_stream_with_namespace_resulting_into_long_names;
 

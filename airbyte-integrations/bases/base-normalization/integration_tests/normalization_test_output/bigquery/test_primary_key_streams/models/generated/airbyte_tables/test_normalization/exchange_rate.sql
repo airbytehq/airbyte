@@ -10,6 +10,6 @@ select
     USD,
     _airbyte_emitted_at,
     _airbyte_exchange_rate_hashid
-from {{ ref('exchange_rate_ab3') }} as table_alias
+from {{ ref('exchange_rate_ab3') }}
 -- exchange_rate from {{ source('test_normalization', '_airbyte_raw_exchange_rate') }}
 

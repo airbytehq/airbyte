@@ -6,6 +6,6 @@ select
         'id',
         'date',
     ]) }} as _airbyte_non_nested_stream_without_namespace_resulting_into_long_names_hashid
-from {{ ref('non_nested_stream_without_namespace_resulting_into_long_names_ab2') }} as table_alias
+from {{ ref('non_nested_stream_without_namespace_resulting_into_long_names_ab2') }}
 -- non_nested_stream_without_namespace_resulting_into_long_names
 

@@ -12,7 +12,7 @@ select
     `groups`,
     _airbyte_emitted_at,
     _airbyte_conflict_stream_name_3_hashid
-from `dataline-integration-testing`._airbyte_test_normalization.`conflict_stream_name_conflict_stream_name_conflict_stream_name_ab3` as table_alias
+from `dataline-integration-testing`._airbyte_test_normalization.`conflict_stream_name_conflict_stream_name_conflict_stream_name_ab3`
 -- conflict_stream_name at conflict_stream_name/conflict_stream_name/conflict_stream_name from `dataline-integration-testing`.test_normalization.`conflict_stream_name_conflict_stream_name`
   );
     

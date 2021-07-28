@@ -27,6 +27,6 @@ select
     float64
 ) as USD,
     _airbyte_emitted_at
-from `dataline-integration-testing`._airbyte_test_normalization.`exchange_rate_ab1`
+from `dataline-integration-testing`._airbyte_test_normalization.`exchange_rate_ab1` as table_alias
 -- exchange_rate;
 

@@ -6,6 +6,6 @@ select
     DATA,
     _airbyte_emitted_at,
     _airbyte_partition_hashid
-from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_partition_ab3') }} as table_alias
+from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_partition_ab3') }}
 -- partition at nested_stream_with_complex_columns_resulting_into_long_names/partition from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names') }}
 

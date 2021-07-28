@@ -13,6 +13,6 @@ select
 ), '')) as 
     string
 ))) as _airbyte_conflict_stream_name_3_hashid
-from `dataline-integration-testing`._airbyte_test_normalization.`conflict_stream_name_conflict_stream_name_conflict_stream_name_ab2` as table_alias
+from `dataline-integration-testing`._airbyte_test_normalization.`conflict_stream_name_conflict_stream_name_conflict_stream_name_ab2`
 -- conflict_stream_name at conflict_stream_name/conflict_stream_name/conflict_stream_name;
 

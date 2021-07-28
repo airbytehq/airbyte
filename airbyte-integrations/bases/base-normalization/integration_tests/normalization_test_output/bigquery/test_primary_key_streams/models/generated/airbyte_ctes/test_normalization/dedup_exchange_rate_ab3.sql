@@ -11,6 +11,6 @@ select
         'NZD',
         'USD',
     ]) }} as _airbyte_dedup_exchange_rate_hashid
-from {{ ref('dedup_exchange_rate_ab2') }} as table_alias
+from {{ ref('dedup_exchange_rate_ab2') }}
 -- dedup_exchange_rate
 

@@ -19,7 +19,7 @@ select
     ) is null as _airbyte_active_row,
     _airbyte_emitted_at,
     _airbyte_dedup_exchange_rate_hashid
-from {{ ref('dedup_exchange_rate_ab4') }} as table_alias
+from {{ ref('dedup_exchange_rate_ab4') }}
 -- dedup_exchange_rate from {{ source('test_normalization', '_airbyte_raw_dedup_exchange_rate') }}
 where _airbyte_row_num = 1
 

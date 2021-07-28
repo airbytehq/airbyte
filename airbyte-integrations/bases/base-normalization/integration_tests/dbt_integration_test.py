@@ -33,6 +33,7 @@ import string
 import subprocess
 import sys
 import threading
+import time
 from typing import Any, Dict, List
 
 from normalization.destination_type import DestinationType
@@ -115,6 +116,8 @@ class DbtIntegrationTest(object):
         ]
         print("Executing: ", " ".join(commands))
         subprocess.call(commands)
+
+        time.sleep(120)
 
         if not os.path.exists("../secrets"):
             os.makedirs("../secrets")
