@@ -1,4 +1,4 @@
-# Source Acceptance Test Suite
+# Source Acceptance Tests Reference
 
 Tests configurable via `acceptance-test-config.yml`. Each test has a number of inputs, 
 you can provide multiple sets of inputs which will cause the same to run multiple times - one for each set of inputs.

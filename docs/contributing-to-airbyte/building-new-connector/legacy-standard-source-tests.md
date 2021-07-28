@@ -2,7 +2,7 @@
 
 ## Airbyte's Standard Tests (v1)
 
-This document describes the old version Standard Tests, please check the latest version [here](testing-connectors.md)
+This document describes the old version Standard Tests, please check the latest version [here](../../connector-development/testing-connectors/testing-connectors.md)
 To ensure a minimum quality bar, Airbyte runs all connectors against the same set of integration tests \(sources & destinations have two different test suites\). Those tests ensure that each connector adheres to the [Airbyte Specification](../../architecture/airbyte-specification.md) and responds correctly to Airbyte commands when provided valid \(or invalid\) inputs.
 
 ### Architecture of standard tests

@@ -163,15 +163,15 @@ While developing, we recommend storing this object in `secrets/config.json`. The
 
 As described in the template code, this method takes in the same config object as `check`. It then returns a json object called a `catalog` that describes what data is available and metadata on what options are available for how to replicate it.
 
-For a brief overview on the catalog check out [Beginner's Guide to the Airbyte Catalog](beginners-guide-to-catalog.md).
+For a brief overview on the catalog check out [Beginner's Guide to the Airbyte Catalog](../../understanding-airbyte/beginners-guide-to-catalog.md).
 
 ### Step 7: Implement `read`
 
-As described in the template code, this method takes in the same config object as the previous methods. It also takes in a "configured catalog". This object wraps the catalog emitted by the `discover` step and includes configuration on how the data should be replicated. For a brief overview on the configured catalog check out [Beginner's Guide to the Airbyte Catalog](beginners-guide-to-catalog.md). It then returns a generator which returns each record in the stream.
+As described in the template code, this method takes in the same config object as the previous methods. It also takes in a "configured catalog". This object wraps the catalog emitted by the `discover` step and includes configuration on how the data should be replicated. For a brief overview on the configured catalog check out [Beginner's Guide to the Airbyte Catalog](../../understanding-airbyte/beginners-guide-to-catalog.md). It then returns a generator which returns each record in the stream.
 
 ### Step 8: Set up Standard Tests
 
-The Standard Tests are a set of tests that run against all sources. These tests are run in the Airbyte CI to prevent regressions. They also can help you sanity check that your source works as expected. The following [article](../building-new-connector/testing-connectors.md) explains Standard Tests and how to run them.
+The Standard Tests are a set of tests that run against all sources. These tests are run in the Airbyte CI to prevent regressions. They also can help you sanity check that your source works as expected. The following [article](../../connector-development/testing-connectors/testing-connectors.md) explains Standard Tests and how to run them.
 
 You can run the tests using `./gradlew :airbyte-integrations:connectors:source-<source-name>:integrationTest`. Make sure to run this command from the Airbyte repository root.
 
