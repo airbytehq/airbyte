@@ -27,7 +27,6 @@ package io.airbyte.server.migration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -60,6 +59,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
@@ -134,11 +134,16 @@ public class RunMigrationTest {
 
   private void assertPostMigrationConfigs(Path importRoot) throws Exception {
     final ConfigRepository configRepository = new ConfigRepository(FileSystemConfigPersistence.createWithValidation(importRoot));
+    final UUID workspaceId = configRepository.listStandardWorkspaces(true).get(0).getWorkspaceId();
+    // originally the default workspace started with a hardcoded id. the migration in version 0.29.0
+    // took that id and randomized it. we want to check that the id is now NOT that hardcoded id and
+    // that all related resources use the updated workspaceId as well.
+    assertNotEquals(UUID.fromString("5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6"), workspaceId);
     final StandardSyncOperation standardSyncOperation = assertSyncOperations(configRepository);
     assertStandardSyncs(configRepository, standardSyncOperation);
-    assertWorkspace(configRepository);
-    assertSources(configRepository);
-    assertDestinations(configRepository);
+    assertWorkspace(configRepository, workspaceId);
+    assertSources(configRepository, workspaceId);
+    assertDestinations(configRepository, workspaceId);
     assertSourceDefinitions(configRepository);
     assertDestinationDefinitions(configRepository);
   }
@@ -234,7 +239,7 @@ public class RunMigrationTest {
     return standardSyncOperation;
   }
 
-  private void assertSources(ConfigRepository configRepository) throws JsonValidationException, IOException {
+  private void assertSources(ConfigRepository configRepository, UUID workspaceId) throws JsonValidationException, IOException {
     final Map<String, SourceConnection> sources = configRepository.listSourceConnection()
         .stream()
         .collect(Collectors.toMap(sourceConnection -> sourceConnection.getSourceId().toString(), sourceConnection -> sourceConnection));
@@ -242,11 +247,7 @@ public class RunMigrationTest {
     final SourceConnection mysqlConnection = sources.get("28ffee2b-372a-4f72-9b95-8ed56a8b99c5");
     assertEquals("MySQL localhost", mysqlConnection.getName());
     assertEquals("435bb9a5-7887-4809-aa58-28c27df0d7ad", mysqlConnection.getSourceDefinitionId().toString());
-    // todo (cgardens) - not good enough
-    assertNotNull(mysqlConnection.getWorkspaceId().toString());
-    assertNotEquals("5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6", mysqlConnection.getWorkspaceId().toString());
-    // assertEquals("5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6",
-    // mysqlConnection.getWorkspaceId().toString());
+    assertEquals(workspaceId, mysqlConnection.getWorkspaceId());
     assertEquals("28ffee2b-372a-4f72-9b95-8ed56a8b99c5", mysqlConnection.getSourceId().toString());
     assertEquals("root", mysqlConnection.getConfiguration().get("username").asText());
     assertEquals("password", mysqlConnection.getConfiguration().get("password").asText());
@@ -257,14 +258,11 @@ public class RunMigrationTest {
 
   }
 
-  private void assertWorkspace(ConfigRepository configRepository) throws JsonValidationException, IOException {
+  private void assertWorkspace(ConfigRepository configRepository, UUID workspaceId) throws JsonValidationException, IOException {
     final List<StandardWorkspace> standardWorkspaces = configRepository.listStandardWorkspaces(true);
     assertEquals(1, standardWorkspaces.size());
     final StandardWorkspace workspace = standardWorkspaces.get(0);
-    // todo (cgardens) - not good enough
-    assertNotNull(workspace.getWorkspaceId().toString());
-    assertNotEquals("5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6", workspace.getWorkspaceId().toString());
-    // assertEquals("5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6", workspace.getWorkspaceId().toString());
+    assertEquals(workspaceId, workspace.getWorkspaceId());
     assertEquals("17f90b72-5ae4-40b7-bc49-d6c2943aea57", workspace.getCustomerId().toString());
     assertEquals("default", workspace.getName());
     assertEquals("default", workspace.getSlug());
@@ -275,17 +273,14 @@ public class RunMigrationTest {
     assertEquals(false, workspace.getDisplaySetupWizard());
   }
 
-  private void assertDestinations(ConfigRepository configRepository) throws JsonValidationException, IOException {
+  private void assertDestinations(ConfigRepository configRepository, UUID workspaceId) throws JsonValidationException, IOException {
     final List<DestinationConnection> destinationConnections = configRepository.listDestinationConnection();
     assertEquals(destinationConnections.size(), 2);
     for (final DestinationConnection destination : destinationConnections) {
       if (destination.getDestinationId().toString().equals("4e00862d-5484-4f50-9860-f3bbb4317397")) {
         assertEquals("Postgres Docker", destination.getName());
         assertEquals("25c5221d-dce2-4163-ade9-739ef790f503", destination.getDestinationDefinitionId().toString());
-        assertNotNull(destination.getWorkspaceId().toString());
-        // todo (cgardens) - not good enough
-        assertNotEquals("5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6", destination.getWorkspaceId().toString());
-        // assertEquals("5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6", destination.getWorkspaceId().toString());
+        assertEquals(workspaceId, destination.getWorkspaceId());
         assertEquals("postgres", destination.getConfiguration().get("username").asText());
         assertEquals("password", destination.getConfiguration().get("password").asText());
         assertEquals("postgres", destination.getConfiguration().get("database").asText());
@@ -296,10 +291,7 @@ public class RunMigrationTest {
       } else if (destination.getDestinationId().toString().equals("5434615d-a3b7-4351-bc6b-a9a695555a30")) {
         assertEquals("CSV", destination.getName());
         assertEquals("8be1cf83-fde1-477f-a4ad-318d23c9f3c6", destination.getDestinationDefinitionId().toString());
-        // todo (cgardens) - not good enough
-        assertNotNull(destination.getWorkspaceId().toString());
-        assertNotEquals("5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6", destination.getWorkspaceId().toString());
-        // assertEquals("5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6", destination.getWorkspaceId().toString());
+        assertEquals(workspaceId, destination.getWorkspaceId());
         assertEquals("csv_data", destination.getConfiguration().get("destination_path").asText());
       } else {
         fail("Unknown destination found with destination id : " + destination.getDestinationId().toString());
