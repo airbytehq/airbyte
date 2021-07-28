@@ -74,6 +74,10 @@ public abstract class BaseTest {
     configPersistence.writeConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId().toString(), destination);
   }
 
+  protected static void deleteDestination(ConfigPersistence configPersistence, StandardDestinationDefinition destination) throws Exception {
+    configPersistence.deleteConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId().toString());
+  }
+
   protected Map<String, Set<JsonNode>> getMapWithSet(Map<String, Stream<JsonNode>> input) {
     return input.entrySet().stream().collect(Collectors.toMap(
         Entry::getKey,

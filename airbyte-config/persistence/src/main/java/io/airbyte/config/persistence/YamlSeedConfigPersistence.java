@@ -29,6 +29,7 @@ import com.google.common.io.Resources;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.yaml.Yamls;
+import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.init.SeedRepository;
 import io.airbyte.validation.json.JsonValidationException;
@@ -89,7 +90,7 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> T getConfig(ConfigSchema configType, String configId, Class<T> clazz)
+  public <T> T getConfig(AirbyteConfig configType, String configId, Class<T> clazz)
       throws ConfigNotFoundException, JsonValidationException, IOException {
     Map<String, JsonNode> configs = allSeedConfigs.get(CONFIG_SCHEMA_MAP.get(configType));
     if (configs == null) {
@@ -103,7 +104,7 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> List<T> listConfigs(ConfigSchema configType, Class<T> clazz) throws JsonValidationException, IOException {
+  public <T> List<T> listConfigs(AirbyteConfig configType, Class<T> clazz) throws JsonValidationException, IOException {
     Map<String, JsonNode> configs = allSeedConfigs.get(CONFIG_SCHEMA_MAP.get(configType));
     if (configs == null) {
       throw new UnsupportedOperationException("There is no seed for " + configType.name());
@@ -112,12 +113,17 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> void writeConfig(ConfigSchema configType, String configId, T config) {
+  public <T> void writeConfig(AirbyteConfig configType, String configId, T config) {
     throw new UnsupportedOperationException("The seed config persistence is read only.");
   }
 
   @Override
-  public <T> void replaceAllConfigs(Map<ConfigSchema, Stream<T>> configs, boolean dryRun) {
+  public <T> void deleteConfig(AirbyteConfig configType, String configId) throws ConfigNotFoundException, IOException {
+    throw new UnsupportedOperationException("The seed config persistence is read only.");
+  }
+
+  @Override
+  public <T> void replaceAllConfigs(Map<AirbyteConfig, Stream<T>> configs, boolean dryRun) {
     throw new UnsupportedOperationException("The seed config persistence is read only.");
   }
 

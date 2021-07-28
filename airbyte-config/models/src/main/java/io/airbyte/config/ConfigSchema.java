@@ -29,7 +29,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.function.Function;
 
-public enum ConfigSchema {
+public enum ConfigSchema implements AirbyteConfig {
 
   // workspace
   STANDARD_WORKSPACE("StandardWorkspace.yaml",
@@ -103,7 +103,8 @@ public enum ConfigSchema {
     this.idFieldName = null;
   }
 
-  public File getFile() {
+  @Override
+  public File getConfigSchemaFile() {
     return KNOWN_SCHEMAS_ROOT.resolve(schemaFilename).toFile();
   }
 
@@ -111,6 +112,7 @@ public enum ConfigSchema {
     return (Class<T>) className;
   }
 
+  @Override
   public <T> String getId(T object) {
     if (getClassName().isInstance(object)) {
       return ((Function<T, String>) extractId).apply(object);
@@ -118,6 +120,7 @@ public enum ConfigSchema {
     throw new RuntimeException("Object: " + object + " is not instance of class " + getClassName().getName());
   }
 
+  @Override
   public String getIdFieldName() {
     return idFieldName;
   }

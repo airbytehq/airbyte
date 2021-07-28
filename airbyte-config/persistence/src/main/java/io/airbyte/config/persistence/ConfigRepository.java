@@ -26,6 +26,7 @@ package io.airbyte.config.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.lang.MoreBooleans;
+import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
@@ -206,7 +207,7 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.STANDARD_SYNC_OPERATION, StandardSyncOperation.class);
   }
 
-  public <T> void replaceAllConfigs(Map<ConfigSchema, Stream<T>> configs, boolean dryRun) throws IOException {
+  public <T> void replaceAllConfigs(Map<AirbyteConfig, Stream<T>> configs, boolean dryRun) throws IOException {
     persistence.replaceAllConfigs(configs, dryRun);
   }
 

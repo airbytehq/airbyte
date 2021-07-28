@@ -28,11 +28,13 @@ import static io.airbyte.db.instance.configs.AirbyteConfigsTable.AIRBYTE_CONFIGS
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.count;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
@@ -122,11 +124,28 @@ public class DatabaseConfigPersistenceTest extends BaseTest {
   }
 
   @Test
+  public void testDeleteConfig() throws Exception {
+    writeDestination(configPersistence, DESTINATION_S3);
+    writeDestination(configPersistence, DESTINATION_SNOWFLAKE);
+    assertRecordCount(2);
+    assertHasDestination(DESTINATION_S3);
+    assertHasDestination(DESTINATION_SNOWFLAKE);
+    assertEquals(
+        List.of(DESTINATION_SNOWFLAKE, DESTINATION_S3),
+        configPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class));
+    deleteDestination(configPersistence, DESTINATION_S3);
+    assertThrows(ConfigNotFoundException.class, () -> assertHasDestination(DESTINATION_S3));
+    assertEquals(
+        List.of(DESTINATION_SNOWFLAKE),
+        configPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class));
+  }
+
+  @Test
   public void testReplaceAllConfigs() throws Exception {
     writeDestination(configPersistence, DESTINATION_S3);
     writeDestination(configPersistence, DESTINATION_SNOWFLAKE);
 
-    Map<ConfigSchema, Stream<Object>> newConfigs = Map.of(
+    Map<AirbyteConfig, Stream<Object>> newConfigs = Map.of(
         ConfigSchema.STANDARD_WORKSPACE, Stream.of(DEFAULT_WORKSPACE),
         ConfigSchema.STANDARD_SOURCE_DEFINITION, Stream.of(SOURCE_GITHUB, SOURCE_POSTGRES));
 

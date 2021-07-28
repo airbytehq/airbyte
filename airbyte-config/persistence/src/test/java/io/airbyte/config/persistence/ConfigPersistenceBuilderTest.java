@@ -39,6 +39,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs;
 import io.airbyte.config.StandardWorkspace;
@@ -156,7 +157,7 @@ class ConfigPersistenceBuilderTest extends BaseTest {
    */
   @Test
   public void testMigrateFromFileToDbPersistence() throws Exception {
-    Map<ConfigSchema, Stream<Object>> seedConfigs = Map.of(
+    Map<AirbyteConfig, Stream<Object>> seedConfigs = Map.of(
         ConfigSchema.STANDARD_WORKSPACE, Stream.of(DEFAULT_WORKSPACE),
         ConfigSchema.STANDARD_SOURCE_DEFINITION, Stream.of(SOURCE_GITHUB, SOURCE_POSTGRES),
         ConfigSchema.STANDARD_DESTINATION_DEFINITION, Stream.of(DESTINATION_S3));
