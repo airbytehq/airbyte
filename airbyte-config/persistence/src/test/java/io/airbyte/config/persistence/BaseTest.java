@@ -30,7 +30,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.StandardWorkspace;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -42,7 +41,6 @@ import java.util.stream.Stream;
  */
 public abstract class BaseTest {
 
-  protected static final StandardWorkspace DEFAULT_WORKSPACE;
   protected static final StandardSourceDefinition SOURCE_GITHUB;
   protected static final StandardSourceDefinition SOURCE_POSTGRES;
   protected static final StandardDestinationDefinition DESTINATION_SNOWFLAKE;
@@ -51,8 +49,6 @@ public abstract class BaseTest {
   static {
     try {
       ConfigPersistence seedPersistence = new YamlSeedConfigPersistence();
-      DEFAULT_WORKSPACE = seedPersistence
-          .getConfig(ConfigSchema.STANDARD_WORKSPACE, PersistenceConstants.DEFAULT_WORKSPACE_ID.toString(), StandardWorkspace.class);
       SOURCE_GITHUB = seedPersistence
           .getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, "ef69ef6e-aa7f-4af1-a01d-ef775033524e", StandardSourceDefinition.class);
       SOURCE_POSTGRES = seedPersistence
