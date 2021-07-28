@@ -2,6 +2,11 @@ name: GKE Kube Acceptance Test
 on:
   schedule:
     - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      comment-id:
+        description: 'The comment-id of the slash command. Used to update the comment with the status.'
+        required: false
 
 jobs:
   start-gke-kube-acceptance-test-runner:
@@ -33,6 +38,13 @@ jobs:
     runs-on: ${{ needs.start-gke-kube-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
     name: GKE Acceptance Tests (Kube)
     steps:
+      - name: Link comment to workflow run
+        if: github.event.inputs.comment-id
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :clock2: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Checkout Airbyte
         uses: actions/checkout@v2
 
@@ -81,12 +93,29 @@ jobs:
           sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
       - name: Run End-to-End Acceptance Tests on GKE
+        id: gke-kube-test
         env:
           USER: root
           HOME: /home/runner
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          ACTION_RUN_ID: ${{github.run_id}}
         run: |
           ./tools/bin/gke-kube-acceptance-test/acceptance_test_kube_gke.sh
+
+      - name: Add Success Comment
+        if: github.event.inputs.comment-id && success()
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+      - name: Add Failure Comment
+        if: github.event.inputs.comment-id && !success()
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :x: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
   # In case of self-hosted EC2 errors, remove this block.
   stop-gke-kube-acceptance-test-runner:
     name: Stop GKE Kube Acceptance Test EC2 Runner
