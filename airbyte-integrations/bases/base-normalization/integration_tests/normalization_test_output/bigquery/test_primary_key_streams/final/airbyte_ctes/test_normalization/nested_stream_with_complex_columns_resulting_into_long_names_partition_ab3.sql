@@ -12,6 +12,8 @@ select
     string
 ), ''), '-', coalesce(cast(array_to_string(DATA, "|", "") as 
     string
+), ''), '-', coalesce(cast(array_to_string(column___with__quotes, "|", "") as 
+    string
 ), '')) as 
     string
 ))) as _airbyte_partition_hashid

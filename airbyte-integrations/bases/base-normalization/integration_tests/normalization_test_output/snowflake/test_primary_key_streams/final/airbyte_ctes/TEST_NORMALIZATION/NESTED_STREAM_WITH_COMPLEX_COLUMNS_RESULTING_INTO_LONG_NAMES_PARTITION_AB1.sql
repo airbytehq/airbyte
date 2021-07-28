@@ -6,6 +6,7 @@ select
     _AIRBYTE_NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_HASHID,
     get_path(parse_json(PARTITION), '"double_array_data"') as DOUBLE_ARRAY_DATA,
     get_path(parse_json(PARTITION), '"DATA"') as DATA,
+    get_path(parse_json(PARTITION), '"column`_''with""_quotes"') as "column`_'with""_quotes",
     _airbyte_emitted_at
 from "AIRBYTE_DATABASE".TEST_NORMALIZATION."NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES"
 where PARTITION is not null

@@ -3,7 +3,7 @@
 {{ unnest_cte('nested_stream_with_c___long_names_partition', 'partition', 'double_array_data') }}
 select
     _airbyte_partition_hashid,
-    {{ json_extract_scalar(unnested_column_value('double_array_data'), ['id']) }} as {{ adapter.quote('id') }},
+    {{ json_extract_scalar(unnested_column_value('double_array_data'), ['id'], ['id']) }} as {{ adapter.quote('id') }},
     _airbyte_emitted_at
 from {{ ref('nested_stream_with_c___long_names_partition') }}
 {{ cross_join_unnest('partition', 'double_array_data') }}

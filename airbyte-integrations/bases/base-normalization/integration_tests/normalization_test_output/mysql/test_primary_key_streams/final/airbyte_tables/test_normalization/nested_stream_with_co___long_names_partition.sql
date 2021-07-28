@@ -9,6 +9,7 @@ select
     _airbyte_nested_strea__nto_long_names_hashid,
     double_array_data,
     `DATA`,
+    `column__'with"_quotes`,
     _airbyte_emitted_at,
     _airbyte_partition_hashid
 from _airbyte_test_normalization.`nested_stream_with_co__g_names_partition_ab3`

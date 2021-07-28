@@ -154,11 +154,17 @@ def test_transform_standard_naming(input_str: str, expected: str):
         ("'QuoTed4 IdenTifiER'", "Redshift", "_quoted4_identifier_", "{{ adapter.quote('\\'quoted4 identifier\\'') }}"),
         ("'QuoTed5 IdenTifiER'", "MySQL", "_quoted5_identifier_", "{{ adapter.quote('\\'QuoTed5 IdenTifiER\\'') }}"),
         # Double Quoted identifiers
-        ('"QuoTed5 IdenTifiER"', "Postgres", "_quoted5_identifier_", '{{ adapter.quote(\'""QuoTed5 IdenTifiER""\') }}'),
-        ('"QuoTed6 IdenTifiER"', "BigQuery", "_QuoTed6_IdenTifiER_", "_QuoTed6_IdenTifiER_"),
-        ('"QuoTed7 IdenTifiER"', "Snowflake", "_QUOTED7_IDENTIFIER_", '{{ adapter.quote(\'""QuoTed7 IdenTifiER""\') }}'),
-        ('"QuoTed8 IdenTifiER"', "Redshift", "_quoted8_identifier_", '{{ adapter.quote(\'""quoted8 identifier""\') }}'),
-        ('"QuoTed9 IdenTifiER"', "MySQL", "_quoted9_identifier_", '{{ adapter.quote(\'""QuoTed9 IdenTifiER""\') }}'),
+        ('"QuoTed6 IdenTifiER"', "Postgres", "_quoted6_identifier_", '{{ adapter.quote(\'""QuoTed6 IdenTifiER""\') }}'),
+        ('"QuoTed7 IdenTifiER"', "BigQuery", "_QuoTed7_IdenTifiER_", "_QuoTed7_IdenTifiER_"),
+        ('"QuoTed8 IdenTifiER"', "Snowflake", "_QUOTED8_IDENTIFIER_", '{{ adapter.quote(\'""QuoTed8 IdenTifiER""\') }}'),
+        ('"QuoTed9 IdenTifiER"', "Redshift", "_quoted9_identifier_", '{{ adapter.quote(\'""quoted9 identifier""\') }}'),
+        ('"QuoTed10 IdenTifiER"', "MySQL", "_quoted10_identifier_", "{{ adapter.quote('\"QuoTed10 IdenTifiER\"') }}"),
+        # Back Quoted identifiers
+        ("`QuoTed11 IdenTifiER`", "Postgres", "_quoted11_identifier_", "{{ adapter.quote('`QuoTed11 IdenTifiER`') }}"),
+        ("`QuoTed12 IdenTifiER`", "BigQuery", "_QuoTed12_IdenTifiER_", "_QuoTed12_IdenTifiER_"),
+        ("`QuoTed13 IdenTifiER`", "Snowflake", "_QUOTED13_IDENTIFIER_", "{{ adapter.quote('`QuoTed13 IdenTifiER`') }}"),
+        ("`QuoTed14 IdenTifiER`", "Redshift", "_quoted14_identifier_", "{{ adapter.quote('`quoted14 identifier`') }}"),
+        ("`QuoTed15 IdenTifiER`", "MySQL", "_quoted15_identifier_", "{{ adapter.quote('_QuoTed15 IdenTifiER_') }}"),
     ],
 )
 def test_normalize_name(input_str: str, destination_type: str, expected: str, expected_column: str):

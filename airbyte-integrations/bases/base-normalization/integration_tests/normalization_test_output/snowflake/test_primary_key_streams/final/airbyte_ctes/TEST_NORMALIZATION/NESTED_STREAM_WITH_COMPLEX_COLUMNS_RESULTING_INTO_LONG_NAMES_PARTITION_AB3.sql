@@ -12,6 +12,8 @@ select
     varchar
 ), '') || '-' || coalesce(cast(DATA as 
     varchar
+), '') || '-' || coalesce(cast("column`_'with""_quotes" as 
+    varchar
 ), '')
 
  as 
