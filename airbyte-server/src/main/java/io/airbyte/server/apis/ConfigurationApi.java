@@ -119,7 +119,6 @@ import io.airbyte.validation.json.JsonValidationException;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.File;
 import java.io.IOException;
-import javax.validation.Valid;
 
 @javax.ws.rs.Path("/v1")
 public class ConfigurationApi implements io.airbyte.api.V1Api {
@@ -178,7 +177,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         destinationHandler,
         jobHistoryHandler,
         schedulerHandler,
-        operationsHandler);
+        operationsHandler,
+        workspaceHelper);
     webBackendSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler, workspaceHelper);
     webBackendDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler, workspaceHelper);
     healthCheckHandler = new HealthCheckHandler(configRepository);
@@ -196,12 +196,12 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public WorkspaceRead createWorkspace(@Valid WorkspaceCreate workspaceCreate) {
+  public WorkspaceRead createWorkspace(final WorkspaceCreate workspaceCreate) {
     return execute(() -> workspacesHandler.createWorkspace(workspaceCreate));
   }
 
   @Override
-  public void deleteWorkspace(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
+  public void deleteWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
     execute(() -> {
       workspacesHandler.deleteWorkspace(workspaceIdRequestBody);
       return null;
@@ -209,22 +209,22 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public WorkspaceRead getWorkspace(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
+  public WorkspaceRead getWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return execute(() -> workspacesHandler.getWorkspace(workspaceIdRequestBody));
   }
 
   @Override
-  public WorkspaceRead getWorkspaceBySlug(@Valid SlugRequestBody slugRequestBody) {
+  public WorkspaceRead getWorkspaceBySlug(final SlugRequestBody slugRequestBody) {
     return execute(() -> workspacesHandler.getWorkspaceBySlug(slugRequestBody));
   }
 
   @Override
-  public WorkspaceRead updateWorkspace(@Valid WorkspaceUpdate workspaceUpdate) {
+  public WorkspaceRead updateWorkspace(final WorkspaceUpdate workspaceUpdate) {
     return execute(() -> workspacesHandler.updateWorkspace(workspaceUpdate));
   }
 
   @Override
-  public NotificationRead tryNotificationConfig(@Valid Notification notification) {
+  public NotificationRead tryNotificationConfig(final Notification notification) {
     return execute(() -> workspacesHandler.tryNotification(notification));
   }
 
@@ -241,51 +241,51 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public SourceDefinitionRead getSourceDefinition(@Valid SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody) {
+  public SourceDefinitionRead getSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody) {
     return execute(() -> sourceDefinitionsHandler.getSourceDefinition(sourceDefinitionIdRequestBody));
   }
 
   @Override
-  public SourceDefinitionRead createSourceDefinition(@Valid SourceDefinitionCreate sourceDefinitionCreate) {
+  public SourceDefinitionRead createSourceDefinition(final SourceDefinitionCreate sourceDefinitionCreate) {
     return execute(() -> sourceDefinitionsHandler.createSourceDefinition(sourceDefinitionCreate));
   }
 
   @Override
-  public SourceDefinitionRead updateSourceDefinition(@Valid SourceDefinitionUpdate sourceDefinitionUpdate) {
+  public SourceDefinitionRead updateSourceDefinition(final SourceDefinitionUpdate sourceDefinitionUpdate) {
     return execute(() -> sourceDefinitionsHandler.updateSourceDefinition(sourceDefinitionUpdate));
   }
 
   // SOURCE SPECIFICATION
 
   @Override
-  public SourceDefinitionSpecificationRead getSourceDefinitionSpecification(@Valid SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody) {
+  public SourceDefinitionSpecificationRead getSourceDefinitionSpecification(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody) {
     return execute(() -> schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdRequestBody));
   }
 
   // SOURCE IMPLEMENTATION
 
   @Override
-  public SourceRead createSource(@Valid SourceCreate sourceCreate) {
+  public SourceRead createSource(final SourceCreate sourceCreate) {
     return execute(() -> sourceHandler.createSource(sourceCreate));
   }
 
   @Override
-  public SourceRead updateSource(@Valid SourceUpdate sourceUpdate) {
+  public SourceRead updateSource(final SourceUpdate sourceUpdate) {
     return execute(() -> sourceHandler.updateSource(sourceUpdate));
   }
 
   @Override
-  public SourceReadList listSourcesForWorkspace(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
+  public SourceReadList listSourcesForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return execute(() -> sourceHandler.listSourcesForWorkspace(workspaceIdRequestBody));
   }
 
   @Override
-  public SourceRead getSource(@Valid SourceIdRequestBody sourceIdRequestBody) {
+  public SourceRead getSource(final SourceIdRequestBody sourceIdRequestBody) {
     return execute(() -> sourceHandler.getSource(sourceIdRequestBody));
   }
 
   @Override
-  public void deleteSource(@Valid SourceIdRequestBody sourceIdRequestBody) {
+  public void deleteSource(final SourceIdRequestBody sourceIdRequestBody) {
     execute(() -> {
       sourceHandler.deleteSource(sourceIdRequestBody);
       return null;
@@ -293,17 +293,17 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public CheckConnectionRead checkConnectionToSource(@Valid SourceIdRequestBody sourceIdRequestBody) {
+  public CheckConnectionRead checkConnectionToSource(final SourceIdRequestBody sourceIdRequestBody) {
     return execute(() -> schedulerHandler.checkSourceConnectionFromSourceId(sourceIdRequestBody));
   }
 
   @Override
-  public CheckConnectionRead checkConnectionToSourceForUpdate(@Valid SourceUpdate sourceUpdate) {
+  public CheckConnectionRead checkConnectionToSourceForUpdate(final SourceUpdate sourceUpdate) {
     return execute(() -> schedulerHandler.checkSourceConnectionFromSourceIdForUpdate(sourceUpdate));
   }
 
   @Override
-  public SourceDiscoverSchemaRead discoverSchemaForSource(@Valid SourceIdRequestBody sourceIdRequestBody) {
+  public SourceDiscoverSchemaRead discoverSchemaForSource(final SourceIdRequestBody sourceIdRequestBody) {
     return execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceId(sourceIdRequestBody));
   }
 
@@ -320,36 +320,36 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public DestinationDefinitionRead getDestinationDefinition(@Valid DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
+  public DestinationDefinitionRead getDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
     return execute(() -> destinationDefinitionsHandler.getDestinationDefinition(destinationDefinitionIdRequestBody));
   }
 
   @Override
-  public DestinationDefinitionRead createDestinationDefinition(@Valid DestinationDefinitionCreate destinationDefinitionCreate) {
+  public DestinationDefinitionRead createDestinationDefinition(final DestinationDefinitionCreate destinationDefinitionCreate) {
     return execute(() -> destinationDefinitionsHandler.createDestinationDefinition(destinationDefinitionCreate));
   }
 
   @Override
-  public DestinationDefinitionRead updateDestinationDefinition(@Valid DestinationDefinitionUpdate destinationDefinitionUpdate) {
+  public DestinationDefinitionRead updateDestinationDefinition(final DestinationDefinitionUpdate destinationDefinitionUpdate) {
     return execute(() -> destinationDefinitionsHandler.updateDestinationDefinition(destinationDefinitionUpdate));
   }
 
   // DESTINATION SPECIFICATION
 
   @Override
-  public DestinationDefinitionSpecificationRead getDestinationDefinitionSpecification(@Valid DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
+  public DestinationDefinitionSpecificationRead getDestinationDefinitionSpecification(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
     return execute(() -> schedulerHandler.getDestinationSpecification(destinationDefinitionIdRequestBody));
   }
 
   // DESTINATION IMPLEMENTATION
 
   @Override
-  public DestinationRead createDestination(@Valid DestinationCreate destinationCreate) {
+  public DestinationRead createDestination(final DestinationCreate destinationCreate) {
     return execute(() -> destinationHandler.createDestination(destinationCreate));
   }
 
   @Override
-  public void deleteDestination(@Valid DestinationIdRequestBody destinationIdRequestBody) {
+  public void deleteDestination(final DestinationIdRequestBody destinationIdRequestBody) {
     execute(() -> {
       destinationHandler.deleteDestination(destinationIdRequestBody);
       return null;
@@ -357,54 +357,54 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public DestinationRead updateDestination(@Valid DestinationUpdate destinationUpdate) {
+  public DestinationRead updateDestination(final DestinationUpdate destinationUpdate) {
     return execute(() -> destinationHandler.updateDestination(destinationUpdate));
   }
 
   @Override
-  public DestinationReadList listDestinationsForWorkspace(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
+  public DestinationReadList listDestinationsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return execute(() -> destinationHandler.listDestinationsForWorkspace(workspaceIdRequestBody));
   }
 
   @Override
-  public DestinationRead getDestination(@Valid DestinationIdRequestBody destinationIdRequestBody) {
+  public DestinationRead getDestination(final DestinationIdRequestBody destinationIdRequestBody) {
     return execute(() -> destinationHandler.getDestination(destinationIdRequestBody));
   }
 
   @Override
-  public CheckConnectionRead checkConnectionToDestination(@Valid DestinationIdRequestBody destinationIdRequestBody) {
+  public CheckConnectionRead checkConnectionToDestination(final DestinationIdRequestBody destinationIdRequestBody) {
     return execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationId(destinationIdRequestBody));
   }
 
   @Override
-  public CheckConnectionRead checkConnectionToDestinationForUpdate(@Valid DestinationUpdate destinationUpdate) {
+  public CheckConnectionRead checkConnectionToDestinationForUpdate(final DestinationUpdate destinationUpdate) {
     return execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationIdForUpdate(destinationUpdate));
   }
 
   // CONNECTION
 
   @Override
-  public ConnectionRead createConnection(@Valid ConnectionCreate connectionCreate) {
+  public ConnectionRead createConnection(final ConnectionCreate connectionCreate) {
     return execute(() -> connectionsHandler.createConnection(connectionCreate));
   }
 
   @Override
-  public ConnectionRead updateConnection(@Valid ConnectionUpdate connectionUpdate) {
+  public ConnectionRead updateConnection(final ConnectionUpdate connectionUpdate) {
     return execute(() -> connectionsHandler.updateConnection(connectionUpdate));
   }
 
   @Override
-  public ConnectionReadList listConnectionsForWorkspace(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
+  public ConnectionReadList listConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return execute(() -> connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody));
   }
 
   @Override
-  public ConnectionRead getConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
+  public ConnectionRead getConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
     return execute(() -> connectionsHandler.getConnection(connectionIdRequestBody));
   }
 
   @Override
-  public void deleteConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
+  public void deleteConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
     execute(() -> {
       operationsHandler.deleteOperationsForConnection(connectionIdRequestBody);
       connectionsHandler.deleteConnection(connectionIdRequestBody);
@@ -413,12 +413,12 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public JobInfoRead syncConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
+  public JobInfoRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
     return execute(() -> schedulerHandler.syncConnection(connectionIdRequestBody));
   }
 
   @Override
-  public JobInfoRead resetConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
+  public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
     return execute(() -> schedulerHandler.resetConnection(connectionIdRequestBody));
   }
 
@@ -430,7 +430,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public OperationRead createOperation(@Valid OperationCreate operationCreate) {
+  public OperationRead createOperation(final OperationCreate operationCreate) {
     return execute(() -> operationsHandler.createOperation(operationCreate));
   }
 
@@ -464,39 +464,39 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   // SCHEDULER
   @Override
-  public CheckConnectionRead executeSourceCheckConnection(@Valid SourceCoreConfig sourceConfig) {
+  public CheckConnectionRead executeSourceCheckConnection(final SourceCoreConfig sourceConfig) {
     return execute(() -> schedulerHandler.checkSourceConnectionFromSourceCreate(sourceConfig));
   }
 
   @Override
-  public CheckConnectionRead executeDestinationCheckConnection(@Valid DestinationCoreConfig destinationConfig) {
+  public CheckConnectionRead executeDestinationCheckConnection(final DestinationCoreConfig destinationConfig) {
     return execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationCreate(destinationConfig));
   }
 
   @Override
-  public SourceDiscoverSchemaRead executeSourceDiscoverSchema(@Valid SourceCoreConfig sourceCreate) {
+  public SourceDiscoverSchemaRead executeSourceDiscoverSchema(final SourceCoreConfig sourceCreate) {
     return execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceCreate(sourceCreate));
   }
 
   @Override
-  public JobInfoRead cancelJob(@Valid JobIdRequestBody jobIdRequestBody) {
+  public JobInfoRead cancelJob(final JobIdRequestBody jobIdRequestBody) {
     return execute(() -> schedulerHandler.cancelJob(jobIdRequestBody));
   }
 
   // JOB HISTORY
 
   @Override
-  public JobReadList listJobsFor(@Valid JobListRequestBody jobListRequestBody) {
+  public JobReadList listJobsFor(final JobListRequestBody jobListRequestBody) {
     return execute(() -> jobHistoryHandler.listJobsFor(jobListRequestBody));
   }
 
   @Override
-  public JobInfoRead getJobInfo(@Valid JobIdRequestBody jobIdRequestBody) {
+  public JobInfoRead getJobInfo(final JobIdRequestBody jobIdRequestBody) {
     return execute(() -> jobHistoryHandler.getJobInfo(jobIdRequestBody));
   }
 
   @Override
-  public File getLogs(@Valid LogsRequestBody logsRequestBody) {
+  public File getLogs(final LogsRequestBody logsRequestBody) {
     return execute(() -> logsHandler.getLogs(configs, logsRequestBody));
   }
 
@@ -514,23 +514,23 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   // WEB BACKEND
 
   @Override
-  public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
+  public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return execute(() -> webBackendConnectionsHandler.webBackendListConnectionsForWorkspace(workspaceIdRequestBody));
   }
 
   @Override
-  public DestinationRead webBackendRecreateDestination(@Valid DestinationRecreate destinationRecreate) {
+  public DestinationRead webBackendRecreateDestination(final DestinationRecreate destinationRecreate) {
     return execute(
         () -> webBackendDestinationHandler.webBackendRecreateDestinationAndCheck(destinationRecreate));
   }
 
   @Override
-  public SourceRead webBackendRecreateSource(@Valid SourceRecreate sourceRecreate) {
+  public SourceRead webBackendRecreateSource(final SourceRecreate sourceRecreate) {
     return execute(() -> webBackendSourceHandler.webBackendRecreateSourceAndCheck(sourceRecreate));
   }
 
   @Override
-  public WebBackendConnectionRead webBackendGetConnection(@Valid WebBackendConnectionRequestBody webBackendConnectionRequestBody) {
+  public WebBackendConnectionRead webBackendGetConnection(final WebBackendConnectionRequestBody webBackendConnectionRequestBody) {
     return execute(() -> webBackendConnectionsHandler.webBackendGetConnection(webBackendConnectionRequestBody));
   }
 
@@ -540,7 +540,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public WebBackendConnectionRead webBackendUpdateConnection(@Valid WebBackendConnectionUpdate webBackendConnectionUpdate) {
+  public WebBackendConnectionRead webBackendUpdateConnection(final WebBackendConnectionUpdate webBackendConnectionUpdate) {
     return execute(() -> webBackendConnectionsHandler.webBackendUpdateConnection(webBackendConnectionUpdate));
   }
 
@@ -552,7 +552,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public ImportRead importArchive(@Valid File archiveFile) {
+  public ImportRead importArchive(final File archiveFile) {
     return execute(() -> archiveHandler.importData(archiveFile));
   }
 
