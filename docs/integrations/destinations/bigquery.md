@@ -114,6 +114,7 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 | :--- | :---  | :--- | :--- |
 | 0.3.6 | 2021-06-18 | [#3947](https://github.com/airbytehq/airbyte/issues/3947) | Service account credentials are now optional. |
 | 0.3.4 | 2021-06-07 | [#3277](https://github.com/airbytehq/airbyte/issues/3277) | Add dataset location option |
+| 0.3.9 | 2021-07-28 | [#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add extended logs and made JobId filled with region and projectId |
 
 ### destination-bigquery-denormalized
 
