@@ -21,7 +21,14 @@ publishing {
         }
     }
     repositories {
-        mavenLocal()
+        maven {
+            credentials {
+                name 'cloudrepo'
+                username System.getenv('CLOUDREPO_USER')
+                password System.getenv('CLOUDREPO_PASSWORD')
+            }
+            url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
+        }
     }
 }
 
