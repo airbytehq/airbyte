@@ -75,6 +75,9 @@ class GoogleAdsStream(Stream, ABC):
 
 
 class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
+    cursor_field = "segments.date"
+    primary_key = None
+
     def __init__(self, start_date: str, conversion_window_days: int, **kwargs):
         self.conversion_window_days = conversion_window_days
         self._start_date = start_date
@@ -124,22 +127,68 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         return query
 
 
-class AdGroupAdReport(IncrementalGoogleAdsStream):
-    cursor_field = "segments.date"
-    primary_key = None
-
-
 class Accounts(GoogleAdsStream):
+    """
+    Accounts stream: https://developers.google.com/google-ads/api/fields/v8/customer
+    """
+
     primary_key = "customer.id"
 
 
 class Campaigns(GoogleAdsStream):
+    """
+    Campaigns stream: https://developers.google.com/google-ads/api/fields/v8/campaign
+    """
+
     primary_key = "campaign.id"
 
 
 class AdGroups(GoogleAdsStream):
+    """
+    AdGroups stream: https://developers.google.com/google-ads/api/fields/v8/ad_group
+    """
+
     primary_key = "ad_group.id"
 
 
 class AdGroupAds(GoogleAdsStream):
+    """
+    AdGroups stream: https://developers.google.com/google-ads/api/fields/v8/ad_group_ad
+    """
+
     primary_key = "ad_group_ad.ad.id"
+
+
+class AccountPerformanceReport(IncrementalGoogleAdsStream):
+    """
+    AccountPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v8/customer
+    Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance
+    """
+
+
+class AdGroupAdReport(IncrementalGoogleAdsStream):
+    """
+    AdGroupAdReport stream: https://developers.google.com/google-ads/api/fields/v8/ad_group_ad
+    Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#ad_performance
+    """
+
+
+class DisplayKeywordPerformanceReport(IncrementalGoogleAdsStream):
+    """
+    DisplayKeywordPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v8/display_keyword_view
+    Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#display_keyword_performance
+    """
+
+
+class DisplayTopicsPerformanceReport(IncrementalGoogleAdsStream):
+    """
+    DisplayTopicsPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v8/topic_view
+    Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#display_topics_performance
+    """
+
+
+class ShoppingPerformanceReport(IncrementalGoogleAdsStream):
+    """
+    ShoppingPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v8/shopping_performance_view
+    Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance
+    """
