@@ -6,10 +6,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -18,10 +18,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -30,10 +30,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -42,10 +42,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -54,10 +54,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -66,10 +66,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -78,10 +78,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -90,10 +90,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -102,10 +102,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -114,10 +114,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -126,10 +126,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -138,10 +138,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -150,10 +150,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -162,10 +162,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -174,10 +174,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -186,10 +186,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -198,10 +198,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -210,10 +210,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -222,10 +222,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -234,10 +234,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -246,10 +246,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -258,10 +258,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -270,10 +270,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -282,10 +282,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -294,10 +294,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -306,10 +306,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -318,10 +318,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     },
     {
@@ -330,10 +330,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["MetaData"]
+        "default_cursor_field": ["MetaData", "LastUpdatedTime"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["MetaData"],
+      "cursor_field": ["MetaData", "LastUpdatedTime"],
       "destination_sync_mode": "append"
     }
   ]
