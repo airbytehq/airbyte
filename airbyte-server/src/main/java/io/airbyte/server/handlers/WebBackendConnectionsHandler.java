@@ -244,9 +244,7 @@ public class WebBackendConnectionsHandler {
 
   public WebBackendConnectionRead webBackendCreateConnection(WebBackendConnectionCreate webBackendConnectionCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    // hack - UI doesn't supply the workspace id yet, so for now, we sneak it in the backend.
-    final UUID workspaceId = getWorkspaceIdForSource(webBackendConnectionCreate.getSourceId());
-    final List<UUID> operationIds = createOperations(webBackendConnectionCreate, workspaceId);
+    final List<UUID> operationIds = createOperations(webBackendConnectionCreate);
     final ConnectionCreate connectionCreate = toConnectionCreate(webBackendConnectionCreate, operationIds);
     return buildWebBackendConnectionRead(connectionsHandler.createConnection(connectionCreate));
   }
@@ -269,11 +267,11 @@ public class WebBackendConnectionsHandler {
     return buildWebBackendConnectionRead(connectionRead);
   }
 
-  private List<UUID> createOperations(WebBackendConnectionCreate webBackendConnectionCreate, UUID workspaceId)
+  private List<UUID> createOperations(WebBackendConnectionCreate webBackendConnectionCreate)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final List<UUID> operationIds = new ArrayList<>();
     for (var operationCreate : webBackendConnectionCreate.getOperations()) {
-      operationIds.add(operationsHandler.createOperation(operationCreate.workspaceId(workspaceId)).getOperationId());
+      operationIds.add(operationsHandler.createOperation(operationCreate).getOperationId());
     }
     return operationIds;
   }
@@ -284,10 +282,6 @@ public class WebBackendConnectionsHandler {
         .getConnection(new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId()));
     final List<UUID> originalOperationIds = new ArrayList<>(connectionRead.getOperationIds());
     final List<UUID> operationIds = new ArrayList<>();
-
-    // hack - UI doesn't supply the workspace id yet, so for now, we sneak it in the backend.
-    final UUID workspaceId = getWorkspaceIdForConnection(webBackendConnectionUpdate.getConnectionId());
-    webBackendConnectionUpdate.getOperations().forEach(operation -> operation.setOperationId(workspaceId));
 
     for (var operationCreateOrUpdate : webBackendConnectionUpdate.getOperations()) {
       if (operationCreateOrUpdate.getOperationId() == null || !originalOperationIds.contains(operationCreateOrUpdate.getOperationId())) {
