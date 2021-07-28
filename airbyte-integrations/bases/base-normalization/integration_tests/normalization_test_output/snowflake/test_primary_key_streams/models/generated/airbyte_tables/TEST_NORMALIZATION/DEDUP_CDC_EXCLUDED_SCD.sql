@@ -17,7 +17,7 @@ select
     ) is null and _ab_cdc_deleted_at is null as _airbyte_active_row,
     _airbyte_emitted_at,
     _AIRBYTE_DEDUP_CDC_EXCLUDED_HASHID
-from {{ ref('DEDUP_CDC_EXCLUDED_AB4') }}
+from {{ ref('DEDUP_CDC_EXCLUDED_AB4') }} as table_alias
 -- DEDUP_CDC_EXCLUDED from {{ source('TEST_NORMALIZATION', '_AIRBYTE_RAW_DEDUP_CDC_EXCLUDED') }}
 where _airbyte_row_num = 1
 

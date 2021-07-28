@@ -21,7 +21,7 @@ select
     ) is null and _ab_cdc_deleted_at is null as _airbyte_active_row,
     _airbyte_emitted_at,
     _airbyte_dedup_cdc_excluded_hashid
-from "postgres"._airbyte_test_normalization."dedup_cdc_excluded_ab4"
+from "postgres"._airbyte_test_normalization."dedup_cdc_excluded_ab4" as table_alias
 -- dedup_cdc_excluded from "postgres".test_normalization._airbyte_raw_dedup_cdc_excluded
 where _airbyte_row_num = 1
   );

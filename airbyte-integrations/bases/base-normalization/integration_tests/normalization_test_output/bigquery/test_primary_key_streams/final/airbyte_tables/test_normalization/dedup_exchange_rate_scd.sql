@@ -30,7 +30,7 @@ select
     ) is null as _airbyte_active_row,
     _airbyte_emitted_at,
     _airbyte_dedup_exchange_rate_hashid
-from `dataline-integration-testing`._airbyte_test_normalization.`dedup_exchange_rate_ab4`
+from `dataline-integration-testing`._airbyte_test_normalization.`dedup_exchange_rate_ab4` as table_alias
 -- dedup_exchange_rate from `dataline-integration-testing`.test_normalization._airbyte_raw_dedup_exchange_rate
 where _airbyte_row_num = 1
   );

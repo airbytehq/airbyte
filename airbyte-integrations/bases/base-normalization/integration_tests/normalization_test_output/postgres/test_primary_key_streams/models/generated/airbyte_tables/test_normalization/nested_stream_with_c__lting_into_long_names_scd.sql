@@ -15,7 +15,7 @@ select
     ) is null as _airbyte_active_row,
     _airbyte_emitted_at,
     _airbyte_nested_stre__nto_long_names_hashid
-from {{ ref('nested_stream_with_c__lting_into_long_names_ab4') }}
+from {{ ref('nested_stream_with_c__lting_into_long_names_ab4') }} as table_alias
 -- nested_stream_with_c__lting_into_long_names from {{ source('test_normalization', '_airbyte_raw_nested_stream_with_complex_columns_resulting_into_long_names') }}
 where _airbyte_row_num = 1
 
