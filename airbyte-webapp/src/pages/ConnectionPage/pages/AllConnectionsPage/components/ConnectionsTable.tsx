@@ -9,8 +9,8 @@ import useSyncActions from "components/EntityTable/hooks";
 import { getConnectionTableData } from "components/EntityTable/utils";
 import { ITableDataItem } from "components/EntityTable/types";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
-import config from "config";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+import useWorkspace from "components/hooks/services/useWorkspace";
 
 type IProps = {
   connections: Connection[];
@@ -18,20 +18,20 @@ type IProps = {
 
 const ConnectionsTable: React.FC<IProps> = ({ connections }) => {
   const { push } = useRouter();
-
+  const { workspace } = useWorkspace();
   const { changeStatus, syncManualConnection } = useSyncActions();
 
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
     {
-      workspaceId: config.ui.workspaceId,
+      workspaceId: workspace.workspaceId,
     }
   );
 
   const { destinationDefinitions } = useResource(
     DestinationDefinitionResource.listShape(),
     {
-      workspaceId: config.ui.workspaceId,
+      workspaceId: workspace.workspaceId,
     }
   );
 

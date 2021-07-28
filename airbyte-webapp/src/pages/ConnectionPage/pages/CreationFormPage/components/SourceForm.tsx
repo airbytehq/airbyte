@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import { useResource } from "rest-hooks";
 
 import useRouter from "components/hooks/useRouterHook";
-import config from "config";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import useSource from "components/hooks/services/useSourceHook";
 
 // TODO: create separate component for source and destinations forms
 import SourceForm from "pages/SourcesPage/pages/CreateSourcePage/components/SourceForm";
 import { ConnectionConfiguration } from "core/domain/connection";
+import useWorkspace from "components/hooks/services/useWorkspace";
 
 type IProps = {
   afterSubmit: () => void;
@@ -18,11 +18,11 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
   const { push, location } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState(null);
-
+  const { workspace } = useWorkspace();
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
     {
-      workspaceId: config.ui.workspaceId,
+      workspaceId: workspace.workspaceId,
     }
   );
   const { createSource } = useSource();

@@ -311,7 +311,7 @@ Other progress on connectors:
 ## 02/02/2021
 
 * Sources that we improved reliability for \(and that became “certified”\):
-  * [Certified sources](https://docs.airbyte.io/integrations/connector-health): Files and Shopify
+  * [Certified sources](https://docs.airbyte.io/integrations): Files and Shopify
   * Enhanced continuous testing for Tempo and Looker sources
 * Other fixes / features:
   * Correctly handle boolean types in the File Source
@@ -326,7 +326,7 @@ Other progress on connectors:
 
 ## 01/19/2021
 
-* **Our new** [**Connector Health Status**](../../integrations/connector-health.md) **page**
+* **Our new** [**Connector Health Grade**](../../integrations) **page**
 * **1 new source:** App Store \(thanks to [@Muriloo](https://github.com/Muriloo)\)
 * Fixes on connectors:
   * Bug fix writing boolean columns to Redshift

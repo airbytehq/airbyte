@@ -123,8 +123,8 @@
                 "type": "string"
               },
               "port": {
-                "type": "number",
-                "default": 22
+                "type": "string",
+                "default": "22"
               }
             }
           },
@@ -148,8 +148,8 @@
                 "type": "string"
               },
               "port": {
-                "type": "number",
-                "default": 22
+                "type": "string",
+                "default": "22"
               }
             }
           },
@@ -171,6 +171,10 @@
               },
               "host": {
                 "type": "string"
+              },
+              "port": {
+                "type": "string",
+                "default": "22"
               }
             }
           },

@@ -3,7 +3,7 @@
 {{ unnest_cte('nested_stream_with_co___long_names_partition', 'partition', adapter.quote('DATA')) }}
 select
     _airbyte_partition_hashid,
-    {{ json_extract_scalar(unnested_column_value(adapter.quote('DATA')), ['currency']) }} as currency,
+    {{ json_extract_scalar(unnested_column_value(adapter.quote('DATA')), ['currency'], ['currency']) }} as currency,
     _airbyte_emitted_at
 from {{ ref('nested_stream_with_co___long_names_partition') }}
 {{ cross_join_unnest('partition', adapter.quote('DATA')) }}

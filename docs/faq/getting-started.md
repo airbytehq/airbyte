@@ -2,7 +2,7 @@
 
 ## **What do I need to get started using Airbyte?**
 
-You can deploy Airbyte in several ways, as [documented here](../deploying-airbyte/). Airbyte will then help you replicate data between a source and a destination. Airbyte offers pre-built connectors for both, you can see their list [here](../project-overview/changelog/connectors.md). If you don’t see the connector you need, you can [build your connector yourself](../contributing-to-airbyte/building-new-connector/) and benefit from Airbyte’s optional scheduling, orchestration and monitoring modules.
+You can deploy Airbyte in several ways, as [documented here](../deploying-airbyte/). Airbyte will then help you replicate data between a source and a destination. Airbyte offers pre-built connectors for both, you can see their list [here](../project-overview/changelog/connectors.md). If you don’t see the connector you need, you can [build your connector yourself](../connector-development) and benefit from Airbyte’s optional scheduling, orchestration and monitoring modules.
 
 ## **How long does it take to set up Airbyte?**
 
@@ -30,7 +30,7 @@ We don’t. Airbyte is to be self-hosted in your own private cloud.
 
 ## Can I set a start time for my integration?
 
-Here the links to the docs: https://docs.airbyte.io/understading-airbyte/connections#sync-schedules
+[Here](../understanding-airbyte/connections#sync-schedules) is the link to the docs on scheduling syncs.
 
 ## **Can I disable analytics in Airbyte?**
 
