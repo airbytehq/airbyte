@@ -51,6 +51,7 @@ class VcrCache:
         # Init inmemory cache file with empty data
         self._cache_file.write(b"interactions: []")
         self._cache_file.flush()
+        self._cache_file.close()
 
     @contextlib.contextmanager
     def use_cassette(self) -> None:

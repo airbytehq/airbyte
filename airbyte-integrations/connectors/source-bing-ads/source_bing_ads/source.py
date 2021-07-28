@@ -38,7 +38,6 @@ cache: VcrCache = VcrCache()
 
 
 class BingAdsStream(Stream, ABC):
-    limit: int = 1000
     primary_key = "Id"
 
     def __init__(self, client: Client, config: Mapping[str, Any]) -> None:
@@ -103,23 +102,22 @@ class BingAdsStream(Stream, ABC):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
-        pagination_complete = False
         next_page_token = None
 
-        while not pagination_complete:
+        while True:
             params = self.request_params(
                 stream_state=stream_state,
                 stream_slice=stream_slice,
                 next_page_token=next_page_token,
             )
+
             response = self.send_request(params, account_id=self.get_account_id(stream_slice))
+            for record in self.parse_response(response):
+                yield record
 
             next_page_token = self.next_page_token(response, current_page_token=next_page_token)
             if not next_page_token:
-                pagination_complete = True
-
-            for record in self.parse_response(response):
-                yield record
+                break
 
         yield from []
 
@@ -135,6 +133,8 @@ class Accounts(BingAdsStream):
     service_name: str = "CustomerManagementService"
     operation_name: str = "SearchAccounts"
     additional_fields: str = "TaxCertificate AccountMode"
+    # maximum page size
+    limit: int = 1000
 
     def next_page_token(self, response: sudsobject.Object, current_page_token: Optional[int]) -> Optional[Mapping[str, Any]]:
         current_page_token = current_page_token or 0
@@ -179,19 +179,10 @@ class Campaigns(BingAdsStream):
     data_field: str = "Campaign"
     service_name: str = "CampaignManagement"
     operation_name: str = "GetCampaignsByAccountId"
-    additional_fields: str = " ".join(
-        [
-            "AdScheduleUseSearcherTimeZone",
-            "BidStrategyId",
-            "CpvCpmBiddingScheme",
-            "DynamicDescriptionSetting",
-            "DynamicFeedSetting",
-            "MaxConversionValueBiddingScheme",
-            "MultimediaAdsBidAdjustment",
-            "TargetImpressionShareBiddingScheme",
-            "TargetSetting",
-            "VerifiedTrackingSetting",
-        ]
+    additional_fields: str = (
+        "AdScheduleUseSearcherTimeZone BidStrategyId CpvCpmBiddingScheme DynamicDescriptionSetting"
+        " DynamicFeedSetting MaxConversionValueBiddingScheme MultimediaAdsBidAdjustment"
+        " TargetImpressionShareBiddingScheme TargetSetting VerifiedTrackingSetting"
     )
 
     def request_params(

@@ -22,19 +22,29 @@
 # SOFTWARE.
 #
 
+import sys
 from datetime import datetime, timedelta
+from functools import lru_cache
 from typing import Any, Iterator, Mapping, Optional
 
+import backoff
 from airbyte_cdk.logger import AirbyteLogger
 from bingads.authorization import AuthorizationData, OAuthTokens, OAuthWebAuthCodeGrant
 from bingads.service_client import ServiceClient
-from suds import sudsobject
+from bingads.util import errorcode_of_exception
+from suds import WebFault, sudsobject
 
 
 class Client:
     api_version: int = 13
     refresh_token_safe_delta: int = 10  # in seconds
     logger: AirbyteLogger = AirbyteLogger()
+    # retry on rate limit errors , when auth token expired or on some internal errors
+    # https://docs.microsoft.com/en-us/advertising/guides/services-protocol?view=bingads-13#throttling
+    # https://docs.microsoft.com/en-us/advertising/guides/operation-error-codes?view=bingads-13
+    retry_on_codes: Iterator[int] = [117, 207, 4204, 109, 0]
+    max_retries: int = 3
+    retry_factor: int = 15
 
     def __init__(
         self,
@@ -61,7 +71,7 @@ class Client:
         self.account_ids = account_ids
 
         self.oauth: OAuthTokens = self._get_access_token()
-
+        # self.authentication.oauth_tokens.access_token = self.authentication.oauth_tokens.access_token + 'asfas'
         for account_id in account_ids:
             self.authorization_data[account_id] = AuthorizationData(
                 account_id=account_id,
@@ -85,7 +95,32 @@ class Client:
         token_updated_expires_in: int = self.oauth.access_token_expires_in_seconds - token_total_lifetime.seconds
         return False if token_updated_expires_in > self.refresh_token_safe_delta else True
 
-    def request(
+    def should_retry(self, error: WebFault) -> bool:
+        error_code = errorcode_of_exception(error)
+        give_up = error_code in self.retry_on_codes
+        if give_up:
+            self.logger.info(f"Giving up for returned error code: {error_code}")
+        return give_up
+
+    def log_retry_attempt(self, details):
+        _, exc, _ = sys.exc_info()
+        error = self.asdict(exc.fault) if hasattr(exc, "fault") else exc
+
+        self.logger.info(str(error))
+        self.logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...")
+
+    def request(self, **kwargs):
+        return backoff.on_exception(
+            backoff.expo,
+            WebFault,
+            max_tries=self.max_retries,
+            factor=self.retry_factor,
+            jitter=None,
+            on_backoff=self.log_retry_attempt,
+            giveup=self.should_retry,
+        )(self._request)(**kwargs)
+
+    def _request(
         self,
         service_name: str,
         operation_name: str,
@@ -97,10 +132,13 @@ class Client:
         """
         if self.is_token_expiring():
             self.oauth = self._get_access_token()
+            # clear caches to be able to use new access token
+            self.get_service.cache_clear()
 
         service = self.get_service(service_name=service_name, account_id=account_id)
         return getattr(service, operation_name)(**params)
 
+    @lru_cache(maxsize=None)
     def get_service(
         self,
         service_name: str,
@@ -110,6 +148,7 @@ class Client:
             service=service_name,
             version=self.api_version,
             authorization_data=self.authorization_data[account_id],
+            # environments supported by Microsoft Advertising: sandbox, production
             environment="production",
         )
 
