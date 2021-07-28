@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.destination.jdbc;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
@@ -115,7 +116,7 @@ public class DefaultSqlOperations implements SqlOperations {
 
       for (AirbyteRecordMessage record : records) {
         var uuid = UUID.randomUUID().toString();
-        var jsonData = Jsons.serialize(record.getData());
+        var jsonData = Jsons.serialize(formatData(record.getData()));
         var emittedAt = Timestamp.from(Instant.ofEpochMilli(record.getEmittedAt()));
         csvPrinter.printRecord(uuid, jsonData, emittedAt);
       }
@@ -124,6 +125,10 @@ public class DefaultSqlOperations implements SqlOperations {
         writer.close();
       }
     }
+  }
+
+  protected JsonNode formatData(JsonNode data) {
+    return data;
   }
 
   @Override
