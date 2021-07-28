@@ -3,7 +3,7 @@
 {{ unnest_cte('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION', 'PARTITION', 'DATA') }}
 select
     _AIRBYTE_PARTITION_HASHID,
-    {{ json_extract_scalar(unnested_column_value('DATA'), ['currency']) }} as CURRENCY,
+    {{ json_extract_scalar(unnested_column_value('DATA'), ['currency'], ['currency']) }} as CURRENCY,
     _airbyte_emitted_at
 from {{ ref('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION') }}
 {{ cross_join_unnest('PARTITION', 'DATA') }}
