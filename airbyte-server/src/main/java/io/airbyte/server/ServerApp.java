@@ -27,7 +27,6 @@ package io.airbyte.server;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.Deployment.DeploymentMode;
 import io.airbyte.analytics.TrackingClientSingleton;
-import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
@@ -109,10 +108,6 @@ public class ServerApp implements ServerRunnable {
 
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
-    final JacksonJaxbJsonProvider jacksonJaxbJsonProvider = new JacksonJaxbJsonProvider();
-    // do not fail request if there are unknown properties
-    jacksonJaxbJsonProvider.setMapper(MoreMappers.initMapper());
-
     final ResourceConfig rc =
         new ResourceConfig()
             .register(new RequestLogger(mdc))
@@ -125,7 +120,6 @@ public class ServerApp implements ServerRunnable {
             // needed so that the custom json exception mappers don't get overridden
             // https://stackoverflow.com/questions/35669774/jersey-custom-exception-mapper-for-invalid-json-string
             .register(JacksonJaxbJsonProvider.class);
-    // .register(jacksonJaxbJsonProvider);
 
     // inject custom server functionality
     customComponentClasses.forEach(rc::register);
