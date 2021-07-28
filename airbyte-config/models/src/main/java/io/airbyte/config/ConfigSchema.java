@@ -29,7 +29,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.function.Function;
 
-public enum ConfigSchema implements AbstractConfig {
+public enum ConfigSchema implements AirbyteConfig {
 
   // workspace
   STANDARD_WORKSPACE("StandardWorkspace.yaml",
@@ -104,7 +104,7 @@ public enum ConfigSchema implements AbstractConfig {
   }
 
   @Override
-  public File getFile() {
+  public File getConfigSchemaFile() {
     return KNOWN_SCHEMAS_ROOT.resolve(schemaFilename).toFile();
   }
 

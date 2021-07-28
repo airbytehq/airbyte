@@ -34,7 +34,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.AbstractConfig;
+import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
@@ -145,7 +145,7 @@ public class DatabaseConfigPersistenceTest extends BaseTest {
     writeDestination(configPersistence, DESTINATION_S3);
     writeDestination(configPersistence, DESTINATION_SNOWFLAKE);
 
-    Map<AbstractConfig, Stream<Object>> newConfigs = Map.of(
+    Map<AirbyteConfig, Stream<Object>> newConfigs = Map.of(
         ConfigSchema.STANDARD_WORKSPACE, Stream.of(DEFAULT_WORKSPACE),
         ConfigSchema.STANDARD_SOURCE_DEFINITION, Stream.of(SOURCE_GITHUB, SOURCE_POSTGRES));
 
