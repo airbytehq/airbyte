@@ -2266,9 +2266,12 @@ components:
       required:
         - name
         - operatorConfiguration
+        - workspaceId
       properties:
         operationId:
           $ref: "#/components/schemas/OperationId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
         name:
           type: string
         operatorConfiguration:
