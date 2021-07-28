@@ -85,6 +85,8 @@ class Client:
 
     def _get_access_token(self) -> OAuthTokens:
         self.logger.info("Fetching access token ...")
+        # clear caches to be able to use new access token
+        self.get_service.cache_clear()
         return self.authentication.request_oauth_tokens_by_refresh_token(self.refresh_token)
 
     def is_token_expiring(self) -> bool:
@@ -132,8 +134,6 @@ class Client:
         """
         if self.is_token_expiring():
             self.oauth = self._get_access_token()
-            # clear caches to be able to use new access token
-            self.get_service.cache_clear()
 
         service = self.get_service(service_name=service_name, account_id=account_id)
         return getattr(service, operation_name)(**params)
