@@ -244,6 +244,7 @@ public class WebBackendConnectionsHandler {
 
   public WebBackendConnectionRead webBackendCreateConnection(WebBackendConnectionCreate webBackendConnectionCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
+    // hack - UI doesn't supply the workspace id yet, so for now, we sneak it in the backend.
     final UUID workspaceId = getWorkspaceIdForSource(webBackendConnectionCreate.getSourceId());
     final List<UUID> operationIds = createOperations(webBackendConnectionCreate, workspaceId);
     final ConnectionCreate connectionCreate = toConnectionCreate(webBackendConnectionCreate, operationIds);
