@@ -282,6 +282,7 @@ public class WebBackendConnectionsHandler {
         .getConnection(new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId()));
     final List<UUID> originalOperationIds = new ArrayList<>(connectionRead.getOperationIds());
     final List<UUID> operationIds = new ArrayList<>();
+
     for (var operationCreateOrUpdate : webBackendConnectionUpdate.getOperations()) {
       if (operationCreateOrUpdate.getOperationId() == null || !originalOperationIds.contains(operationCreateOrUpdate.getOperationId())) {
         final OperationCreate operationCreate = toOperationCreate(operationCreateOrUpdate);
@@ -296,11 +297,21 @@ public class WebBackendConnectionsHandler {
     return operationIds;
   }
 
+  private UUID getWorkspaceIdForConnection(UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException {
+    final UUID sourceId = connectionsHandler.getConnection(new ConnectionIdRequestBody().connectionId(connectionId)).getSourceId();
+    return getWorkspaceIdForSource(sourceId);
+  }
+
+  private UUID getWorkspaceIdForSource(UUID sourceId) throws JsonValidationException, ConfigNotFoundException, IOException {
+    return sourceHandler.getSource(new SourceIdRequestBody().sourceId(sourceId)).getWorkspaceId();
+  }
+
   @VisibleForTesting
   protected static OperationCreate toOperationCreate(WebBackendOperationCreateOrUpdate operationCreateOrUpdate) {
-    OperationCreate operationCreate = new OperationCreate();
+    final OperationCreate operationCreate = new OperationCreate();
 
     operationCreate.name(operationCreateOrUpdate.getName());
+    operationCreate.workspaceId(operationCreateOrUpdate.getWorkspaceId());
     operationCreate.operatorConfiguration(operationCreateOrUpdate.getOperatorConfiguration());
 
     return operationCreate;
@@ -308,7 +319,7 @@ public class WebBackendConnectionsHandler {
 
   @VisibleForTesting
   protected static OperationUpdate toOperationUpdate(WebBackendOperationCreateOrUpdate operationCreateOrUpdate) {
-    OperationUpdate operationUpdate = new OperationUpdate();
+    final OperationUpdate operationUpdate = new OperationUpdate();
 
     operationUpdate.operationId(operationCreateOrUpdate.getOperationId());
     operationUpdate.name(operationCreateOrUpdate.getName());
@@ -319,7 +330,7 @@ public class WebBackendConnectionsHandler {
 
   @VisibleForTesting
   protected static ConnectionCreate toConnectionCreate(WebBackendConnectionCreate webBackendConnectionCreate, List<UUID> operationIds) {
-    ConnectionCreate connectionCreate = new ConnectionCreate();
+    final ConnectionCreate connectionCreate = new ConnectionCreate();
 
     connectionCreate.name(webBackendConnectionCreate.getName());
     connectionCreate.namespaceDefinition(webBackendConnectionCreate.getNamespaceDefinition());
@@ -338,7 +349,7 @@ public class WebBackendConnectionsHandler {
 
   @VisibleForTesting
   protected static ConnectionUpdate toConnectionUpdate(WebBackendConnectionUpdate webBackendConnectionUpdate, List<UUID> operationIds) {
-    ConnectionUpdate connectionUpdate = new ConnectionUpdate();
+    final ConnectionUpdate connectionUpdate = new ConnectionUpdate();
 
     connectionUpdate.connectionId(webBackendConnectionUpdate.getConnectionId());
     connectionUpdate.namespaceDefinition(webBackendConnectionUpdate.getNamespaceDefinition());
