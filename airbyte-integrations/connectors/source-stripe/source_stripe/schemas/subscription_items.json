@@ -106,7 +106,7 @@
       "type": ["null", "string"]
     },
     "trial_start": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "created": {
       "type": ["null", "integer"]
@@ -121,11 +121,10 @@
       "type": ["null", "number"]
     },
     "current_period_start": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "start": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "discount": {
       "type": ["null", "object"],

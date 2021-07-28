@@ -72,7 +72,7 @@
       "type": ["null", "array"],
       "properties": {
         "end": {
-          "type": ["null", "number"]
+          "type": ["null", "integer"]
         },
         "coupon": {
           "type": ["null", "object"],
@@ -132,7 +132,7 @@
           "type": ["null", "string"]
         },
         "start": {
-          "type": ["null", "number"]
+          "type": ["null", "integer"]
         },
         "object": {
           "type": ["null", "string"]
@@ -208,9 +208,6 @@
     },
     "status": {
       "type": ["null", "string"]
-    },
-    "updated": {
-      "type": ["null", "number"]
     }
   }
 }

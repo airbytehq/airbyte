@@ -12,7 +12,7 @@
       "type": ["null", "number"]
     },
     "created": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "credit_note": {
       "type": ["null", "string"]
