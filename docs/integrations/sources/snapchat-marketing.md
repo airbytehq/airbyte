@@ -52,11 +52,12 @@ This Source is capable of syncing the following Streams:
 ### Setup guide
 
 To get the required credentials you need to set up a snapchat business account.
-Follow this guide to set up one: [Set up Snapchat Business account](https://businesshelp.snapchat.com/s/article/get-started?language=en_US)
-After that - [Activate Access to the Snapchat Marketing API](https://businesshelp.snapchat.com/s/article/api-apply?language=en_US)  
-Adding the OAuth2 app requires the `redirect_url` parameter. If you have the API endpoint that will handle next OAuth process - write it to this parameter. 
+Follow this guide to set up one: 
+* [Set up Snapchat Business account](https://businesshelp.snapchat.com/s/article/get-started?language=en_US)
+* After that - [Activate Access to the Snapchat Marketing API](https://businesshelp.snapchat.com/s/article/api-apply?language=en_US)  
+* Adding the OAuth2 app requires the `redirect_url` parameter. If you have the API endpoint that will handle next OAuth process - write it to this parameter. 
 If not - just use some valid url. Here's the discussion about it: [Snapchat Redirect URL - Clarity in documentation please](https://github.com/Snap-Kit/bitmoji-sample/issues/3) 
-On this step you will retrieve **Client ID** and **Client Secret** carefully save **Client Secret** - you cannot view it in UI, only by regenerating
+* On this step you will retrieve **Client ID** and **Client Secret** carefully save **Client Secret** - you cannot view it in UI, only by regenerating
 
 Snapchat uses OAuth2 authentication, so to get the refresh token the workflow in next: 
 1. Open the authorize link in a browser:

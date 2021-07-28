@@ -52,7 +52,7 @@ expected_adaccount_ids = [
 
 
 def test_get_depend_on_ids_none():
-    """ Testing the stream that has 1 level parent dependency (like Adaccounts has dependency) """
+    """ Testing the stream that has non parent dependency (like Organizations has no dependency) """
     # sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     depends_on_stream = None
     slice_key_name = None
@@ -61,7 +61,7 @@ def test_get_depend_on_ids_none():
 
 
 def test_get_depend_on_ids_1():
-    """ Testing the stream that has 1 level parent dependency (like Adaccounts has dependency) """
+    """ Testing the stream that has 1 level parent dependency (like Adaccounts has dependency on Organizations) """
     # sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     depends_on_stream = Organizations
     slice_key_name = "organization_id"
@@ -70,7 +70,10 @@ def test_get_depend_on_ids_1():
 
 
 def test_get_depend_on_ids_2():
-    """ Testing the that has 2 level parent dependency on organization ids """
+    """
+    Testing the that has 2 level parent dependency on organization ids
+    (like Media has dependency on Adaccounts and Adaccounts has dependency on Organizations)
+    """
     depends_on_stream = Adaccounts
     slice_key_name = "ad_account_id"
     ids = get_depend_on_ids(depends_on_stream, depends_on_stream_config, slice_key_name)

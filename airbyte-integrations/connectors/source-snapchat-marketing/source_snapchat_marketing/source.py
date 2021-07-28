@@ -189,6 +189,10 @@ class SnapchatMarketingStream(HttpStream, ABC):
         """
         json_response = response.json().get(self.response_root_name)
         for resp in json_response:
+            if self.response_item_name not in resp:
+                error_text = f"JSON field named '{self.response_item_name}' is absent in the response for {self.name} stream"
+                self.logger.error(error_text)
+                raise SnapchatMarketingException(error_text)
             yield resp.get(self.response_item_name)
 
 
@@ -353,7 +357,6 @@ class SnapchatAdsOauth2Authenticator(Oauth2Authenticator):
             response = requests.request(method="POST", url=self.token_refresh_endpoint, data=self.get_refresh_request_body())
             response_json = response.json()
             response.raise_for_status()
-            return response_json["access_token"], response_json["expires_in"]
         except requests.exceptions.RequestException as e:
             if response_json and "error" in response_json:
                 raise Exception(
@@ -362,6 +365,8 @@ class SnapchatAdsOauth2Authenticator(Oauth2Authenticator):
                     )
                 ) from e
             raise Exception(f"Error refreshing access token: {e}") from e
+        else:
+            return response_json["access_token"], response_json["expires_in"]
 
 
 # Source
