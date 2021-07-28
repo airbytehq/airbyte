@@ -108,14 +108,14 @@ jobs:
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+            > :white_check_mark: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Add Failure Comment
         if: github.event.inputs.comment-id && !success()
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            > :x: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+            > :x: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
   # In case of self-hosted EC2 errors, remove this block.
   stop-gke-kube-acceptance-test-runner:
     name: Stop GKE Kube Acceptance Test EC2 Runner
