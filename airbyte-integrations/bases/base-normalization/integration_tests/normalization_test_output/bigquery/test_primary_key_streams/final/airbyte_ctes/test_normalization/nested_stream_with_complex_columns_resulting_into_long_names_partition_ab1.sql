@@ -8,6 +8,7 @@ select
     _airbyte_nested_stream_with_complex_columns_resulting_into_long_names_hashid,
     json_extract_array(`partition`, "$['double_array_data']") as double_array_data,
     json_extract_array(`partition`, "$['DATA']") as DATA,
+    json_extract_array(`partition`, "$['column___with__quotes']") as column___with__quotes,
     _airbyte_emitted_at
 from `dataline-integration-testing`.test_normalization.`nested_stream_with_complex_columns_resulting_into_long_names`
 where `partition` is not null
