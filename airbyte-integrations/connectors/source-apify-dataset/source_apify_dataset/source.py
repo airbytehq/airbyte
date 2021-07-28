@@ -127,7 +127,7 @@ class SourceApifyDataset(Source):
 
         apify_token = config["apifyToken"]
         dataset_id = config["datasetId"]
-        clean = config["clean"]
+        clean = config.get("clean", False)
 
         client = ApifyClient(apify_token)
         dataset_client = client.dataset(dataset_id)
@@ -135,7 +135,7 @@ class SourceApifyDataset(Source):
         # Get total number of items in dataset. This will be used in pagination
         dataset = dataset_client.get()
         num_items = dataset["itemCount"]
-        
+
         with concurrent.futures.ThreadPoolExecutor() as executor:
             futures = []
             for offset in range(0, num_items, BATCH_SIZE):
