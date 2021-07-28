@@ -50,3 +50,4 @@ redirects:
   tutorials/tutorials/adding-incremental-sync: ./contributing-to-airbyte/building-new-connector/tutorials/adding-incremental-sync.md
   tutorials/tutorials/building-a-python-source: ./contributing-to-airbyte/building-new-connector/tutorials/building-a-python-source.md
   upgrading-airbyte: ./operator-guides/upgrading-airbyte.md
+  tutorials/upgrading-airbyte: ./operator-guides/upgrading-airbyte.md
