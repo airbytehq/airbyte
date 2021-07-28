@@ -8,7 +8,7 @@ This source uses the fully open [PokéAPI](https://pokeapi.co/docs/v2#info) to s
 
 ### Output schema
 
-Currently, only one output stream is available from this source, which is the Pokémon output stream. This schema is defined [here](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-pokeapi/schemas/pokemon.json).
+Currently, only one output stream is available from this source, which is the Pokémon output stream. This schema is defined [here](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-pokeapi/source_pokeapi/schemas/pokemon.json).
 
 ### Data type mapping
 
