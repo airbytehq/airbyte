@@ -25,130 +25,190 @@
 import json
 from typing import Any, Dict, Mapping
 
+
 import pendulum
 from source_zuora.zuora_auth import ZuoraAuthenticator
-from source_zuora.zuora_client import ZoqlExportClient
+from source_zuora.source import ( 
+    ZuoraObjectsBase,
+    ZuoraListObjects, 
+    ZuoraDescribeObject, 
+    ZuoraSubmitJob, 
+    ZuoraJobStatusCheck, 
+    ZuoraGetJobResult,
+)
 
 
-def _config() -> Mapping[str, Any]:
+# Method to get url_base from config input
+def get_url_base(is_sandbox: bool = False) -> str:
+    url_base = "https://rest.zuora.com"
+    if is_sandbox:
+        url_base = "https://rest.apisandbox.zuora.com"
+    return url_base
+
+# Method to read the config from test/input
+def get_config() -> Mapping[str, Any]:
     """
     Get the config from /test_input
     """
     with open("secrets/config.json", "r") as f:
         return json.loads(f.read())
 
+# creates client with config
+def client(config: Dict = get_config()):
+    url_base = get_url_base(config['is_sandbox'])
+    authenticator = ZuoraAuthenticator(
+        token_refresh_endpoint = f"{url_base}/oauth/token",
+        client_id = config["client_id"],
+        client_secret = config["client_secret"], 
+        refresh_token = None, # Zuora doesn't have Refresh Token parameter.
+    )
+    config["authenticator"] = authenticator
+    config["url_base"] = url_base
+    return config
 
-class TestClient:
+
+class TestClass:
     """
-    Make instance of the ZoqlExportClient using input config.json
-    """
-
-    def client(config: Dict = _config()):
-        auth_client = ZuoraAuthenticator(config["is_sandbox"])
-        authenticator = auth_client.generateToken(config["client_id"], config["client_secret"]).get("header")
-        zuora_client = ZoqlExportClient(authenticator=authenticator, url_base=auth_client.endpoint, **config)
-        return zuora_client
-
-
-# Output example from ZoqlExportClient.zuora_get_json_schema
-zuora_schema = [
-    {"field": "field_1", "type": "date"},
-    {"field": "field_2", "type": "varchar"},
-    {"field": "field_3", "type": "decimal(22,9)"},
-    {"field": "field_4", "type": "timestamp with time zone"},
-    {"field": "field_5", "type": "integer"},
-    {"field": "field_6", "type": "bigint"},
-    {"field": "field_7", "type": "zoql"},
-    {"field": "field_8", "type": "xml"},
-    {"field": "field_9", "type": "blob"},
-    {"field": "field_10", "type": "array"},
-    {"field": "field_11", "type": "list"},
-]
-
-# Output expected from ZoqlExportClient.convert_schema_types
-json_schema = {
-    "field_1": {"type": ["string", "null"]},
-    "field_2": {"type": ["string", "null"]},
-    "field_3": {"type": ["number", "null"]},
-    "field_4": {"type": ["string", "null"]},
-    "field_5": {"type": ["number", "null"]},
-    "field_6": {"type": ["number", "null"]},
-    "field_7": {"type": ["object", "null"]},
-    "field_8": {"type": ["object", "null"]},
-    "field_9": {"type": ["object", "null"]},
-    "field_10": {"type": ["array", "null"]},
-    "field_11": {"type": ["array", "null"]},
-}
-
-# Define Test stream, test_date_field (cursor_field), test_field for check
-test_stream = "account"
-test_date_field = "updateddate"
-test_field = "id"
-
-
-def test_convert_to_schema():
-    """
-    Test some popular Zuora Data Types to be converted to JSONSchema types.
-    """
-    converted_schema = TestClient.client().convert_schema_types(schema=zuora_schema)
-    assert converted_schema == json_schema
-
-
-def test_zuora_list_streams():
-    """
-    Test getting list of Zuora objects (streams) from account
-    :: the ACCOUNT object is standard so it should be defenetly in the output
-    """
-    zuora_streams_list = TestClient.client().zuora_list_streams()
-    assert True if test_stream in zuora_streams_list else False
-
-
-def test_zuora_get_json_schema():
-    """
-    Test getting JSONSchema for STREAM
-    """
-    expect_test_field_json_schema_type = {"type": ["string", "null"]}
-    json_schema = TestClient.client().zuora_get_json_schema(test_stream)
-    assert True if json_schema.get(test_field) == expect_test_field_json_schema_type else False
-
-
-def test_to_datetime_str():
-    """
-    Test of correct conversion from datetime object to formated datetime string
-    The output from this method should be formated as follows:
-    :: "YYYY-mm-dd HH:mm:ss Z" or "%Y-%m-%d %H:%M:%S %Z"
-    :: example: '2021-07-15 07:45:55 -07:00'
-    """
-    input_datetime = pendulum.now().astimezone()
-    formated_datetime_str = input_datetime.strftime("%Y-%m-%d %H:%M:%S %Z")
-    converted_datetime_str = TestClient.client().to_datetime_str(input_datetime)
-    assert converted_datetime_str == formated_datetime_str
-
-
-def test_make_query_select():
-
-    """
-    Test to check make_query method works correctly, building the 'select' statement for outgoing data job
+    This test class provides set of tests for custom classes of the Airbyte Zuora connector.
+    The test is based on input so feel free to change the input parameters.
     """
 
-    test_start_date = TestClient.client().to_datetime_str(pendulum.yesterday().astimezone())
-    test_end_date = TestClient.client().to_datetime_str(pendulum.today().astimezone())
+    # create client
+    config = client()
 
-    test_args = {
-        "q_type": "select",
-        "obj": test_stream,
-        "date_field": test_date_field,
-        "start_date": test_start_date,
-        "end_date": test_end_date,
-    }
+    # Define Test input
+    test_stream = "account"
+    test_cursor_field = "updateddate"
+    test_schema_fields = ["id", "creditbalance", "allowinvoiceedit"]
+    test_fields_schema_types = {
+        "id": {'type': ['string', 'null']},
+        "creditbalance" : {'type': ['number', 'null']},
+        "allowinvoiceedit": {'type': ['boolean', 'null']},
+        }
 
-    test_expected_query_output = {
-        "compression": "NONE",
-        "output": {"target": "S3"},
-        "outputFormat": "JSON",
-        "query": f"select * from {test_stream} where {test_date_field} >= TIMESTAMP '{test_start_date}' and {test_date_field} <= TIMESTAMP '{test_end_date}'",
-    }
+    def test_list_all_zuora_objects(self):
+        """
+        Test retrieves all the objects (streams) available from Zuora Account and checks if test_stream is in the list.
+        """
+        zuora_objects_list = ZuoraListObjects(self.config).read_records(sync_mode=None)
+        assert self.test_stream in zuora_objects_list
 
-    test_query = TestClient.client().make_query(**test_args)
-    assert test_query == test_expected_query_output
+    def test_get_json_schema(self):
+        """
+        Test of getting schema from Zuora endpoint, check converted JsonSchema Types are correct
+        """
+        schema = list(ZuoraDescribeObject(self.test_stream, config = self.config).read_records(sync_mode=None))
+        schema = {key: d[key] for d in schema for key in d}
 
+        # Filter the schema up to the test_schema_fields
+        output_converted_schema_types = {key: value for key, value in schema.items() if key in self.test_schema_fields}
+
+        # Return True if all is correct
+        assert self.test_fields_schema_types == output_converted_schema_types
+
+    def test_to_datetime_str(self):
+        """
+        Test converting ZuoraObjectsBase.to_datetime_str works correctly
+        """
+        # Check input in different format
+        test_date = pendulum.parse(self.config["start_date"]).astimezone()
+        is_correct_input = True if test_date.strftime("%Y-%m-%dT%H:%M:%S%Z") else False
+
+        # Check output in different format
+        test_output = ZuoraObjectsBase.to_datetime_str(test_date)
+        is_correct_output = True if pendulum.from_format(test_output, "YYYY-MM-DD HH:mm:ss Z") else False
+
+        # If both are correct return True
+        assert is_correct_input and is_correct_output
+
+    def test_query(self):
+        """
+        The ZuoraObjectsBase.query() works with date_slices as input, we test if date_slices are passed correctly
+        
+        """
+        start_date = ZuoraObjectsBase.to_datetime_str(pendulum.parse(self.config["start_date"]).astimezone())
+        end_date = ZuoraObjectsBase.to_datetime_str(pendulum.now().astimezone())
+        test_date_slice = {"start_date": start_date, "end_date": end_date}
+
+        # Making example query using input
+        example_query = f"""
+            select * from {self.test_stream} where 
+            {self.test_cursor_field} >= TIMESTAMP '{start_date}' and 
+            {self.test_cursor_field} <= TIMESTAMP '{end_date}'
+            """
+
+        # Making test query using query() method
+        test_query = ZuoraObjectsBase.query(
+            self, stream_name=self.test_stream, cursor_field=self.test_cursor_field, date_slice=test_date_slice
+            )
+
+        # If the query is correctly build using connector class return True
+        assert example_query == test_query
+
+    # TEST 5
+    def test_submit_job(self):
+        """
+        Test submits the job to the server and returns the job_id as confimation that the job was submited
+        """
+
+        # Prepare date_slice
+        start_date = ZuoraObjectsBase.to_datetime_str(pendulum.parse(self.config["start_date"]).astimezone())
+        end_date = ZuoraObjectsBase.to_datetime_str(pendulum.now().astimezone())
+        test_date_slice = {"start_date": start_date, "end_date": end_date}
+
+        # Submitting the job to the server
+        job_id = ZuoraSubmitJob(ZuoraObjectsBase.query(
+            self, stream_name=self.test_stream, cursor_field=self.test_cursor_field, date_slice=test_date_slice
+            ), self.config).read_records(sync_mode=None)
+
+        # Return True if we have job_id
+        assert len(list(job_id)) > 0
+    
+    # TEST 6
+    def test_check_job_status(self):
+        """
+        Test checks submited job for status, if status is "completed" job_data_url will contain URL for jsonl dataFile,
+        Otherwise, if the status of the job is in ["failed", "canceled", "aborted"] it will raise the error message to the output,
+        describing what type of error occured.
+        """
+
+        # Prepare date_slice
+        start_date = ZuoraObjectsBase.to_datetime_str(pendulum.parse(self.config["start_date"]).astimezone())
+        end_date = ZuoraObjectsBase.to_datetime_str(pendulum.now().astimezone())
+        test_date_slice = {"start_date": start_date, "end_date": end_date}
+
+        # Submiting a job first
+        job_id = ZuoraSubmitJob(ZuoraObjectsBase.query(
+            self, stream_name=self.test_stream, cursor_field=self.test_cursor_field, date_slice=test_date_slice
+            ), self.config).read_records(sync_mode=None)
+        
+        # checking iteratively if the job is completed, then return the URL with jsonl datafile
+        job_data_url = ZuoraJobStatusCheck(list(job_id)[0], self.config).read_records(sync_mode=None)
+        
+        # Return True if there is a URL leading to a file
+        assert "https://" in list(job_data_url)[0]
+
+    # TEST 7
+    def test_get_job_result(self):
+        """
+        Test reads the dataFile from URL of submited and successfully completed job.
+        """
+
+        # Prepare date_slice
+        start_date = ZuoraObjectsBase.to_datetime_str(pendulum.parse(self.config["start_date"]).astimezone())
+        end_date = ZuoraObjectsBase.to_datetime_str(pendulum.now().astimezone())
+        test_date_slice = {"start_date": start_date, "end_date": end_date}
+
+        # Submiting a job first
+        job_id = ZuoraSubmitJob(ZuoraObjectsBase.query(
+            self, stream_name=self.test_stream, cursor_field=self.test_cursor_field, date_slice=test_date_slice)
+            , self.config).read_records(sync_mode=None)
+        
+        # checking iteratively if the job is completed, then return the URL with jsonl datafile
+        job_data_url = ZuoraJobStatusCheck(list(job_id)[0], self.config).read_records(sync_mode=None)
+        
+        # read records from completed subtmited job
+        job_result = ZuoraGetJobResult(list(job_data_url)[0], self.config).read_records(sync_mode=None)
+        
+        # Return True if we have successfully read records from completed job
+        assert len(list(job_result)) > 0

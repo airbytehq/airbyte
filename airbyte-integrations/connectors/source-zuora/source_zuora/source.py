@@ -103,7 +103,7 @@ class ZuoraBase(ZuoraStream):
 
         """
         
-        job_id: List[str] = ZuoraSubmitJob(self.query(date_slice=date_slice), config).read_records(sync_mode=None)
+        job_id: List[str] = ZuoraSubmitJob(self.query(stream_name=self.name, cursor_field=self.cursor_field, date_slice=date_slice), config).read_records(sync_mode=None)
         job_data_url: List = ZuoraJobStatusCheck(list(job_id)[0], config).read_records(sync_mode=None)
         yield from ZuoraGetJobResult(list(job_data_url)[0], config).read_records(sync_mode=None)
 
@@ -154,11 +154,11 @@ class ZuoraObjectsBase(ZuoraBase):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
-    def query(self, date_slice: Dict) -> str:
+    def query(self, stream_name: str, cursor_field: str, date_slice: Dict) -> str:
         return f"""
-            select * from {self.name} where 
-            {self.cursor_field} >= TIMESTAMP '{date_slice.get('start_date')}' and 
-            {self.cursor_field} <= TIMESTAMP '{date_slice.get('end_date')}'
+            select * from {stream_name} where 
+            {cursor_field} >= TIMESTAMP '{date_slice.get('start_date')}' and 
+            {cursor_field} <= TIMESTAMP '{date_slice.get('end_date')}'
             """
 
     @staticmethod
@@ -276,7 +276,7 @@ class ZuoraSubmitJob(ZuoraStream):
         params["query"] = self.query
         return params
 
-    def parse_response(self,response: requests.Response,**kwargs) -> List[str]:
+    def parse_response(self, response: requests.Response, **kwargs) -> List[str]:
 
         """ 
         Response example:
