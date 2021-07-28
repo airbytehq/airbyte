@@ -40,7 +40,7 @@ import io.airbyte.config.persistence.ConfigPersistenceBuilder;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
 import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
@@ -188,11 +188,11 @@ public class ServerApp implements ServerRunnable {
     setCustomerIdIfNotSet(configRepository);
 
     LOGGER.info("Creating Scheduler persistence...");
-    final Database jobDatabase = Databases.createPostgresDatabaseWithRetry(
+    final Database jobDatabase = new JobsDatabaseInstance(
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
-        configs.getDatabaseUrl(),
-        Databases.IS_JOB_DATABASE_READY);
+        configs.getDatabaseUrl())
+            .getAndInitialize();
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
 
     createDeploymentIfNoneExists(jobPersistence);
@@ -262,8 +262,11 @@ public class ServerApp implements ServerRunnable {
     LOGGER.info("Running Automatic Migration from version : " + airbyteDatabaseVersion + " to version : " + airbyteVersion);
     final Path latestSeedsPath = Path.of(System.getProperty("user.dir")).resolve("latest_seeds");
     LOGGER.info("Last seeds dir: {}", latestSeedsPath);
-    try (RunMigration runMigration = new RunMigration(airbyteDatabaseVersion,
-        jobPersistence, configRepository, airbyteVersion, latestSeedsPath)) {
+    try (final RunMigration runMigration = new RunMigration(
+        jobPersistence,
+        configRepository,
+        airbyteVersion,
+        latestSeedsPath)) {
       runMigration.run();
     } catch (Exception e) {
       LOGGER.error("Automatic Migration failed ", e);

@@ -49,7 +49,6 @@ import io.airbyte.migrate.Migrations;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.RunMigration;
-import io.airbyte.server.converters.DatabaseArchiver;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
@@ -293,7 +292,6 @@ public class RunMigrationTest {
 
   private void runMigration(JobPersistence jobPersistence, Path configRoot) throws Exception {
     try (RunMigration runMigration = new RunMigration(
-        INITIAL_VERSION,
         jobPersistence,
         new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot)),
         TARGET_VERSION,

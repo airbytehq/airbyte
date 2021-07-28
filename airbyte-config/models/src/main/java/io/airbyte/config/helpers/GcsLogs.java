@@ -27,6 +27,7 @@ package io.airbyte.config.helpers;
 import com.google.api.client.util.Preconditions;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.Blob.BlobSourceOption;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.collect.Lists;
@@ -113,6 +114,19 @@ public class GcsLogs implements CloudLogs {
 
     LOGGER.debug("Done retrieving GCS logs: {}.", logPath);
     return lines;
+  }
+
+  @Override
+  public void deleteLogs(LogConfigs configs, String logPath) {
+    LOGGER.debug("Retrieving logs from GCS path: {}", logPath);
+    createGcsClientIfNotExists(configs);
+
+    LOGGER.debug("Start GCS list and delete request.");
+    Page<Blob> blobs = GCS.list(configs.getGcpStorageBucket(), Storage.BlobListOption.prefix(logPath));
+    for (Blob blob : blobs.iterateAll()) {
+      blob.delete(BlobSourceOption.generationMatch());
+    }
+    LOGGER.debug("Finished all deletes.");
   }
 
   private static void createGcsClientIfNotExists(LogConfigs configs) {
