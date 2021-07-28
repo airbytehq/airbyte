@@ -1,5 +1,5 @@
 {
-  "dataset_name": "test",
+  "dataset": "test",
   "provider": {
       "storage": "S3",
       "bucket": "THIS BUCKET DOESN'T EXIST",

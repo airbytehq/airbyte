@@ -133,7 +133,7 @@ class AbstractTestIncrementalFileStream(ABC):
 
         if not fails:
             print(str_user_schema)
-            fs = self.stream_class("dataset_name", provider, format, path_patterns, str_user_schema)
+            fs = self.stream_class("dataset", provider, format, path_patterns, str_user_schema)
             LOGGER.info(f"Testing stream_records() in SyncMode:{sync_mode.value}")
 
             assert fs._get_schema_map() == full_expected_schema  # check we return correct schema from get_json_schema()
@@ -173,7 +173,7 @@ class AbstractTestIncrementalFileStream(ABC):
 
         else:
             with pytest.raises(Exception) as e_info:
-                fs = self.stream_class("dataset_name", provider, format, path_patterns, str_user_schema)
+                fs = self.stream_class("dataset", provider, format, path_patterns, str_user_schema)
                 LOGGER.info(f"Testing EXPECTED FAILURE stream_records() in SyncMode:{sync_mode.value}")
 
                 fs.get_json_schema()

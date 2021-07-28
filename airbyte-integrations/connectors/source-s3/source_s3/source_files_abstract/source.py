@@ -28,17 +28,34 @@ from fnmatch import fnmatch
 from traceback import format_exc
 from typing import Any, List, Mapping, Optional, Tuple
 
+from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
 
 class SourceFilesAbstract(AbstractSource, ABC):
+
     @property
     @abstractmethod
     def stream_class(self) -> type:
         """
         :return: reference to the relevant FileStream class e.g. IncrementalFileStreamS3
+        """
+
+    @property
+    @abstractmethod
+    def spec_class(self) -> type:
+        """
+        :return: reference to the relevant pydantic spec class e.g. SourceS3Spec
+        """
+
+    @property
+    @abstractmethod
+    def documentation_url(self) -> str:
+        """
+        :return: link to docs page for this source e.g. "https://docs.airbyte.io/integrations/sources/s3"
         """
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
@@ -80,3 +97,23 @@ class SourceFilesAbstract(AbstractSource, ABC):
         :return: A list of the streams in this source connector.
         """
         return [self.stream_class(**config)]
+
+    def spec(self, *args, **kwargs) -> ConnectorSpecification:
+        """
+        Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username and password)
+        required to run this integration.
+        """
+        # make dummy instance of stream_class in order to get 'supports_incremental' property
+        incremental = self.stream_class(dataset="", provider="", format="", path_patterns="").supports_incremental
+
+        supported_dest_sync_modes = [DestinationSyncMode.overwrite] 
+        if incremental:
+            supported_dest_sync_modes.extend([DestinationSyncMode.append, DestinationSyncMode.append_dedup])
+
+        return ConnectorSpecification(
+            documentationUrl=self.documentation_url,
+            changelogUrl=self.documentation_url,
+            supportsIncremental=incremental,
+            supported_destination_sync_modes=supported_dest_sync_modes,
+            connectionSpecification=self.spec_class.schema(),
+        )
