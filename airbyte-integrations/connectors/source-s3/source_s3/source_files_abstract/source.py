@@ -24,7 +24,6 @@
 
 
 from abc import ABC, abstractmethod
-from fnmatch import fnmatch
 from traceback import format_exc
 from typing import Any, List, Mapping, Optional, Tuple
 
@@ -33,7 +32,7 @@ from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from wcmatch.glob import EXTGLOB, GLOBSTAR, SPLIT, globmatch
+from wcmatch.glob import GLOBSTAR, SPLIT, globmatch
 
 # ideas on extending this to handle multiple streams:
 # - "dataset" is currently the name of the single table/stream. We could allow comma-split table names in this string for many streams.
@@ -84,7 +83,7 @@ class SourceFilesAbstract(AbstractSource, ABC):
             for filepath in self.stream_class.filepath_iterator(logger, config.get("provider")):
                 found_a_file = True
                 # TODO: will need to split config.get("path_pattern") up by stream once supporting multiple streams
-                globmatch(filepath, config.get("path_pattern"), flags=GLOBSTAR | SPLIT) # test that matching on the pattern doesn't error
+                globmatch(filepath, config.get("path_pattern"), flags=GLOBSTAR | SPLIT)  # test that matching on the pattern doesn't error
                 break  # just need first file here to test connection and valid patterns
 
         except Exception as e:

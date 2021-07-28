@@ -28,7 +28,6 @@ import json
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from datetime import datetime
-from wcmatch.glob import SPLIT, globmatch, GLOBSTAR
 from operator import itemgetter
 from traceback import format_exc
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -36,6 +35,7 @@ from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optio
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.streams import Stream
+from wcmatch.glob import GLOBSTAR, SPLIT, globmatch
 
 from .fileformatparser import CsvParser
 from .storagefile import StorageFile
