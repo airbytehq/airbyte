@@ -32,6 +32,7 @@
     * [Appstore](integrations/sources/appstore.md)
     * [Asana](integrations/sources/asana.md)
     * [AWS CloudTrail](integrations/sources/aws-cloudtrail.md)
+    * [Bamboo HR](integrations/sources/bamboo-hr.md)
     * [Braintree](integrations/sources/braintree.md)
     * [BigQuery](integrations/sources/bigquery.md)
     * [Cart](integrations/sources/cart.md)

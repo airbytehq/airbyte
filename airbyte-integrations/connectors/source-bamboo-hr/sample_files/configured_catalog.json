@@ -1,0 +1,843 @@
+{
+    "streams": [
+        {
+            "stream": {
+                "name": "employee",
+                "json_schema": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "properties": {
+                        "401(k) - Company pays": {
+                            "type": "text"
+                        },
+                        "401(k) - Company pays - Currency code": {
+                            "type": "new_benefit"
+                        },
+                        "401(k) - Coverage": {
+                            "type": "employee_new_benefit_coverage_type"
+                        },
+                        "401(k) - Effective date": {
+                            "type": "date"
+                        },
+                        "401(k) - Eligibility date": {
+                            "type": "date"
+                        },
+                        "401(k) - Employee pays": {
+                            "type": "text"
+                        },
+                        "401(k) - Employee pays - Currency code": {
+                            "type": "new_benefit"
+                        },
+                        "401(k) - Status": {
+                            "type": "new_benefit_status"
+                        },
+                        "Accrual Level Start Date": {
+                            "type": "date"
+                        },
+                        "address1": {
+                            "type": "text"
+                        },
+                        "address2": {
+                            "type": "text"
+                        },
+                        "allergies": {
+                            "type": "text"
+                        },
+                        "Asset Category": {
+                            "type": "list"
+                        },
+                        "Asset Description": {
+                            "type": "text"
+                        },
+                        "BambooHR Advantage Package Demo Video - Completed": {
+                            "type": "date"
+                        },
+                        "BambooHR Advantage Package Demo Video - Due Date": {
+                            "type": "date"
+                        },
+                        "BambooHR Advantage Package Demo Video - Expires": {
+                            "type": "date"
+                        },
+                        "Benefit Groups": {
+                            "type": "benefit_group"
+                        },
+                        "Benefit History": {
+                            "type": "benefit_history"
+                        },
+                        "Bereavement - Accrual Start Date": {
+                            "type": "time_off_type"
+                        },
+                        "Bereavement - Adjustments (YTD)": {
+                            "type": "int"
+                        },
+                        "Bereavement - Available Balance": {
+                            "type": "int"
+                        },
+                        "Bereavement - Current balance": {
+                            "type": "time_off_type"
+                        },
+                        "Bereavement - Days scheduled": {
+                            "type": "int"
+                        },
+                        "Bereavement - Days taken (YTD)": {
+                            "type": "int"
+                        },
+                        "Bereavement - Policy": {
+                            "type": "text"
+                        },
+                        "Bereavement - Policy Assigned": {
+                            "type": "time_off_type_exists"
+                        },
+                        "dateOfBirth": {
+                            "type": "date"
+                        },
+                        "CA Health Insurance - Company pays": {
+                            "type": "text"
+                        },
+                        "CA Health Insurance - Company pays - Currency code": {
+                            "type": "new_benefit"
+                        },
+                        "CA Health Insurance - Coverage": {
+                            "type": "employee_new_benefit_coverage_type"
+                        },
+                        "CA Health Insurance - Effective date": {
+                            "type": "date"
+                        },
+                        "CA Health Insurance - Eligibility date": {
+                            "type": "date"
+                        },
+                        "CA Health Insurance - Employee pays": {
+                            "type": "text"
+                        },
+                        "CA Health Insurance - Employee pays - Currency code": {
+                            "type": "new_benefit"
+                        },
+                        "CA Health Insurance - Status": {
+                            "type": "new_benefit_status"
+                        },
+                        "city": {
+                            "type": "text"
+                        },
+                        "College/Institution": {
+                            "type": "text"
+                        },
+                        "Comp/In Lieu Time - Accrual Start Date": {
+                            "type": "time_off_type"
+                        },
+                        "Comp/In Lieu Time - Adjustments (YTD)": {
+                            "type": "int"
+                        },
+                        "Comp/In Lieu Time - Available Balance": {
+                            "type": "int"
+                        },
+                        "Comp/In Lieu Time - Current balance": {
+                            "type": "time_off_type"
+                        },
+                        "Comp/In Lieu Time - Hours scheduled": {
+                            "type": "int"
+                        },
+                        "Comp/In Lieu Time - Hours taken (YTD)": {
+                            "type": "int"
+                        },
+                        "Comp/In Lieu Time - Policy": {
+                            "type": "text"
+                        },
+                        "Comp/In Lieu Time - Policy Assigned": {
+                            "type": "time_off_type_exists"
+                        },
+                        "Company Handbook Quiz - Completed": {
+                            "type": "date"
+                        },
+                        "Company Handbook Quiz - Due Date": {
+                            "type": "date"
+                        },
+                        "Company Handbook Quiz - Expires": {
+                            "type": "date"
+                        },
+                        "payRateEffectiveDate": {
+                            "type": "date"
+                        },
+                        "payChangeReason": {
+                            "type": "list"
+                        },
+                        "Compensation comments": {
+                            "type": "textarea"
+                        },
+                        "Completed - Category": {
+                            "type": "list"
+                        },
+                        "Completed - Completed": {
+                            "type": "date"
+                        },
+                        "Completed - Cost": {
+                            "type": "currency"
+                        },
+                        "Completed - Credits": {
+                            "type": "int"
+                        },
+                        "Completed - Hours": {
+                            "type": "int"
+                        },
+                        "Completed - Instructor": {
+                            "type": "text"
+                        },
+                        "Completed - Notes": {
+                            "type": "text"
+                        },
+                        "Completed - Title": {
+                            "type": "training_type"
+                        },
+                        "country": {
+                            "type": "country"
+                        },
+                        "COVID-19 Related Absence - Accrual Start Date": {
+                            "type": "time_off_type"
+                        },
+                        "COVID-19 Related Absence - Adjustments (YTD)": {
+                            "type": "int"
+                        },
+                        "COVID-19 Related Absence - Available Balance": {
+                            "type": "int"
+                        },
+                        "COVID-19 Related Absence - Current balance": {
+                            "type": "time_off_type"
+                        },
+                        "COVID-19 Related Absence - Hours scheduled": {
+                            "type": "int"
+                        },
+                        "COVID-19 Related Absence - Hours taken (YTD)": {
+                            "type": "int"
+                        },
+                        "COVID-19 Related Absence - Policy": {
+                            "type": "text"
+                        },
+                        "COVID-19 Related Absence - Policy Assigned": {
+                            "type": "time_off_type_exists"
+                        },
+                        "CPR - Completed": {
+                            "type": "date"
+                        },
+                        "CPR - Due Date": {
+                            "type": "date"
+                        },
+                        "CPR - Expires": {
+                            "type": "date"
+                        },
+                        "Date Assigned": {
+                            "type": "date"
+                        },
+                        "Date Returned": {
+                            "type": "date"
+                        },
+                        "Degree": {
+                            "type": "list"
+                        },
+                        "Dental Insurance - Company pays": {
+                            "type": "text"
+                        },
+                        "Dental Insurance - Company pays - Currency code": {
+                            "type": "new_benefit"
+                        },
+                        "Dental Insurance - Coverage": {
+                            "type": "employee_new_benefit_coverage_type"
+                        },
+                        "Dental Insurance - Effective date": {
+                            "type": "date"
+                        },
+                        "Dental Insurance - Eligibility date": {
+                            "type": "date"
+                        },
+                        "Dental Insurance - Employee pays": {
+                            "type": "text"
+                        },
+                        "Dental Insurance - Employee pays - Currency code": {
+                            "type": "new_benefit"
+                        },
+                        "Dental Insurance - Status": {
+                            "type": "new_benefit_status"
+                        },
+                        "department": {
+                            "type": "list"
+                        },
+                        "Dependent Birth Date": {
+                            "type": "date"
+                        },
+                        "Dependent City": {
+                            "type": "text"
+                        },
+                        "Dependent Country": {
+                            "type": "country"
+                        },
+                        "Dependent First Name": {
+                            "type": "text"
+                        },
+                        "Dependent Full-Time Student": {
+                            "type": "checkbox"
+                        },
+                        "Dependent Gender": {
+                            "type": "gender"
+                        },
+                        "Dependent Home Phone": {
+                            "type": "phone"
+                        },
+                        "Dependent Last Name": {
+                            "type": "text"
+                        },
+                        "Dependent Middle Name": {
+                            "type": "text"
+                        },
+                        "Dependent Relationship": {
+                            "type": "relationship"
+                        },
+                        "Dependent SSN": {
+                            "type": "ssn"
+                        },
+                        "Dependent State": {
+                            "type": "state"
+                        },
+                        "Dependent Street 1": {
+                            "type": "text"
+                        },
+                        "Dependent Street 2": {
+                            "type": "text"
+                        },
+                        "Dependent US Citizen": {
+                            "type": "checkbox"
+                        },
+                        "Dependent ZIP": {
+                            "type": "text"
+                        },
+                        "dietaryRestrictions": {
+                            "type": "textarea"
+                        },
+                        "Disability - Company pays": {
+                            "type": "text"
+                        },
+                        "Disability - Company pays - Currency code": {
+                            "type": "new_benefit"
+                        },
+                        "Disability - Coverage": {
+                            "type": "employee_new_benefit_coverage_type"
+                        },
+                        "Disability - Effective date": {
+                            "type": "date"
+                        },
+                        "Disability - Eligibility date": {
+                            "type": "date"
+                        },
+                        "Disability - Employee pays": {
+                            "type": "text"
+                        },
+                        "Disability - Employee pays - Currency code": {
+                            "type": "new_benefit"
+                        },
+                        "Disability - Status": {
+                            "type": "new_benefit_status"
+                        },
+                        "division": {
+                            "type": "list"
+                        },
+                        "eeo": {
+                            "type": "list"
+                        },
+                        "Eligible For Re-hire": {
+                            "type": "list"
+                        },
+                        "Emergency Contact City": {
+                            "type": "text"
+                        },
+                        "Emergency Contact Country": {
+                            "type": "country"
+                        },
+                        "Emergency Contact Email": {
+                            "type": "email"
+                        },
+                        "Emergency Contact Home Phone": {
+                            "type": "phone"
+                        },
+                        "Emergency Contact Mobile Phone": {
+                            "type": "phone"
+                        },
+                        "Emergency Contact Name": {
+                            "type": "text"
+                        },
+                        "Emergency Contact Primary": {
+                            "type": "checkbox"
+                        },
+                        "Emergency Contact Relationship": {
+                            "type": "list"
+                        },
+                        "Emergency Contacts": {
+                            "type": "employee_contacts"
+                        },
+                        "Emergency Contact State": {
+                            "type": "state"
+                        },
+                        "Emergency Contact Street 1": {
+                            "type": "text"
+                        },
+                        "Emergency Contact Street 2": {
+                            "type": "text"
+                        },
+                        "Emergency Contact Work Ext": {
+                            "type": "text"
+                        },
+                        "Emergency Contact Work Phone": {
+                            "type": "phone"
+                        },
+                        "Emergency Contact ZIP Code": {
+                            "type": "text"
+                        },
+                        "employeeNumber": {
+                            "type": "employee_number"
+                        },
+                        "Employee Education: End Date": {
+                            "type": "date"
+                        },
+                        "Employee Education: Start Date": {
+                            "type": "date"
+                        },
+                        "employmentHistoryStatus": {
+                            "type": "list"
+                        },
+                        "acaStatus": {
+                            "type": "aca_status"
+                        },
+                        "employeeStatusDate": {
+                            "type": "date"
+                        },
+                        "Employment status comments": {
+                            "type": "textarea"
+                        },
+                        "ethnicity": {
+                            "type": "list"
+                        },
+                        "Expiration": {
+                            "type": "date"
+                        },
+                        "facebook": {
+                            "type": "contact_url"
+                        },
+                        "First Aid - Completed": {
+                            "type": "date"
+                        },
+                        "First Aid - Due Date": {
+                            "type": "date"
+                        },
+                        "First Aid - Expires": {
+                            "type": "date"
+                        },
+                        "firstName": {
+                            "type": "text"
+                        },
+                        "FMLA - Accrual Start Date": {
+                            "type": "time_off_type"
+                        },
+                        "FMLA - Adjustments (YTD)": {
+                            "type": "int"
+                        },
+                        "FMLA - Available Balance": {
+                            "type": "int"
+                        },
+                        "FMLA - Current balance": {
+                            "type": "time_off_type"
+                        },
+                        "FMLA - Hours scheduled": {
+                            "type": "int"
+                        },
+                        "FMLA - Hours taken (YTD)": {
+                            "type": "int"
+                        },
+                        "FMLA - Policy": {
+                            "type": "text"
+                        },
+                        "FMLA - Policy Assigned": {
+                            "type": "time_off_type_exists"
+                        },
+                        "gender": {
+                            "type": "gender"
+                        },
+                        "Getting Started in BambooHR - Completed": {
+                            "type": "date"
+                        },
+                        "Getting Started in BambooHR - Due Date": {
+                            "type": "date"
+                        },
+                        "Getting Started in BambooHR - Expires": {
+                            "type": "date"
+                        },
+                        "GPA": {
+                            "type": "text"
+                        },
+                        "Health Insurance - CA - Company pays": {
+                            "type": "text"
+                        },
+                        "Health Insurance - CA - Company pays - Currency code": {
+                            "type": "new_benefit"
+                        },
+                        "Health Insurance - CA - Coverage": {
+                            "type": "employee_new_benefit_coverage_type"
+                        },
+                        "Health Insurance - CA - Effective date": {
+                            "type": "date"
+                        },
+                        "Health Insurance - CA - Eligibility date": {
+                            "type": "date"
+                        },
+                        "Health Insurance - CA - Employee pays": {
+                            "type": "text"
+                        },
+                        "Health Insurance - CA - Employee pays - Currency code": {
+                            "type": "new_benefit"
+                        },
+                        "Health Insurance - CA - Status": {
+                            "type": "new_benefit_status"
+                        },
+                        "hireDate": {
+                            "type": "date"
+                        },
+                        "homeEmail": {
+                            "type": "email"
+                        },
+                        "homePhone": {
+                            "type": "phone"
+                        },
+                        "instagram": {
+                            "type": "contact_url"
+                        },
+                        "Issued": {
+                            "type": "date"
+                        },
+                        "Issuing country": {
+                            "type": "country"
+                        },
+                        "Job Information: Date": {
+                            "type": "date"
+                        },
+                        "jobTitle": {
+                            "type": "list"
+                        },
+                        "lastName": {
+                            "type": "text"
+                        },
+                        "Life Insurance - Company pays": {
+                            "type": "text"
+                        },
+                        "Life Insurance - Company pays - Currency code": {
+                            "type": "new_benefit"
+                        },
+                        "Life Insurance - Coverage": {
+                            "type": "employee_new_benefit_coverage_type"
+                        },
+                        "Life Insurance - Effective date": {
+                            "type": "date"
+                        },
+                        "Life Insurance - Eligibility date": {
+                            "type": "date"
+                        },
+                        "Life Insurance - Employee pays": {
+                            "type": "text"
+                        },
+                        "Life Insurance - Employee pays - Currency code": {
+                            "type": "new_benefit"
+                        },
+                        "Life Insurance - Status": {
+                            "type": "new_benefit_status"
+                        },
+                        "linkedIn": {
+                            "type": "contact_url"
+                        },
+                        "location": {
+                            "type": "list"
+                        },
+                        "Major/Specialization": {
+                            "type": "text"
+                        },
+                        "maritalStatus": {
+                            "type": "marital_status"
+                        },
+                        "middleName": {
+                            "type": "text"
+                        },
+                        "mobilePhone": {
+                            "type": "phone"
+                        },
+                        "New Hire Training - Completed": {
+                            "type": "date"
+                        },
+                        "New Hire Training - Due Date": {
+                            "type": "date"
+                        },
+                        "New Hire Training - Expires": {
+                            "type": "date"
+                        },
+                        "customNIN1": {
+                            "type": "text"
+                        },
+                        "Note": {
+                            "type": "text"
+                        },
+                        "originalHireDate": {
+                            "type": "date"
+                        },
+                        "overtimeRate": {
+                            "type": "text"
+                        },
+                        "exempt": {
+                            "type": "exempt"
+                        },
+                        "payPer": {
+                            "type": "paid_per"
+                        },
+                        "payRate": {
+                            "type": "text"
+                        },
+                        "payPeriod": {
+                            "type": "pay_period"
+                        },
+                        "paySchedule": {
+                            "type": "list"
+                        },
+                        "payType": {
+                            "type": "pay_type"
+                        },
+                        "pinterest": {
+                            "type": "contact_url"
+                        },
+                        "nickname": {
+                            "type": "text"
+                        },
+                        "preferredName": {
+                            "type": "text"
+                        },
+                        "Reporting to": {
+                            "type": "employee"
+                        },
+                        "customSecondaryLanguage1": {
+                            "type": "list"
+                        },
+                        "Self-service access": {
+                            "type": "employee_access"
+                        },
+                        "Serial #": {
+                            "type": "text"
+                        },
+                        "customShirtsize": {
+                            "type": "list"
+                        },
+                        "Sick - Accrual Start Date": {
+                            "type": "time_off_type"
+                        },
+                        "Sick - Adjustments (YTD)": {
+                            "type": "int"
+                        },
+                        "Sick - Available Balance": {
+                            "type": "int"
+                        },
+                        "Sick - Current balance": {
+                            "type": "time_off_type"
+                        },
+                        "Sick - Hours scheduled": {
+                            "type": "int"
+                        },
+                        "Sick - Hours taken (YTD)": {
+                            "type": "int"
+                        },
+                        "Sick - Policy": {
+                            "type": "text"
+                        },
+                        "Sick - Policy Assigned": {
+                            "type": "time_off_type_exists"
+                        },
+                        "Sick Full-Time policy - Assigned": {
+                            "type": "time_off_policy_exists"
+                        },
+                        "Sick Full-Time policy - Started on": {
+                            "type": "date"
+                        },
+                        "ssn": {
+                            "type": "ssn"
+                        },
+                        "state": {
+                            "type": "state"
+                        },
+                        "employmentStatus": {
+                            "type": "status"
+                        },
+                        "status": {
+                            "type": "status"
+                        },
+                        "customTaxFileNumber1": {
+                            "type": "text"
+                        },
+                        "Termination Reason": {
+                            "type": "list"
+                        },
+                        "Termination Type": {
+                            "type": "list"
+                        },
+                        "twitterFeed": {
+                            "type": "twitter_handle"
+                        },
+                        "UK Private Medical Insurance (PMI) - Company pays": {
+                            "type": "text"
+                        },
+                        "UK Private Medical Insurance (PMI) - Company pays - Currency code": {
+                            "type": "new_benefit"
+                        },
+                        "UK Private Medical Insurance (PMI) - Coverage": {
+                            "type": "employee_new_benefit_coverage_type"
+                        },
+                        "UK Private Medical Insurance (PMI) - Effective date": {
+                            "type": "date"
+                        },
+                        "UK Private Medical Insurance (PMI) - Eligibility date": {
+                            "type": "date"
+                        },
+                        "UK Private Medical Insurance (PMI) - Employee pays": {
+                            "type": "text"
+                        },
+                        "UK Private Medical Insurance (PMI) - Employee pays - Currency code": {
+                            "type": "new_benefit"
+                        },
+                        "UK Private Medical Insurance (PMI) - Status": {
+                            "type": "new_benefit_status"
+                        },
+                        "Unlawful Harassment - Completed": {
+                            "type": "date"
+                        },
+                        "Unlawful Harassment - Due Date": {
+                            "type": "date"
+                        },
+                        "Unlawful Harassment - Expires": {
+                            "type": "date"
+                        },
+                        "US Health Insurance - FSA Eligible - Company pays": {
+                            "type": "text"
+                        },
+                        "US Health Insurance - FSA Eligible - Company pays - Currency code": {
+                            "type": "new_benefit"
+                        },
+                        "US Health Insurance - FSA Eligible - Coverage": {
+                            "type": "employee_new_benefit_coverage_type"
+                        },
+                        "US Health Insurance - FSA Eligible - Effective date": {
+                            "type": "date"
+                        },
+                        "US Health Insurance - FSA Eligible - Eligibility date": {
+                            "type": "date"
+                        },
+                        "US Health Insurance - FSA Eligible - Employee pays": {
+                            "type": "text"
+                        },
+                        "US Health Insurance - FSA Eligible - Employee pays - Currency code": {
+                            "type": "new_benefit"
+                        },
+                        "US Health Insurance - FSA Eligible - Status": {
+                            "type": "new_benefit_status"
+                        },
+                        "US Health Insurance - HSA Eligible - Company pays": {
+                            "type": "text"
+                        },
+                        "US Health Insurance - HSA Eligible - Company pays - Currency code": {
+                            "type": "new_benefit"
+                        },
+                        "US Health Insurance - HSA Eligible - Coverage": {
+                            "type": "employee_new_benefit_coverage_type"
+                        },
+                        "US Health Insurance - HSA Eligible - Effective date": {
+                            "type": "date"
+                        },
+                        "US Health Insurance - HSA Eligible - Eligibility date": {
+                            "type": "date"
+                        },
+                        "US Health Insurance - HSA Eligible - Employee pays": {
+                            "type": "text"
+                        },
+                        "US Health Insurance - HSA Eligible - Employee pays - Currency code": {
+                            "type": "new_benefit"
+                        },
+                        "US Health Insurance - HSA Eligible - Status": {
+                            "type": "new_benefit_status"
+                        },
+                        "Vacation - Accrual Start Date": {
+                            "type": "time_off_type"
+                        },
+                        "Vacation - Adjustments (YTD)": {
+                            "type": "int"
+                        },
+                        "Vacation - Available Balance": {
+                            "type": "int"
+                        },
+                        "Vacation - Current balance": {
+                            "type": "time_off_type"
+                        },
+                        "Vacation - Hours scheduled": {
+                            "type": "int"
+                        },
+                        "Vacation - Hours taken (YTD)": {
+                            "type": "int"
+                        },
+                        "Vacation - Policy": {
+                            "type": "text"
+                        },
+                        "Vacation - Policy Assigned": {
+                            "type": "time_off_type_exists"
+                        },
+                        "Vacation Full-Time policy - Assigned": {
+                            "type": "time_off_policy_exists"
+                        },
+                        "Vacation Full-Time policy - Started on": {
+                            "type": "date"
+                        },
+                        "Veteran Status": {
+                            "type": "multilist"
+                        },
+                        "Visa": {
+                            "type": "list"
+                        },
+                        "Visa:Date": {
+                            "type": "date"
+                        },
+                        "Visa Information": {
+                            "type": "employee_visas"
+                        },
+                        "workEmail": {
+                            "type": "email"
+                        },
+                        "workPhoneExtension": {
+                            "type": "text"
+                        },
+                        "Working from home during COVID-19 - Completed": {
+                            "type": "date"
+                        },
+                        "Working from home during COVID-19 - Due Date": {
+                            "type": "date"
+                        },
+                        "Working from home during COVID-19 - Expires": {
+                            "type": "date"
+                        },
+                        "workPhone": {
+                            "type": "phone"
+                        },
+                        "zipcode": {
+                            "type": "text"
+                        },
+                        "terminationDate": {
+                            "type": "date"
+                        }
+                    }
+                },
+                "supported_sync_modes": [
+                    "full_refresh"
+                ],
+                "supported_destination_sync_modes": [
+                    "overwrite",
+                    "append_dedup"
+                ]
+            },
+            "sync_mode": "full_refresh",
+            "destination_sync_mode": "append_dedup"
+        }
+    ]
+}
