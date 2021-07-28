@@ -45,7 +45,7 @@ export default class WorkspaceResource
 
   static listShape<T extends typeof Resource>(
     this: T
-  ): ReadShape<SchemaDetail<Workspace[]>> {
+  ): ReadShape<SchemaDetail<{ workspaces: Workspace[] }>> {
     return {
       ...super.listShape(),
       schema: { workspaces: [this] },

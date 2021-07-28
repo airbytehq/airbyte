@@ -11,6 +11,7 @@ import { Routing } from "./pages/routes";
 import LoadingPage from "./components/LoadingPage";
 import ApiErrorBoundary from "./components/ApiErrorBoundary";
 import NotificationService from "components/hooks/services/Notification";
+import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
 
 const App: React.FC = () => {
   return (
@@ -22,7 +23,9 @@ const App: React.FC = () => {
             <Suspense fallback={<LoadingPage />}>
               <ApiErrorBoundary>
                 <NotificationService>
-                  <Routing />
+                  <AnalyticsInitializer>
+                    <Routing />
+                  </AnalyticsInitializer>
                 </NotificationService>
               </ApiErrorBoundary>
             </Suspense>

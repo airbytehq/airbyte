@@ -13,7 +13,6 @@ import StepsMenu from "components/StepsMenu";
 import HeadTitle from "components/HeadTitle";
 import Version from "components/Version";
 
-import { AnalyticsService } from "core/analytics/AnalyticsService";
 import useSource, {
   useSourceList,
 } from "components/hooks/services/useSourceHook";
@@ -29,6 +28,7 @@ import SourceStep from "./components/SourceStep";
 import DestinationStep from "./components/DestinationStep";
 import ConnectionStep from "./components/ConnectionStep";
 import { StepType } from "./types";
+import { useAnalytics } from "components/hooks/useAnalytics";
 
 const Content = styled.div<{ big?: boolean }>`
   width: 100%;
@@ -84,8 +84,10 @@ const PlayIcon = styled(FontAwesomeIcon)`
 `;
 
 const OnboardingPage: React.FC = () => {
+  const analyticsService = useAnalytics();
+
   useEffect(() => {
-    AnalyticsService.page("Onboarding Page");
+    analyticsService.page("Onboarding Page");
   }, []);
 
   const { sources } = useSourceList();

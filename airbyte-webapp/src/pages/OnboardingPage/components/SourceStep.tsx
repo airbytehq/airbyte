@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { AnalyticsService } from "core/analytics/AnalyticsService";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { JobInfo } from "core/resources/Scheduler";
 import { SourceDefinition } from "core/resources/SourceDefinition";
@@ -14,6 +13,7 @@ import { useSourceDefinitionSpecificationLoad } from "components/hooks/services/
 
 import SkipOnboardingButton from "./SkipOnboardingButton";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { useAnalytics } from "components/hooks/useAnalytics";
 
 type IProps = {
   onSubmit: (values: {
@@ -38,6 +38,8 @@ const SourceStep: React.FC<IProps> = ({
   afterSelectConnector,
 }) => {
   const [sourceDefinitionId, setSourceDefinitionId] = useState("");
+  const analyticsService = useAnalytics();
+
   const {
     sourceDefinitionSpecification,
     isLoading,
@@ -48,7 +50,7 @@ const SourceStep: React.FC<IProps> = ({
       (s) => s.sourceDefinitionId === sourceId
     );
 
-    AnalyticsService.track("New Source - Action", {
+    analyticsService.track("New Source - Action", {
       action: "Select a connector",
       connector_source: sourceDefinition?.name,
       connector_source_id: sourceDefinition?.sourceDefinitionId,

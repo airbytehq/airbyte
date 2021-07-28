@@ -1,37 +1,44 @@
 import { useFetcher, useResource } from "rest-hooks";
 
-import config from "config";
 import WorkspaceResource, { Workspace } from "core/resources/Workspace";
-import { AnalyticsService } from "core/analytics/AnalyticsService";
-import NotificationsResource from "core/resources/Notifications";
+import NotificationsResource, {
+  Notifications,
+} from "core/resources/Notifications";
+import { useAnalytics } from "../useAnalytics";
+
+const useCurrentWorkspace = (): Workspace => {
+  const { workspaces } = useResource(WorkspaceResource.listShape(), {});
+
+  return workspaces[0];
+};
 
 const useWorkspace = (): {
   workspace: Workspace;
-  setInitialSetupConfig: (data: {
-    email: string;
-    anonymousDataCollection: boolean;
-    news: boolean;
-    securityUpdates: boolean;
-  }) => Promise<void>;
   updatePreferences: (data: {
     email?: string;
     anonymousDataCollection: boolean;
     news: boolean;
     securityUpdates: boolean;
-  }) => Promise<void>;
-  updateWebhook: (data: { webhook: string }) => Promise<void>;
+  }) => Promise<Workspace>;
+  updateWebhook: (data: { webhook: string }) => Promise<Workspace>;
+  testWebhook: (webhook: string) => Promise<Notifications>;
+  setInitialSetupConfig: (data: {
+    email: string;
+    anonymousDataCollection: boolean;
+    news: boolean;
+    securityUpdates: boolean;
+  }) => Promise<Workspace>;
   finishOnboarding: (skipStep?: string) => Promise<void>;
-  testWebhook: (webhook: string) => Promise<void>;
 } => {
   const updateWorkspace = useFetcher(WorkspaceResource.updateShape());
   const tryWebhookUrl = useFetcher(NotificationsResource.tryShape());
-  const workspace = useResource(WorkspaceResource.detailShape(), {
-    workspaceId: config.ui.workspaceId,
-  });
+  const workspace = useCurrentWorkspace();
+
+  const analyticsService = useAnalytics();
 
   const finishOnboarding = async (skipStep?: string) => {
     if (skipStep) {
-      AnalyticsService.track("Skip Onboarding", {
+      analyticsService.track("Skip Onboarding", {
         step: skipStep,
       });
     }
@@ -54,37 +61,35 @@ const useWorkspace = (): {
     anonymousDataCollection: boolean;
     news: boolean;
     securityUpdates: boolean;
-  }) => {
+  }) =>
     await updateWorkspace(
       {},
       {
-        workspaceId: config.ui.workspaceId,
+        workspaceId: workspace.workspaceId,
         initialSetupComplete: true,
         displaySetupWizard: true,
         ...data,
       }
     );
-  };
 
   const updatePreferences = async (data: {
     email?: string;
     anonymousDataCollection: boolean;
     news: boolean;
     securityUpdates: boolean;
-  }) => {
+  }) =>
     await updateWorkspace(
       {},
       {
-        workspaceId: config.ui.workspaceId,
+        workspaceId: workspace.workspaceId,
         initialSetupComplete: workspace.initialSetupComplete,
         displaySetupWizard: workspace.displaySetupWizard,
         notifications: workspace.notifications,
         ...data,
       }
     );
-  };
 
-  const testWebhook = async (webhook: string) => {
+  const testWebhook = async (webhook: string) =>
     await tryWebhookUrl(
       {
         notificationType: "slack",
@@ -94,13 +99,12 @@ const useWorkspace = (): {
       },
       {}
     );
-  };
 
-  const updateWebhook = async (data: { webhook: string }) => {
+  const updateWebhook = async (data: { webhook: string }) =>
     await updateWorkspace(
       {},
       {
-        workspaceId: config.ui.workspaceId,
+        workspaceId: workspace.workspaceId,
         initialSetupComplete: workspace.initialSetupComplete,
         displaySetupWizard: workspace.displaySetupWizard,
         anonymousDataCollection: workspace.anonymousDataCollection,
@@ -116,7 +120,6 @@ const useWorkspace = (): {
         ],
       }
     );
-  };
 
   return {
     workspace,
@@ -128,4 +131,5 @@ const useWorkspace = (): {
   };
 };
 
+export { useCurrentWorkspace, useWorkspace };
 export default useWorkspace;

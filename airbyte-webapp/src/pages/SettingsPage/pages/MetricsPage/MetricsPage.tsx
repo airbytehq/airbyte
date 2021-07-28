@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { ContentCard } from "components";
-import useWorkspace from "components/hooks/services/useWorkspaceHook";
+import useWorkspace from "components/hooks/services/useWorkspace";
 import HeadTitle from "components/HeadTitle";
 import MetricsForm from "./components/MetricsForm";
 import useWorkspaceEditor from "../../components/useWorkspaceEditor";

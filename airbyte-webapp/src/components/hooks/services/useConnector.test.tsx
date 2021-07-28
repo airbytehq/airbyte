@@ -10,12 +10,19 @@ import DestinationDefinitionResource from "core/resources/DestinationDefinition"
 
 jest.mock("core/domain/connector/SourceDefinitionService");
 jest.mock("core/domain/connector/DestinationDefinitionService");
+jest.mock("components/hooks/services/useWorkspace", () => ({
+  useWorkspace: () => ({
+    workspace: {
+      workspaceId: "workspaceId",
+    },
+  }),
+}));
 
 const renderRestHook = makeRenderRestHook(makeCacheProvider);
 const results = [
   {
     request: SourceDefinitionResource.listShape(),
-    params: { workspaceId: "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6" },
+    params: { workspaceId: "workspaceId" },
     result: {
       sourceDefinitions: [
         {
@@ -33,7 +40,7 @@ const results = [
   },
   {
     request: DestinationDefinitionResource.listShape(),
-    params: { workspaceId: "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6" },
+    params: { workspaceId: "workspaceId" },
     result: {
       destinationDefinitions: [
         {

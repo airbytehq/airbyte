@@ -1,10 +1,10 @@
 import { useFetcher, useResource } from "rest-hooks";
-import config from "config";
 import { useMemo } from "react";
 
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import { Connector } from "core/domain/connector";
+import { useWorkspace } from "components/hooks/services/useWorkspace";
 
 type ConnectorService = {
   hasNewVersions: boolean;
@@ -17,16 +17,17 @@ type ConnectorService = {
 };
 
 const useConnector = (): ConnectorService => {
+  const { workspace } = useWorkspace();
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
     {
-      workspaceId: config.ui.workspaceId,
+      workspaceId: workspace.workspaceId,
     }
   );
   const { destinationDefinitions } = useResource(
     DestinationDefinitionResource.listShape(),
     {
-      workspaceId: config.ui.workspaceId,
+      workspaceId: workspace.workspaceId,
     }
   );
 

@@ -5,14 +5,12 @@ import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useResource } from "rest-hooks";
 
+import { Button } from "components";
 import LoadingSchema from "components/LoadingSchema";
 import ContentCard from "components/ContentCard";
 import { JobsLogItem } from "components/JobItem";
 import ConnectionForm from "views/Connection/ConnectionForm";
-import { Button } from "components";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
-
-import { AnalyticsService } from "core/analytics/AnalyticsService";
 import { Source } from "core/resources/Source";
 import { Destination } from "core/resources/Destination";
 
@@ -22,7 +20,8 @@ import useConnection, {
 import { useDiscoverSchema } from "components/hooks/services/useSchemaHook";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
-import { IDataItem } from "../base/DropDown/components/Option";
+import { IDataItem } from "components/base/DropDown/components/Option";
+import { useAnalytics } from "components/hooks/useAnalytics";
 
 const SkipButton = styled.div`
   margin-top: 6px;
@@ -52,6 +51,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
   additionBottomControls,
 }) => {
   const { createConnection } = useConnection();
+  const analyticsService = useAnalytics();
 
   const sourceDefinition = useResource(SourceDefinitionResource.detailShape(), {
     sourceDefinitionId: source.sourceDefinitionId,
@@ -121,7 +121,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
   };
 
   const onSelectFrequency = (item: IDataItem | null) => {
-    AnalyticsService.track("New Connection - Action", {
+    analyticsService.track("New Connection - Action", {
       action: "Select a frequency",
       frequency: item?.label,
       connector_source_definition: source?.sourceName,
