@@ -73,7 +73,7 @@ class ZOQLQueryCannotProcessObject(Error):
 
     def __init__(
         self,
-        message: str = "The stream cannot be processed, please check the Zuora Object's Permissions or your Subscription Plan settings.",
+        message: str = "The stream cannot be processed, check Zuora Object's Permissions / Subscription Plan. This warning is not critical, and could be ignored."
     ):
         self.message = message
         super().__init__(self.logger.warn(self.message))

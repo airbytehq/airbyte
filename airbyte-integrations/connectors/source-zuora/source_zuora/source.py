@@ -85,8 +85,9 @@ class ZuoraBase(ZuoraStream):
 
     def request_kwargs(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> Mapping[str, Any]:
         return stream_slice if stream_slice else {}
+        
 
-    def get_data(self, date_slice, config: Dict) -> Iterable[Mapping[str, Any]]:
+    def get_data(self, date_slice: Dict, config: Dict) -> Iterable[Mapping[str, Any]]:
         """
         This is the wrapper for 'Submit > Check > Get' operation.
 
@@ -101,16 +102,23 @@ class ZuoraBase(ZuoraStream):
             for more information see: ZuoraGetJobResult
 
         """
-        job_id: List[str] = ZuoraSubmitJob(self.query(date_slice), config).read_records(sync_mode=None)
+        
+        job_id: List[str] = ZuoraSubmitJob(self.query(date_slice=date_slice), config).read_records(sync_mode=None)
         job_data_url: List = ZuoraJobStatusCheck(list(job_id)[0], config).read_records(sync_mode=None)
         yield from ZuoraGetJobResult(list(job_data_url)[0], config).read_records(sync_mode=None)
 
     def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response: 
         try:
-            yield from self.get_data(request_kwargs, self._config)
+            yield from self.get_data(date_slice=request_kwargs, config=self._config)
         except ZOQLQueryFieldCannotResolve:
-            self.cursor_field = self.alt_cursor_field
-            yield from self.get_data(request_kwargs, self._config)
+            """
+            The default cursor_field is "updateddate" sometimes it's not supported by certain streams.
+            We need to swith the default cursor field to alternative one, and retry again the whole operation, submit the new job to the server.
+            We also need to save the state in the end of the sync. 
+            So this switch is needed as fast and easy way of resolving the cursor_field for streams that support only the "createddate"
+            """
+            self.cursor_field = self.alt_cursor_field # cursor_field switch
+            yield from self.get_data(date_slice=request_kwargs, config=self._config) # retry the whole operation
         except ZOQLQueryCannotProcessObject:
             pass
     
@@ -182,6 +190,7 @@ class ZuoraObjectsBase(ZuoraBase):
                 }
             )
             start_date = end_date_slice
+
         return date_slices
    
 class ZuoraListObjects(ZuoraBase):
@@ -403,13 +412,13 @@ class SourceZuora(AbstractSource):
         config["url_base"] = url_base
 
          # List available objects (streams) names from Zuora
-        zuora_stream_names = ["account", "invoicehistory", "ratedusage"]
-        # zuora_stream_names = ZuoraListObjects(config).read_records(sync_mode=None)
+        # zuora_stream_names = ["account", "invoicehistory", "ratedusage"]
+        zuora_stream_names = ZuoraListObjects(config).read_records(sync_mode=None)
 
         streams: List[ZuoraStream] = []
         for stream_name in zuora_stream_names:
             # construct ZuoraReadStreams sub-class for each stream_name
-            stream_class = type(stream_name, (ZuoraObjectsBase,), {})
+            stream_class = type(stream_name, (ZuoraObjectsBase,), {"cursor_field": "updateddate"})
             # instancetiate a stream with config
             stream_instance = stream_class(config)
             streams.append(stream_instance)
