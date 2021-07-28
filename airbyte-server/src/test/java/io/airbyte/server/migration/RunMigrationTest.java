@@ -82,7 +82,7 @@ public class RunMigrationTest {
 
   @AfterEach
   public void cleanup() throws IOException {
-    for (File file : resourceToBeCleanedUp) {
+    for (final File file : resourceToBeCleanedUp) {
       if (file.exists()) {
         if (file.isDirectory()) {
           FileUtils.deleteDirectory(file);
@@ -96,7 +96,7 @@ public class RunMigrationTest {
   @SuppressWarnings("UnstableApiUsage")
   @Test
   public void testRunMigration() throws Exception {
-    try (StubAirbyteDB stubAirbyteDB = new StubAirbyteDB()) {
+    try (final StubAirbyteDB stubAirbyteDB = new StubAirbyteDB()) {
       final File file = Path
           .of(Resources.getResource("migration/03a4c904-c91d-447f-ab59-27a43b52c2fd.gz").toURI())
           .toFile();
