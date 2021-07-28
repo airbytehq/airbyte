@@ -17,7 +17,7 @@
 - destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   name: BigQuery
   dockerRepository: airbyte/destination-bigquery
-  dockerImageTag: 0.3.8
+  dockerImageTag: 0.3.9
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
 - destinationDefinitionId: 079d5540-f236-4294-ba7c-ade8fd918496
   name: BigQuery (denormalized typed struct)
@@ -58,7 +58,7 @@
 - destinationDefinitionId: ca81ee7c-3163-4246-af40-094cc31e5e42
   name: MySQL
   dockerRepository: airbyte/destination-mysql
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mysql
 - destinationDefinitionId: d4353156-9217-4cad-8dd7-c108fd4f74cf
   name: MS SQL Server

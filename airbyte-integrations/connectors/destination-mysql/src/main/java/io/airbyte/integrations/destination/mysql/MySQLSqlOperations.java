@@ -24,8 +24,10 @@
 
 package io.airbyte.integrations.destination.mysql;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.DefaultSqlOperations;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.File;
@@ -90,6 +92,11 @@ public class MySQLSqlOperations extends DefaultSqlOperations {
         throw new RuntimeException(e);
       }
     });
+  }
+
+  @Override
+  protected JsonNode formatData(JsonNode data) {
+    return StandardNameTransformer.formatJsonPath(data);
   }
 
   void verifyLocalFileEnabled(JdbcDatabase database) throws SQLException {
