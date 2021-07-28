@@ -1,6 +1,6 @@
-# Developing Connectors
+# Connector Development
 
-Airbyte supports two types of connectors: Sources and Destinations. A connector takes the form of a Docker image which follows the [Airbyte specification](../../understanding-airbyte/airbyte-specification.md).
+Airbyte supports two types of connectors: Sources and Destinations. A connector takes the form of a Docker image which follows the [Airbyte specification](../understanding-airbyte/airbyte-specification.md).
 
 To build a new connector in Java or Python, we provide templates so you don't need to start everything from scratch.
 
@@ -8,12 +8,11 @@ To build a new connector in Java or Python, we provide templates so you don't ne
 
 ## Connector-Development Kit (CDK)
 
-You can build a connector very quickly with the [Airbyte CDK](../python/README.md), which generates 75% of the code required for you.   
-
+You can build a connector very quickly with the [Airbyte CDK](cdk-python/README.md), which generates 75% of the code required for you.   
 
 ## The Airbyte specification
 
-Before building a new connector, review [Airbyte's data protocol specification](../../understanding-airbyte/airbyte-specification.md).
+Before building a new connector, review [Airbyte's data protocol specification](../understanding-airbyte/airbyte-specification.md).
 
 ## Adding a new connector
 
@@ -22,7 +21,7 @@ Before building a new connector, review [Airbyte's data protocol specification](
 To add a new connector you need to:
 
 1. Implement & Package your connector in an Airbyte Protocol compliant Docker image
-2. Add integration tests for your connector. At a minimum, all connectors must pass [Airbyte's standard test suite](testing-connectors.md), but you can also add your own tests. 
+2. Add integration tests for your connector. At a minimum, all connectors must pass [Airbyte's standard test suite](testing-connectors/testing-connectors.md), but you can also add your own tests. 
 3. Document how to build & test your connector
 4. Publish the Docker image containing the connector
 
@@ -54,15 +53,17 @@ and choose the relevant template. This will generate a new connector in the `air
 
 Search the generated directory for "TODO"s and follow them to implement your connector. For more detailed walkthroughs and instructions, follow the relevant tutorial:
 
-* [Building a Python source ](../tutorials/building-a-python-source.md) 
-* [Building a Python destination](../tutorials/building-a-python-destination.md)
-* [Building a Java destination ](../tutorials/building-a-java-destination.md)
+* [Speedrun: Building a HTTP source with the CDK](tutorials/cdk-speedrun.md)
+* [Building a HTTP source with the CDK](tutorials/cdk-tutorial-python-http)
+* [Building a Python source](tutorials/building-a-python-source.md) 
+* [Building a Python destination](tutorials/building-a-python-destination.md)
+* [Building a Java destination](tutorials/building-a-java-destination.md)
 
 As you implement your connector, make sure to review the [Best Practices for Connector Development](best-practices.md) guide. Following best practices is not a requirement for merging your contribution to Airbyte, but it certainly doesn't hurt ;\)
 
 ### 2. Integration tests
 
-At a minimum, your connector must implement the acceptance tests described in [Testing Connectors](testing-connectors.md)
+At a minimum, your connector must implement the acceptance tests described in [Testing Connectors](testing-connectors/testing-connectors.md)
 
 **Note:  Acceptance tests are not yet available for Python destination connectors. Coming [soon](https://github.com/airbytehq/airbyte/issues/4698)!**
 
