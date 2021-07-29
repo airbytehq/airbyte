@@ -27,6 +27,7 @@ import os
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, List, Mapping
+from smart_open import open as smart_open
 
 import pyarrow as pa
 import pytest
@@ -158,7 +159,7 @@ class AbstractTestFileFormatParser(ABC):
 
     def test_get_inferred_schema(self):
         for test_file in self.test_files:
-            with open(test_file["filepath"], self._get_readmode("get_inferred_schema", test_file)) as f:
+            with smart_open(test_file["filepath"], self._get_readmode("get_inferred_schema", test_file)) as f:
                 if "test_get_inferred_schema" in test_file["fails"]:
                     with pytest.raises(Exception) as e_info:
                         test_file["fileformatparser"].get_inferred_schema(f)
@@ -168,7 +169,7 @@ class AbstractTestFileFormatParser(ABC):
 
     def test_stream_records(self):
         for test_file in self.test_files:
-            with open(test_file["filepath"], self._get_readmode("stream_records", test_file)) as f:
+            with smart_open(test_file["filepath"], self._get_readmode("stream_records", test_file)) as f:
                 if "test_stream_records" in test_file["fails"]:
                     with pytest.raises(Exception) as e_info:
                         [print(r) for r in test_file["fileformatparser"].stream_records(f)]
@@ -278,19 +279,30 @@ class TestCsvParser(AbstractTestFileFormatParser):
                 },
                 "fails": [],
             },
-            # TODO: this is currently failing. Isolated it down to using an opened file object rather than letting pyarrow open
-            # compression might actually work in live use-cases because of the use of smart_open which handles compression (untested)
-            # {
-            #     # tests compression: gzip
-            #     "fileformatparser": CsvParser(
-            #         format={"filetype": "csv"},
-            #         master_schema={'id': 'integer', 'name': 'string', 'valid': 'boolean', 'code': 'integer', 'degrees': 'number', 'birthday': 'string', 'last_seen': 'string'}),
-            #     "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/test_file_5.csv.gz"),
-            #     "num_records": 8,
-            #     "inferred_schema": {'id': 'integer', 'name': 'string', 'valid': 'boolean', 'code': 'integer', 'degrees': 'number', 'birthday': 'string', 'last_seen': 'string'},
-            #     "line_checks":{7: {"id":7,"name":"xZhh1Kyl","valid":False,"code":10,"degrees":-9.2,"birthday":"2021-07-14","last_seen":"2021-07-14 15:30:09.225145"}},
-            #     "fails": []
-            # },
+            {
+                # tests compression: gzip
+                "test_alias": "compression: gzip",
+                "fileformatparser": CsvParser(
+                    format={"filetype": "csv"},
+                    master_schema={'id': 'integer', 'name': 'string', 'valid': 'boolean', 'code': 'integer', 'degrees': 'number', 'birthday': 'string', 'last_seen': 'string'}),
+                "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/test_file_5.csv.gz"),
+                "num_records": 8,
+                "inferred_schema": {'id': 'integer', 'name': 'string', 'valid': 'boolean', 'code': 'integer', 'degrees': 'number', 'birthday': 'string', 'last_seen': 'string'},
+                "line_checks":{7: {"id":7,"name":"xZhh1Kyl","valid":False,"code":10,"degrees":-9.2,"birthday":"2021-07-14","last_seen":"2021-07-14 15:30:09.225145"}},
+                "fails": []
+            },
+            {
+                # tests compression: bz2
+                "test_alias": "compression: bz2",
+                "fileformatparser": CsvParser(
+                    format={"filetype": "csv"},
+                    master_schema={'id': 'integer', 'name': 'string', 'valid': 'boolean', 'code': 'integer', 'degrees': 'number', 'birthday': 'string', 'last_seen': 'string'}),
+                "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/test_file_7_bz2.csv.bz2"),
+                "num_records": 8,
+                "inferred_schema": {'id': 'integer', 'name': 'string', 'valid': 'boolean', 'code': 'integer', 'degrees': 'number', 'birthday': 'string', 'last_seen': 'string'},
+                "line_checks":{7: {"id":7,"name":"xZhh1Kyl","valid":False,"code":10,"degrees":-9.2,"birthday":"2021-07-14","last_seen":"2021-07-14 15:30:09.225145"}},
+                "fails": []
+            },
             {
                 # tests extra columns in master schema
                 "test_alias": "extra columns in master schema",
