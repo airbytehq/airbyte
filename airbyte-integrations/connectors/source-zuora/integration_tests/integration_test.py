@@ -235,6 +235,5 @@ class TestZuora:
 
         # read records from completed job
         job_result = ZuoraGetJobResult(list(job_data_url)[0], self.config).read_records(sync_mode=None)
-
         # Return True if we have successfully read records from completed job
         assert len(list(job_result)) > 0

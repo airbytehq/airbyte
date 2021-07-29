@@ -59,9 +59,8 @@ class ZOQLQueryFieldCannotResolve(Error):
     This exception is used to switch the default cursor_field inside the query.
     """
 
-    def __init__(self, message: str = "Cursor 'UpdatedDate' is not available. Switching cursor to: 'CreatedDate'"):
-        self.message = message
-        super().__init__(self.logger.info(self.message))
+    def __init__(self, message: str = "Cursor 'UpdatedDate' is not available. Switching cursor to 'CreatedDate'"):
+        super().__init__(self.logger.info(message))
 
 
 class ZOQLQueryCannotProcessObject(Error):
@@ -75,5 +74,4 @@ class ZOQLQueryCannotProcessObject(Error):
         self,
         message: str = "The stream cannot be processed, check Zuora Object's Permissions / Subscription Plan. This warning is not critical, and could be ignored.",
     ):
-        self.message = message
-        super().__init__(self.logger.warn(self.message))
+        super().__init__(self.logger.warn(message))

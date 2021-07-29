@@ -54,6 +54,9 @@ class ZuoraStream(HttpStream, ABC):
     # Define primary key
     primary_key = "id"
 
+    cursor_field = "updateddate"
+    alt_cursor_field = "createddate"
+
     def __init__(self, config: Dict):
         super().__init__(authenticator=config["authenticator"])
         self.logger = AirbyteLogger()
@@ -129,9 +132,6 @@ class ZuoraBase(ZuoraStream):
 
 class ZuoraObjectsBase(ZuoraBase):
 
-    cursor_field = "updateddate"
-    alt_cursor_field = "createddate"
-
     # setting checkpoint interval to the limit of date-slice
     @property
     def state_checkpoint_interval(self) -> int:
@@ -185,11 +185,11 @@ class ZuoraObjectsBase(ZuoraBase):
         start_date = min(start_date, end_date)
         date_slices = []
 
-        while start_date < end_date:
+        while start_date <= end_date:
+            
             end_date_slice = start_date.add(days=self.window_in_days)
             date_slices.append({"start_date": self.to_datetime_str(start_date), "end_date": self.to_datetime_str(end_date_slice)})
             start_date = end_date_slice
-
         return date_slices
 
 
@@ -332,13 +332,19 @@ class ZuoraJobStatusCheck(ZuoraStream):
         # Define the job error statuses
         errors = ["failed", "canceled", "aborted"]
         # Error msg: the cursor_field cannot be resolved
-        cursor_error = "Column 'updateddate' cannot be resolved"
+        cursor_error = f"Column '{self.cursor_field}' cannot be resolved"
         # Error msg: cannot process object
         obj_read_error = "failed to process object"
 
         status = None
         success = "completed"
         while status != success:
+            """
+            There is no opportunity for the infinity loop because the operation performs on the server-side,
+            there are query run-time limitations: if the query time is longer than 120 min,
+            the server will output the error with the corresponding message for the user in the output,
+            by raising `ZOQLQueryFailed` exception.
+            """
             response: requests.Response = self._session.send(request, **request_kwargs)
             job_check = response.json()
             status = job_check["data"]["queryStatus"]
@@ -371,7 +377,8 @@ class ZuoraGetJobResult(HttpStream):
         return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> str:
-        yield from [json.loads(line) for line in response.text.splitlines()]
+        for line in response.text.splitlines():
+            yield json.loads(line)
 
 
 class SourceZuora(AbstractSource):
