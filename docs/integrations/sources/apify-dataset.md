@@ -36,4 +36,4 @@ Please read [How to get your API key and Secret key](https://help.amplitude.com/
 ### Changelog
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.0   | 2021-07-29 | [PR#](https://github.com/airbytehq/airbyte/pull/PR#) | Initial version of the connector |
+| 0.1.0   | 2021-07-29 | [PR#5069](https://github.com/airbytehq/airbyte/pull/5069) | Initial version of the connector |
