@@ -45,6 +45,7 @@ from apify_client import ApifyClient
 
 DATASET_ITEMS_STREAM_NAME = "DatasetItems"
 
+# Batch size for downloading dataset items from Apify dataset
 BATCH_SIZE = 50000
 
 
