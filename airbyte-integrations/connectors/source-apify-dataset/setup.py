@@ -25,7 +25,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "apify-client"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "apify-client~=0.0.1"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",

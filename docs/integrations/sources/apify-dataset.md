@@ -27,7 +27,6 @@ The Apify dataset connector uses [Apify Python Client](https://docs.apify.com/ap
 ### Requirements
 
 * Dataset Id
-* Amplitude Secret Key
 
 ### Setup guide
 

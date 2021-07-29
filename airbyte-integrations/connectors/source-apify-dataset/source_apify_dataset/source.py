@@ -68,9 +68,10 @@ class SourceApifyDataset(Source):
             dataset = ApifyClient().dataset(dataset_id).get()
             if dataset is None:
                 raise ValueError(f"Dataset {dataset_id} does not exist")
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
+        else:
+            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
         """
