@@ -1,6 +1,4 @@
 {
-    "userId": "non_existent_user_id",
-    "apifyToken": "non_existent_token",
-    "datasetId": "non_existent_dataset_it",
+    "datasetId": "non_existent_dataset_id",
     "clean": false
 }
