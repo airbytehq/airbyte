@@ -291,6 +291,9 @@ class Stream(ABC):
         if self.entity not in {
             "contact",
             "engagement",
+            "product",
+            "quote",
+            "ticket",
             "company",
             "deal",
             "line_item"
