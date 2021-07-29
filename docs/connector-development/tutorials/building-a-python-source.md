@@ -195,17 +195,17 @@ Place any integration tests in the `integration_tests` directory such that they 
 
 Run integration tests using `python -m pytest -s integration_tests`.
 
-#### Step 10: Update the `README.md`
+### Step 10: Update the `README.md`
 
 The template fills in most of the information for the readme for you. Unless there is a special case, the only piece of information you need to add is how one can get the credentials required to run the source. e.g. Where one can find the relevant API key, etc.
 
-#### Step 11: Add the connector to the API/UI
+### Step 11: Add the connector to the API/UI
 
 Open the following file: `airbyte-config/init/src/main/resources/seed/source_definitions.yaml`. You'll find a list of all the connectors that Airbyte displays in the UI. Pattern match to add your own connector. Make sure to generate a new _unique_ UUIDv4 for the `sourceDefinitionId` field. You can get one [here](https://www.uuidgenerator.net/).
 
 Note that for simple and quick testing use cases, you can also do this step [using the UI](../../integrations/custom-connectors.md#adding-your-connectors-in-the-ui).
 
-#### Step 12: Add docs
+### Step 12: Add docs
 
 Each connector has its own documentation page. By convention, that page should have the following path: in `docs/integrations/sources/<source-name>.md`. For the documentation to get packaged with the docs, make sure to add a link to it in `docs/SUMMARY.md`. You can pattern match doing that from existing connectors.
 
