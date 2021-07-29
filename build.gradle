@@ -291,7 +291,7 @@ tasks.withType(AbstractArchiveTask) {
     reproducibleFileOrder = true
 }
 
-// Configure what Subprojects to publish.
+// Configure what subprojects to publish.
 String[] toPublish = [
         ':airbyte-analytics',
         ':airbyte-api',
@@ -302,10 +302,11 @@ String[] toPublish = [
         ':airbyte-config:persistence',
         ':airbyte-db',
         ':airbyte-json-validation',
-        ':airbyte-json-notification',
+        ':airbyte-migration',
+        ':airbyte-notification',
         ':airbyte-protocol:models',
-        ':airbyte-scheduler:models',
         ':airbyte-scheduler:client',
+        ':airbyte-scheduler:models',
         ':airbyte-scheduler:persistence',
         ':airbyte-server',
         ':airbyte-workers'
