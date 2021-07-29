@@ -186,7 +186,7 @@ class ZuoraObjectsBase(ZuoraBase):
         date_slices = []
 
         while start_date <= end_date:
-            
+
             end_date_slice = start_date.add(days=self.window_in_days)
             date_slices.append({"start_date": self.to_datetime_str(start_date), "end_date": self.to_datetime_str(end_date_slice)})
             start_date = end_date_slice
