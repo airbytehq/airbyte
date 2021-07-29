@@ -133,7 +133,7 @@
     * [Snowflake](integrations/destinations/snowflake.md)
   * [Custom or New Connector](integrations/custom-connectors.md)
 * [Connector Development](connector-development/README.md)
-  * [Connector Development Kit \(Python)\)](connector-development/cdk-python/README.md)
+  * [Connector Development Kit \(Python\)](connector-development/cdk-python/README.md)
     * [Basic Concepts](connector-development/cdk-python/basic-concepts.md)
     * [Defining Stream Schemas](connector-development/cdk-python/schemas.md)
     * [Full Refresh Streams](connector-development/cdk-python/full-refresh-stream.md)
