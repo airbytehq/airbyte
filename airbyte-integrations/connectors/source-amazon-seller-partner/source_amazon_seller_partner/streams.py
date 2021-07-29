@@ -23,24 +23,22 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
-import pendulum
 import requests
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_amazon_seller_partner.auth import AWSSigV4
 
 
-class AspStream(HttpStream, ABC):
+class AmazonSPStream(HttpStream, ABC):
     page_size = 100
     data_field = "payload"
 
-    def __init__(self, url_base: str, authenticator: AWSSigV4, access_token_credentials: dict, replication_start_date: str):
+    def __init__(self, url_base: str, aws_sig_v4: AWSSigV4, replication_start_date: str, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
         self._url_base = url_base
-        self._authenticator = authenticator
-        self._access_token_credentials = access_token_credentials
-        self._session = requests.Session()
+        self._aws_sig_v4 = aws_sig_v4
         self._replication_start_date = replication_start_date
 
     @property
@@ -84,8 +82,7 @@ class AspStream(HttpStream, ABC):
         """
         :return an iterable containing each record in the response
         """
-        records = response.json().get(self.data_field, [])
-        yield from records
+        yield from response.json().get(self.data_field, [])
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -97,70 +94,18 @@ class AspStream(HttpStream, ABC):
             return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
         return {self.cursor_field: latest_benchmark}
 
-    def _get_access_token(self) -> str:
-        """
-        Get's the access token
-        :return: access_token str
-        """
-        data = {"grant_type": "refresh_token", **self._access_token_credentials}
-        headers = {"User-Agent": "python-sp-api-0.6.2", "content-type": "application/x-www-form-urlencoded;charset=UTF-8"}
-        res = requests.post("https://api.amazon.com/auth/o2/token", data, headers)
-        return res.json()["access_token"]
-
-    def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Mapping[str, Any]:
-        return {
-            "host": "sellingpartnerapi-na.amazon.com",
-            "user-agent": "python-sp-api-0.6.2",
-            "x-amz-access-token": self._get_access_token(),
-            "x-amz-date": pendulum.now("utc").strftime("%Y%m%dT%H%M%SZ"),
-            "content-type": "application/json",
-        }
-
     def _create_prepared_request(
-        self, path: str, headers: Mapping = None, params: Mapping = None, json: Any = None, auth: AWSSigV4 = None
+        self, path: str, headers: Mapping = None, params: Mapping = None, json: Any = None
     ) -> requests.PreparedRequest:
-        args = {"method": self.http_method, "url": self.url_base + path, "headers": headers, "params": params, "auth": auth}
-
-        if self.http_method.upper() == "POST":
-            args["json"] = json
+        args = {"method": self.http_method, "url": self.url_base + path, "headers": headers, "params": params, "auth": self._aws_sig_v4}
 
         return self._session.prepare_request(requests.Request(**args))
 
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        stream_state = stream_state or {}
-        pagination_complete = False
-
-        next_page_token = None
-        while not pagination_complete:
-            request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-            request = self._create_prepared_request(
-                path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                headers=dict(request_headers),
-                params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                auth=self.authenticator,
-            )
-            request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-            response = self._send_request(request, request_kwargs)
-            yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
-
-            next_page_token = self.next_page_token(response)
-            if not next_page_token:
-                pagination_complete = True
-
-        # Always return an empty generator just in case no records were ever yielded
-        yield from []
+    def request_headers(self, *args, **kwargs) -> Mapping[str, Any]:
+        return {"content-type": "application/json"}
 
 
-class RecordsBase(AspStream, ABC):
+class RecordsBase(AmazonSPStream, ABC):
     primary_key = "reportId"
     cursor_field = "createdTime"
     replication_start_date_field = "createdSince"
@@ -191,7 +136,7 @@ class FbaInventoryReports(RecordsBase):
     name = "GET_FBA_INVENTORY_AGED_DATA"
 
 
-class Orders(AspStream):
+class Orders(AmazonSPStream):
     name = "Orders"
     primary_key = "AmazonOrderId"
     cursor_field = "LastUpdateDate"
@@ -218,5 +163,4 @@ class Orders(AspStream):
         """
         :return an iterable containing each record in the response
         """
-        records = response.json().get(self.data_field, {}).get(self.name, [])
-        yield from records
+        yield from response.json().get(self.data_field, {}).get(self.name, [])

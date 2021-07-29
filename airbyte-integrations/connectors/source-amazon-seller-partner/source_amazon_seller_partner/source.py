@@ -29,7 +29,7 @@ from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from source_amazon_seller_partner.auth import AWSSigV4
+from source_amazon_seller_partner.auth import AWSAuthenticator, AWSSigV4
 from source_amazon_seller_partner.constants import AWS_ENV, get_marketplaces_enum
 from source_amazon_seller_partner.streams import FbaInventoryReports, FlatFileOrdersReports, MerchantListingsReports, Orders
 
@@ -43,21 +43,24 @@ class SourceAmazonSellerPartner(AbstractSource):
         boto3_client = boto3.client("sts", aws_access_key_id=config["aws_access_key"], aws_secret_access_key=config["aws_secret_key"])
         role = boto3_client.assume_role(RoleArn=config["role_arn"], RoleSessionName="guid")
         role_creds = role["Credentials"]
-        auth = AWSSigV4(
-            "execute-api",
+        aws_sig_v4 = AWSSigV4(
+            service="execute-api",
             aws_access_key_id=role_creds.get("AccessKeyId"),
             aws_secret_access_key=role_creds.get("SecretAccessKey"),
-            region=self.marketplace_values.region,
             aws_session_token=role_creds.get("SessionToken"),
+            region=self.marketplace_values.region,
+        )
+        auth = AWSAuthenticator(
+            token_refresh_endpoint="https://api.amazon.com/auth/o2/token",
+            client_secret=config["lwa_client_secret"],
+            client_id=config["lwa_app_id"],
+            refresh_token=config["refresh_token"],
+            host=self.marketplace_values.endpoint[8:],
         )
         stream_kwargs = {
             "url_base": self.marketplace_values.endpoint,
             "authenticator": auth,
-            "access_token_credentials": {
-                "client_id": config["lwa_app_id"],
-                "client_secret": config["lwa_client_secret"],
-                "refresh_token": config["refresh_token"],
-            },
+            "aws_sig_v4": aws_sig_v4,
             "replication_start_date": config["replication_start_date"],
         }
         return stream_kwargs
@@ -77,10 +80,9 @@ class SourceAmazonSellerPartner(AbstractSource):
         """
 
         stream_kwargs = self._get_stream_kwargs(config)
-        streams = [
+        return [
             MerchantListingsReports(**stream_kwargs),
             FlatFileOrdersReports(**stream_kwargs),
             FbaInventoryReports(**stream_kwargs),
             Orders(marketplace_ids=self.marketplace_values.marketplace_id, **stream_kwargs),
         ]
-        return streams
