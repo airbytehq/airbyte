@@ -6,7 +6,7 @@ The Zendesk Support source supports both Full Refresh and Incremental syncs. You
 
 This source can sync data for the [Zendesk Support API](https://developer.zendesk.com/rest_api/docs/support).
 This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/contributing-to-airbyte/python).
-
+Incremental sync are implemented on API side by its filters
 ### Output schema
 
 This Source is capable of syncing the following core Streams:
@@ -57,7 +57,6 @@ This Source is capable of syncing the following core Streams:
 | `number` | `number` |  |
 | `array` | `array` |  |
 | `object` | `object` |  |
-## CHANGELOG
 ### Features
 
 | Feature | Supported?\(Yes/No\) | Notes |
@@ -74,10 +73,6 @@ The connector is restricted by normal Zendesk [requests limitation](https://deve
 The Zendesk connector should not run into Zendesk API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Getting started
-## CHANGELOG
-| Version | Date | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| `0.1.0` | 2021-07-21 | [4861](https://github.com/airbytehq/airbyte/issues/3698) | created CDK native zendesk connector |
 ### Requirements
 * Zendesk Subdomain
 * Auth Method
@@ -93,4 +88,8 @@ Generate a API access token using the [Zendesk support](https://support.zendesk.
 
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
 
+### CHANGELOG
+| Version | Date | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| `0.1.0` | 2021-07-21 | [4861](https://github.com/airbytehq/airbyte/issues/3698) | created CDK native zendesk connector |
 

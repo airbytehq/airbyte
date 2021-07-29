@@ -30,9 +30,24 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .streams import UserSettingsStream, generate_stream_classes
-
-STREAMS = generate_stream_classes()
+from .streams import (
+    GroupMemberships,
+    Groups,
+    Macros,
+    Organizations,
+    SatisfactionRatings,
+    SlaPolicies,
+    SourceZendeskException,
+    Tags,
+    TicketAudits,
+    TicketComments,
+    TicketFields,
+    TicketForms,
+    TicketMetrics,
+    Tickets,
+    Users,
+    UserSettingsStream,
+)
 
 
 class BasicApiTokenAuthenticator(TokenAuthenticator):
@@ -52,8 +67,8 @@ class SourceZendeskSupport(AbstractSource):
 
     def get_authenticator(self, config):
         if config["auth_method"].get("email") and config["auth_method"].get("api_token"):
-            return BasicApiTokenAuthenticator(config["auth_method"]["email"], config["auth_method"]["api_token"]), None
-        return None, "Not implemented authorization method"
+            return BasicApiTokenAuthenticator(config["auth_method"]["email"], config["auth_method"]["api_token"])
+        raise SourceZendeskException(f"Not implemented authorization method: {config['auth_method']}")
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
@@ -63,17 +78,13 @@ class SourceZendeskSupport(AbstractSource):
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully,
         (False, error) otherwise.
         """
-        auth, err = self.get_authenticator(config)
-        if err:
-            return False, err
+        auth = self.get_authenticator(config)
+        settings = None
         try:
-            settings, err = UserSettingsStream(config["subdomain"], authenticator=auth).get_settings()
+            settings = UserSettingsStream(config["subdomain"], authenticator=auth).get_settings()
         except requests.exceptions.RequestException as e:
             return False, e
 
-        if err:
-            raise Exception(err)
-            return False, err
         active_features = [k for k, v in settings.get("active_features", {}).items() if v]
         logger.info("available features: %s" % active_features)
         if "organization_access_enabled" not in active_features:
@@ -84,13 +95,27 @@ class SourceZendeskSupport(AbstractSource):
         """Returns relevant a list of available streams
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        auth, err = self.get_authenticator(config)
-        if err:
-            return False, err
-
+        auth = self.get_authenticator(config)
         args = {
             "subdomain": config["subdomain"],
             "start_date": config["start_date"],
             "authenticator": auth,
         }
-        return [stream_class(**args) for stream_class in STREAMS]
+        streams = [
+            Users(**args),
+            Organizations(**args),
+            Tickets(**args),
+            Groups(**args),
+            GroupMemberships(**args),
+            SatisfactionRatings(**args),
+            TicketFields(**args),
+            TicketForms(**args),
+            TicketMetrics(**args),
+            Macros(**args),
+            TicketAudits(**args),
+            Tags(**args),
+            SlaPolicies(**args),
+            TicketComments(**args),
+        ]
+        # sort in alphabet order
+        return sorted(streams, key=lambda s: s.__class__.__name__)
