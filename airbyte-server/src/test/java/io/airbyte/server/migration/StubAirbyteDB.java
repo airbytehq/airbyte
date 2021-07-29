@@ -24,11 +24,11 @@
 
 package io.airbyte.server.migration;
 
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import java.io.IOException;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.MountableFile;
 
 public class StubAirbyteDB implements AutoCloseable {
 
@@ -39,7 +39,7 @@ public class StubAirbyteDB implements AutoCloseable {
     return database;
   }
 
-  public StubAirbyteDB() throws IOException, InterruptedException {
+  public StubAirbyteDB() throws IOException {
     container =
         new PostgreSQLContainer<>("postgres:13-alpine")
             .withDatabaseName("airbyte")
@@ -47,15 +47,13 @@ public class StubAirbyteDB implements AutoCloseable {
             .withPassword("docker");
     container.start();
 
-    container
-        .copyFileToContainer(MountableFile.forClasspathResource("migration/schema.sql"), "/etc/init.sql");
-    // execInContainer uses Docker's EXEC so it needs to be split up like this
-    container.execInContainer("psql", "-d", "airbyte", "-U", "docker", "-a", "-f", "/etc/init.sql");
-
-    database = Databases
-        .createPostgresDatabase(container.getUsername(), container.getPassword(),
-            container.getJdbcUrl());
-
+    String jobsDatabaseSchema = MoreResources.readResource("migration/schema.sql");
+    database = new JobsDatabaseInstance(
+        container.getUsername(),
+        container.getPassword(),
+        container.getJdbcUrl(),
+        jobsDatabaseSchema)
+            .getAndInitialize();
   }
 
   @Override

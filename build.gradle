@@ -152,6 +152,10 @@ subprojects {
 
     repositories {
         mavenCentral()
+        maven {
+            // TODO(Issue-4915): Remove this when upstream is merged in.
+            url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
+        }
     }
 
     pmd {
@@ -213,7 +217,7 @@ subprojects {
         implementation 'org.slf4j:log4j-over-slf4j:1.7.30' // log4j1.2 bridge
 
         // Dependencies for logging to cloud storage, as well as the various clients used to do so.
-        implementation 'com.therealvan:appender-log4j2:3.1.0'
+        implementation 'com.therealvan:appender-log4j2:3.1.2-SNAPSHOT'
         implementation 'com.amazonaws:aws-java-sdk-s3:1.12.6'
         implementation 'com.google.cloud:google-cloud-storage:1.115.0'
 
@@ -285,4 +289,51 @@ subprojects {
 tasks.withType(AbstractArchiveTask) {
     preserveFileTimestamps = false
     reproducibleFileOrder = true
+}
+
+// Configure what Subprojects to publish.
+String[] toPublish = [
+        ':airbyte-analytics',
+        ':airbyte-api',
+        ':airbyte-commons',
+        ':airbyte-commons-docker',
+        ':airbyte-config:init',
+        ':airbyte-config:models',
+        ':airbyte-config:persistence',
+        ':airbyte-db',
+        ':airbyte-json-validation',
+        ':airbyte-json-notification',
+        ':airbyte-protocol:models',
+        ':airbyte-scheduler:models',
+        ':airbyte-scheduler:client',
+        ':airbyte-scheduler:persistence',
+        ':airbyte-server',
+        ':airbyte-workers'
+]
+configure(subprojects.findAll { toPublish.contains(it.getPath()) }) {
+    apply plugin: 'maven-publish'
+
+    publishing {
+        repositories {
+            publications {
+                // This block is present so Gradle knows to publish a Maven jar.
+                maven(MavenPublication) {
+                    from components.java
+                    // Gradle will by default use the subproject path as the group id and the subproject name as the artifact id.
+                    // e.g. the subproject :airbyte-scheduler:models is imported at io.airbyte.airbyte-config:persistence:<version-number>.
+                }
+            }
+
+            maven {
+                credentials {
+                    name 'cloudrepo'
+                    username System.getenv('CLOUDREPO_USER')
+                    password System.getenv('CLOUDREPO_PASSWORD')
+                }
+                url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
+            }
+
+            mavenLocal()
+        }
+    }
 }

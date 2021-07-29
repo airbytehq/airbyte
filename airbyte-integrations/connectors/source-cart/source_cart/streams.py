@@ -45,7 +45,7 @@ class CartStream(HttpStream, ABC):
     @property
     @abstractmethod
     def data_field() -> str:
-        """ Field of the response containing data"""
+        """Field of the response containing data"""
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """

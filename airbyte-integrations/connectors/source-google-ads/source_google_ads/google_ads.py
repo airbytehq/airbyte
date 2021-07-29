@@ -30,11 +30,15 @@ from google.ads.googleads.v8.services.types.google_ads_service import GoogleAdsR
 from proto.marshal.collections import Repeated, RepeatedComposite
 
 REPORT_MAPPING = {
-    "ad_group_ad_report": "ad_group_ad",
     "accounts": "customer",
-    "campaigns": "campaign",
-    "ad_groups": "ad_group",
     "ad_group_ads": "ad_group_ad",
+    "ad_groups": "ad_group",
+    "campaigns": "campaign",
+    "account_performance_report": "customer",
+    "ad_group_ad_report": "ad_group_ad",
+    "display_keyword_performance_report": "display_keyword_view",
+    "display_topics_performance_report": "topic_view",
+    "shopping_performance_report": "shopping_performance_view",
 }
 
 

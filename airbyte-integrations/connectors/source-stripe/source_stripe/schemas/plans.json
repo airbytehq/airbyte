@@ -81,10 +81,6 @@
     "metadata": {
       "type": ["null", "object"],
       "properties": {}
-    },
-    "updated": {
-      "type": ["null", "string"],
-      "format": "date-time"
     }
   }
 }
