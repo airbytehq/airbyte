@@ -3,6 +3,10 @@
 This is the repository for the Apify Dataset source connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/apify-dataset).
 
+# About connector
+This connector allows you to download data from Apify [dataset](https://docs.apify.com/storage/dataset) to Airbyte. All you need
+is Apify dataset ID.
+
 ## Local development
 
 ### Prerequisites
