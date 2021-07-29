@@ -4,7 +4,7 @@ set -e
 CWD=$(pwd)
 # change directory to be inside git_repo that was just cloned
 cd git_repo
-
+echo "Running from $(pwd)"
 POSITIONAL=()
 # Detect if some mandatory dbt flags were already passed as arguments
 CONTAINS_PROFILES_DIR="false"
