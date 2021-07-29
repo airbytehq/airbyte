@@ -59,6 +59,15 @@ KNOWN_CONVERTIBLE_SCHEMA_TYPES = {
     "phone_number": ("string", None),
 }
 
+CUSTOM_FIELD_VALUE_TYPE_CAST = {
+    bool: "boolean",
+    str: "string",
+    float: "number",
+    int: "integer",
+}
+
+CUSTOM_FIELD_VALUE_TYPE_CAST_REVERSED = {v: k for k, v in CUSTOM_FIELD_VALUE_TYPE_CAST.items()}
+
 
 def retry_connection_handler(**kwargs):
     """Retry helper, log each attempt"""
@@ -249,9 +258,62 @@ class Stream(ABC):
                         record["properties"].pop(key)
             yield record
 
+    @staticmethod
+    def _cast_value(declared_field_types: List, field_name: str, field_value):
+
+        if field_value is None and "null" in declared_field_types:
+            return field_value
+
+        actual_field_type = type(field_value)
+        actual_field_type_name = CUSTOM_FIELD_VALUE_TYPE_CAST.get(actual_field_type)
+        if actual_field_type_name in declared_field_types:
+            return field_value
+
+        target_type_name = next(filter(lambda t: t != "null", declared_field_types))
+        target_type = CUSTOM_FIELD_VALUE_TYPE_CAST_REVERSED.get(target_type_name)
+
+        if target_type_name == "number":
+            if field_name.endswith("_id"):
+                # do not cast numeric IDs into float, use integer instead
+                target_type = int
+
+        try:
+            casted_value = target_type(field_value)
+        except ValueError as e:
+            logger.warn(f"Could not cast {field_value} to {target_type}")
+            logger.warn(e)
+            return field_value
+
+        return casted_value
+
+    def _cast_record_fields_if_needed(self, record: Mapping, properties: Mapping[str, Any] = None) -> Mapping:
+
+        if self.entity not in {
+            "contact",
+            "engagement",
+            "company",
+            "deal",
+            "line_item"
+        }:
+            return record
+
+        if not record.get("properties"):
+            return record
+
+        properties = properties or self.properties
+
+        for field_name, field_value in record["properties"].items():
+            declared_field_types = properties[field_name].get("type") or []
+            if not isinstance(declared_field_types, Iterable):
+                declared_field_types = [declared_field_types]
+            record["properties"][field_name] = self._cast_value(declared_field_types, field_name, field_value)
+
+        return record
+
     def _transform(self, records: Iterable) -> Iterable:
         """Preprocess record before emitting"""
         for record in records:
+            record = self._cast_record_fields_if_needed(record)
             if self.created_at_field and self.updated_at_field and record.get(self.updated_at_field) is None:
                 record[self.updated_at_field] = record[self.created_at_field]
             yield record
@@ -313,11 +375,11 @@ class Stream(ABC):
         yield from self._filter_dynamic_fields(self._filter_old_records(self._transform(self._read(getter, params))))
 
     @staticmethod
-    def _get_field_props(field_type: str) -> Mapping[str, str]:
+    def _get_field_props(field_type: str) -> Mapping[str, List[str]]:
 
         if field_type in VALID_JSON_SCHEMA_TYPES:
             return {
-                "type": field_type,
+                "type": ["null", field_type],
             }
 
         converted_type, field_format = KNOWN_CONVERTIBLE_SCHEMA_TYPES.get(field_type) or (None, None)
@@ -327,7 +389,7 @@ class Stream(ABC):
             logger.warn(f"Unsupported type {field_type} found")
 
         field_props = {
-            "type": converted_type or field_type,
+            "type": ["null", converted_type or field_type],
         }
 
         if field_format:
