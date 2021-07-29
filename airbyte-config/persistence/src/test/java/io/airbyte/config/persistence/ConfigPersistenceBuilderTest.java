@@ -157,11 +157,10 @@ class ConfigPersistenceBuilderTest extends BaseTest {
    */
   @Test
   public void testMigrateFromFileToDbPersistence() throws Exception {
-    Map<AirbyteConfig, Stream<Object>> seedConfigs = Map.of(
-        ConfigSchema.STANDARD_WORKSPACE, Stream.of(DEFAULT_WORKSPACE),
+    final Map<AirbyteConfig, Stream<Object>> seedConfigs = Map.of(
         ConfigSchema.STANDARD_SOURCE_DEFINITION, Stream.of(SOURCE_GITHUB, SOURCE_POSTGRES),
         ConfigSchema.STANDARD_DESTINATION_DEFINITION, Stream.of(DESTINATION_S3));
-    StandardWorkspace extraWorkspace = new StandardWorkspace()
+    final StandardWorkspace extraWorkspace = new StandardWorkspace()
         .withWorkspaceId(UUID.randomUUID())
         .withName("extra")
         .withSlug("extra")
@@ -169,12 +168,12 @@ class ConfigPersistenceBuilderTest extends BaseTest {
         .withInitialSetupComplete(true);
 
     // first run uses file system config persistence, and adds an extra workspace
-    Path testRoot = Path.of("/tmp/cpf_test_migration");
-    Path storageRoot = Files.createTempDirectory(Files.createDirectories(testRoot), ConfigPersistenceBuilderTest.class.getName());
+    final Path testRoot = Path.of("/tmp/cpf_test_migration");
+    final Path storageRoot = Files.createTempDirectory(Files.createDirectories(testRoot), ConfigPersistenceBuilderTest.class.getName());
     Files.createDirectories(storageRoot.resolve(FileSystemConfigPersistence.CONFIG_DIR));
     when(configs.getConfigRoot()).thenReturn(storageRoot);
 
-    ConfigPersistence filePersistence = FileSystemConfigPersistence.createWithValidation(storageRoot);
+    final ConfigPersistence filePersistence = FileSystemConfigPersistence.createWithValidation(storageRoot);
 
     filePersistence.replaceAllConfigs(seedConfigs, false);
     filePersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, extraWorkspace.getWorkspaceId().toString(), extraWorkspace);
@@ -182,9 +181,9 @@ class ConfigPersistenceBuilderTest extends BaseTest {
     // second run uses database config persistence;
     // the only difference is that useConfigDatabase is no longer overridden to false;
     // the extra workspace should be ported to this persistence
-    ConfigPersistence dbPersistence = new ConfigPersistenceBuilder(configs, true).create();
-    Map<String, Stream<JsonNode>> expected = Map.of(
-        ConfigSchema.STANDARD_WORKSPACE.name(), Stream.of(Jsons.jsonNode(DEFAULT_WORKSPACE), Jsons.jsonNode(extraWorkspace)),
+    final ConfigPersistence dbPersistence = new ConfigPersistenceBuilder(configs, true).create();
+    final Map<String, Stream<JsonNode>> expected = Map.of(
+        ConfigSchema.STANDARD_WORKSPACE.name(), Stream.of(Jsons.jsonNode(extraWorkspace)),
         ConfigSchema.STANDARD_SOURCE_DEFINITION.name(), Stream.of(Jsons.jsonNode(SOURCE_GITHUB), Jsons.jsonNode(SOURCE_POSTGRES)),
         ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(), Stream.of(Jsons.jsonNode(DESTINATION_S3)));
     assertSameConfigDump(expected, dbPersistence.dumpConfigs());
