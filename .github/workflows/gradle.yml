@@ -35,9 +35,14 @@ jobs:
   ensure-images-exist:
     name: "Ensure all required Docker images exist on Dockerhub"
     runs-on: ubuntu-latest
+    env:
+      TEST_SECRET: ${{ secrets.TEST_SECRET }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
+
+      - name: test
+        run: echo $TEST_SECRET
 
       - name: Check images exist
         run: ./tools/bin/check_images_exist.sh all
