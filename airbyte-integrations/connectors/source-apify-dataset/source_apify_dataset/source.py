@@ -63,13 +63,10 @@ class SourceApifyDataset(Source):
         """
 
         try:
-            # Try to get user info using the provided userId and token. If either of them is invalid, ApifyClient throws an exception
-            user_id = config["userId"]
-            apify_token = config["apifyToken"]
-
-            client = ApifyClient(apify_token)
-            client.user(user_id).get()
-
+            dataset_id = config["datasetId"]
+            dataset = ApifyClient().dataset(dataset_id).get()
+            if dataset is None:
+                raise ValueError(f"Dataset {dataset_id} does not exist")
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
@@ -125,11 +122,10 @@ class SourceApifyDataset(Source):
         """
         logger.info("Reading data from Apify dataset")
 
-        apify_token = config["apifyToken"]
         dataset_id = config["datasetId"]
         clean = config.get("clean", False)
 
-        client = ApifyClient(apify_token)
+        client = ApifyClient()
         dataset_client = client.dataset(dataset_id)
 
         # Get total number of items in dataset. This will be used in pagination
