@@ -42,6 +42,7 @@ jobs:
   publish-image:
     needs: start-publish-image-runner
     runs-on: ${{ needs.start-publish-image-runner.outputs.label }}
+    environment: more-secrets
     steps:
       - name: Search for valid connector name format
         id: regex
