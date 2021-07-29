@@ -112,6 +112,7 @@ class TestZuora:
         """
         Helper method for other tests,
         makes test_date_slice to use within another tests.
+        As well as we test the ZuoraObjectsBase.to_datetime_str method for correct datetime formating needed for the query to run.
         """
         start_date = ZuoraObjectsBase.to_datetime_str(pendulum.parse(self.config["start_date"]).astimezone())
         end_date = ZuoraObjectsBase.to_datetime_str(pendulum.now().astimezone())
@@ -137,22 +138,6 @@ class TestZuora:
 
         # Return True if all is correct
         assert self.test_fields_schema_types == output_converted_schema_types
-
-    def test_to_datetime_str(self):
-        """
-        Test of ZuoraObjectsBase.to_datetime_str works correctly,
-        and converts datetime input to datetime_string as expected.
-        """
-        # Check input in different format
-        test_date = pendulum.parse(self.config["start_date"]).astimezone()
-        is_correct_input = True if test_date.strftime("%Y-%m-%dT%H:%M:%S%Z") else False
-
-        # Check output in different format
-        test_output = ZuoraObjectsBase.to_datetime_str(test_date)
-        is_correct_output = True if pendulum.from_format(test_output, "YYYY-MM-DD HH:mm:ss Z") else False
-
-        # If both are correct return True
-        assert is_correct_input and is_correct_output
 
     def test_query(self):
         """
