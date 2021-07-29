@@ -44,7 +44,7 @@ export enum Routes {
   Notifications = "/notifications",
   Metrics = "/metrics",
   Account = "/account",
-  Root = "/",
+  Root = "/airbyte",
 }
 
 const getPageName = (pathname: string) => {

@@ -10,9 +10,9 @@ server {
     #charset koi8-r;
     #access_log  /var/log/nginx/host.access.log  main;
 
-    location / {
+    location /airbyte {
         root   /usr/share/nginx/html;
-        try_files $uri $uri/ /airbyte/index.html;
+        # try_files $uri $uri/ /airbyte/index.html;
 
         sub_filter </head>
                 '</head><script language="javascript"\>
