@@ -75,6 +75,10 @@ public interface Configs {
 
   Set<Integer> getTemporalWorkerPorts();
 
+  String getBlotoutBaseUrl();
+
+  String getBlotoutAuthEndpoint();
+
   String getKubeNamespace();
 
   String getSubmitterNumThreads();

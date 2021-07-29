@@ -192,17 +192,15 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     this.configs = configs;
   }
 
-
-
   // WORKSPACE
 
   @GET
   @Path("/test")
-  @Produces({ "application/json" })
+  @Produces({"application/json"})
   public HealthCheckRead getHealthCheckTest() {
     return healthCheckHandler.health();
   }
-  
+
   @Override
   public WorkspaceReadList listWorkspaces() {
     return execute(workspacesHandler::listWorkspaces);

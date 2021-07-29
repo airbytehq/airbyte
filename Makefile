@@ -16,3 +16,4 @@ build:
 	export PATH=${GRADLE_HOME}/bin:${PATH}
 	#CORE_ONLY=1 ./gradlew build
 	SUB_BUILD=PLATFORM ./gradlew build
+
