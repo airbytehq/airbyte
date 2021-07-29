@@ -85,7 +85,7 @@ def streams(self, config: Mapping[str, Any]) -> List[Stream]:
 
 We're now ready to query the API!
 
-To do this, we'll need a [ConfiguredCatalog](https://docs.airbyte.io/tutorials/tutorials/beginners-guide-to-catalog). We've prepared one [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/configured_catalog.json) -- download this and place it in `sample_files/configured_catalog.json`. Then run:
+To do this, we'll need a [ConfiguredCatalog](../../../understanding-airbyte/beginners-guide-to-catalog.md). We've prepared one [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/configured_catalog.json) -- download this and place it in `sample_files/configured_catalog.json`. Then run:
 
 ```text
  python main.py read --config sample_files/config.json --catalog sample_files/configured_catalog.json
@@ -105,7 +105,7 @@ We theoretically _could_ stop here and call it a connector. But let's give addin
 
 To add incremental sync, we'll do a few things: 1. Pass the `start_date` param input by the user into the stream. 2. Declare the stream's `cursor_field`. 3. Implement the `get_updated_state` method. 4. Implement the `stream_slices` method. 5. Update the `path` method to specify the date to pull exchange rates for. 6. Update the configured catalog to use `incremental` sync when we're testing the stream.
 
-We'll describe what each of these methods do below. Before we begin, it may help to familiarize yourself with how incremental sync works in Airbyte by reading the [docs on incremental](https://docs.airbyte.io/architecture/connections/incremental-append).
+We'll describe what each of these methods do below. Before we begin, it may help to familiarize yourself with how incremental sync works in Airbyte by reading the [docs on incremental](../../../understanding-airbyte/connections/incremental-append.md).
 
 To keep things concise, we'll only show functions as we edit them one by one.
 
@@ -176,7 +176,7 @@ We'll implement the `stream_slices` method to return a list of the dates for whi
         return self._chunk_date_range(start_date)
 ```
 
-Each slice will cause an HTTP request to be made to the API. We can then use the information present in the `stream_slice` parameter \(a single element from the list we constructed in `stream_slices` above\) to set other configurations for the outgoing request like `path` or `request_params`. For more info about stream slicing, see [the slicing docs](../../stream_slices.md).
+Each slice will cause an HTTP request to be made to the API. We can then use the information present in the `stream_slice` parameter \(a single element from the list we constructed in `stream_slices` above\) to set other configurations for the outgoing request like `path` or `request_params`. For more info about stream slicing, see [the slicing docs](../../cdk-python/stream-slices.md).
 
 In order to pull data for a specific date, the Exchange Rates API requires that we pass the date as the path component of the URL. Let's override the `path` method to achieve this:
 
