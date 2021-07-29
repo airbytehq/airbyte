@@ -12,6 +12,7 @@ export const theme = {
   brightColor: "#F7F6FF",
 
   dangerColor: "#F74D58",
+  lightDangerColor: "#FEEDEE",
   dangerTransparentColor: "rgba(247, 77, 88, 0.1)",
   attentionColor: "#FFBD2E",
   successColor: "#45E698",
@@ -33,6 +34,7 @@ export const theme = {
   greyColor0: "#F7F7FA",
 
   whiteColor: "#FFFFFF",
+  whiteColor5: "rgba(255, 255, 255, .5)",
 
   regularFont: "Inter, Arial, sans-serif",
   highlightFont: "Montserrat, Arial, sans-serif",

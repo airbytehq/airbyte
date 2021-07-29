@@ -16,6 +16,7 @@ Each stream will be output into its own index in MeiliSearch. Each table will be
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
 | Incremental - Append Sync | Yes |  |
+| Namespaces | No |  |
 
 ## Getting started
 

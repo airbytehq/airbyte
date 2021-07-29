@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "group": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "self": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "id": {
+      "type": "integer"
+    },
+    "project": {
+      "properties": {
+        "assigneeType": {
+          "type": "string"
+        },
+        "avatarUrls": {
+          "properties": {
+            "16x16": {
+              "type": "string"
+            },
+            "24x24": {
+              "type": "string"
+            },
+            "32x32": {
+              "type": "string"
+            },
+            "48x48": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectTypeKey": {
+          "type": "string"
+        },
+        "properties": {
+          "type": "object"
+        },
+        "roles": {
+          "type": "object"
+        },
+        "self": {
+          "type": "string"
+        },
+        "simplified": {
+          "type": "boolean"
+        },
+        "style": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "type": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

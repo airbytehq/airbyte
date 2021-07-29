@@ -1,18 +1,20 @@
 import { JSONSchema7Definition } from "json-schema";
 import Status from "core/statuses";
-import { NetworkError } from "core/request/NetworkError";
+import { CommonRequestError } from "core/request/CommonRequestError";
+
 import { SourceDiscoverSchemaRead } from "./api";
 import { SyncSchemaField } from "./models";
+import { ConnectionNamespaceDefinition } from "../connection";
+import { SOURCE_NAMESPACE_TAG } from "../connector/source";
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function toInnerModel(
+function toInnerModel(
   result: SourceDiscoverSchemaRead
 ): SourceDiscoverSchemaRead {
   if (result.jobInfo?.status === Status.FAILED || !result.catalog) {
     // @ts-ignore address this case
-    const e = new NetworkError(result);
+    const e = new CommonRequestError(result);
     // Generate error with failed status and received logs
-    e.status = 400;
+    e._status = 400;
     // @ts-ignore address this case
     e.response = result.jobInfo;
     throw e;
@@ -21,7 +23,7 @@ export function toInnerModel(
   return result;
 }
 
-export const traverseSchemaToField = (
+const traverseSchemaToField = (
   jsonSchema: JSONSchema7Definition,
   key: string
 ): SyncSchemaField[] => {
@@ -32,7 +34,8 @@ export const traverseSchemaToField = (
 const traverseJsonSchemaProperties = (
   jsonSchema: JSONSchema7Definition,
   key: string,
-  path: string = key
+  path: string = key,
+  depth = 0
 ): SyncSchemaField[] => {
   if (typeof jsonSchema === "boolean") {
     return [];
@@ -42,7 +45,12 @@ const traverseJsonSchemaProperties = (
   if (jsonSchema.properties) {
     fields = Object.entries(jsonSchema.properties)
       .flatMap(([k, schema]) =>
-        traverseJsonSchemaProperties(schema, k, `${path}.${k}`)
+        traverseJsonSchemaProperties(
+          schema,
+          k,
+          depth === 0 ? k : `${path}.${k}`,
+          depth + 1
+        )
       )
       .flat(2);
   }
@@ -50,7 +58,7 @@ const traverseJsonSchemaProperties = (
   return [
     {
       cleanedName: key,
-      name: path || key,
+      name: path,
       key,
       fields,
       type:
@@ -60,3 +68,37 @@ const traverseJsonSchemaProperties = (
     },
   ];
 };
+
+type NamespaceOptions =
+  | {
+      namespaceDefinition:
+        | ConnectionNamespaceDefinition.Source
+        | ConnectionNamespaceDefinition.Destination;
+      sourceNamespace?: string;
+    }
+  | {
+      namespaceDefinition: ConnectionNamespaceDefinition.CustomFormat;
+      namespaceFormat: string;
+      sourceNamespace?: string;
+    };
+
+function getDestinationNamespace(opt: NamespaceOptions): string {
+  const destinationSetting = "<destination schema>";
+  switch (opt.namespaceDefinition) {
+    case ConnectionNamespaceDefinition.Source:
+      return opt.sourceNamespace ?? destinationSetting;
+    case ConnectionNamespaceDefinition.Destination:
+      return destinationSetting;
+    case ConnectionNamespaceDefinition.CustomFormat:
+      if (!opt.sourceNamespace?.trim()) {
+        return destinationSetting;
+      }
+
+      return opt.namespaceFormat.replace(
+        SOURCE_NAMESPACE_TAG,
+        opt.sourceNamespace
+      );
+  }
+}
+
+export { getDestinationNamespace, traverseSchemaToField, toInnerModel };

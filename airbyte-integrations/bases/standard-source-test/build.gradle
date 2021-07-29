@@ -12,6 +12,7 @@ plugins {
 import org.jsoup.Jsoup;
 
 dependencies {
+    implementation project(':airbyte-db')
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-workers')
@@ -24,8 +25,12 @@ dependencies {
 }
 
 def getFullPath(String className) {
-    def matchingFiles = project.fileTree("src/main/java").filter { file -> file.toString().endsWith("${className}.java") }.asCollection()
-    if (matchingFiles.size() != 1) {
+    def matchingFiles = project.fileTree("src/main/java")
+            .filter { file -> file.getName().equals("${className}.java".toString())}.asCollection()
+    if (matchingFiles.size() == 0) {
+        throw new IllegalArgumentException("Ambiguous class name ${className}: no file found.")
+    }
+    if (matchingFiles.size() > 1) {
         throw new IllegalArgumentException("Ambiguous class name ${className}: more than one matching file was found. Files found: ${matchingFiles}")
     }
     def absoluteFilePath = matchingFiles[0].toString()
@@ -42,7 +47,7 @@ task generateSourceTestDocs(type: Javadoc) {
     destinationDir = javadocOutputDir
 
     doLast {
-        def className = "StandardSourceTest" // this can be made into a list once we have multiple standard tests, and can also be used for destinations
+        def className = "SourceAcceptanceTest" // this can be made into a list once we have multiple standard tests, and can also be used for destinations
         def pathInPackage = getFullPath(className)
         def stdSrcTest = project.file("${javadocOutputDir}/${pathInPackage}.html").readLines().join("\n")
         def methodList = Jsoup.parse(stdSrcTest).body().select("section.methodDetails>ul>li>section")
@@ -70,5 +75,5 @@ task generateSourceTestDocs(type: Javadoc) {
 project.build.dependsOn(generateSourceTestDocs)
 
 application {
-    mainClass = 'io.airbyte.integrations.standardtest.source.TestPythonSourceMain'
+    mainClass = 'io.airbyte.integrations.standardtest.source.PythonSourceAcceptanceTest'
 }

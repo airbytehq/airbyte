@@ -30,22 +30,24 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
-import io.airbyte.config.StandardSyncSchedule;
+import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,7 +56,7 @@ import org.junit.jupiter.api.Test;
 class JobSchedulerTest {
 
   private static final StandardSync STANDARD_SYNC;
-  private static final StandardSyncSchedule STANDARD_SYNC_SCHEDULE;
+  private static final List<StandardSyncOperation> STANDARD_SYNC_OPERATIONS;
   private static final long JOB_ID = 12L;
   private Job previousJob;
 
@@ -71,18 +73,22 @@ class JobSchedulerTest {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(stream));
 
     final UUID connectionId = UUID.randomUUID();
+    final UUID operationId = UUID.randomUUID();
 
     STANDARD_SYNC = new StandardSync()
         .withConnectionId(connectionId)
         .withName("presto to hudi")
+        .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
+        .withNamespaceFormat(null)
         .withPrefix("presto_to_hudi")
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(catalog)
         .withSourceId(sourceId)
-        .withDestinationId(destinationId);
+        .withDestinationId(destinationId)
+        .withOperationIds(List.of(operationId));
 
     // empty. contents not needed for any of these unit tests.
-    STANDARD_SYNC_SCHEDULE = new StandardSyncSchedule();
+    STANDARD_SYNC_OPERATIONS = List.of(new StandardSyncOperation().withOperationId(operationId));
   }
 
   private ConfigRepository configRepository;
@@ -107,14 +113,14 @@ class JobSchedulerTest {
   public void testScheduleJob() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(jobPersistence.getLastReplicationJob(STANDARD_SYNC.getConnectionId()))
         .thenReturn(java.util.Optional.of(previousJob));
-    when(scheduleJobPredicate.test(Optional.of(previousJob), STANDARD_SYNC_SCHEDULE)).thenReturn(true);
+    when(scheduleJobPredicate.test(Optional.of(previousJob), STANDARD_SYNC)).thenReturn(true);
     when(jobFactory.create(STANDARD_SYNC.getConnectionId())).thenReturn(JOB_ID);
     setConfigMocks();
 
     scheduler.run();
 
     verifyConfigCalls();
-    verify(scheduleJobPredicate).test(Optional.of(previousJob), STANDARD_SYNC_SCHEDULE);
+    verify(scheduleJobPredicate).test(Optional.of(previousJob), STANDARD_SYNC);
     verify(jobPersistence).getLastReplicationJob(STANDARD_SYNC.getConnectionId());
     verify(jobFactory).create(STANDARD_SYNC.getConnectionId());
   }
@@ -123,14 +129,14 @@ class JobSchedulerTest {
   public void testScheduleJobNoPreviousJob() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(jobPersistence.getLastReplicationJob(STANDARD_SYNC.getConnectionId()))
         .thenReturn(java.util.Optional.empty());
-    when(scheduleJobPredicate.test(Optional.empty(), STANDARD_SYNC_SCHEDULE)).thenReturn(true);
+    when(scheduleJobPredicate.test(Optional.empty(), STANDARD_SYNC)).thenReturn(true);
     when(jobFactory.create(STANDARD_SYNC.getConnectionId())).thenReturn(JOB_ID);
     setConfigMocks();
 
     scheduler.run();
 
     verifyConfigCalls();
-    verify(scheduleJobPredicate).test(Optional.empty(), STANDARD_SYNC_SCHEDULE);
+    verify(scheduleJobPredicate).test(Optional.empty(), STANDARD_SYNC);
     verify(jobPersistence).getLastReplicationJob(STANDARD_SYNC.getConnectionId());
     verify(jobFactory).create(STANDARD_SYNC.getConnectionId());
   }
@@ -139,13 +145,13 @@ class JobSchedulerTest {
   public void testDoNotScheduleJob() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(jobPersistence.getLastReplicationJob(STANDARD_SYNC.getConnectionId()))
         .thenReturn(java.util.Optional.of(previousJob));
-    when(scheduleJobPredicate.test(Optional.of(previousJob), STANDARD_SYNC_SCHEDULE)).thenReturn(false);
+    when(scheduleJobPredicate.test(Optional.of(previousJob), STANDARD_SYNC)).thenReturn(false);
     setConfigMocks();
 
     scheduler.run();
 
     verifyConfigCalls();
-    verify(scheduleJobPredicate).test(Optional.of(previousJob), STANDARD_SYNC_SCHEDULE);
+    verify(scheduleJobPredicate).test(Optional.of(previousJob), STANDARD_SYNC);
     verify(jobPersistence).getLastReplicationJob(STANDARD_SYNC.getConnectionId());
     verify(jobFactory, never()).create(STANDARD_SYNC.getConnectionId());
   }
@@ -159,8 +165,7 @@ class JobSchedulerTest {
     scheduler.run();
 
     verify(configRepository).listStandardSyncs();
-    verify(configRepository, never()).getStandardSyncSchedule(STANDARD_SYNC.getConnectionId());
-    verify(scheduleJobPredicate, never()).test(Optional.of(previousJob), STANDARD_SYNC_SCHEDULE);
+    verify(scheduleJobPredicate, never()).test(Optional.of(previousJob), STANDARD_SYNC);
     verify(jobPersistence, never()).getLastReplicationJob(standardSync.getConnectionId());
     verify(jobFactory, never()).create(standardSync.getConnectionId());
   }
@@ -169,14 +174,12 @@ class JobSchedulerTest {
   // test suite.
   private void setConfigMocks() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configRepository.listStandardSyncs()).thenReturn(Collections.singletonList(STANDARD_SYNC));
-    when(configRepository.getStandardSyncSchedule(STANDARD_SYNC.getConnectionId())).thenReturn(STANDARD_SYNC_SCHEDULE);
   }
 
   // verify all mocks that are related to fetching configs are called. these are the same for all
   // tests in this test suite.
   private void verifyConfigCalls() throws ConfigNotFoundException, IOException, JsonValidationException {
     verify(configRepository).listStandardSyncs();
-    verify(configRepository).getStandardSyncSchedule(STANDARD_SYNC.getConnectionId());
   }
 
 }

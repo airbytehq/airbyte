@@ -8,7 +8,7 @@ ENV CODE_PATH="source_exchangeratesapi_singer"
 ENV AIRBYTE_IMPL_MODULE="source_exchangeratesapi_singer"
 ENV AIRBYTE_IMPL_PATH="SourceExchangeRatesApiSinger"
 
-LABEL io.airbyte.version=0.2.2
+LABEL io.airbyte.version=0.2.3
 LABEL io.airbyte.name=airbyte/source-exchangeratesapi-singer
 
 WORKDIR /airbyte/integration_code

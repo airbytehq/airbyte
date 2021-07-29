@@ -9,9 +9,12 @@
     "properties": {
       "domain": {
         "type": "string",
-        "pattern": ["^[a-zA-Z0-9._-]*\\.looker\\.com$"],
-        "examples": ["domainname.looker.com"],
-        "description": "Domain for your Looker account, e.g. airbyte.cloud.looker.com"
+        "examples": [
+          "domainname.looker.com",
+          "looker.clientname.com",
+          "123.123.124.123:8000"
+        ],
+        "description": "Domain for your Looker account, e.g. airbyte.cloud.looker.com,looker.[clientname].com,IP address"
       },
       "client_id": {
         "title": "Client ID",
@@ -22,6 +25,15 @@
         "title": "Client Secret",
         "type": "string",
         "description": "The Client Secret is second part of an API3 key."
+      },
+      "run_look_ids": {
+        "title": "Look IDs to Run",
+        "type": "array",
+        "items": {
+          "type": "string",
+          "pattern": ["^[0-9]*$"]
+        },
+        "description": "The IDs of any Looks to run (optional)"
       }
     }
   }

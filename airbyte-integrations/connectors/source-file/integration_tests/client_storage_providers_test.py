@@ -1,26 +1,27 @@
-"""
-MIT License
+#
+# MIT License
+#
+# Copyright (c) 2020 Airbyte
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 
-Copyright (c) 2020 Airbyte
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
 
 import json
 from pathlib import Path
@@ -141,6 +142,47 @@ def test__read_from_private_aws(aws_credentials, private_aws_file):
             "storage": "S3",
             "aws_access_key_id": aws_credentials["aws_access_key_id"],
             "aws_secret_access_key": aws_credentials["aws_secret_access_key"],
+        },
+    }
+    check_read(config)
+
+
+def test__read_from_public_azblob(azblob_credentials, public_azblob_file):
+    config = {
+        "dataset_name": "output",
+        "format": "csv",
+        "url": public_azblob_file,
+        "reader_options": json.dumps({"sep": ",", "nrows": 42}),
+        "provider": {"storage": "AzBlob", "storage_account": azblob_credentials["storage_account"]},
+    }
+    check_read(config)
+
+
+def test__read_from_private_azblob_shared_key(azblob_credentials, private_azblob_file):
+    config = {
+        "dataset_name": "output",
+        "format": "csv",
+        "url": private_azblob_file,
+        "reader_options": json.dumps({"sep": ",", "nrows": 42}),
+        "provider": {
+            "storage": "AzBlob",
+            "storage_account": azblob_credentials["storage_account"],
+            "shared_key": azblob_credentials["shared_key"],
+        },
+    }
+    check_read(config)
+
+
+def test__read_from_private_azblob_sas_token(azblob_credentials, private_azblob_file):
+    config = {
+        "dataset_name": "output",
+        "format": "csv",
+        "url": private_azblob_file,
+        "reader_options": json.dumps({"sep": ",", "nrows": 42}),
+        "provider": {
+            "storage": "AzBlob",
+            "storage_account": azblob_credentials["storage_account"],
+            "sas_token": azblob_credentials["sas_token"],
         },
     }
     check_read(config)

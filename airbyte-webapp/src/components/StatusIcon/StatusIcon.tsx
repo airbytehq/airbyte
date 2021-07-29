@@ -7,6 +7,7 @@ import PauseIcon from "./components/Pause";
 
 type IProps = {
   success?: boolean;
+  title?: string;
   inactive?: boolean;
   empty?: boolean;
   className?: string;
@@ -55,13 +56,13 @@ const Value = styled.span`
 const StatusIcon: React.FC<IProps> = (props) => (
   <Badge {...props}>
     {props.success ? (
-      <FontAwesomeIcon icon={faCheck} />
+      <FontAwesomeIcon icon={faCheck} title={props.title} />
     ) : props.inactive ? (
       <PauseIcon />
     ) : props.empty ? (
-      <FontAwesomeIcon icon={faBan} />
+      <FontAwesomeIcon icon={faBan} title={props.title} />
     ) : (
-      <FontAwesomeIcon icon={faTimes} />
+      <FontAwesomeIcon icon={faTimes} title={props.title} />
     )}
     {props.value && <Value>{props.value}</Value>}
   </Badge>

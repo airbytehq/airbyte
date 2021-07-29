@@ -14,14 +14,15 @@ The Redshift source does not alter the schema present in your warehouse. Dependi
 
 ### Features
 
-| Feature | Supported |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental Sync | Coming soon |
-| Replicate Incremental Deletes | Coming soon |
-| Logical Replication \(WAL\) | Coming soon |
-| SSL Support | Yes |
-| SSH Tunnel Connection | Coming soon |
+| Feature | Supported | Notes |
+| :--- | :--- | :--- |
+| Full Refresh Sync | Yes |  |
+| Incremental Sync | Coming soon |  |
+| Replicate Incremental Deletes | Coming soon |  |
+| Logical Replication \(WAL\) | Coming soon |  |
+| SSL Support | Yes |  |
+| SSH Tunnel Connection | Coming soon |  |
+| Namespaces | Yes | Enabled by default |
 
 #### Incremental Sync
 

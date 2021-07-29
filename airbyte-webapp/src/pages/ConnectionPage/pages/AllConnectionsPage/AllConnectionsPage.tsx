@@ -4,23 +4,26 @@ import { useResource } from "rest-hooks";
 
 import { Button, MainPageWithScroll, PageTitle, LoadingPage } from "components";
 import ConnectionResource from "core/resources/Connection";
-import config from "config";
 import ConnectionsTable from "./components/ConnectionsTable";
 import { Routes } from "pages/routes";
 import useRouter from "components/hooks/useRouterHook";
+import HeadTitle from "components/HeadTitle";
+import Placeholder, { ResourceTypes } from "components/Placeholder";
+import useWorkspace from "components/hooks/services/useWorkspace";
 
 const AllConnectionsPage: React.FC = () => {
   const { push } = useRouter();
-
+  const { workspace } = useWorkspace();
   const { connections } = useResource(ConnectionResource.listShape(), {
-    workspaceId: config.ui.workspaceId,
+    workspaceId: workspace.workspaceId,
   });
 
   const onClick = () => push(`${Routes.Connections}${Routes.ConnectionNew}`);
 
   return (
     <MainPageWithScroll
-      title={
+      headTitle={<HeadTitle titles={[{ id: "sidebar.connections" }]} />}
+      pageTitle={
         <PageTitle
           title={<FormattedMessage id="sidebar.connections" />}
           endComponent={
@@ -32,7 +35,11 @@ const AllConnectionsPage: React.FC = () => {
       }
     >
       <Suspense fallback={<LoadingPage />}>
-        <ConnectionsTable connections={connections} />
+        {connections.length ? (
+          <ConnectionsTable connections={connections} />
+        ) : (
+          <Placeholder resource={ResourceTypes.Connections} />
+        )}
       </Suspense>
     </MainPageWithScroll>
   );

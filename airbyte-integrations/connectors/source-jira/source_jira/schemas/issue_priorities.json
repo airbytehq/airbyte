@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "description": {
+      "type": "string"
+    },
+    "iconUrl": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "self": {
+      "type": "string"
+    },
+    "statusColor": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

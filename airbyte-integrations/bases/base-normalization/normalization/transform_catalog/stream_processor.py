@@ -1,35 +1,36 @@
-"""
-MIT License
+#
+# MIT License
+#
+# Copyright (c) 2020 Airbyte
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 
-Copyright (c) 2020 Airbyte
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
-
-import hashlib
 import os
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMode
 from jinja2 import Template
 from normalization.destination_type import DestinationType
-from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer
+from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer, transform_json_naming
+from normalization.transform_catalog.table_name_registry import TableNameRegistry
 from normalization.transform_catalog.utils import (
     is_airbyte_column,
     is_array,
@@ -43,8 +44,9 @@ from normalization.transform_catalog.utils import (
     jinja_call,
 )
 
-# minimum length of parent name used for nested streams
-MINIMUM_PARENT_LENGTH = 10
+# using too many columns breaks ephemeral materialization (somewhere between 480 and 490 columns)
+# let's use a lower value to be safely away from the limit...
+MAXIMUM_COLUMNS_TO_USE_EPHEMERAL = 450
 
 
 class StreamProcessor(object):
@@ -80,7 +82,7 @@ class StreamProcessor(object):
         primary_key: List[List[str]],
         json_column_name: str,
         properties: Dict,
-        tables_registry: Set[str],
+        tables_registry: TableNameRegistry,
         from_table: str,
     ):
         """
@@ -96,14 +98,13 @@ class StreamProcessor(object):
         self.primary_key: List[List[str]] = primary_key
         self.json_column_name: str = json_column_name
         self.properties: Dict = properties
-        self.tables_registry: Set[str] = tables_registry
+        self.tables_registry: TableNameRegistry = tables_registry
         self.from_table: str = from_table
 
         self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(destination_type)
         self.json_path: List[str] = [stream_name]
         self.final_table_name: str = ""
         self.sql_outputs: Dict[str, str] = {}
-        self.local_registry: Set[str] = set()
         self.parent: Optional["StreamProcessor"] = None
         self.is_nested_array: bool = False
 
@@ -155,7 +156,7 @@ class StreamProcessor(object):
         primary_key: List[List[str]],
         json_column_name: str,
         properties: Dict,
-        tables_registry: Set[str],
+        tables_registry: TableNameRegistry,
         from_table: str,
     ) -> "StreamProcessor":
         """
@@ -191,6 +192,12 @@ class StreamProcessor(object):
             from_table,
         )
 
+    def collect_table_names(self):
+        column_names = self.extract_column_names()
+        self.tables_registry.register_table(self.get_schema(True), self.get_schema(False), self.stream_name, self.json_path)
+        for child in self.find_children_streams(self.from_table, column_names):
+            child.collect_table_names()
+
     def process(self) -> List["StreamProcessor"]:
         """
         See description of StreamProcessor class.
@@ -198,27 +205,43 @@ class StreamProcessor(object):
         """
         # Check properties
         if not self.properties:
-            print(f"  Ignoring substream '{self.stream_name}' from {self.current_json_path()} because properties list is empty")
+            print(f"  Ignoring stream '{self.stream_name}' from {self.current_json_path()} because properties list is empty")
             return []
 
         column_names = self.extract_column_names()
+        column_count = len(column_names)
+
+        if column_count == 0:
+            print(f"  Ignoring stream '{self.stream_name}' from {self.current_json_path()} because no columns were identified")
+            return []
 
         from_table = self.from_table
         # Transformation Pipeline for this stream
         from_table = self.add_to_outputs(self.generate_json_parsing_model(from_table, column_names), is_intermediate=True, suffix="ab1")
-        from_table = self.add_to_outputs(self.generate_column_typing_model(from_table, column_names), is_intermediate=True, suffix="ab2")
-        from_table = self.add_to_outputs(self.generate_id_hashing_model(from_table, column_names), is_intermediate=True, suffix="ab3")
+        from_table = self.add_to_outputs(
+            self.generate_column_typing_model(from_table, column_names), is_intermediate=True, column_count=column_count, suffix="ab2"
+        )
+        from_table = self.add_to_outputs(
+            self.generate_id_hashing_model(from_table, column_names), is_intermediate=True, column_count=column_count, suffix="ab3"
+        )
         if self.destination_sync_mode.value == DestinationSyncMode.append_dedup.value:
             from_table = self.add_to_outputs(self.generate_dedup_record_model(from_table, column_names), is_intermediate=True, suffix="ab4")
             where_clause = "\nwhere _airbyte_row_num = 1"
             from_table = self.add_to_outputs(
-                self.generate_scd_type_2_model(from_table, column_names) + where_clause, is_intermediate=False, suffix="scd"
+                self.generate_scd_type_2_model(from_table, column_names) + where_clause,
+                is_intermediate=False,
+                column_count=column_count,
+                suffix="scd",
             )
             where_clause = "\nwhere _airbyte_active_row = True"
-            from_table = self.add_to_outputs(self.generate_final_model(from_table, column_names) + where_clause, is_intermediate=False)
+            from_table = self.add_to_outputs(
+                self.generate_final_model(from_table, column_names) + where_clause, is_intermediate=False, column_count=column_count
+            )
             # TODO generate yaml file to dbt test final table where primary keys should be unique
         else:
-            from_table = self.add_to_outputs(self.generate_final_model(from_table, column_names), is_intermediate=False)
+            from_table = self.add_to_outputs(
+                self.generate_final_model(from_table, column_names), is_intermediate=False, column_count=column_count
+            )
         return self.find_children_streams(from_table, column_names)
 
     def extract_column_names(self) -> Dict[str, Tuple[str, str]]:
@@ -323,14 +346,17 @@ from {{ from_table }}
     @staticmethod
     def extract_json_column(property_name: str, json_column_name: str, definition: Dict, column_name: str) -> str:
         json_path = [property_name]
-        json_extract = jinja_call(f"json_extract({json_column_name}, {json_path})")
+        # In some cases, some destination aren't able to parse the JSON blob using the original property name
+        # we make their life easier by using a pre-populated and sanitized column name instead...
+        normalized_json_path = [transform_json_naming(property_name)]
+        json_extract = jinja_call(f"json_extract({json_column_name}, {json_path}, {normalized_json_path})")
         if "type" in definition:
             if is_array(definition["type"]):
-                json_extract = jinja_call(f"json_extract_array({json_column_name}, {json_path})")
+                json_extract = jinja_call(f"json_extract_array({json_column_name}, {json_path}, {normalized_json_path})")
             elif is_object(definition["type"]):
-                json_extract = jinja_call(f"json_extract({json_column_name}, {json_path})")
+                json_extract = jinja_call(f"json_extract({json_column_name}, {json_path}, {normalized_json_path})")
             elif is_simple_property(definition["type"]):
-                json_extract = jinja_call(f"json_extract_scalar({json_column_name}, {json_path})")
+                json_extract = jinja_call(f"json_extract_scalar({json_column_name}, {json_path}, {normalized_json_path})")
         return f"{json_extract} as {column_name}"
 
     def generate_column_typing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
@@ -366,9 +392,9 @@ from {{ from_table }}
             print(f"WARN: Unknown type for column {property_name} at {self.current_json_path()}")
             return column_name
         elif is_array(definition["type"]):
-            return self.cast_property_type_as_array(property_name, column_name)
+            return column_name
         elif is_object(definition["type"]):
-            sql_type = self.cast_property_type_as_object(property_name, column_name)
+            sql_type = jinja_call("type_json()")
         # Treat simple types from narrower to wider scope type: boolean < integer < number < string
         elif is_boolean(definition["type"]):
             cast_operation = jinja_call(f"cast_to_boolean({jinja_column})")
@@ -383,18 +409,6 @@ from {{ from_table }}
             print(f"WARN: Unknown type {definition['type']} for column {property_name} at {self.current_json_path()}")
             return column_name
         return f"cast({column_name} as {sql_type}) as {column_name}"
-
-    def cast_property_type_as_array(self, property_name: str, column_name: str) -> str:
-        if self.destination_type.value == DestinationType.BIGQUERY.value:
-            # TODO build a struct/record type from properties JSON schema
-            pass
-        return column_name
-
-    def cast_property_type_as_object(self, property_name: str, column_name: str) -> str:
-        if self.destination_type.value == DestinationType.BIGQUERY.value:
-            # TODO build a struct/record type from properties JSON schema
-            pass
-        return jinja_call("type_json()")
 
     def generate_id_hashing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
         template = Template(
@@ -424,10 +438,13 @@ from {{ from_table }}
         return sql
 
     def safe_cast_to_strings(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
-        return [StreamProcessor.safe_cast_to_string(field, self.properties[field], column_names[field][1]) for field in column_names]
+        return [StreamProcessor.safe_cast_to_string(self.properties[field], column_names[field][1]) for field in column_names]
 
     @staticmethod
-    def safe_cast_to_string(property_name: str, definition: Dict, column_name: str) -> str:
+    def safe_cast_to_string(definition: Dict, column_name: str) -> str:
+        """
+        Note that the result from this static method should always be used within a jinja context (for example, from jinja macro surrogate_key call)
+        """
         if "type" not in definition:
             return column_name
         elif is_boolean(definition["type"]):
@@ -472,18 +489,25 @@ select
     {{ cursor_field }} as _airbyte_start_at,
     lag({{ cursor_field }}) over (
         partition by {{ primary_key }}
-        order by {{ cursor_field }} desc, _airbyte_emitted_at desc
+        order by {{ cursor_field }} is null asc, {{ cursor_field }} desc, _airbyte_emitted_at desc
     ) as _airbyte_end_at,
     lag({{ cursor_field }}) over (
         partition by {{ primary_key }}
-        order by {{ cursor_field }} desc, _airbyte_emitted_at desc
-    ) is null as _airbyte_active_row,
+        order by {{ cursor_field }} is null asc, {{ cursor_field }} desc, _airbyte_emitted_at desc{{ cdc_updated_at_order }}
+    ) is null {{ cdc_active_row }}as _airbyte_active_row,
     _airbyte_emitted_at,
     {{ hash_id }}
 from {{ from_table }}
 {{ sql_table_comment }}
         """
         )
+
+        cdc_active_row_pattern = ""
+        cdc_updated_order_pattern = ""
+        if "_ab_cdc_deleted_at" in column_names.keys():
+            cdc_active_row_pattern = "and _ab_cdc_deleted_at is null "
+            cdc_updated_order_pattern = ", _ab_cdc_updated_at desc"
+
         sql = template.render(
             parent_hash_id=self.parent_hash_id(),
             fields=self.list_fields(column_names),
@@ -492,6 +516,8 @@ from {{ from_table }}
             hash_id=self.hash_id(),
             from_table=jinja_call(from_table),
             sql_table_comment=self.sql_table_comment(include_from_table=True),
+            cdc_active_row=cdc_active_row_pattern,
+            cdc_updated_at_order=cdc_updated_order_pattern,
         )
         return sql
 
@@ -521,11 +547,11 @@ from {{ from_table }}
                     property_type = self.properties[field]["type"]
                 else:
                     property_type = "object"
-                if is_number(property_type) or is_boolean(property_type) or is_array(property_type) or is_object(property_type):
-                    # some destinations don't handle float columns (or other types) as primary keys, turn everything to string
-                    return f"cast({self.safe_cast_to_string(field, self.properties[field], column_names[field][1])} as {jinja_call('dbt_utils.type_string()')})"
+                if is_number(property_type) or is_object(property_type):
+                    # some destinations don't handle float columns (or complex types) as primary keys, turn them to string
+                    return f"cast({column_names[field][0]} as {jinja_call('dbt_utils.type_string()')})"
                 else:
-                    return field
+                    return column_names[field][0]
             else:
                 # using an airbyte generated column
                 return f"cast({field} as {jinja_call('dbt_utils.type_string()')})"
@@ -561,20 +587,32 @@ from {{ from_table }}
         )
         return sql
 
-    def list_fields(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
+    @staticmethod
+    def list_fields(column_names: Dict[str, Tuple[str, str]]) -> List[str]:
         return [column_names[field][0] for field in column_names]
 
-    def add_to_outputs(self, sql: str, is_intermediate: bool, suffix: str = "") -> str:
+    def add_to_outputs(self, sql: str, is_intermediate: bool, column_count: int = 0, suffix: str = "") -> str:
         schema = self.get_schema(is_intermediate)
-        table_name = self.generate_new_table_name(is_intermediate, suffix)
-        self.add_table_to_local_registry(table_name)
-        file = f"{table_name}.sql"
+        # MySQL table names need to be manually truncated, because it does not do it automatically
+        truncate_name = self.destination_type == DestinationType.MYSQL
+        table_name = self.tables_registry.get_table_name(schema, self.json_path, self.stream_name, suffix, truncate_name)
+        file_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, suffix, truncate_name)
+        file = f"{file_name}.sql"
         if is_intermediate:
-            output = os.path.join("airbyte_views", self.schema, file)
+            if column_count <= MAXIMUM_COLUMNS_TO_USE_EPHEMERAL:
+                output = os.path.join("airbyte_ctes", self.schema, file)
+            else:
+                # dbt throws "maximum recursion depth exceeded" exception at runtime
+                # if ephemeral is used with large number of columns, use views instead
+                output = os.path.join("airbyte_views", self.schema, file)
         else:
             output = os.path.join("airbyte_tables", self.schema, file)
         tags = self.get_model_tags(is_intermediate)
-        header = jinja_call(f'config(schema="{schema}", tags=[{tags}])')
+        # The alias() macro configs a model's final table name.
+        if file_name != table_name:
+            header = jinja_call(f'config(alias="{table_name}", schema="{schema}", tags=[{tags}])')
+        else:
+            header = jinja_call(f'config(schema="{schema}", tags=[{tags}])')
         self.sql_outputs[
             output
         ] = f"""
@@ -583,7 +621,7 @@ from {{ from_table }}
 """
         json_path = self.current_json_path()
         print(f"  Generating {output} from {json_path}")
-        return ref_table(table_name)
+        return ref_table(file_name)
 
     def get_model_tags(self, is_intermediate: bool) -> str:
         tags = ""
@@ -594,38 +632,6 @@ from {{ from_table }}
         if is_intermediate:
             tags += "-intermediate"
         return f'"{tags}"'
-
-    def generate_new_table_name(self, is_intermediate: bool, suffix: str) -> str:
-        """
-        Generates a new table names that is not registered in the schema yet (based on normalized_stream_name())
-        """
-        tables_registry = self.tables_registry.union(self.local_registry)
-        new_table_name = self.normalized_stream_name()
-        if not is_intermediate and self.parent is None:
-            if suffix:
-                norm_suffix = suffix if not suffix or suffix.startswith("_") else f"_{suffix}"
-                new_table_name = new_table_name + norm_suffix
-            # Top-level stream has priority on table_names
-            if new_table_name in tables_registry:
-                # TODO handle collisions between different schemas (dbt works with only one schema for ref()?)
-                # so filenames should always be different for dbt but the final table can be same as long as schemas are different:
-                # see alias in dbt: https://docs.getdbt.com/docs/building-a-dbt-project/building-models/using-custom-aliases/
-                raise ValueError(f"Conflict: Table name {new_table_name} already exists!")
-        elif not self.parent:
-            new_table_name = get_table_name(self.name_transformer, "", new_table_name, suffix, self.json_path)
-        else:
-            new_table_name = get_table_name(self.name_transformer, "_".join(self.json_path[:-1]), new_table_name, suffix, self.json_path)
-        new_table_name = self.name_transformer.normalize_table_name(new_table_name, False, False)
-        if not is_intermediate:
-            self.final_table_name = new_table_name
-        return new_table_name
-
-    def add_table_to_local_registry(self, table_name: str):
-        tables_registry = self.tables_registry.union(self.local_registry)
-        if table_name not in tables_registry:
-            self.local_registry.add(table_name)
-        else:
-            raise KeyError(f"Duplicate table {table_name}")
 
     def get_schema(self, is_intermediate: bool) -> str:
         if is_intermediate:
@@ -642,16 +648,6 @@ from {{ from_table }}
         Note that it might not be the actual table name in case of collisions with other streams (see actual_table_name)...
         """
         return self.name_transformer.normalize_table_name(self.stream_name)
-
-    def actual_table_name(self) -> str:
-        """
-        Record the final actual name of the table for this stream once it is written.
-        (to be used by children stream processors that need to still refer to their actual parent table)
-        """
-        if self.final_table_name:
-            return self.final_table_name
-        else:
-            raise KeyError("Final table name is not determined yet...")
 
     def sql_table_comment(self, include_from_table: bool = False) -> str:
         result = f"-- {self.normalized_stream_name()}"
@@ -674,10 +670,12 @@ from {{ from_table }}
 
     def unnesting_before_query(self) -> str:
         if self.parent and self.is_nested_array:
-            parent_table_name = f"'{self.parent.actual_table_name()}'"
+            parent_file_name = (
+                f"'{self.tables_registry.get_file_name(self.parent.get_schema(False), self.parent.json_path, self.parent.stream_name, '')}'"
+            )
             parent_stream_name = f"'{self.parent.normalized_stream_name()}'"
             quoted_field = self.name_transformer.normalize_column_name(self.stream_name, in_jinja=True)
-            return jinja_call(f"unnest_cte({parent_table_name}, {parent_stream_name}, {quoted_field})")
+            return jinja_call(f"unnest_cte({parent_file_name}, {parent_stream_name}, {quoted_field})")
         return ""
 
     def unnesting_after_query(self) -> str:
@@ -698,8 +696,8 @@ where {column_name} is not null"""
 # Static Functions
 
 
-def ref_table(table_name) -> str:
-    return f"ref('{table_name}')"
+def ref_table(file_name: str) -> str:
+    return f"ref('{file_name}')"
 
 
 def find_properties_object(path: List[str], field: str, properties) -> Dict[str, Dict]:
@@ -736,35 +734,3 @@ def find_properties_object(path: List[str], field: str, properties) -> Dict[str,
                 if child:
                     result.update(child)
     return result
-
-
-def hash_json_path(json_path: List[str]) -> str:
-    lineage = "&airbyte&".join(json_path)
-    h = hashlib.sha1()
-    h.update(lineage.encode("utf-8"))
-    return h.hexdigest()[:3]
-
-
-def get_table_name(name_transformer: DestinationNameTransformer, parent: str, child: str, suffix: str, json_path: List[str]) -> str:
-    max_length = name_transformer.get_name_max_length() - 2  # less two for the underscores
-    json_path_hash = hash_json_path(json_path)
-    norm_suffix = suffix if not suffix or suffix.startswith("_") else f"_{suffix}"
-    norm_parent = parent if not parent else name_transformer.normalize_table_name(parent, False, False)
-    norm_child = name_transformer.normalize_table_name(child, False, False)
-    min_parent_length = min(MINIMUM_PARENT_LENGTH, len(norm_parent))
-
-    # no parent
-    if not parent:
-        return name_transformer.truncate_identifier_name(f"{norm_child}{norm_suffix}")
-    # if everything fits without truncation, don't truncate anything
-    elif (len(norm_parent) + len(norm_child) + len(json_path_hash) + len(norm_suffix)) < max_length:
-        return f"{norm_parent}_{json_path_hash}_{norm_child}{norm_suffix}"
-    # if everything fits except for the parent, just truncate the parent
-    elif (len(norm_child) + len(json_path_hash) + len(norm_suffix)) < (max_length - min_parent_length):
-        max_parent_length = max_length - len(norm_child) - len(json_path_hash) - len(norm_suffix)
-        return f"{norm_parent[:max_parent_length]}_{json_path_hash}_{norm_child}{norm_suffix}"
-    # otherwise first truncate parent to the minimum length and middle truncate the child
-    else:
-        norm_child_max_length = max_length - min_parent_length - len(json_path_hash) - len(norm_suffix)
-        trunc_norm_child = name_transformer.truncate_identifier_name(norm_child, norm_child_max_length)
-        return f"{norm_parent[:min_parent_length]}_{json_path_hash}_{trunc_norm_child}{norm_suffix}"

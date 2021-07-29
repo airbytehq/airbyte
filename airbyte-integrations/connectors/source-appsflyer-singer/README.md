@@ -8,6 +8,8 @@ For information about how to use this connector within Airbyte, see [the User Do
 ### Prerequisites
 **To iterate on this connector, make sure to complete this prerequisites section.**
 
+#### Minimum Python version required `= 3.7.0`
+
 #### Build & Activate Virtual Environment and install dependencies
 From this connector directory, create a virtual environment:
 ```
@@ -75,7 +77,7 @@ python -m pytest unit_tests
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/appsflyer-singer:dev
+docker build . -t airbyte/source-appsflyer-singer:dev
 ```
 
 You can also build the connector image via Gradle:

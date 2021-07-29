@@ -1,45 +1,60 @@
-# Oracle
+# Oracle DB
 
 ## Overview
 
-The Oracle Database source supports both Full Refresh and Incremental syncs. You can choose if this
-connector will copy only the new or updated data, or all rows in the tables and columns you set up
-for replication, every time a sync is run.
-
+The Oracle Database source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
 ### Resulting schema
 
-The Oracle source does not alter the schema present in your database. Depending on the destination
-connected to this source, however, the schema may be altered. See the destination's documentation
-for more details.
+The Oracle source does not alter the schema present in your database. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
 
 ### Data type mapping
 
-Oracle data types are mapped to the following data types when synchronizing data:
+Oracle data types are mapped to the following data types when synchronizing data.
+You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-oracle/src/test-integration/java/io/airbyte/integrations/source/oracle/OracleSourceComprehensiveTest.java).
+If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
 | Oracle Type | Resulting Type | Notes |
 | :--- | :--- | :--- |
-| `number` | number | |
-| `integer` | number |  |
+| `binary_double` | number |  |
+| `binary_float` | number |  |
+| `blob` | string |  |
+| `char` | string |  |
+| `char(3 char)` | string |  |
+| `clob` | string |  |
+| `date` | string |  |
 | `decimal` | number |  |
 | `float` | number |  |
-| everything else | string |  |
+| `float(5)` | number |  |
+| `integer` | number |  |
+| `interval year to month` | string |  |
+| `long raw` | string |  |
+| `number` | number |  |
+| `number(6, 2)` | number |  |
+| `nvarchar(3)` | string |  |
+| `raw` | string |  |
+| `timestamp` | string |  |
+| `timestamp with local time zone` | string |  |
+| `timestamp with time zone` | string |  |
+| `varchar2` | string |  |
+| `varchar2(256)` | string |  |
+| `xmltype` | string |  |
 
-If you do not see a type in this list, assume that it is coerced into a string. We are happy to 
-take feedback on preferred mappings.
+If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
 
 ### Features
 
-| Feature | Supported |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental - Append Sync | Yes |
-| Replicate Incremental Deletes | Coming soon |
-| Logical Replication \(WAL\) | Coming soon |
-| SSL Support | Coming soon |
-| SSH Tunnel Connection | Coming soon |
-| LogMiner | Coming soon |
-| Flashback | Coming soon |
+| Feature | Supported | Notes |
+| :--- | :--- | :--- |
+| Full Refresh Sync | Yes |  |
+| Incremental - Append Sync | Yes |  |
+| Replicate Incremental Deletes | Coming soon |  |
+| Logical Replication \(WAL\) | Coming soon |  |
+| SSL Support | Coming soon |  |
+| SSH Tunnel Connection | Coming soon |  |
+| LogMiner | Coming soon |  |
+| Flashback | Coming soon |  |
+| Namespaces | Yes | Enabled by default |
 
 ## Getting started
 
@@ -73,9 +88,11 @@ GRANT SELECT ANY TABLE TO airbyte;
 ```
 
 Or you can be more granular:
+
 ```sql
 GRANT SELECT ON "<schema_a>"."<table_1>" TO airbyte;
 GRANT SELECT ON "<schema_b>"."<table_2>" TO airbyte;
 ```
 
 Your database user should now be ready for use with Airbyte.
+

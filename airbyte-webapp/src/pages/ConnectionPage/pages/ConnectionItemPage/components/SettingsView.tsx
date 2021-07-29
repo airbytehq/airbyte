@@ -1,32 +1,38 @@
 import React, { useCallback, useState } from "react";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 
+import { Button } from "components";
 import ContentCard from "components/ContentCard";
-import FrequencyConfig from "data/FrequencyConfig.json";
 import useConnection, {
   useConnectionLoad,
+  ValuesProps,
 } from "components/hooks/services/useConnectionHook";
 import DeleteBlock from "components/DeleteBlock";
-import FrequencyForm from "views/Connector/FrequencyForm";
-import { SyncSchema } from "core/domain/catalog";
-import { equal } from "utils/objects";
+import ConnectionForm from "views/Connection/ConnectionForm";
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
-import Button from "components/Button";
 import LoadingSchema from "components/LoadingSchema";
+import { DestinationDefinition } from "core/resources/DestinationDefinition";
+import { SourceDefinition } from "core/resources/SourceDefinition";
+
+import { equal } from "utils/objects";
 import EnabledControl from "./EnabledControl";
+import { ConnectionNamespaceDefinition } from "core/domain/connection";
+import { useAsyncFn } from "react-use";
 
 type IProps = {
   onAfterSaveSchema: () => void;
   connectionId: string;
   frequencyText?: string;
+  destinationDefinition?: DestinationDefinition;
+  sourceDefinition?: SourceDefinition;
 };
 
 const Content = styled.div`
-  max-width: 1140px;
+  max-width: 1279px;
   overflow-x: hidden;
   margin: 18px auto;
 `;
@@ -62,89 +68,73 @@ const Note = styled.span`
   color: ${({ theme }) => theme.dangerColor};
 `;
 
-type FormValues = {
-  frequency: string;
-  prefix: string;
-  schema: SyncSchema;
-};
-
 const SettingsView: React.FC<IProps> = ({
   onAfterSaveSchema,
   connectionId,
   frequencyText,
+  destinationDefinition,
+  sourceDefinition,
 }) => {
   const [isModalOpen, setIsUpdateModalOpen] = useState(false);
   const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(
     false
   );
-  const formatMessage = useIntl().formatMessage;
   const [saved, setSaved] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [currentValues, setCurrentValues] = useState<FormValues>({
-    frequency: "",
+  const [currentValues, setCurrentValues] = useState<ValuesProps>({
+    namespaceDefinition: ConnectionNamespaceDefinition.Source,
+    namespaceFormat: "",
+    schedule: null,
     prefix: "",
-    schema: { streams: [] },
+    syncCatalog: { streams: [] },
   });
-  const [errorMessage, setErrorMessage] = useState("");
+
   const {
     updateConnection,
     deleteConnection,
     resetConnection,
   } = useConnection();
 
-  const { connection, isLoadingConnection } = useConnectionLoad(
+  const onDelete = useCallback(() => deleteConnection({ connectionId }), [
+    deleteConnection,
     connectionId,
-    activeUpdatingSchemaMode
-  );
-
-  const onDelete = useCallback(
-    () => deleteConnection({ connectionId: connectionId }),
-    [deleteConnection, connectionId]
-  );
+  ]);
 
   const onReset = useCallback(() => resetConnection(connectionId), [
     resetConnection,
     connectionId,
   ]);
 
-  const schedule =
-    connection &&
-    FrequencyConfig.find((item) => equal(connection.schedule, item.config));
+  const {
+    connection: initialConnection,
+    refreshConnectionCatalog,
+  } = useConnectionLoad(connectionId);
 
-  const onSubmit = async (values: FormValues) => {
-    setIsLoading(true);
-    const frequencyData = FrequencyConfig.find(
-      (item) => item.value === values.frequency
-    );
+  const [
+    { value: connectionWithRefreshCatalog, loading: isRefreshingCatalog },
+    refreshCatalog,
+  ] = useAsyncFn(refreshConnectionCatalog, [connectionId]);
+
+  const connection = activeUpdatingSchemaMode
+    ? connectionWithRefreshCatalog
+    : initialConnection;
+
+  const onSubmit = async (values: ValuesProps) => {
     const initialSyncSchema = connection?.syncCatalog;
 
-    try {
-      await updateConnection({
-        connectionId: connectionId,
-        syncCatalog: values.schema,
-        status: connection?.status || "",
-        schedule: frequencyData?.config || null,
-        prefix: values.prefix,
-        withRefreshedCatalog: activeUpdatingSchemaMode,
-      });
+    await updateConnection({
+      ...values,
+      connectionId,
+      status: initialConnection.status || "",
+      withRefreshedCatalog: activeUpdatingSchemaMode,
+    });
 
-      setSaved(true);
-      if (!equal(values.schema, initialSyncSchema)) {
-        onAfterSaveSchema();
-      }
+    setSaved(true);
+    if (!equal(values.syncCatalog, initialSyncSchema)) {
+      onAfterSaveSchema();
+    }
 
-      if (activeUpdatingSchemaMode) {
-        setActiveUpdatingSchemaMode(false);
-      }
-    } catch (e) {
-      setErrorMessage(
-        e.message ||
-          formatMessage({
-            id: "form.someError",
-          })
-      );
-    } finally {
-      setIsLoading(false);
+    if (activeUpdatingSchemaMode) {
+      setActiveUpdatingSchemaMode(false);
     }
   };
 
@@ -153,7 +143,7 @@ const SettingsView: React.FC<IProps> = ({
     await onSubmit(currentValues);
   };
 
-  const onSubmitForm = async (values: FormValues) => {
+  const onSubmitForm = async (values: ValuesProps) => {
     if (activeUpdatingSchemaMode) {
       setCurrentValues(values);
       setIsUpdateModalOpen(true);
@@ -162,10 +152,19 @@ const SettingsView: React.FC<IProps> = ({
     }
   };
 
-  const UpdateSchemaButton = () => {
+  const onEnterRefreshCatalogMode = async () => {
+    setActiveUpdatingSchemaMode(true);
+    await refreshCatalog();
+  };
+
+  const onExitRefreshCatalogMode = () => {
+    setActiveUpdatingSchemaMode(false);
+  };
+
+  const renderUpdateSchemaButton = () => {
     if (!activeUpdatingSchemaMode) {
       return (
-        <Button onClick={() => setActiveUpdatingSchemaMode(true)} type="button">
+        <Button onClick={onEnterRefreshCatalogMode} type="button">
           <TryArrow icon={faRedoAlt} />
           <FormattedMessage id="connection.updateSchema" />
         </Button>
@@ -189,33 +188,28 @@ const SettingsView: React.FC<IProps> = ({
             <TitleContainer hasButton={!activeUpdatingSchemaMode}>
               <FormattedMessage id="connection.connectionSettings" />{" "}
             </TitleContainer>
-            {!connection ? null : (
-              <EnabledControl
-                connection={connection}
-                frequencyText={frequencyText}
-              />
-            )}
+            <EnabledControl
+              disabled={isRefreshingCatalog}
+              connection={initialConnection}
+              frequencyText={frequencyText}
+            />
           </Title>
         }
       >
-        {!isLoadingConnection && connection ? (
-          <FrequencyForm
+        {!isRefreshingCatalog && connection ? (
+          <ConnectionForm
             isEditMode
-            schema={connection.syncCatalog}
+            connection={connection}
             onSubmit={onSubmitForm}
             onReset={onReset}
-            frequencyValue={schedule?.value}
-            prefixValue={connection.prefix}
-            errorMessage={errorMessage}
             successMessage={
               saved && <FormattedMessage id="form.changesSaved" />
             }
-            onCancel={() => setActiveUpdatingSchemaMode(false)}
+            onCancel={onExitRefreshCatalogMode}
             editSchemeMode={activeUpdatingSchemaMode}
-            isLoading={isLoading}
-            additionalSchemaControl={UpdateSchemaButton()}
-            source={connection.source}
-            destination={connection.destination}
+            additionalSchemaControl={renderUpdateSchemaButton()}
+            destinationIcon={destinationDefinition?.icon}
+            sourceIcon={sourceDefinition?.icon}
           />
         ) : (
           <LoadingSchema />

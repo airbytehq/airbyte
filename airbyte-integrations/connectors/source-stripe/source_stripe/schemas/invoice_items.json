@@ -38,8 +38,7 @@
           "type": ["null", "string"]
         },
         "created": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "statement_description": {
           "type": ["null", "string"]
@@ -106,12 +105,10 @@
       "type": ["null", "object"],
       "properties": {
         "end": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "number"]
         },
         "start": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         }
       }
     },
@@ -122,8 +119,7 @@
       "type": ["null", "string"]
     },
     "date": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "object": {
       "type": ["null", "string"]
@@ -154,10 +150,6 @@
     },
     "subscription_item": {
       "type": ["null", "string"]
-    },
-    "updated": {
-      "type": ["null", "string"],
-      "format": "date-time"
     }
   }
 }

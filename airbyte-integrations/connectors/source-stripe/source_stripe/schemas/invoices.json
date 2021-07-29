@@ -1,13 +1,11 @@
 {
   "type": ["null", "object"],
   "properties": {
-    "date": {
-      "type": ["null", "string"],
-      "format": "date-time"
+    "created": {
+      "type": ["null", "integer"]
     },
     "next_payment_attempt": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "number"]
     },
     "tax": {
       "type": ["null", "integer"]
@@ -35,15 +33,13 @@
       "type": ["null", "integer"]
     },
     "due_date": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "number"]
     },
     "id": {
       "type": ["null", "string"]
     },
     "webhooks_delivered_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "number"]
     },
     "statement_descriptor": {
       "type": ["null", "string"]
@@ -52,8 +48,7 @@
       "type": ["null", "string"]
     },
     "period_end": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "number"]
     },
     "amount_remaining": {
       "type": ["null", "integer"]
@@ -71,11 +66,13 @@
       "type": ["null", "boolean"]
     },
     "discount": {
-      "type": ["null", "object"],
+      "type": ["null", "string"]
+    },
+    "discounts": {
+      "type": ["null", "array"],
       "properties": {
         "end": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "coupon": {
           "type": ["null", "object"],
@@ -94,8 +91,7 @@
               "type": ["null", "integer"]
             },
             "redeem_by": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": ["null", "number"]
             },
             "duration_in_months": {
               "type": ["null", "integer"]
@@ -125,11 +121,10 @@
               "type": ["null", "string"]
             },
             "percent_off": {
-              "type": ["null", "integer"]
+              "type": ["null", "number"]
             },
             "created": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": ["null", "integer"]
             }
           }
         },
@@ -137,8 +132,7 @@
           "type": ["null", "string"]
         },
         "start": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "object": {
           "type": ["null", "string"]
@@ -161,8 +155,7 @@
       "type": ["null", "boolean"]
     },
     "period_start": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "number"]
     },
     "attempted": {
       "type": ["null", "boolean"]
@@ -215,10 +208,6 @@
     },
     "status": {
       "type": ["null", "string"]
-    },
-    "updated": {
-      "type": ["null", "string"],
-      "format": "date-time"
     }
   }
 }

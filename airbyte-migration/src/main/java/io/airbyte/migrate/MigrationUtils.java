@@ -33,6 +33,7 @@ import io.airbyte.validation.json.JsonSchemaValidator;
 import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -54,12 +55,18 @@ public class MigrationUtils {
    *        that are included here. resolving those dependencies is handled separately.
    * @return ResourceId to the JsonSchema found there.
    */
-  private static Map<ResourceId, JsonNode> getNameToSchemasFromPath(Path migrationResourcePath,
-                                                                    Path relativePath,
-                                                                    ResourceType resourceType,
-                                                                    Set<String> schemasToInclude) {
+  public static Map<ResourceId, JsonNode> getNameToSchemasFromResourcePath(Path migrationResourcePath,
+                                                                           Path relativePath,
+                                                                           ResourceType resourceType,
+                                                                           Set<String> schemasToInclude) {
+    return getNameToSchemasFromResourcePath(migrationResourcePath.resolve(relativePath), resourceType, schemasToInclude);
+  }
+
+  public static Map<ResourceId, JsonNode> getNameToSchemasFromResourcePath(Path pathToSchemasResource,
+                                                                           ResourceType resourceType,
+                                                                           Set<String> schemasToInclude) {
     final Map<ResourceId, JsonNode> schemas = new HashMap<>();
-    final Path pathToSchemas = JsonSchemas.prepareSchemas(migrationResourcePath.resolve(relativePath).toString(), MigrationUtils.class);
+    final Path pathToSchemas = JsonSchemas.prepareSchemas(pathToSchemasResource.toString(), MigrationUtils.class);
     FileUtils.listFiles(pathToSchemas.toFile(), null, false)
         .stream()
         .map(JsonSchemaValidator::getSchema)
@@ -72,16 +79,26 @@ public class MigrationUtils {
     return schemas;
   }
 
+  // this method is decently inefficient. if you need to fetch the schema for multiple configs, use
+  // getNameToSchemasFromResourcePath.
+  public static JsonNode getSchemaFromResourcePath(Path pathToSchema, ResourceId resourceId) {
+    final Map<ResourceId, JsonNode> nameToSchemas = getNameToSchemasFromResourcePath(
+        pathToSchema,
+        resourceId.getType(),
+        Collections.singleton(resourceId.getName()));
+    return nameToSchemas.get(resourceId);
+  }
+
   private static String getTitleAsConstantCase(JsonNode jsonNode) {
     return CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, jsonNode.get("title").asText());
   }
 
   public static Map<ResourceId, JsonNode> getConfigModels(Path migrationResourcePath, Set<String> schemasToInclude) {
-    return getNameToSchemasFromPath(migrationResourcePath, ResourceType.CONFIG.getDirectoryName(), ResourceType.CONFIG, schemasToInclude);
+    return getNameToSchemasFromResourcePath(migrationResourcePath, ResourceType.CONFIG.getDirectoryName(), ResourceType.CONFIG, schemasToInclude);
   }
 
   public static Map<ResourceId, JsonNode> getJobModels(Path migrationResourcePath, Set<String> schemasToInclude) {
-    return getNameToSchemasFromPath(migrationResourcePath, ResourceType.JOB.getDirectoryName(), ResourceType.JOB, schemasToInclude);
+    return getNameToSchemasFromResourcePath(migrationResourcePath, ResourceType.JOB.getDirectoryName(), ResourceType.JOB, schemasToInclude);
   }
 
   /**

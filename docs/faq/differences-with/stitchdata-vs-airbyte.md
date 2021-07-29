@@ -14,14 +14,14 @@ We wrote an article, “[Open-source vs. Commercial Software: How to Solve the D
 
 ## Airbyte:
 
-* **Free, as open source, so no more pricing based on usage:** learn more about our [future business model](../../company-handbook/business-model.md) \(connectors will always remain open-source\). 
+* **Free, as open source, so no more pricing based on usage:** learn more about our [future business model](https://handbook.airbyte.io/strategy/business-model) \(connectors will always remain open-source\). 
 * **Supporting 50+ connectors by the end of 2020** \(so in only 5 months of existence\). Our goal is to reach 300+ connectors by the end of 2021.
 * **Building new connectors made trivial, in the language of your choice:** Airbyte makes it a lot easier to create your own connector, vs. building them yourself in-house \(with Airflow or other tools\). Scheduling, orchestration, and monitoring comes out of the box with Airbyte.
 * **Maintenance-free connectors you can use in minutes.** Just authenticate your sources and warehouse, and get connectors that adapt to schema and API changes for you.
 * **Addressing the long tail of connectors:** with the help of the community, Airbyte ambitions to support thousands of connectors. 
 * **Adapt existing connectors to your needs:** you can adapt any existing connector to address your own unique edge case.
 * **Using data integration in a workflow:** Airbyte’s API lets engineering teams add data integration jobs into their workflow seamlessly.
-* **Integrates with your data stack and your needs:** Airflow, Kubernetes, DBT, etc. Its normalization is optional, it gives you a basic version that works out of the box, but also allows you to use DBT to do more complicated things.
+* **Integrates with your data stack and your needs:** Airflow, Kubernetes, dbt, etc. Its normalization is optional, it gives you a basic version that works out of the box, but also allows you to use dbt to do more complicated things.
 * **Debugging autonomy:** if you experience any connector issue, you won’t need to wait for Fivetran’s customer support team to get back to you, if you can fix the issue fast yourself. 
 * **Your data stays in your cloud.** Have full control over your data, and the costs of your data transfers.
 * **No more security and privacy compliance, as self-hosted and open-sourced \(MIT\).** Any team can directly address their integration needs.

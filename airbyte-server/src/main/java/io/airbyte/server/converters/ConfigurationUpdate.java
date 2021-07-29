@@ -56,9 +56,11 @@ public class ConfigurationUpdate {
     this.secretsProcessor = secretsProcessor;
   }
 
-  public SourceConnection source(UUID sourceId, JsonNode newConfiguration) throws ConfigNotFoundException, IOException, JsonValidationException {
+  public SourceConnection source(UUID sourceId, String sourceName, JsonNode newConfiguration)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     // get existing source
     final SourceConnection persistedSource = configRepository.getSourceConnection(sourceId);
+    persistedSource.setName(sourceName);
     // get spec
     final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(persistedSource.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
@@ -72,10 +74,11 @@ public class ConfigurationUpdate {
     return Jsons.clone(persistedSource).withConfiguration(updatedConfiguration);
   }
 
-  public DestinationConnection destination(UUID destinationId, JsonNode newConfiguration)
+  public DestinationConnection destination(UUID destinationId, String destName, JsonNode newConfiguration)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // get existing destination
     final DestinationConnection persistedDestination = configRepository.getDestinationConnection(destinationId);
+    persistedDestination.setName(destName);
     // get spec
     final StandardDestinationDefinition destinationDefinition = configRepository
         .getStandardDestinationDefinition(persistedDestination.getDestinationDefinitionId());

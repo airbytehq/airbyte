@@ -1,0 +1,9 @@
+plugins {
+    id 'airbyte-docker'
+    id 'airbyte-python'
+}
+
+airbytePython {
+    moduleDirectory 'source_acceptance_test'
+}
+

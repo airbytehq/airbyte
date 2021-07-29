@@ -30,12 +30,12 @@ import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.helpers.YamlListToStandardDefinitions;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
-import io.airbyte.server.errors.KnownException;
+import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -46,8 +46,12 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DestinationDefinitionsHandler {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(DestinationDefinitionsHandler.class);
 
   private final DockerImageValidator imageValidator;
   private final ConfigRepository configRepository;
@@ -74,45 +78,41 @@ public class DestinationDefinitionsHandler {
     this.githubStore = githubStore;
   }
 
-  private static DestinationDefinitionRead buildDestinationDefinitionRead(StandardDestinationDefinition standardDestinationDefinition) {
+  @VisibleForTesting
+  static DestinationDefinitionRead buildDestinationDefinitionRead(StandardDestinationDefinition standardDestinationDefinition) {
     try {
       return new DestinationDefinitionRead()
           .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
           .name(standardDestinationDefinition.getName())
           .dockerRepository(standardDestinationDefinition.getDockerRepository())
           .dockerImageTag(standardDestinationDefinition.getDockerImageTag())
-          .documentationUrl(new URI(standardDestinationDefinition.getDocumentationUrl()));
+          .documentationUrl(new URI(standardDestinationDefinition.getDocumentationUrl()))
+          .icon(loadIcon(standardDestinationDefinition.getIcon()));
     } catch (URISyntaxException | NullPointerException e) {
-      throw new KnownException(500, "Unable to process retrieved latest destination definitions list", e);
+      throw new InternalServerKnownException("Unable to process retrieved latest destination definitions list", e);
     }
   }
 
-  public DestinationDefinitionReadList listDestinationDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
-    final List<DestinationDefinitionRead> reads = configRepository
-        .listStandardDestinationDefinitions()
-        .stream()
+  public DestinationDefinitionReadList listDestinationDefinitions() throws IOException, JsonValidationException {
+    return toDestinationDefinitionReadList(configRepository.listStandardDestinationDefinitions());
+  }
+
+  private static DestinationDefinitionReadList toDestinationDefinitionReadList(List<StandardDestinationDefinition> defs) {
+    final List<DestinationDefinitionRead> reads = defs.stream()
         .map(DestinationDefinitionsHandler::buildDestinationDefinitionRead)
         .collect(Collectors.toList());
-
     return new DestinationDefinitionReadList().destinationDefinitions(reads);
   }
 
-  public DestinationDefinitionReadList listLatestDestinationDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
-    final List<StandardDestinationDefinition> destDefs;
-    try {
-      destDefs = YamlListToStandardDefinitions.toStandardDestinationDefinitions(getLatestDestinations());
-    } catch (RuntimeException e) {
-      throw new KnownException(500, "Error retrieving latest destination definitions", e);
-    }
-    final var reads = destDefs.stream().map(DestinationDefinitionsHandler::buildDestinationDefinitionRead).collect(Collectors.toList());
-    return new DestinationDefinitionReadList().destinationDefinitions(reads);
+  public DestinationDefinitionReadList listLatestDestinationDefinitions() {
+    return toDestinationDefinitionReadList(getLatestDestinations());
   }
 
-  private String getLatestDestinations() {
+  private List<StandardDestinationDefinition> getLatestDestinations() {
     try {
       return githubStore.getLatestDestinations();
-    } catch (InterruptedException | IOException e) {
-      throw new KnownException(500, "Request to retrieve latest destination definitions failed", e);
+    } catch (InterruptedException e) {
+      throw new InternalServerKnownException("Request to retrieve latest destination definitions failed", e);
     }
   }
 
@@ -133,7 +133,8 @@ public class DestinationDefinitionsHandler {
         .withDockerRepository(destinationDefinitionCreate.getDockerRepository())
         .withDockerImageTag(destinationDefinitionCreate.getDockerImageTag())
         .withDocumentationUrl(destinationDefinitionCreate.getDocumentationUrl().toString())
-        .withName(destinationDefinitionCreate.getName());
+        .withName(destinationDefinitionCreate.getName())
+        .withIcon(destinationDefinitionCreate.getIcon());
 
     configRepository.writeStandardDestinationDefinition(destinationDefinition);
 
@@ -152,12 +153,21 @@ public class DestinationDefinitionsHandler {
         .withDockerImageTag(destinationDefinitionUpdate.getDockerImageTag())
         .withDockerRepository(currentDestination.getDockerRepository())
         .withName(currentDestination.getName())
-        .withDocumentationUrl(currentDestination.getDocumentationUrl());
+        .withDocumentationUrl(currentDestination.getDocumentationUrl())
+        .withIcon(currentDestination.getIcon());
 
     configRepository.writeStandardDestinationDefinition(newDestination);
     // we want to re-fetch the spec for updated definitions.
     schedulerSynchronousClient.resetCache();
     return buildDestinationDefinitionRead(newDestination);
+  }
+
+  public static String loadIcon(String name) {
+    try {
+      return name == null ? null : MoreResources.readResource("icons/" + name);
+    } catch (Exception e) {
+      return null;
+    }
   }
 
 }

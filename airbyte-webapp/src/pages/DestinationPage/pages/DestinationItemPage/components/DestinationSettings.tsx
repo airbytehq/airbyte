@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { useResource } from "rest-hooks";
 
 import ContentCard from "components/ContentCard";
-import ServiceForm from "components/ServiceForm";
+import ServiceForm from "views/Connector/ServiceForm";
 import { Destination } from "core/resources/Destination";
 import DestinationDefinitionSpecificationResource from "core/resources/DestinationDefinitionSpecification";
 import useDestination from "components/hooks/services/useDestinationHook";
@@ -14,6 +14,7 @@ import { JobInfo } from "core/resources/Scheduler";
 import { JobsLogItem } from "components/JobItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
+import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 
 const Content = styled.div`
   width: 100%;
@@ -38,6 +39,13 @@ const DestinationsSettings: React.FC<IProps> = ({
 
   const destinationSpecification = useResource(
     DestinationDefinitionSpecificationResource.detailShape(),
+    {
+      destinationDefinitionId: currentDestination.destinationDefinitionId,
+    }
+  );
+
+  const destinationDefinition = useResource(
+    DestinationDefinitionResource.detailShape(),
     {
       destinationDefinitionId: currentDestination.destinationDefinitionId,
     }
@@ -105,13 +113,7 @@ const DestinationsSettings: React.FC<IProps> = ({
           isEditMode
           onSubmit={onSubmitForm}
           formType="destination"
-          dropDownData={[
-            {
-              value: currentDestination.destinationDefinitionId,
-              text: currentDestination.destinationName,
-              img: "/default-logo-catalog.svg",
-            },
-          ]}
+          availableServices={[destinationDefinition]}
           formValues={{
             ...currentDestination,
             serviceType: currentDestination.destinationDefinitionId,

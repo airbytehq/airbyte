@@ -1,0 +1,31 @@
+connector_image: airbyte/source-twilio:dev
+tests:
+  spec:
+    - spec_path: "source_twilio/spec.json"
+  connection:
+    - config_path: "secrets/config.json"
+      status: "succeed"
+    - config_path: "integration_tests/invalid_config.json"
+      status: "failed"
+  discovery:
+    - config_path: "secrets/config.json"
+  basic_read:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/no_empty_streams_catalog.json"
+  incremental:
+    - config_path: "secrets/config.json"
+      # usage records stream produces and error if cursor date gte than current date
+      configured_catalog_path: "integration_tests/no_empty_streams_no_usage_records_catalog.json"
+      future_state_path: "integration_tests/abnormal_state.json"
+      cursor_paths:
+        calls: ["end_time"]
+        conferences: ["date_updated"]
+        recordings: ["date_created"]
+        messages: ["date_sent"]
+        message_media: ["date_created"]
+        alerts: ["date_updated"]
+  full_refresh:
+    - config_path: "secrets/config.json"
+      # `constant_records_catalog.json` does not contain the available phone numbers streams,
+      # as they may change on each request
+      configured_catalog_path: "integration_tests/constant_records_catalog.json"

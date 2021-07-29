@@ -84,6 +84,10 @@ public class ResourceId {
     return type.getDirectoryName().resolve(name + ".yaml");
   }
 
+  public String getName() {
+    return name;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {

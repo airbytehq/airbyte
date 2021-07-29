@@ -1,10 +1,8 @@
 import { useCallback } from "react";
-import { useFetcher } from "rest-hooks";
+import { useFetcher, useResource } from "rest-hooks";
 import { useStatefulResource } from "@rest-hooks/legacy";
 
-import config from "config";
 import DestinationResource, { Destination } from "core/resources/Destination";
-import { AnalyticsService } from "core/analytics/AnalyticsService";
 import ConnectionResource, { Connection } from "core/resources/Connection";
 import { Routes } from "pages/routes";
 import useRouter from "../useRouterHook";
@@ -13,6 +11,8 @@ import DestinationDefinitionSpecificationResource, {
 } from "core/resources/DestinationDefinitionSpecification";
 import SchedulerResource, { Scheduler } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
+import useWorkspace from "./useWorkspace";
+import { useAnalytics } from "components/hooks/useAnalytics";
 
 type ValuesProps = {
   name: string;
@@ -23,10 +23,10 @@ type ValuesProps = {
 type ConnectorProps = { name: string; destinationDefinitionId: string };
 
 export const useDestinationDefinitionSpecificationLoad = (
-  destinationDefinitionId: string
+  destinationDefinitionId: string | null
 ): {
   isLoading: boolean;
-  destinationDefinitionSpecification: DestinationDefinitionSpecification;
+  destinationDefinitionSpecification?: DestinationDefinitionSpecification;
   error?: Error;
 } => {
   const {
@@ -43,6 +43,19 @@ export const useDestinationDefinitionSpecificationLoad = (
   );
 
   return { destinationDefinitionSpecification, error, isLoading };
+};
+
+export const useDestinationDefinitionSpecificationLoadAsync = (
+  destinationDefinitionId: string
+): DestinationDefinitionSpecification => {
+  const definition = useResource(
+    DestinationDefinitionSpecificationResource.detailShape(),
+    {
+      destinationDefinitionId,
+    }
+  );
+
+  return definition;
 };
 
 type DestinationService = {
@@ -85,7 +98,8 @@ type DestinationService = {
 
 const useDestination = (): DestinationService => {
   const { push } = useRouter();
-
+  const { workspace } = useWorkspace();
+  const analyticsService = useAnalytics();
   const createDestinationsImplementation = useFetcher(
     DestinationResource.createShape()
   );
@@ -113,7 +127,7 @@ const useDestination = (): DestinationService => {
     values: ValuesProps;
     destinationConnector?: ConnectorProps;
   }) => {
-    AnalyticsService.track("New Destination - Action", {
+    analyticsService.track("New Destination - Action", {
       action: "Test a connector",
       connector_destination: destinationConnector?.name,
       connector_destination_definition_id:
@@ -133,13 +147,13 @@ const useDestination = (): DestinationService => {
           name: values.name,
           destinationDefinitionId:
             destinationConnector?.destinationDefinitionId,
-          workspaceId: config.ui.workspaceId,
+          workspaceId: workspace.workspaceId,
           connectionConfiguration: values.connectionConfiguration,
         },
         [
           [
             DestinationResource.listShape(),
-            { workspaceId: config.ui.workspaceId },
+            { workspaceId: workspace.workspaceId },
             (
               newdestinationId: string,
               destinationIds: { destinations: string[] }
@@ -153,7 +167,7 @@ const useDestination = (): DestinationService => {
         ]
       );
 
-      AnalyticsService.track("New Destination - Action", {
+      analyticsService.track("New Destination - Action", {
         action: "Tested connector - success",
         connector_destination: destinationConnector?.name,
         connector_destination_definition_id:
@@ -162,7 +176,7 @@ const useDestination = (): DestinationService => {
 
       return result;
     } catch (e) {
-      AnalyticsService.track("New Destination - Action", {
+      analyticsService.track("New Destination - Action", {
         action: "Tested connector - failure",
         connector_destination: destinationConnector?.name,
         connector_destination_definition_id:
@@ -212,7 +226,7 @@ const useDestination = (): DestinationService => {
         name: values.name,
         destinationId,
         connectionConfiguration: values.connectionConfiguration,
-        workspaceId: config.ui.workspaceId,
+        workspaceId: workspace.workspaceId,
         destinationDefinitionId: values.serviceType,
       },
       // Method used only in onboarding.
@@ -220,7 +234,7 @@ const useDestination = (): DestinationService => {
       [
         [
           DestinationResource.listShape(),
-          { workspaceId: config.ui.workspaceId },
+          { workspaceId: workspace.workspaceId },
           (newdestinationId: string) => ({
             destinations: [newdestinationId],
           }),
@@ -279,4 +293,12 @@ const useDestination = (): DestinationService => {
   };
 };
 
+const useDestinationList = (): { destinations: Destination[] } => {
+  const { workspace } = useWorkspace();
+  return useResource(DestinationResource.listShape(), {
+    workspaceId: workspace.workspaceId,
+  });
+};
+
+export { useDestinationList };
 export default useDestination;

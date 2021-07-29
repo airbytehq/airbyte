@@ -25,12 +25,17 @@
 package io.airbyte.config;
 
 import java.nio.file.Path;
+import java.util.Set;
 
 public interface Configs {
 
   String getAirbyteRole();
 
   String getAirbyteVersion();
+
+  String getAirbyteApiUrl();
+
+  int getAirbyteApiPort();
 
   String getAirbyteVersionOrWarning();
 
@@ -45,6 +50,12 @@ public interface Configs {
   String getDatabasePassword();
 
   String getDatabaseUrl();
+
+  String getConfigDatabaseUser();
+
+  String getConfigDatabasePassword();
+
+  String getConfigDatabaseUrl();
 
   String getWebappUrl();
 
@@ -61,6 +72,36 @@ public interface Configs {
   WorkspaceRetentionConfig getWorkspaceRetentionConfig();
 
   String getTemporalHost();
+
+  Set<Integer> getTemporalWorkerPorts();
+
+  String getKubeNamespace();
+
+  String getSubmitterNumThreads();
+
+  // Resources
+  String getCpuRequest();
+
+  String getCpuLimit();
+
+  String getMemoryRequest();
+
+  String getMemoryLimit();
+
+  // Logging
+  String getS3LogBucket();
+
+  String getS3LogBucketRegion();
+
+  String getAwsAccessKey();
+
+  String getAwsSecretAccessKey();
+
+  String getS3MinioEndpoint();
+
+  String getGcpStorageBucket();
+
+  String getGoogleApplicationCredentials();
 
   enum TrackingStrategy {
     SEGMENT,
