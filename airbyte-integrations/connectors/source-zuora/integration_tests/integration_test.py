@@ -88,15 +88,15 @@ class TestZuora:
             than connector should be able to normalize data as expected.
 
     Issues that could potentially may take place:
-    ::  If the any of the tests fails, 
-        - check the input parameters first, 
+    ::  If the any of the tests fails,
+        - check the input parameters first,
         - start_date in the secrets/config.json, this should be valid date range where data is 100% available to be read.
         - availability of the test_stream in the Zuora Account and your Subscription Plan.
         - check other errors from the test output.
     """
 
     # create client
-    config = client(config = get_config("secrets/config.json"))
+    config = client(config=get_config("secrets/config.json"))
 
     # Define common test input
     test_stream = "account"
@@ -117,7 +117,6 @@ class TestZuora:
         end_date = ZuoraObjectsBase.to_datetime_str(pendulum.now().astimezone())
         test_date_slice = {"start_date": start_date, "end_date": end_date}
         return test_date_slice
-
 
     def test_list_all_zuora_objects(self):
         """
