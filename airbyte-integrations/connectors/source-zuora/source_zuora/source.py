@@ -23,9 +23,6 @@
 #
 
 
-# import logging
-# logging.basicConfig(level=logging.DEBUG)
-
 import json
 from abc import ABC
 from datetime import datetime
