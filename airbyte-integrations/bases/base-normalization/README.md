@@ -2,8 +2,8 @@
 
 Related documentation on normalization is available here:
 
-- [architecture / Basic Normalization](../../../docs/architecture/basic-normalization.md)
-* [tutorials / Custom dbt normalization](../../../docs/tutorials/connecting-el-with-t-using-dbt.md)
+- [architecture / Basic Normalization](../../../docs/understanding-airbyte/basic-normalization.md)
+* [tutorials / Custom dbt normalization](../../../docs/operator-guides/transformation-and-normalization/transformations-with-dbt.md)
 
 # Testing normalization
 
@@ -232,7 +232,7 @@ Generally, to invoke standard destination tests, you run with gradle using:
 
     ./gradlew :airbyte-integrations:connectors:destination-<connector name>:integrationTest
 
-For more details and options, you can also refer to the [testing connectors docs](../../../docs/contributing-to-airbyte/building-new-connector/testing-connectors.md).
+For more details and options, you can also refer to the [testing connectors docs](../../../docs/connector-development/testing-connectors/README.md).
 
 ## Acceptance Tests
 
