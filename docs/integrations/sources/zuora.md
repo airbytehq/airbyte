@@ -59,10 +59,18 @@ For details refer to the [Availability of Data Source Objects](https://knowledge
 | Incremental - Append + Deduplication Sync | Yes |  |
 | Namespaces | No |  |
 
+## Supported Environments for Zuora
+| Environment | Supported?\(Yes/No\) | Notes |
+| :--- | :--- | :--- |
+| Production | Yes | Default setting for the connector|
+| Sandbox | Yes | Enable the `is_sandbox` toggle inside connector settings |
+
+For more information about available environments, please visit [this page](https://knowledgecenter.zuora.com/BB_Introducing_Z_Business/D_Zuora_Environments)
+
 ### Performance considerations
 
 If you experience the long time for sync operation, please consider:
-* to increase the `window_days` parameter inside Zuora source configuration
+* to increase the `window_in_days` parameter inside Zuora source configuration
 * use the smaller date range by tuning `start_date` parameter.
 
 ### Note
