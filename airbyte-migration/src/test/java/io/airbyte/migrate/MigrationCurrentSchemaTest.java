@@ -84,7 +84,7 @@ public class MigrationCurrentSchemaTest {
 
     // break out element-wise assertion so it is easier to read any failed tests.
     for (Map.Entry<ResourceId, JsonNode> lastMigrationEntry : lastMigrationOutputSchemaCleanedSorted) {
-      assertEquals(lastMigrationEntry.getValue(), currentSchemas.get(lastMigrationEntry.getKey()));
+      assertEquals(currentSchemas.get(lastMigrationEntry.getKey()), lastMigrationEntry.getValue());
     }
   }
 
