@@ -65,7 +65,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
@@ -209,7 +208,13 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .setSchema(schema)
           .setFormatOptions(FormatOptions.json()).build(); // new-line delimited json.
 
-      final TableDataWriteChannel writer = bigquery.writer(JobId.of(UUID.randomUUID().toString()), writeChannelConfiguration);
+      final JobId job = JobId.newBuilder()
+          .setRandomJob()
+          .setLocation(datasetLocation)
+          .setProject(bigquery.getOptions().getProjectId())
+          .build();
+
+      final TableDataWriteChannel writer = bigquery.writer(job, writeChannelConfiguration);
       final WriteDisposition syncMode = getWriteDisposition(configStream.getDestinationSyncMode());
 
       writeConfigs.put(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),

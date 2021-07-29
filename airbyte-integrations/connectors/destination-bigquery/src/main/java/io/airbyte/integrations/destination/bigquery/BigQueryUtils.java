@@ -53,6 +53,7 @@ public class BigQueryUtils {
   static ImmutablePair<Job, String> executeQuery(Job queryJob) {
     final Job completedJob = waitForQuery(queryJob);
     if (completedJob == null) {
+      LOGGER.error("Job no longer exists:" + queryJob);
       throw new RuntimeException("Job no longer exists");
     } else if (completedJob.getStatus().getError() != null) {
       // You can also look at queryJob.getStatus().getExecutionErrors() for all
@@ -67,6 +68,7 @@ public class BigQueryUtils {
     try {
       return queryJob.waitFor();
     } catch (Exception e) {
+      LOGGER.error("Failed to wait for a query job:" + queryJob);
       throw new RuntimeException(e);
     }
   }
