@@ -17,13 +17,13 @@
 - sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   name: File
   dockerRepository: airbyte/source-file
-  dockerImageTag: 0.2.4
+  dockerImageTag: 0.2.5
   documentationUrl: https://hub.docker.com/r/airbyte/source-file
   icon: file.svg
 - sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   name: Google Ads
   dockerRepository: airbyte/source-google-ads
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   documentationUrl: https://hub.docker.com/r/airbyte/source-google-ads
 - sourceDefinitionId: fdc8b827-3257-4b33-83cc-106d234c34d4
   name: Google Adwords (Deprecated)
@@ -103,13 +103,13 @@
 - sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   name: Stripe
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 0.1.15
+  dockerImageTag: 0.1.16
   documentationUrl: https://hub.docker.com/r/airbyte/source-stripe
   icon: stripe.svg
 - sourceDefinitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
   name: Mailchimp
   dockerRepository: airbyte/source-mailchimp
-  dockerImageTag: 0.2.5
+  dockerImageTag: 0.2.6
   documentationUrl: https://hub.docker.com/r/airbyte/source-mailchimp
   icon: mailchimp.svg
 - sourceDefinitionId: 39f092a6-8c87-4f6f-a8d9-5cef45b7dbe1
@@ -196,7 +196,7 @@
 - sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
   name: Jira
   dockerRepository: airbyte/source-jira
-  dockerImageTag: 0.2.7
+  dockerImageTag: 0.2.8
   documentationUrl: https://hub.docker.com/r/airbyte/source-jira
   icon: jira.svg
 - sourceDefinitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
@@ -409,3 +409,8 @@
   dockerRepository: airbyte/source-bigquery
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/bigquery
+- sourceDefinitionId: 200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b
+  name: Snapchat Marketing
+  dockerRepository: airbyte/source-snapchat-marketing
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/snapchat-marketing
