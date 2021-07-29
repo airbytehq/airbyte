@@ -7,11 +7,13 @@ In some cases, a connector needs to accept one out of many options. For example,
 
 In order for the Airbyte UI to correctly render a specification, however, a few extra rules must be followed: 
 
-1. Each item in the `oneOf` array must be a property with `type: object`.
-2. One `string` field with the same property name must be consistently present throughout each object inside the `oneOf` array. In each instance of this field, there must be a [`const`](https://json-schema.org/understanding-json-schema/reference/generic.html#constant-values) value unique to that `oneOf` option. For example: 
+1. The top-level item containing the `oneOf` must have `type: object`.
+2. Each item in the `oneOf` array must be a property with `type: object`.
+3. One `string` field with the same property name must be consistently present throughout each object inside the `oneOf` array. In each instance of this field, there must be a [`const`](https://json-schema.org/understanding-json-schema/reference/generic.html#constant-values) value unique to that `oneOf` option. For example: 
     ```
     {
       "dropdown_list_option": {
+        "type": "object",
         "oneOf": [
           {
             "required": ["option_title"],
@@ -43,5 +45,5 @@ In order for the Airbyte UI to correctly render a specification, however, a few 
       }
     }
     ```
-    Notice how in each item in the `oneOf` array, the `option_title` string field exists with a `constant` value unique to that item. This helps the UI and the connector distinguish between the option that was chosen by the user. See   
-3. There can be no nested `oneOf` properties. 
+    Note that in each item in the `oneOf` array, the `option_title` string field exists with a `constant` value unique to that item. This helps the UI and the connector distinguish between the option that was chosen by the user. 
+4. There can be no nested `oneOf` properties. 
