@@ -69,10 +69,10 @@
       "type": ["null", "string"]
     },
     "discounts": {
-      "type": ["null", "array", "object"],
+      "type": ["null", "array"],
       "properties": {
         "end": {
-          "type": ["null", "number"]
+          "type": ["null", "integer"]
         },
         "coupon": {
           "type": ["null", "object"],
@@ -121,7 +121,7 @@
               "type": ["null", "string"]
             },
             "percent_off": {
-              "type": ["null", "integer"]
+              "type": ["null", "number"]
             },
             "created": {
               "type": ["null", "integer"]
@@ -132,7 +132,7 @@
           "type": ["null", "string"]
         },
         "start": {
-          "type": ["null", "number"]
+          "type": ["null", "integer"]
         },
         "object": {
           "type": ["null", "string"]
@@ -208,9 +208,6 @@
     },
     "status": {
       "type": ["null", "string"]
-    },
-    "updated": {
-      "type": ["null", "number"]
     }
   }
 }

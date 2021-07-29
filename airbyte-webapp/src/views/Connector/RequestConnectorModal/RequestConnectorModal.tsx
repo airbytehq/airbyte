@@ -6,7 +6,7 @@ import ConnectorForm from "./components/ConnectorForm";
 
 import { Modal } from "components";
 import useRequestConnector from "components/hooks/services/useRequestConnector";
-import useWorkspace from "components/hooks/services/useWorkspaceHook";
+import useWorkspace from "components/hooks/services/useWorkspace";
 import { Values } from "./types";
 
 type RequestConnectorModalProps = {

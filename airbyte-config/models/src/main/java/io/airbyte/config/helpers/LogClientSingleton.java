@@ -24,6 +24,7 @@
 
 package io.airbyte.config.helpers;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -31,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -119,6 +121,20 @@ public class LogClientSingleton {
     createCloudClientIfNull(logConfigs);
     var cloudLogPath = JOB_LOGGING_CLOUD_PREFIX + logPath;
     return logClient.tailCloudLog(logConfigs, cloudLogPath, LOG_TAIL_SIZE);
+  }
+
+  /**
+   * Primarily to clean up logs after testing. Only valid for Kube logs.
+   */
+  @VisibleForTesting
+  public static void deleteLogs(Configs configs, String logPath) {
+    if (shouldUseLocalLogs(configs)) {
+      throw new NotImplementedException("Local log deletes not supported.");
+    }
+    var logConfigs = new LogConfigDelegator(configs);
+    createCloudClientIfNull(logConfigs);
+    var cloudLogPath = JOB_LOGGING_CLOUD_PREFIX + logPath;
+    logClient.deleteLogs(logConfigs, cloudLogPath);
   }
 
   public static void setJobMdc(Path path) {

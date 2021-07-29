@@ -48,7 +48,8 @@ import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
+import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.Job;
@@ -85,7 +86,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.MountableFile;
 
 @DisplayName("DefaultJobPersistance")
 class DefaultJobPersistenceTest {
@@ -113,16 +113,12 @@ class DefaultJobPersistenceTest {
   private JobPersistence jobPersistence;
 
   @BeforeAll
-  public static void dbSetup() throws Exception {
+  public static void dbSetup() {
     container = new PostgreSQLContainer<>("postgres:13-alpine")
         .withDatabaseName("airbyte")
         .withUsername("docker")
         .withPassword("docker");
     container.start();
-
-    container.copyFileToContainer(MountableFile.forClasspathResource("schema.sql"), "/etc/init.sql");
-    // execInContainer uses Docker's EXEC so it needs to be split up like this
-    container.execInContainer("psql", "-d", "airbyte", "-U", "docker", "-a", "-f", "/etc/init.sql");
   }
 
   @AfterAll
@@ -162,7 +158,7 @@ class DefaultJobPersistenceTest {
   @SuppressWarnings("unchecked")
   @BeforeEach
   public void setup() throws Exception {
-    database = Databases.createPostgresDatabase(container.getUsername(), container.getPassword(), container.getJdbcUrl());
+    database = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
     resetDb();
 
     timeSupplier = mock(Supplier.class);
@@ -180,6 +176,7 @@ class DefaultJobPersistenceTest {
     // todo (cgardens) - truncate whole db.
     database.query(ctx -> ctx.execute("TRUNCATE TABLE jobs"));
     database.query(ctx -> ctx.execute("TRUNCATE TABLE attempts"));
+    database.query(ctx -> ctx.execute("TRUNCATE TABLE airbyte_metadata"));
   }
 
   private Result<Record> getJobRecord(long jobId) throws SQLException {
@@ -280,12 +277,12 @@ class DefaultJobPersistenceTest {
     final int attemptNumber1 = jobPersistence.createAttempt(jobId, secondAttemptLogPath);
     jobPersistence.succeedAttempt(jobId, attemptNumber1);
 
-    final Map<DatabaseSchema, Stream<JsonNode>> inputStreams = jobPersistence.exportDatabase();
+    final Map<JobsDatabaseSchema, Stream<JsonNode>> inputStreams = jobPersistence.exportDatabase();
 
     // Collect streams to memory for temporary storage
-    final Map<DatabaseSchema, List<JsonNode>> tempData = new HashMap<>();
-    final Map<DatabaseSchema, Stream<JsonNode>> outputStreams = new HashMap<>();
-    for (Entry<DatabaseSchema, Stream<JsonNode>> entry : inputStreams.entrySet()) {
+    final Map<JobsDatabaseSchema, List<JsonNode>> tempData = new HashMap<>();
+    final Map<JobsDatabaseSchema, Stream<JsonNode>> outputStreams = new HashMap<>();
+    for (Entry<JobsDatabaseSchema, Stream<JsonNode>> entry : inputStreams.entrySet()) {
       final List<JsonNode> tableData = entry.getValue().collect(Collectors.toList());
       tempData.put(entry.getKey(), tableData);
       outputStreams.put(entry.getKey(), tableData.stream());
@@ -321,10 +318,10 @@ class DefaultJobPersistenceTest {
     jobPersistence.succeedAttempt(jobId, attemptNumber1);
     final JsonSchemaValidator jsonSchemaValidator = new JsonSchemaValidator();
 
-    final Map<DatabaseSchema, Stream<JsonNode>> inputStreams = jobPersistence.exportDatabase();
+    final Map<JobsDatabaseSchema, Stream<JsonNode>> inputStreams = jobPersistence.exportDatabase();
     inputStreams.forEach((tableSchema, tableStream) -> {
       final String tableName = tableSchema.name();
-      final JsonNode schema = tableSchema.toJsonNode();
+      final JsonNode schema = tableSchema.getTableDefinition();
       assertNotNull(schema,
           "Json schema files should be created in airbyte-scheduler/src/main/resources/tables for every table in the Database to validate its content");
       tableStream.forEach(row -> {
@@ -340,6 +337,48 @@ class DefaultJobPersistenceTest {
   private long createJobAt(Instant created_at) throws IOException {
     when(timeSupplier.get()).thenReturn(created_at);
     return jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+  }
+
+  @Nested
+  class GetAndSetVersion {
+
+    @Test
+    void testSetVersion() throws IOException {
+      final String version = UUID.randomUUID().toString();
+      jobPersistence.setVersion(version);
+      assertEquals(version, jobPersistence.getVersion().orElseThrow());
+    }
+
+    @Test
+    void testSetVersionReplacesExistingId() throws IOException {
+      final String deploymentId1 = UUID.randomUUID().toString();
+      final String deploymentId2 = UUID.randomUUID().toString();
+      jobPersistence.setVersion(deploymentId1);
+      jobPersistence.setVersion(deploymentId2);
+      assertEquals(deploymentId2, jobPersistence.getVersion().orElseThrow());
+    }
+
+  }
+
+  @Nested
+  class GetAndSetDeployment {
+
+    @Test
+    void testSetDeployment() throws IOException {
+      final UUID deploymentId = UUID.randomUUID();
+      jobPersistence.setDeployment(deploymentId);
+      assertEquals(deploymentId, jobPersistence.getDeployment().orElseThrow());
+    }
+
+    @Test
+    void testSetDeploymentIdDoesNotReplaceExistingId() throws IOException {
+      final UUID deploymentId1 = UUID.randomUUID();
+      final UUID deploymentId2 = UUID.randomUUID();
+      jobPersistence.setDeployment(deploymentId1);
+      jobPersistence.setDeployment(deploymentId2);
+      assertEquals(deploymentId1, jobPersistence.getDeployment().orElseThrow());
+    }
+
   }
 
   @Nested

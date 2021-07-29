@@ -72,7 +72,7 @@ normalize                    target_config.json
 
 ### Reading the content of the catalog.json file
 
-For example, it is often useful to inspect the content of the [catalog](../contributing-to-airbyte/tutorials/beginners-guide-to-catalog.md) file. You could do so by running a `cat` command:
+For example, it is often useful to inspect the content of the [catalog](../understanding-airbyte/beginners-guide-to-catalog.md) file. You could do so by running a `cat` command:
 
 ```bash
 docker run -it --rm --volume airbyte_workspace:/data busybox cat /data/9/2/catalog.json
@@ -95,7 +95,7 @@ cat catalog.json
 
 ## CSV or JSON local Destinations: Check local data folder
 
-If you setup a pipeline using one of the local File based destinations \(CSV or JSON\), Airbyte is writing the resulting files containing the data in the special `/local/` directory in the container. By default, this volume is mounted from `/tmp/airbyte_local` on the host machine. So you need to navigate to this [local folder](file:///tmp/airbyte_local/) on the filesystem of the machine running the Airbyte instance to retrieve the local data files.
+If you setup a pipeline using one of the local File based destinations \(CSV or JSON\), Airbyte is writing the resulting files containing the data in the special `/local/` directory in the container. By default, this volume is mounted from `/tmp/airbyte_local` on the host machine. So you need to navigate to this [local folder](file:///tmp/airbyte_local/) on the filesystem of the machine running the Airbyte deployment to retrieve the local data files.
 
 Or, you can also run through docker commands as proxy:
 
