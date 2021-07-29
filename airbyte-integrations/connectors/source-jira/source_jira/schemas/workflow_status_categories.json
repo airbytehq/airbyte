@@ -1,34 +1,21 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "$schema": "http://json-schema.org/schema#",
   "properties": {
-    "self": {
-      "type": "string",
-      "description": "The URL of the status category.",
-      "readOnly": true
+    "colorName": {
+      "type": "string"
     },
     "id": {
-      "type": "integer",
-      "description": "The ID of the status category.",
-      "format": "int64",
-      "readOnly": true
+      "type": "integer"
     },
     "key": {
-      "type": "string",
-      "description": "The key of the status category.",
-      "readOnly": true
-    },
-    "colorName": {
-      "type": "string",
-      "description": "The name of the color used to represent the status category.",
-      "readOnly": true
+      "type": "string"
     },
     "name": {
-      "type": "string",
-      "description": "The name of the status category.",
-      "readOnly": true
+      "type": "string"
+    },
+    "self": {
+      "type": "string"
     }
   },
-  "additionalProperties": true,
-  "description": "A status category."
+  "type": "object"
 }

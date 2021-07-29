@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.server.CorsFilter;
+import io.airbyte.server.ServerRunnable;
 import java.io.IOException;
 import java.util.Map;
 import javax.servlet.http.HttpServlet;
@@ -44,7 +45,7 @@ import org.slf4j.LoggerFactory;
  * mismatch occurs, a migration is required to upgrade the database. Until then, we show errors
  * using this server in order to prevent getting into a bad state.
  */
-public class VersionMismatchServer {
+public class VersionMismatchServer implements ServerRunnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(VersionMismatchServer.class);
   private final String version1;
@@ -57,6 +58,7 @@ public class VersionMismatchServer {
     this.port = port;
   }
 
+  @Override
   public void start() throws Exception {
     final Server server = getServer();
     server.start();

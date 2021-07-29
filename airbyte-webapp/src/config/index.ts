@@ -1,11 +1,13 @@
 import * as Fullstory from "@fullstory/browser";
 import { SegmentAnalytics } from "core/analytics/types";
+import { Options } from "@asayerio/tracker";
 
 declare global {
   interface Window {
     TRACKING_STRATEGY?: string;
     PAPERCUPS_STORYTIME?: string;
     FULLSTORY?: string;
+    OPENREPLAY?: string;
     AIRBYTE_VERSION?: string;
     API_URL?: string;
     IS_DEMO?: string;
@@ -13,15 +15,41 @@ declare global {
   }
 }
 
+const Version = window.AIRBYTE_VERSION;
+
+const OpenReplayConfig: Options = {
+  projectID: window.OPENREPLAY !== "disabled" ? 6611843272536134 : -1,
+  obscureTextEmails: false,
+  obscureInputEmails: false,
+  revID: Version,
+};
+
+const PaperCupsConfig: {
+  accountId: string;
+  baseUrl: string;
+  enableStorytime: boolean;
+} = {
+  accountId: "74560291-451e-4ceb-a802-56706ece528b",
+  baseUrl: "https://app.papercups.io",
+  enableStorytime:
+    !process.env.REACT_APP_PAPERCUPS_DISABLE_STORYTIME &&
+    window.PAPERCUPS_STORYTIME !== "disabled",
+};
+
+const FullStoryConfig: Fullstory.SnippetOptions = {
+  orgId: "13AXQ4",
+  devMode: window.FULLSTORY === "disabled",
+};
+
 type Config = {
   ui: {
     helpLink: string;
+    updateLink: string;
     slackLink: string;
     docsLink: string;
     configurationArchiveLink: string;
     namespaceLink: string;
     normalizationLink: string;
-    workspaceId: string;
     tutorialLink: string;
     technicalSupport: string;
   };
@@ -31,6 +59,7 @@ type Config = {
     baseUrl: string;
     enableStorytime: boolean;
   };
+  openreplay: Options;
   fullstory: Fullstory.SnippetOptions;
   apiUrl: string;
   healthCheckInterval: number;
@@ -44,14 +73,14 @@ const config: Config = {
   ui: {
     technicalSupport: `${BASE_DOCS_LINK}/troubleshooting/on-deploying`,
     helpLink: "https://airbyte.io/community",
+    updateLink: `${BASE_DOCS_LINK}/upgrading-airbyte`,
     slackLink: "https://slack.airbyte.io",
-    docsLink: "https://docs.airbyte.io",
+    docsLink: BASE_DOCS_LINK,
     configurationArchiveLink: `${BASE_DOCS_LINK}/tutorials/upgrading-airbyte`,
-    normalizationLink: `${BASE_DOCS_LINK}/understanding-airbyte/namespaces`,
-    namespaceLink: `${BASE_DOCS_LINK}/understanding-airbyte/connections#airbyte-basic-normalization`,
+    normalizationLink: `${BASE_DOCS_LINK}/understanding-airbyte/connections#airbyte-basic-normalization`,
+    namespaceLink: `${BASE_DOCS_LINK}/understanding-airbyte/namespaces`,
     tutorialLink:
       "https://www.youtube.com/watch?v=Rcpt5SVsMpk&feature=emb_logo",
-    workspaceId: "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6",
   },
   segment: {
     token:
@@ -60,18 +89,10 @@ const config: Config = {
           "6cxNSmQyGSKcATLdJ2pL6WsawkzEMDAN"
         : "",
   },
-  papercups: {
-    accountId: "74560291-451e-4ceb-a802-56706ece528b",
-    baseUrl: "https://app.papercups.io",
-    enableStorytime:
-      !process.env.REACT_APP_PAPERCUPS_DISABLE_STORYTIME &&
-      window.PAPERCUPS_STORYTIME !== "disabled",
-  },
-  fullstory: {
-    orgId: "13AXQ4",
-    devMode: window.FULLSTORY === "disabled",
-  },
-  version: window.AIRBYTE_VERSION,
+  papercups: PaperCupsConfig,
+  openreplay: OpenReplayConfig,
+  fullstory: FullStoryConfig,
+  version: Version,
   apiUrl:
     window.API_URL ||
     process.env.REACT_APP_API_URL ||

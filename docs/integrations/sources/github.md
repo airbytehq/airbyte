@@ -4,27 +4,47 @@
 
 The GitHub source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This Github source wraps the [Singer Github Tap](https://github.com/singer-io/tap-github).
-
 ### Output schema
 
-This connector outputs the following streams:
+This connector outputs the following full refresh streams:
 
-* [Assignees](https://developer.github.com/v3/issues/assignees/#list-assignees)
-* [Collaborators](https://developer.github.com/v3/repos/collaborators/#list-collaborators)
-* [Comments](https://developer.github.com/v3/issues/comments/#list-comments-in-a-repository)
-* [Commits](https://developer.github.com/v3/repos/commits/#list-commits-on-a-repository)
-* [Commit comments](https://docs.github.com/en/free-pro-team@latest/rest/reference/repos#list-commit-comments-for-a-repository)
-* [Events](https://docs.github.com/en/free-pro-team@latest/rest/reference/activity#list-repository-events)  
-* [Issues](https://developer.github.com/v3/issues/#list-issues-for-a-repository)
-* [Issue events](https://docs.github.com/en/free-pro-team@latest/rest/reference/issues#list-issue-events-for-a-repository) 
+* [Assignees](https://docs.github.com/en/rest/reference/issues#list-assignees)
+* [Reviews](https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request)
+* [Collaborators](https://docs.github.com/en/rest/reference/repos#list-repository-collaborators)
+* [Teams](https://docs.github.com/en/rest/reference/teams#list-teams)
 * [Issue labels](https://docs.github.com/en/free-pro-team@latest/rest/reference/issues#list-labels-for-a-repository)
-* [Issue milestones](https://docs.github.com/en/free-pro-team@latest/rest/reference/issues#list-milestones)
-* [Projects](https://docs.github.com/en/free-pro-team@latest/rest/reference/projects#list-repository-projects)
-* [Pull requests](https://developer.github.com/v3/pulls/#list-pull-requests)
-* [Releases](https://docs.github.com/en/free-pro-team@latest/rest/reference/repos#list-releases)
-* [Stargazers](https://developer.github.com/v3/activity/starring/#list-stargazers)
-* [Teams](https://docs.github.com/en/free-pro-team@latest/rest/reference/teams#list-teams)
+
+This connector outputs the following incremental streams:
+
+* [Comments](https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository)
+* [Commits](https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository)
+* [Issues](https://docs.github.com/en/rest/reference/issues#list-repository-issues)
+* [Commit comments](https://docs.github.com/en/rest/reference/repos#list-commit-comments-for-a-repository)
+* [Events](https://docs.github.com/en/rest/reference/activity#list-repository-events)
+* [Issue events](https://docs.github.com/en/rest/reference/issues#list-issue-events-for-a-repository)
+* [Issue milestones](https://docs.github.com/en/rest/reference/issues#list-milestones)
+* [Projects](https://docs.github.com/en/rest/reference/projects#list-repository-projects)
+* [Pull requests](https://docs.github.com/en/rest/reference/pulls#list-pull-requests)
+* [Releases](https://docs.github.com/en/rest/reference/repos#list-releases)
+* [Stargazers](https://docs.github.com/en/rest/reference/activity#list-stargazers)
+
+### Notes
+
+1. Only 3 streams from above 11 incremental streams (`comments`, `commits` and `issues`) are pure incremental
+meaning that they:
+    - read only new records;
+    - output only new records.
+
+    Other 8 incremental streams are also incremental but with one difference, they:
+    - read all records;
+    - output only new records.
+
+    Please, consider this behaviour when using those 8 incremental streams because it may affect you API call limits.
+
+1. We are passing few parameters (`since`, `sort` and `direction`) to GitHub in order to filter records and sometimes
+   for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub
+   instead of records (respective `WARN` log message will be outputted). In this case Specifying more recent
+   `start_date` may help.
 
 ### Features
 
@@ -44,8 +64,10 @@ The Github connector should not run into Github API limitations under normal usa
 
 ### Requirements
 
-* Github Account
-* Github Personal Access Token wih the necessary permissions \(described below\)
+* Github Account;
+* `access_token` - Github Personal Access Token wih the necessary permissions \(described below\);
+* `repository` - GitHub repository which looks like `<owner>/<repo>`;
+* `start_date` - start date for 3 incremental streams: `comments`, `commits` and `issues`.
 
 ### Setup guide
 
@@ -57,3 +79,10 @@ Your token should have at least the `repo` scope. Depending on which streams you
 * Syncing [Teams](https://docs.github.com/en/free-pro-team@latest/github/setting-up-and-managing-organizations-and-teams/about-teams) is only available to authenticated members of a team's [organization](https://docs.github.com/en/free-pro-team@latest/rest/reference/orgs). [Personal user accounts](https://docs.github.com/en/free-pro-team@latest/github/getting-started-with-github/types-of-github-accounts) and repositories belonging to them don't have access to Teams features. In this case no records will be synced.
 * To sync the Projects stream, the repository must have the Projects feature enabled.
 
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.1.2   | 2021-07-13 | [4708](https://github.com/airbytehq/airbyte/pull/4708) | Fix bug with IssueEvents stream and add handling for rate limiting |
+| 0.1.1   | 2021-07-07 | [4590](https://github.com/airbytehq/airbyte/pull/4590) | Fix schema in the `pull_request` stream |
+| 0.1.0   | 2021-07-06 | [4174](https://github.com/airbytehq/airbyte/pull/4174) | New Source: GitHub |
