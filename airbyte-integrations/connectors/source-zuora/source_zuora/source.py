@@ -165,7 +165,7 @@ class ZuoraObjectsBase(ZuoraBase):
         """
         :: Output example: '2021-07-15 07:45:55 -07:00' FROMAT : "%Y-%m-%d %H:%M:%S %Z"
         """
-        return f"{date.strftime('%Y-%m-%d %H:%M:%S %Z')}"
+        return date.strftime('%Y-%m-%d %H:%M:%S %Z')
 
     def stream_slices(
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
