@@ -26,21 +26,20 @@
 # import logging
 # logging.basicConfig(level=logging.DEBUG)
 
+import json
 from abc import ABC
 from datetime import datetime
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Tuple, Optional
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+
 import pendulum
-
 import requests
-import json
-
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams.http import HttpStream
 
 from .zuora_auth import ZuoraAuthenticator
-from .zuora_errors import ZOQLQueryCannotProcessObject, ZOQLQueryFieldCannotResolve, ZOQLQueryFailed
+from .zuora_errors import ZOQLQueryCannotProcessObject, ZOQLQueryFailed, ZOQLQueryFieldCannotResolve
 
 
 def get_url_base(is_sandbox: bool = False) -> str:
@@ -48,6 +47,7 @@ def get_url_base(is_sandbox: bool = False) -> str:
     if is_sandbox:
         url_base = "https://rest.apisandbox.zuora.com"
     return url_base
+
 
 class ZuoraStream(HttpStream, ABC):
 
@@ -77,15 +77,14 @@ class ZuoraStream(HttpStream, ABC):
 
     def get_stream_state(self, stream_state: Mapping[str, Any] = None) -> Mapping[str, Any]:
         return stream_state.get(self.cursor_field, stream_state.get(self.alt_cursor_field)) if stream_state else self.api.start_date
-    
-class ZuoraBase(ZuoraStream):
 
+
+class ZuoraBase(ZuoraStream):
     def path(self, **kwargs) -> str:
         return ""
 
     def request_kwargs(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> Mapping[str, Any]:
         return stream_slice if stream_slice else {}
-        
 
     def get_data(self, date_slice: Dict, config: Dict) -> Iterable[Mapping[str, Any]]:
         """
@@ -102,28 +101,31 @@ class ZuoraBase(ZuoraStream):
             for more information see: ZuoraGetJobResult
 
         """
-        
-        job_id: List[str] = ZuoraSubmitJob(self.query(stream_name=self.name, cursor_field=self.cursor_field, date_slice=date_slice), config).read_records(sync_mode=None)
+
+        job_id: List[str] = ZuoraSubmitJob(
+            self.query(stream_name=self.name, cursor_field=self.cursor_field, date_slice=date_slice), config
+        ).read_records(sync_mode=None)
         job_data_url: List = ZuoraJobStatusCheck(list(job_id)[0], config).read_records(sync_mode=None)
         yield from ZuoraGetJobResult(list(job_data_url)[0], config).read_records(sync_mode=None)
 
-    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response: 
+    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
         try:
             yield from self.get_data(date_slice=request_kwargs, config=self._config)
         except ZOQLQueryFieldCannotResolve:
             """
             The default cursor_field is "updateddate" sometimes it's not supported by certain streams.
             We need to swith the default cursor field to alternative one, and retry again the whole operation, submit the new job to the server.
-            We also need to save the state in the end of the sync. 
+            We also need to save the state in the end of the sync.
             So this switch is needed as fast and easy way of resolving the cursor_field for streams that support only the "createddate"
             """
-            self.cursor_field = self.alt_cursor_field # cursor_field switch
-            yield from self.get_data(date_slice=request_kwargs, config=self._config) # retry the whole operation
+            self.cursor_field = self.alt_cursor_field  # cursor_field switch
+            yield from self.get_data(date_slice=request_kwargs, config=self._config)  # retry the whole operation
         except ZOQLQueryCannotProcessObject:
             pass
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> str:
         yield from response
+
 
 class ZuoraObjectsBase(ZuoraBase):
 
@@ -132,7 +134,7 @@ class ZuoraObjectsBase(ZuoraBase):
 
     # setting checkpoint interval to the limit of date-slice
     @property
-    def state_checkpoint_interval(self) -> int: 
+    def state_checkpoint_interval(self) -> int:
         return self.window_in_days
 
     def get_cursor_from_schema(self, schema: Dict) -> str:
@@ -143,8 +145,8 @@ class ZuoraObjectsBase(ZuoraBase):
         return self.cursor_field if self.cursor_field in schema else self.alt_cursor_field
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        schema = list(ZuoraDescribeObject(self.name, config = self._config).read_records(sync_mode=None))
-        return {"properties": {key: d[key] for d in schema for key in d} }
+        schema = list(ZuoraDescribeObject(self.name, config=self._config).read_records(sync_mode=None))
+        return {"properties": {key: d[key] for d in schema for key in d}}
 
     def as_airbyte_stream(self) -> AirbyteStream:
         stream = super().as_airbyte_stream()
@@ -156,8 +158,8 @@ class ZuoraObjectsBase(ZuoraBase):
 
     def query(self, stream_name: str, cursor_field: str, date_slice: Dict) -> str:
         return f"""
-            select * from {stream_name} where 
-            {cursor_field} >= TIMESTAMP '{date_slice.get('start_date')}' and 
+            select * from {stream_name} where
+            {cursor_field} >= TIMESTAMP '{date_slice.get('start_date')}' and
             {cursor_field} <= TIMESTAMP '{date_slice.get('end_date')}'
             """
 
@@ -168,8 +170,10 @@ class ZuoraObjectsBase(ZuoraBase):
         """
         return f"{date.strftime('%Y-%m-%d %H:%M:%S %Z')}"
 
-    def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
-    
+    def stream_slices(
+        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+
         start_date = pendulum.parse(self.start_date).astimezone()
         end_date = pendulum.now().astimezone()
 
@@ -183,43 +187,38 @@ class ZuoraObjectsBase(ZuoraBase):
 
         while start_date < end_date:
             end_date_slice = start_date.add(days=self.window_in_days)
-            date_slices.append(
-                {
-                    "start_date": self.to_datetime_str(start_date),
-                    "end_date": self.to_datetime_str(end_date_slice)
-                }
-            )
+            date_slices.append({"start_date": self.to_datetime_str(start_date), "end_date": self.to_datetime_str(end_date_slice)})
             start_date = end_date_slice
 
         return date_slices
-   
-class ZuoraListObjects(ZuoraBase):
 
+
+class ZuoraListObjects(ZuoraBase):
     def query(self, **kwargs) -> str:
         return "SHOW TABLES"
-    
+
     def path(self, **kwargs) -> str:
         return ""
 
-    def parse_response(self,response: requests.Response,**kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         self.logger.info("Retrieving the list of available Objects from Zuora")
         return [name["Table"] for name in response]
 
-class ZuoraDescribeObject(ZuoraBase):
 
+class ZuoraDescribeObject(ZuoraBase):
     def __init__(self, zuora_object_name: str, config: Dict):
         super().__init__(config)
         self.zuora_object_name = zuora_object_name
- 
+
     def query(self, **kwargs) -> str:
         self.logger.info(f"Getting schema information for {self.zuora_object_name}")
         return f"DESCRIBE {self.zuora_object_name}"
 
     def parse_response(self, response: requests.Response, **kwargs) -> List[Dict]:
-        """ 
+        """
         Response example:
         [
-            {'Column': 'taxexempteffectivedate', 'Type': 'date', 'Extra': '', 'Comment': 'TaxExemptEffectiveDate'}, 
+            {'Column': 'taxexempteffectivedate', 'Type': 'date', 'Extra': '', 'Comment': 'TaxExemptEffectiveDate'},
             {'Column': 'invoicetemplateid', 'Type': 'varchar', 'Extra': '', 'Comment': 'InvoiceTemplateId'}...
         ]
         """
@@ -247,11 +246,11 @@ class ZuoraDescribeObject(ZuoraBase):
             "json": type_object,
             "xml": type_object,
             "blob": type_object,
-            "list": type_array, 
+            "list": type_array,
             "array": type_array,
             "boolean": type_bool,
-            "bool": type_bool
-            }
+            "bool": type_bool,
+        }
 
         json_schema = {}
         for field in response:
@@ -259,6 +258,7 @@ class ZuoraDescribeObject(ZuoraBase):
             json_schema[field.get("Column")] = {"type": json_type}
 
         return [json_schema]
+
 
 class ZuoraSubmitJob(ZuoraStream):
 
@@ -271,33 +271,33 @@ class ZuoraSubmitJob(ZuoraStream):
     def path(self, **kwargs) -> str:
         return "/query/jobs"
 
-    def request_body_json(self,**kwargs) -> Optional[Mapping]:
+    def request_body_json(self, **kwargs) -> Optional[Mapping]:
         params = self._request_params(stream_state=None)
         params["query"] = self.query
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> List[str]:
 
-        """ 
+        """
         Response example:
-        {'data': 
+        {'data':
             {
-                'id': 'c6f25f91-5357-4fec-a00d-9009cc1ae856', 
-                'query': 'DESCRIBE account', 
-                'useIndexJoin': False, 
-                'sourceData': 'LIVE', 
-                'queryStatus': 'accepted', 
-                'remainingRetries': 3, 
-                'retries': 3, 
-                'updatedOn': '2021-07-26T15:33:48.287Z', 
+                'id': 'c6f25f91-5357-4fec-a00d-9009cc1ae856',
+                'query': 'DESCRIBE account',
+                'useIndexJoin': False,
+                'sourceData': 'LIVE',
+                'queryStatus': 'accepted',
+                'remainingRetries': 3,
+                'retries': 3,
+                'updatedOn': '2021-07-26T15:33:48.287Z',
                 'createdBy': '84f78cea-8a5b-4332-933f-27439fe3b87b'
             }
         }
         """
-        return [ response.json()["data"]["id"] ]
+        return [response.json()["data"]["id"]]
+
 
 class ZuoraJobStatusCheck(ZuoraStream):
-
     def __init__(self, job_id: str, config: Dict):
         super().__init__(config)
         self.job_id = job_id
@@ -306,24 +306,24 @@ class ZuoraJobStatusCheck(ZuoraStream):
         return f"/query/jobs/{self.job_id}"
 
     def parse_response(self, response: requests.Response, **kwargs) -> List[str]:
-       return [response.json()["data"]["dataFile"]]
+        return [response.json()["data"]["dataFile"]]
 
     def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
 
-        """ 
-        {'data': 
+        """
+        {'data':
             {
-                'id': 'c6f25f91-5357-4fec-a00d-9009cc1ae856', 
-                'query': 'DESCRIBE account', 
-                'useIndexJoin': False, 
-                'sourceData': 'LIVE', 
-                'queryStatus': 'completed', 
-                'dataFile': 'https://owl-auw2-sbx01-query-result.s3.us-west-2.amazonaws.com/c6f25f91-5357-4fec-a00d-9009cc1ae856_2779514650704989.jsonl?....', 
-                'outputRows': 53, 
-                'processingTime': 516, 
-                'remainingRetries': 3, 
-                'retries': 3, 
-                'updatedOn': '2021-07-26T15:33:48.803Z', 
+                'id': 'c6f25f91-5357-4fec-a00d-9009cc1ae856',
+                'query': 'DESCRIBE account',
+                'useIndexJoin': False,
+                'sourceData': 'LIVE',
+                'queryStatus': 'completed',
+                'dataFile': 'https://owl-auw2-sbx01-query-result.s3.us-west-2.amazonaws.com/c6f25f91-5357-4fec-a00d-9009cc1ae856_2779514650704989.jsonl?....',
+                'outputRows': 53,
+                'processingTime': 516,
+                'remainingRetries': 3,
+                'retries': 3,
+                'updatedOn': '2021-07-26T15:33:48.803Z',
                 'createdBy': '84f78cea-8a5b-4332-933f-27439fe3b87b'
             }
         }
@@ -349,7 +349,8 @@ class ZuoraJobStatusCheck(ZuoraStream):
             elif status in errors:
                 raise ZOQLQueryFailed(response)
         return response
- 
+
+
 class ZuoraGetJobResult(HttpStream):
 
     # TODO: describe the dataFile is comming from...from S3
@@ -372,21 +373,21 @@ class ZuoraGetJobResult(HttpStream):
     def parse_response(self, response: requests.Response, **kwargs) -> str:
         yield from [json.loads(line) for line in response.text.splitlines()]
 
-class SourceZuora(AbstractSource):
 
+class SourceZuora(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         Testing connection availability for the connector by granting the token.
         """
 
         # Define the endpoint from user's config
-        url_base = get_url_base(config['is_sandbox'])
+        url_base = get_url_base(config["is_sandbox"])
         try:
             ZuoraAuthenticator(
-                token_refresh_endpoint = f"{url_base}/oauth/token",
-                client_id = config["client_id"],
-                client_secret = config["client_secret"], 
-                refresh_token = None, # Zuora doesn't have Refresh Token parameter.
+                token_refresh_endpoint=f"{url_base}/oauth/token",
+                client_id=config["client_id"],
+                client_secret=config["client_secret"],
+                refresh_token=None,  # Zuora doesn't have Refresh Token parameter.
             ).get_auth_header()
             return True, None
         except Exception as e:
@@ -398,20 +399,20 @@ class SourceZuora(AbstractSource):
         Defining streams to run by building stream classes dynamically.
         """
         # Define the endpoint from user's config
-        url_base = get_url_base(config['is_sandbox'])
+        url_base = get_url_base(config["is_sandbox"])
 
         # Get Authotization Header with Access Token
         authenticator = ZuoraAuthenticator(
-            token_refresh_endpoint = f"{url_base}/oauth/token",
-            client_id = config["client_id"],
-            client_secret = config["client_secret"], 
-            refresh_token = None, # Zuora doesn't have Refresh Token parameter.
+            token_refresh_endpoint=f"{url_base}/oauth/token",
+            client_id=config["client_id"],
+            client_secret=config["client_secret"],
+            refresh_token=None,  # Zuora doesn't have Refresh Token parameter.
         )
 
         config["authenticator"] = authenticator
         config["url_base"] = url_base
 
-         # List available objects (streams) names from Zuora
+        # List available objects (streams) names from Zuora
         # zuora_stream_names = ["account", "invoicehistory", "ratedusage"]
         zuora_stream_names = ZuoraListObjects(config).read_records(sync_mode=None)
 
@@ -422,6 +423,5 @@ class SourceZuora(AbstractSource):
             # instancetiate a stream with config
             stream_instance = stream_class(config)
             streams.append(stream_instance)
-        
-        return streams
 
+        return streams
