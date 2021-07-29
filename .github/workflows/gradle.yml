@@ -42,7 +42,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: test
-        run: echo $TEST_SECRET
+        run: echo "HERE IS THE TEST SECRET VALUE" && echo $TEST_SECRET
 
       - name: Check images exist
         run: ./tools/bin/check_images_exist.sh all
