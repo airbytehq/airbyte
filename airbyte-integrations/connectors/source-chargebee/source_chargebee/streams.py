@@ -22,16 +22,21 @@
 # SOFTWARE.
 #
 
-from datetime import datetime, timezone
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import backoff
+import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from chargebee.api_error import OperationFailedError
 from chargebee.list_result import ListResult
 from chargebee.model import Model
-from chargebee.models import Addon, Customer, Invoice, Order, Plan, Subscription
+from chargebee.models import Addon as AddonModel
+from chargebee.models import Customer as CustomerModel
+from chargebee.models import Invoice as InvoiceModel
+from chargebee.models import Order as OrderModel
+from chargebee.models import Plan as PlanModel
+from chargebee.models import Subscription as SubscriptionModel
 
 # Backoff params below
 # according to Chargebee's guidance on rate limit
@@ -44,11 +49,12 @@ class ChargebeeStream(Stream):
     primary_key = "id"
     cursor_field = "updated_at"
     page_size = 100
+    include_deleted = "true"
     api: Model = None
 
     def __init__(self, start_date: str):
         # Convert `start_date` to timestamp(UTC).
-        self._start_date = int(datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc).timestamp())
+        self._start_date = pendulum.parse(start_date).int_timestamp
 
     @property
     def state_checkpoint_interval(self) -> int:
@@ -66,7 +72,7 @@ class ChargebeeStream(Stream):
     ) -> MutableMapping[str, Any]:
         params = {
             "limit": self.page_size,
-            "include_deleted": "true",
+            "include_deleted": self.include_deleted,
             "sort_by[asc]": self.cursor_field,
         }
 
@@ -91,15 +97,13 @@ class ChargebeeStream(Stream):
         max_tries=MAX_TRIES,
         max_time=MAX_TIME,
     )
-    def _send_request(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> ListResult:
+    def _send_request(self, **kwargs) -> ListResult:
         """
         Just a wrapper to allow @backoff decorator
         Reference: https://apidocs.chargebee.com/docs/api/#error_codes_list
         """
-        kwargs = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        return self.api.list(kwargs)
+        params = self.request_params(**kwargs)
+        return self.api.list(params)
 
     def read_records(
         self,
@@ -142,31 +146,55 @@ class ChargebeeStream(Stream):
         return state_value
 
 
-class SubscriptionStream(ChargebeeStream):
+class Subscription(ChargebeeStream):
+    """
+    API docs: https://apidocs.chargebee.com/docs/api/subscriptions?prod_cat_ver=2#list_subscriptions
+    """
+
     name = "subscription"
-    api = Subscription
+    api = SubscriptionModel
 
 
-class CustomerStream(ChargebeeStream):
+class Customer(ChargebeeStream):
+    """
+    API docs: https://apidocs.chargebee.com/docs/api/customers?prod_cat_ver=2#list_customers
+    """
+
     name = "customer"
-    api = Customer
+    api = CustomerModel
 
 
-class InvoiceStream(ChargebeeStream):
+class Invoice(ChargebeeStream):
+    """
+    API docs: https://apidocs.chargebee.com/docs/api/invoices?prod_cat_ver=2#list_invoices
+    """
+
     name = "invoice"
-    api = Invoice
+    api = InvoiceModel
 
 
-class OrderStream(ChargebeeStream):
+class Order(ChargebeeStream):
+    """
+    API docs: https://apidocs.chargebee.com/docs/api/orders?prod_cat_ver=2#list_orders
+    """
+
     name = "order"
-    api = Order
+    api = OrderModel
 
 
-class PlanStream(ChargebeeStream):
+class Plan(ChargebeeStream):
+    """
+    API docs: https://apidocs.chargebee.com/docs/api/plans?prod_cat_ver=1&lang=curl#list_plans
+    """
+
     name = "plan"
-    api = Plan
+    api = PlanModel
 
 
-class AddonStream(ChargebeeStream):
+class Addon(ChargebeeStream):
+    """
+    API docs: https://apidocs.chargebee.com/docs/api/addons?prod_cat_ver=1&lang=curl#list_addons
+    """
+
     name = "addon"
-    api = Addon
+    api = AddonModel

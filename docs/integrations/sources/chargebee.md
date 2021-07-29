@@ -10,13 +10,28 @@ This Chargebee source uses the [Chargebee Python Client Library](https://github.
 
 This connector outputs the following streams:
 
-* [Subscription](https://apidocs.chargebee.com/docs/api/subscriptions?prod_cat_ver=2#list_subscriptions)
+* [Subscriptions](https://apidocs.chargebee.com/docs/api/subscriptions?prod_cat_ver=2#list_subscriptions)
 * [Customers](https://apidocs.chargebee.com/docs/api/customers?prod_cat_ver=2#list_customers)
 * [Invoices](https://apidocs.chargebee.com/docs/api/invoices?prod_cat_ver=2#list_invoices)
 * [Orders](https://apidocs.chargebee.com/docs/api/orders?prod_cat_ver=2#list_orders)
 * [Plans](https://apidocs.chargebee.com/docs/api/plans?prod_cat_ver=1&lang=curl#list_plans)
 * [Addons](https://apidocs.chargebee.com/docs/api/addons?prod_cat_ver=1&lang=curl#list_addons)
 
+### Notes
+
+Some streams may depend on Product Catalog version and be accessible only on sites with specific Product Catalog version. This means that we have following streams:
+
+1. presented in both `Product Catalog 1.0` and `Product Catalog 2.0`:
+    - Subscriptions
+    - Customers
+    - Invoices
+    - Orders
+    
+2. presented only in `Product Catalog 1.0`:
+    - Plans
+    - Addons
+    
+3. presented only in `Product Catalog 2.0` will be added soon.
 
 ### Features
 
@@ -39,17 +54,19 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 * Chargebee Account;
 * `site_api_key` - Chargebee API Key wih the necessary permissions \(described below\);
 * `site` - Chargebee site prefix for your instance;
-* `start_date` - start date for incremental streams.
+* `start_date` - start date for incremental streams;
+* `product_catalog` - Product Catalog version of your Chargebee site \(described below\).
 
 ### Setup guide
 
 Log into Chargebee and then generate an [API Key](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_authentication).
+Then follow [these](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2) instructions, under `API Version` section, on how to find your Product Catalog version.
 
 
 ## Changelog
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.2   | 2021-07-29 | [5067](https://github.com/airbytehq/airbyte/pull/5067) | Publish connector ???? |
+| 0.1.2   | 2021-07-30 | [5067](https://github.com/airbytehq/airbyte/pull/5067) | Prepare connector for publishing |
 | 0.1.1   | 2021-07-07 | [4539](https://github.com/airbytehq/airbyte/pull/4539) | Add entrypoint and bump version for connector |
 | 0.1.0   | 2021-06-30 | [3410](https://github.com/airbytehq/airbyte/pull/3410) | New Source: Chargebee |
