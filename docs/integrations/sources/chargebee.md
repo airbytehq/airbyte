@@ -50,6 +50,6 @@ Log into Chargebee and then generate an [API Key](https://apidocs.chargebee.com/
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.2   | 2021-07-29 | [????](https://github.com/airbytehq/airbyte/pull/????) | Publish connector ???? |
+| 0.1.2   | 2021-07-29 | [5067](https://github.com/airbytehq/airbyte/pull/5067) | Publish connector ???? |
 | 0.1.1   | 2021-07-07 | [4539](https://github.com/airbytehq/airbyte/pull/4539) | Add entrypoint and bump version for connector |
 | 0.1.0   | 2021-06-30 | [3410](https://github.com/airbytehq/airbyte/pull/3410) | New Source: Chargebee |
