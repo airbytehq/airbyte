@@ -10,7 +10,8 @@
       "client_id": {
         "title": "Client ID",
         "type": "string",
-        "description": "The Snapchat Client ID for API credentials."
+        "description": "The Snapchat Client ID for API credentials.",
+        "airbyte_secret": true
       },
       "client_secret": {
         "title": "Client Secret",

@@ -208,7 +208,8 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
     max_state = None
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        self.initial_state = kwargs.get("stream_state") or self.start_date
+        stream_state = kwargs.get("stream_state")
+        self.initial_state = stream_state.get(self.cursor_field) if stream_state else self.start_date
         self.max_state = self.initial_state
         depends_on_stream_config = {"authenticator": self.authenticator, "start_date": self.start_date}
         stream_slices = get_depend_on_ids(self.depends_on_stream, depends_on_stream_config, self.slice_key_name)
