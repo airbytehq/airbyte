@@ -1,13 +1,14 @@
 import React from "react";
-import { Formik, FieldProps, Field } from "formik";
+import { Field, FieldProps, Formik } from "formik";
 import * as yup from "yup";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { H1 } from "../../../components/Titles";
-import { Form, FieldItem, BottomBlock } from "../components/FormComponents";
-import LabeledInput from "components/LabeledInput";
-import { Button } from "components/base";
-import { Link } from "components/Link";
+import { useAuthService } from "packages/cloud/services/auth/AuthService";
+
+import { LabeledInput, Link, LoadingButton } from "components";
+import { BottomBlock, FieldItem, Form } from "../components/FormComponents";
+import { FormTitle } from "../components/FormTitle";
+import { FieldError } from "../../../lib/errors/FieldError";
 
 const LoginPageValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
@@ -16,12 +17,11 @@ const LoginPageValidationSchema = yup.object().shape({
 
 const LoginPage: React.FC = () => {
   const formatMessage = useIntl().formatMessage;
+  const { login } = useAuthService();
 
   return (
     <div>
-      <H1 bold danger>
-        Sign in to Airbyte
-      </H1>
+      <FormTitle bold>Sign in to Airbyte</FormTitle>
 
       <Formik
         initialValues={{
@@ -29,11 +29,19 @@ const LoginPage: React.FC = () => {
           password: "",
         }}
         validationSchema={LoginPageValidationSchema}
-        onSubmit={() => console.log("ok")}
-        validateOnBlur={true}
+        onSubmit={async (values, { setFieldError, setStatus }) =>
+          login(values).catch((err) => {
+            if (err instanceof FieldError) {
+              setFieldError(err.field, err.message);
+            } else {
+              setStatus(err.message);
+            }
+          })
+        }
+        validateOnBlur
         validateOnChange={false}
       >
-        {() => (
+        {({ isSubmitting }) => (
           <Form>
             <FieldItem>
               <Field name="email">
@@ -61,7 +69,7 @@ const LoginPage: React.FC = () => {
                   <LabeledInput
                     {...field}
                     label={"Password"}
-                    placeholder={"ss"}
+                    placeholder={"Enter a strong password"}
                     type="password"
                     error={!!meta.error && meta.touched}
                     message={
@@ -76,9 +84,11 @@ const LoginPage: React.FC = () => {
             <BottomBlock>
               <>
                 <Link to={"/reset-password"} $light>
-                  reset-password
+                  Forgot your password
                 </Link>
-                <Button type="submit">Log In</Button>
+                <LoadingButton type="submit" isLoading={isSubmitting}>
+                  Log In
+                </LoadingButton>
               </>
             </BottomBlock>
           </Form>

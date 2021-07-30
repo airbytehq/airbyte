@@ -10,10 +10,10 @@ import {
   Form,
   RowFieldItem,
 } from "../components/FormComponents";
-import LabeledInput from "components/LabeledInput";
-import { Button } from "components/base/Button";
-import LabeledToggle from "components/LabeledToggle";
-import { H1, H4 } from "../../../components/Titles";
+import { Button, H4, LabeledInput, LabeledToggle } from "components";
+import { FormTitle } from "../components/FormTitle";
+import { useAuthService } from "packages/cloud/services/auth/AuthService";
+import { FieldError } from "packages/cloud/lib/errors/FieldError";
 
 const MarginBlock = styled.div`
   margin-bottom: 15px;
@@ -30,11 +30,11 @@ const SignupPageValidationSchema = yup.object().shape({
 const SignupPage: React.FC = () => {
   const formatMessage = useIntl().formatMessage;
 
+  const { signUp } = useAuthService();
+
   return (
     <div>
-      <H1 bold danger>
-        Activate your free beta access
-      </H1>
+      <FormTitle bold>Activate your free beta access</FormTitle>
       <H4>No credit card required. Free until official launch.</H4>
 
       <Formik
@@ -47,7 +47,15 @@ const SignupPage: React.FC = () => {
           security: false,
         }}
         validationSchema={SignupPageValidationSchema}
-        onSubmit={() => console.log("ok")}
+        onSubmit={async (values, { setFieldError, setStatus }) =>
+          signUp(values).catch((err) => {
+            if (err instanceof FieldError) {
+              setFieldError(err.field, err.message);
+            } else {
+              setStatus(err.message);
+            }
+          })
+        }
         validateOnBlur={true}
         validateOnChange={false}
       >
@@ -112,8 +120,8 @@ const SignupPage: React.FC = () => {
                 {({ field, meta }: FieldProps<string>) => (
                   <LabeledInput
                     {...field}
-                    label={"Password"}
-                    placeholder={"ss"}
+                    label="Password"
+                    placeholder="ss"
                     type="password"
                     error={!!meta.error && meta.touched}
                     message={

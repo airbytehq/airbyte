@@ -1,13 +1,11 @@
 import React from "react";
-import { Formik, FieldProps, Field } from "formik";
+import { Field, FieldProps, Formik } from "formik";
 import * as yup from "yup";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { Form, FieldItem, BottomBlock } from "../components/FormComponents";
-import LabeledInput from "components/LabeledInput";
-import { Button } from "components/base";
-import { Link } from "components/Link";
-import { H1 } from "../../../components/Titles";
+import { BottomBlock, FieldItem, Form } from "../components/FormComponents";
+import { Button, LabeledInput, Link } from "components";
+import { FormTitle } from "../components/FormTitle";
 
 const ResetPasswordPageValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
@@ -18,9 +16,7 @@ const ResetPasswordPage: React.FC = () => {
 
   return (
     <div>
-      <H1 bold danger>
-        Reset your password
-      </H1>
+      <FormTitle bold>Reset your password</FormTitle>
 
       <Formik
         initialValues={{

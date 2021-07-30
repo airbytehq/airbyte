@@ -23,6 +23,7 @@
     "@rest-hooks/legacy": "^2.0.5",
     "@storybook/react": "^6.3.2",
     "dayjs": "^1.8.35",
+    "firebase": "^8.8.0",
     "flat": "^5.0.2",
     "formik": "2.1.5",
     "lodash.get": "^4.4.2",

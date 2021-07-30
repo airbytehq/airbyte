@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
-import Button from "components/base/Button";
+import { Button } from "components";
 
 const Links = styled.div`
   width: 100%;

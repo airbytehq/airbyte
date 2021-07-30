@@ -3,8 +3,8 @@ import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 
+import { H2, H3, H4 } from "components";
 import NewsItem from "./NewsItem";
-import { H2, H3, H4 } from "../../../components/Titles";
 
 const Icon = styled.div`
   width: 184px;

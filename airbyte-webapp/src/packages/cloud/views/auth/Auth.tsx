@@ -2,13 +2,14 @@ import React, { Suspense } from "react";
 import styled from "styled-components";
 import { Redirect, Route, Switch } from "react-router-dom";
 
-import LoadingPage from "components/LoadingPage";
+import { LoadingPage } from "components";
+import useRouter from "components/hooks/useRouterHook";
 import FormContent from "./components/FormContent";
 import News from "./components/News";
+
 import { LoginPage } from "./LoginPage";
 import { SignupPage } from "./SignupPage";
 import { ResetPasswordPage } from "./ResetPasswordPage";
-import useRouter from "components/hooks/useRouterHook";
 
 const Content = styled.div`
   width: 100%;
@@ -44,16 +45,16 @@ const Auth: React.FC = () => {
         <FormContent toLogin={pathname === "/signup"}>
           <Suspense fallback={<LoadingPage />}>
             <Switch>
-              <Route path={"/login"}>
+              <Route path="/login">
                 <LoginPage />
               </Route>
-              <Route path={"/signup"}>
+              <Route path="/signup">
                 <SignupPage />
               </Route>
-              <Route path={"/reset-password"}>
+              <Route path="/reset-password">
                 <ResetPasswordPage />
               </Route>
-              <Redirect to={"/login"} />
+              <Redirect to="/login" />
             </Switch>
           </Suspense>
         </FormContent>

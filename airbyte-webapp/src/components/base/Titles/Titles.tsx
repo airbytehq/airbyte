@@ -6,10 +6,10 @@ type IProps = {
 };
 
 export const H1 = styled.h1<IProps>`
+  font-size: ${({ theme }) => theme.h1?.fontSize || "28px"};
+  line-height: ${({ theme }) => theme.h1?.lineHeight || "34px"};
   font-style: normal;
   font-weight: ${(props) => (props.bold ? 600 : 500)};
-  font-size: 28px;
-  line-height: 34px;
   display: block;
   text-align: ${(props) => (props.center ? "center" : "left")};
   color: ${({ theme }) => theme.textColor};
