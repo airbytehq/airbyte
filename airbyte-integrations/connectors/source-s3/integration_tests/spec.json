@@ -8,6 +8,7 @@
             "dataset": {
                 "title": "Dataset",
                 "description": "This source creates one table per connection, this field is the name of that table. This should include only letters, numbers, dash and underscores. Note that this may be altered according to destination.",
+                "pattern": "^([A-Za-z0-9\\-\\_]+)$",
                 "type": "string"
             },
             "path_pattern": {

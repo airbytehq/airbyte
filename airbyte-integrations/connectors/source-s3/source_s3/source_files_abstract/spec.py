@@ -117,6 +117,7 @@ class ParquetFormat(BaseModel):
 class SourceFilesAbstractSpec(BaseModel):
 
     dataset: str = Field(
+        pattern="^([A-Za-z0-9\-\_]+)$",
         description="This source creates one table per connection, this field is the name of that table. This should include only letters, numbers, dash and underscores. Note that this may be altered according to destination."
     )
 
