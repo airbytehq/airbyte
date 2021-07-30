@@ -102,7 +102,7 @@ public class MigrateV0_28_0Test {
   }
 
   @Test
-  void testEmptyResourceStreams() throws IOException {
+  void testEmptyResourceStreams() {
     final MigrationV0_28_0 migration = (MigrationV0_28_0) Migrations.MIGRATIONS
         .stream()
         .filter(m -> m instanceof MigrationV0_28_0)
