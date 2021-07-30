@@ -39,6 +39,7 @@ import io.airbyte.migrate.Migrations;
 import io.airbyte.migrate.ResourceId;
 import io.airbyte.migrate.ResourceType;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Spliterators;
@@ -90,6 +91,33 @@ public class MigrateV0_28_0Test {
         .put(SOURCE_RESOURCE_ID, getResourceList(INPUT_CONFIG_PATH + "/SOURCE_CONNECTION.yaml"))
         .put(OPERATION_RESOURCE_ID, getResourceList(OUTPUT_CONFIG_PATH + "/STANDARD_SYNC_OPERATION.yaml"))
         .build();
+
+    final Map<ResourceId, List<JsonNode>> expectedOutput = MigrationTestUtils
+        .createExpectedOutput(migration.getOutputSchema().keySet(), expectedOutputOverrides);
+
+    final Map<ResourceId, List<JsonNode>> outputAsList = MigrationTestUtils
+        .collectConsumersToList(outputConsumer);
+
+    assertExpectedOutput(expectedOutput, outputAsList);
+  }
+
+  @Test
+  void testEmptyResourceStreams() {
+    final MigrationV0_28_0 migration = (MigrationV0_28_0) Migrations.MIGRATIONS
+        .stream()
+        .filter(m -> m instanceof MigrationV0_28_0)
+        .findAny()
+        .orElse(null);
+    assertNotNull(migration);
+
+    final Map<ResourceId, Stream<JsonNode>> inputConfigs = Collections.emptyMap();
+
+    final Map<ResourceId, ListConsumer<JsonNode>> outputConsumer = MigrationTestUtils
+        .createOutputConsumer(migration.getOutputSchema().keySet());
+
+    migration.migrate(inputConfigs, MigrationUtils.mapRecordConsumerToConsumer(outputConsumer));
+
+    final Map<ResourceId, List<JsonNode>> expectedOutputOverrides = Collections.emptyMap();
 
     final Map<ResourceId, List<JsonNode>> expectedOutput = MigrationTestUtils
         .createExpectedOutput(migration.getOutputSchema().keySet(), expectedOutputOverrides);
