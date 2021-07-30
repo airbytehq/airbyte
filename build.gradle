@@ -113,7 +113,7 @@ allprojects {
 
     afterEvaluate { project ->
         def composeDeps = [
-                ":airbyte-config:init",
+                ":airbyte-config:config-init",
                 ":airbyte-db",
                 ":airbyte-migration",
                 ":airbyte-scheduler:app",
@@ -298,7 +298,7 @@ tasks.withType(AbstractArchiveTask) {
 //        ':airbyte-api',
 //        ':airbyte-commons',
 //        ':airbyte-commons-docker',
-//        ':airbyte-config:init',
+//        ':airbyte-config:config-init',
 //        ':airbyte-config:models',
 //        ':airbyte-config:persistence',
 //        ':airbyte-db',

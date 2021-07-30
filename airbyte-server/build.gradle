@@ -63,7 +63,7 @@ dependencies {
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-api')
     implementation project(':airbyte-commons-docker')
-    implementation project(':airbyte-config:init')
+    implementation project(':airbyte-config:config-init')
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-config:persistence')
     implementation project(':airbyte-db')
@@ -84,8 +84,8 @@ dependencies {
 }
 
 // we want to be able to access the generated db files from config/init when we build the server docker image.
-task copySeed(type: Copy, dependsOn: [project(':airbyte-config:init').processResources]) {
-    from "${project(':airbyte-config:init').buildDir}/resources/main/config"
+task copySeed(type: Copy, dependsOn: [project(':airbyte-config:config-init').processResources]) {
+    from "${project(':airbyte-config:config-init').buildDir}/resources/main/config"
     into "${buildDir}/config_init/resources/main/config"
 }
 

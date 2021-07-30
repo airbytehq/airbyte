@@ -3,7 +3,7 @@ dependencies {
 
     implementation project(':airbyte-db')
     implementation project(':airbyte-config:models')
-    implementation project(':airbyte-config:init')
+    implementation project(':airbyte-config:config-init')
     implementation project(':airbyte-json-validation')
 
     testImplementation "org.testcontainers:postgresql:1.15.1"
