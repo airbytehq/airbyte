@@ -27,8 +27,7 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.1",
-    # Install chargebee
-    # according to API doc
+    # Install chargebee according to API doc.
     # https://apidocs.chargebee.com/docs/api?lang=python&prod_cat_ver=2#client_library
     "chargebee>=2,<3",
     "backoff==1.10.0",
@@ -47,7 +46,7 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json"]},
+    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
