@@ -46,4 +46,3 @@ In order for the Airbyte UI to correctly render a specification, however, a few 
     }
     ```
     Note that in each item in the `oneOf` array, the `option_title` string field exists with a `constant` value unique to that item. This helps the UI and the connector distinguish between the option that was chosen by the user. 
-4. There can be no nested `oneOf` properties. 
