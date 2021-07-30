@@ -1,6 +1,6 @@
-# Oracle Peoplesoft
+# Oracle PeopleSoft
 
-[Oracle Peoplesoft](https://www.oracle.com/applications/peoplesoft/) is a Human Resource, Financial, Supply Chain, Customer Relationship, and Enterprise Performance Management System.
+[Oracle PeopleSoft](https://www.oracle.com/applications/peoplesoft/) is a Human Resource, Financial, Supply Chain, Customer Relationship, and Enterprise Performance Management System.
 
 ## Sync overview
 
