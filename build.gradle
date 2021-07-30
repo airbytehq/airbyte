@@ -116,7 +116,7 @@ allprojects {
                 ":airbyte-config:config-init",
                 ":airbyte-db",
                 ":airbyte-migration",
-                ":airbyte-protocol:scheduler-app",
+                ":airbyte-scheduler:scheduler-app",
                 ":airbyte-server",
                 ":airbyte-webapp",
         ].toSet().asImmutable()
