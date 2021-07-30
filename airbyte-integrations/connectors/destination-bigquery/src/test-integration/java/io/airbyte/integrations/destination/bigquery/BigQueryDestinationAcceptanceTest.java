@@ -75,7 +75,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
   private Dataset dataset;
   private boolean tornDown;
   private JsonNode config;
-  private StandardNameTransformer namingResolver = new StandardNameTransformer();
+  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   @Override
   protected String getImageName() {

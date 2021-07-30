@@ -44,7 +44,7 @@ public class PostgresDestinationAcceptanceTest extends DestinationAcceptanceTest
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
   private PostgreSQLContainer<?> db;
-  private ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
   @Override
   protected String getImageName() {

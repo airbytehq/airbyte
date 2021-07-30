@@ -42,7 +42,7 @@ public class OracleOperations implements SqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleOperations.class);
 
-  private String tablespace;
+  private final String tablespace;
 
   public OracleOperations(final String tablespace) {
     this.tablespace = tablespace;

@@ -36,7 +36,7 @@ import java.util.Optional;
 // For debugging and testing purposes only; not recommended to use this for real code
 public class LocalAirbyteDestination implements AirbyteDestination {
 
-  private Destination dest;
+  private final Destination dest;
   private AirbyteMessageConsumer consumer;
   private boolean isClosed = false;
 

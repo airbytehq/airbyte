@@ -72,7 +72,7 @@ public abstract class SourceAcceptanceTest extends SourceAbstractTest {
    * sync. This works for many integrations but not some Singer ones, so we hardcode the list of
    * integrations to skip over when performing those tests.
    */
-  private Set<String> IMAGES_TO_SKIP_SECOND_INCREMENTAL_READ = Sets.newHashSet(
+  private final Set<String> IMAGES_TO_SKIP_SECOND_INCREMENTAL_READ = Sets.newHashSet(
       "airbyte/source-intercom-singer",
       "airbyte/source-exchangeratesapi-singer",
       "airbyte/source-hubspot",
@@ -97,7 +97,7 @@ public abstract class SourceAcceptanceTest extends SourceAbstractTest {
   /**
    * FIXME: Some sources can't guarantee that there will be no events between two sequential sync
    */
-  private Set<String> IMAGES_TO_SKIP_IDENTICAL_FULL_REFRESHES = Sets.newHashSet(
+  private final Set<String> IMAGES_TO_SKIP_IDENTICAL_FULL_REFRESHES = Sets.newHashSet(
       "airbyte/source-google-workspace-admin-reports");
 
   /**

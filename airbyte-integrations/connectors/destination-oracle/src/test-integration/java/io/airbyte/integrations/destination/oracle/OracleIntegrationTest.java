@@ -49,7 +49,7 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
   private static OracleContainer db;
-  private ExtendedNameTransformer namingResolver = new OracleNameTransformer();
+  private final ExtendedNameTransformer namingResolver = new OracleNameTransformer();
   private JsonNode config;
 
   @BeforeAll

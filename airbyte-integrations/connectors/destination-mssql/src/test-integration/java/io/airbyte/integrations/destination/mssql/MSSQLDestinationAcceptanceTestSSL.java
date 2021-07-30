@@ -50,7 +50,7 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
   private static MSSQLServerContainer<?> db;
-  private ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
   private JsonNode configWithoutDbName;
   private JsonNode config;
 

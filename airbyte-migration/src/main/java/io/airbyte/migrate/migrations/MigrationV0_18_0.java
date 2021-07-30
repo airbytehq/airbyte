@@ -155,7 +155,7 @@ public class MigrationV0_18_0 extends BaseMigration implements Migration {
 
     INCREMENTAL("incremental");
 
-    private String value;
+    private final String value;
 
     SyncMode(final String value) {
       this.value = value;
