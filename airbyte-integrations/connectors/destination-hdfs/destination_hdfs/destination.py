@@ -21,23 +21,45 @@
 # SOFTWARE.
 
 
-from typing import Mapping, Any, Iterable
+import json
+from typing import Mapping, Any, Iterable, Generator
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, ConfiguredAirbyteCatalog, AirbyteMessage, Status
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    ConfiguredAirbyteCatalog,
+    AirbyteMessage,
+    Status,
+    DestinationSyncMode,
+    Type,
+)
+
+from .client import HDFSClient
 
 
 class DestinationHdfs(Destination):
+    @staticmethod
+    def _stream_generator(
+        input_messages: Iterable[AirbyteMessage],
+    ) -> Generator[str, None, None]:
+        for message in input_messages:
+            # Due to the way this generator streams data directly into HDFS, we
+            # can only accept record messages. All others are ignored
+            if message.type != Type.RECORD:
+                continue
+            record = message.record
+            line = f"{json.dumps(record.data)}\n"
+            yield line
+
     def write(
-            self,
-            config: Mapping[str, Any],
-            configured_catalog: ConfiguredAirbyteCatalog,
-            input_messages: Iterable[AirbyteMessage]
+        self,
+        config: Mapping[str, Any],
+        configured_catalog: ConfiguredAirbyteCatalog,
+        input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
 
         """
-        TODO
         Reads the input stream of messages, config, and catalog to write data to the destination.
 
         This method returns an iterable (typically a generator of AirbyteMessages via yield) containing state messages received
@@ -51,10 +73,27 @@ class DestinationHdfs(Destination):
         :param input_messages: The stream of input messages received from the source
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
+        for configured_stream in configured_catalog.streams:
+            client = HDFSClient(
+                **config, stream=configured_stream.stream.name, logger=self.logger
+            )
+            overwrite = (
+                configured_stream.destination_sync_mode == DestinationSyncMode.overwrite
+            )
+            self.logger.info(
+                f"Streaming data directly into HDFS at {client.path} "
+                f"(overwrite: {overwrite})"
+            )
+            data_gen = self._stream_generator(input_messages)
+            client.write(data_gen, overwrite=overwrite)
+            # Spoof yield to make sure this is a generator, even though we're passing
+            # the messages directly into the write generator for HDFS
+            if False:
+                yield
 
-        pass
-
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(
+        self, logger: AirbyteLogger, config: Mapping[str, Any]
+    ) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
             e.g: if a provided API token or password can be used to connect and write to the destination.
@@ -67,11 +106,10 @@ class DestinationHdfs(Destination):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            # TODO
-
+            client = HDFSClient(**config, stream="")
+            client.check()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
-
-
-
+            return AirbyteConnectionStatus(
+                status=Status.FAILED, message=f"An exception occurred: {repr(e)}"
+            )

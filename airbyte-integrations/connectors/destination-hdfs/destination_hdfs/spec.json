@@ -1,21 +1,49 @@
 {
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/hdfs",
   "supported_destination_sync_modes": [
-    "TODO, available options are: 'overwrite', 'append', and 'append_dedup'"
+    "overwrite",
+    "append"
   ],
   "supportsIncremental": true,
   "supportsDBT": false,
   "supportsNormalization": false,
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Destination Hdfs",
+    "title": "Destination HDFS",
     "type": "object",
-    "required": ["TODO -- fix me!"],
+    "required": [
+      "host",
+      "user",
+      "destination_path"
+    ],
     "additionalProperties": false,
     "properties": {
-      "TODO": {
+      "host": {
+        "title": "Host",
+        "description": "Hostname of the HDFS NameNode server.",
+        "type": "string"
+      },
+      "port": {
+        "title": "Port",
+        "description": "Port of the HDFS NameNode server.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 50070,
+        "examples": [
+          "50070"
+        ]
+      },
+      "username": {
+        "title": "User",
+        "description": "Effective user on the HDFS cluster.",
+        "type": "string"
+      },
+      "destination_path": {
+        "title": "Destination path",
         "type": "string",
-        "description": "FIX ME"
+        "description": "Path to the directory in HDFS where json files will be written. If the path does not exist it will be created.",
+        "examples": ["/user/mydata"]
       }
     }
   }

@@ -27,6 +27,7 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk",
+    "hdfs==2.6.0",
 ]
 
 TEST_REQUIREMENTS = [
