@@ -82,7 +82,7 @@ public class JobScheduler implements Runnable {
       scheduleSyncJobs();
 
       LOGGER.debug("Completed Job-Scheduler...");
-    } catch (Throwable e) {
+    } catch (final Throwable e) {
       LOGGER.error("Job Scheduler Error", e);
     }
   }
@@ -91,14 +91,14 @@ public class JobScheduler implements Runnable {
     final AtomicInteger jobsScheduled = new AtomicInteger();
     final List<StandardSync> activeConnections = getAllActiveConnections();
 
-    for (StandardSync connection : activeConnections) {
+    for (final StandardSync connection : activeConnections) {
       final Optional<Job> previousJobOptional = jobPersistence.getLastReplicationJob(connection.getConnectionId());
 
       if (scheduleJobPredicate.test(previousJobOptional, connection)) {
         jobFactory.create(connection.getConnectionId());
       }
     }
-    int jobsScheduledCount = jobsScheduled.get();
+    final int jobsScheduledCount = jobsScheduled.get();
     if (jobsScheduledCount > 0) {
       LOGGER.info("Job-Scheduler Summary. Active connections: {}, Jobs scheduler: {}", activeConnections.size(), jobsScheduled.get());
     }
@@ -110,7 +110,7 @@ public class JobScheduler implements Runnable {
           .stream()
           .filter(sync -> sync.getStatus() == Status.ACTIVE)
           .collect(Collectors.toList());
-    } catch (JsonValidationException | IOException | ConfigNotFoundException e) {
+    } catch (final JsonValidationException | IOException | ConfigNotFoundException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
   }

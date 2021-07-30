@@ -102,23 +102,23 @@ class ConfigPersistenceBuilderTest extends BaseTest {
 
   @Test
   public void testCreateDbPersistenceWithYamlSeed() throws IOException {
-    ConfigPersistence dbPersistence = new ConfigPersistenceBuilder(configs, true).getDbPersistenceWithYamlSeed();
-    ConfigPersistence seedPersistence = new YamlSeedConfigPersistence();
+    final ConfigPersistence dbPersistence = new ConfigPersistenceBuilder(configs, true).getDbPersistenceWithYamlSeed();
+    final ConfigPersistence seedPersistence = new YamlSeedConfigPersistence();
     assertSameConfigDump(seedPersistence.dumpConfigs(), dbPersistence.dumpConfigs());
   }
 
   @Test
   public void testCreateDbPersistenceWithFileSeed() throws Exception {
-    Path testRoot = Path.of("/tmp/cpf_test_file_seed");
-    Path rootPath = Files.createTempDirectory(Files.createDirectories(testRoot), ConfigPersistenceBuilderTest.class.getName());
-    ConfigPersistence seedPersistence = new FileSystemConfigPersistence(rootPath);
+    final Path testRoot = Path.of("/tmp/cpf_test_file_seed");
+    final Path rootPath = Files.createTempDirectory(Files.createDirectories(testRoot), ConfigPersistenceBuilderTest.class.getName());
+    final ConfigPersistence seedPersistence = new FileSystemConfigPersistence(rootPath);
     writeSource(seedPersistence, SOURCE_GITHUB);
     writeDestination(seedPersistence, DESTINATION_S3);
 
     when(configs.getConfigRoot()).thenReturn(rootPath);
 
-    ConfigPersistence dbPersistence = new ConfigPersistenceBuilder(configs, true).getDbPersistenceWithFileSeed();
-    int dbConfigSize = (int) dbPersistence.dumpConfigs().values().stream()
+    final ConfigPersistence dbPersistence = new ConfigPersistenceBuilder(configs, true).getDbPersistenceWithFileSeed();
+    final int dbConfigSize = (int) dbPersistence.dumpConfigs().values().stream()
         .map(stream -> stream.collect(Collectors.toList()))
         .mapToLong(Collection::size)
         .sum();
@@ -129,7 +129,7 @@ class ConfigPersistenceBuilderTest extends BaseTest {
   @Test
   public void testCreateDbPersistenceWithoutSetupDatabase() throws Exception {
     // Initialize the database with one config.
-    Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(System.currentTimeMillis()));
+    final Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(System.currentTimeMillis()));
     database.transaction(ctx -> {
       ctx.insertInto(AIRBYTE_CONFIGS)
           .set(CONFIG_ID, SOURCE_GITHUB.getSourceDefinitionId().toString())
@@ -141,10 +141,10 @@ class ConfigPersistenceBuilderTest extends BaseTest {
       return null;
     });
 
-    ConfigPersistence seedPersistence = spy(new YamlSeedConfigPersistence());
+    final ConfigPersistence seedPersistence = spy(new YamlSeedConfigPersistence());
     // When setupDatabase is false, the createDbPersistence method does not initialize
     // the database itself, but it expects that the database has already been initialized.
-    ConfigPersistence dbPersistence = new ConfigPersistenceBuilder(configs, false).getDbPersistence(seedPersistence);
+    final ConfigPersistence dbPersistence = new ConfigPersistenceBuilder(configs, false).getDbPersistence(seedPersistence);
     // The return persistence is not initialized by the seed persistence, and has only one config.
     verify(seedPersistence, never()).dumpConfigs();
     assertSameConfigDump(

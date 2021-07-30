@@ -63,7 +63,7 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
     return "airbyte/destination-oracle:dev";
   }
 
-  private JsonNode getConfig(OracleContainer db) {
+  private JsonNode getConfig(final OracleContainer db) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
         .put("port", db.getFirstMappedPort())
@@ -92,7 +92,7 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName, String namespace, JsonNode streamSchema) throws Exception {
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env, final String streamName, final String namespace, final JsonNode streamSchema) throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
         .map(r -> Jsons.deserialize(r.get(OracleDestination.COLUMN_NAME_DATA).asText()))
@@ -110,14 +110,14 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName, String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
-    String tableName = namingResolver.getIdentifier(streamName);
+    final String tableName = namingResolver.getIdentifier(streamName);
     return retrieveRecordsFromTable(tableName, namespace);
   }
 
   @Override
-  protected List<String> resolveIdentifier(String identifier) {
+  protected List<String> resolveIdentifier(final String identifier) {
     final List<String> result = new ArrayList<>();
     final String resolved = namingResolver.getIdentifier(identifier);
     result.add(identifier);
@@ -129,8 +129,8 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
-    List<org.jooq.Record> result = Databases.createOracleDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl())
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
+    final List<org.jooq.Record> result = Databases.createOracleDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl())
         .query(ctx -> ctx
             .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, OracleDestination.COLUMN_NAME_EMITTED_AT))
             .stream()
@@ -142,7 +142,7 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
         .collect(Collectors.toList());
   }
 
-  private static Database getDatabase(JsonNode config) {
+  private static Database getDatabase(final JsonNode config) {
     // todo (cgardens) - rework this abstraction so that we do not have to pass a null into the
     // constructor. at least explicitly handle it, even if the impl doesn't change.
     return Databases.createDatabase(
@@ -158,20 +158,20 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
 
   private List<String> allTables;
 
-  private List<String> getAllTables(Database db) {
+  private List<String> getAllTables(final Database db) {
     try {
       return db.query(ctx -> ctx.fetch("select OWNER, TABLE_NAME from ALL_TABLES where upper(TABLESPACE_NAME) = 'USERS'")
           .stream()
           .map(r -> String.format("%s.%s", r.get("OWNER"), r.get("TABLE_NAME")))
           .collect(Collectors.toList()));
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       LOGGER.error("Error while cleaning up test.", e);
       return null;
     }
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws SQLException {
+  protected void setup(final TestDestinationEnv testEnv) throws SQLException {
     config = getConfig(db);
 
     final Database database = getDatabase(config);
@@ -183,20 +183,20 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     config = getConfig(db);
 
     final Database database = getDatabase(config);
-    var tables = getAllTables(database);
+    final var tables = getAllTables(database);
     tables.removeAll(allTables);
     try {
-      for (String table : tables) {
+      for (final String table : tables) {
         database.query(ctx -> {
           ctx.execute("drop table " + table);
           return null;
         });
       }
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       LOGGER.error("Error while cleaning up test.", e);
     }
   }

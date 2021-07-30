@@ -69,7 +69,7 @@ class SegmentTrackingClientTest {
   void testIdentify() {
     // equals is not defined on MessageBuilder, so we need to use ArgumentCaptor to inspect each field
     // manually.
-    ArgumentCaptor<IdentifyMessage.Builder> mockBuilder = ArgumentCaptor.forClass(IdentifyMessage.Builder.class);
+    final ArgumentCaptor<IdentifyMessage.Builder> mockBuilder = ArgumentCaptor.forClass(IdentifyMessage.Builder.class);
 
     segmentTrackingClient.identify(WORKSPACE_ID);
 
@@ -94,7 +94,7 @@ class SegmentTrackingClientTest {
     segmentTrackingClient = new SegmentTrackingClient((workspaceId) -> IDENTITY, DEPLOYMENT, "role", analytics);
     // equals is not defined on MessageBuilder, so we need to use ArgumentCaptor to inspect each field
     // manually.
-    ArgumentCaptor<IdentifyMessage.Builder> mockBuilder = ArgumentCaptor.forClass(IdentifyMessage.Builder.class);
+    final ArgumentCaptor<IdentifyMessage.Builder> mockBuilder = ArgumentCaptor.forClass(IdentifyMessage.Builder.class);
     when(roleSupplier.get()).thenReturn("role");
 
     segmentTrackingClient.identify(WORKSPACE_ID);
@@ -124,7 +124,7 @@ class SegmentTrackingClientTest {
     segmentTrackingClient.track(WORKSPACE_ID, "jump");
 
     verify(analytics).enqueue(mockBuilder.capture());
-    TrackMessage actual = mockBuilder.getValue().build();
+    final TrackMessage actual = mockBuilder.getValue().build();
     assertEquals("jump", actual.event());
     assertEquals(IDENTITY.getCustomerId().toString(), actual.userId());
     assertEquals(metadata, actual.properties());

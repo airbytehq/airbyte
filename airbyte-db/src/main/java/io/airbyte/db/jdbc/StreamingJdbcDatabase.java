@@ -46,7 +46,9 @@ public class StreamingJdbcDatabase extends JdbcDatabase {
   private final JdbcDatabase database;
   private final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration;
 
-  public StreamingJdbcDatabase(DataSource dataSource, JdbcDatabase database, JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration) {
+  public StreamingJdbcDatabase(final DataSource dataSource,
+                               final JdbcDatabase database,
+                               final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration) {
     this.dataSource = dataSource;
     this.database = database;
     this.jdbcStreamingQueryConfiguration = jdbcStreamingQueryConfiguration;
@@ -58,20 +60,20 @@ public class StreamingJdbcDatabase extends JdbcDatabase {
   }
 
   @Override
-  public void execute(CheckedConsumer<Connection, SQLException> query) throws SQLException {
+  public void execute(final CheckedConsumer<Connection, SQLException> query) throws SQLException {
     database.execute(query);
   }
 
   @Override
-  public <T> List<T> bufferedResultSetQuery(CheckedFunction<Connection, ResultSet, SQLException> query,
-                                            CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> List<T> bufferedResultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
+                                            final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     return database.bufferedResultSetQuery(query, recordTransform);
   }
 
   @Override
-  public <T> Stream<T> resultSetQuery(CheckedFunction<Connection, ResultSet, SQLException> query,
-                                      CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> Stream<T> resultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
+                                      final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     return database.resultSetQuery(query, recordTransform);
   }
@@ -93,8 +95,8 @@ public class StreamingJdbcDatabase extends JdbcDatabase {
    * @throws SQLException SQL related exceptions.
    */
   @Override
-  public <T> Stream<T> query(CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
-                             CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> Stream<T> query(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
+                             final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     try {
       final Connection connection = dataSource.getConnection();
@@ -106,11 +108,11 @@ public class StreamingJdbcDatabase extends JdbcDatabase {
             try {
               connection.setAutoCommit(true);
               connection.close();
-            } catch (SQLException e) {
+            } catch (final SQLException e) {
               throw new RuntimeException(e);
             }
           });
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
   }

@@ -56,13 +56,16 @@ public class BigQueryUtils {
   public static final DateFormat BIG_QUERY_DATETIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
   public static final DateFormat BIG_QUERY_TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS z");
 
-  public static JsonNode rowToJson(FieldValueList rowValues, FieldList fieldList) {
-    ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
+  public static JsonNode rowToJson(final FieldValueList rowValues, final FieldList fieldList) {
+    final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     fieldList.forEach(field -> setJsonField(field, rowValues.get(field.getName()), jsonNode));
     return jsonNode;
   }
 
-  private static void fillObjectNode(String fieldName, StandardSQLTypeName fieldType, FieldValue fieldValue, ObjectNode node) {
+  private static void fillObjectNode(final String fieldName,
+                                     final StandardSQLTypeName fieldType,
+                                     final FieldValue fieldValue,
+                                     final ObjectNode node) {
     switch (fieldType) {
       case BOOL -> node.put(fieldName, fieldValue.getBooleanValue());
       case INT64 -> node.put(fieldName, fieldValue.getLongValue());
@@ -79,8 +82,8 @@ public class BigQueryUtils {
     }
   }
 
-  private static void setJsonField(Field field, FieldValue fieldValue, ObjectNode node) {
-    String fieldName = field.getName();
+  private static void setJsonField(final Field field, final FieldValue fieldValue, final ObjectNode node) {
+    final String fieldName = field.getName();
     if (fieldValue.getAttribute().equals(Attribute.PRIMITIVE)) {
       if (fieldValue.isNull()) {
         node.put(fieldName, (String) null);
@@ -88,43 +91,43 @@ public class BigQueryUtils {
         fillObjectNode(fieldName, field.getType().getStandardType(), fieldValue, node);
       }
     } else if (fieldValue.getAttribute().equals(Attribute.REPEATED)) {
-      ArrayNode arrayNode = node.putArray(fieldName);
-      StandardSQLTypeName fieldType = field.getType().getStandardType();
-      FieldList subFields = field.getSubFields();
+      final ArrayNode arrayNode = node.putArray(fieldName);
+      final StandardSQLTypeName fieldType = field.getType().getStandardType();
+      final FieldList subFields = field.getSubFields();
       // Array of primitive
       if (subFields == null || subFields.isEmpty()) {
         fieldValue.getRepeatedValue().forEach(arrayFieldValue -> fillObjectNode(fieldName, fieldType, arrayFieldValue, arrayNode.addObject()));
         // Array of records
       } else {
-        for (FieldValue arrayFieldValue : fieldValue.getRepeatedValue()) {
+        for (final FieldValue arrayFieldValue : fieldValue.getRepeatedValue()) {
           int count = 0; // named get doesn't work here for some reasons.
-          ObjectNode newNode = arrayNode.addObject();
-          for (Field repeatedField : subFields) {
+          final ObjectNode newNode = arrayNode.addObject();
+          for (final Field repeatedField : subFields) {
             setJsonField(repeatedField, arrayFieldValue.getRecordValue().get(count++),
                 newNode);
           }
         }
       }
     } else if (fieldValue.getAttribute().equals(Attribute.RECORD)) {
-      ObjectNode newNode = node.putObject(fieldName);
+      final ObjectNode newNode = node.putObject(fieldName);
       field.getSubFields().forEach(recordField -> {
         setJsonField(recordField, fieldValue.getRecordValue().get(recordField.getName()), newNode);
       });
     }
   }
 
-  public static Date getDateValue(FieldValue fieldValue, DateFormat dateFormat) {
+  public static Date getDateValue(final FieldValue fieldValue, final DateFormat dateFormat) {
     Date parsedValue = null;
-    String value = fieldValue.getStringValue();
+    final String value = fieldValue.getStringValue();
     try {
       parsedValue = dateFormat.parse(value);
-    } catch (ParseException e) {
+    } catch (final ParseException e) {
       LOGGER.error("Fail to parse date value : " + value + ". Null is returned.");
     }
     return parsedValue;
   }
 
-  public static JsonSchemaPrimitive getType(StandardSQLTypeName bigQueryType) {
+  public static JsonSchemaPrimitive getType(final StandardSQLTypeName bigQueryType) {
     return switch (bigQueryType) {
       case BOOL -> JsonSchemaPrimitive.BOOLEAN;
       case INT64, FLOAT64, NUMERIC, BIGNUMERIC -> JsonSchemaPrimitive.NUMBER;
@@ -135,7 +138,7 @@ public class BigQueryUtils {
     };
   }
 
-  private static String getFormattedValue(StandardSQLTypeName paramType, String paramValue) {
+  private static String getFormattedValue(final StandardSQLTypeName paramType, final String paramValue) {
     try {
       return switch (paramType) {
         case DATE -> BIG_QUERY_DATE_FORMAT.format(DataTypeUtils.DATE_FORMAT.parse(paramValue));
@@ -145,13 +148,13 @@ public class BigQueryUtils {
             .format(DataTypeUtils.DATE_FORMAT.parse(paramValue));
         default -> paramValue;
       };
-    } catch (ParseException e) {
+    } catch (final ParseException e) {
       throw new RuntimeException("Fail to parse value " + paramValue + " to type " + paramType.name());
     }
   }
 
-  public static QueryParameterValue getQueryParameter(StandardSQLTypeName paramType, String paramValue) {
-    String value = getFormattedValue(paramType, paramValue);
+  public static QueryParameterValue getQueryParameter(final StandardSQLTypeName paramType, final String paramValue) {
+    final String value = getFormattedValue(paramType, paramValue);
     LOGGER.info("Query parameter for set : " + value + ". Type: " + paramType.name());
     return QueryParameterValue.newBuilder().setType(paramType).setValue(value).build();
   }

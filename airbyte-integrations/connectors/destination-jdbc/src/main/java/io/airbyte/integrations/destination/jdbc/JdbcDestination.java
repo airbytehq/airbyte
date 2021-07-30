@@ -41,11 +41,11 @@ public class JdbcDestination extends AbstractJdbcDestination implements Destinat
 
   // no-op for JdbcIntegration since the config it receives is designed to be use for JDBC.
   @Override
-  public JsonNode toJdbcConfig(JsonNode config) {
+  public JsonNode toJdbcConfig(final JsonNode config) {
     return config;
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Destination destination = new JdbcDestination();
     LOGGER.info("starting destination: {}", JdbcDestination.class);
     new IntegrationRunner(destination).run(args);

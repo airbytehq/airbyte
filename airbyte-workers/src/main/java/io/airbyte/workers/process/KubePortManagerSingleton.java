@@ -53,7 +53,7 @@ public class KubePortManagerSingleton {
     return workerPorts.poll(10, TimeUnit.MINUTES);
   }
 
-  public static void offer(Integer port) {
+  public static void offer(final Integer port) {
     if (!workerPorts.contains(port)) {
       workerPorts.add(port);
     }
@@ -68,7 +68,7 @@ public class KubePortManagerSingleton {
   }
 
   @VisibleForTesting
-  protected static void setWorkerPorts(Set<Integer> ports) {
+  protected static void setWorkerPorts(final Set<Integer> ports) {
     workerPorts = new LinkedBlockingDeque<>(ports);
   }
 

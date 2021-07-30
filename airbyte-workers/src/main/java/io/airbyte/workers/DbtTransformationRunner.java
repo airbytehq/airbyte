@@ -52,7 +52,7 @@ public class DbtTransformationRunner implements AutoCloseable {
   private final NormalizationRunner normalizationRunner;
   private Process process = null;
 
-  public DbtTransformationRunner(final ProcessFactory processFactory, NormalizationRunner normalizationRunner) {
+  public DbtTransformationRunner(final ProcessFactory processFactory, final NormalizationRunner normalizationRunner) {
     this.processFactory = processFactory;
     this.normalizationRunner = normalizationRunner;
   }
@@ -71,7 +71,12 @@ public class DbtTransformationRunner implements AutoCloseable {
    * Once the workspace folder/files is setup to run, we invoke the custom transformation command as
    * provided by the user to execute whatever extra transformation has been implemented.
    */
-  public boolean run(String jobId, int attempt, Path jobRoot, JsonNode config, ResourceRequirements resourceRequirements, OperatorDbt dbtConfig)
+  public boolean run(final String jobId,
+                     final int attempt,
+                     final Path jobRoot,
+                     final JsonNode config,
+                     final ResourceRequirements resourceRequirements,
+                     final OperatorDbt dbtConfig)
       throws Exception {
     if (!normalizationRunner.configureDbt(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig)) {
       return false;
@@ -79,7 +84,12 @@ public class DbtTransformationRunner implements AutoCloseable {
     return transform(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig);
   }
 
-  public boolean transform(String jobId, int attempt, Path jobRoot, JsonNode config, ResourceRequirements resourceRequirements, OperatorDbt dbtConfig)
+  public boolean transform(final String jobId,
+                           final int attempt,
+                           final Path jobRoot,
+                           final JsonNode config,
+                           final ResourceRequirements resourceRequirements,
+                           final OperatorDbt dbtConfig)
       throws Exception {
     try {
       final Map<String, String> files = ImmutableMap.of(DBT_ENTRYPOINT_SH, MoreResources.readResource("dbt_transformation_entrypoint.sh"));
@@ -98,7 +108,7 @@ public class DbtTransformationRunner implements AutoCloseable {
       WorkerUtils.wait(process);
 
       return process.exitValue() == 0;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       // make sure we kill the process on failure to avoid zombies.
       if (process != null) {
         WorkerUtils.cancelProcess(process);

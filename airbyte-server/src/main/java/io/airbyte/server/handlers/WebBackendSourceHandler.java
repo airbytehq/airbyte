@@ -55,7 +55,7 @@ public class WebBackendSourceHandler {
     this.workspaceHelper = workspaceHelper;
   }
 
-  public SourceRead webBackendRecreateSourceAndCheck(SourceRecreate sourceRecreate)
+  public SourceRead webBackendRecreateSourceAndCheck(final SourceRecreate sourceRecreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     Preconditions.checkArgument(workspaceHelper.getWorkspaceForSourceId(sourceRecreate.getSourceId()).equals(sourceRecreate.getWorkspaceId()));
 
@@ -77,7 +77,7 @@ public class WebBackendSourceHandler {
         sourceHandler.deleteSource(sourceIdRequestBody1);
         return source;
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Error while checking connection", e);
     }
 

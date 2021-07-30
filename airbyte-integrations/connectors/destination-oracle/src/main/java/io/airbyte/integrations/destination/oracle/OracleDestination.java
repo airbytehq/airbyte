@@ -50,7 +50,7 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
   }
 
   @Override
-  public JsonNode toJdbcConfig(JsonNode config) {
+  public JsonNode toJdbcConfig(final JsonNode config) {
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
         .put("jdbc_url", String.format("jdbc:oracle:thin:@//%s:%s/%s",
@@ -65,7 +65,7 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Destination destination = new OracleDestination();
     LOGGER.info("starting destination: {}", OracleDestination.class);
     new IntegrationRunner(destination).run(args);

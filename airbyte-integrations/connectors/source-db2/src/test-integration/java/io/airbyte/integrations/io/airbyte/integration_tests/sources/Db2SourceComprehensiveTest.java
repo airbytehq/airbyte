@@ -56,7 +56,7 @@ public class Db2SourceComprehensiveTest extends SourceComprehensiveTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     container.close();
   }
 

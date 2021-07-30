@@ -63,7 +63,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.synchronousSchedulerClient = synchronousSchedulerClient;
   }
 
-  public static void setConfigs(Configs configs) {
+  public static void setConfigs(final Configs configs) {
     ConfigurationApiFactory.configs = configs;
   }
 
@@ -71,7 +71,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.archiveTtlManager = archiveTtlManager;
   }
 
-  public static void setMdc(Map<String, String> mdc) {
+  public static void setMdc(final Map<String, String> mdc) {
     ConfigurationApiFactory.mdc = mdc;
   }
 
@@ -94,7 +94,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   }
 
   @Override
-  public void dispose(ConfigurationApi service) {
+  public void dispose(final ConfigurationApi service) {
     /* noop */
   }
 

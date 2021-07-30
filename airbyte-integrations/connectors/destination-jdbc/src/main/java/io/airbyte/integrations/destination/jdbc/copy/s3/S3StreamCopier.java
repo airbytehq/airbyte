@@ -73,15 +73,15 @@ public abstract class S3StreamCopier implements StreamCopier {
   private final ExtendedNameTransformer nameTransformer;
   private final SqlOperations sqlOperations;
 
-  public S3StreamCopier(String stagingFolder,
-                        DestinationSyncMode destSyncMode,
-                        String schema,
-                        String streamName,
-                        AmazonS3 client,
-                        JdbcDatabase db,
-                        S3Config s3Config,
-                        ExtendedNameTransformer nameTransformer,
-                        SqlOperations sqlOperations) {
+  public S3StreamCopier(final String stagingFolder,
+                        final DestinationSyncMode destSyncMode,
+                        final String schema,
+                        final String streamName,
+                        final AmazonS3 client,
+                        final JdbcDatabase db,
+                        final S3Config s3Config,
+                        final ExtendedNameTransformer nameTransformer,
+                        final SqlOperations sqlOperations) {
     this.destSyncMode = destSyncMode;
     this.schemaName = schema;
     this.streamName = streamName;
@@ -110,21 +110,21 @@ public abstract class S3StreamCopier implements StreamCopier {
     // See the above comment.
     this.outputStream = multipartUploadManager.getMultiPartOutputStreams().get(0);
 
-    var writer = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
+    final var writer = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
     try {
       this.csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
-  public void write(UUID id, String jsonDataString, Timestamp emittedAt) throws Exception {
+  public void write(final UUID id, final String jsonDataString, final Timestamp emittedAt) throws Exception {
     csvPrinter.printRecord(id, jsonDataString, emittedAt);
   }
 
   @Override
-  public void closeStagingUploader(boolean hasFailed) throws Exception {
+  public void closeStagingUploader(final boolean hasFailed) throws Exception {
     if (hasFailed) {
       multipartUploadManager.abort();
     }
@@ -152,7 +152,7 @@ public abstract class S3StreamCopier implements StreamCopier {
 
   @Override
   public String createDestinationTable() throws Exception {
-    var destTableName = nameTransformer.getRawTableName(streamName);
+    final var destTableName = nameTransformer.getRawTableName(streamName);
     LOGGER.info("Preparing table {} in destination.", destTableName);
     sqlOperations.createTableIfNotExists(db, schemaName, destTableName);
     LOGGER.info("Table {} in destination prepared.", tmpTableName);
@@ -161,9 +161,9 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   @Override
-  public String generateMergeStatement(String destTableName) throws Exception {
+  public String generateMergeStatement(final String destTableName) throws Exception {
     LOGGER.info("Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.", tmpTableName, destTableName, schemaName);
-    var queries = new StringBuilder();
+    final var queries = new StringBuilder();
     if (destSyncMode.equals(DestinationSyncMode.OVERWRITE)) {
       queries.append(sqlOperations.truncateTableQuery(db, schemaName, destTableName));
       LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.", destTableName, schemaName);
@@ -185,7 +185,7 @@ public abstract class S3StreamCopier implements StreamCopier {
     LOGGER.info("{} tmp table in destination cleaned.", tmpTableName);
   }
 
-  private static String getFullS3Path(String s3BucketName, String s3StagingFile) {
+  private static String getFullS3Path(final String s3BucketName, final String s3StagingFile) {
     return String.join("/", "s3:/", s3BucketName, s3StagingFile);
   }
 
@@ -200,31 +200,31 @@ public abstract class S3StreamCopier implements StreamCopier {
     LOGGER.info("All data for {} stream uploaded.", streamName);
   }
 
-  public static void attemptS3WriteAndDelete(S3Config s3Config) {
+  public static void attemptS3WriteAndDelete(final S3Config s3Config) {
     attemptS3WriteAndDelete(s3Config, "");
   }
 
-  public static void attemptS3WriteAndDelete(S3Config s3Config, String bucketPath) {
-    var prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
+  public static void attemptS3WriteAndDelete(final S3Config s3Config, final String bucketPath) {
+    final var prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
     final String outputTableName = prefix + "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
     attemptWriteAndDeleteS3Object(s3Config, outputTableName);
   }
 
-  private static void attemptWriteAndDeleteS3Object(S3Config s3Config, String outputTableName) {
-    var s3 = getAmazonS3(s3Config);
-    var s3Bucket = s3Config.getBucketName();
+  private static void attemptWriteAndDeleteS3Object(final S3Config s3Config, final String outputTableName) {
+    final var s3 = getAmazonS3(s3Config);
+    final var s3Bucket = s3Config.getBucketName();
 
     s3.putObject(s3Bucket, outputTableName, "check-content");
     s3.deleteObject(s3Bucket, outputTableName);
   }
 
-  public static AmazonS3 getAmazonS3(S3Config s3Config) {
-    var endpoint = s3Config.getEndpoint();
-    var region = s3Config.getRegion();
-    var accessKeyId = s3Config.getAccessKeyId();
-    var secretAccessKey = s3Config.getSecretAccessKey();
+  public static AmazonS3 getAmazonS3(final S3Config s3Config) {
+    final var endpoint = s3Config.getEndpoint();
+    final var region = s3Config.getRegion();
+    final var accessKeyId = s3Config.getAccessKeyId();
+    final var secretAccessKey = s3Config.getSecretAccessKey();
 
-    var awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
+    final var awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
 
     if (endpoint.isEmpty()) {
       return AmazonS3ClientBuilder.standard()
@@ -234,7 +234,7 @@ public abstract class S3StreamCopier implements StreamCopier {
 
     } else {
 
-      ClientConfiguration clientConfiguration = new ClientConfiguration();
+      final ClientConfiguration clientConfiguration = new ClientConfiguration();
       clientConfiguration.setSignerOverride("AWSS3V4SignerType");
 
       return AmazonS3ClientBuilder

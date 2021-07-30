@@ -61,22 +61,22 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
   private static final String TYPE_FIELD = "type";
 
   @Override
-  protected String getTargetTableName(String streamName) {
+  protected String getTargetTableName(final String streamName) {
     // This BigQuery destination does not write to a staging "raw" table but directly to a normalized
     // table
     return getNamingResolver().getIdentifier(streamName);
   }
 
   @Override
-  protected AirbyteMessageConsumer getRecordConsumer(BigQuery bigquery,
-                                                     Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
-                                                     ConfiguredAirbyteCatalog catalog,
-                                                     Consumer<AirbyteMessage> outputRecordCollector) {
+  protected AirbyteMessageConsumer getRecordConsumer(final BigQuery bigquery,
+                                                     final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
+                                                     final ConfiguredAirbyteCatalog catalog,
+                                                     final Consumer<AirbyteMessage> outputRecordCollector) {
     return new BigQueryDenormalizedRecordConsumer(bigquery, writeConfigs, catalog, outputRecordCollector, getNamingResolver());
   }
 
   @Override
-  protected Schema getBigQuerySchema(JsonNode jsonSchema) {
+  protected Schema getBigQuerySchema(final JsonNode jsonSchema) {
     final List<Field> fieldList = getSchemaFields(getNamingResolver(), jsonSchema);
     if (fieldList.stream().noneMatch(f -> f.getName().equals(JavaBaseConstants.COLUMN_NAME_AB_ID))) {
       fieldList.add(Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING));
@@ -87,13 +87,13 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
     return com.google.cloud.bigquery.Schema.of(fieldList);
   }
 
-  private static List<Field> getSchemaFields(BigQuerySQLNameTransformer namingResolver, JsonNode jsonSchema) {
+  private static List<Field> getSchemaFields(final BigQuerySQLNameTransformer namingResolver, final JsonNode jsonSchema) {
     Preconditions.checkArgument(jsonSchema.isObject() && jsonSchema.has(PROPERTIES_FIELD));
     final ObjectNode properties = (ObjectNode) jsonSchema.get(PROPERTIES_FIELD);
     return Jsons.keys(properties).stream().map(key -> getField(namingResolver, key, properties.get(key)).build()).collect(Collectors.toList());
   }
 
-  private static Builder getField(BigQuerySQLNameTransformer namingResolver, String key, JsonNode fieldDefinition) {
+  private static Builder getField(final BigQuerySQLNameTransformer namingResolver, final String key, final JsonNode fieldDefinition) {
     final String fieldName = namingResolver.getIdentifier(key);
     final Builder builder = Field.newBuilder(fieldName, StandardSQLTypeName.STRING);
     final List<JsonSchemaType> fieldTypes = getTypes(fieldName, fieldDefinition.get(TYPE_FIELD));
@@ -152,7 +152,7 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
     return builder;
   }
 
-  private static List<JsonSchemaType> getTypes(String fieldName, JsonNode type) {
+  private static List<JsonSchemaType> getTypes(final String fieldName, final JsonNode type) {
     if (type == null) {
       LOGGER.warn("Field {} has no type defined, defaulting to STRING", fieldName);
       return List.of(JsonSchemaType.STRING);
@@ -169,7 +169,7 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
     }
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Destination destination = new BigQueryDenormalizedDestination();
     LOGGER.info("starting destination: {}", BigQueryDenormalizedDestination.class);
     new IntegrationRunner(destination).run(args);

@@ -37,7 +37,7 @@ public abstract class BaseMigration implements Migration {
 
   private final Migration previousMigration;
 
-  public BaseMigration(Migration previousMigration) {
+  public BaseMigration(final Migration previousMigration) {
     this.previousMigration = previousMigration;
   }
 

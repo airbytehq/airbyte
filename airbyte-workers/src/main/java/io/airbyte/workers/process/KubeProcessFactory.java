@@ -52,10 +52,10 @@ public class KubeProcessFactory implements ProcessFactory {
    *        itself
    * @param workerPorts a set of ports that can be used for IO socket servers
    */
-  public KubeProcessFactory(String namespace,
-                            ApiClient officialClient,
-                            KubernetesClient fabricClient,
-                            String kubeHeartbeatUrl) {
+  public KubeProcessFactory(final String namespace,
+                            final ApiClient officialClient,
+                            final KubernetesClient fabricClient,
+                            final String kubeHeartbeatUrl) {
     this.namespace = namespace;
     this.officialClient = officialClient;
     this.fabricClient = fabricClient;
@@ -63,8 +63,8 @@ public class KubeProcessFactory implements ProcessFactory {
   }
 
   @Override
-  public Process create(String jobId,
-                        int attempt,
+  public Process create(final String jobId,
+                        final int attempt,
                         final Path jobRoot,
                         final String imageName,
                         final boolean usesStdin,
@@ -98,7 +98,7 @@ public class KubeProcessFactory implements ProcessFactory {
           entrypoint,
           resourceRequirements,
           args);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new WorkerException(e.getMessage(), e);
     }
   }
@@ -114,22 +114,22 @@ public class KubeProcessFactory implements ProcessFactory {
    * easier operations.
    */
   @VisibleForTesting
-  protected static String createPodName(String fullImagePath, String jobId, int attempt) {
-    var versionDelimiter = ":";
-    var noVersion = fullImagePath.split(versionDelimiter)[0];
+  protected static String createPodName(final String fullImagePath, final String jobId, final int attempt) {
+    final var versionDelimiter = ":";
+    final var noVersion = fullImagePath.split(versionDelimiter)[0];
 
-    var dockerDelimiter = "/";
-    var nameParts = noVersion.split(dockerDelimiter);
+    final var dockerDelimiter = "/";
+    final var nameParts = noVersion.split(dockerDelimiter);
     var imageName = nameParts[nameParts.length - 1];
 
-    var randSuffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
+    final var randSuffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
     final String suffix = "worker-" + jobId + "-" + attempt + "-" + randSuffix;
 
     var podName = imageName + "-" + suffix;
 
-    var podNameLenLimit = 63;
+    final var podNameLenLimit = 63;
     if (podName.length() > podNameLenLimit) {
-      var extra = podName.length() - podNameLenLimit;
+      final var extra = podName.length() - podNameLenLimit;
       imageName = imageName.substring(extra);
       podName = imageName + "-" + suffix;
     }

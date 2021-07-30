@@ -91,7 +91,7 @@ public class ArchiveHandler {
    *
    * @return a status object describing if import was successful or not.
    */
-  public ImportRead importData(File archive) {
+  public ImportRead importData(final File archive) {
     ImportRead result;
     try {
       final Path tempFolder = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive");
@@ -102,7 +102,7 @@ public class ArchiveHandler {
         FileUtils.deleteDirectory(tempFolder.toFile());
         FileUtils.deleteQuietly(archive);
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Import failed", e);
       result = new ImportRead().status(StatusEnum.FAILED).reason(e.getMessage());
     }

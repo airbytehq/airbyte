@@ -88,7 +88,7 @@ public class KubePodProcessIntegrationTest {
   @Test
   public void testSuccessfulSpawning() throws Exception {
     // start a finite process
-    var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
+    final var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
     final Process process = getProcess("echo hi; sleep 1; echo hi2");
     process.waitFor();
 
@@ -101,7 +101,7 @@ public class KubePodProcessIntegrationTest {
   @Test
   public void testPipeInEntrypoint() throws Exception {
     // start a process that has a pipe in the entrypoint
-    var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
+    final var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
     final Process process = getProcess("echo hi | cat");
     process.waitFor();
 
@@ -114,7 +114,7 @@ public class KubePodProcessIntegrationTest {
   @Test
   public void testExitCodeRetrieval() throws Exception {
     // start a process that requests
-    var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
+    final var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
     final Process process = getProcess("exit 10");
     process.waitFor();
 
@@ -127,7 +127,7 @@ public class KubePodProcessIntegrationTest {
   @Test
   public void testMissingEntrypoint() throws WorkerException, InterruptedException {
     // start a process with an entrypoint that doesn't exist
-    var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
+    final var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
     final Process process = getProcess("ksaiiiasdfjklaslkei");
     process.waitFor();
 
@@ -140,7 +140,7 @@ public class KubePodProcessIntegrationTest {
   @Test
   public void testKillingWithoutHeartbeat() throws Exception {
     // start an infinite process
-    var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
+    final var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
     final Process process = getProcess("while true; do echo hi; sleep 1; done");
 
     // kill the heartbeat server
@@ -155,8 +155,8 @@ public class KubePodProcessIntegrationTest {
     assertNotEquals(0, process.exitValue());
   }
 
-  private static String getRandomFile(int lines) {
-    var sb = new StringBuilder();
+  private static String getRandomFile(final int lines) {
+    final var sb = new StringBuilder();
     for (int i = 0; i < lines; i++) {
       sb.append(RandomStringUtils.randomAlphabetic(100));
       sb.append("\n");
@@ -164,9 +164,9 @@ public class KubePodProcessIntegrationTest {
     return sb.toString();
   }
 
-  private Process getProcess(String entrypoint) throws WorkerException {
+  private Process getProcess(final String entrypoint) throws WorkerException {
     // these files aren't used for anything, it's just to check for exceptions when uploading
-    var files = ImmutableMap.of(
+    final var files = ImmutableMap.of(
         "file0", "fixed str",
         "file1", getRandomFile(1),
         "file2", getRandomFile(100),
@@ -182,20 +182,20 @@ public class KubePodProcessIntegrationTest {
         entrypoint, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
   }
 
-  private static Set<Integer> getOpenPorts(int count) {
+  private static Set<Integer> getOpenPorts(final int count) {
     final Set<ServerSocket> servers = new HashSet<>();
     final Set<Integer> ports = new HashSet<>();
 
     try {
       for (int i = 0; i < count; i++) {
-        var server = new ServerSocket(0);
+        final var server = new ServerSocket(0);
         servers.add(server);
         ports.add(server.getLocalPort());
       }
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     } finally {
-      for (ServerSocket server : servers) {
+      for (final ServerSocket server : servers) {
         Exceptions.swallow(server::close);
       }
     }
@@ -206,7 +206,7 @@ public class KubePodProcessIntegrationTest {
   private static String getHost() {
     try {
       return (IS_MINIKUBE ? Inet4Address.getLocalHost().getHostAddress() : "host.docker.internal");
-    } catch (UnknownHostException e) {
+    } catch (final UnknownHostException e) {
       throw new RuntimeException(e);
     }
   };

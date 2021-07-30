@@ -40,7 +40,7 @@ public abstract class SqlDatabase implements AutoCloseable {
     return sourceConfig;
   }
 
-  public void setSourceConfig(JsonNode sourceConfig) {
+  public void setSourceConfig(final JsonNode sourceConfig) {
     this.sourceConfig = sourceConfig;
   }
 
@@ -48,7 +48,7 @@ public abstract class SqlDatabase implements AutoCloseable {
     return databaseConfig;
   }
 
-  public void setDatabaseConfig(JsonNode databaseConfig) {
+  public void setDatabaseConfig(final JsonNode databaseConfig) {
     this.databaseConfig = databaseConfig;
   }
 

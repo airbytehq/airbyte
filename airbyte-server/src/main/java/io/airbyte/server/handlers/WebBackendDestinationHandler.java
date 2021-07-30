@@ -57,7 +57,7 @@ public class WebBackendDestinationHandler {
     this.workspaceHelper = workspaceHelper;
   }
 
-  public DestinationRead webBackendRecreateDestinationAndCheck(DestinationRecreate destinationRecreate)
+  public DestinationRead webBackendRecreateDestinationAndCheck(final DestinationRecreate destinationRecreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     Preconditions.checkArgument(
         workspaceHelper.getWorkspaceForDestinationId(destinationRecreate.getDestinationId()).equals(destinationRecreate.getWorkspaceId()));
@@ -83,7 +83,7 @@ public class WebBackendDestinationHandler {
         destinationHandler.deleteDestination(destinationIdRequestBody1);
         return destination;
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Error while checking connection", e);
     }
 

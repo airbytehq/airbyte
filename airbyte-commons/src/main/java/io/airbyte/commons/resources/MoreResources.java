@@ -41,13 +41,13 @@ import java.util.stream.Stream;
 public class MoreResources {
 
   @SuppressWarnings("UnstableApiUsage")
-  public static String readResource(String name) throws IOException {
-    URL resource = Resources.getResource(name);
+  public static String readResource(final String name) throws IOException {
+    final URL resource = Resources.getResource(name);
     return Resources.toString(resource, StandardCharsets.UTF_8);
   }
 
-  public static byte[] readBytes(String name) throws IOException {
-    URL resource = Resources.getResource(name);
+  public static byte[] readBytes(final String name) throws IOException {
+    final URL resource = Resources.getResource(name);
     return Resources.toByteArray(resource);
   }
 
@@ -59,7 +59,7 @@ public class MoreResources {
    * @return stream of paths to each resource file. THIS STREAM MUST BE CLOSED.
    * @throws IOException you never know when you IO.
    */
-  public static Stream<Path> listResources(Class<?> klass, String name) throws IOException {
+  public static Stream<Path> listResources(final Class<?> klass, final String name) throws IOException {
     Preconditions.checkNotNull(klass);
     Preconditions.checkNotNull(name);
     Preconditions.checkArgument(!name.isBlank());
@@ -68,7 +68,7 @@ public class MoreResources {
       final String rootedResourceDir = !name.startsWith("/") ? String.format("/%s", name) : name;
       final URL url = klass.getResource(rootedResourceDir);
 
-      Path searchPath;
+      final Path searchPath;
       if (url.toString().startsWith("jar")) {
         final FileSystem fileSystem = FileSystems.newFileSystem(url.toURI(), Collections.emptyMap());
         searchPath = fileSystem.getPath(rootedResourceDir);
@@ -78,7 +78,7 @@ public class MoreResources {
         return Files.walk(searchPath, 1);
       }
 
-    } catch (URISyntaxException e) {
+    } catch (final URISyntaxException e) {
       throw new RuntimeException(e);
     }
   }

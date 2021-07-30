@@ -66,7 +66,7 @@ public class ConfigDumpExporter {
   private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
 
-  public ConfigDumpExporter(ConfigRepository configRepository, JobPersistence jobPersistence) {
+  public ConfigDumpExporter(final ConfigRepository configRepository, final JobPersistence jobPersistence) {
     this.configRepository = configRepository;
     this.jobPersistence = jobPersistence;
   }
@@ -81,22 +81,22 @@ public class ConfigDumpExporter {
 
       Archives.createArchive(tempFolder, dump.toPath());
       return dump;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  private void exportVersionFile(Path tempFolder) throws IOException {
+  private void exportVersionFile(final Path tempFolder) throws IOException {
     final String version = jobPersistence.getVersion().orElseThrow();
     final File versionFile = Files.createFile(tempFolder.resolve(VERSION_FILE_NAME)).toFile();
     FileUtils.writeStringToFile(versionFile, version, Charset.defaultCharset());
   }
 
-  private void dumpDatabase(Path parentFolder) throws Exception {
+  private void dumpDatabase(final Path parentFolder) throws Exception {
     final Map<String, Stream<JsonNode>> tables = jobPersistence.exportDatabase().entrySet().stream()
         .collect(Collectors.toMap(e -> e.getKey().name(), Entry::getValue));
     Files.createDirectories(parentFolder.resolve(DB_FOLDER_NAME));
-    for (Map.Entry<String, Stream<JsonNode>> table : tables.entrySet()) {
+    for (final Map.Entry<String, Stream<JsonNode>> table : tables.entrySet()) {
       final Path tablePath = buildTablePath(parentFolder, table.getKey());
       writeTableToArchive(tablePath, table.getValue());
     }
@@ -116,8 +116,8 @@ public class ConfigDumpExporter {
         .resolve(String.format("%s.yaml", tableName.toUpperCase()));
   }
 
-  private void dumpConfigs(Path parentFolder) throws IOException {
-    for (Map.Entry<String, Stream<JsonNode>> configEntry : configRepository.dumpConfigs().entrySet()) {
+  private void dumpConfigs(final Path parentFolder) throws IOException {
+    for (final Map.Entry<String, Stream<JsonNode>> configEntry : configRepository.dumpConfigs().entrySet()) {
       writeConfigsToArchive(parentFolder, configEntry.getKey(), configEntry.getValue());
     }
   }

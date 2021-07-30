@@ -81,7 +81,7 @@ public class SnowflakeSourceComprehensiveTest extends SourceComprehensiveTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     final String dropSchemaQuery = String
         .format("DROP SCHEMA IF EXISTS %s", SCHEMA_NAME);
     database = getDatabase();

@@ -44,28 +44,28 @@ public abstract class GcsStreamCopierFactory implements StreamCopierFactory<GcsC
    * Used by the copy consumer.
    */
   @Override
-  public StreamCopier create(String configuredSchema,
-                             GcsConfig gcsConfig,
-                             String stagingFolder,
-                             DestinationSyncMode syncMode,
-                             AirbyteStream stream,
-                             ExtendedNameTransformer nameTransformer,
-                             JdbcDatabase db,
-                             SqlOperations sqlOperations) {
+  public StreamCopier create(final String configuredSchema,
+                             final GcsConfig gcsConfig,
+                             final String stagingFolder,
+                             final DestinationSyncMode syncMode,
+                             final AirbyteStream stream,
+                             final ExtendedNameTransformer nameTransformer,
+                             final JdbcDatabase db,
+                             final SqlOperations sqlOperations) {
     try {
-      var pair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
-      var schema = getSchema(stream, configuredSchema, nameTransformer);
+      final var pair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
+      final var schema = getSchema(stream, configuredSchema, nameTransformer);
 
-      InputStream credentialsInputStream = new ByteArrayInputStream(gcsConfig.getCredentialsJson().getBytes());
-      GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsInputStream);
-      Storage storageClient = StorageOptions.newBuilder()
+      final InputStream credentialsInputStream = new ByteArrayInputStream(gcsConfig.getCredentialsJson().getBytes());
+      final GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsInputStream);
+      final Storage storageClient = StorageOptions.newBuilder()
           .setCredentials(credentials)
           .setProjectId(gcsConfig.getProjectId())
           .build()
           .getService();
 
       return create(stagingFolder, syncMode, schema, pair.getName(), storageClient, db, gcsConfig, nameTransformer, sqlOperations);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -84,7 +84,7 @@ public abstract class GcsStreamCopierFactory implements StreamCopierFactory<GcsC
                                       SqlOperations sqlOperations)
       throws Exception;
 
-  private String getSchema(AirbyteStream stream, String configuredSchema, ExtendedNameTransformer nameTransformer) {
+  private String getSchema(final AirbyteStream stream, final String configuredSchema, final ExtendedNameTransformer nameTransformer) {
     if (stream.getNamespace() != null) {
       return nameTransformer.convertStreamName(stream.getNamespace());
     } else {

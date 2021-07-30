@@ -46,12 +46,12 @@ public class DefaultJobCreator implements JobCreator {
 
   private final JobPersistence jobPersistence;
 
-  public DefaultJobCreator(JobPersistence jobPersistence) {
+  public DefaultJobCreator(final JobPersistence jobPersistence) {
     this.jobPersistence = jobPersistence;
   }
 
   @Override
-  public long createSourceCheckConnectionJob(SourceConnection source, String dockerImageName) throws IOException {
+  public long createSourceCheckConnectionJob(final SourceConnection source, final String dockerImageName) throws IOException {
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
         .withConnectionConfiguration(source.getConfiguration())
         .withDockerImage(dockerImageName);
@@ -65,7 +65,7 @@ public class DefaultJobCreator implements JobCreator {
   }
 
   @Override
-  public long createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImageName) throws IOException {
+  public long createDestinationCheckConnectionJob(final DestinationConnection destination, final String dockerImageName) throws IOException {
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
         .withConnectionConfiguration(destination.getConfiguration())
         .withDockerImage(dockerImageName);
@@ -79,7 +79,7 @@ public class DefaultJobCreator implements JobCreator {
   }
 
   @Override
-  public long createDiscoverSchemaJob(SourceConnection source, String dockerImageName) throws IOException {
+  public long createDiscoverSchemaJob(final SourceConnection source, final String dockerImageName) throws IOException {
     final JobDiscoverCatalogConfig jobDiscoverCatalogConfig = new JobDiscoverCatalogConfig()
         .withConnectionConfiguration(source.getConfiguration())
         .withDockerImage(dockerImageName);
@@ -93,7 +93,7 @@ public class DefaultJobCreator implements JobCreator {
   }
 
   @Override
-  public long createGetSpecJob(String integrationImage) throws IOException {
+  public long createGetSpecJob(final String integrationImage) throws IOException {
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.GET_SPEC)
         .withGetSpec(new JobGetSpecConfig().withDockerImage(integrationImage));
@@ -102,12 +102,12 @@ public class DefaultJobCreator implements JobCreator {
   }
 
   @Override
-  public Optional<Long> createSyncJob(SourceConnection source,
-                                      DestinationConnection destination,
-                                      StandardSync standardSync,
-                                      String sourceDockerImageName,
-                                      String destinationDockerImageName,
-                                      List<StandardSyncOperation> standardSyncOperations)
+  public Optional<Long> createSyncJob(final SourceConnection source,
+                                      final DestinationConnection destination,
+                                      final StandardSync standardSync,
+                                      final String sourceDockerImageName,
+                                      final String destinationDockerImageName,
+                                      final List<StandardSyncOperation> standardSyncOperations)
       throws IOException {
     // reusing this isn't going to quite work.
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
@@ -139,10 +139,10 @@ public class DefaultJobCreator implements JobCreator {
   // 4. The Empty source emits no state message, so state will start at null (i.e. start from the
   // beginning on the next sync).
   @Override
-  public Optional<Long> createResetConnectionJob(DestinationConnection destination,
-                                                 StandardSync standardSync,
-                                                 String destinationDockerImage,
-                                                 List<StandardSyncOperation> standardSyncOperations)
+  public Optional<Long> createResetConnectionJob(final DestinationConnection destination,
+                                                 final StandardSync standardSync,
+                                                 final String destinationDockerImage,
+                                                 final List<StandardSyncOperation> standardSyncOperations)
       throws IOException {
     final ConfiguredAirbyteCatalog configuredAirbyteCatalog = standardSync.getCatalog();
     configuredAirbyteCatalog.getStreams().forEach(configuredAirbyteStream -> {

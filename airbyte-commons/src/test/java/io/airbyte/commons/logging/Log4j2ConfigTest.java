@@ -57,7 +57,7 @@ public class Log4j2ConfigTest {
 
     final String filename = "logs.log";
 
-    ExecutorService executor = Executors.newFixedThreadPool(1);
+    final ExecutorService executor = Executors.newFixedThreadPool(1);
     executor.submit(() -> {
       MDC.put("context", "worker");
       MDC.put("job_log_path", root + "/" + filename);
@@ -79,7 +79,7 @@ public class Log4j2ConfigTest {
     final Path root1 = root.resolve("1");
     final Path root2 = root.resolve("2");
 
-    ExecutorService executor = Executors.newFixedThreadPool(2);
+    final ExecutorService executor = Executors.newFixedThreadPool(2);
     executor.submit(() -> {
       MDC.put("job_log_path", root1 + "/" + filename);
       logger.error("random message 1");
@@ -103,7 +103,7 @@ public class Log4j2ConfigTest {
 
     final String filename = "logs.log";
 
-    ExecutorService executor = Executors.newFixedThreadPool(1);
+    final ExecutorService executor = Executors.newFixedThreadPool(1);
     executor.submit(() -> {
       logger.error("random message testLogNoJobRoot");
       MDC.clear();
@@ -121,7 +121,7 @@ public class Log4j2ConfigTest {
 
     final String filename = "logs.log";
 
-    ExecutorService executor = Executors.newFixedThreadPool(1);
+    final ExecutorService executor = Executors.newFixedThreadPool(1);
     executor.submit(() -> {
       MDC.put("workspace_app_root", root.toString());
       logger.error("random message testAppDispatch");
@@ -140,7 +140,7 @@ public class Log4j2ConfigTest {
 
     final String filename = "logs.log";
 
-    ExecutorService executor = Executors.newFixedThreadPool(1);
+    final ExecutorService executor = Executors.newFixedThreadPool(1);
     executor.submit(() -> {
       logger.error("random message testLogNoAppRoot");
       MDC.clear();

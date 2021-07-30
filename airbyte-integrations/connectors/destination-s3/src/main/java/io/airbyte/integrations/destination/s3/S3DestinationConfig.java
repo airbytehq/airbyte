@@ -37,13 +37,13 @@ public class S3DestinationConfig {
   private final S3FormatConfig formatConfig;
 
   public S3DestinationConfig(
-                             String endpoint,
-                             String bucketName,
-                             String bucketPath,
-                             String bucketRegion,
-                             String accessKeyId,
-                             String secretAccessKey,
-                             S3FormatConfig formatConfig) {
+                             final String endpoint,
+                             final String bucketName,
+                             final String bucketPath,
+                             final String bucketRegion,
+                             final String accessKeyId,
+                             final String secretAccessKey,
+                             final S3FormatConfig formatConfig) {
     this.endpoint = endpoint;
     this.bucketName = bucketName;
     this.bucketPath = bucketPath;
@@ -53,7 +53,7 @@ public class S3DestinationConfig {
     this.formatConfig = formatConfig;
   }
 
-  public static S3DestinationConfig getS3DestinationConfig(JsonNode config) {
+  public static S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
     return new S3DestinationConfig(
         config.get("s3_endpoint") == null ? "" : config.get("s3_endpoint").asText(),
         config.get("s3_bucket_name").asText(),

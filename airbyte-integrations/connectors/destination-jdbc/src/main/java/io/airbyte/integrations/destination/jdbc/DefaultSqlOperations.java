@@ -53,21 +53,21 @@ public class DefaultSqlOperations implements SqlOperations {
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSqlOperations.class);
 
   @Override
-  public void createSchemaIfNotExists(JdbcDatabase database, String schemaName) throws Exception {
+  public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
     database.execute(createSchemaQuery(schemaName));
   }
 
-  private String createSchemaQuery(String schemaName) {
+  private String createSchemaQuery(final String schemaName) {
     return String.format("CREATE SCHEMA IF NOT EXISTS %s;\n", schemaName);
   }
 
   @Override
-  public void createTableIfNotExists(JdbcDatabase database, String schemaName, String tableName) throws SQLException {
+  public void createTableIfNotExists(final JdbcDatabase database, final String schemaName, final String tableName) throws SQLException {
     database.execute(createTableQuery(database, schemaName, tableName));
   }
 
   @Override
-  public String createTableQuery(JdbcDatabase database, String schemaName, String tableName) {
+  public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s VARCHAR PRIMARY KEY,\n"
@@ -78,7 +78,7 @@ public class DefaultSqlOperations implements SqlOperations {
   }
 
   @Override
-  public void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tmpTableName) throws SQLException {
+  public void insertRecords(final JdbcDatabase database, final List<AirbyteRecordMessage> records, final String schemaName, final String tmpTableName) throws SQLException {
     if (records.isEmpty()) {
       return;
     }
@@ -90,34 +90,34 @@ public class DefaultSqlOperations implements SqlOperations {
         tmpFile = Files.createTempFile(tmpTableName + "-", ".tmp").toFile();
         writeBatchToFile(tmpFile, records);
 
-        var copyManager = new CopyManager(connection.unwrap(BaseConnection.class));
-        var sql = String.format("COPY %s.%s FROM stdin DELIMITER ',' CSV", schemaName, tmpTableName);
-        var bufferedReader = new BufferedReader(new FileReader(tmpFile));
+        final var copyManager = new CopyManager(connection.unwrap(BaseConnection.class));
+        final var sql = String.format("COPY %s.%s FROM stdin DELIMITER ',' CSV", schemaName, tmpTableName);
+        final var bufferedReader = new BufferedReader(new FileReader(tmpFile));
         copyManager.copyIn(sql, bufferedReader);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new RuntimeException(e);
       } finally {
         try {
           if (tmpFile != null) {
             Files.delete(tmpFile.toPath());
           }
-        } catch (IOException e) {
+        } catch (final IOException e) {
           throw new RuntimeException(e);
         }
       }
     });
   }
 
-  protected void writeBatchToFile(File tmpFile, List<AirbyteRecordMessage> records) throws Exception {
+  protected void writeBatchToFile(final File tmpFile, final List<AirbyteRecordMessage> records) throws Exception {
     PrintWriter writer = null;
     try {
       writer = new PrintWriter(tmpFile, StandardCharsets.UTF_8);
-      var csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
+      final var csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
 
-      for (AirbyteRecordMessage record : records) {
-        var uuid = UUID.randomUUID().toString();
-        var jsonData = Jsons.serialize(formatData(record.getData()));
-        var emittedAt = Timestamp.from(Instant.ofEpochMilli(record.getEmittedAt()));
+      for (final AirbyteRecordMessage record : records) {
+        final var uuid = UUID.randomUUID().toString();
+        final var jsonData = Jsons.serialize(formatData(record.getData()));
+        final var emittedAt = Timestamp.from(Instant.ofEpochMilli(record.getEmittedAt()));
         csvPrinter.printRecord(uuid, jsonData, emittedAt);
       }
     } finally {
@@ -127,25 +127,25 @@ public class DefaultSqlOperations implements SqlOperations {
     }
   }
 
-  protected JsonNode formatData(JsonNode data) {
+  protected JsonNode formatData(final JsonNode data) {
     return data;
   }
 
   @Override
-  public String truncateTableQuery(JdbcDatabase database, String schemaName, String tableName) {
+  public String truncateTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format("TRUNCATE TABLE %s.%s;\n", schemaName, tableName);
   }
 
   @Override
-  public String copyTableQuery(JdbcDatabase database, String schemaName, String srcTableName, String dstTableName) {
+  public String copyTableQuery(final JdbcDatabase database, final String schemaName, final String srcTableName, final String dstTableName) {
     return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", schemaName, dstTableName, schemaName, srcTableName);
   }
 
   @Override
-  public void executeTransaction(JdbcDatabase database, List<String> queries) throws Exception {
+  public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
     final StringBuilder appendedQueries = new StringBuilder();
     appendedQueries.append("BEGIN;\n");
-    for (String query : queries) {
+    for (final String query : queries) {
       appendedQueries.append(query);
     }
     appendedQueries.append("COMMIT;");
@@ -153,11 +153,11 @@ public class DefaultSqlOperations implements SqlOperations {
   }
 
   @Override
-  public void dropTableIfExists(JdbcDatabase database, String schemaName, String tableName) throws SQLException {
+  public void dropTableIfExists(final JdbcDatabase database, final String schemaName, final String tableName) throws SQLException {
     database.execute(dropTableIfExistsQuery(schemaName, tableName));
   }
 
-  private String dropTableIfExistsQuery(String schemaName, String tableName) {
+  private String dropTableIfExistsQuery(final String schemaName, final String tableName) {
     return String.format("DROP TABLE IF EXISTS %s.%s;\n", schemaName, tableName);
   }
 
@@ -167,7 +167,7 @@ public class DefaultSqlOperations implements SqlOperations {
   }
 
   @Override
-  public boolean isValidData(String data) {
+  public boolean isValidData(final String data) {
     return true;
   }
 

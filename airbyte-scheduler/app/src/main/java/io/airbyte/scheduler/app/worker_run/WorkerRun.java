@@ -47,7 +47,10 @@ public class WorkerRun implements Callable<OutputAndStatus<JobOutput>> {
   private final Path jobRoot;
   private final CheckedSupplier<OutputAndStatus<JobOutput>, Exception> workerRun;
 
-  public static WorkerRun create(Path workspaceRoot, long jobId, int attempt, CheckedSupplier<OutputAndStatus<JobOutput>, Exception> workerRun) {
+  public static WorkerRun create(final Path workspaceRoot,
+                                 final long jobId,
+                                 final int attempt,
+                                 final CheckedSupplier<OutputAndStatus<JobOutput>, Exception> workerRun) {
     final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, String.valueOf(jobId), attempt);
     return new WorkerRun(jobRoot, workerRun);
   }

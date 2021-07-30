@@ -55,18 +55,18 @@ public class JsonSecretsProcessor {
    * @param schema Schema containing secret annotations
    * @param obj Object containing potentially secret fields
    */
-  public JsonNode maskSecrets(JsonNode obj, JsonNode schema) {
+  public JsonNode maskSecrets(final JsonNode obj, final JsonNode schema) {
     // if schema is an object and has a properties field
     if (!canBeProcessed(schema)) {
       return obj;
     }
     Preconditions.checkArgument(schema.isObject());
     // get the properties field
-    ObjectNode properties = (ObjectNode) schema.get(PROPERTIES_FIELD);
-    JsonNode copy = obj.deepCopy();
+    final ObjectNode properties = (ObjectNode) schema.get(PROPERTIES_FIELD);
+    final JsonNode copy = obj.deepCopy();
     // for the property keys
-    for (String key : Jsons.keys(properties)) {
-      JsonNode fieldSchema = properties.get(key);
+    for (final String key : Jsons.keys(properties)) {
+      final JsonNode fieldSchema = properties.get(key);
       // if the json schema field is an obj and has the airbyte secret field
       if (isSecret(fieldSchema) && copy.has(key)) {
         // mask and set it
@@ -75,10 +75,10 @@ public class JsonSecretsProcessor {
         }
       }
 
-      var combinationKey = findJsonCombinationNode(fieldSchema);
+      final var combinationKey = findJsonCombinationNode(fieldSchema);
       if (combinationKey.isPresent() && copy.has(key)) {
         var combinationCopy = copy.get(key);
-        var arrayNode = (ArrayNode) fieldSchema.get(combinationKey.get());
+        final var arrayNode = (ArrayNode) fieldSchema.get(combinationKey.get());
         for (int i = 0; i < arrayNode.size(); i++) {
           // Mask field values if any of the combination option is declaring it as secrets
           combinationCopy = maskSecrets(combinationCopy, arrayNode.get(i));
@@ -90,8 +90,8 @@ public class JsonSecretsProcessor {
     return copy;
   }
 
-  private static Optional<String> findJsonCombinationNode(JsonNode node) {
-    for (String combinationNode : List.of("allOf", "anyOf", "oneOf")) {
+  private static Optional<String> findJsonCombinationNode(final JsonNode node) {
+    for (final String combinationNode : List.of("allOf", "anyOf", "oneOf")) {
       if (node.has(combinationNode) && node.get(combinationNode).isArray()) {
         return Optional.of(combinationNode);
       }
@@ -111,18 +111,18 @@ public class JsonSecretsProcessor {
    * @param schema
    * @return
    */
-  public JsonNode copySecrets(JsonNode src, JsonNode dst, JsonNode schema) {
+  public JsonNode copySecrets(final JsonNode src, final JsonNode dst, final JsonNode schema) {
     if (!canBeProcessed(schema)) {
       return dst;
     }
     Preconditions.checkArgument(dst.isObject());
     Preconditions.checkArgument(src.isObject());
 
-    ObjectNode dstCopy = dst.deepCopy();
+    final ObjectNode dstCopy = dst.deepCopy();
 
-    ObjectNode properties = (ObjectNode) schema.get(PROPERTIES_FIELD);
-    for (String key : Jsons.keys(properties)) {
-      JsonNode fieldSchema = properties.get(key);
+    final ObjectNode properties = (ObjectNode) schema.get(PROPERTIES_FIELD);
+    for (final String key : Jsons.keys(properties)) {
+      final JsonNode fieldSchema = properties.get(key);
       // We only copy the original secret if the destination object isn't attempting to overwrite it
       // i.e: if the value of the secret isn't set to the mask
       if (isSecret(fieldSchema) && src.has(key)) {
@@ -130,11 +130,11 @@ public class JsonSecretsProcessor {
           dstCopy.set(key, src.get(key));
       }
 
-      var combinationKey = findJsonCombinationNode(fieldSchema);
+      final var combinationKey = findJsonCombinationNode(fieldSchema);
       if (combinationKey.isPresent() && dstCopy.has(key)) {
         var combinationCopy = dstCopy.get(key);
         if (src.has(key)) {
-          var arrayNode = (ArrayNode) fieldSchema.get(combinationKey.get());
+          final var arrayNode = (ArrayNode) fieldSchema.get(combinationKey.get());
           for (int i = 0; i < arrayNode.size(); i++) {
             // Absorb field values if any of the combination option is declaring it as secrets
             combinationCopy = copySecrets(src.get(key), combinationCopy, arrayNode.get(i));
@@ -147,11 +147,11 @@ public class JsonSecretsProcessor {
     return dstCopy;
   }
 
-  private static boolean isSecret(JsonNode obj) {
+  private static boolean isSecret(final JsonNode obj) {
     return obj.isObject() && obj.has(AIRBYTE_SECRET_FIELD) && obj.get(AIRBYTE_SECRET_FIELD).asBoolean();
   }
 
-  private static boolean canBeProcessed(JsonNode schema) {
+  private static boolean canBeProcessed(final JsonNode schema) {
     return schema.isObject() && schema.has(PROPERTIES_FIELD) && schema.get(PROPERTIES_FIELD).isObject();
   }
 

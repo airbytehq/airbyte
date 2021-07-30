@@ -183,7 +183,7 @@ class WorkspacesHandlerTest {
     when(configRepository.listStandardWorkspaces(false))
         .thenReturn(Lists.newArrayList(workspace, workspace2));
 
-    WorkspaceRead expectedWorkspaceRead1 = new WorkspaceRead()
+    final WorkspaceRead expectedWorkspaceRead1 = new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
         .customerId(workspace.getCustomerId())
         .email(workspace.getEmail())
@@ -196,7 +196,7 @@ class WorkspacesHandlerTest {
         .securityUpdates(workspace.getSecurityUpdates())
         .notifications(List.of(generateApiNotification()));
 
-    WorkspaceRead expectedWorkspaceRead2 = new WorkspaceRead()
+    final WorkspaceRead expectedWorkspaceRead2 = new WorkspaceRead()
         .workspaceId(workspace2.getWorkspaceId())
         .customerId(workspace2.getCustomerId())
         .email(workspace2.getEmail())

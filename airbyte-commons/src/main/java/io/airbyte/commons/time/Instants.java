@@ -26,7 +26,7 @@ package io.airbyte.commons.time;
 
 public class Instants {
 
-  public static long toSeconds(long millis) {
+  public static long toSeconds(final long millis) {
     return millis / 1000;
   }
 

@@ -37,7 +37,7 @@ class BigQueryWriteConfig {
   private final WriteDisposition syncMode;
   private final Schema schema;
 
-  BigQueryWriteConfig(TableId table, TableId tmpTable, TableDataWriteChannel writer, WriteDisposition syncMode, Schema schema) {
+  BigQueryWriteConfig(final TableId table, final TableId tmpTable, final TableDataWriteChannel writer, final WriteDisposition syncMode, final Schema schema) {
     this.table = table;
     this.tmpTable = tmpTable;
     this.writer = writer;

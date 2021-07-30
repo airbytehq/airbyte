@@ -45,17 +45,17 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   public static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
 
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
+  public AirbyteConnectionStatus check(final JsonNode config) {
     try (final JdbcDatabase database = getDatabase(config)) {
-      MySQLSqlOperations mySQLSqlOperations = (MySQLSqlOperations) getSqlOperations();
+      final MySQLSqlOperations mySQLSqlOperations = (MySQLSqlOperations) getSqlOperations();
 
-      String outputSchema = getNamingResolver().getIdentifier(config.get("database").asText());
+      final String outputSchema = getNamingResolver().getIdentifier(config.get("database").asText());
       attemptSQLCreateAndDropTableOperations(outputSchema, database, getNamingResolver(),
           mySQLSqlOperations);
 
       mySQLSqlOperations.verifyLocalFileEnabled(database);
 
-      VersionCompatibility compatibility = mySQLSqlOperations.isCompatibleVersion(database);
+      final VersionCompatibility compatibility = mySQLSqlOperations.isCompatibleVersion(database);
       if (!compatibility.isCompatible()) {
         throw new RuntimeException(String
             .format("Your MySQL version %s is not compatible with Airbyte",
@@ -63,7 +63,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
       }
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
@@ -76,7 +76,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   }
 
   @Override
-  protected JdbcDatabase getDatabase(JsonNode config) {
+  protected JdbcDatabase getDatabase(final JsonNode config) {
     final JsonNode jdbcConfig = toJdbcConfig(config);
 
     return Databases.createJdbcDatabase(
@@ -88,13 +88,13 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   }
 
   @Override
-  public JsonNode toJdbcConfig(JsonNode config) {
+  public JsonNode toJdbcConfig(final JsonNode config) {
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
         config.get("host").asText(),
         config.get("port").asText(),
         config.get("database").asText()));
 
-    ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
         .put("jdbc_url", jdbcUrl.toString());
 
@@ -105,7 +105,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Destination destination = new MySQLDestination();
     LOGGER.info("starting destination: {}", MySQLDestination.class);
     new IntegrationRunner(destination).run(args);

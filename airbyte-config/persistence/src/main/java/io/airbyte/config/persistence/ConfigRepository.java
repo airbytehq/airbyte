@@ -47,13 +47,13 @@ public class ConfigRepository {
 
   private final ConfigPersistence persistence;
 
-  public ConfigRepository(ConfigPersistence persistence) {
+  public ConfigRepository(final ConfigPersistence persistence) {
     this.persistence = persistence;
   }
 
-  public StandardWorkspace getStandardWorkspace(final UUID workspaceId, boolean includeTombstone)
+  public StandardWorkspace getStandardWorkspace(final UUID workspaceId, final boolean includeTombstone)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    StandardWorkspace workspace = persistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), StandardWorkspace.class);
+    final StandardWorkspace workspace = persistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), StandardWorkspace.class);
 
     if (!MoreBooleans.isTruthy(workspace.getTombstone()) || includeTombstone) {
       return workspace;
@@ -62,9 +62,9 @@ public class ConfigRepository {
     throw new ConfigNotFoundException(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString());
   }
 
-  public StandardWorkspace getWorkspaceBySlug(String slug, boolean includeTombstone)
+  public StandardWorkspace getWorkspaceBySlug(final String slug, final boolean includeTombstone)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    for (StandardWorkspace workspace : listStandardWorkspaces(includeTombstone)) {
+    for (final StandardWorkspace workspace : listStandardWorkspaces(includeTombstone)) {
       if (workspace.getSlug().equals(slug)) {
         return workspace;
       }
@@ -73,12 +73,12 @@ public class ConfigRepository {
     throw new ConfigNotFoundException(ConfigSchema.STANDARD_WORKSPACE, slug);
   }
 
-  public List<StandardWorkspace> listStandardWorkspaces(boolean includeTombstone)
+  public List<StandardWorkspace> listStandardWorkspaces(final boolean includeTombstone)
       throws JsonValidationException, IOException {
 
-    List<StandardWorkspace> workspaces = new ArrayList<StandardWorkspace>();
+    final List<StandardWorkspace> workspaces = new ArrayList<StandardWorkspace>();
 
-    for (StandardWorkspace workspace : persistence.listConfigs(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class)) {
+    for (final StandardWorkspace workspace : persistence.listConfigs(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class)) {
       if (!MoreBooleans.isTruthy(workspace.getTombstone()) || includeTombstone) {
         workspaces.add(workspace);
       }
@@ -96,20 +96,20 @@ public class ConfigRepository {
     return persistence.getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionId.toString(), StandardSourceDefinition.class);
   }
 
-  public StandardSourceDefinition getSourceDefinitionFromSource(UUID sourceId) {
+  public StandardSourceDefinition getSourceDefinitionFromSource(final UUID sourceId) {
     try {
       final SourceConnection source = getSourceConnection(sourceId);
       return getStandardSourceDefinition(source.getSourceDefinitionId());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  public StandardSourceDefinition getSourceDefinitionFromConnection(UUID connectionId) {
+  public StandardSourceDefinition getSourceDefinitionFromConnection(final UUID connectionId) {
     try {
       final StandardSync sync = getStandardSync(connectionId);
       return getSourceDefinitionFromSource(sync.getSourceId());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -128,20 +128,20 @@ public class ConfigRepository {
         StandardDestinationDefinition.class);
   }
 
-  public StandardDestinationDefinition getDestinationDefinitionFromDestination(UUID destinationId) {
+  public StandardDestinationDefinition getDestinationDefinitionFromDestination(final UUID destinationId) {
     try {
       final DestinationConnection destination = getDestinationConnection(destinationId);
       return getStandardDestinationDefinition(destination.getDestinationDefinitionId());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  public StandardDestinationDefinition getDestinationDefinitionFromConnection(UUID connectionId) {
+  public StandardDestinationDefinition getDestinationDefinitionFromConnection(final UUID connectionId) {
     try {
       final StandardSync sync = getStandardSync(connectionId);
       return getDestinationDefinitionFromDestination(sync.getDestinationId());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -175,7 +175,7 @@ public class ConfigRepository {
     return persistence.getConfig(ConfigSchema.DESTINATION_CONNECTION, destinationId.toString(), DestinationConnection.class);
   }
 
-  public void writeDestinationConnection(DestinationConnection destinationConnection) throws JsonValidationException, IOException {
+  public void writeDestinationConnection(final DestinationConnection destinationConnection) throws JsonValidationException, IOException {
     persistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, destinationConnection.getDestinationId().toString(), destinationConnection);
   }
 
@@ -207,7 +207,7 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.STANDARD_SYNC_OPERATION, StandardSyncOperation.class);
   }
 
-  public <T> void replaceAllConfigs(Map<AirbyteConfig, Stream<T>> configs, boolean dryRun) throws IOException {
+  public <T> void replaceAllConfigs(final Map<AirbyteConfig, Stream<T>> configs, final boolean dryRun) throws IOException {
     persistence.replaceAllConfigs(configs, dryRun);
   }
 

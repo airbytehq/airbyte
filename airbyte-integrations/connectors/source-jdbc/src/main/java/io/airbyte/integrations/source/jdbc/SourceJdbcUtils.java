@@ -40,10 +40,10 @@ import javax.xml.bind.DatatypeConverter;
 
 public class SourceJdbcUtils {
 
-  public static void setStatementField(PreparedStatement preparedStatement,
-                                       int parameterIndex,
-                                       JDBCType cursorFieldType,
-                                       String value)
+  public static void setStatementField(final PreparedStatement preparedStatement,
+                                       final int parameterIndex,
+                                       final JDBCType cursorFieldType,
+                                       final String value)
       throws SQLException {
     switch (cursorFieldType) {
       // parse time, and timestamp the same way. this seems to not cause an problems and allows us
@@ -54,16 +54,16 @@ public class SourceJdbcUtils {
         try {
           preparedStatement.setTimestamp(parameterIndex, Timestamp
               .from(DataTypeUtils.DATE_FORMAT.parse(value).toInstant()));
-        } catch (ParseException e) {
+        } catch (final ParseException e) {
           throw new RuntimeException(e);
         }
       }
 
       case DATE -> {
         try {
-          Timestamp from = Timestamp.from(DataTypeUtils.DATE_FORMAT.parse(value).toInstant());
+          final Timestamp from = Timestamp.from(DataTypeUtils.DATE_FORMAT.parse(value).toInstant());
           preparedStatement.setDate(parameterIndex, new Date(from.getTime()));
-        } catch (ParseException e) {
+        } catch (final ParseException e) {
           throw new RuntimeException(e);
         }
       }
@@ -95,10 +95,10 @@ public class SourceJdbcUtils {
    * @return quoted identifiers
    * @throws SQLException throws if there are any issues fulling the quoting metadata from the db.
    */
-  public static String enquoteIdentifierList(Connection connection, List<String> identifiers) throws SQLException {
+  public static String enquoteIdentifierList(final Connection connection, final List<String> identifiers) throws SQLException {
     final StringJoiner joiner = new StringJoiner(",");
-    for (String col : identifiers) {
-      String s = enquoteIdentifier(connection, col);
+    for (final String col : identifiers) {
+      final String s = enquoteIdentifier(connection, col);
       joiner.add(s);
     }
     return joiner.toString();
@@ -112,7 +112,7 @@ public class SourceJdbcUtils {
    * @return quoted identifier
    * @throws SQLException throws if there are any issues fulling the quoting metadata from the db.
    */
-  public static String enquoteIdentifier(Connection connection, String identifier) throws SQLException {
+  public static String enquoteIdentifier(final Connection connection, final String identifier) throws SQLException {
     final String identifierQuoteString = connection.getMetaData().getIdentifierQuoteString();
 
     return identifierQuoteString + identifier + identifierQuoteString;
@@ -125,7 +125,7 @@ public class SourceJdbcUtils {
    * @param tableName name of the table
    * @return fully qualified table name
    */
-  public static String getFullyQualifiedTableName(String schemaName, String tableName) {
+  public static String getFullyQualifiedTableName(final String schemaName, final String tableName) {
     return schemaName != null ? schemaName + "." + tableName : tableName;
   }
 
@@ -139,13 +139,13 @@ public class SourceJdbcUtils {
    * @return fully qualified table name, using db-specific quoted syntax
    * @throws SQLException throws if fails to pull correct quote character.
    */
-  public static String getFullyQualifiedTableNameWithQuoting(Connection connection, String schemaName, String tableName) throws SQLException {
+  public static String getFullyQualifiedTableNameWithQuoting(final Connection connection, final String schemaName, final String tableName) throws SQLException {
     final String quotedTableName = enquoteIdentifier(connection, tableName);
     return schemaName != null ? enquoteIdentifier(connection, schemaName) + "." + quotedTableName : quotedTableName;
   }
 
   @SuppressWarnings("DuplicateBranchesInSwitch")
-  public static JsonSchemaPrimitive getType(JDBCType jdbcType) {
+  public static JsonSchemaPrimitive getType(final JDBCType jdbcType) {
     return switch (jdbcType) {
       case BIT, BOOLEAN -> JsonSchemaPrimitive.BOOLEAN;
       case TINYINT, SMALLINT -> JsonSchemaPrimitive.NUMBER;

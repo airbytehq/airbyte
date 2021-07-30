@@ -44,13 +44,13 @@ public class BigQueryUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUtils.class);
 
-  static ImmutablePair<Job, String> executeQuery(BigQuery bigquery, QueryJobConfiguration queryConfig) {
+  static ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
     final JobId jobId = JobId.of(UUID.randomUUID().toString());
     final Job queryJob = bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build());
     return executeQuery(queryJob);
   }
 
-  static ImmutablePair<Job, String> executeQuery(Job queryJob) {
+  static ImmutablePair<Job, String> executeQuery(final Job queryJob) {
     final Job completedJob = waitForQuery(queryJob);
     if (completedJob == null) {
       LOGGER.error("Job no longer exists:" + queryJob);
@@ -64,17 +64,17 @@ public class BigQueryUtils {
     return ImmutablePair.of(completedJob, null);
   }
 
-  static Job waitForQuery(Job queryJob) {
+  static Job waitForQuery(final Job queryJob) {
     try {
       return queryJob.waitFor();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Failed to wait for a query job:" + queryJob);
       throw new RuntimeException(e);
     }
   }
 
   // https://cloud.google.com/bigquery/docs/tables#create-table
-  static void createTable(BigQuery bigquery, String datasetName, String tableName, Schema schema) {
+  static void createTable(final BigQuery bigquery, final String datasetName, final String tableName, final Schema schema) {
     try {
 
       final TableId tableId = TableId.of(datasetName, tableName);
@@ -83,7 +83,7 @@ public class BigQueryUtils {
 
       bigquery.create(tableInfo);
       LOGGER.info("Table: {} created successfully", tableId);
-    } catch (BigQueryException e) {
+    } catch (final BigQueryException e) {
       LOGGER.info("Table was not created. \n", e);
     }
   }

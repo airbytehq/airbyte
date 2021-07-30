@@ -61,11 +61,11 @@ public class AirbyteGithubStore {
     return new AirbyteGithubStore(GITHUB_BASE_URL, Duration.ofSeconds(30));
   }
 
-  public static AirbyteGithubStore test(String testBaseUrl, Duration timeout) {
+  public static AirbyteGithubStore test(final String testBaseUrl, final Duration timeout) {
     return new AirbyteGithubStore(testBaseUrl, timeout);
   }
 
-  public AirbyteGithubStore(String baseUrl, Duration timeout) {
+  public AirbyteGithubStore(final String baseUrl, final Duration timeout) {
     this.baseUrl = baseUrl;
     this.timeout = timeout;
   }
@@ -73,7 +73,7 @@ public class AirbyteGithubStore {
   public List<StandardDestinationDefinition> getLatestDestinations() throws InterruptedException {
     try {
       return YamlListToStandardDefinitions.toStandardDestinationDefinitions(getFile(DESTINATION_DEFINITION_LIST_LOCATION_PATH));
-    } catch (IOException e) {
+    } catch (final IOException e) {
       LOGGER.warn(
           "Unable to retrieve latest Destination list from Github. Using the list bundled with Airbyte. This warning is expected if this Airbyte cluster does not have internet access.",
           e);
@@ -84,7 +84,7 @@ public class AirbyteGithubStore {
   public List<StandardSourceDefinition> getLatestSources() throws InterruptedException {
     try {
       return YamlListToStandardDefinitions.toStandardSourceDefinitions(getFile(SOURCE_DEFINITION_LIST_LOCATION_PATH));
-    } catch (IOException e) {
+    } catch (final IOException e) {
       LOGGER.warn(
           "Unable to retrieve latest Source list from Github. Using the list bundled with Airbyte. This warning is expected if this Airbyte cluster does not have internet access.",
           e);
@@ -93,7 +93,7 @@ public class AirbyteGithubStore {
   }
 
   @VisibleForTesting
-  String getFile(String filePathWithSlashPrefix) throws IOException, InterruptedException {
+  String getFile(final String filePathWithSlashPrefix) throws IOException, InterruptedException {
     final var request = HttpRequest
         .newBuilder(URI.create(baseUrl + filePathWithSlashPrefix))
         .timeout(timeout)

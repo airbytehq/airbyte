@@ -59,10 +59,10 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   private AirbyteMessage lastStateMessage = null;
 
-  public KafkaRecordConsumer(KafkaDestinationConfig kafkaDestinationConfig,
-                             ConfiguredAirbyteCatalog catalog,
-                             Consumer<AirbyteMessage> outputRecordCollector,
-                             NamingConventionTransformer nameTransformer) {
+  public KafkaRecordConsumer(final KafkaDestinationConfig kafkaDestinationConfig,
+                             final ConfiguredAirbyteCatalog catalog,
+                             final Consumer<AirbyteMessage> outputRecordCollector,
+                             final NamingConventionTransformer nameTransformer) {
     this.topicPattern = kafkaDestinationConfig.getTopicPattern();
     this.topicMap = new HashMap<>();
     this.producer = kafkaDestinationConfig.getProducer();
@@ -78,7 +78,7 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   }
 
   @Override
-  protected void acceptTracked(AirbyteMessage airbyteMessage) {
+  protected void acceptTracked(final AirbyteMessage airbyteMessage) {
     if (airbyteMessage.getType() == AirbyteMessage.Type.STATE) {
       lastStateMessage = airbyteMessage;
     } else if (airbyteMessage.getType() == AirbyteMessage.Type.RECORD) {
@@ -109,7 +109,7 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
                 .replaceAll("\\{stream}", Optional.ofNullable(pair.getName()).orElse("")))));
   }
 
-  private void sendRecord(ProducerRecord<String, JsonNode> record) {
+  private void sendRecord(final ProducerRecord<String, JsonNode> record) {
     producer.send(record, (recordMetadata, exception) -> {
       if (exception != null) {
         LOGGER.error("Error sending message to topic.", exception);
@@ -123,7 +123,7 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   }
 
   @Override
-  protected void close(boolean hasFailed) {
+  protected void close(final boolean hasFailed) {
     producer.flush();
     producer.close();
     outputRecordCollector.accept(lastStateMessage);

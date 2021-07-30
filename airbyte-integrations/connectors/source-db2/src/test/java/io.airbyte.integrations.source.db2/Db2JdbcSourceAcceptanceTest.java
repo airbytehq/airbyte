@@ -92,7 +92,7 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   public void clean() throws Exception {
     // In Db2 before dropping a schema, all objects that were in that schema must be dropped or moved to
     // another schema.
-    for (String tableName : TEST_TABLES) {
+    for (final String tableName : TEST_TABLES) {
       final String dropTableQuery = String
           .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME, tableName);
       super.database.execute(connection -> connection.createStatement().execute(dropTableQuery));

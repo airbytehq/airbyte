@@ -37,7 +37,7 @@ public class MySqlCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
   private final JsonNode savedOffset;
   private final JsonNode savedSchemaHistory;
 
-  protected MySqlCdcSavedInfoFetcher(CdcState savedState) {
+  protected MySqlCdcSavedInfoFetcher(final CdcState savedState) {
     final boolean savedStatePresent = savedState != null && savedState.getState() != null;
     this.savedOffset = savedStatePresent ? savedState.getState().get(MYSQL_CDC_OFFSET) : null;
     this.savedSchemaHistory = savedStatePresent ? savedState.getState().get(MYSQL_DB_HISTORY) : null;

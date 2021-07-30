@@ -72,54 +72,54 @@ public class LogClientSingleton {
   public static String APP_LOGGING_CLOUD_PREFIX = "app-logging";
   public static String JOB_LOGGING_CLOUD_PREFIX = "job-logging";
 
-  public static Path getServerLogsRoot(Configs configs) {
+  public static Path getServerLogsRoot(final Configs configs) {
     return configs.getWorkspaceRoot().resolve("server/logs");
   }
 
-  public static Path getSchedulerLogsRoot(Configs configs) {
+  public static Path getSchedulerLogsRoot(final Configs configs) {
     return configs.getWorkspaceRoot().resolve("scheduler/logs");
   }
 
-  public static File getServerLogFile(Configs configs) {
-    var logPathBase = getServerLogsRoot(configs);
+  public static File getServerLogFile(final Configs configs) {
+    final var logPathBase = getServerLogsRoot(configs);
     if (shouldUseLocalLogs(configs)) {
       return logPathBase.resolve(LOG_FILENAME).toFile();
     }
 
-    var logConfigs = new LogConfigDelegator(configs);
+    final var logConfigs = new LogConfigDelegator(configs);
     createCloudClientIfNull(logConfigs);
-    var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
+    final var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
     try {
       return logClient.downloadCloudLog(logConfigs, cloudLogPath);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException("Error retrieving log file: " + cloudLogPath + " from S3", e);
     }
   }
 
-  public static File getSchedulerLogFile(Configs configs) {
-    var logPathBase = getSchedulerLogsRoot(configs);
+  public static File getSchedulerLogFile(final Configs configs) {
+    final var logPathBase = getSchedulerLogsRoot(configs);
     if (shouldUseLocalLogs(configs)) {
       return logPathBase.resolve(LOG_FILENAME).toFile();
     }
 
-    var logConfigs = new LogConfigDelegator(configs);
+    final var logConfigs = new LogConfigDelegator(configs);
     createCloudClientIfNull(logConfigs);
-    var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
+    final var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
     try {
       return logClient.downloadCloudLog(logConfigs, cloudLogPath);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException("Error retrieving log file: " + cloudLogPath + " from S3", e);
     }
   }
 
-  public static List<String> getJobLogFile(Configs configs, Path logPath) throws IOException {
+  public static List<String> getJobLogFile(final Configs configs, final Path logPath) throws IOException {
     if (shouldUseLocalLogs(configs)) {
       return IOs.getTail(LOG_TAIL_SIZE, logPath);
     }
 
-    var logConfigs = new LogConfigDelegator(configs);
+    final var logConfigs = new LogConfigDelegator(configs);
     createCloudClientIfNull(logConfigs);
-    var cloudLogPath = JOB_LOGGING_CLOUD_PREFIX + logPath;
+    final var cloudLogPath = JOB_LOGGING_CLOUD_PREFIX + logPath;
     return logClient.tailCloudLog(logConfigs, cloudLogPath, LOG_TAIL_SIZE);
   }
 
@@ -127,25 +127,25 @@ public class LogClientSingleton {
    * Primarily to clean up logs after testing. Only valid for Kube logs.
    */
   @VisibleForTesting
-  public static void deleteLogs(Configs configs, String logPath) {
+  public static void deleteLogs(final Configs configs, final String logPath) {
     if (shouldUseLocalLogs(configs)) {
       throw new NotImplementedException("Local log deletes not supported.");
     }
-    var logConfigs = new LogConfigDelegator(configs);
+    final var logConfigs = new LogConfigDelegator(configs);
     createCloudClientIfNull(logConfigs);
-    var cloudLogPath = JOB_LOGGING_CLOUD_PREFIX + logPath;
+    final var cloudLogPath = JOB_LOGGING_CLOUD_PREFIX + logPath;
     logClient.deleteLogs(logConfigs, cloudLogPath);
   }
 
-  public static void setJobMdc(Path path) {
+  public static void setJobMdc(final Path path) {
     MDC.put(LogClientSingleton.JOB_LOG_PATH_MDC_KEY, path.resolve(LogClientSingleton.LOG_FILENAME).toString());
   }
 
-  private static boolean shouldUseLocalLogs(Configs configs) {
+  private static boolean shouldUseLocalLogs(final Configs configs) {
     return configs.getWorkerEnvironment().equals(WorkerEnvironment.DOCKER) || CloudLogs.hasEmptyConfigs(new LogConfigDelegator(configs));
   }
 
-  private static void createCloudClientIfNull(LogConfigs configs) {
+  private static void createCloudClientIfNull(final LogConfigs configs) {
     if (logClient == null) {
       logClient = CloudLogs.createCloudLogClient(configs);
     }

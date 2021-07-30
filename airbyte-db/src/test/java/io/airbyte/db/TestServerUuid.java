@@ -60,15 +60,15 @@ public class TestServerUuid {
 
   @Test
   void testUuidFormat() throws SQLException {
-    Optional<String> uuid = ServerUuid.get(database);
+    final Optional<String> uuid = ServerUuid.get(database);
 
     assertTrue(uuid.get().matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"));
   }
 
   @Test
   void testSameUuidOverInitializations() throws SQLException {
-    Optional<String> uuid1 = ServerUuid.get(database);
-    Optional<String> uuid2 = ServerUuid.get(database);
+    final Optional<String> uuid1 = ServerUuid.get(database);
+    final Optional<String> uuid2 = ServerUuid.get(database);
 
     assertEquals(uuid1, uuid2);
   }

@@ -53,7 +53,7 @@ public class AirbyteApiClient {
   private final WorkspaceApi workspaceApi;
   private final HealthApi healthApi;
 
-  public AirbyteApiClient(ApiClient apiClient) {
+  public AirbyteApiClient(final ApiClient apiClient) {
     connectionApi = new ConnectionApi(apiClient);
     destinationDefinitionApi = new DestinationDefinitionApi(apiClient);
     destinationApi = new DestinationApi(apiClient);

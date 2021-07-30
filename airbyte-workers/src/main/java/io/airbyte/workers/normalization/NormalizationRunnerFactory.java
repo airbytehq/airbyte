@@ -39,7 +39,7 @@ public class NormalizationRunnerFactory {
           .put("airbyte/destination-mysql", DefaultNormalizationRunner.DestinationType.MYSQL)
           .build();
 
-  public static NormalizationRunner create(String imageName, ProcessFactory processFactory) {
+  public static NormalizationRunner create(final String imageName, final ProcessFactory processFactory) {
 
     final String imageNameWithoutTag = imageName.split(":")[0];
 

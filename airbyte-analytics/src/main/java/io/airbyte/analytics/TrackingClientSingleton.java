@@ -49,7 +49,7 @@ public class TrackingClientSingleton {
   }
 
   @VisibleForTesting
-  static void initialize(TrackingClient trackingClient) {
+  static void initialize(final TrackingClient trackingClient) {
     synchronized (lock) {
       TrackingClientSingleton.trackingClient = trackingClient;
     }
@@ -73,7 +73,7 @@ public class TrackingClientSingleton {
   }
 
   @VisibleForTesting
-  static TrackingIdentity getTrackingIdentity(ConfigRepository configRepository, String airbyteVersion, UUID workspaceId) {
+  static TrackingIdentity getTrackingIdentity(final ConfigRepository configRepository, final String airbyteVersion, final UUID workspaceId) {
     try {
       final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
       String email = null;
@@ -87,9 +87,9 @@ public class TrackingClientSingleton {
           workspace.getAnonymousDataCollection(),
           workspace.getNews(),
           workspace.getSecurityUpdates());
-    } catch (ConfigNotFoundException e) {
+    } catch (final ConfigNotFoundException e) {
       throw new RuntimeException("could not find workspace with id: " + workspaceId, e);
-    } catch (JsonValidationException | IOException e) {
+    } catch (final JsonValidationException | IOException e) {
       throw new RuntimeException(e);
     }
   }

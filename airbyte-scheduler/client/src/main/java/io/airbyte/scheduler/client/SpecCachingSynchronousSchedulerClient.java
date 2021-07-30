@@ -48,7 +48,7 @@ public class SpecCachingSynchronousSchedulerClient implements CachingSynchronous
   private final Cache<String, SynchronousResponse<ConnectorSpecification>> specCache;
   private final SynchronousSchedulerClient decoratedClient;
 
-  public SpecCachingSynchronousSchedulerClient(SynchronousSchedulerClient decoratedClient) {
+  public SpecCachingSynchronousSchedulerClient(final SynchronousSchedulerClient decoratedClient) {
     this.decoratedClient = decoratedClient;
     this.specCache = CacheBuilder.newBuilder().build();
   }
@@ -72,7 +72,7 @@ public class SpecCachingSynchronousSchedulerClient implements CachingSynchronous
   }
 
   @Override
-  public SynchronousResponse<ConnectorSpecification> createGetSpecJob(String dockerImage) throws IOException {
+  public SynchronousResponse<ConnectorSpecification> createGetSpecJob(final String dockerImage) throws IOException {
     final Optional<SynchronousResponse<ConnectorSpecification>> cachedJob = Optional.ofNullable(specCache.getIfPresent(dockerImage));
     if (cachedJob.isPresent()) {
       LOGGER.debug("cache hit: " + dockerImage);

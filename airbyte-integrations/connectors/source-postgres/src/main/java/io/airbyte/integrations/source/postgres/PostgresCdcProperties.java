@@ -29,7 +29,7 @@ import java.util.Properties;
 
 public class PostgresCdcProperties {
 
-  static Properties getDebeziumProperties(JsonNode config) {
+  static Properties getDebeziumProperties(final JsonNode config) {
     final Properties props = new Properties();
     props.setProperty("plugin.name", "pgoutput");
     props.setProperty("connector.class", "io.debezium.connector.postgresql.PostgresConnector");

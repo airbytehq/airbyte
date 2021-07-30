@@ -47,7 +47,7 @@ public class YamlSeedConfigPersistenceTest {
   static {
     try {
       PERSISTENCE = new YamlSeedConfigPersistence();
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
@@ -84,7 +84,7 @@ public class YamlSeedConfigPersistenceTest {
 
   @Test
   public void testDumpConfigs() {
-    Map<String, Stream<JsonNode>> allSeedConfigs = PERSISTENCE.dumpConfigs();
+    final Map<String, Stream<JsonNode>> allSeedConfigs = PERSISTENCE.dumpConfigs();
     assertEquals(2, allSeedConfigs.size());
     assertTrue(allSeedConfigs.get(ConfigSchema.STANDARD_SOURCE_DEFINITION.name()).count() > 0);
     assertTrue(allSeedConfigs.get(ConfigSchema.STANDARD_DESTINATION_DEFINITION.name()).count() > 0);

@@ -59,21 +59,21 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
   private final StandardNameTransformer namingResolver;
   private final Set<String> invalidKeys;
 
-  public BigQueryDenormalizedRecordConsumer(BigQuery bigquery,
-                                            Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
-                                            ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector,
-                                            StandardNameTransformer namingResolver) {
+  public BigQueryDenormalizedRecordConsumer(final BigQuery bigquery,
+                                            final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector,
+                                            final StandardNameTransformer namingResolver) {
     super(bigquery, writeConfigs, catalog, outputRecordCollector);
     this.namingResolver = namingResolver;
     invalidKeys = new HashSet<>();
   }
 
   @Override
-  protected JsonNode formatRecord(Schema schema, AirbyteRecordMessage recordMessage) {
+  protected JsonNode formatRecord(final Schema schema, final AirbyteRecordMessage recordMessage) {
     // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds then
     // use BQ helpers to string-format correctly.
-    long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
+    final long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
     final String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
     Preconditions.checkArgument(recordMessage.getData().isObject());
     final ObjectNode data = (ObjectNode) formatData(schema.getFields(), recordMessage.getData());
@@ -82,7 +82,7 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
     return data;
   }
 
-  protected JsonNode formatData(FieldList fields, JsonNode root) {
+  protected JsonNode formatData(final FieldList fields, final JsonNode root) {
     if (root.isObject()) {
       final List<String> fieldNames = fields.stream().map(Field::getName).collect(Collectors.toList());
       return Jsons.jsonNode(Jsons.keys(root).stream()

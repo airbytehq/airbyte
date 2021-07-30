@@ -36,11 +36,11 @@ import org.jooq.Result;
  */
 public class ServerUuid {
 
-  public static Optional<String> get(Database database) throws SQLException {
+  public static Optional<String> get(final Database database) throws SQLException {
     return database.query(ctx -> {
-      Result<Record> result =
+      final Result<Record> result =
           ctx.select().from("airbyte_metadata").where(field("key").eq("server_uuid")).fetch();
-      Optional<Record> first = result.stream().findFirst();
+      final Optional<Record> first = result.stream().findFirst();
 
       if (first.isEmpty()) {
         return Optional.empty();

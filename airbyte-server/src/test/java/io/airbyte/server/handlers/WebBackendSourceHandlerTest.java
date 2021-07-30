@@ -69,7 +69,7 @@ public class WebBackendSourceHandlerTest {
     wbSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler, workspaceHelper);
 
     final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSource();
-    SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
+    final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
     sourceRead = SourceHelpers.getSourceRead(source, standardSourceDefinition);
 
     when(workspaceHelper.getWorkspaceForSourceId(sourceRead.getSourceId())).thenReturn(sourceRead.getWorkspaceId());
@@ -77,36 +77,36 @@ public class WebBackendSourceHandlerTest {
 
   @Test
   public void testReCreatesSourceWhenCheckConnectionSucceeds() throws JsonValidationException, IOException, ConfigNotFoundException {
-    SourceCreate sourceCreate = new SourceCreate();
+    final SourceCreate sourceCreate = new SourceCreate();
     sourceCreate.setName(sourceRead.getName());
     sourceCreate.setConnectionConfiguration(sourceRead.getConnectionConfiguration());
     sourceCreate.setWorkspaceId(sourceRead.getWorkspaceId());
     sourceCreate.setSourceDefinitionId(sourceRead.getSourceDefinitionId());
 
-    SourceRead newSource = SourceHelpers
+    final SourceRead newSource = SourceHelpers
         .getSourceRead(SourceHelpers.generateSource(UUID.randomUUID()), SourceDefinitionHelpers.generateSource());
 
     when(sourceHandler.createSource(sourceCreate)).thenReturn(newSource);
 
-    SourceIdRequestBody newSourceId = new SourceIdRequestBody();
+    final SourceIdRequestBody newSourceId = new SourceIdRequestBody();
     newSourceId.setSourceId(newSource.getSourceId());
 
-    CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
+    final CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
     checkConnectionRead.setStatus(StatusEnum.SUCCEEDED);
 
     when(schedulerHandler.checkSourceConnectionFromSourceId(newSourceId)).thenReturn(checkConnectionRead);
 
-    SourceRecreate sourceRecreate = new SourceRecreate();
+    final SourceRecreate sourceRecreate = new SourceRecreate();
     sourceRecreate.setName(sourceRead.getName());
     sourceRecreate.setConnectionConfiguration(sourceRead.getConnectionConfiguration());
     sourceRecreate.setWorkspaceId(sourceRead.getWorkspaceId());
     sourceRecreate.setSourceId(sourceRead.getSourceId());
     sourceRecreate.setSourceDefinitionId(sourceRead.getSourceDefinitionId());
 
-    SourceIdRequestBody oldSourceIdBody = new SourceIdRequestBody();
+    final SourceIdRequestBody oldSourceIdBody = new SourceIdRequestBody();
     oldSourceIdBody.setSourceId(sourceRead.getSourceId());
 
-    SourceRead returnedSource =
+    final SourceRead returnedSource =
         wbSourceHandler.webBackendRecreateSourceAndCheck(sourceRecreate);
 
     verify(sourceHandler, times(1)).deleteSource(Mockito.eq(oldSourceIdBody));
@@ -115,26 +115,26 @@ public class WebBackendSourceHandlerTest {
 
   @Test
   public void testRecreateDeletesNewCreatedSourceWhenFails() throws JsonValidationException, IOException, ConfigNotFoundException {
-    SourceCreate sourceCreate = new SourceCreate();
+    final SourceCreate sourceCreate = new SourceCreate();
     sourceCreate.setName(sourceRead.getName());
     sourceCreate.setConnectionConfiguration(sourceRead.getConnectionConfiguration());
     sourceCreate.setWorkspaceId(sourceRead.getWorkspaceId());
     sourceCreate.setSourceDefinitionId(sourceRead.getSourceDefinitionId());
 
-    SourceRead newSource = SourceHelpers
+    final SourceRead newSource = SourceHelpers
         .getSourceRead(SourceHelpers.generateSource(sourceRead.getSourceDefinitionId()), SourceDefinitionHelpers.generateSource());
 
     when(sourceHandler.createSource(sourceCreate)).thenReturn(newSource);
 
-    SourceIdRequestBody newSourceId = new SourceIdRequestBody();
+    final SourceIdRequestBody newSourceId = new SourceIdRequestBody();
     newSourceId.setSourceId(newSource.getSourceId());
 
-    CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
+    final CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
     checkConnectionRead.setStatus(StatusEnum.FAILED);
 
     when(schedulerHandler.checkSourceConnectionFromSourceId(newSourceId)).thenReturn(checkConnectionRead);
 
-    SourceRecreate sourceRecreate = new SourceRecreate();
+    final SourceRecreate sourceRecreate = new SourceRecreate();
     sourceRecreate.setName(sourceRead.getName());
     sourceRecreate.setConnectionConfiguration(sourceRead.getConnectionConfiguration());
     sourceRecreate.setWorkspaceId(sourceRead.getWorkspaceId());
@@ -150,33 +150,33 @@ public class WebBackendSourceHandlerTest {
   public void testUnmatchedWorkspaces() throws IOException, JsonValidationException, ConfigNotFoundException {
     when(workspaceHelper.getWorkspaceForSourceId(sourceRead.getSourceId())).thenReturn(UUID.randomUUID());
 
-    SourceCreate sourceCreate = new SourceCreate();
+    final SourceCreate sourceCreate = new SourceCreate();
     sourceCreate.setName(sourceRead.getName());
     sourceCreate.setConnectionConfiguration(sourceRead.getConnectionConfiguration());
     sourceCreate.setWorkspaceId(sourceRead.getWorkspaceId());
     sourceCreate.setSourceDefinitionId(sourceRead.getSourceDefinitionId());
 
-    SourceRead newSource = SourceHelpers
+    final SourceRead newSource = SourceHelpers
         .getSourceRead(SourceHelpers.generateSource(UUID.randomUUID()), SourceDefinitionHelpers.generateSource());
 
     when(sourceHandler.createSource(sourceCreate)).thenReturn(newSource);
 
-    SourceIdRequestBody newSourceId = new SourceIdRequestBody();
+    final SourceIdRequestBody newSourceId = new SourceIdRequestBody();
     newSourceId.setSourceId(newSource.getSourceId());
 
-    CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
+    final CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
     checkConnectionRead.setStatus(StatusEnum.SUCCEEDED);
 
     when(schedulerHandler.checkSourceConnectionFromSourceId(newSourceId)).thenReturn(checkConnectionRead);
 
-    SourceRecreate sourceRecreate = new SourceRecreate();
+    final SourceRecreate sourceRecreate = new SourceRecreate();
     sourceRecreate.setName(sourceRead.getName());
     sourceRecreate.setConnectionConfiguration(sourceRead.getConnectionConfiguration());
     sourceRecreate.setWorkspaceId(sourceRead.getWorkspaceId());
     sourceRecreate.setSourceId(sourceRead.getSourceId());
     sourceRecreate.setSourceDefinitionId(sourceRead.getSourceDefinitionId());
 
-    SourceIdRequestBody oldSourceIdBody = new SourceIdRequestBody();
+    final SourceIdRequestBody oldSourceIdBody = new SourceIdRequestBody();
     oldSourceIdBody.setSourceId(sourceRead.getSourceId());
 
     Assertions.assertThrows(IllegalArgumentException.class, () -> {

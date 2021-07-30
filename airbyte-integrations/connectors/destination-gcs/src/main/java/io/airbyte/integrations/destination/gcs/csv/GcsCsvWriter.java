@@ -56,18 +56,18 @@ public class GcsCsvWriter extends BaseGcsWriter implements S3Writer {
   private final MultiPartOutputStream outputStream;
   private final CSVPrinter csvPrinter;
 
-  public GcsCsvWriter(GcsDestinationConfig config,
-                      AmazonS3 s3Client,
-                      ConfiguredAirbyteStream configuredStream,
-                      Timestamp uploadTimestamp)
+  public GcsCsvWriter(final GcsDestinationConfig config,
+                      final AmazonS3 s3Client,
+                      final ConfiguredAirbyteStream configuredStream,
+                      final Timestamp uploadTimestamp)
       throws IOException {
     super(config, s3Client, configuredStream);
 
-    S3CsvFormatConfig formatConfig = (S3CsvFormatConfig) config.getFormatConfig();
+    final S3CsvFormatConfig formatConfig = (S3CsvFormatConfig) config.getFormatConfig();
     this.csvSheetGenerator = CsvSheetGenerator.Factory.create(configuredStream.getStream().getJsonSchema(), formatConfig);
 
-    String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.CSV);
-    String objectKey = String.join("/", outputPrefix, outputFilename);
+    final String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.CSV);
+    final String objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
         objectKey);
@@ -81,7 +81,7 @@ public class GcsCsvWriter extends BaseGcsWriter implements S3Writer {
   }
 
   @Override
-  public void write(UUID id, AirbyteRecordMessage recordMessage) throws IOException {
+  public void write(final UUID id, final AirbyteRecordMessage recordMessage) throws IOException {
     csvPrinter.printRecord(csvSheetGenerator.getDataRow(id, recordMessage));
   }
 

@@ -105,14 +105,14 @@ public class SchedulerApp {
   private final TemporalClient temporalClient;
   private final WorkflowServiceStubs temporalService;
 
-  public SchedulerApp(Path workspaceRoot,
-                      ProcessFactory processFactory,
-                      JobPersistence jobPersistence,
-                      ConfigRepository configRepository,
-                      JobCleaner jobCleaner,
-                      JobNotifier jobNotifier,
-                      TemporalClient temporalClient,
-                      WorkflowServiceStubs temporalService) {
+  public SchedulerApp(final Path workspaceRoot,
+                      final ProcessFactory processFactory,
+                      final JobPersistence jobPersistence,
+                      final ConfigRepository configRepository,
+                      final JobCleaner jobCleaner,
+                      final JobNotifier jobNotifier,
+                      final TemporalClient temporalClient,
+                      final WorkflowServiceStubs temporalService) {
     this.workspaceRoot = workspaceRoot;
     this.processFactory = processFactory;
     this.jobPersistence = jobPersistence;
@@ -138,7 +138,7 @@ public class SchedulerApp {
         temporalWorkerRunFactory,
         new JobTracker(configRepository, jobPersistence));
 
-    Map<String, String> mdc = MDC.getCopyOfContextMap();
+    final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
     // We cancel jobs that where running before the restart. They are not being monitored by the worker
     // anymore.
@@ -168,14 +168,14 @@ public class SchedulerApp {
     Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofSeconds(GRACEFUL_SHUTDOWN_SECONDS), workerThreadPool, scheduledPool));
   }
 
-  private void cleanupZombies(JobPersistence jobPersistence, JobNotifier jobNotifier) throws IOException {
-    for (Job zombieJob : jobPersistence.listJobsWithStatus(JobStatus.RUNNING)) {
+  private void cleanupZombies(final JobPersistence jobPersistence, final JobNotifier jobNotifier) throws IOException {
+    for (final Job zombieJob : jobPersistence.listJobsWithStatus(JobStatus.RUNNING)) {
       jobNotifier.failJob("zombie job was cancelled", zombieJob);
       jobPersistence.cancelJob(zombieJob.getId());
     }
   }
 
-  private static ProcessFactory getProcessBuilderFactory(Configs configs) throws IOException {
+  private static ProcessFactory getProcessBuilderFactory(final Configs configs) throws IOException {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
       final ApiClient officialClient = Config.defaultClient();
       final KubernetesClient fabricClient = new DefaultKubernetesClient();
@@ -192,7 +192,7 @@ public class SchedulerApp {
     }
   }
 
-  public static void main(String[] args) throws IOException, InterruptedException {
+  public static void main(final String[] args) throws IOException, InterruptedException {
 
     final Configs configs = new EnvConfigs();
 
@@ -223,20 +223,20 @@ public class SchedulerApp {
     final JobNotifier jobNotifier = new JobNotifier(configs.getWebappUrl(), configRepository, new WorkspaceHelper(configRepository, jobPersistence));
 
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
-      var supportedWorkers = KubePortManagerSingleton.getSupportedWorkers();
+      final var supportedWorkers = KubePortManagerSingleton.getSupportedWorkers();
       if (supportedWorkers < SUBMITTER_NUM_THREADS) {
         LOGGER.warn("{} workers configured with only {} ports available. Insufficient ports. Setting workers to {}.", SUBMITTER_NUM_THREADS,
             KubePortManagerSingleton.getNumAvailablePorts(), supportedWorkers);
         SUBMITTER_NUM_THREADS = supportedWorkers;
       }
 
-      Map<String, String> mdc = MDC.getCopyOfContextMap();
+      final Map<String, String> mdc = MDC.getCopyOfContextMap();
       Executors.newSingleThreadExecutor().submit(
           () -> {
             MDC.setContextMap(mdc);
             try {
               new WorkerHeartbeatServer(KUBE_HEARTBEAT_PORT).start();
-            } catch (Exception e) {
+            } catch (final Exception e) {
               throw new RuntimeException(e);
             }
           });

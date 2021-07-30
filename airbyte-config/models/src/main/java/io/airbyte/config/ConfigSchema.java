@@ -84,9 +84,9 @@ public enum ConfigSchema implements AirbyteConfig {
   private final String idFieldName;
 
   <T> ConfigSchema(final String schemaFilename,
-                   Class<T> className,
-                   Function<T, String> extractId,
-                   String idFieldName) {
+                   final Class<T> className,
+                   final Function<T, String> extractId,
+                   final String idFieldName) {
     this.schemaFilename = schemaFilename;
     this.className = className;
     this.extractId = extractId;
@@ -94,7 +94,7 @@ public enum ConfigSchema implements AirbyteConfig {
   }
 
   <T> ConfigSchema(final String schemaFilename,
-                   Class<T> className) {
+                   final Class<T> className) {
     this.schemaFilename = schemaFilename;
     this.className = className;
     this.extractId = object -> {
@@ -113,7 +113,7 @@ public enum ConfigSchema implements AirbyteConfig {
   }
 
   @Override
-  public <T> String getId(T object) {
+  public <T> String getId(final T object) {
     if (getClassName().isInstance(object)) {
       return ((Function<T, String>) extractId).apply(object);
     }

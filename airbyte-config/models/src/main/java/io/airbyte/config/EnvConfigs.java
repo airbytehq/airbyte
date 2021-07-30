@@ -186,7 +186,7 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(TRACKING_STRATEGY, TrackingStrategy.LOGGING, s -> {
       try {
         return TrackingStrategy.valueOf(s.toUpperCase());
-      } catch (IllegalArgumentException e) {
+      } catch (final IllegalArgumentException e) {
         LOGGER.info(s + " not recognized, defaulting to " + TrackingStrategy.LOGGING);
         return TrackingStrategy.LOGGING;
       }
@@ -200,9 +200,9 @@ public class EnvConfigs implements Configs {
 
   @Override
   public WorkspaceRetentionConfig getWorkspaceRetentionConfig() {
-    long minDays = getEnvOrDefault(MINIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS);
-    long maxDays = getEnvOrDefault(MAXIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS);
-    long maxSizeMb = getEnvOrDefault(MAXIMUM_WORKSPACE_SIZE_MB, DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB);
+    final long minDays = getEnvOrDefault(MINIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS);
+    final long maxDays = getEnvOrDefault(MAXIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS);
+    final long maxSizeMb = getEnvOrDefault(MAXIMUM_WORKSPACE_SIZE_MB, DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB);
 
     return new WorkspaceRetentionConfig(minDays, maxDays, maxSizeMb);
   }
@@ -214,7 +214,7 @@ public class EnvConfigs implements Configs {
 
   @Override
   public Set<Integer> getTemporalWorkerPorts() {
-    var ports = getEnvOrDefault(TEMPORAL_WORKER_PORTS, "");
+    final var ports = getEnvOrDefault(TEMPORAL_WORKER_PORTS, "");
     if (ports.isEmpty()) {
       return new HashSet<>();
     }
@@ -286,15 +286,15 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, "");
   }
 
-  private String getEnvOrDefault(String key, String defaultValue) {
+  private String getEnvOrDefault(final String key, final String defaultValue) {
     return getEnvOrDefault(key, defaultValue, Function.identity());
   }
 
-  private long getEnvOrDefault(String key, long defaultValue) {
+  private long getEnvOrDefault(final String key, final long defaultValue) {
     return getEnvOrDefault(key, defaultValue, Long::parseLong);
   }
 
-  private <T> T getEnvOrDefault(String key, T defaultValue, Function<String, T> parser) {
+  private <T> T getEnvOrDefault(final String key, final T defaultValue, final Function<String, T> parser) {
     final String value = getEnv.apply(key);
     if (value != null && !value.isEmpty()) {
       return parser.apply(value);

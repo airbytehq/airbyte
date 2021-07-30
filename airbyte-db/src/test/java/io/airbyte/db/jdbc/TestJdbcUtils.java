@@ -100,7 +100,7 @@ public class TestJdbcUtils {
     });
   }
 
-  private JsonNode getConfig(PostgreSQLContainer<?> psqlDb, String dbName) {
+  private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", psqlDb.getHost())
         .put("port", psqlDb.getFirstMappedPort())
@@ -172,7 +172,7 @@ public class TestJdbcUtils {
     }
   }
 
-  private static void createTableWithAllTypes(Connection connection) throws SQLException {
+  private static void createTableWithAllTypes(final Connection connection) throws SQLException {
     // jdbctype not included because they are not directly supported in postgres: TINYINT, LONGVARCHAR,
     // VARBINAR, LONGVARBINARY
     connection.createStatement().execute("CREATE TABLE data("
@@ -196,7 +196,7 @@ public class TestJdbcUtils {
 
   }
 
-  private static void insertRecordOfEachType(Connection connection) throws SQLException {
+  private static void insertRecordOfEachType(final Connection connection) throws SQLException {
     connection.createStatement().execute("INSERT INTO data("
         + "bit,"
         + "boolean,"
@@ -234,7 +234,7 @@ public class TestJdbcUtils {
         + ");");
   }
 
-  private static void assertExpectedOutputValues(Connection connection) throws SQLException {
+  private static void assertExpectedOutputValues(final Connection connection) throws SQLException {
     final ResultSet resultSet = connection.createStatement().executeQuery("SELECT * FROM data;");
 
     resultSet.next();
@@ -265,7 +265,7 @@ public class TestJdbcUtils {
     assertEquals(expected, actual);
   }
 
-  private static void assertExpectedOutputTypes(Connection connection) throws SQLException {
+  private static void assertExpectedOutputTypes(final Connection connection) throws SQLException {
     final ResultSet resultSet = connection.createStatement().executeQuery("SELECT * FROM data;");
 
     resultSet.next();

@@ -63,7 +63,7 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
   }
 
   @Override
-  public StandardCheckConnectionOutput run(StandardCheckConnectionInput input, Path jobRoot) throws WorkerException {
+  public StandardCheckConnectionOutput run(final StandardCheckConnectionInput input, final Path jobRoot) throws WorkerException {
 
     try {
       process = integrationLauncher.check(
@@ -73,8 +73,8 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
-      Optional<AirbyteConnectionStatus> status;
-      try (InputStream stdout = process.getInputStream()) {
+      final Optional<AirbyteConnectionStatus> status;
+      try (final InputStream stdout = process.getInputStream()) {
         status = streamFactory.create(IOs.newBufferedReader(stdout))
             .filter(message -> message.getType() == Type.CONNECTION_STATUS)
             .map(AirbyteMessage::getConnectionStatus).findFirst();
@@ -82,7 +82,7 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
         WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
       }
 
-      int exitCode = process.exitValue();
+      final int exitCode = process.exitValue();
 
       if (status.isPresent() && exitCode == 0) {
         final StandardCheckConnectionOutput output = new StandardCheckConnectionOutput()
@@ -96,7 +96,7 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
         throw new WorkerException("Error while getting checking connection.");
       }
 
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new WorkerException("Error while getting checking connection.", e);
     }
   }

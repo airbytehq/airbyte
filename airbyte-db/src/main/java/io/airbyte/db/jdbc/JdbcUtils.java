@@ -56,18 +56,18 @@ public class JdbcUtils {
    * @param <T> type that each record will be mapped to
    * @return stream of records that the result set is mapped to.
    */
-  public static <T> Stream<T> toStream(ResultSet resultSet, CheckedFunction<ResultSet, T, SQLException> mapper) {
+  public static <T> Stream<T> toStream(final ResultSet resultSet, final CheckedFunction<ResultSet, T, SQLException> mapper) {
     return StreamSupport.stream(new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.ORDERED) {
 
       @Override
-      public boolean tryAdvance(Consumer<? super T> action) {
+      public boolean tryAdvance(final Consumer<? super T> action) {
         try {
           if (!resultSet.next()) {
             return false;
           }
           action.accept(mapper.apply(resultSet));
           return true;
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
           throw new RuntimeException(e);
         }
       }
@@ -82,11 +82,11 @@ public class JdbcUtils {
    * @return Stream of JsonNode.
    * @throws SQLException exceptions throws when parsing the ResultSet.
    */
-  public static Stream<JsonNode> toJsonStream(ResultSet resultSet) throws SQLException {
+  public static Stream<JsonNode> toJsonStream(final ResultSet resultSet) throws SQLException {
     return toStream(resultSet, JdbcUtils::rowToJson);
   }
 
-  public static JsonNode rowToJson(ResultSet r) throws SQLException {
+  public static JsonNode rowToJson(final ResultSet r) throws SQLException {
     // the first call communicates with the database. after that the result is cached.
     final int columnCount = r.getMetaData().getColumnCount();
     final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
@@ -107,15 +107,15 @@ public class JdbcUtils {
     return jsonNode;
   }
 
-  private static JDBCType safeGetJdbcType(int columnTypeInt) {
+  private static JDBCType safeGetJdbcType(final int columnTypeInt) {
     try {
       return JDBCType.valueOf(columnTypeInt);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       return JDBCType.VARCHAR;
     }
   }
 
-  private static void setJsonField(ResultSet r, int i, ObjectNode o) throws SQLException {
+  private static void setJsonField(final ResultSet r, final int i, final ObjectNode o) throws SQLException {
     final int columnTypeInt = r.getMetaData().getColumnType(i);
     final String columnName = r.getMetaData().getColumnName(i);
     final JDBCType columnType = safeGetJdbcType(columnTypeInt);
@@ -136,7 +136,7 @@ public class JdbcUtils {
       case TIMESTAMP -> {
         // https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html
         final Timestamp t = r.getTimestamp(i);
-        java.util.Date d = new java.util.Date(t.getTime() + (t.getNanos() / 1000000));
+        final java.util.Date d = new java.util.Date(t.getTime() + (t.getNanos() / 1000000));
         o.put(columnName, DataTypeUtils.toISO8601String(d));
       }
       case BLOB, BINARY, VARBINARY, LONGVARBINARY -> o.put(columnName, r.getBytes(i));
@@ -149,20 +149,20 @@ public class JdbcUtils {
    * unsigned Integer type, which can contain value 3428724653. If we fail to cast Integer value, we
    * will try to cast Long.
    */
-  private static void putInteger(ObjectNode node, String columnName, ResultSet resultSet, int index) {
+  private static void putInteger(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) {
     try {
       node.put(columnName, resultSet.getInt(index));
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> resultSet.getLong(index)));
     }
   }
 
   // todo (cgardens) - move generic date helpers to commons.
 
-  public static void setStatementField(PreparedStatement preparedStatement,
-                                       int parameterIndex,
-                                       JDBCType cursorFieldType,
-                                       String value)
+  public static void setStatementField(final PreparedStatement preparedStatement,
+                                       final int parameterIndex,
+                                       final JDBCType cursorFieldType,
+                                       final String value)
       throws SQLException {
     switch (cursorFieldType) {
       // parse time, and timestamp the same way. this seems to not cause an problems and allows us
@@ -173,16 +173,16 @@ public class JdbcUtils {
         try {
           preparedStatement.setTimestamp(parameterIndex, Timestamp.from(
               DataTypeUtils.DATE_FORMAT.parse(value).toInstant()));
-        } catch (ParseException e) {
+        } catch (final ParseException e) {
           throw new RuntimeException(e);
         }
       }
 
       case DATE -> {
         try {
-          Timestamp from = Timestamp.from(DataTypeUtils.DATE_FORMAT.parse(value).toInstant());
+          final Timestamp from = Timestamp.from(DataTypeUtils.DATE_FORMAT.parse(value).toInstant());
           preparedStatement.setDate(parameterIndex, new Date(from.getTime()));
-        } catch (ParseException e) {
+        } catch (final ParseException e) {
           throw new RuntimeException(e);
         }
       }
@@ -210,7 +210,7 @@ public class JdbcUtils {
   // statement above.
 
   @SuppressWarnings("DuplicateBranchesInSwitch")
-  public static JsonSchemaPrimitive getType(JDBCType jdbcType) {
+  public static JsonSchemaPrimitive getType(final JDBCType jdbcType) {
     return switch (jdbcType) {
       case BIT, BOOLEAN -> JsonSchemaPrimitive.BOOLEAN;
       case TINYINT, SMALLINT -> JsonSchemaPrimitive.NUMBER;

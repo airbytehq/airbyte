@@ -121,7 +121,7 @@ public class ServerApp implements ServerRunnable {
     customComponentClasses.forEach(rc::register);
     customComponents.forEach(rc::register);
 
-    ServletHolder configServlet = new ServletHolder(new ServletContainer(rc));
+    final ServletHolder configServlet = new ServletHolder(new ServletContainer(rc));
 
     handler.addServlet(configServlet, "/api/*");
 
@@ -163,7 +163,7 @@ public class ServerApp implements ServerRunnable {
     TrackingClientSingleton.get().identify(workspaceId);
   }
 
-  public static ServerRunnable getServer(ServerFactory apiFactory) throws Exception {
+  public static ServerRunnable getServer(final ServerFactory apiFactory) throws Exception {
     final Configs configs = new EnvConfigs();
 
     MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, LogClientSingleton.getServerLogsRoot(configs).toString());
@@ -202,8 +202,8 @@ public class ServerApp implements ServerRunnable {
 
     Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
     if (airbyteDatabaseVersion.isPresent() && isDatabaseVersionBehindAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
-      boolean isKubernetes = configs.getWorkerEnvironment() == WorkerEnvironment.KUBERNETES;
-      boolean versionSupportsAutoMigrate =
+      final boolean isKubernetes = configs.getWorkerEnvironment() == WorkerEnvironment.KUBERNETES;
+      final boolean versionSupportsAutoMigrate =
           new AirbyteVersion(airbyteDatabaseVersion.get()).patchVersionCompareTo(KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION) >= 0;
       if (!isKubernetes || versionSupportsAutoMigrate) {
         runAutomaticMigration(configRepository, jobPersistence, airbyteVersion, airbyteDatabaseVersion.get());
@@ -237,7 +237,7 @@ public class ServerApp implements ServerRunnable {
     }
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     getServer(new ServerFactory.Api()).start();
   }
 
@@ -245,10 +245,10 @@ public class ServerApp implements ServerRunnable {
    * Ideally when automatic migration runs, we should make sure that we acquire a lock on database and
    * no other operation is allowed
    */
-  private static void runAutomaticMigration(ConfigRepository configRepository,
-                                            JobPersistence jobPersistence,
-                                            String airbyteVersion,
-                                            String airbyteDatabaseVersion) {
+  private static void runAutomaticMigration(final ConfigRepository configRepository,
+                                            final JobPersistence jobPersistence,
+                                            final String airbyteVersion,
+                                            final String airbyteDatabaseVersion) {
     LOGGER.info("Running Automatic Migration from version : " + airbyteDatabaseVersion + " to version : " + airbyteVersion);
     final Path latestSeedsPath = Path.of(System.getProperty("user.dir")).resolve("latest_seeds");
     LOGGER.info("Last seeds dir: {}", latestSeedsPath);
@@ -258,19 +258,19 @@ public class ServerApp implements ServerRunnable {
         airbyteVersion,
         latestSeedsPath)) {
       runMigration.run();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Automatic Migration failed ", e);
     }
   }
 
-  public static boolean isDatabaseVersionBehindAppVersion(String airbyteVersion, String airbyteDatabaseVersion) {
-    boolean bothVersionsCompatible = AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion);
+  public static boolean isDatabaseVersionBehindAppVersion(final String airbyteVersion, final String airbyteDatabaseVersion) {
+    final boolean bothVersionsCompatible = AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion);
     if (bothVersionsCompatible) {
       return false;
     }
 
-    AirbyteVersion serverVersion = new AirbyteVersion(airbyteVersion);
-    AirbyteVersion databaseVersion = new AirbyteVersion(airbyteDatabaseVersion);
+    final AirbyteVersion serverVersion = new AirbyteVersion(airbyteVersion);
+    final AirbyteVersion databaseVersion = new AirbyteVersion(airbyteDatabaseVersion);
 
     if (databaseVersion.getMajorVersion().compareTo(serverVersion.getMajorVersion()) < 0) {
       return true;

@@ -424,7 +424,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   // Operations
 
   @Override
-  public CheckOperationRead checkOperation(OperatorConfiguration operatorConfiguration) {
+  public CheckOperationRead checkOperation(final OperatorConfiguration operatorConfiguration) {
     return execute(() -> operationsHandler.checkOperation(operatorConfiguration));
   }
 
@@ -434,7 +434,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public void deleteOperation(OperationIdRequestBody operationIdRequestBody) {
+  public void deleteOperation(final OperationIdRequestBody operationIdRequestBody) {
     execute(() -> {
       operationsHandler.deleteOperation(operationIdRequestBody);
       return null;
@@ -442,17 +442,17 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public OperationReadList listOperationsForConnection(ConnectionIdRequestBody connectionIdRequestBody) {
+  public OperationReadList listOperationsForConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
     return execute(() -> operationsHandler.listOperationsForConnection(connectionIdRequestBody));
   }
 
   @Override
-  public OperationRead getOperation(OperationIdRequestBody operationIdRequestBody) {
+  public OperationRead getOperation(final OperationIdRequestBody operationIdRequestBody) {
     return execute(() -> operationsHandler.getOperation(operationIdRequestBody));
   }
 
   @Override
-  public OperationRead updateOperation(OperationUpdate operationUpdate) {
+  public OperationRead updateOperation(final OperationUpdate operationUpdate) {
     return execute(() -> operationsHandler.updateOperation(operationUpdate));
   }
 
@@ -534,7 +534,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public WebBackendConnectionRead webBackendCreateConnection(WebBackendConnectionCreate webBackendConnectionCreate) {
+  public WebBackendConnectionRead webBackendCreateConnection(final WebBackendConnectionCreate webBackendConnectionCreate) {
     return execute(() -> webBackendConnectionsHandler.webBackendCreateConnection(webBackendConnectionCreate));
   }
 
@@ -555,16 +555,16 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     return execute(() -> archiveHandler.importData(archiveFile));
   }
 
-  private <T> T execute(HandlerCall<T> call) {
+  private <T> T execute(final HandlerCall<T> call) {
     try {
       return call.call();
-    } catch (ConfigNotFoundException e) {
+    } catch (final ConfigNotFoundException e) {
       throw new IdNotFoundKnownException(String.format("Could not find configuration for %s: %s.", e.getType().toString(), e.getConfigId()),
           e.getConfigId(), e);
-    } catch (JsonValidationException e) {
+    } catch (final JsonValidationException e) {
       throw new BadObjectSchemaKnownException(
           String.format("The provided configuration does not fulfill the specification. Errors: %s", e.getMessage()), e);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }

@@ -105,7 +105,7 @@ public class AirbyteGithubStoreTest {
           .setBody(goodBody);
       webServer.enqueue(goodResp);
 
-      var fileStr = githubStore.getFile("test-file");
+      final var fileStr = githubStore.getFile("test-file");
       assertEquals(goodBody, fileStr);
     }
 

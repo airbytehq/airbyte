@@ -44,7 +44,7 @@ public class TemporalPool implements Runnable {
   private final Path workspaceRoot;
   private final ProcessFactory processFactory;
 
-  public TemporalPool(WorkflowServiceStubs temporalService, Path workspaceRoot, ProcessFactory processFactory) {
+  public TemporalPool(final WorkflowServiceStubs temporalService, final Path workspaceRoot, final ProcessFactory processFactory) {
     this.temporalService = temporalService;
     this.workspaceRoot = workspaceRoot;
     this.processFactory = processFactory;

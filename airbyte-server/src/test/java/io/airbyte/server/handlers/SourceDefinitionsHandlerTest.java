@@ -99,7 +99,7 @@ class SourceDefinitionsHandlerTest {
 
     when(configRepository.listStandardSources()).thenReturn(Lists.newArrayList(source, source2));
 
-    SourceDefinitionRead expectedSourceDefinitionRead1 = new SourceDefinitionRead()
+    final SourceDefinitionRead expectedSourceDefinitionRead1 = new SourceDefinitionRead()
         .sourceDefinitionId(source.getSourceDefinitionId())
         .name(source.getName())
         .dockerRepository(source.getDockerRepository())
@@ -107,7 +107,7 @@ class SourceDefinitionsHandlerTest {
         .documentationUrl(new URI(source.getDocumentationUrl()))
         .icon(SourceDefinitionsHandler.loadIcon(source.getIcon()));
 
-    SourceDefinitionRead expectedSourceDefinitionRead2 = new SourceDefinitionRead()
+    final SourceDefinitionRead expectedSourceDefinitionRead2 = new SourceDefinitionRead()
         .sourceDefinitionId(source2.getSourceDefinitionId())
         .name(source2.getName())
         .dockerRepository(source.getDockerRepository())
@@ -127,7 +127,7 @@ class SourceDefinitionsHandlerTest {
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
         .thenReturn(source);
 
-    SourceDefinitionRead expectedSourceDefinitionRead = new SourceDefinitionRead()
+    final SourceDefinitionRead expectedSourceDefinitionRead = new SourceDefinitionRead()
         .sourceDefinitionId(source.getSourceDefinitionId())
         .name(source.getName())
         .dockerRepository(source.getDockerRepository())

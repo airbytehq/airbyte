@@ -84,27 +84,29 @@ public class ConfigDumpImporter {
   private final JsonSchemaValidator jsonSchemaValidator;
   private final JobPersistence postgresPersistence;
 
-  public ConfigDumpImporter(ConfigRepository configRepository, JobPersistence postgresPersistence) {
+  public ConfigDumpImporter(final ConfigRepository configRepository, final JobPersistence postgresPersistence) {
     this(configRepository, postgresPersistence, new JsonSchemaValidator());
   }
 
   @VisibleForTesting
-  public ConfigDumpImporter(ConfigRepository configRepository, JobPersistence postgresPersistence, JsonSchemaValidator jsonSchemaValidator) {
+  public ConfigDumpImporter(final ConfigRepository configRepository,
+                            final JobPersistence postgresPersistence,
+                            final JsonSchemaValidator jsonSchemaValidator) {
     this.jsonSchemaValidator = jsonSchemaValidator;
     this.postgresPersistence = postgresPersistence;
     this.configRepository = configRepository;
   }
 
-  public ImportRead importData(String targetVersion, File archive) {
+  public ImportRead importData(final String targetVersion, final File archive) {
     return importDataInternal(targetVersion, archive, Optional.empty());
   }
 
-  public ImportRead importDataWithSeed(String targetVersion, File archive, Path seedPath) {
+  public ImportRead importDataWithSeed(final String targetVersion, final File archive, final Path seedPath) {
     return importDataInternal(targetVersion, archive, Optional.of(seedPath));
   }
 
   // seedPath - if present, merge with the import. otherwise just use the data in the import.
-  private ImportRead importDataInternal(String targetVersion, File archive, Optional<Path> seedPath) {
+  private ImportRead importDataInternal(final String targetVersion, final File archive, final Optional<Path> seedPath) {
     Preconditions.checkNotNull(seedPath);
 
     ImportRead result;
@@ -117,7 +119,7 @@ public class ConfigDumpImporter {
         // 2. dry run
         try {
           checkImport(targetVersion, sourceRoot, seedPath);
-        } catch (Exception e) {
+        } catch (final Exception e) {
           LOGGER.error("Dry run failed.", e);
           throw e;
         }
@@ -142,7 +144,7 @@ public class ConfigDumpImporter {
 
       // identify this instance as the new customer id.
       configRepository.listStandardWorkspaces(true).forEach(workspace -> TrackingClientSingleton.get().identify(workspace.getWorkspaceId()));
-    } catch (IOException | JsonValidationException | RuntimeException e) {
+    } catch (final IOException | JsonValidationException | RuntimeException e) {
       LOGGER.error("Import failed", e);
       result = new ImportRead().status(StatusEnum.FAILED).reason(e.getMessage());
     }
@@ -150,7 +152,7 @@ public class ConfigDumpImporter {
     return result;
   }
 
-  private void checkImport(String targetVersion, Path tempFolder, Optional<Path> seed) throws IOException, JsonValidationException {
+  private void checkImport(final String targetVersion, final Path tempFolder, final Optional<Path> seed) throws IOException, JsonValidationException {
     final Path versionFile = tempFolder.resolve(VERSION_FILE_NAME);
     final String importVersion = Files.readString(versionFile, Charset.defaultCharset())
         .replace("\n", "").strip();
@@ -165,14 +167,14 @@ public class ConfigDumpImporter {
   }
 
   // Config
-  private List<String> listDirectories(Path sourceRoot) throws IOException {
-    try (Stream<Path> files = Files.list(sourceRoot.resolve(CONFIG_FOLDER_NAME))) {
+  private List<String> listDirectories(final Path sourceRoot) throws IOException {
+    try (final Stream<Path> files = Files.list(sourceRoot.resolve(CONFIG_FOLDER_NAME))) {
       return files.map(c -> c.getFileName().toString())
           .collect(Collectors.toList());
     }
   }
 
-  private <T> void importConfigsFromArchive(final Path sourceRoot, Optional<Path> seedPath, final boolean dryRun)
+  private <T> void importConfigsFromArchive(final Path sourceRoot, final Optional<Path> seedPath, final boolean dryRun)
       throws IOException, JsonValidationException {
     final List<String> sourceDefinitionsToMigrate = new ArrayList<>();
     final List<String> destinationDefinitionsToMigrate = new ArrayList<>();
@@ -213,34 +215,34 @@ public class ConfigDumpImporter {
     configRepository.replaceAllConfigs(data, dryRun);
   }
 
-  private <T> Map<ConfigSchema, Map<String, T>> getSeed(Path seed) throws IOException {
+  private <T> Map<ConfigSchema, Map<String, T>> getSeed(final Path seed) throws IOException {
     final List<ConfigSchema> configSchemas = Files.list(seed).map(c -> ConfigSchema.valueOf(c.getFileName().toString())).collect(Collectors.toList());
     final Map<ConfigSchema, Map<String, T>> allData = new HashMap<>();
-    for (ConfigSchema configSchema : configSchemas) {
+    for (final ConfigSchema configSchema : configSchemas) {
       final Map<String, T> data = readLatestSeed(seed, configSchema);
       allData.put(configSchema, data);
     }
     return allData;
   }
 
-  private <T> Map<String, T> readLatestSeed(Path latestSeed, ConfigSchema configSchema) throws IOException {
-    try (Stream<Path> files = Files.list(latestSeed.resolve(configSchema.toString()))) {
+  private <T> Map<String, T> readLatestSeed(final Path latestSeed, final ConfigSchema configSchema) throws IOException {
+    try (final Stream<Path> files = Files.list(latestSeed.resolve(configSchema.toString()))) {
       final List<String> ids = files
           .filter(p -> !p.endsWith(".json"))
           .map(p -> p.getFileName().toString().replace(".json", ""))
           .collect(Collectors.toList());
 
       final Map<String, T> configData = new HashMap<>();
-      for (String id : ids) {
+      for (final String id : ids) {
         try {
           final Path configPath = latestSeed.resolve(configSchema.toString()).resolve(String.format("%s.json", id));
           if (!Files.exists(configPath)) {
             throw new RuntimeException("Config NotFound");
           }
 
-          T config = Jsons.deserialize(Files.readString(configPath), configSchema.getClassName());
+          final T config = Jsons.deserialize(Files.readString(configPath), configSchema.getClassName());
           configData.put(id, config);
-        } catch (RuntimeException e) {
+        } catch (final RuntimeException e) {
           throw new IOException(e);
         }
       }
@@ -249,13 +251,13 @@ public class ConfigDumpImporter {
     }
   }
 
-  private <T> Stream<T> streamWithAdditionalOperation(List<String> sourceDefinitionsToMigrate,
-                                                      List<String> destinationDefinitionsToMigrate,
-                                                      boolean[] sourceProcessed,
-                                                      boolean[] destinationProcessed,
-                                                      ConfigSchema configSchema,
+  private <T> Stream<T> streamWithAdditionalOperation(final List<String> sourceDefinitionsToMigrate,
+                                                      final List<String> destinationDefinitionsToMigrate,
+                                                      final boolean[] sourceProcessed,
+                                                      final boolean[] destinationProcessed,
+                                                      final ConfigSchema configSchema,
                                                       Stream<T> configs,
-                                                      Map<ConfigSchema, Map<String, T>> latestSeeds) {
+                                                      final Map<ConfigSchema, Map<String, T>> latestSeeds) {
     if (configSchema == ConfigSchema.SOURCE_CONNECTION) {
       sourceProcessed[0] = true;
       configs = configs.peek(config -> sourceDefinitionsToMigrate.add(((SourceConnection) config).getSourceDefinitionId().toString()));
@@ -275,11 +277,11 @@ public class ConfigDumpImporter {
    * by user, it will continue to be at the same version, otherwise it will be migrated to the latest
    * version
    */
-  private <T> Stream<T> getDefinitionStream(List<String> definitionsToMigrate,
-                                            boolean definitionsPopulated,
-                                            ConfigSchema configSchema,
-                                            Stream<T> configs,
-                                            Map<ConfigSchema, Map<String, T>> latestSeeds) {
+  private <T> Stream<T> getDefinitionStream(final List<String> definitionsToMigrate,
+                                            final boolean definitionsPopulated,
+                                            final ConfigSchema configSchema,
+                                            final Stream<T> configs,
+                                            final Map<ConfigSchema, Map<String, T>> latestSeeds) {
     if (!definitionsPopulated) {
       throw new RuntimeException("Trying to process " + configSchema + " without populating the definitions to migrate");
     }
@@ -303,7 +305,7 @@ public class ConfigDumpImporter {
             try {
               validateJson(config, schemaType);
               return config;
-            } catch (JsonValidationException e) {
+            } catch (final JsonValidationException e) {
               throw new RuntimeException(e);
             }
           });
@@ -315,7 +317,7 @@ public class ConfigDumpImporter {
   }
 
   private <T> void validateJson(final T config, final ConfigSchema configType) throws JsonValidationException {
-    JsonNode schema = JsonSchemaValidator.getSchema(configType.getConfigSchemaFile());
+    final JsonNode schema = JsonSchemaValidator.getSchema(configType.getConfigSchemaFile());
     jsonSchemaValidator.ensure(schema, Jsons.jsonNode(config));
   }
 
@@ -328,7 +330,7 @@ public class ConfigDumpImporter {
   public void importDatabaseFromArchive(final Path storageRoot, final String airbyteVersion) throws IOException {
     try {
       final Map<JobsDatabaseSchema, Stream<JsonNode>> data = new HashMap<>();
-      for (JobsDatabaseSchema tableType : JobsDatabaseSchema.values()) {
+      for (final JobsDatabaseSchema tableType : JobsDatabaseSchema.values()) {
         final Path tablePath = buildTablePath(storageRoot, tableType.name());
         Stream<JsonNode> tableStream = readTableFromArchive(tableType, tablePath);
 
@@ -340,7 +342,7 @@ public class ConfigDumpImporter {
       }
       postgresPersistence.importDatabase(airbyteVersion, data);
       LOGGER.info("Successful upgrade of airbyte postgres database from archive");
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.warn("Postgres database version upgrade failed, reverting to state previous to migration.");
       throw e;
     }
@@ -357,8 +359,8 @@ public class ConfigDumpImporter {
    * @return modified stream with old deployment id removed and correct deployment id inserted.
    * @throws IOException - you never know when you IO.
    */
-  static Stream<JsonNode> replaceDeploymentMetadata(JobPersistence postgresPersistence,
-                                                    Stream<JsonNode> metadataTableStream)
+  static Stream<JsonNode> replaceDeploymentMetadata(final JobPersistence postgresPersistence,
+                                                    final Stream<JsonNode> metadataTableStream)
       throws IOException {
     // filter out the deployment record from the import data, if it exists.
     Stream<JsonNode> stream = metadataTableStream
@@ -391,7 +393,7 @@ public class ConfigDumpImporter {
           .peek(r -> {
             try {
               jsonSchemaValidator.ensure(schema, r);
-            } catch (JsonValidationException e) {
+            } catch (final JsonValidationException e) {
               throw new IllegalArgumentException(
                   "Archived Data Schema does not match current Airbyte Data Schemas", e);
             }

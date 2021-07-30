@@ -49,10 +49,10 @@ public class Jsons {
   private static final ObjectMapper OBJECT_MAPPER = MoreMappers.initMapper();
   private static final ObjectWriter OBJECT_WRITER = OBJECT_MAPPER.writer(new JsonPrettyPrinter());
 
-  public static <T> String serialize(T object) {
+  public static <T> String serialize(final T object) {
     try {
       return OBJECT_MAPPER.writeValueAsString(object);
-    } catch (JsonProcessingException e) {
+    } catch (final JsonProcessingException e) {
       throw new RuntimeException(e);
     }
   }
@@ -60,7 +60,7 @@ public class Jsons {
   public static <T> T deserialize(final String jsonString, final Class<T> klass) {
     try {
       return OBJECT_MAPPER.readValue(jsonString, klass);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
@@ -68,7 +68,7 @@ public class Jsons {
   public static JsonNode deserialize(final String jsonString) {
     try {
       return OBJECT_MAPPER.readTree(jsonString);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
@@ -76,7 +76,7 @@ public class Jsons {
   public static <T> Optional<T> tryDeserialize(final String jsonString, final Class<T> klass) {
     try {
       return Optional.of(OBJECT_MAPPER.readValue(jsonString, klass));
-    } catch (IOException e) {
+    } catch (final IOException e) {
       return Optional.empty();
     }
   }
@@ -84,7 +84,7 @@ public class Jsons {
   public static Optional<JsonNode> tryDeserialize(final String jsonString) {
     try {
       return Optional.of(OBJECT_MAPPER.readTree(jsonString));
-    } catch (IOException e) {
+    } catch (final IOException e) {
       return Optional.empty();
     }
   }
@@ -108,7 +108,7 @@ public class Jsons {
   public static <T> Optional<T> tryObject(final JsonNode jsonNode, final Class<T> klass) {
     try {
       return Optional.of(OBJECT_MAPPER.convertValue(jsonNode, klass));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       return Optional.empty();
     }
   }
@@ -116,7 +116,7 @@ public class Jsons {
   public static <T> Optional<T> tryObject(final JsonNode jsonNode, final TypeReference<T> typeReference) {
     try {
       return Optional.of(OBJECT_MAPPER.convertValue(jsonNode, typeReference));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       return Optional.empty();
     }
   }
@@ -126,11 +126,11 @@ public class Jsons {
     return (T) deserialize(serialize(object), object.getClass());
   }
 
-  public static byte[] toBytes(JsonNode jsonNode) {
+  public static byte[] toBytes(final JsonNode jsonNode) {
     return serialize(jsonNode).getBytes(Charsets.UTF_8);
   }
 
-  public static Set<String> keys(JsonNode jsonNode) {
+  public static Set<String> keys(final JsonNode jsonNode) {
     if (jsonNode.isObject()) {
       return Jsons.object(jsonNode, new TypeReference<Map<String, Object>>() {}).keySet();
     } else {
@@ -138,14 +138,14 @@ public class Jsons {
     }
   }
 
-  public static List<JsonNode> children(JsonNode jsonNode) {
+  public static List<JsonNode> children(final JsonNode jsonNode) {
     return MoreStreams.toStream(jsonNode.elements()).collect(Collectors.toList());
   }
 
-  public static String toPrettyString(JsonNode jsonNode) {
+  public static String toPrettyString(final JsonNode jsonNode) {
     try {
       return OBJECT_WRITER.writeValueAsString(jsonNode) + "\n";
-    } catch (JsonProcessingException e) {
+    } catch (final JsonProcessingException e) {
       throw new RuntimeException(e);
     }
   }
@@ -165,7 +165,7 @@ public class Jsons {
 
     // override the method that inserts the extra space.
     @Override
-    public DefaultPrettyPrinter withSeparators(Separators separators) {
+    public DefaultPrettyPrinter withSeparators(final Separators separators) {
       _separators = separators;
       _objectFieldValueSeparatorWithSpaces = separators.getObjectFieldValueSeparator() + " ";
       return this;

@@ -35,8 +35,8 @@ import net.sourceforge.argparse4j.inf.Namespace;
  */
 public class TestPythonSourceMain {
 
-  public static void main(String[] args) {
-    ArgumentParser parser = ArgumentParsers.newFor(TestPythonSourceMain.class.getName()).build()
+  public static void main(final String[] args) {
+    final ArgumentParser parser = ArgumentParsers.newFor(TestPythonSourceMain.class.getName()).build()
         .defaultHelp(true)
         .description("Run standard source tests");
 
@@ -49,7 +49,7 @@ public class TestPythonSourceMain {
     Namespace ns = null;
     try {
       ns = parser.parseArgs(args);
-    } catch (ArgumentParserException e) {
+    } catch (final ArgumentParserException e) {
       parser.handleError(e);
       System.exit(1);
     }

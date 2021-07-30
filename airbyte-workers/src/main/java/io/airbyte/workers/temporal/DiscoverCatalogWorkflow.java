@@ -64,9 +64,9 @@ public interface DiscoverCatalogWorkflow {
     private final DiscoverCatalogActivity activity = Workflow.newActivityStub(DiscoverCatalogActivity.class, options);
 
     @Override
-    public AirbyteCatalog run(JobRunConfig jobRunConfig,
-                              IntegrationLauncherConfig launcherConfig,
-                              StandardDiscoverCatalogInput config) {
+    public AirbyteCatalog run(final JobRunConfig jobRunConfig,
+                              final IntegrationLauncherConfig launcherConfig,
+                              final StandardDiscoverCatalogInput config) {
       return activity.run(jobRunConfig, launcherConfig, config);
     }
 
@@ -87,14 +87,14 @@ public interface DiscoverCatalogWorkflow {
     private final ProcessFactory processFactory;
     private final Path workspaceRoot;
 
-    public DiscoverCatalogActivityImpl(ProcessFactory processFactory, Path workspaceRoot) {
+    public DiscoverCatalogActivityImpl(final ProcessFactory processFactory, final Path workspaceRoot) {
       this.processFactory = processFactory;
       this.workspaceRoot = workspaceRoot;
     }
 
-    public AirbyteCatalog run(JobRunConfig jobRunConfig,
-                              IntegrationLauncherConfig launcherConfig,
-                              StandardDiscoverCatalogInput config) {
+    public AirbyteCatalog run(final JobRunConfig jobRunConfig,
+                              final IntegrationLauncherConfig launcherConfig,
+                              final StandardDiscoverCatalogInput config) {
       final Supplier<StandardDiscoverCatalogInput> inputSupplier = () -> config;
 
       final TemporalAttemptExecution<StandardDiscoverCatalogInput, AirbyteCatalog> temporalAttemptExecution = new TemporalAttemptExecution<>(
@@ -107,7 +107,7 @@ public interface DiscoverCatalogWorkflow {
       return temporalAttemptExecution.get();
     }
 
-    private CheckedSupplier<Worker<StandardDiscoverCatalogInput, AirbyteCatalog>, Exception> getWorkerFactory(IntegrationLauncherConfig launcherConfig) {
+    private CheckedSupplier<Worker<StandardDiscoverCatalogInput, AirbyteCatalog>, Exception> getWorkerFactory(final IntegrationLauncherConfig launcherConfig) {
       return () -> {
         final IntegrationLauncher integrationLauncher =
             new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(),

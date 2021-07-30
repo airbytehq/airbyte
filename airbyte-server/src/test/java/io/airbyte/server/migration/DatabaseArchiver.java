@@ -114,7 +114,7 @@ public class DatabaseArchiver {
    */
   public void importDatabaseFromArchive(final Path storageRoot, final String airbyteVersion) throws IOException {
     final Map<JobsDatabaseSchema, Stream<JsonNode>> data = new HashMap<>();
-    for (JobsDatabaseSchema tableType : JobsDatabaseSchema.values()) {
+    for (final JobsDatabaseSchema tableType : JobsDatabaseSchema.values()) {
       final Path tablePath = buildTablePath(storageRoot, tableType.name());
       data.put(tableType, readTableFromArchive(tableType, tablePath));
     }
@@ -129,7 +129,7 @@ public class DatabaseArchiver {
           .peek(r -> {
             try {
               jsonSchemaValidator.ensure(schema, r);
-            } catch (JsonValidationException e) {
+            } catch (final JsonValidationException e) {
               throw new IllegalArgumentException("Archived Data Schema does not match current Airbyte Data Schemas", e);
             }
           });

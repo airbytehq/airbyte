@@ -40,7 +40,7 @@ class SnowflakeSqlOperations extends DefaultSqlOperations implements SqlOperatio
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
 
   @Override
-  public void createTableIfNotExists(JdbcDatabase database, String schemaName, String tableName) throws SQLException {
+  public void createTableIfNotExists(final JdbcDatabase database, final String schemaName, final String tableName) throws SQLException {
     final String createTableQuery = String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s VARCHAR PRIMARY KEY,\n"
@@ -52,7 +52,7 @@ class SnowflakeSqlOperations extends DefaultSqlOperations implements SqlOperatio
   }
 
   @Override
-  public void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tableName) throws SQLException {
+  public void insertRecords(final JdbcDatabase database, final List<AirbyteRecordMessage> records, final String schemaName, final String tableName) throws SQLException {
     LOGGER.info("actual size of batch: {}", records.size());
 
     // snowflake query syntax:

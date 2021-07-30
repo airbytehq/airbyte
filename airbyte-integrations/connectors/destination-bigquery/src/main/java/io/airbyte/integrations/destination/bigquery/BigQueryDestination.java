@@ -90,13 +90,13 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
+  public AirbyteConnectionStatus check(final JsonNode config) {
     try {
       final String datasetId = config.get(CONFIG_DATASET_ID).asText();
       final String datasetLocation = getDatasetLocation(config);
       final BigQuery bigquery = getBigQuery(config);
       createSchemaTable(bigquery, datasetId, datasetLocation);
-      QueryJobConfiguration queryConfig = QueryJobConfiguration
+      final QueryJobConfiguration queryConfig = QueryJobConfiguration
           .newBuilder(String.format("SELECT * FROM %s.INFORMATION_SCHEMA.TABLES LIMIT 1;", datasetId))
           .setUseLegacySql(false)
           .build();
@@ -107,7 +107,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       } else {
         return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(result.getRight());
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.info("Check failed.", e);
       return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage() != null ? e.getMessage() : e.toString());
     }
@@ -117,7 +117,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return namingResolver;
   }
 
-  private static String getDatasetLocation(JsonNode config) {
+  private static String getDatasetLocation(final JsonNode config) {
     if (config.has(CONFIG_DATASET_LOCATION)) {
       return config.get(CONFIG_DATASET_LOCATION).asText();
     } else {
@@ -125,7 +125,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
-  private void createSchemaTable(BigQuery bigquery, String datasetId, String datasetLocation) {
+  private void createSchemaTable(final BigQuery bigquery, final String datasetId, final String datasetLocation) {
     final Dataset dataset = bigquery.getDataset(datasetId);
     if (dataset == null || !dataset.exists()) {
       final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
@@ -133,11 +133,11 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
-  private BigQuery getBigQuery(JsonNode config) {
+  private BigQuery getBigQuery(final JsonNode config) {
     final String projectId = config.get(CONFIG_PROJECT_ID).asText();
 
     try {
-      BigQueryOptions.Builder bigQueryBuilder = BigQueryOptions.newBuilder();
+      final BigQueryOptions.Builder bigQueryBuilder = BigQueryOptions.newBuilder();
       ServiceAccountCredentials credentials = null;
       if (isUsingJsonCredentials(config)) {
         // handle the credentials json being passed as a json object or a json object already serialized as
@@ -152,12 +152,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .setCredentials(!isNull(credentials) ? credentials : ServiceAccountCredentials.getApplicationDefault())
           .build()
           .getService();
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public static boolean isUsingJsonCredentials(JsonNode config) {
+  public static boolean isUsingJsonCredentials(final JsonNode config) {
     return config.has(CONFIG_CREDS) && !config.get(CONFIG_CREDS).asText().isEmpty();
   }
 
@@ -184,12 +184,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
    * @return consumer that writes singer messages to the database.
    */
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector) {
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
     final BigQuery bigquery = getBigQuery(config);
-    Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs = new HashMap<>();
-    Set<String> existingSchemas = new HashSet<>();
+    final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs = new HashMap<>();
+    final Set<String> existingSchemas = new HashSet<>();
 
     // create tmp tables if not exist
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
@@ -225,22 +225,22 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return getRecordConsumer(bigquery, writeConfigs, catalog, outputRecordCollector);
   }
 
-  protected String getTargetTableName(String streamName) {
+  protected String getTargetTableName(final String streamName) {
     return namingResolver.getRawTableName(streamName);
   }
 
-  protected AirbyteMessageConsumer getRecordConsumer(BigQuery bigquery,
-                                                     Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
-                                                     ConfiguredAirbyteCatalog catalog,
-                                                     Consumer<AirbyteMessage> outputRecordCollector) {
+  protected AirbyteMessageConsumer getRecordConsumer(final BigQuery bigquery,
+                                                     final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
+                                                     final ConfiguredAirbyteCatalog catalog,
+                                                     final Consumer<AirbyteMessage> outputRecordCollector) {
     return new BigQueryRecordConsumer(bigquery, writeConfigs, catalog, outputRecordCollector);
   }
 
-  protected Schema getBigQuerySchema(JsonNode jsonSchema) {
+  protected Schema getBigQuerySchema(final JsonNode jsonSchema) {
     return SCHEMA;
   }
 
-  private static String getSchema(JsonNode config, ConfiguredAirbyteStream stream) {
+  private static String getSchema(final JsonNode config, final ConfiguredAirbyteStream stream) {
     final String defaultSchema = config.get(CONFIG_DATASET_ID).asText();
     final String srcNamespace = stream.getStream().getNamespace();
     if (srcNamespace == null) {
@@ -249,12 +249,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return srcNamespace;
   }
 
-  private void createSchemaAndTableIfNeeded(BigQuery bigquery,
-                                            Set<String> existingSchemas,
-                                            String schemaName,
-                                            String tmpTableName,
-                                            String datasetLocation,
-                                            JsonNode jsonSchema) {
+  private void createSchemaAndTableIfNeeded(final BigQuery bigquery,
+                                            final Set<String> existingSchemas,
+                                            final String schemaName,
+                                            final String tmpTableName,
+                                            final String datasetLocation,
+                                            final JsonNode jsonSchema) {
     if (!existingSchemas.contains(schemaName)) {
       createSchemaTable(bigquery, schemaName, datasetLocation);
       existingSchemas.add(schemaName);
@@ -263,7 +263,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     BigQueryUtils.createTable(bigquery, schemaName, tmpTableName, schema);
   }
 
-  private static WriteDisposition getWriteDisposition(DestinationSyncMode syncMode) {
+  private static WriteDisposition getWriteDisposition(final DestinationSyncMode syncMode) {
     if (syncMode == null) {
       throw new IllegalStateException("Undefined destination sync mode");
     }
@@ -278,7 +278,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Destination destination = new BigQueryDestination();
     LOGGER.info("starting destination: {}", BigQueryDestination.class);
     new IntegrationRunner(destination).run(args);

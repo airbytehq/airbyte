@@ -49,10 +49,10 @@ public class RunMigration implements Runnable, AutoCloseable {
   private final ConfigDumpImporter configDumpImporter;
   private final List<File> filesToBeCleanedUp = new ArrayList<>();
 
-  public RunMigration(JobPersistence jobPersistence,
-                      ConfigRepository configRepository,
-                      String targetVersion,
-                      Path seedPath) {
+  public RunMigration(final JobPersistence jobPersistence,
+                      final ConfigRepository configRepository,
+                      final String targetVersion,
+                      final Path seedPath) {
     this.targetVersion = targetVersion;
     this.seedPath = seedPath;
     this.configDumpExporter = new ConfigDumpExporter(configRepository, jobPersistence);
@@ -63,7 +63,7 @@ public class RunMigration implements Runnable, AutoCloseable {
   public void run() {
     try {
       // Export data
-      File exportData = configDumpExporter.dump();
+      final File exportData = configDumpExporter.dump();
       filesToBeCleanedUp.add(exportData);
 
       // Define output target
@@ -73,23 +73,23 @@ public class RunMigration implements Runnable, AutoCloseable {
       filesToBeCleanedUp.add(tempFolder.toFile());
 
       // Run Migration
-      MigrateConfig migrateConfig = new MigrateConfig(exportData.toPath(), output.toPath(), targetVersion);
+      final MigrateConfig migrateConfig = new MigrateConfig(exportData.toPath(), output.toPath(), targetVersion);
       MigrationRunner.run(migrateConfig);
 
       // Import data
-      ImportRead importRead = configDumpImporter.importDataWithSeed(targetVersion, output, seedPath);
+      final ImportRead importRead = configDumpImporter.importDataWithSeed(targetVersion, output, seedPath);
       if (importRead.getStatus() == StatusEnum.FAILED) {
         throw new RuntimeException("Automatic migration failed : " + importRead.getReason());
       }
 
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException("Automatic migration failed", e);
     }
   }
 
   @Override
   public void close() throws IOException {
-    for (File file : filesToBeCleanedUp) {
+    for (final File file : filesToBeCleanedUp) {
       if (file.exists()) {
         LOGGER.info("Deleting " + file.getName());
         if (file.isDirectory()) {

@@ -116,9 +116,9 @@ class SeedRepositoryTest {
     assertEquals(OBJECT.get(CONFIG_ID).asText() + ".json", Files.list(output).collect(Collectors.toList()).get(0).getFileName().toString());
   }
 
-  private void writeSeedList(JsonNode... seeds) {
+  private void writeSeedList(final JsonNode... seeds) {
     final JsonNode seedList = Jsons.jsonNode(new ArrayList<>());
-    for (JsonNode seed : seeds) {
+    for (final JsonNode seed : seeds) {
       ((ArrayNode) seedList).add(seed);
     }
     IOs.writeFile(input, Yamls.serialize(seedList));

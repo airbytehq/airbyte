@@ -46,12 +46,12 @@ public class JobHistoryHandler {
   public static final int DEFAULT_PAGE_SIZE = 200;
   private final JobPersistence jobPersistence;
 
-  public JobHistoryHandler(JobPersistence jobPersistence) {
+  public JobHistoryHandler(final JobPersistence jobPersistence) {
     this.jobPersistence = jobPersistence;
   }
 
   @SuppressWarnings("UnstableApiUsage")
-  public JobReadList listJobsFor(JobListRequestBody request) throws IOException {
+  public JobReadList listJobsFor(final JobListRequestBody request) throws IOException {
     Preconditions.checkNotNull(request.getConfigTypes(), "configType cannot be null.");
     Preconditions.checkState(!request.getConfigTypes().isEmpty(), "Must include at least one configType.");
 
@@ -72,7 +72,7 @@ public class JobHistoryHandler {
     return new JobReadList().jobs(jobReads);
   }
 
-  public JobInfoRead getJobInfo(JobIdRequestBody jobIdRequestBody) throws IOException {
+  public JobInfoRead getJobInfo(final JobIdRequestBody jobIdRequestBody) throws IOException {
     final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
 
     return JobConverter.getJobInfoRead(job);

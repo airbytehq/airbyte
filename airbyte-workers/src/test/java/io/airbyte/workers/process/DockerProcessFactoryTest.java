@@ -72,7 +72,7 @@ class DockerProcessFactoryTest {
    */
   @Test
   public void testImageExists() throws IOException, WorkerException {
-    Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
+    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
 
     final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "");
     assertTrue(processFactory.checkImageExists("busybox"));
@@ -80,7 +80,7 @@ class DockerProcessFactoryTest {
 
   @Test
   public void testImageDoesNotExist() throws IOException, WorkerException {
-    Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
+    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
 
     final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "");
     assertFalse(processFactory.checkImageExists("airbyte/fake:0.1.2"));
@@ -88,8 +88,8 @@ class DockerProcessFactoryTest {
 
   @Test
   public void testFileWriting() throws IOException, WorkerException {
-    Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
-    Path jobRoot = workspaceRoot.resolve("job");
+    final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
+    final Path jobRoot = workspaceRoot.resolve("job");
 
     final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "");
     processFactory.create("job_id", 0, jobRoot, "busybox", false, ImmutableMap.of("config.json", "{\"data\": 2}"), "echo hi",

@@ -71,10 +71,10 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
   private AirbyteMessage lastStateMessage = null;
 
-  public BigQueryRecordConsumer(BigQuery bigquery,
-                                Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
-                                ConfiguredAirbyteCatalog catalog,
-                                Consumer<AirbyteMessage> outputRecordCollector) {
+  public BigQueryRecordConsumer(final BigQuery bigquery,
+                                final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
+                                final ConfiguredAirbyteCatalog catalog,
+                                final Consumer<AirbyteMessage> outputRecordCollector) {
     this.bigquery = bigquery;
     this.writeConfigs = writeConfigs;
     this.catalog = catalog;
@@ -87,14 +87,14 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   @Override
-  public void acceptTracked(AirbyteMessage message) {
+  public void acceptTracked(final AirbyteMessage message) {
     if (message.getType() == Type.STATE) {
       lastStateMessage = message;
     } else if (message.getType() == Type.RECORD) {
       final AirbyteRecordMessage recordMessage = message.getRecord();
 
       // ignore other message types.
-      AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
+      final AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
       if (!writeConfigs.containsKey(pair)) {
         throw new IllegalArgumentException(
             String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
@@ -103,7 +103,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       final BigQueryWriteConfig writer = writeConfigs.get(pair);
       try {
         writer.getWriter().write(ByteBuffer.wrap((Jsons.serialize(formatRecord(writer.getSchema(), recordMessage)) + "\n").getBytes(Charsets.UTF_8)));
-      } catch (IOException | RuntimeException e) {
+      } catch (final IOException | RuntimeException e) {
         LOGGER.error("Got an error while writing message:" + e.getMessage());
         LOGGER.error(String.format(
             "Failed to process a message for job: %s, \nStreams numbers: %s, \nSyncMode: %s, \nTableName: %s, \nTmpTableName: %s, \nAirbyteMessage: %s",
@@ -116,10 +116,10 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     }
   }
 
-  protected JsonNode formatRecord(Schema schema, AirbyteRecordMessage recordMessage) {
+  protected JsonNode formatRecord(final Schema schema, final AirbyteRecordMessage recordMessage) {
     // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds then
     // use BQ helpers to string-format correctly.
-    long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
+    final long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
     final String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
     final JsonNode formattedData = StandardNameTransformer.formatJsonPath(recordMessage.getData());
     return Jsons.jsonNode(ImmutableMap.of(
@@ -129,14 +129,14 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   @Override
-  public void close(boolean hasFailed) {
+  public void close(final boolean hasFailed) {
     LOGGER.info("Started closing all connections");
     try {
       writeConfigs.values().parallelStream().forEach(bigQueryWriteConfig -> Exceptions.toRuntime(() -> {
-        TableDataWriteChannel writer = bigQueryWriteConfig.getWriter();
+        final TableDataWriteChannel writer = bigQueryWriteConfig.getWriter();
         try {
           writer.close();
-        } catch (IOException | RuntimeException e) {
+        } catch (final IOException | RuntimeException e) {
           LOGGER.error(String.format("Failed to process a message for job: %s, \nStreams numbers: %s",
               writer.getJob(), catalog.getStreams().size()));
           printHeapMemoryConsumption();
@@ -149,7 +149,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
         if (bigQueryWriteConfig.getWriter().getJob() != null) {
           try {
             bigQueryWriteConfig.getWriter().getJob().waitFor();
-          } catch (RuntimeException e) {
+          } catch (final RuntimeException e) {
             LOGGER.error(
                 String.format("Failed to process a message for job: %s, \nStreams numbers: %s, \nSyncMode: %s, \nTableName: %s, \nTmpTableName: %s",
                     bigQueryWriteConfig.getWriter().getJob(), catalog.getStreams().size(), bigQueryWriteConfig.getSyncMode(),
@@ -181,10 +181,10 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
   // https://cloud.google.com/bigquery/docs/managing-tables#copying_a_single_source_table
   private static void copyTable(
-                                BigQuery bigquery,
-                                TableId sourceTableId,
-                                TableId destinationTableId,
-                                WriteDisposition syncMode) {
+                                final BigQuery bigquery,
+                                final TableId sourceTableId,
+                                final TableId destinationTableId,
+                                final WriteDisposition syncMode) {
 
     final CopyJobConfiguration configuration = CopyJobConfiguration.newBuilder(destinationTableId, sourceTableId)
         .setCreateDisposition(CreateDisposition.CREATE_IF_NEEDED)
@@ -201,10 +201,10 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   private void printHeapMemoryConsumption() {
-    int mb = 1024 * 1024;
-    MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
-    long xmx = memoryBean.getHeapMemoryUsage().getMax() / mb;
-    long xms = memoryBean.getHeapMemoryUsage().getInit() / mb;
+    final int mb = 1024 * 1024;
+    final MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+    final long xmx = memoryBean.getHeapMemoryUsage().getMax() / mb;
+    final long xms = memoryBean.getHeapMemoryUsage().getInit() / mb;
     LOGGER.info("Initial Memory (xms) mb = " + xms);
     LOGGER.info("Max Memory (xmx) : mb + " + xmx);
   }

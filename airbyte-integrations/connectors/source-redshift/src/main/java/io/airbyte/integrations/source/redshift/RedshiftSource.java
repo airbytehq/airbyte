@@ -46,7 +46,7 @@ public class RedshiftSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public JsonNode toDatabaseConfig(JsonNode redshiftConfig) {
+  public JsonNode toDatabaseConfig(final JsonNode redshiftConfig) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("username", redshiftConfig.get("username").asText())
         .put("password", redshiftConfig.get("password").asText())
@@ -62,7 +62,7 @@ public class RedshiftSource extends AbstractJdbcSource implements Source {
     return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Source source = new RedshiftSource();
     LOGGER.info("starting source: {}", RedshiftSource.class);
     new IntegrationRunner(source).run(args);

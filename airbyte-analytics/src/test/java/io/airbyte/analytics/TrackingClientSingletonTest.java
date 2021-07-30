@@ -82,7 +82,7 @@ class TrackingClientSingletonTest {
 
   @Test
   void testGet() {
-    TrackingClient client = mock(TrackingClient.class);
+    final TrackingClient client = mock(TrackingClient.class);
     TrackingClientSingleton.initialize(client);
     assertEquals(client, TrackingClientSingleton.get());
   }

@@ -46,7 +46,7 @@ public class OracleSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public JsonNode toDatabaseConfig(JsonNode config) {
+  public JsonNode toDatabaseConfig(final JsonNode config) {
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
         .put("jdbc_url", String.format("jdbc:oracle:thin:@//%s:%s/%s",
@@ -67,7 +67,7 @@ public class OracleSource extends AbstractJdbcSource implements Source {
     return Set.of("APEX_040000", "CTXSYS", "SYSTEM", "FLOWS_FILES", "HR", "MDSYS", "OUTLN", "SYS", "XDB");
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Source source = new OracleSource();
     LOGGER.info("starting source: {}", OracleSource.class);
     new IntegrationRunner(source).run(args);

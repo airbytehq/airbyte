@@ -44,11 +44,11 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination implement
   }
 
   @Override
-  public JsonNode toJdbcConfig(JsonNode redshiftConfig) {
+  public JsonNode toJdbcConfig(final JsonNode redshiftConfig) {
     return getJdbcConfig(redshiftConfig);
   }
 
-  public static JsonNode getJdbcConfig(JsonNode redshiftConfig) {
+  public static JsonNode getJdbcConfig(final JsonNode redshiftConfig) {
     final String schema = Optional.ofNullable(redshiftConfig.get("schema")).map(JsonNode::asText).orElse("public");
 
     return Jsons.jsonNode(ImmutableMap.builder()

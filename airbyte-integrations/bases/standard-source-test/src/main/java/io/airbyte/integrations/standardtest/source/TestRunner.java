@@ -36,7 +36,7 @@ import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 
 public class TestRunner {
 
-  public static void runTestClass(Class<?> testClass) {
+  public static void runTestClass(final Class<?> testClass) {
     final LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
         .selectors(selectClass(testClass))
         .build();

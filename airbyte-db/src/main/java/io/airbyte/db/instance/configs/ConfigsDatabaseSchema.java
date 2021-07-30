@@ -42,7 +42,7 @@ public enum ConfigsDatabaseSchema implements TableSchema {
 
   private final String schemaFilename;
 
-  ConfigsDatabaseSchema(String schemaFilename) {
+  ConfigsDatabaseSchema(final String schemaFilename) {
     this.schemaFilename = schemaFilename;
   }
 
@@ -53,7 +53,7 @@ public enum ConfigsDatabaseSchema implements TableSchema {
 
   @Override
   public JsonNode getTableDefinition() {
-    File schemaFile = SCHEMAS_ROOT.resolve(schemaFilename).toFile();
+    final File schemaFile = SCHEMAS_ROOT.resolve(schemaFilename).toFile();
     return JsonSchemaValidator.getSchema(schemaFile);
   }
 

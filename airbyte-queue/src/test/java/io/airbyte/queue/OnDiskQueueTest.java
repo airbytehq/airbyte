@@ -113,7 +113,7 @@ class OnDiskQueueTest {
   }
 
   @SuppressWarnings("SameParameterValue")
-  private static byte[] toBytes(String string) {
+  private static byte[] toBytes(final String string) {
     return string.getBytes(Charsets.UTF_8);
   }
 

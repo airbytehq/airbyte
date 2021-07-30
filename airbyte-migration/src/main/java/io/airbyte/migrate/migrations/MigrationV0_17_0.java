@@ -109,7 +109,7 @@ public class MigrationV0_17_0 extends BaseMigration implements Migration {
 
   private final Migration previousMigration;
 
-  public MigrationV0_17_0(Migration previousMigration) {
+  public MigrationV0_17_0(final Migration previousMigration) {
     super(previousMigration);
     this.previousMigration = previousMigration;
   }
@@ -125,7 +125,7 @@ public class MigrationV0_17_0 extends BaseMigration implements Migration {
   }
 
   @Override
-  public void migrate(Map<ResourceId, Stream<JsonNode>> inputData, Map<ResourceId, Consumer<JsonNode>> outputData) {
+  public void migrate(final Map<ResourceId, Stream<JsonNode>> inputData, final Map<ResourceId, Consumer<JsonNode>> outputData) {
     for (final Map.Entry<ResourceId, Stream<JsonNode>> entry : inputData.entrySet()) {
       final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
 
@@ -156,7 +156,7 @@ public class MigrationV0_17_0 extends BaseMigration implements Migration {
           LOGGER.debug(String.format("Bump connector %s version from %s to %s", dockerRepository, dockerImageTag, requiredDockerTag));
           return requiredDockerTag;
         }
-      } catch (IllegalArgumentException e) {
+      } catch (final IllegalArgumentException e) {
         LOGGER.error(String.format("Failed to recognize connector version %s", node), e);
       }
     }

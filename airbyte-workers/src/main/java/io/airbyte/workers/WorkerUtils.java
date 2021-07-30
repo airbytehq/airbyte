@@ -62,7 +62,7 @@ public class WorkerUtils {
       if (process.isAlive()) {
         process.waitFor(timeout, timeUnit);
       }
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
       LOGGER.error("Exception while while waiting for process to finish", e);
     }
 
@@ -89,9 +89,9 @@ public class WorkerUtils {
    */
   public static void gentleCloseWithHeartbeat(final Process process,
                                               final HeartbeatMonitor heartbeatMonitor,
-                                              Duration gracefulShutdownDuration,
-                                              Duration checkHeartbeatDuration,
-                                              Duration forcedShutdownDuration) {
+                                              final Duration gracefulShutdownDuration,
+                                              final Duration checkHeartbeatDuration,
+                                              final Duration forcedShutdownDuration) {
     gentleCloseWithHeartbeat(
         process,
         heartbeatMonitor,
@@ -115,7 +115,7 @@ public class WorkerUtils {
         }
 
         process.waitFor(checkHeartbeatDuration.toMillis(), TimeUnit.MILLISECONDS);
-      } catch (InterruptedException e) {
+      } catch (final InterruptedException e) {
         LOGGER.error("Exception while waiting for process to finish", e);
       }
     }
@@ -127,7 +127,7 @@ public class WorkerUtils {
         }
 
         process.waitFor(gracefulShutdownDuration.toMillis(), TimeUnit.MILLISECONDS);
-      } catch (InterruptedException e) {
+      } catch (final InterruptedException e) {
         LOGGER.error("Exception during grace period for process to finish. This can happen when cancelling jobs.");
       }
     }
@@ -143,12 +143,12 @@ public class WorkerUtils {
   }
 
   @VisibleForTesting
-  static void forceShutdown(Process process, Duration lastChanceDuration) {
+  static void forceShutdown(final Process process, final Duration lastChanceDuration) {
     LOGGER.warn("Process is taking too long to finish. Killing it");
     process.destroy();
     try {
       process.waitFor(lastChanceDuration.toMillis(), TimeUnit.MILLISECONDS);
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
       LOGGER.error("Exception while while killing the process", e);
     }
     if (process.isAlive()) {
@@ -156,7 +156,7 @@ public class WorkerUtils {
     }
   }
 
-  public static void closeProcess(Process process, int duration, TimeUnit timeUnit) {
+  public static void closeProcess(final Process process, final int duration, final TimeUnit timeUnit) {
     if (process == null) {
       return;
     }
@@ -166,20 +166,20 @@ public class WorkerUtils {
       if (process.isAlive()) {
         process.destroyForcibly();
       }
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
       LOGGER.error("Exception when closing process.", e);
     }
   }
 
-  public static void wait(Process process) {
+  public static void wait(final Process process) {
     try {
       process.waitFor();
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
       LOGGER.error("Exception while while waiting for process to finish", e);
     }
   }
 
-  public static void cancelProcess(Process process) {
+  public static void cancelProcess(final Process process) {
     closeProcess(process, 10, TimeUnit.SECONDS);
   }
 
@@ -187,7 +187,7 @@ public class WorkerUtils {
    * Translates a StandardSyncInput into a WorkerSourceConfig. WorkerSourceConfig is a subset of
    * StandardSyncInput.
    */
-  public static WorkerSourceConfig syncToWorkerSourceConfig(StandardSyncInput sync) {
+  public static WorkerSourceConfig syncToWorkerSourceConfig(final StandardSyncInput sync) {
     return new WorkerSourceConfig()
         .withSourceConnectionConfiguration(sync.getSourceConfiguration())
         .withCatalog(sync.getCatalog())
@@ -198,7 +198,7 @@ public class WorkerUtils {
    * Translates a StandardSyncInput into a WorkerDestinationConfig. WorkerDestinationConfig is a
    * subset of StandardSyncInput.
    */
-  public static WorkerDestinationConfig syncToWorkerDestinationConfig(StandardSyncInput sync) {
+  public static WorkerDestinationConfig syncToWorkerDestinationConfig(final StandardSyncInput sync) {
     return new WorkerDestinationConfig()
         .withDestinationConnectionConfiguration(sync.getDestinationConfiguration())
         .withCatalog(sync.getCatalog())
@@ -207,19 +207,19 @@ public class WorkerUtils {
 
   // todo (cgardens) - there are 2 sources of truth for job path. we need to reduce this down to one,
   // once we are fully on temporal.
-  public static Path getJobRoot(Path workspaceRoot, JobRunConfig jobRunConfig) {
+  public static Path getJobRoot(final Path workspaceRoot, final JobRunConfig jobRunConfig) {
     return getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
   }
 
-  public static Path getLogPath(Path jobRoot) {
+  public static Path getLogPath(final Path jobRoot) {
     return jobRoot.resolve(LogClientSingleton.LOG_FILENAME);
   }
 
-  public static Path getJobRoot(Path workspaceRoot, String jobId, long attemptId) {
+  public static Path getJobRoot(final Path workspaceRoot, final String jobId, final long attemptId) {
     return getJobRoot(workspaceRoot, jobId, Math.toIntExact(attemptId));
   }
 
-  public static Path getJobRoot(Path workspaceRoot, String jobId, int attemptId) {
+  public static Path getJobRoot(final Path workspaceRoot, final String jobId, final int attemptId) {
     return workspaceRoot
         .resolve(String.valueOf(jobId))
         .resolve(String.valueOf(attemptId));

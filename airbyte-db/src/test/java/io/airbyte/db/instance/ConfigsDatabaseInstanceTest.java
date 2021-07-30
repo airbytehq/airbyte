@@ -71,7 +71,7 @@ class ConfigsDatabaseInstanceTest {
   public void setup() throws Exception {
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
 
-    Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(System.currentTimeMillis()));
+    final Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(System.currentTimeMillis()));
     database.transaction(ctx -> ctx.insertInto(AIRBYTE_CONFIGS)
         .set(CONFIG_ID, UUID.randomUUID().toString())
         .set(CONFIG_TYPE, "STANDARD_SOURCE_DEFINITION")
@@ -104,13 +104,13 @@ class ConfigsDatabaseInstanceTest {
     database.query(ctx -> ctx.fetchExists(select().from(AIRBYTE_CONFIGS).where(CONFIG_ID.eq("ID"))));
     database.query(ctx -> ctx.fetchExists(select().from(AIRBYTE_CONFIGS).where(CONFIG_TYPE.eq("TYPE"))));
     database.query(ctx -> ctx.fetchExists(select().from(AIRBYTE_CONFIGS).where(CONFIG_BLOB.eq(JSONB.valueOf("{}")))));
-    Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(System.currentTimeMillis()));
+    final Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(System.currentTimeMillis()));
     database.query(ctx -> ctx.fetchExists(select().from(AIRBYTE_CONFIGS).where(CREATED_AT.eq(timestamp))));
     database.query(ctx -> ctx.fetchExists(select().from(AIRBYTE_CONFIGS).where(UPDATED_AT.eq(timestamp))));
 
     // when the configs database has been initialized, calling getAndInitialize again will not change
     // anything
-    String testSchema = "CREATE TABLE IF NOT EXISTS airbyte_test_configs(id BIGINT PRIMARY KEY);";
+    final String testSchema = "CREATE TABLE IF NOT EXISTS airbyte_test_configs(id BIGINT PRIMARY KEY);";
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl(), testSchema).getAndInitialize();
     // the airbyte_test_configs table does not exist
     assertThrows(DataAccessException.class, () -> database.query(ctx -> ctx.fetchExists(select().from("airbyte_test_configs"))));

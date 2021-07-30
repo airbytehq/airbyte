@@ -76,7 +76,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   }
 
   @Override
-  public void start(WorkerSourceConfig sourceConfig, Path jobRoot) throws Exception {
+  public void start(final WorkerSourceConfig sourceConfig, final Path jobRoot) throws Exception {
     Preconditions.checkState(sourceProcess == null);
 
     sourceProcess = integrationLauncher.read(jobRoot,
@@ -100,7 +100,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
     Preconditions.checkState(sourceProcess != null);
     // As this check is done on every message read, it is important for this operation to be efficient.
     // Short circuit early to avoid checking the underlying process.
-    var isEmpty = !messageIterator.hasNext();
+    final var isEmpty = !messageIterator.hasNext();
     if (!isEmpty) {
       return false;
     }
@@ -131,7 +131,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
         FORCED_SHUTDOWN_DURATION);
 
     if (sourceProcess.isAlive() || sourceProcess.exitValue() != 0) {
-      String message = sourceProcess.isAlive() ? "Source has not terminated " : "Source process exit with code " + sourceProcess.exitValue();
+      final String message = sourceProcess.isAlive() ? "Source has not terminated " : "Source process exit with code " + sourceProcess.exitValue();
       throw new WorkerException(message + ". This warning is normal if the job was cancelled.");
     }
   }

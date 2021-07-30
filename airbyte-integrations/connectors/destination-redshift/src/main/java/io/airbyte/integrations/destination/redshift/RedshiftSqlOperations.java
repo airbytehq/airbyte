@@ -41,7 +41,7 @@ public class RedshiftSqlOperations extends DefaultSqlOperations implements SqlOp
   protected static final int REDSHIFT_VARCHAR_MAX_BYTE_SIZE = 65535;
 
   @Override
-  public String createTableQuery(JdbcDatabase database, String schemaName, String tableName) {
+  public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s VARCHAR PRIMARY KEY,\n"
@@ -52,7 +52,7 @@ public class RedshiftSqlOperations extends DefaultSqlOperations implements SqlOp
   }
 
   @Override
-  public void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tmpTableName) throws SQLException {
+  public void insertRecords(final JdbcDatabase database, final List<AirbyteRecordMessage> records, final String schemaName, final String tmpTableName) throws SQLException {
     LOGGER.info("actual size of batch: {}", records.size());
 
     // query syntax:

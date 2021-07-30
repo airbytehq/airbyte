@@ -48,12 +48,12 @@ public interface ServerFactory {
   class Api implements ServerFactory {
 
     @Override
-    public ServerRunnable create(SchedulerJobClient schedulerJobClient,
-                                 SpecCachingSynchronousSchedulerClient cachingSchedulerClient,
-                                 WorkflowServiceStubs temporalService,
-                                 ConfigRepository configRepository,
-                                 JobPersistence jobPersistence,
-                                 Configs configs) {
+    public ServerRunnable create(final SchedulerJobClient schedulerJobClient,
+                                 final SpecCachingSynchronousSchedulerClient cachingSchedulerClient,
+                                 final WorkflowServiceStubs temporalService,
+                                 final ConfigRepository configRepository,
+                                 final JobPersistence jobPersistence,
+                                 final Configs configs) {
       // set static values for factory
       ConfigurationApiFactory.setSchedulerJobClient(schedulerJobClient);
       ConfigurationApiFactory.setSynchronousSchedulerClient(cachingSchedulerClient);

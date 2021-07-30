@@ -40,7 +40,7 @@ public class AirbyteProtocolPredicate implements Predicate<JsonNode> {
   }
 
   @Override
-  public boolean test(JsonNode s) {
+  public boolean test(final JsonNode s) {
     return jsonSchemaValidator.test(schema, s);
   }
 

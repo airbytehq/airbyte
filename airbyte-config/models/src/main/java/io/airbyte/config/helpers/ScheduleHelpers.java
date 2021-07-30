@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ScheduleHelpers {
 
-  public static Long getSecondsInUnit(Schedule.TimeUnit timeUnitEnum) {
+  public static Long getSecondsInUnit(final Schedule.TimeUnit timeUnitEnum) {
     switch (timeUnitEnum) {
       case MINUTES:
         return TimeUnit.MINUTES.toSeconds(1);
@@ -46,7 +46,7 @@ public class ScheduleHelpers {
     }
   }
 
-  public static Long getIntervalInSecond(Schedule schedule) {
+  public static Long getIntervalInSecond(final Schedule schedule) {
     return getSecondsInUnit(schedule.getTimeUnit()) * schedule.getUnits();
   }
 

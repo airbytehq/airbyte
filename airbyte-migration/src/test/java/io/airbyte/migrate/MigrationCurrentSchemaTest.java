@@ -51,7 +51,7 @@ public class MigrationCurrentSchemaTest {
     assertSameSchemas(currentSchema, lastMigrationSchema);
   }
 
-  private static Map<ResourceId, JsonNode> getSchemaOfLastMigration(ResourceType resourceType) {
+  private static Map<ResourceId, JsonNode> getSchemaOfLastMigration(final ResourceType resourceType) {
     final Migration lastMigration = Migrations.MIGRATIONS.get(Migrations.MIGRATIONS.size() - 1);
     final Map<ResourceId, JsonNode> lastMigrationOutputSchema = lastMigration.getOutputSchema();
 
@@ -74,7 +74,7 @@ public class MigrationCurrentSchemaTest {
     assertSameSchemas(currentSchema, lastMigrationSchema);
   }
 
-  private static void assertSameSchemas(Map<ResourceId, JsonNode> currentSchemas, Map<ResourceId, JsonNode> lastMigrationSchema) {
+  private static void assertSameSchemas(final Map<ResourceId, JsonNode> currentSchemas, final Map<ResourceId, JsonNode> lastMigrationSchema) {
     assertEquals(currentSchemas.size(), lastMigrationSchema.size());
 
     final List<Entry<ResourceId, JsonNode>> lastMigrationOutputSchemaCleanedSorted = lastMigrationSchema.entrySet()
@@ -83,7 +83,7 @@ public class MigrationCurrentSchemaTest {
         .collect(Collectors.toList());
 
     // break out element-wise assertion so it is easier to read any failed tests.
-    for (Map.Entry<ResourceId, JsonNode> lastMigrationEntry : lastMigrationOutputSchemaCleanedSorted) {
+    for (final Map.Entry<ResourceId, JsonNode> lastMigrationEntry : lastMigrationOutputSchemaCleanedSorted) {
       assertEquals(currentSchemas.get(lastMigrationEntry.getKey()), lastMigrationEntry.getValue());
     }
   }

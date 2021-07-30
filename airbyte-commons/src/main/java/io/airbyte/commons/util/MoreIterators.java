@@ -42,7 +42,7 @@ public class MoreIterators {
    * @param <T> type
    * @return iterator with all elements
    */
-  public static <T> Iterator<T> of(T... elements) {
+  public static <T> Iterator<T> of(final T... elements) {
     return Arrays.asList(elements).iterator();
   }
 
@@ -53,7 +53,7 @@ public class MoreIterators {
    * @param <T> type
    * @return list
    */
-  public static <T> List<T> toList(Iterator<T> iterator) {
+  public static <T> List<T> toList(final Iterator<T> iterator) {
     final List<T> list = new ArrayList<>();
     while (iterator.hasNext()) {
       list.add(iterator.next());
@@ -68,7 +68,7 @@ public class MoreIterators {
    * @param <T> type
    * @return set
    */
-  public static <T> Set<T> toSet(Iterator<T> iterator) {
+  public static <T> Set<T> toSet(final Iterator<T> iterator) {
     final Set<T> set = new HashSet<>();
     while (iterator.hasNext()) {
       set.add(iterator.next());
@@ -76,7 +76,7 @@ public class MoreIterators {
     return set;
   }
 
-  public static <T> Iterator<T> singletonIteratorFromSupplier(Supplier<T> supplier) {
+  public static <T> Iterator<T> singletonIteratorFromSupplier(final Supplier<T> supplier) {
     return new AbstractIterator<T>() {
 
       private boolean hasSupplied = false;

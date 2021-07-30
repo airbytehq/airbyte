@@ -96,7 +96,7 @@ class DefaultSynchronousSchedulerClientTest {
     schedulerClient = new DefaultSynchronousSchedulerClient(temporalClient, jobTracker);
   }
 
-  private static JobMetadata createMetadata(boolean succeeded) {
+  private static JobMetadata createMetadata(final boolean succeeded) {
     return new JobMetadata(
         succeeded,
         LOG_PATH);

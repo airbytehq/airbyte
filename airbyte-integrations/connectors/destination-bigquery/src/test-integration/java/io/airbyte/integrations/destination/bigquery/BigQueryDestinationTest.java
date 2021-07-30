@@ -116,7 +116,7 @@ class BigQueryDestinationTest {
   private boolean tornDown = true;
 
   @BeforeEach
-  void setup(TestInfo info) throws IOException {
+  void setup(final TestInfo info) throws IOException {
     if (info.getDisplayName().equals("testSpec()")) {
       return;
     }
@@ -173,7 +173,7 @@ class BigQueryDestinationTest {
   }
 
   @AfterEach
-  void tearDown(TestInfo info) {
+  void tearDown(final TestInfo info) {
     if (info.getDisplayName().equals("testSpec()")) {
       return;
     }
@@ -288,7 +288,7 @@ class BigQueryDestinationTest {
         .map(v -> v.get("TABLE_NAME").getStringValue()).collect(Collectors.toSet());
   }
 
-  private void assertTmpTablesNotPresent(List<String> tableNames) throws InterruptedException {
+  private void assertTmpTablesNotPresent(final List<String> tableNames) throws InterruptedException {
     final Set<String> tmpTableNamePrefixes = tableNames.stream().map(name -> name + "_").collect(Collectors.toSet());
     final Set<String> finalTableNames = tableNames.stream().map(name -> name + "_raw").collect(Collectors.toSet());
     // search for table names that have the tmp table prefix but are not raw tables.
@@ -298,8 +298,8 @@ class BigQueryDestinationTest {
         .noneMatch(tableName -> tmpTableNamePrefixes.stream().anyMatch(tableName::startsWith)));
   }
 
-  private List<JsonNode> retrieveRecords(String tableName) throws Exception {
-    QueryJobConfiguration queryConfig =
+  private List<JsonNode> retrieveRecords(final String tableName) throws Exception {
+    final QueryJobConfiguration queryConfig =
         QueryJobConfiguration.newBuilder(String.format("SELECT * FROM %s.%s;", dataset.getDatasetId().getDataset(), tableName.toLowerCase()))
             .setUseLegacySql(false).build();
 

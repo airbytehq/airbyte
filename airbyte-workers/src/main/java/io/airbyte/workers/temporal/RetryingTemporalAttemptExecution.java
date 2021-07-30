@@ -60,14 +60,14 @@ public class RetryingTemporalAttemptExecution<INPUT, OUTPUT> implements Supplier
   private final Path workspaceRoot;
   private final JobRunConfig jobRunConfig;
 
-  public RetryingTemporalAttemptExecution(Path workspaceRoot,
-                                          JobRunConfig jobRunConfig,
-                                          CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
-                                          Supplier<INPUT> initialInputSupplier,
-                                          CancellationHandler cancellationHandler,
-                                          Predicate<OUTPUT> shouldAttemptAgainPredicate,
-                                          BiFunction<INPUT, OUTPUT, INPUT> computeNextAttemptInputFunction,
-                                          int maxRetriesCount) {
+  public RetryingTemporalAttemptExecution(final Path workspaceRoot,
+                                          final JobRunConfig jobRunConfig,
+                                          final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
+                                          final Supplier<INPUT> initialInputSupplier,
+                                          final CancellationHandler cancellationHandler,
+                                          final Predicate<OUTPUT> shouldAttemptAgainPredicate,
+                                          final BiFunction<INPUT, OUTPUT, INPUT> computeNextAttemptInputFunction,
+                                          final int maxRetriesCount) {
     this(
         workspaceRoot,
         jobRunConfig,
@@ -81,15 +81,15 @@ public class RetryingTemporalAttemptExecution<INPUT, OUTPUT> implements Supplier
   }
 
   @VisibleForTesting
-  RetryingTemporalAttemptExecution(Path workspaceRoot,
-                                   JobRunConfig jobRunConfig,
-                                   CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
-                                   Supplier<INPUT> initialInputSupplier,
-                                   CancellationHandler cancellationHandler,
-                                   Predicate<OUTPUT> shouldAttemptAgainPredicate,
-                                   BiFunction<INPUT, OUTPUT, INPUT> computeNextAttemptInputFunction,
-                                   int maxRetriesCount,
-                                   TemporalAttemptExecutionFactory<INPUT, OUTPUT> temporalAttemptExecutionFactory) {
+  RetryingTemporalAttemptExecution(final Path workspaceRoot,
+                                   final JobRunConfig jobRunConfig,
+                                   final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
+                                   final Supplier<INPUT> initialInputSupplier,
+                                   final CancellationHandler cancellationHandler,
+                                   final Predicate<OUTPUT> shouldAttemptAgainPredicate,
+                                   final BiFunction<INPUT, OUTPUT, INPUT> computeNextAttemptInputFunction,
+                                   final int maxRetriesCount,
+                                   final TemporalAttemptExecutionFactory<INPUT, OUTPUT> temporalAttemptExecutionFactory) {
     this.workspaceRoot = workspaceRoot;
     this.jobRunConfig = jobRunConfig;
     this.workerSupplier = workerSupplier;
@@ -103,9 +103,9 @@ public class RetryingTemporalAttemptExecution<INPUT, OUTPUT> implements Supplier
 
   @Override
   public List<OUTPUT> get() {
-    INPUT input = inputSupplier.get();
+    final INPUT input = inputSupplier.get();
     final AtomicReference<OUTPUT> lastOutput = new AtomicReference<>();
-    List<OUTPUT> outputCollector = new ArrayList<>();
+    final List<OUTPUT> outputCollector = new ArrayList<>();
 
     for (int i = 0; true; i++) {
       if (i >= maxRetriesCount) {
@@ -122,7 +122,8 @@ public class RetryingTemporalAttemptExecution<INPUT, OUTPUT> implements Supplier
 
       LOGGER.info("Starting attempt: {} of {}", i, maxRetriesCount);
 
-      Supplier<INPUT> resolvedInputSupplier = !hasLastOutput ? inputSupplier : () -> computeNextAttemptInputFunction.apply(input, lastOutput.get());
+      final Supplier<INPUT> resolvedInputSupplier =
+          !hasLastOutput ? inputSupplier : () -> computeNextAttemptInputFunction.apply(input, lastOutput.get());
 
       final TemporalAttemptExecution<INPUT, OUTPUT> temporalAttemptExecution = temporalAttemptExecutionFactory.create(
           workspaceRoot,

@@ -69,7 +69,7 @@ public class WebBackendDestinationHandlerTest {
     wbDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler, workspaceHelper);
 
     final StandardDestinationDefinition standardDestinationDefinition = DestinationDefinitionHelpers.generateDestination();
-    DestinationConnection destination =
+    final DestinationConnection destination =
         DestinationHelpers.generateDestination(UUID.randomUUID());
     destinationRead = DestinationHelpers.getDestinationRead(destination, standardDestinationDefinition);
 
@@ -78,37 +78,37 @@ public class WebBackendDestinationHandlerTest {
 
   @Test
   public void testReCreatesDestinationWhenCheckConnectionSucceeds() throws JsonValidationException, IOException, ConfigNotFoundException {
-    DestinationCreate destinationCreate = new DestinationCreate();
+    final DestinationCreate destinationCreate = new DestinationCreate();
     destinationCreate.setName(destinationRead.getName());
     destinationCreate.setConnectionConfiguration(destinationRead.getConnectionConfiguration());
     destinationCreate.setWorkspaceId(destinationRead.getWorkspaceId());
     destinationCreate.setDestinationDefinitionId(destinationRead.getDestinationDefinitionId());
 
-    DestinationRead newDestination = DestinationHelpers
+    final DestinationRead newDestination = DestinationHelpers
         .getDestinationRead(DestinationHelpers.generateDestination(UUID.randomUUID()), DestinationDefinitionHelpers
             .generateDestination());
 
     when(destinationHandler.createDestination(destinationCreate)).thenReturn(newDestination);
 
-    DestinationIdRequestBody newDestinationId = new DestinationIdRequestBody();
+    final DestinationIdRequestBody newDestinationId = new DestinationIdRequestBody();
     newDestinationId.setDestinationId(newDestination.getDestinationId());
 
-    CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
+    final CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
     checkConnectionRead.setStatus(StatusEnum.SUCCEEDED);
 
     when(schedulerHandler.checkDestinationConnectionFromDestinationId(newDestinationId)).thenReturn(checkConnectionRead);
 
-    DestinationRecreate destinationRecreate = new DestinationRecreate();
+    final DestinationRecreate destinationRecreate = new DestinationRecreate();
     destinationRecreate.setName(destinationRead.getName());
     destinationRecreate.setConnectionConfiguration(destinationRead.getConnectionConfiguration());
     destinationRecreate.setWorkspaceId(destinationRead.getWorkspaceId());
     destinationRecreate.setDestinationId(destinationRead.getDestinationId());
     destinationRecreate.setDestinationDefinitionId(destinationRead.getDestinationDefinitionId());
 
-    DestinationIdRequestBody oldDestinationIdBody = new DestinationIdRequestBody();
+    final DestinationIdRequestBody oldDestinationIdBody = new DestinationIdRequestBody();
     oldDestinationIdBody.setDestinationId(destinationRead.getDestinationId());
 
-    DestinationRead returnedDestination =
+    final DestinationRead returnedDestination =
         wbDestinationHandler.webBackendRecreateDestinationAndCheck(destinationRecreate);
 
     verify(destinationHandler, times(1)).deleteDestination(Mockito.eq(oldDestinationIdBody));
@@ -117,26 +117,26 @@ public class WebBackendDestinationHandlerTest {
 
   @Test
   public void testRecreateDeletesNewCreatedDestinationWhenFails() throws JsonValidationException, IOException, ConfigNotFoundException {
-    DestinationCreate destinationCreate = new DestinationCreate();
+    final DestinationCreate destinationCreate = new DestinationCreate();
     destinationCreate.setName(destinationRead.getName());
     destinationCreate.setConnectionConfiguration(destinationRead.getConnectionConfiguration());
     destinationCreate.setWorkspaceId(destinationRead.getWorkspaceId());
     destinationCreate.setDestinationDefinitionId(destinationRead.getDestinationDefinitionId());
 
-    DestinationRead newDestination = DestinationHelpers.getDestinationRead(
+    final DestinationRead newDestination = DestinationHelpers.getDestinationRead(
         DestinationHelpers.generateDestination(UUID.randomUUID()), DestinationDefinitionHelpers.generateDestination());
 
     when(destinationHandler.createDestination(destinationCreate)).thenReturn(newDestination);
 
-    DestinationIdRequestBody newDestinationId = new DestinationIdRequestBody();
+    final DestinationIdRequestBody newDestinationId = new DestinationIdRequestBody();
     newDestinationId.setDestinationId(newDestination.getDestinationId());
 
-    CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
+    final CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
     checkConnectionRead.setStatus(StatusEnum.FAILED);
 
     when(schedulerHandler.checkDestinationConnectionFromDestinationId(newDestinationId)).thenReturn(checkConnectionRead);
 
-    DestinationRecreate destinationRecreate = new DestinationRecreate();
+    final DestinationRecreate destinationRecreate = new DestinationRecreate();
     destinationRecreate.setName(destinationRead.getName());
     destinationRecreate.setConnectionConfiguration(destinationRead.getConnectionConfiguration());
     destinationRecreate.setWorkspaceId(destinationRead.getWorkspaceId());
@@ -152,34 +152,34 @@ public class WebBackendDestinationHandlerTest {
   public void testUnmatchedWorkspaces() throws IOException, JsonValidationException, ConfigNotFoundException {
     when(workspaceHelper.getWorkspaceForDestinationId(destinationRead.getDestinationId())).thenReturn(UUID.randomUUID());
 
-    DestinationCreate destinationCreate = new DestinationCreate();
+    final DestinationCreate destinationCreate = new DestinationCreate();
     destinationCreate.setName(destinationRead.getName());
     destinationCreate.setConnectionConfiguration(destinationRead.getConnectionConfiguration());
     destinationCreate.setWorkspaceId(destinationRead.getWorkspaceId());
     destinationCreate.setDestinationDefinitionId(destinationRead.getDestinationDefinitionId());
 
-    DestinationRead newDestination = DestinationHelpers
+    final DestinationRead newDestination = DestinationHelpers
         .getDestinationRead(DestinationHelpers.generateDestination(UUID.randomUUID()), DestinationDefinitionHelpers
             .generateDestination());
 
     when(destinationHandler.createDestination(destinationCreate)).thenReturn(newDestination);
 
-    DestinationIdRequestBody newDestinationId = new DestinationIdRequestBody();
+    final DestinationIdRequestBody newDestinationId = new DestinationIdRequestBody();
     newDestinationId.setDestinationId(newDestination.getDestinationId());
 
-    CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
+    final CheckConnectionRead checkConnectionRead = new CheckConnectionRead();
     checkConnectionRead.setStatus(StatusEnum.SUCCEEDED);
 
     when(schedulerHandler.checkDestinationConnectionFromDestinationId(newDestinationId)).thenReturn(checkConnectionRead);
 
-    DestinationRecreate destinationRecreate = new DestinationRecreate();
+    final DestinationRecreate destinationRecreate = new DestinationRecreate();
     destinationRecreate.setName(destinationRead.getName());
     destinationRecreate.setConnectionConfiguration(destinationRead.getConnectionConfiguration());
     destinationRecreate.setWorkspaceId(destinationRead.getWorkspaceId());
     destinationRecreate.setDestinationId(destinationRead.getDestinationId());
     destinationRecreate.setDestinationDefinitionId(destinationRead.getDestinationDefinitionId());
 
-    DestinationIdRequestBody oldDestinationIdBody = new DestinationIdRequestBody();
+    final DestinationIdRequestBody oldDestinationIdBody = new DestinationIdRequestBody();
     oldDestinationIdBody.setDestinationId(destinationRead.getDestinationId());
 
     Assertions.assertThrows(IllegalArgumentException.class, () -> {

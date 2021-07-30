@@ -47,7 +47,7 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
   }
 
@@ -105,8 +105,8 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             + container.getUsername() + "@'%';");
   }
 
-  private void executeQuery(String query) {
-    try (Database database = Databases.createDatabase(
+  private void executeQuery(final String query) {
+    try (final Database database = Databases.createDatabase(
         "root",
         "test",
         String.format("jdbc:mysql://%s:%s/%s",
@@ -118,7 +118,7 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
       database.query(
           ctx -> ctx
               .execute(query));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }

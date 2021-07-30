@@ -43,7 +43,7 @@ public class ConfigPersistenceBuilder {
   private final Configs configs;
   private final boolean setupDatabase;
 
-  ConfigPersistenceBuilder(Configs configs, boolean setupDatabase) {
+  ConfigPersistenceBuilder(final Configs configs, final boolean setupDatabase) {
     this.configs = configs;
     this.setupDatabase = setupDatabase;
   }
@@ -51,14 +51,14 @@ public class ConfigPersistenceBuilder {
   /**
    * Create a db config persistence and setup the database, including table creation and data loading.
    */
-  public static ConfigPersistence getAndInitializeDbPersistence(Configs configs) throws IOException, InterruptedException {
+  public static ConfigPersistence getAndInitializeDbPersistence(final Configs configs) throws IOException, InterruptedException {
     return new ConfigPersistenceBuilder(configs, true).create();
   }
 
   /**
    * Create a db config persistence without setting up the database.
    */
-  public static ConfigPersistence getDbPersistence(Configs configs) throws IOException, InterruptedException {
+  public static ConfigPersistence getDbPersistence(final Configs configs) throws IOException, InterruptedException {
     return new ConfigPersistenceBuilder(configs, false).create();
   }
 
@@ -81,7 +81,7 @@ public class ConfigPersistenceBuilder {
    */
   ConfigPersistence getDbPersistenceWithYamlSeed() throws IOException {
     LOGGER.info("Creating db-based config persistence, and loading initial seed from YAML files");
-    ConfigPersistence seedConfigPersistence = new YamlSeedConfigPersistence();
+    final ConfigPersistence seedConfigPersistence = new YamlSeedConfigPersistence();
     return getDbPersistence(seedConfigPersistence);
   }
 
@@ -91,7 +91,7 @@ public class ConfigPersistenceBuilder {
    */
   ConfigPersistence getDbPersistenceWithFileSeed() throws IOException, InterruptedException {
     LOGGER.info("Creating db-based config persistence, and loading seed and existing data from files");
-    ConfigPersistence fsConfigPersistence = FileSystemConfigPersistence.createWithValidation(configs.getConfigRoot());
+    final ConfigPersistence fsConfigPersistence = FileSystemConfigPersistence.createWithValidation(configs.getConfigRoot());
     return getDbPersistence(fsConfigPersistence);
   }
 
@@ -99,12 +99,12 @@ public class ConfigPersistenceBuilder {
    * Create the database config persistence and load it with configs from the
    * {@code seedConfigPersistence} if database should be initialized.
    */
-  ConfigPersistence getDbPersistence(ConfigPersistence seedConfigPersistence) throws IOException {
+  ConfigPersistence getDbPersistence(final ConfigPersistence seedConfigPersistence) throws IOException {
     LOGGER.info("Use database config persistence.");
 
-    DatabaseConfigPersistence dbConfigPersistence;
+    final DatabaseConfigPersistence dbConfigPersistence;
     if (setupDatabase) {
-      Database database = new ConfigsDatabaseInstance(
+      final Database database = new ConfigsDatabaseInstance(
           configs.getConfigDatabaseUser(),
           configs.getConfigDatabasePassword(),
           configs.getConfigDatabaseUrl())
@@ -112,7 +112,7 @@ public class ConfigPersistenceBuilder {
       dbConfigPersistence = new DatabaseConfigPersistence(database)
           .loadData(seedConfigPersistence);
     } else {
-      Database database = new ConfigsDatabaseInstance(
+      final Database database = new ConfigsDatabaseInstance(
           configs.getConfigDatabaseUser(),
           configs.getConfigDatabasePassword(),
           configs.getConfigDatabaseUrl())

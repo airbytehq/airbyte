@@ -46,7 +46,7 @@ public class AirbyteMessageTracker implements MessageTracker<AirbyteMessage> {
   }
 
   @Override
-  public void accept(AirbyteMessage message) {
+  public void accept(final AirbyteMessage message) {
     if (message.getType() == AirbyteMessage.Type.RECORD) {
       recordCount.incrementAndGet();
       // todo (cgardens) - pretty wasteful to do an extra serialization just to get size.

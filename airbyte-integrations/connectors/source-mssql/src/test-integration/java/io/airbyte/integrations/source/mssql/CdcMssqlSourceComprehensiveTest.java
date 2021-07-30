@@ -50,7 +50,7 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
   }
 
@@ -95,8 +95,8 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
     return SCHEMA_NAME;
   }
 
-  private void executeQuery(String query) {
-    try (Database database = Databases.createDatabase(
+  private void executeQuery(final String query) {
+    try (final Database database = Databases.createDatabase(
         container.getUsername(),
         container.getPassword(),
         String.format("jdbc:sqlserver://%s:%s",
@@ -107,13 +107,13 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
       database.query(
           ctx -> ctx
               .execute(query));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     super.setupEnvironment(environment);
     enableCdcOnAllTables();
   }

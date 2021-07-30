@@ -163,30 +163,30 @@ public class DatabaseConfigPersistenceTest extends BaseTest {
     writeSource(configPersistence, SOURCE_GITHUB);
     writeSource(configPersistence, SOURCE_POSTGRES);
     writeDestination(configPersistence, DESTINATION_S3);
-    Map<String, Stream<JsonNode>> actual = configPersistence.dumpConfigs();
-    Map<String, Stream<JsonNode>> expected = Map.of(
+    final Map<String, Stream<JsonNode>> actual = configPersistence.dumpConfigs();
+    final Map<String, Stream<JsonNode>> expected = Map.of(
         ConfigSchema.STANDARD_SOURCE_DEFINITION.name(), Stream.of(Jsons.jsonNode(SOURCE_GITHUB), Jsons.jsonNode(SOURCE_POSTGRES)),
         ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(), Stream.of(Jsons.jsonNode(DESTINATION_S3)));
     assertSameConfigDump(expected, actual);
   }
 
-  private void assertRecordCount(int expectedCount) throws Exception {
-    Result<Record1<Integer>> recordCount = database.query(ctx -> ctx.select(count(asterisk())).from(AIRBYTE_CONFIGS).fetch());
+  private void assertRecordCount(final int expectedCount) throws Exception {
+    final Result<Record1<Integer>> recordCount = database.query(ctx -> ctx.select(count(asterisk())).from(AIRBYTE_CONFIGS).fetch());
     assertEquals(expectedCount, recordCount.get(0).value1());
   }
 
-  private void assertHasWorkspace(StandardWorkspace workspace) throws Exception {
+  private void assertHasWorkspace(final StandardWorkspace workspace) throws Exception {
     assertEquals(workspace,
         configPersistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), StandardWorkspace.class));
   }
 
-  private void assertHasSource(StandardSourceDefinition source) throws Exception {
+  private void assertHasSource(final StandardSourceDefinition source) throws Exception {
     assertEquals(source, configPersistence
         .getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, source.getSourceDefinitionId().toString(),
             StandardSourceDefinition.class));
   }
 
-  private void assertHasDestination(StandardDestinationDefinition destination) throws Exception {
+  private void assertHasDestination(final StandardDestinationDefinition destination) throws Exception {
     assertEquals(destination, configPersistence
         .getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId().toString(),
             StandardDestinationDefinition.class));

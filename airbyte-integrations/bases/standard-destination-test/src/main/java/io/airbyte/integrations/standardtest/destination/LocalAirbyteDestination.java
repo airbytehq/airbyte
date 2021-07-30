@@ -40,12 +40,12 @@ public class LocalAirbyteDestination implements AirbyteDestination {
   private AirbyteMessageConsumer consumer;
   private boolean isClosed = false;
 
-  public LocalAirbyteDestination(Destination dest) {
+  public LocalAirbyteDestination(final Destination dest) {
     this.dest = dest;
   }
 
   @Override
-  public void start(WorkerDestinationConfig destinationConfig, Path jobRoot) throws Exception {
+  public void start(final WorkerDestinationConfig destinationConfig, final Path jobRoot) throws Exception {
     consumer =
         dest.getConsumer(destinationConfig.getDestinationConnectionConfiguration(), destinationConfig.getCatalog(),
             Destination::defaultOutputRecordCollector);
@@ -53,7 +53,7 @@ public class LocalAirbyteDestination implements AirbyteDestination {
   }
 
   @Override
-  public void accept(AirbyteMessage message) throws Exception {
+  public void accept(final AirbyteMessage message) throws Exception {
     consumer.accept(message);
   }
 

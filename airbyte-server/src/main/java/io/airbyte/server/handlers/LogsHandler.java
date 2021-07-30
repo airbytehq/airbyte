@@ -35,7 +35,7 @@ import java.io.File;
  */
 public class LogsHandler {
 
-  public File getLogs(Configs configs, LogsRequestBody logsRequestBody) {
+  public File getLogs(final Configs configs, final LogsRequestBody logsRequestBody) {
     switch (logsRequestBody.getLogType()) {
       case SERVER -> {
         return LogClientSingleton.getServerLogFile(configs);

@@ -231,7 +231,7 @@ class DestinationHandlerTest {
 
   @Test
   void testGetDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
-    DestinationRead expectedDestinationRead = new DestinationRead()
+    final DestinationRead expectedDestinationRead = new DestinationRead()
         .name(destinationConnection.getName())
         .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
         .workspaceId(destinationConnection.getWorkspaceId())
@@ -269,7 +269,7 @@ class DestinationHandlerTest {
 
   @Test
   void testListDestinationForWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
-    DestinationRead expectedDestinationRead = new DestinationRead()
+    final DestinationRead expectedDestinationRead = new DestinationRead()
         .name(destinationConnection.getName())
         .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
         .workspaceId(destinationConnection.getWorkspaceId())

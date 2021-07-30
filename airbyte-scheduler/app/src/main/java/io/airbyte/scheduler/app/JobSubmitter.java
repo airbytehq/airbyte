@@ -76,7 +76,7 @@ public class JobSubmitter implements Runnable {
       nextJob.ifPresent(attemptJobSubmit());
 
       LOGGER.debug("Completed Job-Submitter...");
-    } catch (Throwable e) {
+    } catch (final Throwable e) {
       LOGGER.error("Job Submitter Error", e);
     }
   }
@@ -110,7 +110,7 @@ public class JobSubmitter implements Runnable {
   }
 
   @VisibleForTesting
-  void submitJob(Job job) {
+  void submitJob(final Job job) {
     final WorkerRun workerRun = temporalWorkerRunFactory.create(job);
     // we need to know the attempt number before we begin the job lifecycle. thus we state what the
     // attempt number should be. if it is not, that the lifecycle will fail. this should not happen as
@@ -150,17 +150,17 @@ public class JobSubmitter implements Runnable {
         .build());
   }
 
-  private void assertSameIds(long expectedAttemptId, long actualAttemptId) {
+  private void assertSameIds(final long expectedAttemptId, final long actualAttemptId) {
     if (expectedAttemptId != actualAttemptId) {
       throw new IllegalStateException("Created attempt was not the expected attempt");
     }
   }
 
-  private void trackSubmission(Job job) {
+  private void trackSubmission(final Job job) {
     jobTracker.trackSync(job, JobState.STARTED);
   }
 
-  private void trackCompletion(Job job, io.airbyte.workers.JobStatus status) {
+  private void trackCompletion(final Job job, final io.airbyte.workers.JobStatus status) {
     jobTracker.trackSync(job, Enums.convertTo(status, JobState.class));
   }
 

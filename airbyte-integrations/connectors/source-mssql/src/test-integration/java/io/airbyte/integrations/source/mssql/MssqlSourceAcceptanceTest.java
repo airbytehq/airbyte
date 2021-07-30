@@ -53,7 +53,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   protected JsonNode config;
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws SQLException {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws SQLException {
     db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
     db.start();
 
@@ -82,7 +82,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     db.stop();
     db.close();
   }
@@ -122,7 +122,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     return Collections.emptyList();
   }
 
-  private static Database getDatabase(JsonNode config) {
+  private static Database getDatabase(final JsonNode config) {
     return Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),

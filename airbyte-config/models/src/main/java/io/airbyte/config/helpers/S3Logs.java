@@ -55,7 +55,7 @@ public class S3Logs implements CloudLogs {
 
   private static S3Client S3;
 
-  private static void assertValidS3Configuration(LogConfigs configs) {
+  private static void assertValidS3Configuration(final LogConfigs configs) {
     Preconditions.checkNotNull(configs.getAwsAccessKey());
     Preconditions.checkNotNull(configs.getAwsSecretAccessKey());
     Preconditions.checkNotNull(configs.getS3LogBucketRegion());
@@ -63,32 +63,32 @@ public class S3Logs implements CloudLogs {
   }
 
   @Override
-  public File downloadCloudLog(LogConfigs configs, String logPath) throws IOException {
+  public File downloadCloudLog(final LogConfigs configs, final String logPath) throws IOException {
     return getFile(configs, logPath, LogClientSingleton.DEFAULT_PAGE_SIZE);
   }
 
   @VisibleForTesting
-  static File getFile(LogConfigs configs, String logPath, int pageSize) throws IOException {
+  static File getFile(final LogConfigs configs, final String logPath, final int pageSize) throws IOException {
     LOGGER.debug("Retrieving logs from S3 path: {}", logPath);
     createS3ClientIfNotExist(configs);
 
-    var s3Bucket = configs.getS3LogBucket();
-    var randomName = Strings.addRandomSuffix("logs", "-", 5);
-    var tmpOutputFile = new File("/tmp/" + randomName);
-    var os = new FileOutputStream(tmpOutputFile);
+    final var s3Bucket = configs.getS3LogBucket();
+    final var randomName = Strings.addRandomSuffix("logs", "-", 5);
+    final var tmpOutputFile = new File("/tmp/" + randomName);
+    final var os = new FileOutputStream(tmpOutputFile);
 
     LOGGER.debug("Start S3 list request.");
-    var listObjReq = ListObjectsV2Request.builder().bucket(s3Bucket)
+    final var listObjReq = ListObjectsV2Request.builder().bucket(s3Bucket)
         .prefix(logPath).maxKeys(pageSize).build();
     LOGGER.debug("Start getting S3 objects.");
     // Objects are returned in lexicographical order.
-    for (var page : S3.listObjectsV2Paginator(listObjReq)) {
-      for (var objMetadata : page.contents()) {
-        var getObjReq = GetObjectRequest.builder()
+    for (final var page : S3.listObjectsV2Paginator(listObjReq)) {
+      for (final var objMetadata : page.contents()) {
+        final var getObjReq = GetObjectRequest.builder()
             .key(objMetadata.key())
             .bucket(s3Bucket)
             .build();
-        var data = S3.getObjectAsBytes(getObjReq).asByteArray();
+        final var data = S3.getObjectAsBytes(getObjReq).asByteArray();
         os.write(data);
       }
     }
@@ -99,23 +99,23 @@ public class S3Logs implements CloudLogs {
   }
 
   @Override
-  public List<String> tailCloudLog(LogConfigs configs, String logPath, int numLines) throws IOException {
+  public List<String> tailCloudLog(final LogConfigs configs, final String logPath, final int numLines) throws IOException {
     LOGGER.debug("Tailing logs from S3 path: {}", logPath);
     createS3ClientIfNotExist(configs);
 
-    var s3Bucket = configs.getS3LogBucket();
+    final var s3Bucket = configs.getS3LogBucket();
     LOGGER.debug("Start making S3 list request.");
-    ArrayList<String> ascendingTimestampKeys = getAscendingObjectKeys(logPath, s3Bucket);
-    var descendingTimestampKeys = Lists.reverse(ascendingTimestampKeys);
+    final ArrayList<String> ascendingTimestampKeys = getAscendingObjectKeys(logPath, s3Bucket);
+    final var descendingTimestampKeys = Lists.reverse(ascendingTimestampKeys);
 
-    var lines = new ArrayList<String>();
+    final var lines = new ArrayList<String>();
     int linesRead = 0;
 
     LOGGER.debug("Start getting S3 objects.");
     while (linesRead <= numLines && !descendingTimestampKeys.isEmpty()) {
-      var poppedKey = descendingTimestampKeys.remove(0);
-      List<String> currFileLinesReversed = Lists.reverse(getCurrFile(s3Bucket, poppedKey));
-      for (var line : currFileLinesReversed) {
+      final var poppedKey = descendingTimestampKeys.remove(0);
+      final List<String> currFileLinesReversed = Lists.reverse(getCurrFile(s3Bucket, poppedKey));
+      for (final var line : currFileLinesReversed) {
         if (linesRead == numLines) {
           break;
         }
@@ -129,17 +129,17 @@ public class S3Logs implements CloudLogs {
   }
 
   @Override
-  public void deleteLogs(LogConfigs configs, String logPath) {
+  public void deleteLogs(final LogConfigs configs, final String logPath) {
     LOGGER.debug("Deleting logs from S3 path: {}", logPath);
     createS3ClientIfNotExist(configs);
 
-    var keys = getAscendingObjectKeys(logPath, configs.getS3LogBucket())
+    final var keys = getAscendingObjectKeys(logPath, configs.getS3LogBucket())
         .stream().map(key -> ObjectIdentifier.builder().key(key).build())
         .collect(Collectors.toList());
-    Delete del = Delete.builder()
+    final Delete del = Delete.builder()
         .objects(keys)
         .build();
-    DeleteObjectsRequest multiObjectDeleteRequest = DeleteObjectsRequest.builder()
+    final DeleteObjectsRequest multiObjectDeleteRequest = DeleteObjectsRequest.builder()
         .bucket(configs.getS3LogBucket())
         .delete(del)
         .build();
@@ -148,18 +148,18 @@ public class S3Logs implements CloudLogs {
     LOGGER.debug("Multiple objects are deleted!");
   }
 
-  private static void createS3ClientIfNotExist(LogConfigs configs) {
+  private static void createS3ClientIfNotExist(final LogConfigs configs) {
     if (S3 == null) {
       assertValidS3Configuration(configs);
-      var s3Region = configs.getS3LogBucketRegion();
-      var builder = S3Client.builder().region(Region.of(s3Region));
+      final var s3Region = configs.getS3LogBucketRegion();
+      final var builder = S3Client.builder().region(Region.of(s3Region));
 
-      var minioEndpoint = configs.getS3MinioEndpoint();
+      final var minioEndpoint = configs.getS3MinioEndpoint();
       if (!minioEndpoint.isBlank()) {
         try {
-          var minioUri = new URI(minioEndpoint);
+          final var minioUri = new URI(minioEndpoint);
           builder.endpointOverride(minioUri);
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
           throw new RuntimeException("Error creating S3 log client to Minio", e);
         }
       }
@@ -168,29 +168,29 @@ public class S3Logs implements CloudLogs {
     }
   }
 
-  private ArrayList<String> getAscendingObjectKeys(String logPath, String s3Bucket) {
-    var listObjReq = ListObjectsV2Request.builder().bucket(s3Bucket).prefix(logPath).build();
-    var ascendingTimestampObjs = new ArrayList<String>();
+  private ArrayList<String> getAscendingObjectKeys(final String logPath, final String s3Bucket) {
+    final var listObjReq = ListObjectsV2Request.builder().bucket(s3Bucket).prefix(logPath).build();
+    final var ascendingTimestampObjs = new ArrayList<String>();
 
     // Objects are returned in lexicographical order.
-    for (var page : S3.listObjectsV2Paginator(listObjReq)) {
-      for (var objMetadata : page.contents()) {
+    for (final var page : S3.listObjectsV2Paginator(listObjReq)) {
+      for (final var objMetadata : page.contents()) {
         ascendingTimestampObjs.add(objMetadata.key());
       }
     }
     return ascendingTimestampObjs;
   }
 
-  private static ArrayList<String> getCurrFile(String s3Bucket, String poppedKey) throws IOException {
-    var getObjReq = GetObjectRequest.builder()
+  private static ArrayList<String> getCurrFile(final String s3Bucket, final String poppedKey) throws IOException {
+    final var getObjReq = GetObjectRequest.builder()
         .key(poppedKey)
         .bucket(s3Bucket)
         .build();
 
-    var data = S3.getObjectAsBytes(getObjReq).asByteArray();
-    var is = new ByteArrayInputStream(data);
-    var currentFileLines = new ArrayList<String>();
-    try (var reader = new BufferedReader(new InputStreamReader(is))) {
+    final var data = S3.getObjectAsBytes(getObjReq).asByteArray();
+    final var is = new ByteArrayInputStream(data);
+    final var currentFileLines = new ArrayList<String>();
+    try (final var reader = new BufferedReader(new InputStreamReader(is))) {
       String temp;
       while ((temp = reader.readLine()) != null) {
         currentFileLines.add(temp);

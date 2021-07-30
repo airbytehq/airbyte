@@ -98,7 +98,7 @@ public class PostresSourceComprehensiveTest extends SourceComprehensiveTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
   }
 

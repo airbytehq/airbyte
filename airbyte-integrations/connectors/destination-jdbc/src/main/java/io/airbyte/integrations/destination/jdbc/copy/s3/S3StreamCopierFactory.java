@@ -40,21 +40,21 @@ public abstract class S3StreamCopierFactory implements StreamCopierFactory<S3Con
    * Used by the copy consumer.
    */
   @Override
-  public StreamCopier create(String configuredSchema,
-                             S3Config s3Config,
-                             String stagingFolder,
-                             DestinationSyncMode syncMode,
-                             AirbyteStream stream,
-                             ExtendedNameTransformer nameTransformer,
-                             JdbcDatabase db,
-                             SqlOperations sqlOperations) {
+  public StreamCopier create(final String configuredSchema,
+                             final S3Config s3Config,
+                             final String stagingFolder,
+                             final DestinationSyncMode syncMode,
+                             final AirbyteStream stream,
+                             final ExtendedNameTransformer nameTransformer,
+                             final JdbcDatabase db,
+                             final SqlOperations sqlOperations) {
     try {
-      var pair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
-      var schema = getSchema(stream, configuredSchema, nameTransformer);
-      var s3Client = S3StreamCopier.getAmazonS3(s3Config);
+      final var pair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
+      final var schema = getSchema(stream, configuredSchema, nameTransformer);
+      final var s3Client = S3StreamCopier.getAmazonS3(s3Config);
 
       return create(stagingFolder, syncMode, schema, pair.getName(), s3Client, db, s3Config, nameTransformer, sqlOperations);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -73,7 +73,7 @@ public abstract class S3StreamCopierFactory implements StreamCopierFactory<S3Con
                                       SqlOperations sqlOperations)
       throws Exception;
 
-  private String getSchema(AirbyteStream stream, String configuredSchema, ExtendedNameTransformer nameTransformer) {
+  private String getSchema(final AirbyteStream stream, final String configuredSchema, final ExtendedNameTransformer nameTransformer) {
     if (stream.getNamespace() != null) {
       return nameTransformer.convertStreamName(stream.getNamespace());
     } else {

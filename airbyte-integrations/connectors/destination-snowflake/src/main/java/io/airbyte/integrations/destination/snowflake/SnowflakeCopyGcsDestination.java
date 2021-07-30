@@ -40,9 +40,9 @@ import java.util.function.Consumer;
 public class SnowflakeCopyGcsDestination extends CopyDestination {
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector)
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     return CopyConsumerFactory.create(
         outputRecordCollector,
@@ -56,7 +56,7 @@ public class SnowflakeCopyGcsDestination extends CopyDestination {
   }
 
   @Override
-  public void checkPersistence(JsonNode config) throws Exception {
+  public void checkPersistence(final JsonNode config) throws Exception {
     GcsStreamCopier.attemptWriteToPersistence(GcsConfig.getGcsConfig(config));
   }
 
@@ -66,7 +66,7 @@ public class SnowflakeCopyGcsDestination extends CopyDestination {
   }
 
   @Override
-  public JdbcDatabase getDatabase(JsonNode config) throws Exception {
+  public JdbcDatabase getDatabase(final JsonNode config) throws Exception {
     return SnowflakeDatabase.getDatabase(config);
   }
 
@@ -75,7 +75,7 @@ public class SnowflakeCopyGcsDestination extends CopyDestination {
     return new SnowflakeSqlOperations();
   }
 
-  private String getConfiguredSchema(JsonNode config) {
+  private String getConfiguredSchema(final JsonNode config) {
     return config.get("schema").asText();
   }
 

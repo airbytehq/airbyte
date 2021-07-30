@@ -78,10 +78,10 @@ public class JdbcDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv env,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namingResolver.getIdentifier(namespace))
         .stream()
@@ -90,7 +90,7 @@ public class JdbcDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName, String namespace)
+  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
     String tableName = namingResolver.getIdentifier(streamName);
     if (!tableName.startsWith("\"")) {
@@ -101,7 +101,7 @@ public class JdbcDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected List<String> resolveIdentifier(String identifier) {
+  protected List<String> resolveIdentifier(final String identifier) {
     final List<String> result = new ArrayList<>();
     final String resolved = namingResolver.getIdentifier(identifier);
     result.add(identifier);
@@ -113,7 +113,7 @@ public class JdbcDestinationAcceptanceTest extends DestinationAcceptanceTest {
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(String tableName, String schema) throws SQLException {
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema) throws SQLException {
     return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(),
         db.getJdbcUrl()).query(
             ctx -> ctx
@@ -125,13 +125,13 @@ public class JdbcDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv) {
     db = new PostgreSQLContainer<>("postgres:13-alpine");
     db.start();
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     db.stop();
     db.close();
   }

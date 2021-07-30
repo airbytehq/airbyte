@@ -62,9 +62,9 @@ public interface CheckConnectionWorkflow {
     private final CheckConnectionActivity activity = Workflow.newActivityStub(CheckConnectionActivity.class, options);
 
     @Override
-    public StandardCheckConnectionOutput run(JobRunConfig jobRunConfig,
-                                             IntegrationLauncherConfig launcherConfig,
-                                             StandardCheckConnectionInput connectionConfiguration) {
+    public StandardCheckConnectionOutput run(final JobRunConfig jobRunConfig,
+                                             final IntegrationLauncherConfig launcherConfig,
+                                             final StandardCheckConnectionInput connectionConfiguration) {
       return activity.run(jobRunConfig, launcherConfig, connectionConfiguration);
     }
 
@@ -85,14 +85,14 @@ public interface CheckConnectionWorkflow {
     private final ProcessFactory processFactory;
     private final Path workspaceRoot;
 
-    public CheckConnectionActivityImpl(ProcessFactory processFactory, Path workspaceRoot) {
+    public CheckConnectionActivityImpl(final ProcessFactory processFactory, final Path workspaceRoot) {
       this.processFactory = processFactory;
       this.workspaceRoot = workspaceRoot;
     }
 
-    public StandardCheckConnectionOutput run(JobRunConfig jobRunConfig,
-                                             IntegrationLauncherConfig launcherConfig,
-                                             StandardCheckConnectionInput connectionConfiguration) {
+    public StandardCheckConnectionOutput run(final JobRunConfig jobRunConfig,
+                                             final IntegrationLauncherConfig launcherConfig,
+                                             final StandardCheckConnectionInput connectionConfiguration) {
 
       final Supplier<StandardCheckConnectionInput> inputSupplier = () -> connectionConfiguration;
 
@@ -107,7 +107,8 @@ public interface CheckConnectionWorkflow {
       return temporalAttemptExecution.get();
     }
 
-    private CheckedSupplier<Worker<StandardCheckConnectionInput, StandardCheckConnectionOutput>, Exception> getWorkerFactory(IntegrationLauncherConfig launcherConfig) {
+    private CheckedSupplier<Worker<StandardCheckConnectionInput, StandardCheckConnectionOutput>, Exception> getWorkerFactory(
+                                                                                                                             final IntegrationLauncherConfig launcherConfig) {
       return () -> {
         final IntegrationLauncher integrationLauncher = new AirbyteIntegrationLauncher(
             launcherConfig.getJobId(),

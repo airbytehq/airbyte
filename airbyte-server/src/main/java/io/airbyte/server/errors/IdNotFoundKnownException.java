@@ -31,17 +31,17 @@ public class IdNotFoundKnownException extends KnownException {
 
   String id;
 
-  public IdNotFoundKnownException(String message, String id) {
+  public IdNotFoundKnownException(final String message, final String id) {
     super(message);
     this.id = id;
   }
 
-  public IdNotFoundKnownException(String message, String id, Throwable cause) {
+  public IdNotFoundKnownException(final String message, final String id, final Throwable cause) {
     super(message, cause);
     this.id = id;
   }
 
-  public IdNotFoundKnownException(String message, Throwable cause) {
+  public IdNotFoundKnownException(final String message, final Throwable cause) {
     super(message, cause);
   }
 
@@ -55,7 +55,7 @@ public class IdNotFoundKnownException extends KnownException {
   }
 
   public NotFoundKnownExceptionInfo getNotFoundKnownExceptionInfo() {
-    NotFoundKnownExceptionInfo exceptionInfo = new NotFoundKnownExceptionInfo()
+    final NotFoundKnownExceptionInfo exceptionInfo = new NotFoundKnownExceptionInfo()
         .exceptionClassName(this.getClass().getName())
         .message(this.getMessage())
         .exceptionStack(Throwables.toStringList(this));

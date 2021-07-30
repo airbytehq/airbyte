@@ -52,10 +52,10 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
   public abstract SqlOperations getSqlOperations();
 
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
+  public AirbyteConnectionStatus check(final JsonNode config) {
     try {
       checkPersistence(config);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Exception attempting to access the staging persistence: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
@@ -63,13 +63,13 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
     }
 
     try {
-      var nameTransformer = getNameTransformer();
-      var outputSchema = nameTransformer.convertStreamName(config.get("schema").asText());
-      JdbcDatabase database = getDatabase(config);
+      final var nameTransformer = getNameTransformer();
+      final var outputSchema = nameTransformer.convertStreamName(config.get("schema").asText());
+      final JdbcDatabase database = getDatabase(config);
       AbstractJdbcDestination.attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, getSqlOperations());
 
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Exception attempting to connect to the warehouse: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)

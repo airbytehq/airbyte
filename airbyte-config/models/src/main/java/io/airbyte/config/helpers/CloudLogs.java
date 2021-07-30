@@ -58,11 +58,11 @@ public interface CloudLogs {
   /**
    * @return true if no cloud logging configuration is set;
    */
-  static boolean hasEmptyConfigs(LogConfigs configs) {
+  static boolean hasEmptyConfigs(final LogConfigs configs) {
     return !hasS3Configuration(configs) && !hasGcpConfiguration(configs);
   }
 
-  static CloudLogs createCloudLogClient(LogConfigs configs) {
+  static CloudLogs createCloudLogClient(final LogConfigs configs) {
     // check if the configs exists, and pick a client.
     if (hasS3Configuration(configs)) {
       LOGGER.info("Creating AWS Log Client");
@@ -77,14 +77,14 @@ public interface CloudLogs {
     throw new RuntimeException("Error no cloud credentials configured..");
   }
 
-  private static boolean hasS3Configuration(LogConfigs configs) {
+  private static boolean hasS3Configuration(final LogConfigs configs) {
     return !configs.getAwsAccessKey().isBlank() &&
         !configs.getAwsSecretAccessKey().isBlank() &&
         !configs.getS3LogBucketRegion().isBlank() &&
         !configs.getS3LogBucket().isBlank();
   }
 
-  private static boolean hasGcpConfiguration(LogConfigs configs) {
+  private static boolean hasGcpConfiguration(final LogConfigs configs) {
     return !configs.getGcpStorageBucket().isBlank() &&
         !configs.getGoogleApplicationCredentials().isBlank();
   }

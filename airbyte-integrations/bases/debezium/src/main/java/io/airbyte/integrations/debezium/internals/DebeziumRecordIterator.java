@@ -64,10 +64,10 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   private boolean receivedFirstRecord;
   private boolean hasSnapshotFinished;
 
-  public DebeziumRecordIterator(LinkedBlockingQueue<ChangeEvent<String, String>> queue,
-                                CdcTargetPosition targetPosition,
-                                Supplier<Boolean> publisherStatusSupplier,
-                                VoidCallable requestClose) {
+  public DebeziumRecordIterator(final LinkedBlockingQueue<ChangeEvent<String, String>> queue,
+                                final CdcTargetPosition targetPosition,
+                                final Supplier<Boolean> publisherStatusSupplier,
+                                final VoidCallable requestClose) {
     this.queue = queue;
     this.targetPosition = targetPosition;
     this.publisherStatusSupplier = publisherStatusSupplier;
@@ -84,9 +84,9 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
       final ChangeEvent<String, String> next;
       try {
-        WaitTime waitTime = receivedFirstRecord ? SUBSEQUENT_RECORD_WAIT_TIME_SECONDS : FIRST_RECORD_WAIT_TIME_MINUTES;
+        final WaitTime waitTime = receivedFirstRecord ? SUBSEQUENT_RECORD_WAIT_TIME_SECONDS : FIRST_RECORD_WAIT_TIME_MINUTES;
         next = queue.poll(waitTime.period, waitTime.timeUnit);
-      } catch (InterruptedException e) {
+      } catch (final InterruptedException e) {
         throw new RuntimeException(e);
       }
 
@@ -99,7 +99,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
         continue;
       }
 
-      JsonNode eventAsJson = Jsons.deserialize(next.value());
+      final JsonNode eventAsJson = Jsons.deserialize(next.value());
       hasSnapshotFinished = hasSnapshotFinished(eventAsJson);
 
       // if the last record matches the target file position, it is time to tell the producer to shutdown.
@@ -112,8 +112,8 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     return endOfData();
   }
 
-  private boolean hasSnapshotFinished(JsonNode eventAsJson) {
-    SnapshotMetadata snapshot = SnapshotMetadata.valueOf(eventAsJson.get("source").get("snapshot").asText().toUpperCase());
+  private boolean hasSnapshotFinished(final JsonNode eventAsJson) {
+    final SnapshotMetadata snapshot = SnapshotMetadata.valueOf(eventAsJson.get("source").get("snapshot").asText().toUpperCase());
     return SnapshotMetadata.TRUE != snapshot;
   }
 
@@ -139,14 +139,14 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     throwExceptionIfSnapshotNotFinished();
   }
 
-  private boolean shouldSignalClose(JsonNode eventAsJson) {
+  private boolean shouldSignalClose(final JsonNode eventAsJson) {
     return targetPosition.reachedTargetPosition(eventAsJson);
   }
 
   private void requestClose() {
     try {
       requestClose.call();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
     throwExceptionIfSnapshotNotFinished();
@@ -163,7 +163,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     public final int period;
     public final TimeUnit timeUnit;
 
-    public WaitTime(int period, TimeUnit timeUnit) {
+    public WaitTime(final int period, final TimeUnit timeUnit) {
       this.period = period;
       this.timeUnit = timeUnit;
     }

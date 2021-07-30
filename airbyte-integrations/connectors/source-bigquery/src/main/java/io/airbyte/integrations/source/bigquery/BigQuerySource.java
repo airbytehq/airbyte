@@ -66,7 +66,7 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   private JsonNode dbConfig;
 
   @Override
-  public JsonNode toDatabaseConfig(JsonNode config) {
+  public JsonNode toDatabaseConfig(final JsonNode config) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(CONFIG_PROJECT_ID, config.get(CONFIG_PROJECT_ID).asText())
         .put(CONFIG_CREDS, config.get(CONFIG_CREDS).asText())
@@ -75,14 +75,14 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   }
 
   @Override
-  protected BigQueryDatabase createDatabase(JsonNode config) {
+  protected BigQueryDatabase createDatabase(final JsonNode config) {
     dbConfig = Jsons.clone(config);
     return Databases.createBigQueryDatabase(config.get(CONFIG_PROJECT_ID).asText(), config.get(CONFIG_CREDS).asText());
   }
 
   @Override
-  public List<CheckedConsumer<BigQueryDatabase, Exception>> getCheckOperations(JsonNode config) {
-    List<CheckedConsumer<BigQueryDatabase, Exception>> checkList = new ArrayList<>();
+  public List<CheckedConsumer<BigQueryDatabase, Exception>> getCheckOperations(final JsonNode config) {
+    final List<CheckedConsumer<BigQueryDatabase, Exception>> checkList = new ArrayList<>();
     checkList.add(database -> {
       if (database.query("select 1").count() < 1)
         throw new Exception("Unable to execute any query on the source!");
@@ -104,7 +104,7 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   }
 
   @Override
-  protected JsonSchemaPrimitive getType(StandardSQLTypeName columnType) {
+  protected JsonSchemaPrimitive getType(final StandardSQLTypeName columnType) {
     return BigQueryUtils.getType(columnType);
   }
 
@@ -114,18 +114,18 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   }
 
   @Override
-  protected List<TableInfo<CommonField<StandardSQLTypeName>>> discoverInternal(BigQueryDatabase database) {
-    String projectId = dbConfig.get(CONFIG_PROJECT_ID).asText();
-    String datasetId = getConfigDatasetId(database);
-    List<Table> tables =
+  protected List<TableInfo<CommonField<StandardSQLTypeName>>> discoverInternal(final BigQueryDatabase database) {
+    final String projectId = dbConfig.get(CONFIG_PROJECT_ID).asText();
+    final String datasetId = getConfigDatasetId(database);
+    final List<Table> tables =
         (isDatasetConfigured(database) ? database.getDatasetTables(getConfigDatasetId(database)) : database.getProjectTables(projectId));
-    List<TableInfo<CommonField<StandardSQLTypeName>>> result = new ArrayList<>();
+    final List<TableInfo<CommonField<StandardSQLTypeName>>> result = new ArrayList<>();
     tables.stream().map(table -> TableInfo.<CommonField<StandardSQLTypeName>>builder()
         .nameSpace(datasetId)
         .name(table.getTableId().getTable())
         .fields(Objects.requireNonNull(table.getDefinition().getSchema()).getFields().stream()
             .map(f -> {
-              StandardSQLTypeName standardType = f.getType().getStandardType();
+              final StandardSQLTypeName standardType = f.getType().getStandardType();
               return new CommonField<>(f.getName(), standardType);
             })
             .collect(Collectors.toList()))
@@ -135,7 +135,7 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   }
 
   @Override
-  protected Map<String, List<String>> discoverPrimaryKeys(BigQueryDatabase database, List<TableInfo<CommonField<StandardSQLTypeName>>> tableInfos) {
+  protected Map<String, List<String>> discoverPrimaryKeys(final BigQueryDatabase database, final List<TableInfo<CommonField<StandardSQLTypeName>>> tableInfos) {
     return Collections.emptyMap();
   }
 
@@ -145,13 +145,13 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   }
 
   @Override
-  public AutoCloseableIterator<JsonNode> queryTableIncremental(BigQueryDatabase database,
-                                                               List<String> columnNames,
-                                                               String schemaName,
-                                                               String tableName,
-                                                               String cursorField,
-                                                               StandardSQLTypeName cursorFieldType,
-                                                               String cursor) {
+  public AutoCloseableIterator<JsonNode> queryTableIncremental(final BigQueryDatabase database,
+                                                               final List<String> columnNames,
+                                                               final String schemaName,
+                                                               final String tableName,
+                                                               final String cursorField,
+                                                               final StandardSQLTypeName cursorFieldType,
+                                                               final String cursor) {
     return queryTableWithParams(database, String.format("SELECT %s FROM %s WHERE %s > ?",
         enquoteIdentifierList(columnNames),
         getFullTableName(schemaName, tableName),
@@ -159,26 +159,26 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
         BigQueryUtils.getQueryParameter(cursorFieldType, cursor));
   }
 
-  private AutoCloseableIterator<JsonNode> queryTableWithParams(BigQueryDatabase database, String sqlQuery, QueryParameterValue... params) {
+  private AutoCloseableIterator<JsonNode> queryTableWithParams(final BigQueryDatabase database, final String sqlQuery, final QueryParameterValue... params) {
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
         final Stream<JsonNode> stream = database.query(sqlQuery, params);
         return AutoCloseableIterators.fromStream(stream);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new RuntimeException(e);
       }
     });
   }
 
-  private boolean isDatasetConfigured(SqlDatabase database) {
+  private boolean isDatasetConfigured(final SqlDatabase database) {
     return database.getSourceConfig().hasNonNull(CONFIG_DATASET_ID);
   }
 
-  private String getConfigDatasetId(SqlDatabase database) {
+  private String getConfigDatasetId(final SqlDatabase database) {
     return (isDatasetConfigured(database) ? database.getSourceConfig().get(CONFIG_DATASET_ID).asText() : null);
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Source source = new BigQuerySource();
     LOGGER.info("starting source: {}", BigQuerySource.class);
     new IntegrationRunner(source).run(args);

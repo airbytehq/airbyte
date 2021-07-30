@@ -38,7 +38,7 @@ public class S3StreamTransferManagerHelper {
   public static final int DEFAULT_PART_SIZE_MB = 5;
   public static final int DEFAULT_NUM_STREAMS = 1;
 
-  public static StreamTransferManager getDefault(String bucketName, String objectKey, AmazonS3 s3Client) {
+  public static StreamTransferManager getDefault(final String bucketName, final String objectKey, final AmazonS3 s3Client) {
     // The stream transfer manager lets us greedily stream into S3. The native AWS SDK does not
     // have support for streaming multipart uploads. The alternative is first writing the entire
     // output to disk before loading into S3. This is not feasible with large input.

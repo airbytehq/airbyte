@@ -88,7 +88,7 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
   protected abstract void initTests();
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     setupDatabaseInternal();
   }
 
@@ -105,20 +105,20 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
    */
   @Test
   public void testDataTypes() throws Exception {
-    ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
-    List<AirbyteMessage> allMessages = runRead(catalog);
+    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
+    final List<AirbyteMessage> allMessages = runRead(catalog);
     final List<AirbyteMessage> recordMessages = allMessages.stream().filter(m -> m.getType() == Type.RECORD).collect(Collectors.toList());
-    Map<String, List<String>> expectedValues = new HashMap<>();
+    final Map<String, List<String>> expectedValues = new HashMap<>();
     testDataHolders.forEach(testDataHolder -> {
       if (!testDataHolder.getExpectedValues().isEmpty())
         expectedValues.put(testDataHolder.getNameWithTestPrefix(), testDataHolder.getExpectedValues());
     });
 
     recordMessages.forEach(msg -> {
-      String streamName = msg.getRecord().getStream();
-      List<String> expectedValuesForStream = expectedValues.get(streamName);
+      final String streamName = msg.getRecord().getStream();
+      final List<String> expectedValuesForStream = expectedValues.get(streamName);
       if (expectedValuesForStream != null) {
-        String value = getValueFromJsonNode(msg.getRecord().getData().get(getTestColumnName()));
+        final String value = getValueFromJsonNode(msg.getRecord().getData().get(getTestColumnName()));
         assertTrue(expectedValuesForStream.contains(value),
             "Returned value '" + value + "' by streamer " + streamName + " should be in the expected list: " + expectedValuesForStream);
         expectedValuesForStream.remove(value);
@@ -129,10 +129,10 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
         "The streamer " + streamName + " should return all expected values. Missing values: " + values));
   }
 
-  private String getValueFromJsonNode(JsonNode jsonNode) {
+  private String getValueFromJsonNode(final JsonNode jsonNode) {
     if (jsonNode != null) {
-      String nodeText = jsonNode.asText();
-      String nodeString = jsonNode.toString();
+      final String nodeText = jsonNode.asText();
+      final String nodeString = jsonNode.toString();
       String value = (nodeText != null && !nodeText.equals("") ? nodeText : nodeString);
       value = (value != null && value.equals("null") ? null : value);
       return value;
@@ -147,11 +147,11 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
    *         scripts failed.
    */
   private void setupDatabaseInternal() throws Exception {
-    Database database = setupDatabase();
+    final Database database = setupDatabase();
 
     initTests();
 
-    for (TestDataHolder test : testDataHolders) {
+    for (final TestDataHolder test : testDataHolders) {
       database.query(ctx -> {
         ctx.fetch(test.getCreateSqlQuery());
         LOGGER.debug("Table " + test.getNameWithTestPrefix() + " is created.");
@@ -197,7 +197,7 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
    *
    * @param test comprehensive data type test
    */
-  public void addDataTypeTestData(TestDataHolder test) {
+  public void addDataTypeTestData(final TestDataHolder test) {
     testDataHolders.add(test);
     test.setTestNumber(testDataHolders.stream().filter(t -> t.getSourceType().equals(test.getSourceType())).count());
     test.setNameSpace(getNameSpace());
@@ -205,7 +205,7 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
     test.setTestColumnName(getTestColumnName());
   }
 
-  private String formatCollection(Collection<String> collection) {
+  private String formatCollection(final Collection<String> collection) {
     return collection.stream().map(s -> "`" + s + "`").collect(Collectors.joining(", "));
   }
 
@@ -216,7 +216,7 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
    * @return formatted list of test cases
    */
   public String getMarkdownTestTable() {
-    StringBuilder table = new StringBuilder()
+    final StringBuilder table = new StringBuilder()
         .append("|**Data Type**|**Insert values**|**Expected values**|**Comment**|**Common test result**|\n")
         .append("|----|----|----|----|----|\n");
 

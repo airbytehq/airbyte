@@ -136,8 +136,8 @@ public class AirbyteVersion {
         '}';
   }
 
-  public static AirbyteVersion versionWithoutPatch(AirbyteVersion airbyteVersion) {
-    String versionWithoutPatch = "" + airbyteVersion.getMajorVersion()
+  public static AirbyteVersion versionWithoutPatch(final AirbyteVersion airbyteVersion) {
+    final String versionWithoutPatch = "" + airbyteVersion.getMajorVersion()
         + "."
         + airbyteVersion.getMinorVersion()
         + ".0-"
@@ -145,7 +145,7 @@ public class AirbyteVersion {
     return new AirbyteVersion(versionWithoutPatch);
   }
 
-  public static AirbyteVersion versionWithoutPatch(String airbyteVersion) {
+  public static AirbyteVersion versionWithoutPatch(final String airbyteVersion) {
     return versionWithoutPatch(new AirbyteVersion(airbyteVersion));
   }
 

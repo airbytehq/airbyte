@@ -128,7 +128,7 @@ public class DestinationHandler {
     // disable all connections associated with this destination
     // Delete connections first in case it it fails in the middle, destination will still be visible
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(destination.getWorkspaceId());
-    for (ConnectionRead connectionRead : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
+    for (final ConnectionRead connectionRead : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
       if (!connectionRead.getDestinationId().equals(destination.getDestinationId())) {
         continue;
       }
@@ -170,7 +170,7 @@ public class DestinationHandler {
     return buildDestinationRead(destinationUpdate.getDestinationId(), spec);
   }
 
-  public DestinationRead getDestination(DestinationIdRequestBody destinationIdRequestBody)
+  public DestinationRead getDestination(final DestinationIdRequestBody destinationIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final UUID destinationId = destinationIdRequestBody.getDestinationId();
     final DestinationConnection dci = configRepository.getDestinationConnection(destinationId);
@@ -182,11 +182,11 @@ public class DestinationHandler {
     return buildDestinationRead(destinationIdRequestBody.getDestinationId());
   }
 
-  public DestinationReadList listDestinationsForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody)
+  public DestinationReadList listDestinationsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<DestinationRead> reads = Lists.newArrayList();
 
-    for (DestinationConnection dci : configRepository.listDestinationConnection()) {
+    for (final DestinationConnection dci : configRepository.listDestinationConnection()) {
       if (!dci.getWorkspaceId().equals(workspaceIdRequestBody.getWorkspaceId())) {
         continue;
       }
@@ -205,7 +205,7 @@ public class DestinationHandler {
     validator.ensure(spec.getConnectionSpecification(), configuration);
   }
 
-  private ConnectorSpecification getSpec(UUID destinationDefinitionId)
+  private ConnectorSpecification getSpec(final UUID destinationDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
     final String imageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
@@ -235,7 +235,7 @@ public class DestinationHandler {
     return buildDestinationRead(destinationId, spec);
   }
 
-  private DestinationRead buildDestinationRead(final UUID destinationId, ConnectorSpecification spec)
+  private DestinationRead buildDestinationRead(final UUID destinationId, final ConnectorSpecification spec)
       throws ConfigNotFoundException, IOException, JsonValidationException {
 
     // remove secrets from config before returning the read

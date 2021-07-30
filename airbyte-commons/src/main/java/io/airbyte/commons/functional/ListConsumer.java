@@ -44,7 +44,7 @@ public class ListConsumer<T> implements Consumer<T> {
   }
 
   @Override
-  public void accept(T t) {
+  public void accept(final T t) {
     consumed.add(t);
   }
 

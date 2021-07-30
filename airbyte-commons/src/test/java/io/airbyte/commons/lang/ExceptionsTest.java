@@ -42,7 +42,7 @@ class ExceptionsTest {
 
   @Test
   void testToRuntimeVoid() {
-    List<String> list = new ArrayList<>();
+    final List<String> list = new ArrayList<>();
     assertThrows(RuntimeException.class, () -> Exceptions.toRuntime(() -> voidCallable(list, "hello", true)));
     assertEquals(0, list.size());
 
@@ -61,7 +61,7 @@ class ExceptionsTest {
     });
   }
 
-  private String callable(String input, boolean shouldThrow) throws IOException {
+  private String callable(final String input, final boolean shouldThrow) throws IOException {
     if (shouldThrow) {
       throw new IOException();
     } else {
@@ -69,7 +69,7 @@ class ExceptionsTest {
     }
   }
 
-  private void voidCallable(List<String> list, String input, boolean shouldThrow) throws IOException {
+  private void voidCallable(final List<String> list, final String input, final boolean shouldThrow) throws IOException {
     if (shouldThrow) {
       throw new IOException();
     } else {

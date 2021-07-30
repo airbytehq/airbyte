@@ -254,21 +254,21 @@ class JsonsTest {
 
     public ToClass() {}
 
-    public ToClass(String str, Integer num, long numLong) {
+    public ToClass(final String str, final Integer num, final long numLong) {
       this.str = str;
       this.num = num;
       this.numLong = numLong;
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
       if (this == o) {
         return true;
       }
       if (o == null || getClass() != o.getClass()) {
         return false;
       }
-      ToClass toClass = (ToClass) o;
+      final ToClass toClass = (ToClass) o;
       return numLong == toClass.numLong
           && Objects.equals(str, toClass.str)
           && Objects.equals(num, toClass.num);

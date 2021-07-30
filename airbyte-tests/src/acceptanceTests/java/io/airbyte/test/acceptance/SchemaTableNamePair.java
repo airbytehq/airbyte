@@ -31,7 +31,7 @@ public class SchemaTableNamePair {
   public String schemaName;
   public String tableName;
 
-  public SchemaTableNamePair(String schemaName, String tableName) {
+  public SchemaTableNamePair(final String schemaName, final String tableName) {
     this.schemaName = schemaName;
     this.tableName = tableName;
   }
@@ -45,14 +45,14 @@ public class SchemaTableNamePair {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    SchemaTableNamePair that = (SchemaTableNamePair) o;
+    final SchemaTableNamePair that = (SchemaTableNamePair) o;
     return Objects.equals(schemaName, that.schemaName) && Objects.equals(tableName, that.tableName);
   }
 
