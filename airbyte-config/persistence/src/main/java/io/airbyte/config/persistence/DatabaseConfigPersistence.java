@@ -24,18 +24,18 @@
 
 package io.airbyte.config.persistence;
 
-import static io.airbyte.config.persistence.AirbyteConfigsTable.AIRBYTE_CONFIGS;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.CONFIG_BLOB;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.CONFIG_ID;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.CONFIG_TYPE;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.CREATED_AT;
-import static io.airbyte.config.persistence.AirbyteConfigsTable.UPDATED_AT;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.AIRBYTE_CONFIGS;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CONFIG_BLOB;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CONFIG_ID;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CONFIG_TYPE;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CREATED_AT;
+import static io.airbyte.db.instance.configs.AirbyteConfigsTable.UPDATED_AT;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.select;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchemaMigrationSupport;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
@@ -65,25 +65,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
   public DatabaseConfigPersistence(Database database) {
     this.database = new ExceptionWrappingDatabase(database);
-  }
-
-  /**
-   * Initialize the database by creating the {@code airbyte_configs} table.
-   */
-  public DatabaseConfigPersistence initialize(String schema) throws IOException {
-    database.transaction(ctx -> {
-      boolean hasConfigsTable = ctx.fetchExists(select()
-          .from("information_schema.tables")
-          .where("table_name = 'airbyte_configs'"));
-      if (hasConfigsTable) {
-        return null;
-      }
-      LOGGER.info("Config database has not been initialized");
-      LOGGER.info("Creating tables with schema: {}", schema);
-      ctx.execute(schema);
-      return null;
-    });
-    return this;
   }
 
   /**
@@ -122,7 +103,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> T getConfig(ConfigSchema configType, String configId, Class<T> clazz)
+  public <T> T getConfig(AirbyteConfig configType, String configId, Class<T> clazz)
       throws ConfigNotFoundException, JsonValidationException, IOException {
     Result<Record> result = database.query(ctx -> ctx.select(asterisk())
         .from(AIRBYTE_CONFIGS)
@@ -139,7 +120,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> List<T> listConfigs(ConfigSchema configType, Class<T> clazz) throws IOException {
+  public <T> List<T> listConfigs(AirbyteConfig configType, Class<T> clazz) throws IOException {
     Result<Record> results = database.query(ctx -> ctx.select(asterisk())
         .from(AIRBYTE_CONFIGS)
         .where(CONFIG_TYPE.eq(configType.name()))
@@ -151,7 +132,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> void writeConfig(ConfigSchema configType, String configId, T config) throws IOException {
+  public <T> void writeConfig(AirbyteConfig configType, String configId, T config) throws IOException {
     LOGGER.info("Upserting {} record {}", configType, configId);
 
     database.transaction(ctx -> {
@@ -190,7 +171,24 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> void replaceAllConfigs(Map<ConfigSchema, Stream<T>> configs, boolean dryRun) throws IOException {
+  public void deleteConfig(AirbyteConfig configType, String configId) throws IOException {
+    database.transaction(ctx -> {
+      boolean isExistingConfig = ctx.fetchExists(select()
+          .from(AIRBYTE_CONFIGS)
+          .where(CONFIG_TYPE.eq(configType.name()), CONFIG_ID.eq(configId)));
+
+      if (isExistingConfig) {
+        ctx.deleteFrom(AIRBYTE_CONFIGS)
+            .where(CONFIG_TYPE.eq(configType.name()), CONFIG_ID.eq(configId))
+            .execute();
+        return null;
+      }
+      return null;
+    });
+  }
+
+  @Override
+  public <T> void replaceAllConfigs(Map<AirbyteConfig, Stream<T>> configs, boolean dryRun) throws IOException {
     if (dryRun) {
       return;
     }
@@ -202,7 +200,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       ctx.truncate(AIRBYTE_CONFIGS).restartIdentity().execute();
 
       return configs.entrySet().stream().map(entry -> {
-        ConfigSchema configType = entry.getKey();
+        AirbyteConfig configType = entry.getKey();
         return entry.getValue()
             .map(configObject -> insertConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(configObject), configType.getIdFieldName()))
             .reduce(0, Integer::sum);

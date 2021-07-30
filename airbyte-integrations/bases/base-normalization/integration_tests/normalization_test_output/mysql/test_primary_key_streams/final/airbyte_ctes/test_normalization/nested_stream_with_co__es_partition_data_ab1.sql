@@ -50,7 +50,7 @@ with numbers as (
 select
     _airbyte_partition_hashid,
     json_value(_airbyte_nested_data, 
-  '$."currency"') as currency,
+    '$."currency"') as currency,
     _airbyte_emitted_at
 from test_normalization.`nested_stream_with_co___long_names_partition`
 left join joined on _airbyte_partition_hashid = joined._airbyte_hashid

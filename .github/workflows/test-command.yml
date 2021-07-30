@@ -40,6 +40,7 @@ jobs:
   integration-test:
     needs: start-test-runner
     runs-on: ${{ needs.start-test-runner.outputs.label }}
+    environment: more-secrets
     steps:
       - name: Search for valid connector name format
         id: regex
@@ -123,6 +124,7 @@ jobs:
           SOURCE_SLACK_TEST_CREDS: ${{ secrets.SOURCE_SLACK_TEST_CREDS }}
           SOURCE_US_CENSUS_TEST_CREDS: ${{ secrets.SOURCE_US_CENSUS_TEST_CREDS }}
           SMARTSHEETS_TEST_CREDS: ${{ secrets.SMARTSHEETS_TEST_CREDS }}
+          SOURCE_SNAPCHAT_MARKETING_CREDS: ${{ secrets.SOURCE_SNAPCHAT_MARKETING_CREDS }}
           SNOWFLAKE_INTEGRATION_TEST_CREDS: ${{ secrets.SNOWFLAKE_INTEGRATION_TEST_CREDS }}
           SNOWFLAKE_S3_COPY_INTEGRATION_TEST_CREDS: ${{ secrets.SNOWFLAKE_S3_COPY_INTEGRATION_TEST_CREDS }}
           SNOWFLAKE_GCS_COPY_INTEGRATION_TEST_CREDS: ${{ secrets.SNOWFLAKE_GCS_COPY_INTEGRATION_TEST_CREDS }}
