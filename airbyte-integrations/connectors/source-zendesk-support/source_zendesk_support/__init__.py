@@ -24,4 +24,4 @@ SOFTWARE.
 
 from .source import SourceZendeskSupport
 
-__all__ = ["SourceZendeskSupport"]
+__all__ = ("SourceZendeskSupport",)
