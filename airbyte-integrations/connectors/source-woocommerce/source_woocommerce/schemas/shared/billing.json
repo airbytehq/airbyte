@@ -1,0 +1,38 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "first_name": {
+      "type": ["null", "string"]
+    },
+    "last_name": {
+      "type": ["null", "string"]
+    },
+    "company": {
+      "type": ["null", "string"]
+    },
+    "address_1": {
+      "type": ["null", "string"]
+    },
+    "address_2": {
+      "type": ["null", "string"]
+    },
+    "city": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "postcode": {
+      "type": ["null", "string"]
+    },
+    "country": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "phone": {
+      "type": ["null", "string"]
+    }
+  }
+}
