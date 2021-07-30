@@ -54,19 +54,9 @@ public class YamlSeedConfigPersistenceTest {
 
   @Test
   public void testGetConfig() throws Exception {
-    // workspace
-    StandardWorkspace defaultWorkspace = PERSISTENCE
-        .getConfig(ConfigSchema.STANDARD_WORKSPACE, PersistenceConstants.DEFAULT_WORKSPACE_ID.toString(), StandardWorkspace.class);
-    assertEquals(PersistenceConstants.DEFAULT_WORKSPACE_ID, defaultWorkspace.getWorkspaceId());
-    assertEquals("default", defaultWorkspace.getName());
-    assertEquals("default", defaultWorkspace.getSlug());
-    assertEquals(false, defaultWorkspace.getInitialSetupComplete());
-    assertEquals(true, defaultWorkspace.getDisplaySetupWizard());
-    assertEquals(false, defaultWorkspace.getTombstone());
-
     // source
-    String mySqlSourceId = "435bb9a5-7887-4809-aa58-28c27df0d7ad";
-    StandardSourceDefinition mysqlSource = PERSISTENCE
+    final String mySqlSourceId = "435bb9a5-7887-4809-aa58-28c27df0d7ad";
+    final StandardSourceDefinition mysqlSource = PERSISTENCE
         .getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, mySqlSourceId, StandardSourceDefinition.class);
     assertEquals(mySqlSourceId, mysqlSource.getSourceDefinitionId().toString());
     assertEquals("MySQL", mysqlSource.getName());
@@ -75,8 +65,8 @@ public class YamlSeedConfigPersistenceTest {
     assertEquals("mysql.svg", mysqlSource.getIcon());
 
     // destination
-    String s3DestinationId = "4816b78f-1489-44c1-9060-4b19d5fa9362";
-    StandardDestinationDefinition s3Destination = PERSISTENCE
+    final String s3DestinationId = "4816b78f-1489-44c1-9060-4b19d5fa9362";
+    final StandardDestinationDefinition s3Destination = PERSISTENCE
         .getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, s3DestinationId, StandardDestinationDefinition.class);
     assertEquals(s3DestinationId, s3Destination.getDestinationDefinitionId().toString());
     assertEquals("S3", s3Destination.getName());
@@ -89,21 +79,20 @@ public class YamlSeedConfigPersistenceTest {
     assertThrows(UnsupportedOperationException.class,
         () -> PERSISTENCE.getConfig(ConfigSchema.STANDARD_SYNC, "invalid_id", StandardSync.class));
     assertThrows(ConfigNotFoundException.class,
-        () -> PERSISTENCE.getConfig(ConfigSchema.STANDARD_WORKSPACE, "invalid_id", StandardWorkspace.class));
+        () -> PERSISTENCE.getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, "invalid_id", StandardWorkspace.class));
   }
 
   @Test
   public void testDumpConfigs() {
     Map<String, Stream<JsonNode>> allSeedConfigs = PERSISTENCE.dumpConfigs();
-    assertEquals(3, allSeedConfigs.size());
-    assertTrue(allSeedConfigs.get(ConfigSchema.STANDARD_WORKSPACE.name()).count() > 0);
+    assertEquals(2, allSeedConfigs.size());
     assertTrue(allSeedConfigs.get(ConfigSchema.STANDARD_SOURCE_DEFINITION.name()).count() > 0);
     assertTrue(allSeedConfigs.get(ConfigSchema.STANDARD_DESTINATION_DEFINITION.name()).count() > 0);
   }
 
   @Test
   public void testWriteMethods() {
-    assertThrows(UnsupportedOperationException.class, () -> PERSISTENCE.writeConfig(ConfigSchema.STANDARD_WORKSPACE, "id", new Object()));
+    assertThrows(UnsupportedOperationException.class, () -> PERSISTENCE.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, "id", new Object()));
     assertThrows(UnsupportedOperationException.class, () -> PERSISTENCE.replaceAllConfigs(Collections.emptyMap(), false));
   }
 

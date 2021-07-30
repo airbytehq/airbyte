@@ -291,7 +291,7 @@ tasks.withType(AbstractArchiveTask) {
     reproducibleFileOrder = true
 }
 
-// Configure what Subprojects to publish.
+// Configure what subprojects to publish.
 String[] toPublish = [
         ':airbyte-analytics',
         ':airbyte-api',
@@ -302,10 +302,11 @@ String[] toPublish = [
         ':airbyte-config:persistence',
         ':airbyte-db',
         ':airbyte-json-validation',
-        ':airbyte-json-notification',
+        ':airbyte-migration',
+        ':airbyte-notification',
         ':airbyte-protocol:models',
-        ':airbyte-scheduler:models',
         ':airbyte-scheduler:client',
+        ':airbyte-scheduler:models',
         ':airbyte-scheduler:persistence',
         ':airbyte-server',
         ':airbyte-workers'
@@ -318,6 +319,7 @@ configure(subprojects.findAll { toPublish.contains(it.getPath()) }) {
             publications {
                 // This block is present so Gradle knows to publish a Maven jar.
                 maven(MavenPublication) {
+                    from components.java
                     // Gradle will by default use the subproject path as the group id and the subproject name as the artifact id.
                     // e.g. the subproject :airbyte-scheduler:models is imported at io.airbyte.airbyte-config:persistence:<version-number>.
                 }
