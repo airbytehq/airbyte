@@ -6,6 +6,15 @@ description: Be sure to not miss out on new features and improvements!
 
 This is the changelog for Airbyte Platform. For our connector changelog, please visit our [Connector Changelog](connectors.md) page.
 
+## [07-29-2021 - 0.29.1](https://github.com/airbytehq/airbyte/releases/tag/v0.29.1-alpha)
+* When migrating, types represented in the config archive need to be a subset of the types declared in the schema.
+
+## [07-28-2021 - 0.29.0](https://github.com/airbytehq/airbyte/releases/tag/v0.29.0-alpha)
+* Deprecated `DEFAULT_WORKSPACE_ID`; default workspace no longer exists by default.
+
+## [07-28-2021 - 0.28.2](https://github.com/airbytehq/airbyte/releases/tag/v0.28.2-alpha)
+* Backend now handles workspaceId for WebBackend operations.
+
 ## [07-26-2021 - 0.28.1](https://github.com/airbytehq/airbyte/releases/tag/v0.28.1-alpha)
 * K8s: Overly-sensitive logs are now silenced.
 
