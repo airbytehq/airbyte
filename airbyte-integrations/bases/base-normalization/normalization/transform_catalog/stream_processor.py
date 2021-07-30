@@ -29,7 +29,7 @@ from typing import Dict, List, Optional, Tuple
 from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMode
 from jinja2 import Template
 from normalization.destination_type import DestinationType
-from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer
+from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer, transform_json_naming
 from normalization.transform_catalog.table_name_registry import TableNameRegistry
 from normalization.transform_catalog.utils import (
     is_airbyte_column,
@@ -346,14 +346,17 @@ from {{ from_table }}
     @staticmethod
     def extract_json_column(property_name: str, json_column_name: str, definition: Dict, column_name: str) -> str:
         json_path = [property_name]
-        json_extract = jinja_call(f"json_extract({json_column_name}, {json_path})")
+        # In some cases, some destination aren't able to parse the JSON blob using the original property name
+        # we make their life easier by using a pre-populated and sanitized column name instead...
+        normalized_json_path = [transform_json_naming(property_name)]
+        json_extract = jinja_call(f"json_extract({json_column_name}, {json_path}, {normalized_json_path})")
         if "type" in definition:
             if is_array(definition["type"]):
-                json_extract = jinja_call(f"json_extract_array({json_column_name}, {json_path})")
+                json_extract = jinja_call(f"json_extract_array({json_column_name}, {json_path}, {normalized_json_path})")
             elif is_object(definition["type"]):
-                json_extract = jinja_call(f"json_extract({json_column_name}, {json_path})")
+                json_extract = jinja_call(f"json_extract({json_column_name}, {json_path}, {normalized_json_path})")
             elif is_simple_property(definition["type"]):
-                json_extract = jinja_call(f"json_extract_scalar({json_column_name}, {json_path})")
+                json_extract = jinja_call(f"json_extract_scalar({json_column_name}, {json_path}, {normalized_json_path})")
         return f"{json_extract} as {column_name}"
 
     def generate_column_typing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
@@ -486,11 +489,11 @@ select
     {{ cursor_field }} as _airbyte_start_at,
     lag({{ cursor_field }}) over (
         partition by {{ primary_key }}
-        order by {{ cursor_field }} desc, _airbyte_emitted_at desc
+        order by {{ cursor_field }} is null asc, {{ cursor_field }} desc, _airbyte_emitted_at desc
     ) as _airbyte_end_at,
     lag({{ cursor_field }}) over (
         partition by {{ primary_key }}
-        order by {{ cursor_field }} desc, _airbyte_emitted_at desc{{ cdc_updated_at_order }}
+        order by {{ cursor_field }} is null asc, {{ cursor_field }} desc, _airbyte_emitted_at desc{{ cdc_updated_at_order }}
     ) is null {{ cdc_active_row }}as _airbyte_active_row,
     _airbyte_emitted_at,
     {{ hash_id }}

@@ -26,8 +26,6 @@ package io.airbyte.workers.protocols.airbyte;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -139,7 +137,7 @@ class DefaultAirbyteDestinationTest {
       }
     });
 
-    verify(process).waitFor(anyLong(), any());
+    verify(process).exitValue();
   }
 
   @Test
