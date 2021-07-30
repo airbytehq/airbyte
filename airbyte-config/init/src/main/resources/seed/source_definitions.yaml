@@ -8,6 +8,11 @@
   dockerRepository: airbyte/source-asana
   dockerImageTag: 0.1.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-asana
+- sourceDefinitionId: 686473f1-76d9-4994-9cc7-9b13da46147c
+  name: Chargebee
+  dockerRepository: airbyte/source-chargebee
+  dockerImageTag: 0.1.2
+  documentationUrl: https://hub.docker.com/r/airbyte/source-chargebee
 - sourceDefinitionId: e2b40e36-aa0e-4bed-b41b-bcea6fa348b1
   name: Exchange Rates Api
   dockerRepository: airbyte/source-exchange-rates
