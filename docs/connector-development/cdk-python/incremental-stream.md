@@ -20,15 +20,39 @@ The `cursor_field` refers to the field in the stream's output records used to de
 
 Cursor fields can be input by the user \(e.g: a user can choose to use an auto-incrementing `id` column in a DB table\) or they can be defined by the source e.g: where an API defines that `updated_at` is what determines the ordering of records.
 
-In the context of the CDK, setting the `Stream.cursor_field` property to any value informs the framework that this stream is incremental.
+In the context of the CDK, setting the `Stream.cursor_field` property to any truthy value informs the framework that this stream is incremental.
 
 ### `Stream.get_updated_state`
 
-This function helps the CDK figure out the latest state for every record output by the connector \(as returned by the `Stream.read_records` method\). This allows sync to resume from where the previous sync last stopped, regardless of success or failure. This function typically compares the state object's and the latest record's cursor field, picking the latest one.
+This function helps the stream keep track of the latest state by inspecting every record output by the stream \(as returned by the `Stream.read_records` method\) and comparing it against the most recent state object. This allows sync to resume from where the previous sync last stopped, regardless of success or failure. This function typically compares the state object's and the latest record's cursor field, picking the latest one.
+
+
+## Checkpointing state
+
+There are two ways to checkpointing state (i.e: controling the timing of when state is saved) while reading data from a connector: 
+
+1. Interval-based checkpointing
+2. Stream Slices
+
+
+### Interval based checkpointing
+This is the simplest method for checkpointing. When the interval is set to a truthy value e.g: 100, then state is persisted after every 100 records output by the connector e.g: state is saved after reading 100 records, then 200, 300, etc.. 
+
+While this is very simple, **it requires that records are output in ascending order with regards to the cursor field**. For example, if your stream outputs records in ascending order of the `updated_at` field, then this is a good fit for your usecase. But if the stream outputs records in a random order, then you cannot use this method because we can only be certain that we read records after a particular `updated_at` timestamp once all records have been fully read. 
+
+Interval based checkpointing can be implemented by setting the `Stream.state_checkpoint_interval` property e.g: 
+
+```
+class MyAmazingStream(Stream): 
+  # Save the state every 100 records
+  state_checkpoint_interval = 100
+```
 
 ### `Stream.stream_slices`
 
-The above methods can optionally be paired with the `stream_slices` function to granularly control exactly when state is saved. Conceptually, a Stream Slice is a subset of the records in a stream which represent the smallest unit of data which can be re-synced. Once a full slice is read, an `AirbyteStateMessage` will be output, causing state to be saved. If a connector fails while reading the Nth slice of a stream, then the next time it retries, it will begin reading at the beginning of the Nth slice again, rather than re-read slices `1...N-1`.
+Stream slices can be used to achieve finer grain control of when state is checkpointed.
+
+Conceptually, a Stream Slice is a subset of the records in a stream which represent the smallest unit of data which can be re-synced. Once a full slice is read, an `AirbyteStateMessage` will be output, causing state to be saved. If a connector fails while reading the Nth slice of a stream, then the next time it retries, it will begin reading at the beginning of the Nth slice again, rather than re-read slices `1...N-1`.
 
 A Slice object is not typed, and the developer is free to include any information necessary to make the request. This function is called when the `Stream` is about to be read. Typically, the `stream_slices` function, via inspecting the state object, generates a Slice for every request to be made.
 
