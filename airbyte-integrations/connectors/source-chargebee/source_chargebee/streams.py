@@ -24,11 +24,10 @@
 
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
-import backoff
 import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
-from chargebee.api_error import OperationFailedError
+from chargebee import APIError
 from chargebee.list_result import ListResult
 from chargebee.model import Model
 from chargebee.models import Addon as AddonModel
@@ -38,8 +37,9 @@ from chargebee.models import Order as OrderModel
 from chargebee.models import Plan as PlanModel
 from chargebee.models import Subscription as SubscriptionModel
 
-# Backoff params below
-# according to Chargebee's guidance on rate limit
+from .rate_limiting import default_backoff_handler
+
+# Backoff params below according to Chargebee's guidance on rate limit.
 # https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_rate_limits
 MAX_TRIES = 10  # arbitrary max_tries
 MAX_TIME = 90  # because Chargebee API enforce a per-minute limit
@@ -63,9 +63,10 @@ class ChargebeeStream(Stream):
     def next_page_token(self, list_result: ListResult) -> Optional[Mapping[str, Any]]:
         # Reference for Chargebee's pagination strategy below:
         # https://apidocs.chargebee.com/docs/api/#pagination_and_filtering
-        next_offset = list_result.next_offset
-        if next_offset:
-            return {"offset": next_offset}
+        if list_result:
+            next_offset = list_result.next_offset
+            if next_offset:
+                return {"offset": next_offset}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -91,12 +92,7 @@ class ChargebeeStream(Stream):
         for message in list_result:
             yield message._response[self.name]
 
-    @backoff.on_exception(
-        backoff.expo,  # Exponential back-off
-        OperationFailedError,  # Only on Chargebee's OperationFailedError
-        max_tries=MAX_TRIES,
-        max_time=MAX_TIME,
-    )
+    @default_backoff_handler(max_tries=MAX_TRIES, factor=MAX_TIME)
     def _send_request(self, **kwargs) -> ListResult:
         """
         Just a wrapper to allow @backoff decorator
@@ -120,8 +116,12 @@ class ChargebeeStream(Stream):
 
         next_page_token = None
         while not pagination_completed:
-            # Request the ListResult object from Chargebee with back-off implemented through self._send_request().
-            list_result = self._send_request(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+            try:
+                # Request the ListResult object from Chargebee with back-off implemented through self._send_request().
+                list_result = self._send_request(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+            except APIError as e:
+                self.logger.warn(str(e))
+                break
 
             yield from self.parse_response(list_result, stream_state=stream_state, stream_slice=stream_slice)
 
