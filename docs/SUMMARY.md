@@ -161,6 +161,7 @@
     * [Building a Python Source](connector-development/tutorials/building-a-python-source.md)
     * [Building a Python Destination](connector-development/tutorials/building-a-python-destination.md)
     * [Building a Java Destination](connector-development/tutorials/building-a-java-destination.md)
+  * [Connector Specification Reference](connector-development/connector-specification-reference.md)
   * [Best Practices](connector-development/best-practices.md)
 * [Contributing to Airbyte](contributing-to-airbyte/README.md)
   * [Code of Conduct](contributing-to-airbyte/code-of-conduct.md)
