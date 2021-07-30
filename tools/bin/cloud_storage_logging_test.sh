@@ -17,7 +17,7 @@ export GCP_STORAGE_BUCKET=airbyte-kube-integration-logging-test
 
 # Run the logging test first since the same client is used in the log4j2 integration test.
 echo "Running log client tests.."
-SUB_BUILD=PLATFORM ./gradlew :airbyte-config:models:logClientsIntegrationTest  --scan
+SUB_BUILD=PLATFORM ./gradlew :airbyte-config:config-models:logClientsIntegrationTest  --scan
 
 # Reset existing configurations and run this for each possible configuration
 # These configurations mirror the configurations documented in https://docs.airbyte.io/deploying-airbyte/on-kubernetes#configure-logs.
@@ -36,7 +36,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=
 export GCP_STORAGE_BUCKET=
 
 echo "Running logging to S3 test.."
-SUB_BUILD=PLATFORM ./gradlew  :airbyte-config:models:log4j2IntegrationTest --scan --rerun-tasks -i
+SUB_BUILD=PLATFORM ./gradlew  :airbyte-config:config-models:log4j2IntegrationTest --scan --rerun-tasks -i
 
 echo "Setting GCS configuration.."
 export AWS_ACCESS_KEY_ID=
@@ -50,7 +50,7 @@ export GOOGLE_APPLICATION_CREDENTIALS="/tmp/gcs.json"
 export GCP_STORAGE_BUCKET=airbyte-kube-integration-logging-test
 
 echo "Running logging to GCS test.."
-SUB_BUILD=PLATFORM ./gradlew :airbyte-config:models:log4j2IntegrationTest --scan --rerun-tasks -i
+SUB_BUILD=PLATFORM ./gradlew :airbyte-config:config-models:log4j2IntegrationTest --scan --rerun-tasks -i
 
 echo "Starting Minio service.."
 wget https://dl.min.io/server/minio/release/linux-amd64/minio
@@ -72,4 +72,4 @@ export GOOGLE_APPLICATION_CREDENTIALS=
 export GCP_STORAGE_BUCKET=
 
 echo "Running logging to Minio test.."
-SUB_BUILD=PLATFORM ./gradlew :airbyte-config:models:log4j2IntegrationTest --scan --rerun-tasks -i
+SUB_BUILD=PLATFORM ./gradlew :airbyte-config:config-models:log4j2IntegrationTest --scan --rerun-tasks -i

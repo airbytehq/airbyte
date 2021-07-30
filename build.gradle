@@ -299,7 +299,7 @@ tasks.withType(AbstractArchiveTask) {
 //        ':airbyte-commons',
 //        ':airbyte-commons-docker',
 //        ':airbyte-config:config-init',
-//        ':airbyte-config:models',
+//        ':airbyte-config:config-models',
 //        ':airbyte-config:persistence',
 //        ':airbyte-db',
 //        ':airbyte-json-validation',

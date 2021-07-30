@@ -64,7 +64,7 @@ dependencies {
     implementation project(':airbyte-api')
     implementation project(':airbyte-commons-docker')
     implementation project(':airbyte-config:config-init')
-    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:persistence')
     implementation project(':airbyte-db')
     implementation project(":airbyte-json-validation")

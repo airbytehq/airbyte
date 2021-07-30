@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-scheduler:models')
     implementation project(':airbyte-scheduler:persistence')
