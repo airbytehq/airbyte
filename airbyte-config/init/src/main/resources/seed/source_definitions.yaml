@@ -70,6 +70,11 @@
   dockerImageTag: 0.2.4
   documentationUrl: https://hub.docker.com/r/airbyte/source-recurly
   icon: recurly.svg
+- sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
+  name: S3
+  dockerRepository: airbyte/source-s3
+  dockerImageTag: 0.1.1
+  documentationUrl: https://hub.docker.com/r/airbyte/source-s3
 - sourceDefinitionId: fbb5fbe2-16ad-4cf4-af7d-ff9d9c316c87
   name: Sendgrid
   dockerRepository: airbyte/source-sendgrid
