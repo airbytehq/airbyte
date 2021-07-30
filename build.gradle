@@ -308,7 +308,7 @@ tasks.withType(AbstractArchiveTask) {
 //        ':airbyte-protocol:models',
 //        ':airbyte-scheduler:scheduler-client',
 //        ':airbyte-scheduler:scheduler-models',
-//        ':airbyte-scheduler:persistence',
+//        ':airbyte-scheduler:scheduler-persistence',
 //        ':airbyte-server',
 //        ':airbyte-workers'
 //]

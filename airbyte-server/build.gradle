@@ -73,7 +73,7 @@ dependencies {
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-scheduler:scheduler-client')
     implementation project(':airbyte-scheduler:scheduler-models')
-    implementation project(':airbyte-scheduler:persistence')
+    implementation project(':airbyte-scheduler:scheduler-persistence')
     implementation project(':airbyte-workers')
 
     testImplementation "org.postgresql:postgresql:42.2.18"
