@@ -22,8 +22,6 @@
 # SOFTWARE.
 #
 
-from __future__ import print_function
-
 import hashlib
 import hmac
 import urllib.parse
