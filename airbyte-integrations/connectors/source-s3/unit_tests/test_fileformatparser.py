@@ -27,11 +27,11 @@ import os
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, List, Mapping
-from smart_open import open as smart_open
 
 import pyarrow as pa
 import pytest
 from airbyte_cdk import AirbyteLogger
+from smart_open import open as smart_open
 from source_s3.source_files_abstract.fileformatparser import CsvParser, FileFormatParser
 
 LOGGER = AirbyteLogger()
@@ -284,24 +284,78 @@ class TestCsvParser(AbstractTestFileFormatParser):
                 "test_alias": "compression: gzip",
                 "fileformatparser": CsvParser(
                     format={"filetype": "csv"},
-                    master_schema={'id': 'integer', 'name': 'string', 'valid': 'boolean', 'code': 'integer', 'degrees': 'number', 'birthday': 'string', 'last_seen': 'string'}),
+                    master_schema={
+                        "id": "integer",
+                        "name": "string",
+                        "valid": "boolean",
+                        "code": "integer",
+                        "degrees": "number",
+                        "birthday": "string",
+                        "last_seen": "string",
+                    },
+                ),
                 "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/test_file_5.csv.gz"),
                 "num_records": 8,
-                "inferred_schema": {'id': 'integer', 'name': 'string', 'valid': 'boolean', 'code': 'integer', 'degrees': 'number', 'birthday': 'string', 'last_seen': 'string'},
-                "line_checks":{7: {"id":7,"name":"xZhh1Kyl","valid":False,"code":10,"degrees":-9.2,"birthday":"2021-07-14","last_seen":"2021-07-14 15:30:09.225145"}},
-                "fails": []
+                "inferred_schema": {
+                    "id": "integer",
+                    "name": "string",
+                    "valid": "boolean",
+                    "code": "integer",
+                    "degrees": "number",
+                    "birthday": "string",
+                    "last_seen": "string",
+                },
+                "line_checks": {
+                    7: {
+                        "id": 7,
+                        "name": "xZhh1Kyl",
+                        "valid": False,
+                        "code": 10,
+                        "degrees": -9.2,
+                        "birthday": "2021-07-14",
+                        "last_seen": "2021-07-14 15:30:09.225145",
+                    }
+                },
+                "fails": [],
             },
             {
                 # tests compression: bz2
                 "test_alias": "compression: bz2",
                 "fileformatparser": CsvParser(
                     format={"filetype": "csv"},
-                    master_schema={'id': 'integer', 'name': 'string', 'valid': 'boolean', 'code': 'integer', 'degrees': 'number', 'birthday': 'string', 'last_seen': 'string'}),
+                    master_schema={
+                        "id": "integer",
+                        "name": "string",
+                        "valid": "boolean",
+                        "code": "integer",
+                        "degrees": "number",
+                        "birthday": "string",
+                        "last_seen": "string",
+                    },
+                ),
                 "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/test_file_7_bz2.csv.bz2"),
                 "num_records": 8,
-                "inferred_schema": {'id': 'integer', 'name': 'string', 'valid': 'boolean', 'code': 'integer', 'degrees': 'number', 'birthday': 'string', 'last_seen': 'string'},
-                "line_checks":{7: {"id":7,"name":"xZhh1Kyl","valid":False,"code":10,"degrees":-9.2,"birthday":"2021-07-14","last_seen":"2021-07-14 15:30:09.225145"}},
-                "fails": []
+                "inferred_schema": {
+                    "id": "integer",
+                    "name": "string",
+                    "valid": "boolean",
+                    "code": "integer",
+                    "degrees": "number",
+                    "birthday": "string",
+                    "last_seen": "string",
+                },
+                "line_checks": {
+                    7: {
+                        "id": 7,
+                        "name": "xZhh1Kyl",
+                        "valid": False,
+                        "code": 10,
+                        "degrees": -9.2,
+                        "birthday": "2021-07-14",
+                        "last_seen": "2021-07-14 15:30:09.225145",
+                    }
+                },
+                "fails": [],
             },
             {
                 # tests extra columns in master schema
