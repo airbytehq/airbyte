@@ -91,6 +91,7 @@
     * [Recharge](integrations/sources/recharge.md)
     * [Recurly](integrations/sources/recurly.md)
     * [Redshift](integrations/sources/redshift.md)
+    * [S3](integrations/sources/s3.md)
     * [SAP Business One](integrations/sources/sap-business-one.md)
     * [Salesforce](integrations/sources/salesforce.md)
     * [Sendgrid](integrations/sources/sendgrid.md)
