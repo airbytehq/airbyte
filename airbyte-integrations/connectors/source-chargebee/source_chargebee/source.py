@@ -68,6 +68,5 @@ class SourceChargebee(AbstractSource):
             ]
             return common_streams + product_catalog_v1_streams
 
-        if product_catalog_version == "2.0":
-            # Below streams are suitable only for `Product Catalog 2.0`.
-            return common_streams
+        # Below streams are suitable only for `Product Catalog 2.0`.
+        return common_streams
