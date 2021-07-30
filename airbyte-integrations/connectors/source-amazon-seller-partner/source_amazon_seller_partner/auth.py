@@ -49,7 +49,9 @@ class AWSAuthenticator(Oauth2Authenticator):
         }
 
 
-class AWSSigV4(AuthBase):
+class AWSSignature(AuthBase):
+    """Source from https://github.com/saleweaver/python-amazon-sp-api/blob/master/sp_api/base/aws_sig_v4.py"""
+
     def __init__(self, service: str, aws_access_key_id: str, aws_secret_access_key: str, aws_session_token: str, region: str):
         self.service = service
         self.aws_access_key_id = aws_access_key_id
@@ -58,11 +60,12 @@ class AWSSigV4(AuthBase):
         self.region = region
 
     @staticmethod
-    def sign_msg(key, msg):
+    def _sign_msg(key, msg):
         """ Sign message using key """
         return hmac.new(key, msg.encode("utf-8"), hashlib.sha256).digest()
 
-    def get_authorization_header(self, current_ts: pendulum.datetime, prepared_request: requests.PreparedRequest) -> str:
+    def _get_authorization_header(self, prepared_request: requests.PreparedRequest) -> str:
+        current_ts = pendulum.now("utc")
         url_parsed = urlparse(prepared_request.url)
         uri = urllib.parse.quote(url_parsed.path)
         host = url_parsed.hostname
@@ -104,10 +107,10 @@ class AWSSigV4(AuthBase):
             ["AWS4-HMAC-SHA256", amz_date, credential_scope, hashlib.sha256(canonical_request.encode("utf-8")).hexdigest()]
         )
 
-        datestamp_signed = self.sign_msg(("AWS4" + self.aws_secret_access_key).encode("utf-8"), datestamp)
-        region_signed = self.sign_msg(datestamp_signed, self.region)
-        service_signed = self.sign_msg(region_signed, self.service)
-        aws4_request_signed = self.sign_msg(service_signed, "aws4_request")
+        datestamp_signed = self._sign_msg(("AWS4" + self.aws_secret_access_key).encode("utf-8"), datestamp)
+        region_signed = self._sign_msg(datestamp_signed, self.region)
+        service_signed = self._sign_msg(region_signed, self.service)
+        aws4_request_signed = self._sign_msg(service_signed, "aws4_request")
         signature = hmac.new(aws4_request_signed, string_to_sign.encode("utf-8"), hashlib.sha256).hexdigest()
 
         authorization_header = "AWS4-HMAC-SHA256 Credential={}/{}, SignedHeaders={}, Signature={}".format(
@@ -116,13 +119,9 @@ class AWSSigV4(AuthBase):
         return authorization_header
 
     def __call__(self, prepared_request):
-        current_ts = pendulum.now("utc")
-
         prepared_request.headers.update(
             {
-                "host": urlparse(prepared_request.url).hostname,
-                "x-amz-date": current_ts.strftime("%Y%m%dT%H%M%SZ"),
-                "Authorization": self.get_authorization_header(current_ts, prepared_request),
+                "authorization": self._get_authorization_header(prepared_request),
                 "x-amz-security-token": self.aws_session_token,
             }
         )

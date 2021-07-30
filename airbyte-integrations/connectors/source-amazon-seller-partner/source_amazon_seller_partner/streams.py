@@ -23,22 +23,25 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
-from source_amazon_seller_partner.auth import AWSSigV4
+from source_amazon_seller_partner.auth import AWSSignature
+
+REPORTS_API_VERSION = "2020-09-04"
+ORDERS_API_VERSION = "v0"
 
 
 class AmazonSPStream(HttpStream, ABC):
     page_size = 100
     data_field = "payload"
 
-    def __init__(self, url_base: str, aws_sig_v4: AWSSigV4, replication_start_date: str, *args, **kwargs):
+    def __init__(self, url_base: str, aws_signature: AWSSignature, replication_start_date: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self._url_base = url_base
-        self._aws_sig_v4 = aws_sig_v4
+        self._aws_signature = aws_signature
         self._replication_start_date = replication_start_date
 
     @property
@@ -64,7 +67,7 @@ class AmazonSPStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         if next_page_token:
-            return next_page_token
+            return dict(next_page_token)
 
         params = {self.replication_start_date_field: self._replication_start_date, self.page_size_field: self.page_size}
         if self._replication_start_date:
@@ -74,7 +77,7 @@ class AmazonSPStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         stream_data = response.json()
-        next_page_token = stream_data.get("nextToken")
+        next_page_token = stream_data.get(self.next_page_token_field)
         if next_page_token:
             return {self.next_page_token_field: next_page_token}
 
@@ -97,15 +100,15 @@ class AmazonSPStream(HttpStream, ABC):
     def _create_prepared_request(
         self, path: str, headers: Mapping = None, params: Mapping = None, json: Any = None
     ) -> requests.PreparedRequest:
-        args = {"method": self.http_method, "url": self.url_base + path, "headers": headers, "params": params, "auth": self._aws_sig_v4}
-
-        return self._session.prepare_request(requests.Request(**args))
+        return self._session.prepare_request(
+            requests.Request(method=self.http_method, url=self.url_base + path, headers=headers, params=params, auth=self._aws_signature)
+        )
 
     def request_headers(self, *args, **kwargs) -> Mapping[str, Any]:
         return {"content-type": "application/json"}
 
 
-class RecordsBase(AmazonSPStream, ABC):
+class ReportsBase(AmazonSPStream, ABC):
     primary_key = "reportId"
     cursor_field = "createdTime"
     replication_start_date_field = "createdSince"
@@ -113,7 +116,7 @@ class RecordsBase(AmazonSPStream, ABC):
     page_size_field = "pageSize"
 
     def path(self, **kwargs):
-        return "/reports/2020-09-04/reports"
+        return f"/reports/{REPORTS_API_VERSION}/reports"
 
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
@@ -124,15 +127,15 @@ class RecordsBase(AmazonSPStream, ABC):
         return params
 
 
-class MerchantListingsReports(RecordsBase):
+class MerchantListingsReports(ReportsBase):
     name = "GET_MERCHANT_LISTINGS_ALL_DATA"
 
 
-class FlatFileOrdersReports(RecordsBase):
+class FlatFileOrdersReports(ReportsBase):
     name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
 
 
-class FbaInventoryReports(RecordsBase):
+class FbaInventoryReports(ReportsBase):
     name = "GET_FBA_INVENTORY_AGED_DATA"
 
 
@@ -144,19 +147,19 @@ class Orders(AmazonSPStream):
     next_page_token_field = "NextToken"
     page_size_field = "MaxResultsPerPage"
 
-    def __init__(self, marketplace_ids, **kwargs):
+    def __init__(self, marketplace_ids: List[str], **kwargs):
         super().__init__(**kwargs)
         self.marketplace_ids = marketplace_ids
 
     def path(self, **kwargs):
-        return "/orders/v0/orders"
+        return f"/orders/{ORDERS_API_VERSION}/orders"
 
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, next_page_token, **kwargs)
         if not next_page_token:
-            params.update({"MarketplaceIds": self.marketplace_ids})
+            params.update({"MarketplaceIds": ",".join(self.marketplace_ids)})
         return params
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:

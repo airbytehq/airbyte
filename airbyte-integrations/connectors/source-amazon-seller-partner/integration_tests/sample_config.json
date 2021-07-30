@@ -6,6 +6,6 @@
   "aws_access_key": "<aws_access_key>",
   "aws_secret_key": "<aws_secret_key>",
   "role_arn": "<role_arn>",
-  "aws_env": "<PRODUCTION or SANDBOX>",
+  "aws_environment": "<PRODUCTION or SANDBOX>",
   "region": "US"
 }

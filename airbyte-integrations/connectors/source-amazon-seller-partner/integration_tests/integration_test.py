@@ -23,6 +23,5 @@
 #
 
 
-def test_dummy_test():
-    """This test added for successful passing customIntegrationTests"""
+class TestAmazonSellerPartnerSource:
     pass

@@ -52,49 +52,65 @@ Japan	A1VC38T7YXB528	JP
 from enum import Enum
 
 
-class AWS_ENV(Enum):
+class AWSEnvironment(str, Enum):
     PRODUCTION = "PRODUCTION"
     SANDBOX = "SANDBOX"
 
 
+class AWSRegion(str, Enum):
+    AE = "AE"
+    DE = "DE"
+    PL = "PL"
+    EG = "EG"
+    ES = "ES"
+    FR = "FR"
+    IN = "IN"
+    IT = "IT"
+    NL = "NL"
+    SA = "SA"
+    SE = "SE"
+    TR = "TR"
+    UK = "UK"
+    AU = "AU"
+    JP = "JP"
+    SG = "SG"
+    US = "US"
+    BR = "BR"
+    CA = "CA"
+    MX = "MX"
+    GB = "GB"
+
+
 def get_aws_base_url(aws_env):
-    if aws_env == AWS_ENV.PRODUCTION:
+    if aws_env == AWSEnvironment.PRODUCTION:
         return "https://sellingpartnerapi"
     return "https://sandbox.sellingpartnerapi"
 
 
-def get_marketplaces_enum(aws_env):
+def get_marketplaces(aws_env):
     base_url = get_aws_base_url(aws_env)
 
-    def __init__(self, endpoint, marketplace_id, region):
-        """Easy dot access like: Marketplaces.endpoint ."""
-
-        self.endpoint = endpoint
-        self.marketplace_id = marketplace_id
-        self.region = region
-
-    values = {
-        "AE": (f"{base_url}-eu.amazon.com", "A2VIGQ35RCS4UG", "eu-west-1"),
-        "DE": (f"{base_url}-eu.amazon.com", "A1PA6795UKMFR9", "eu-west-1"),
-        "PL": (f"{base_url}-eu.amazon.com", "A1C3SOZRARQ6R3", "eu-west-1"),
-        "EG": (f"{base_url}-eu.amazon.com", "ARBP9OOSHTCHU", "eu-west-1"),
-        "ES": (f"{base_url}-eu.amazon.com", "A1RKKUPIHCS9HS", "eu-west-1"),
-        "FR": (f"{base_url}-eu.amazon.com", "A13V1IB3VIYZZH", "eu-west-1"),
-        "GB": (f"{base_url}-eu.amazon.com", "A1F83G8C2ARO7P", "eu-west-1"),
-        "IN": (f"{base_url}-eu.amazon.com", "A21TJRUUN4KGV", "eu-west-1"),
-        "IT": (f"{base_url}-eu.amazon.com", "APJ6JRA9NG5V4", "eu-west-1"),
-        "NL": (f"{base_url}-eu.amazon.com", "A1805IZSGTT6HS", "eu-west-1"),
-        "SA": (f"{base_url}-eu.amazon.com", "A17E79C6D8DWNP", "eu-west-1"),
-        "SE": (f"{base_url}-eu.amazon.com", "A2NODRKZP88ZB9", "eu-west-1"),
-        "TR": (f"{base_url}-eu.amazon.com", "A33AVAJ2PDY3EV", "eu-west-1"),
-        "UK": (f"{base_url}-eu.amazon.com", "A1F83G8C2ARO7P", "eu-west-1"),  # alias for GB
-        "AU": (f"{base_url}-fe.amazon.com", "A39IBJ37TRP1C6", "us-west-2"),
-        "JP": (f"{base_url}-fe.amazon.com", "A1VC38T7YXB528", "us-west-2"),
-        "SG": (f"{base_url}-fe.amazon.com", "A19VAU5U5O7RUS", "us-west-2"),
-        "US": (f"{base_url}-na.amazon.com", "ATVPDKIKX0DER", "us-east-1"),
-        "BR": (f"{base_url}-na.amazon.com", "A2Q3Y263D00KWC", "us-east-1"),
-        "CA": (f"{base_url}-na.amazon.com", "A2EUQ1WTGCTBG2", "us-east-1"),
-        "MX": (f"{base_url}-na.amazon.com", "A1AM78C64UM0Y8", "us-east-1"),
-        "__init__": __init__,
+    marketplaces = {
+        AWSRegion.AE: (f"{base_url}-eu.amazon.com", "A2VIGQ35RCS4UG", "eu-west-1"),
+        AWSRegion.DE: (f"{base_url}-eu.amazon.com", "A1PA6795UKMFR9", "eu-west-1"),
+        AWSRegion.PL: (f"{base_url}-eu.amazon.com", "A1C3SOZRARQ6R3", "eu-west-1"),
+        AWSRegion.EG: (f"{base_url}-eu.amazon.com", "ARBP9OOSHTCHU", "eu-west-1"),
+        AWSRegion.ES: (f"{base_url}-eu.amazon.com", "A1RKKUPIHCS9HS", "eu-west-1"),
+        AWSRegion.FR: (f"{base_url}-eu.amazon.com", "A13V1IB3VIYZZH", "eu-west-1"),
+        AWSRegion.IN: (f"{base_url}-eu.amazon.com", "A21TJRUUN4KGV", "eu-west-1"),
+        AWSRegion.IT: (f"{base_url}-eu.amazon.com", "APJ6JRA9NG5V4", "eu-west-1"),
+        AWSRegion.NL: (f"{base_url}-eu.amazon.com", "A1805IZSGTT6HS", "eu-west-1"),
+        AWSRegion.SA: (f"{base_url}-eu.amazon.com", "A17E79C6D8DWNP", "eu-west-1"),
+        AWSRegion.SE: (f"{base_url}-eu.amazon.com", "A2NODRKZP88ZB9", "eu-west-1"),
+        AWSRegion.TR: (f"{base_url}-eu.amazon.com", "A33AVAJ2PDY3EV", "eu-west-1"),
+        AWSRegion.UK: (f"{base_url}-eu.amazon.com", "A1F83G8C2ARO7P", "eu-west-1"),
+        AWSRegion.AU: (f"{base_url}-fe.amazon.com", "A39IBJ37TRP1C6", "us-west-2"),
+        AWSRegion.JP: (f"{base_url}-fe.amazon.com", "A1VC38T7YXB528", "us-west-2"),
+        AWSRegion.SG: (f"{base_url}-fe.amazon.com", "A19VAU5U5O7RUS", "us-west-2"),
+        AWSRegion.US: (f"{base_url}-na.amazon.com", "ATVPDKIKX0DER", "us-east-1"),
+        AWSRegion.BR: (f"{base_url}-na.amazon.com", "A2Q3Y263D00KWC", "us-east-1"),
+        AWSRegion.CA: (f"{base_url}-na.amazon.com", "A2EUQ1WTGCTBG2", "us-east-1"),
+        AWSRegion.MX: (f"{base_url}-na.amazon.com", "A1AM78C64UM0Y8", "us-east-1"),
     }
-    return Enum("Marketplaces", values)
+    marketplaces[AWSRegion.GB] = marketplaces[AWSRegion.UK]
+    return marketplaces
