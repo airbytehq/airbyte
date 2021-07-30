@@ -128,16 +128,17 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   // https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html
-  private int getBigQueryClientChunkSize(JsonNode config) {
-    final JsonNode jsonNode = config.get(BIG_QUERY_CLIENT_CHUNK_SIZE);
-    if (jsonNode == null) {
-      throw new IllegalArgumentException("BigQuery client Chunk (buffer) size \"big_query_client_buffer_size_mb\" must be set in config");
+  private Integer getBigQueryClientChunkSize(JsonNode config) {
+    Integer chunkSizeFromConfig = null;
+    if (config.has(BIG_QUERY_CLIENT_CHUNK_SIZE)) {
+      chunkSizeFromConfig = config.get(BIG_QUERY_CLIENT_CHUNK_SIZE).asInt();
+      if (chunkSizeFromConfig <= 0) {
+        LOGGER.error("BigQuery client Chunk (buffer) size must be a positive number (MB), but was:" + chunkSizeFromConfig);
+        throw new IllegalArgumentException("BigQuery client Chunk (buffer) size must be a positive number (MB)");
+      }
+      chunkSizeFromConfig = chunkSizeFromConfig * MiB;
     }
-    int chunkSizeFromConfig = jsonNode.asInt();
-    if (chunkSizeFromConfig <= 0) {
-      throw new IllegalArgumentException("BigQuery client Chunk (buffer) size must be a positive value");
-    }
-    return chunkSizeFromConfig * MiB;
+    return chunkSizeFromConfig;
   }
 
   private void createSchemaTable(BigQuery bigquery, String datasetId, String datasetLocation) {
@@ -230,7 +231,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .build();
 
       final TableDataWriteChannel writer = bigquery.writer(job, writeChannelConfiguration);
-      writer.setChunkSize(getBigQueryClientChunkSize(config));
+
+      // this this optional value. If not set - use default client's value (15MiG)
+      final Integer bigQueryClientChunkSizeFomConfig = getBigQueryClientChunkSize(config);
+      if (bigQueryClientChunkSizeFomConfig != null) {
+        writer.setChunkSize(bigQueryClientChunkSizeFomConfig);
+      }
       final WriteDisposition syncMode = getWriteDisposition(configStream.getDestinationSyncMode());
 
       writeConfigs.put(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),

@@ -70,7 +70,6 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
   private static final String CONFIG_PROJECT_ID = "project_id";
   private static final String CONFIG_DATASET_LOCATION = "dataset_location";
   private static final String CONFIG_CREDS = "credentials_json";
-  private static final String BIG_QUERY_CLIENT_CHUNK_SIZE = "big_query_client_buffer_size_mb";
 
   private BigQuery bigquery;
   private Dataset dataset;
@@ -203,7 +202,6 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
         .put(CONFIG_CREDS, credentialsJsonString)
         .put(CONFIG_DATASET_ID, datasetId)
         .put(CONFIG_DATASET_LOCATION, datasetLocation)
-        .put(BIG_QUERY_CLIENT_CHUNK_SIZE, 10)
         .build());
 
     final ServiceAccountCredentials credentials =
