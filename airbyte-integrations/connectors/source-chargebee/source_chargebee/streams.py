@@ -151,7 +151,6 @@ class Subscription(ChargebeeStream):
     API docs: https://apidocs.chargebee.com/docs/api/subscriptions?prod_cat_ver=2#list_subscriptions
     """
 
-    name = "subscription"
     api = SubscriptionModel
 
 
@@ -160,7 +159,6 @@ class Customer(ChargebeeStream):
     API docs: https://apidocs.chargebee.com/docs/api/customers?prod_cat_ver=2#list_customers
     """
 
-    name = "customer"
     api = CustomerModel
 
 
@@ -169,7 +167,6 @@ class Invoice(ChargebeeStream):
     API docs: https://apidocs.chargebee.com/docs/api/invoices?prod_cat_ver=2#list_invoices
     """
 
-    name = "invoice"
     api = InvoiceModel
 
 
@@ -178,7 +175,6 @@ class Order(ChargebeeStream):
     API docs: https://apidocs.chargebee.com/docs/api/orders?prod_cat_ver=2#list_orders
     """
 
-    name = "order"
     api = OrderModel
 
 
@@ -187,7 +183,6 @@ class Plan(ChargebeeStream):
     API docs: https://apidocs.chargebee.com/docs/api/plans?prod_cat_ver=1&lang=curl#list_plans
     """
 
-    name = "plan"
     api = PlanModel
 
 
@@ -196,5 +191,4 @@ class Addon(ChargebeeStream):
     API docs: https://apidocs.chargebee.com/docs/api/addons?prod_cat_ver=1&lang=curl#list_addons
     """
 
-    name = "addon"
     api = AddonModel
