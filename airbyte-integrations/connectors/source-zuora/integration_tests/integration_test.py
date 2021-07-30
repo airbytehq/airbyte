@@ -164,7 +164,7 @@ class TestZuora:
 
     def test_submit_job(self):
         """
-        Test submits the job to the server and returns the `job_id` as confimation that the job was submited successfully.
+        Test submits the job to the server and returns the `job_id` as confirmation that the job was submitted successfully.
         """
 
         # Prepare date_slice

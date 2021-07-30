@@ -49,6 +49,8 @@ For details refer to the [Availability of Data Source Objects](https://knowledge
 | `boolean` | `boolean` |  |
 | `bool` | `boolean` |  |
 
+Any other data type not listed in the table above will be treated as `string`.
+
 ### Features
 
 | Feature | Supported?\(Yes/No\) | Notes |
