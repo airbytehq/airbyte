@@ -47,7 +47,7 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
     include ':airbyte-notification'
     include ':airbyte-scheduler:scheduler-app'
     include ':airbyte-scheduler:scheduler-client'
-    include ':airbyte-scheduler:models'
+    include ':airbyte-scheduler:scheduler-models'
     include ':airbyte-scheduler:persistence'
     include ':airbyte-server'
     include ':airbyte-webapp'
