@@ -48,4 +48,3 @@ When reviewing connectors, we'll use the following "checklist" to verify whether
 ### Rate Limiting
 
 Most APIs enforce rate limits. Your connector should gracefully handle those \(i.e: without failing the connector process\). The most common way to handle rate limits is to implement backoff.
-
