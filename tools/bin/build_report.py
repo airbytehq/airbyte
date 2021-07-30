@@ -122,9 +122,8 @@ Destinations: total: {destinations_len} / tested: {len(TESTED_DESTINATION)} / su
 
 
 def send_report(report):
-    token = os.environ["SLACK_BUILD_MONITORING"]
+    token = os.environ["SLACK_BUILD_REPORT"]
     channel = "C022G3PV0H1"  # _global-logic-connectors
-    channel = "C028P99HFB9"  # vadim-test-channel
     client = WebClient(token=token)
     try:
         def msgs(report):
@@ -155,10 +154,12 @@ FAILED_2_LAST = []
 
 if __name__ == "__main__":
     # find all connectors
-    connectors = sorted(os.listdir("../../airbyte-integrations/connectors"))
-    # analyse build results for each connector
+    connectors = sorted(os.listdir("./airbyte-integrations/connectors"))
     print(f"Checking connectors: {len(connectors)}")
+
+    # analyse build results for each connector
     [check_connector(connector) for connector in connectors]
+
     report = create_report(connectors)
     print(report)
     send_report(report)

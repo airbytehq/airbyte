@@ -1,0 +1,24 @@
+name: Build Report
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 7pm UTC is 12am PDT.
+    - cron: '0 19 * * *'
+
+jobs:
+  build-report:
+    name: Build Report
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests slack_sdk
+      - name: create and send report
+        run: python ./tools/bin/build_report.py
+        env:
+          SLACK_BUILD_MONITORING: ${{ secrets.SLACK_BUILD_REPORT }}
