@@ -24,10 +24,10 @@
 
 
 import json
-import sys
 import os
 import selectors
 import subprocess
+import sys
 from dataclasses import dataclass
 from datetime import datetime
 from io import TextIOWrapper
