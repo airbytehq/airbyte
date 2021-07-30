@@ -25,7 +25,7 @@
 import os
 import requests
 import re
-from slack_sdk import WebClient
+from slack_sdk import WebhookClient
 from slack_sdk.errors import SlackApiError
 
 
@@ -122,9 +122,7 @@ Destinations: total: {destinations_len} / tested: {len(TESTED_DESTINATION)} / su
 
 
 def send_report(report):
-    token = os.environ["SLACK_BUILD_REPORT"]
-    channel = "C022G3PV0H1"  # _global-logic-connectors
-    client = WebClient(token=token)
+    webhook = WebhookClient(os.environ["BUILD_SLACK_WEBHOOK"])
     try:
         def msgs(report):
             """split report into messages with no more than 4000 chars each (slack limitation)"""
@@ -136,10 +134,10 @@ def send_report(report):
                     msg = ''
             yield msg
         for msg in msgs(report):
-            client.chat_postMessage(channel=channel, text=f"```{msg}```")
-        print(f'Report has been sent to channel: {channel}')
+            webhook.send(text=f"```{msg}```")
+        print(f'Report has been sent')
     except SlackApiError as e:
-        print(f'Unable to send report channel: {channel}')
+        print(f'Unable to send report')
         assert e.response["error"]
 
 
