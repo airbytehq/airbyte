@@ -1,7 +1,4 @@
-FROM python:3.7.11-alpine3.14
-
-# Bash is installed for more convenient debugging.
-RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
+FROM python:3.7-slim
 
 WORKDIR /airbyte/integration_code
 COPY destination_hdfs ./destination_hdfs
