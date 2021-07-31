@@ -29,6 +29,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -41,7 +42,7 @@ class WoocommerceStream(HttpStream, ABC):
     # Latest Stable Release
     api_version = "wc/v3"
     # Page size
-    limit = 1
+    limit = 100
     # Define primary key as sort key for full_refresh, or very first sync for incremental_refresh
     primary_key = "id"
     order_field = "date"
@@ -113,6 +114,23 @@ class IncrementalWoocommerceStream(WoocommerceStream, ABC):
         else:
             yield from records_slice
 
+class NonFilteredStream(IncrementalWoocommerceStream):
+
+    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
+        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
+
+        if not next_page_token and stream_state:
+           del params["after"]
+        return params
+
+    def read_records(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+        ) -> Iterable[Mapping[str, Any]]:
+
+            slice = super().read_records(sync_mode = SyncMode.full_refresh, stream_slice = stream_slice,stream_state = stream_state)
+            yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
+
+
 class Coupons(IncrementalWoocommerceStream):
     data_field = "coupons"
     order_field = "date"
@@ -120,21 +138,13 @@ class Coupons(IncrementalWoocommerceStream):
     def path(self, **kwargs) -> str:
         return f"{self.data_field}"
 
-class Customers(IncrementalWoocommerceStream):
+class Customers(NonFilteredStream):
     data_field = "customers"
     order_field = "registered_date"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}"
 
-    def request_params(
-            self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
-        ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
-        # If there is a next page token then we should only send pagination-related parameters.
-        if not next_page_token and stream_state:
-            del params["after"]
-        return params
 
 class Orders(IncrementalWoocommerceStream):
     data_field = "orders"

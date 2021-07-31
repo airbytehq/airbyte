@@ -1,5 +1,6 @@
 {
   "shop": "SHOP_NAME",
+  "start_date": "START_DATE",
   "api_key": "API_KEY",
   "api_secret": "API_SECRET"
 }
