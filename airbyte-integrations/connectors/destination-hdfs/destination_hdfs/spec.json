@@ -34,7 +34,7 @@
           "50070"
         ]
       },
-      "username": {
+      "user": {
         "title": "User",
         "description": "Effective user on the HDFS cluster.",
         "type": "string"
