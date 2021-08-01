@@ -9,7 +9,7 @@
     "title": "BigQuery Destination Spec",
     "type": "object",
     "required": ["project_id", "dataset_id"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "project_id": {
         "type": "string",

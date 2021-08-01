@@ -2,6 +2,6 @@
   "destinationDefinitionId": "424892c4-daac-4491-b35d-c6688ba547ba",
   "name": "Snowflake",
   "dockerRepository": "airbyte/destination-snowflake",
-  "dockerImageTag": "0.3.11",
+  "dockerImageTag": "0.3.12",
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/snowflake"
 }

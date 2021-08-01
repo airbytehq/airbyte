@@ -30,7 +30,7 @@
       "send_buffer_bytes",
       "receive_buffer_bytes"
     ],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "bootstrap_servers": {
         "title": "Bootstrap servers",
