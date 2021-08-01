@@ -34,6 +34,8 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import org.junit.jupiter.api.Test;
+
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -89,10 +91,9 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     return true;
   }
 
-  // Disable because is failing the CI created issue #.... to solve this
   @Override
   protected boolean supportsDBT() {
-    return false;
+    return true;
   }
 
   @Override
