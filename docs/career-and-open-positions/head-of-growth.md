@@ -1,4 +1,4 @@
-# Head of Lead generation
+# Head of Growth
 
 ## **About Airbyte**
 
@@ -8,14 +8,16 @@ Airbyte is remote friendly, with most of the team still based in San Francisco. 
 
 We raised a total of $31.2M by some of the world's [top investors](./#our-investors) (Benchmark, Accel, YCombinator, co-founders or CEOs of Segment, Elastic, MongoDB, Cloudera, etc.) and believe in product-led growth, where we build something awesome and let our product bring the users, rather than an outbound sales engine with cold calls.
 
-## **Description**
+## **The Opportunity**
 
-As the first Marketing hire, the Head of Lead Generation will work closely with both co-founders,  and will be responsible for developing and managing our lead generation initiatives. This is a unique opportunity to build out the marketing organization and grow it. You will be accountable for the strategy, development, and execution of lead generation programs to drive awareness and demand for Airbyte. 
+As the Head of Growth, you will work closely with both co-founders, and will be responsible for the strategy, development, and execution of growth programs to drive awareness and demand for Airbyte Cloud. While the responsibilities below will be the core of your jon, we are looking for a high-performing individual who will take initiative, proactively solve new problems, and create their own career path with us. 
 
-## **Responsibilities**
+## **What You'll Do**
 
+* Identify common denominators across key user conversion points
 * Build our pipeline. You’ll help deliver a robust sales pipeline through organic and paid efforts to fuel our rapid growth.
 * Drive key business metrics including leads, PQLs, SQLs, pipeline, and revenue through strategic and integrated programs and campaigns.
+* Act as a strategic partner to product, sales, customer success and engineering teams to prioritize opportunities and increase user retention
 * Leverage our open-source user community as a lead channel for our premium offers.
 * Optimize our paid digital spend. You’ll lead the team to significantly grow our paid digital leads from key market segments.
 * Lead our marketing operations and analytics. You’ll build out our marketing automation systems that we need to support our rapid growth, you’ll lead our marketing operations team for strong execution with our sales and SDR teams, and your team will manage our dashboards, reporting and developing insights to inform our strategy.
@@ -23,7 +25,7 @@ As the first Marketing hire, the Head of Lead Generation will work closely with 
 * Build, train and nurture your team. Provide mentorship, management and support to your rapidly growing team of marketers.
 
 
-## **Requirements**
+## **What You'll Need**
 
 * 5+ years of experience in lead generation and prospecting
 * Experience in B2B and developer tools for at least 3+ years
