@@ -200,7 +200,7 @@
 * [Careers & Open Positions](career-and-open-positions/README.md)
   * [Senior Software Engineer](career-and-open-positions/senior-software-engineer.md)
   * [Senior Product Manager](career-and-open-positions/senior-product-manager.md)
-  * [Head of Lead Generation](career-and-open-positions/head-of-lead-generation.md)
+  * [Head of Growth](career-and-open-positions/head-of-growth.md)
   * [Revenue Product Manager](career-and-open-positions/revenue-product-manager.md)
   * [Senior Content Editor / Strategist](career-and-open-positions/senior-content-editor.md)
 * [Troubleshooting](troubleshooting/README.md)
