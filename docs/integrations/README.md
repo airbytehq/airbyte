@@ -20,6 +20,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Braintree](./sources/braintree.md)| Alpha |
 |[BigQuery](./sources/bigquery.md)| Beta |
 |[Cart](./sources/cart.md)| Beta |
+|[Chargebee](./sources/chargebee.md)| Alpha |
 |[ClickHouse](./sources/clickhouse.md)| Beta |
 |[CockroachDB](./sources/cockroachdb.md)| Beta |
 |[Db2](./sources/db2.md)| Beta |
@@ -75,6 +76,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Recharge](./sources/recharge.md)| Beta |
 |[Recurly](./sources/recurly.md)| Beta |
 |[Redshift](./sources/redshift.md)| Certified |
+|[S3](./sources/s3.md)| Alpha |
 |[Salesforce](./sources/salesforce.md)| Certified |
 |[SAP Business One](./sources/sap-business-one.md)| Beta |
 |[Sendgrid](./sources/sendgrid.md)| Certified |
@@ -109,7 +111,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Local CSV](./destinations/local-csv.md)| Certified |
 |[Local JSON](./destinations/local-json.md)| Certified |
 |[MeiliSearch](./destinations/meilisearch.md)| Beta |
-|[MySQL](./destinations/mysql.md)| Alpha |
+|[MySQL](./destinations/mysql.md)| Beta |
 |[Oracle](./destinations/oracle.md)| Alpha |
 |[Postgres](./destinations/postgres.md)| Certified |
 |[Redshift](./destinations/redshift.md)| Certified |
