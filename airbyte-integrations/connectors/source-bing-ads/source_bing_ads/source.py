@@ -41,6 +41,7 @@ class BingAdsStream(Stream, ABC):
     primary_key = "Id"
 
     def __init__(self, client: Client, config: Mapping[str, Any]) -> None:
+        super().__init__()
         self.client = client
         self.config = config
 
@@ -155,9 +156,18 @@ class Accounts(BingAdsStream):
                     "Field": "UserId",
                     "Operator": "Equals",
                     "Value": self.config["user_id"],
-                },
+                }
             ]
         }
+
+        if self.config["accounts"]["type"] == "subset":
+            predicates["Predicate"].append(
+                {
+                    "Field": "AccountId",
+                    "Operator": "In",
+                    "Value": ",".join(self.config["accounts"]["ids"]),
+                }
+            )
 
         paging = self.client.get_service(service_name=self.service_name).factory.create("ns5:Paging")
         paging.Index = next_page_token or 0
@@ -202,8 +212,10 @@ class Campaigns(BingAdsStream):
         cursor_field: List[str] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        for account_id in self.config["account_ids"]:
-            yield {"account_id": account_id}
+        for account in Accounts(self.client, self.config).read_records(SyncMode.full_refresh):
+            yield {"account_id": account["Id"]}
+
+        yield from []
 
 
 class AdGroups(BingAdsStream):
@@ -233,9 +245,9 @@ class AdGroups(BingAdsStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         campaigns = Campaigns(self.client, self.config)
-        for account_id in self.config["account_ids"]:
-            for campaign in campaigns.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"account_id": account_id}):
-                yield {"campaign_id": campaign["Id"], "account_id": account_id}
+        for account in Accounts(self.client, self.config).read_records(SyncMode.full_refresh):
+            for campaign in campaigns.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"account_id": account["Id"]}):
+                yield {"campaign_id": campaign["Id"], "account_id": account["Id"]}
 
         yield from []
 
@@ -286,7 +298,7 @@ class SourceBingAds(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             client = Client(**config)
-            client.get_service(service_name="CustomerManagementService").GetAccount(AccountId=config["account_ids"][0])
+            Accounts(client, config).read_records(SyncMode.full_refresh)
         except Exception as error:
             return False, error
 

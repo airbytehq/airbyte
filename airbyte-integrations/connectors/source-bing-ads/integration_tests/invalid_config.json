@@ -1,5 +1,5 @@
 {
-  "account_ids": ["00000", "111111"],
+  "accounts": {"type": "all"},
   "user_id": "2222",
   "customer_id": "1111",
   "developer_token": "asgag4gwag3",

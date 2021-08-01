@@ -5,7 +5,7 @@
     "title": "Bing Ads Spec",
     "type": "object",
     "required": [
-      "account_ids",
+      "accounts",
       "client_id",
       "client_secret",
       "customer_id",
@@ -15,16 +15,52 @@
     ],
     "additionalProperties": false,
     "properties": {
-      "account_ids": {
-        "type": "array",
-        "description": "List of accounts from which data will be fetched.",
-        "items": {
-          "type": "string"
-        }
+      "accounts": {
+        "title": "Accounts",
+        "type": "object",
+        "description": "Account selection strategy.",
+        "oneOf": [
+          {
+            "title": "All accounts assigned to your user",
+            "additionalProperties": false,
+            "description": "Fetch data for all available accounts.",
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["all"],
+                "default": "all"
+              }
+            }
+          },
+          {
+            "title": "Subset of your accounts",
+            "additionalProperties": false,
+            "description": "Fetch data for subset of account ids.",
+            "required": ["ids", "type"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["subset"],
+                "default": "subset"
+              },
+              "ids": {
+                "type": "array",
+                "description": "List of accounts from which data will be fetched.",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1,
+                "uniqueItems": true
+              }
+            }
+          }
+        ]
       },
       "client_id": {
         "type": "string",
-        "description": "ID of your Microsoft Advertising client application."
+        "description": "ID of your Microsoft Advertising client application.",
+        "airbyte_secret": true
       },
       "client_secret": {
         "type": "string",

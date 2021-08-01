@@ -39,7 +39,7 @@ class Client:
     api_version: int = 13
     refresh_token_safe_delta: int = 10  # in seconds
     logger: AirbyteLogger = AirbyteLogger()
-    # retry on rate limit errors , when auth token expired or on some internal errors
+    # retry on: rate limit errors, auth token expiration, internal errors
     # https://docs.microsoft.com/en-us/advertising/guides/services-protocol?view=bingads-13#throttling
     # https://docs.microsoft.com/en-us/advertising/guides/operation-error-codes?view=bingads-13
     retry_on_codes: Iterator[int] = [117, 207, 4204, 109, 0]
@@ -49,17 +49,12 @@ class Client:
     def __init__(
         self,
         developer_token: str,
-        account_ids: Iterator[str],
         customer_id: str,
         client_secret: str,
         client_id: str,
         refresh_token: str,
         **kwargs: Mapping[str, Any],
     ) -> None:
-
-        if not account_ids:
-            raise Exception("At least one id in account_ids is required.")
-
         self.authorization_data: Mapping[str, AuthorizationData] = {}
         self.authentication = OAuthWebAuthCodeGrant(
             client_id,
@@ -68,25 +63,25 @@ class Client:
         )
 
         self.refresh_token = refresh_token
-        self.account_ids = account_ids
+        self.customer_id = customer_id
+        self.developer_token = developer_token
 
         self.oauth: OAuthTokens = self._get_access_token()
-        # self.authentication.oauth_tokens.access_token = self.authentication.oauth_tokens.access_token + 'asfas'
-        for account_id in account_ids:
-            self.authorization_data[account_id] = AuthorizationData(
-                account_id=account_id,
-                customer_id=customer_id,
-                developer_token=developer_token,
-                authentication=self.authentication,
-            )
 
-        # setup default authorization data for requests which don't depend on concrete account id
-        self.authorization_data[None] = self.authorization_data[account_ids[0]]
+    @lru_cache(maxsize=None)
+    def _get_auth_data(self, account_id: Optional[str] = None) -> AuthorizationData:
+        return AuthorizationData(
+            account_id=account_id,
+            customer_id=self.customer_id,
+            developer_token=self.developer_token,
+            authentication=self.authentication,
+        )
 
     def _get_access_token(self) -> OAuthTokens:
         self.logger.info("Fetching access token ...")
         # clear caches to be able to use new access token
         self.get_service.cache_clear()
+        self._get_auth_data.cache_clear()
         return self.authentication.request_oauth_tokens_by_refresh_token(self.refresh_token)
 
     def is_token_expiring(self) -> bool:
@@ -104,14 +99,14 @@ class Client:
             self.logger.info(f"Giving up for returned error code: {error_code}")
         return give_up
 
-    def log_retry_attempt(self, details):
+    def log_retry_attempt(self, details: Mapping[str, Any]) -> None:
         _, exc, _ = sys.exc_info()
         error = self.asdict(exc.fault) if hasattr(exc, "fault") else exc
 
         self.logger.info(str(error))
         self.logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...")
 
-    def request(self, **kwargs):
+    def request(self, **kwargs: Mapping[str, Any]) -> Mapping[str, Any]:
         return backoff.on_exception(
             backoff.expo,
             WebFault,
@@ -147,7 +142,7 @@ class Client:
         return ServiceClient(
             service=service_name,
             version=self.api_version,
-            authorization_data=self.authorization_data[account_id],
+            authorization_data=self._get_auth_data(account_id),
             # environments supported by Microsoft Advertising: sandbox, production
             environment="production",
         )
