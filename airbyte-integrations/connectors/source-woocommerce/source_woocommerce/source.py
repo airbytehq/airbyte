@@ -48,22 +48,22 @@ class WoocommerceStream(HttpStream, ABC):
     order_field = "date"
 
     def __init__(self, shop: str, start_date: str, api_key: str, api_secret: str, **kwargs):
-            super().__init__(**kwargs)
-            self.start_date = start_date
-            self.shop = shop
-            self.api_key = api_key
-            self.api_secret = api_secret
+        super().__init__(**kwargs)
+        self.start_date = start_date
+        self.shop = shop
+        self.api_key = api_key
+        self.api_secret = api_secret
 
     @property
     def url_base(self) -> str:
-       return f"https://{self.shop}.com/wp-json/{self.api_version}/"
+        return f"https://{self.shop}.com/wp-json/{self.api_version}/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-       next_page = response.links.get("next", None)
-       if next_page:
-           return dict(parse_qsl(urlparse(next_page.get("url")).query))
-       else:
-           return None
+        next_page = response.links.get("next", None)
+        if next_page:
+            return dict(parse_qsl(urlparse(next_page.get("url")).query))
+        else:
+            return None
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -120,7 +120,7 @@ class NonFilteredStream(IncrementalWoocommerceStream):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
 
         if not next_page_token and stream_state:
-           del params["after"]
+            del params["after"]
         return params
 
     def read_records(

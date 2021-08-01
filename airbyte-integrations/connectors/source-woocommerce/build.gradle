@@ -12,9 +12,3 @@ dependencies {
     implementation files(project(':airbyte-integrations:bases:source-acceptance-test').airbyteDocker.outputs)
     implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)
 }
-
-// used to allow local iteration to work
-task('installSingerTap', type: PythonTask) {
-    module = "pip"
-    command = "install woocommerce"
-}
