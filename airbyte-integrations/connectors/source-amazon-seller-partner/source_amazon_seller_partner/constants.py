@@ -50,6 +50,7 @@ Australia	A39IBJ37TRP1C6	AU
 Japan	A1VC38T7YXB528	JP
 """
 from enum import Enum
+from typing import Dict, Tuple
 
 
 class AWSEnvironment(str, Enum):
@@ -81,13 +82,13 @@ class AWSRegion(str, Enum):
     GB = "GB"
 
 
-def get_aws_base_url(aws_env):
+def get_aws_base_url(aws_env: AWSEnvironment) -> str:
     if aws_env == AWSEnvironment.PRODUCTION:
         return "https://sellingpartnerapi"
     return "https://sandbox.sellingpartnerapi"
 
 
-def get_marketplaces(aws_env):
+def get_marketplaces(aws_env: AWSEnvironment) -> Dict[AWSRegion, Tuple[str, str, str]]:
     base_url = get_aws_base_url(aws_env)
 
     marketplaces = {

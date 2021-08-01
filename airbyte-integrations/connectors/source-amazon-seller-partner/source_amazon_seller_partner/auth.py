@@ -60,7 +60,7 @@ class AWSSignature(AuthBase):
         self.region = region
 
     @staticmethod
-    def _sign_msg(key, msg):
+    def _sign_msg(key: bytes, msg: str) -> bytes:
         """ Sign message using key """
         return hmac.new(key, msg.encode("utf-8"), hashlib.sha256).digest()
 
@@ -118,7 +118,7 @@ class AWSSignature(AuthBase):
         )
         return authorization_header
 
-    def __call__(self, prepared_request):
+    def __call__(self, prepared_request: requests.PreparedRequest) -> requests.PreparedRequest:
         prepared_request.headers.update(
             {
                 "authorization": self._get_authorization_header(prepared_request),

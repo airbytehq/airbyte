@@ -100,6 +100,12 @@ class AmazonSPStream(HttpStream, ABC):
     def _create_prepared_request(
         self, path: str, headers: Mapping = None, params: Mapping = None, json: Any = None
     ) -> requests.PreparedRequest:
+        """
+        Override to prepare request for AWS API.
+        AWS signature flow require prepared request to correctly generate `authorization` header.
+        Add `auth` arg to sign all the requests with AWS signature.
+        """
+
         return self._session.prepare_request(
             requests.Request(method=self.http_method, url=self.url_base + path, headers=headers, params=params, auth=self._aws_signature)
         )
