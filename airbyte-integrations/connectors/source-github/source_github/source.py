@@ -25,6 +25,7 @@
 
 from typing import Any, List, Mapping, Tuple
 
+import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -52,18 +53,39 @@ from .streams import (
 
 
 class SourceGithub(AbstractSource):
+    def _generate_repositories(self, config: Mapping[str, Any], authenticator: TokenAuthenticator) -> List[str]:
+        org_ids = list(filter(None, config["organization"].split(" ")))
+        repo_ids = list(filter(None, config["repository"].split(" ")))
+
+        if org_ids:
+            org_repositories = []
+            for org in org_ids:
+                response = requests.get(f"https://api.github.com/orgs/{org}/repos", headers=authenticator.get_auth_header())
+                if response.status_code != 200:
+                    raise Exception(response.text)
+                org_repositories += [repository["full_name"] for repository in response.json()]
+            return org_repositories
+        elif repo_ids:
+            return repo_ids
+        else:
+            raise Exception("Either `organisation` or `repository` need to be provided for connect to Github API")
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             authenticator = TokenAuthenticator(token=config["access_token"], auth_method="token")
-            commits_stream = Commits(authenticator=authenticator, repository=config["repository"], start_date=config["start_date"])
-            next(commits_stream.read_records(sync_mode=SyncMode.full_refresh))
+            repositories = self._generate_repositories(config=config, authenticator=authenticator)
+            projects_stream = Projects(authenticator=authenticator, repositories=repositories, start_date=config["start_date"])
+            for stream in projects_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+                # We should use the most poorly filled stream to use the `list` method, because when using the `next` method, we can get the `StopIteration` error.
+                list(projects_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream))
             return True, None
         except Exception as e:
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(token=config["access_token"], auth_method="token")
-        full_refresh_args = {"authenticator": authenticator, "repository": config["repository"]}
+        repositories = self._generate_repositories(config=config, authenticator=authenticator)
+        full_refresh_args = {"authenticator": authenticator, "repositories": repositories}
         incremental_args = {**full_refresh_args, "start_date": config["start_date"]}
 
         return [
