@@ -24,31 +24,33 @@
 
 package io.airbyte.integrations.destination.azure_blob_storage;
 
+import static io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDestinationConstants.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Locale;
 
 public class AzureBlobStorageDestinationConfig {
-
-  private static final String DEFAULT_STORAGE_CONTAINER_NAME = "airbytecontainer";
-  private static final String DEFAULT_STORAGE_BLOB_NAME = "airbyteblob";
-  private static final String DEFAULT_STORAGE_ENDPOINT_HTTP_PROTOCOL = "https";
-  private static final String DEFAULT_STORAGE_ENDPOINT_DOMAIN_NAME = "blob.core.windows.net";
-  private static final String DEFAULT_STORAGE_ENDPOINT_FORMAT = "%s://%s.%s";
 
   private final String endpointUrl;
   private final String accountName;
   private final String accountKey;
   private final String containerName;
   private final String blobName;
+  private final AzureBlobStorageFormatConfig formatConfig;
 
-  public AzureBlobStorageDestinationConfig(String endpointUrl, String accountName,
-      String accountKey,
-      String containerName, String blobName) {
+  public AzureBlobStorageDestinationConfig(
+                                           String endpointUrl,
+                                           String accountName,
+                                           String accountKey,
+                                           String containerName,
+                                           String blobName,
+                                           AzureBlobStorageFormatConfig formatConfig) {
     this.endpointUrl = endpointUrl;
     this.accountName = accountName;
     this.accountKey = accountKey;
     this.containerName = containerName;
     this.blobName = blobName;
+    this.formatConfig = formatConfig;
   }
 
   public String getEndpointUrl() {
@@ -71,20 +73,23 @@ public class AzureBlobStorageDestinationConfig {
     return blobName;
   }
 
+  public AzureBlobStorageFormatConfig getFormatConfig() {
+    return formatConfig;
+  }
+
   public static AzureBlobStorageDestinationConfig getAzureBlobStorageConfig(JsonNode config) {
     final String accountNameFomConfig = config.get("azure_blob_storage_account_name").asText();
     final String accountKeyFromConfig = config.get("azure_blob_storage_account_key").asText();
     final JsonNode endpointFromConfig = config
         .get("azure_blob_storage_endpoint_domain_name");
     final JsonNode containerName = config.get("azure_blob_storage_container_name");
-    final JsonNode blobName = config.get("azure_blob_storage_blob_name"); //streamId
+    final JsonNode blobName = config.get("azure_blob_storage_blob_name"); // streamId
 
     final String endpointComputed = String.format(Locale.ROOT, DEFAULT_STORAGE_ENDPOINT_FORMAT,
         DEFAULT_STORAGE_ENDPOINT_HTTP_PROTOCOL,
         accountNameFomConfig,
         endpointFromConfig == null ? DEFAULT_STORAGE_ENDPOINT_DOMAIN_NAME
-            : endpointFromConfig.asText()
-    );
+            : endpointFromConfig.asText());
 
     final String containerNameComputed =
         containerName == null ? DEFAULT_STORAGE_CONTAINER_NAME : containerName.asText();
@@ -92,8 +97,13 @@ public class AzureBlobStorageDestinationConfig {
     final String blobNameComputed =
         blobName == null ? DEFAULT_STORAGE_BLOB_NAME : blobName.asText();
 
-    return new AzureBlobStorageDestinationConfig(endpointComputed, accountNameFomConfig,
-        accountKeyFromConfig, containerNameComputed, blobNameComputed);
+    return new AzureBlobStorageDestinationConfig(
+        endpointComputed,
+        accountNameFomConfig,
+        accountKeyFromConfig,
+        containerNameComputed,
+        blobNameComputed,
+        AzureBlobStorageFormatConfigs.getAzureBlobStorageFormatConfig(config));
   }
 
 }

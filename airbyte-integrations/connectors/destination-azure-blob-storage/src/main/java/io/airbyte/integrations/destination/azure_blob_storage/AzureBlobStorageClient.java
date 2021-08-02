@@ -31,7 +31,6 @@ import com.azure.storage.blob.specialized.AppendBlobClient;
 import com.azure.storage.blob.specialized.BlobOutputStream;
 import com.azure.storage.blob.specialized.SpecializedBlobClientBuilder;
 import com.azure.storage.common.StorageSharedKeyCredential;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,16 +39,17 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Deprecated
 public class AzureBlobStorageClient {
 
   private final BlobContainerClient containerClient; // schema in SQL DBs controller
-  private final AppendBlobClient storageClient; //aka "SQL Table" controller
+  private final AppendBlobClient storageClient; // aka "SQL Table" controller
   private final boolean overwriteDataInStream;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AzureBlobStorageClient.class);
 
   public AzureBlobStorageClient(AzureBlobStorageDestinationConfig azureBlobStorageConfig,
-      boolean overwriteDataInStream) {
+                                boolean overwriteDataInStream) {
 
     this.overwriteDataInStream = overwriteDataInStream;
 
@@ -83,8 +83,8 @@ public class AzureBlobStorageClient {
     return storageClient.getBlobOutputStream();
   }
 
-  //TODO !!!!!!!!!!!!!!!fails for empty lines !!!!!!!!!!!!!!!!!!!!!!!!!
-  //this options may be used to write and flush right away.
+  // TODO !!!!!!!!!!!!!!!fails for empty lines !!!!!!!!!!!!!!!!!!!!!!!!!
+  // this options may be used to write and flush right away.
   public void writeUsingAppendBlock(String data) {
     LOGGER.debug("Writing data to Azure Blob storage: " + data);
     if (overwriteDataInStream) {
@@ -99,7 +99,6 @@ public class AzureBlobStorageClient {
 
     LOGGER.debug("blobCommittedBlockCount: " + blobCommittedBlockCount);
   }
-
 
   public void writeUsingStreams(List<String> strings) throws IOException {
     LOGGER.debug("Writing data to Azure Blob storage: " + strings);
@@ -130,7 +129,7 @@ public class AzureBlobStorageClient {
     final BlobOutputStream blobOutputStream = storageClient.getBlobOutputStream();
 
     blobOutputStream.write((data).getBytes());
-//    blobOutputStream.write((data + "\n").getBytes());
+    // blobOutputStream.write((data + "\n").getBytes());
 
     blobOutputStream.flush();
     blobOutputStream.close();
@@ -153,26 +152,26 @@ public class AzureBlobStorageClient {
   }
 
   /*
-   * Delete the Container. Be very careful when you ise ir. It removes thw whole bucket and
-   *  supposed to be used in check connection ony for writing tmp data
+   * Delete the Container. Be very careful when you ise ir. It removes thw whole bucket and supposed
+   * to be used in check connection ony for writing tmp data
    *
    */
   public void deleteContainer() {
     LOGGER.info("Deleting blob: " + containerClient.getBlobContainerName());
-    containerClient.delete(); //remove aka "SQL Schema" used
+    containerClient.delete(); // remove aka "SQL Schema" used
   }
 
-  // this a kinda test method that is used in CHECK operation to make sure all works fine with the currect config
+  // this a kinda test method that is used in CHECK operation to make sure all works fine with the
+  // currect config
   public void attemptWriteAndDelete() throws IOException {
-//    List<String> strings = Arrays.asList("Test12", "Test22", "Test32", null);
-//    writeUsingStreams(strings);
+    // List<String> strings = Arrays.asList("Test12", "Test22", "Test32", null);
+    // writeUsingStreams(strings);
 
     writeUsingAppendBlock("Some test data");
     listBlobsInContainer()
         .forEach(
-            blobItem ->
-                LOGGER.debug(
-                    "Blob name: " + blobItem.getName() + "Snapshot: " + blobItem.getSnapshot()));
+            blobItem -> LOGGER.debug(
+                "Blob name: " + blobItem.getName() + "Snapshot: " + blobItem.getSnapshot()));
 
     deleteBlob();
   }
