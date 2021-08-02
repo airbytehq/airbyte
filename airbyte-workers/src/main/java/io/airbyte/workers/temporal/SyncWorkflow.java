@@ -30,6 +30,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreLists;
 import io.airbyte.config.AirbyteConfigValidator;
 import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.ReplicationAttemptSummary;
@@ -148,7 +149,7 @@ public interface SyncWorkflow {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReplicationActivityImpl.class);
 
-    private static final int MAX_RETRIES = 3;
+    private static final int MAX_RETRIES = new EnvConfigs().getMaxRetriesPerAttempt();
 
     private final ProcessFactory processFactory;
     private final Path workspaceRoot;

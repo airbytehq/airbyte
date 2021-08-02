@@ -24,6 +24,7 @@
 
 package io.airbyte.scheduler.app;
 
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.JobNotifier;
@@ -40,7 +41,7 @@ import org.slf4j.LoggerFactory;
 public class JobRetrier implements Runnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JobRetrier.class);
-  private static final int MAX_SYNC_JOB_ATTEMPTS = 3;
+  private static final int MAX_SYNC_JOB_ATTEMPTS = new EnvConfigs().getMaxSyncJobAttempts();;
   private static final int RETRY_WAIT_MINUTES = 1;
 
   private final JobPersistence persistence;
