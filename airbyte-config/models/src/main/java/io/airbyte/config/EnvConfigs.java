@@ -28,6 +28,7 @@ import com.google.common.base.Preconditions;
 import io.airbyte.config.helpers.LogClientSingleton;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -41,6 +42,7 @@ public class EnvConfigs implements Configs {
 
   public static final String AIRBYTE_ROLE = "AIRBYTE_ROLE";
   public static final String AIRBYTE_VERSION = "AIRBYTE_VERSION";
+  public static final String INTERNAL_API_HOST = "INTERNAL_API_HOST";
   public static final String WORKER_ENVIRONMENT = "WORKER_ENVIRONMENT";
   public static final String WORKSPACE_ROOT = "WORKSPACE_ROOT";
   public static final String WORKSPACE_DOCKER_MOUNT = "WORKSPACE_DOCKER_MOUNT";
@@ -52,13 +54,19 @@ public class EnvConfigs implements Configs {
   public static final String DATABASE_USER = "DATABASE_USER";
   public static final String DATABASE_PASSWORD = "DATABASE_PASSWORD";
   public static final String DATABASE_URL = "DATABASE_URL";
+  public static final String CONFIG_DATABASE_USER = "CONFIG_DATABASE_USER";
+  public static final String CONFIG_DATABASE_PASSWORD = "CONFIG_DATABASE_PASSWORD";
+  public static final String CONFIG_DATABASE_URL = "CONFIG_DATABASE_URL";
   public static final String WEBAPP_URL = "WEBAPP_URL";
+  public static final String MAX_RETRIES_PER_ATTEMPT = "MAX_RETRIES_PER_ATTEMPT";
+  public static final String MAX_SYNC_JOB_ATTEMPTS = "MAX_SYNC_JOB_ATTEMPTS";
   private static final String MINIMUM_WORKSPACE_RETENTION_DAYS = "MINIMUM_WORKSPACE_RETENTION_DAYS";
   private static final String MAXIMUM_WORKSPACE_RETENTION_DAYS = "MAXIMUM_WORKSPACE_RETENTION_DAYS";
   private static final String MAXIMUM_WORKSPACE_SIZE_MB = "MAXIMUM_WORKSPACE_SIZE_MB";
   private static final String TEMPORAL_HOST = "TEMPORAL_HOST";
   private static final String TEMPORAL_WORKER_PORTS = "TEMPORAL_WORKER_PORTS";
   private static final String KUBE_NAMESPACE = "KUBE_NAMESPACE";
+  private static final String SUBMITTER_NUM_THREADS = "SUBMITTER_NUM_THREADS";
   private static final String RESOURCE_CPU_REQUEST = "RESOURCE_CPU_REQUEST";
   private static final String RESOURCE_CPU_LIMIT = "RESOURCE_CPU_LIMIT";
   private static final String RESOURCE_MEMORY_REQUEST = "RESOURCE_MEMORY_REQUEST";
@@ -85,6 +93,16 @@ public class EnvConfigs implements Configs {
   @Override
   public String getAirbyteRole() {
     return getEnv(AIRBYTE_ROLE);
+  }
+
+  @Override
+  public String getAirbyteApiUrl() {
+    return getEnsureEnv(INTERNAL_API_HOST).split(":")[0];
+  }
+
+  @Override
+  public int getAirbyteApiPort() {
+    return Integer.parseInt(getEnsureEnv(INTERNAL_API_HOST).split(":")[1]);
   }
 
   @Override
@@ -125,6 +143,34 @@ public class EnvConfigs implements Configs {
   @Override
   public String getDatabaseUrl() {
     return getEnsureEnv(DATABASE_URL);
+  }
+
+  @Override
+  public int getMaxRetriesPerAttempt() {
+    return Integer.parseInt(getEnvOrDefault(MAX_RETRIES_PER_ATTEMPT, "3"));
+  }
+
+  @Override
+  public int getMaxSyncJobAttempts() {
+    return Integer.parseInt(getEnvOrDefault(MAX_SYNC_JOB_ATTEMPTS, "3"));
+  }
+
+  @Override
+  public String getConfigDatabaseUser() {
+    // Default to reuse the job database
+    return getEnvOrDefault(CONFIG_DATABASE_USER, getDatabaseUser());
+  }
+
+  @Override
+  public String getConfigDatabasePassword() {
+    // Default to reuse the job database
+    return getEnvOrDefault(CONFIG_DATABASE_PASSWORD, getDatabasePassword());
+  }
+
+  @Override
+  public String getConfigDatabaseUrl() {
+    // Default to reuse the job database
+    return getEnvOrDefault(CONFIG_DATABASE_URL, getDatabaseUrl());
   }
 
   @Override
@@ -180,14 +226,21 @@ public class EnvConfigs implements Configs {
 
   @Override
   public Set<Integer> getTemporalWorkerPorts() {
-    return Arrays.stream(getEnvOrDefault(TEMPORAL_WORKER_PORTS, "").split(","))
-        .map(Integer::valueOf)
-        .collect(Collectors.toSet());
+    var ports = getEnvOrDefault(TEMPORAL_WORKER_PORTS, "");
+    if (ports.isEmpty()) {
+      return new HashSet<>();
+    }
+    return Arrays.stream(ports.split(",")).map(Integer::valueOf).collect(Collectors.toSet());
   }
 
   @Override
   public String getKubeNamespace() {
     return getEnvOrDefault(KUBE_NAMESPACE, DEFAULT_KUBE_NAMESPACE);
+  }
+
+  @Override
+  public String getSubmitterNumThreads() {
+    return getEnvOrDefault(SUBMITTER_NUM_THREADS, "5");
   }
 
   @Override
@@ -255,10 +308,10 @@ public class EnvConfigs implements Configs {
 
   private <T> T getEnvOrDefault(String key, T defaultValue, Function<String, T> parser) {
     final String value = getEnv.apply(key);
-    if (value != null) {
+    if (value != null && !value.isEmpty()) {
       return parser.apply(value);
     } else {
-      LOGGER.info(key + " not found, defaulting to " + defaultValue);
+      LOGGER.info(key + " not found or empty, defaulting to " + defaultValue);
       return defaultValue;
     }
   }

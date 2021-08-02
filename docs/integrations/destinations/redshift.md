@@ -103,3 +103,8 @@ Redshift specifies a maximum limit of 65535 bytes to store the raw JSON record d
 
 See [docs](https://docs.aws.amazon.com/redshift/latest/dg/r_Character_types.html)
 
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.3.11   | 2021-07-20 | [4874](https://github.com/airbytehq/airbyte/pull/4874) | allow `additionalProperties` in connector spec |

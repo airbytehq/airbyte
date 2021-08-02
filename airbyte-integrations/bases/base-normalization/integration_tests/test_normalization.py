@@ -74,6 +74,9 @@ def setup_test_path(request):
         ]
     ),
 )
+# Uncomment the following line as an example on how to run the test against local destinations only...
+# @pytest.mark.parametrize("destination_type", [DestinationType.POSTGRES, DestinationType.MYSQL])
+# Run tests on all destinations:
 @pytest.mark.parametrize("destination_type", list(DestinationType))
 def test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
     print("Testing normalization")
@@ -233,7 +236,9 @@ def copy_test_files(src: str, dst: str, destination_type: DestinationType, repla
             if destination_type.value in identifiers_map:
                 for entry in identifiers_map[destination_type.value]:
                     for k in entry:
-                        pattern.append(k)
+                        # re.escape() must not be used for the replacement string in sub(), only backslashes should be escaped:
+                        # see https://docs.python.org/3/library/re.html#re.escape
+                        pattern.append(k.replace("\\", r"\\"))
                         replace_value.append(entry[k])
             if pattern and replace_value:
 

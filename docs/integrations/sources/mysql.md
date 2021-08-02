@@ -10,22 +10,44 @@ The MySQL source does not alter the schema present in your database. Depending o
 
 ### Data type mapping
 
-MySQL data types are mapped to the following data types when synchronizing data:
+MySQL data types are mapped to the following data types when synchronizing data.
+You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mysql/src/test-integration/java/io/airbyte/integrations/source/mysql/MySqlSourceComprehensiveTest.java).
+If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
 | MySQL Type | Resulting Type | Notes |
 | :--- | :--- | :--- |
 | `array` | array |  |
+| `bigint` | number |  |
 | `binary` | string |  |
+| `blob` | string |  |
 | `date` | string |  |
 | `datetime` | string |  |
+| `decimal` | number |  |
+| `decimal(19, 2)` | number |  |
+| `double` | number |  |
 | `enum` | string |  |
-| `tinyint` | number |  |
-| `smallint` | number |  |
-| `mediumint` | number |  |
+| `float` | number |  |
 | `int` | number |  |
-| `bigint` | number |  |
+| `int unsigned` | number |  |
+| `int zerofill` | number |  |
+| `json` | text |  |
+| `mediumint` | number |  |
+| `mediumint zerofill` | number |  |
+| `mediumint` | number |  |
 | `numeric` | number |  |
+| `point` | object |  |
+| `smallint` | number |  |
+| `smallint zerofill` | number |  |
 | `string` | string |  |
+| `tinyint` | number |  |
+| `text` | string |  |
+| `time` | string |  |
+| `timestamp` | string |  |
+| `tinytext` | string |  |
+| `varbinary(256)` | string |  |
+| `varchar` | string |  |
+| `varchar(256) character set cp1251` | string |  |
+| `varchar(256) character set utf16` | string |  |
 
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
 
@@ -138,6 +160,7 @@ But in order for the sync to work without any error/unexpected behaviour, it is 
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.4.1   | 2021-07-23 | [4956](https://github.com/airbytehq/airbyte/pull/4956) | Fix log link |
 | 0.3.7   | 2021-06-09 | [3179](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE_ENTRYPOINT for Kubernetes support |
 | 0.3.6   | 2021-06-09 | [3966](https://github.com/airbytehq/airbyte/pull/3966) | Fix excessive logging for CDC method |
 | 0.3.5   | 2021-06-07 | [3890](https://github.com/airbytehq/airbyte/pull/3890) | Fix CDC handle tinyint(1) and boolean types |
