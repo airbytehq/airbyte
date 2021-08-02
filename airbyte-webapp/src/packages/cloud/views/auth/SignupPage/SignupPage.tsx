@@ -10,8 +10,9 @@ import {
   Form,
   RowFieldItem,
 } from "../components/FormComponents";
-import { Button, H5, LabeledInput, LabeledToggle } from "components";
+import { Button, H5, LabeledInput } from "components";
 import { FormTitle } from "../components/FormTitle";
+import CheckBoxControl from "../components/CheckBoxControl";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
 
@@ -147,7 +148,7 @@ const SignupPage: React.FC = () => {
               <Field name="subscribe">
                 {({ field, meta }: FieldProps<string>) => (
                   <MarginBlock>
-                    <LabeledToggle
+                    <CheckBoxControl
                       {...field}
                       checked={!!field.value}
                       checkbox
@@ -163,7 +164,7 @@ const SignupPage: React.FC = () => {
               </Field>
               <Field name="security">
                 {({ field, meta }: FieldProps<string>) => (
-                  <LabeledToggle
+                  <CheckBoxControl
                     {...field}
                     checked={!!field.value}
                     checkbox

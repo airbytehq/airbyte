@@ -18,7 +18,7 @@
   "login.companyName": "Company name*",
   "login.companyName.placeholder": "Acme Inc.",
   "login.subscribe": "Receive community and feature updates. You can unsubcribe any time. ",
-  "login.security": "By using the service, you agree to to our Terms of Service and Privacy Policy.",
+  "login.security": "By using the service, you agree to to our Terms of Service and Privacy\u00a0Policy.",
 
   "login.selfhosting": "Interested in self-hosting?",
   "login.opensource": "Open-source",
