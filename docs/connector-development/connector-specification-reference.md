@@ -13,12 +13,11 @@ In order for the Airbyte UI to correctly render a specification, however, a few 
 
 1. The top-level item containing the `oneOf` must have `type: object`.
 2. Each item in the `oneOf` array must be a property with `type: object`.
-3. One `string` field with the same property name must be consistently present throughout each object inside the `oneOf` array.
+3. One `string` field with the same property name must be consistently present throughout each object inside the `oneOf` array. It is required to add a [`const`](https://json-schema.org/understanding-json-schema/reference/generic.html#constant-values) value unique to that `oneOf` option.
 
 Let's look at the [source-file](../integrations/sources/file.md) implementation as an example. In this example, we have `provider` as a dropdown
 list option, which allows the user to select what provider their file is being hosted on. We note that the `oneOf` keyword lives under the `provider` object as follows:
 
-It is required to add a [`const`](https://json-schema.org/understanding-json-schema/reference/generic.html#constant-values) value unique to that `oneOf` option.
 In each item in the `oneOf` array, the `option_title` string field exists with the aforementioned `const` value unique to that item. This helps the UI and the connector distinguish between the option that was chosen by the user. This can
 be displayed with adapting the file source spec to this example:
 
