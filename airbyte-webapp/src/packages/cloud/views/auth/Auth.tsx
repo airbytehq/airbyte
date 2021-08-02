@@ -10,6 +10,7 @@ import News from "./components/News";
 import { LoginPage } from "./LoginPage";
 import { SignupPage } from "./SignupPage";
 import { ResetPasswordPage } from "./ResetPasswordPage";
+import { Routes } from "../../routes";
 
 const Content = styled.div`
   width: 100%;
@@ -34,27 +35,25 @@ const NewsPart = styled(Part)`
   justify-content: space-between;
 `;
 
-// TODO: fix route paths
-
 const Auth: React.FC = () => {
   const { pathname } = useRouter();
 
   return (
     <Content>
       <Part>
-        <FormContent toLogin={pathname === "/signup"}>
+        <FormContent toLogin={pathname === Routes.Signup}>
           <Suspense fallback={<LoadingPage />}>
             <Switch>
-              <Route path="/login">
+              <Route path={Routes.Login}>
                 <LoginPage />
               </Route>
-              <Route path="/signup">
+              <Route path={Routes.Signup}>
                 <SignupPage />
               </Route>
-              <Route path="/reset-password">
+              <Route path={Routes.ResetPassword}>
                 <ResetPasswordPage />
               </Route>
-              <Redirect to="/login" />
+              <Redirect to={Routes.Login} />
             </Switch>
           </Suspense>
         </FormContent>

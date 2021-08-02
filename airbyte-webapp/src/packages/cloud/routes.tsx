@@ -36,6 +36,9 @@ export enum Routes {
   Metrics = "/metrics",
   Account = "/account",
   Workspaces = "/workspaces",
+  Signup = "/signup",
+  Login = "/login",
+  ResetPassword = "/reset-password",
   Root = "/",
 }
 

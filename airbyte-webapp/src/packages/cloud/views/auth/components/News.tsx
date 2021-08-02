@@ -5,11 +5,13 @@ import { faGithub } from "@fortawesome/free-brands-svg-icons";
 
 import { H2, H4, H5 } from "components";
 import NewsItem from "./NewsItem";
+import { FormattedMessage } from "react-intl";
+import config from "config";
 
-const Icon = styled.div`
-  width: 184px;
+const Icon = styled.img`
   height: 214px;
   margin: 0 auto 21px;
+  display: block;
 `;
 
 const GitBlock = styled.div`
@@ -24,26 +26,37 @@ const GitIcon = styled(FontAwesomeIcon)`
   font-size: 36px;
 `;
 
+const GitLink = styled.a`
+  text-decoration: none;
+  color: ${({ theme }) => theme.textColor};
+`;
+
 const News: React.FC = () => {
   return (
     <>
       <div>
-        <Icon>Icon</Icon>
+        <Icon src="/cloud/hello.png" width={184} />
         <NewsItem />
         <NewsItem />
         <NewsItem />
       </div>
-      <div>
-        <H2>Interested in self-hosting?</H2>
+      <GitLink href={config.ui.gitLink} target="_blank">
+        <H2>
+          <FormattedMessage id="login.selfhosting" />
+        </H2>
         <GitBlock>
           {/*@ts-ignore github icon fails here*/}
           <GitIcon icon={faGithub} />
           <div>
-            <H4>Open-source</H4>
-            <H5>Deploy in your own infrastructure. Free forever. </H5>
+            <H4>
+              <FormattedMessage id="login.opensource" />
+            </H4>
+            <H5>
+              <FormattedMessage id="login.deployInfrastructure" />
+            </H5>
           </div>
         </GitBlock>
-      </div>
+      </GitLink>
     </>
   );
 };

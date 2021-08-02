@@ -9,6 +9,7 @@ import { LabeledInput, Link, LoadingButton } from "components";
 import { BottomBlock, FieldItem, Form } from "../components/FormComponents";
 import { FormTitle } from "../components/FormTitle";
 import { FieldError } from "../../../lib/errors/FieldError";
+import { Routes } from "../../../routes";
 
 const LoginPageValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
@@ -21,7 +22,9 @@ const LoginPage: React.FC = () => {
 
   return (
     <div>
-      <FormTitle bold>Sign in to Airbyte</FormTitle>
+      <FormTitle bold>
+        <FormattedMessage id="login.loginTitle" />
+      </FormTitle>
 
       <Formik
         initialValues={{
@@ -48,9 +51,9 @@ const LoginPage: React.FC = () => {
                 {({ field, meta }: FieldProps<string>) => (
                   <LabeledInput
                     {...field}
-                    label={<FormattedMessage id="form.yourEmail" />}
+                    label={<FormattedMessage id="login.yourEmail" />}
                     placeholder={formatMessage({
-                      id: "form.email.placeholder",
+                      id: "login.yourEmail.placeholder",
                     })}
                     type="text"
                     error={!!meta.error && meta.touched}
@@ -68,8 +71,10 @@ const LoginPage: React.FC = () => {
                 {({ field, meta }: FieldProps<string>) => (
                   <LabeledInput
                     {...field}
-                    label={"Password"}
-                    placeholder={"Enter a strong password"}
+                    label={<FormattedMessage id="login.password" />}
+                    placeholder={formatMessage({
+                      id: "login.password.placeholder",
+                    })}
                     type="password"
                     error={!!meta.error && meta.touched}
                     message={
@@ -83,11 +88,11 @@ const LoginPage: React.FC = () => {
             </FieldItem>
             <BottomBlock>
               <>
-                <Link to={"/reset-password"} $light>
-                  Forgot your password
+                <Link to={Routes.ResetPassword} $light>
+                  <FormattedMessage id="login.forgotPassword" />
                 </Link>
                 <LoadingButton type="submit" isLoading={isSubmitting}>
-                  Log In
+                  <FormattedMessage id="login.login" />
                 </LoadingButton>
               </>
             </BottomBlock>

@@ -34,8 +34,12 @@ const SignupPage: React.FC = () => {
 
   return (
     <div>
-      <FormTitle bold>Activate your free beta access</FormTitle>
-      <H5>No credit card required. Free until official launch.</H5>
+      <FormTitle bold>
+        <FormattedMessage id="login.activateAccess" />
+      </FormTitle>
+      <H5>
+        <FormattedMessage id="login.activateAccess.subtitle" />
+      </H5>
 
       <Formik
         initialValues={{
@@ -66,8 +70,10 @@ const SignupPage: React.FC = () => {
                 {({ field, meta }: FieldProps<string>) => (
                   <LabeledInput
                     {...field}
-                    label="name"
-                    placeholder="name"
+                    label={<FormattedMessage id="login.fullName" />}
+                    placeholder={formatMessage({
+                      id: "login.fullName.placeholder",
+                    })}
                     type="text"
                     error={!!meta.error && meta.touched}
                     message={
@@ -82,8 +88,10 @@ const SignupPage: React.FC = () => {
                 {({ field, meta }: FieldProps<string>) => (
                   <LabeledInput
                     {...field}
-                    label="company"
-                    placeholder="company"
+                    label={<FormattedMessage id="login.companyName" />}
+                    placeholder={formatMessage({
+                      id: "login.companyName.placeholder",
+                    })}
                     type="text"
                     error={!!meta.error && meta.touched}
                     message={
@@ -100,9 +108,9 @@ const SignupPage: React.FC = () => {
                 {({ field, meta }: FieldProps<string>) => (
                   <LabeledInput
                     {...field}
-                    label={<FormattedMessage id="form.yourEmail" />}
+                    label={<FormattedMessage id="login.yourEmail" />}
                     placeholder={formatMessage({
-                      id: "form.email.placeholder",
+                      id: "login.yourEmail.placeholder",
                     })}
                     type="text"
                     error={!!meta.error && meta.touched}
@@ -120,8 +128,10 @@ const SignupPage: React.FC = () => {
                 {({ field, meta }: FieldProps<string>) => (
                   <LabeledInput
                     {...field}
-                    label="Password"
-                    placeholder="ss"
+                    label={<FormattedMessage id="login.password" />}
+                    placeholder={formatMessage({
+                      id: "login.password.placeholder",
+                    })}
                     type="password"
                     error={!!meta.error && meta.touched}
                     message={
@@ -141,7 +151,7 @@ const SignupPage: React.FC = () => {
                       {...field}
                       checked={!!field.value}
                       checkbox
-                      label={"subscribe"}
+                      label={<FormattedMessage id="login.subscribe" />}
                       message={
                         meta.touched &&
                         meta.error &&
@@ -157,7 +167,7 @@ const SignupPage: React.FC = () => {
                     {...field}
                     checked={!!field.value}
                     checkbox
-                    label={"security"}
+                    label={<FormattedMessage id="login.security" />}
                     message={
                       meta.touched &&
                       meta.error &&
@@ -170,7 +180,9 @@ const SignupPage: React.FC = () => {
             <BottomBlock>
               <>
                 <div />
-                <Button type="submit">Sign Up</Button>
+                <Button type="submit">
+                  <FormattedMessage id="login.signup" />
+                </Button>
               </>
             </BottomBlock>
           </Form>

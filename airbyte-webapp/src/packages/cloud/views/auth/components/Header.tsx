@@ -5,6 +5,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
 import { Button } from "components";
+import { Routes } from "../../../routes";
+import { FormattedMessage } from "react-intl";
 
 const Links = styled.div`
   width: 100%;
@@ -51,10 +53,18 @@ const Header: React.FC<HeaderProps> = ({ toLogin }) => {
       </BackLink>
       <FormLink>
         <TextBlock>
-          {toLogin ? "Already have an account?" : "Don’t have an account?"}
+          {toLogin ? (
+            <FormattedMessage id="login.haveAccount" />
+          ) : (
+            <FormattedMessage id="login.DontHaveAccount" />
+          )}
         </TextBlock>
-        <Button secondary as={Link} to={toLogin ? "/login" : "/signup"}>
-          {toLogin ? "Log in" : "Sign up"}
+        <Button secondary as={Link} to={toLogin ? Routes.Login : Routes.Signup}>
+          {toLogin ? (
+            <FormattedMessage id="login.login" />
+          ) : (
+            <FormattedMessage id="login.signup" />
+          )}
         </Button>
       </FormLink>
     </Links>

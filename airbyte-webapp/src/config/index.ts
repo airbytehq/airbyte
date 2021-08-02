@@ -44,6 +44,7 @@ const FullStoryConfig: Fullstory.SnippetOptions = {
 type Config = {
   ui: {
     helpLink: string;
+    gitLink: string;
     updateLink: string;
     slackLink: string;
     docsLink: string;
@@ -73,6 +74,7 @@ const config: Config = {
   ui: {
     technicalSupport: `${BASE_DOCS_LINK}/troubleshooting/on-deploying`,
     helpLink: "https://airbyte.io/community",
+    gitLink: "https://github.com/airbytehq/airbyte",
     updateLink: `${BASE_DOCS_LINK}/upgrading-airbyte`,
     slackLink: "https://slack.airbyte.io",
     docsLink: BASE_DOCS_LINK,

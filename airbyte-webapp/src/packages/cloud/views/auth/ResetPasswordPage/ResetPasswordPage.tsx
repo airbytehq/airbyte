@@ -6,6 +6,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { BottomBlock, FieldItem, Form } from "../components/FormComponents";
 import { Button, LabeledInput, Link } from "components";
 import { FormTitle } from "../components/FormTitle";
+import { Routes } from "../../../routes";
 
 const ResetPasswordPageValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
@@ -16,7 +17,9 @@ const ResetPasswordPage: React.FC = () => {
 
   return (
     <div>
-      <FormTitle bold>Reset your password</FormTitle>
+      <FormTitle bold>
+        <FormattedMessage id="login.resetPassword" />
+      </FormTitle>
 
       <Formik
         initialValues={{
@@ -34,9 +37,9 @@ const ResetPasswordPage: React.FC = () => {
                 {({ field, meta }: FieldProps<string>) => (
                   <LabeledInput
                     {...field}
-                    label={<FormattedMessage id="form.yourEmail" />}
+                    label={<FormattedMessage id="login.yourEmail" />}
                     placeholder={formatMessage({
-                      id: "form.email.placeholder",
+                      id: "login.yourEmail.placeholder",
                     })}
                     type="text"
                     error={!!meta.error && meta.touched}
@@ -51,10 +54,12 @@ const ResetPasswordPage: React.FC = () => {
             </FieldItem>
             <BottomBlock>
               <>
-                <Link to={"/login"} $light>
-                  Back to Log in
+                <Link to={Routes.Login} $light>
+                  <FormattedMessage id="login.backLogin" />
                 </Link>
-                <Button type="submit">Reset your password</Button>
+                <Button type="submit">
+                  <FormattedMessage id="login.resetPassword" />
+                </Button>
               </>
             </BottomBlock>
           </Form>
