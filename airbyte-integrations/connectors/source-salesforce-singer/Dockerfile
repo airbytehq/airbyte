@@ -1,4 +1,4 @@
-FROM airbyte/integration-base-singer:0.1.1
+FROM airbyte/integration-base-singer:0.1.2
 
 RUN apt-get update \
     && apt-get install -y bash \
