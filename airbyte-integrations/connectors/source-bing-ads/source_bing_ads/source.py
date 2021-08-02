@@ -75,6 +75,9 @@ class BingAdsStream(Stream, ABC):
         raise NotImplementedError()
 
     def next_page_token(self, response: sudsobject.Object, **kwargs: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
+        """
+        Default method for streams that don't support pagination
+        """
         return None
 
     def parse_response(self, response: sudsobject.Object, **kwargs) -> Iterable[Mapping]:
@@ -263,7 +266,16 @@ class Ads(BingAdsStream):
     service_name: str = "CampaignManagement"
     operation_name: str = "GetAdsByAdGroupId"
     additional_fields: str = "ImpressionTrackingUrls Videos LongHeadlines"
-    ad_types = ["Text", "Image", "Product", "AppInstall", "ExpandedText", "DynamicSearch", "ResponsiveAd", "ResponsiveSearch"]
+    ad_types: Iterable[str] = [
+        "Text",
+        "Image",
+        "Product",
+        "AppInstall",
+        "ExpandedText",
+        "DynamicSearch",
+        "ResponsiveAd",
+        "ResponsiveSearch",
+    ]
 
     def request_params(
         self,
