@@ -22,10 +22,10 @@
 # SOFTWARE.
 #
 
-
 import concurrent.futures
 import json
 from datetime import datetime
+from functools import partial
 from typing import Dict, Generator
 
 from airbyte_cdk.logger import AirbyteLogger
@@ -50,6 +50,19 @@ BATCH_SIZE = 50000
 
 
 class SourceApifyDataset(Source):
+    def _apify_get_dataset_items(self, dataset_client, clean, offset):
+        """
+        Wrapper around Apify dataset client that returns a single page with dataset items.
+        This function needs to be defined explicitly so it can be called in parallel in the main read function.
+
+        :param dataset_client: Apify dataset client
+        :param clean: whether to fetch only clean items (clean are non-empty ones excluding hidden columns)
+        :param offset: page offset
+
+        :return: dictionary where .items field contains the fetched dataset items
+        """
+        return dataset_client.list_items(offset=offset, limit=BATCH_SIZE, clean=clean)
+
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the Apify integration.
@@ -68,9 +81,10 @@ class SourceApifyDataset(Source):
             dataset = ApifyClient().dataset(dataset_id).get()
             if dataset is None:
                 raise ValueError(f"Dataset {dataset_id} does not exist")
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
+        else:
+            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
         """
@@ -112,8 +126,8 @@ class SourceApifyDataset(Source):
             the properties of the spec.json file
         :param catalog: The input catalog is a ConfiguredAirbyteCatalog which is almost the same as AirbyteCatalog
             returned by discover(), but
-        in addition, it's been configured in the UI! For each particular stream and field, there may have been provided
-        with extra modifications such as: filtering streams and/or columns out, renaming some entities, etc
+            in addition, it's been configured in the UI! For each particular stream and field, there may have been provided
+            with extra modifications such as: filtering streams and/or columns out, renaming some entities, etc
         :param state: When a Airbyte reads data from a source, it might need to keep a checkpoint cursor to resume
             replication in the future from that saved checkpoint.
             This is the object that is provided with state from previous runs and avoid replicating the entire set of
@@ -134,12 +148,8 @@ class SourceApifyDataset(Source):
         num_items = dataset["itemCount"]
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            futures = []
-            for offset in range(0, num_items, BATCH_SIZE):
-                limit = BATCH_SIZE
-                futures.append(executor.submit(dataset_client.list_items, offset=offset, limit=limit, clean=clean))
-            for future in concurrent.futures.as_completed(futures):
-                for data in future.result().items:
+            for result in executor.map(partial(self._apify_get_dataset_items, dataset_client, clean), range(0, num_items, BATCH_SIZE)):
+                for data in result.items:
                     yield AirbyteMessage(
                         type=Type.RECORD,
                         record=AirbyteRecordMessage(

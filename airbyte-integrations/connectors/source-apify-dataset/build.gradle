@@ -5,7 +5,7 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_apify_dataset_singer'
+    moduleDirectory 'source_apify_dataset'
 }
 
 dependencies {
