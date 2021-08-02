@@ -4,8 +4,8 @@
 
 For this week's update, we got... a few new connectors this week in 0.29.0. We found that a lot of sources can pull data directly from the underlying db instance, which we naturally already supported.
 
-* New Source: PrestaShop :sparkles:
-* New Source: Snapchat Marketing :sparkles:
+* New Source: PrestaShop ✨
+* New Source: Snapchat Marketing ✨
 * New Source: Drupal
 * New Source: Magento
 * New Source: Microsoft Dynamics AX
@@ -20,6 +20,7 @@ For this week's update, we got... a few new connectors this week in 0.29.0. We f
 * New Source: Wordpress
 * New Source: Zencart
 
+
 * 🐛 Shopify source: Fixed the products schema to be in accordance with the API
 * 🐛 BigQuery source: No longer fails with nested array data types.
 
@@ -29,11 +30,14 @@ And as always, thank you to our wonderful contributors: Madison Swain-Bowden, Br
 
 ## 07/23/2021 Summary
 
-What's going on @channel? We just released 0.28.0 and here's the main highlights.
-* New Destination: Google Cloud Storage :sparkles:
-* New Destination: Kafka :sparkles: (contributed by @Mario Molina)
+What's going on? We just released 0.28.0 and here's the main highlights.
+
+
+* New Destination: Google Cloud Storage ✨
+* New Destination: Kafka ✨ (contributed by @Mario Molina)
 * New Source: Pipedrive
 * New Source: US Census (contributed by @Daniel Mateus Pires (Earnest Research))
+
 
 * ✨ Google Ads source: Now supports Campaigns, Ads, AdGroups, and Accounts streams.
 * ✨ Stripe source: All subscription types (including expired and canceled ones) are now returned.
@@ -52,6 +56,7 @@ As for our changes this week...
 * New Source: Zendesk Sunshine
 * New Source: Dixa
 * New Source: Typeform
+
 
 * 💎 MySQL destination: Now supports normalization!  
 * 💎 MSSQL source: Now supports CDC (Change Data Capture)
@@ -72,6 +77,7 @@ As usual, thank you to our awesome community contributors this week: Oliver Meye
 * New Source: Airbyte-Native GitHub
 * New Source: Airbyte-Native GitLab
 * New Source: Airbyte-Native Twilio
+
 
 * ✨ S3 destination: Now supports anyOf, oneOf and allOf schema fields.
 * ✨ Instagram source: Migrated to the CDK and has improved error handling.
