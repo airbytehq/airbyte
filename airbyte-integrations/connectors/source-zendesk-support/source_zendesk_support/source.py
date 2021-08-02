@@ -64,12 +64,12 @@ class SourceZendeskSupport(AbstractSource):
     """Source Zendesk Support fetch data from Zendesk CRM that builds customer
     support and sales software which aims for quick implementation and adaptation at scale.
     """
+
     @classmethod
     def get_authenticator(cls, config: Mapping[str, Any]) -> BasicApiTokenAuthenticator:
         if config["auth_method"].get("email") and config["auth_method"].get("api_token"):
             return BasicApiTokenAuthenticator(config["auth_method"]["email"], config["auth_method"]["api_token"])
-        raise SourceZendeskException(
-            f"Not implemented authorization method: {config['auth_method']}")
+        raise SourceZendeskException(f"Not implemented authorization method: {config['auth_method']}")
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
@@ -82,13 +82,11 @@ class SourceZendeskSupport(AbstractSource):
         auth = self.get_authenticator(config)
         settings = None
         try:
-            settings = UserSettingsStream(
-                config["subdomain"], authenticator=auth).get_settings()
+            settings = UserSettingsStream(config["subdomain"], authenticator=auth).get_settings()
         except requests.exceptions.RequestException as e:
             return False, e
 
-        active_features = [k for k, v in settings.get(
-            "active_features", {}).items() if v]
+        active_features = [k for k, v in settings.get("active_features", {}).items() if v]
         logger.info("available features: %s" % active_features)
         if "organization_access_enabled" not in active_features:
             return False, "Organization access is not enabled. Please check admin permission of the current account"
@@ -97,7 +95,7 @@ class SourceZendeskSupport(AbstractSource):
     @classmethod
     def convert_config2stream_args(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
         """Convert input configs to parameters of the future streams
-            This function is used by unit tests too
+        This function is used by unit tests too
         """
         return {
             "subdomain": config["subdomain"],

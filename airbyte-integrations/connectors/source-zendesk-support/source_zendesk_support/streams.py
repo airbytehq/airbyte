@@ -90,7 +90,7 @@ class SourceZendeskSupportStream(HttpStream, ABC):
     @staticmethod
     def str2datetime(str_dt: str) -> datetime:
         """convert string to datetime object
-            Input example: '2021-07-22T06:55:55Z' FROMAT : "%Y-%m-%dT%H:%M:%SZ"
+        Input example: '2021-07-22T06:55:55Z' FROMAT : "%Y-%m-%dT%H:%M:%SZ"
         """
         if not str_dt:
             return None
@@ -99,7 +99,7 @@ class SourceZendeskSupportStream(HttpStream, ABC):
     @staticmethod
     def datetime2str(dt: datetime) -> str:
         """convert datetime object to string
-            Output example: '2021-07-22T06:55:55Z' FROMAT : "%Y-%m-%dT%H:%M:%SZ"
+        Output example: '2021-07-22T06:55:55Z' FROMAT : "%Y-%m-%dT%H:%M:%SZ"
         """
         return datetime.strftime(dt.replace(tzinfo=pytz.UTC), DATETIME_FORMAT)
 
@@ -140,8 +140,7 @@ class IncrementalEntityStream(SourceZendeskSupportStream, ABC):
     def __init__(self, start_date: str, **kwargs):
         super().__init__(**kwargs)
         # add the custom value for skiping of not relevant records
-        self._start_date = self.str2datetime(
-            start_date) if isinstance(start_date, str) else start_date
+        self._start_date = self.str2datetime(start_date) if isinstance(start_date, str) else start_date
 
     def path(self, **kwargs) -> str:
         return f"{self.name}.json"
@@ -159,8 +158,7 @@ class IncrementalEntityStream(SourceZendeskSupportStream, ABC):
         # try to save maximum value of a cursor field
         return {
             self.cursor_field: max(
-                str((latest_record or {}).get(self.cursor_field, "")), str(
-                    (current_stream_state or {}).get(self.cursor_field, ""))
+                str((latest_record or {}).get(self.cursor_field, "")), str((current_stream_state or {}).get(self.cursor_field, ""))
             )
         }
 
@@ -183,8 +181,8 @@ class IncrementalExportStream(IncrementalEntityStream, ABC):
     @staticmethod
     def str2unixtime(str_dt: str) -> int:
         """convert string to unixtime number
-            Input example: '2021-07-22T06:55:55Z' FROMAT : "%Y-%m-%dT%H:%M:%SZ"
-            Output example: 1626936955"
+        Input example: '2021-07-22T06:55:55Z' FROMAT : "%Y-%m-%dT%H:%M:%SZ"
+        Output example: 1626936955"
         """
         if not str_dt:
             return None
@@ -202,9 +200,7 @@ class IncrementalExportStream(IncrementalEntityStream, ABC):
         return f"incremental/{self.name}.json"
 
     def request_params(
-        self, stream_state: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-        **kwargs
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
 
         params = {"per_page": self.page_size}
@@ -214,8 +210,7 @@ class IncrementalExportStream(IncrementalEntityStream, ABC):
             if current_state and isinstance(current_state, str) and not current_state.isdigit():
                 # try to save a stage with UnixTime format
                 current_state = self.str2unixtime(current_state)
-            start_time = int(current_state or time.mktime(
-                self._start_date.timetuple())) + 1
+            start_time = int(current_state or time.mktime(self._start_date.timetuple())) + 1
             # +1 because the API returns all records where  generated_timestamp >= start_time
 
             now = calendar.timegm(datetime.now().utctimetuple())
@@ -269,8 +264,7 @@ class IncrementalUnsortedStream(IncrementalEntityStream, ABC):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
 
-        max_updated_at = self.datetime2str(
-            self._max_cursor_date) if self._max_cursor_date else ""
+        max_updated_at = self.datetime2str(self._max_cursor_date) if self._max_cursor_date else ""
         return {self.cursor_field: max(max_updated_at, (current_stream_state or {}).get(self.cursor_field, ""))}
 
     @property
@@ -302,6 +296,7 @@ class IncrementalUnsortedPageStream(IncrementalUnsortedStream, ABC):
 
 class FullRefreshStream(IncrementalUnsortedPageStream, ABC):
     """"Stream for endpoints where there are not any created_at or updated_at fields"""
+
     # reset to default value
     cursor_field = SourceZendeskSupportStream.cursor_field
 
@@ -309,17 +304,9 @@ class FullRefreshStream(IncrementalUnsortedPageStream, ABC):
 class IncrementalSortedCursorStream(IncrementalUnsortedStream, ABC):
     """Stream for loading sorting data with cursor based pagination"""
 
-    def request_params(
-        self,
-        next_page_token: Mapping[str, Any] = None,
-        **kwargs
-    ) -> MutableMapping[str, Any]:
+    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(next_page_token=next_page_token, **kwargs)
-        params.update({
-            "sort_by": self.cursor_field,
-            "sort_order": "desc",
-            "limit": self.page_size
-        })
+        params.update({"sort_by": self.cursor_field, "sort_order": "desc", "limit": self.page_size})
 
         if next_page_token:
             params["cursor"] = next_page_token
@@ -337,11 +324,7 @@ class IncrementalSortedPageStream(IncrementalUnsortedPageStream, ABC):
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
         if params:
-            params.update({
-                "sort_by": self.cursor_field,
-                "sort_order": "desc",
-                "limit": self.page_size
-            })
+            params.update({"sort_by": self.cursor_field, "sort_order": "desc", "limit": self.page_size})
         return params
 
 
@@ -365,24 +348,24 @@ class TicketComments(IncrementalSortedPageStream):
         stream_state = stream_state or {}
         # convert a comment state value to a ticket one
         # Comment state: {"created_at": "2021-07-30T12:30:09Z"} => Ticket state {"generated_timestamp": 1627637409}
-        ticket_stream_value = Tickets.str2unixtime(
-            stream_state.get(self.cursor_field))
+        ticket_stream_value = Tickets.str2unixtime(stream_state.get(self.cursor_field))
 
         tickets = Tickets(self._start_date, subdomain=self._subdomain, authenticator=self.authenticator).read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field,
-            stream_state={Tickets.cursor_field: ticket_stream_value}
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_state={Tickets.cursor_field: ticket_stream_value}
         )
-        stream_state_dt = self.str2datetime(
-            stream_state.get(self.cursor_field))
+        stream_state_dt = self.str2datetime(stream_state.get(self.cursor_field))
 
         # selects all tickets what have at least one comment
-        ticket_ids = [{
-            "id": ticket["id"],
-            "start_stream_state": stream_state_dt,
-            Tickets.cursor_field: ticket[Tickets.cursor_field],
-        } for ticket in tickets if ticket["comment_count"]]
-        self.logger.info(
-            f"Found updated {len(ticket_ids)} ticket(s) with comments")
+        ticket_ids = [
+            {
+                "id": ticket["id"],
+                "start_stream_state": stream_state_dt,
+                Tickets.cursor_field: ticket[Tickets.cursor_field],
+            }
+            for ticket in tickets
+            if ticket["comment_count"]
+        ]
+        self.logger.info(f"Found updated {len(ticket_ids)} ticket(s) with comments")
         # sort slices by generated_timestamp
         ticket_ids.sort(key=lambda ticket: ticket[Tickets.cursor_field])
         return ticket_ids
@@ -483,6 +466,7 @@ class TicketAudits(IncrementalSortedCursorStream):
 
 class Tags(FullRefreshStream):
     """Tags stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/tags/"""
+
     # doesn't have the 'id' field
     primary_key = "name"
 
