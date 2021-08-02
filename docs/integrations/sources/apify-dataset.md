@@ -28,10 +28,6 @@ The Apify dataset connector uses [Apify Python Client](https://docs.apify.com/ap
 
 * Dataset Id
 
-### Setup guide
-
-Please read [How to get your API key and Secret key](https://help.amplitude.com/hc/en-us/articles/360058073772-Create-and-manage-organizations-and-projects#view-and-edit-your-project-information).
-
 ### Changelog
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |

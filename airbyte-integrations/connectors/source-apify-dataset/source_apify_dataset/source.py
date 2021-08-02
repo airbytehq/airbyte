@@ -113,8 +113,8 @@ class SourceApifyDataset(Source):
             the properties of the spec.json file
         :param catalog: The input catalog is a ConfiguredAirbyteCatalog which is almost the same as AirbyteCatalog
             returned by discover(), but
-        in addition, it's been configured in the UI! For each particular stream and field, there may have been provided
-        with extra modifications such as: filtering streams and/or columns out, renaming some entities, etc
+            in addition, it's been configured in the UI! For each particular stream and field, there may have been provided
+            with extra modifications such as: filtering streams and/or columns out, renaming some entities, etc
         :param state: When a Airbyte reads data from a source, it might need to keep a checkpoint cursor to resume
             replication in the future from that saved checkpoint.
             This is the object that is provided with state from previous runs and avoid replicating the entire set of
