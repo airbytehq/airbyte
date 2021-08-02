@@ -134,13 +134,15 @@ class SourceApifyDataset(Source):
         dataset = dataset_client.get()
         num_items = dataset["itemCount"]
 
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            futures = []
-            for offset in range(0, num_items, BATCH_SIZE):
-                limit = BATCH_SIZE
-                futures.append(executor.submit(dataset_client.list_items, offset=offset, limit=limit, clean=clean))
-            for future in concurrent.futures.as_completed(futures):
-                for data in future.result().items:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            apify_get_items_request = lambda offset: dataset_client.list_items(
+                    offset=offset,
+                    limit=BATCH_SIZE,
+                    clean=clean
+                )
+
+            for result in executor.map(apify_get_items_request, range(0, num_items, BATCH_SIZE)):
+                for data in result.items:
                     yield AirbyteMessage(
                         type=Type.RECORD,
                         record=AirbyteRecordMessage(
