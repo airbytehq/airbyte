@@ -68,7 +68,7 @@ def check_connector(connector):
     # order: recent values goes first
     history = parse(status_page)
     # order: recent values goes last
-    short_status = ''.join(['.' if build['status'] == 'success' else 'F' for build in history[::-1]])  # ex: F..F..FF
+    short_status = ''.join(['✅' if build['status'] == 'success' else '❌' for build in history[::-1]])  # ex: ❌✅✅❌✅✅❌❌
 
     # check latest build status
     last_build = history[0]
@@ -124,7 +124,7 @@ Destinations: total: {destinations_len} / tested: {len(TESTED_DESTINATION)} / su
 def send_report(report):
     webhook = WebhookClient(os.environ["BUILD_SLACK_WEBHOOK"])
     try:
-        def msgs(report):
+        def chunk_messages(report):
             """split report into messages with no more than 4000 chars each (slack limitation)"""
             msg = ''
             for line in report.splitlines():
@@ -133,7 +133,7 @@ def send_report(report):
                     yield msg
                     msg = ''
             yield msg
-        for msg in msgs(report):
+        for msg in chunk_messages(report):
             webhook.send(text=f"```{msg}```")
         print(f'Report has been sent')
     except SlackApiError as e:
