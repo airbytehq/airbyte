@@ -64,17 +64,23 @@ A service account's credentials include a generated email address that is unique
 4. Under Service account details, type a `name`, `ID`, and `description` for the service account, then click `Create`.
   * Optional: Under `Service account permissions`, select the `IAM roles` to grant to the service account, then click `Continue`.
   * Optional: Under `Grant users access to this service account`, add the `users` or `groups` that are allowed to use and manage the service account.
-5. Click `+ Create key`, then click `Create`.
+5. Go to [API Console/Credentials](https://console.cloud.google.com/apis/credentials), check the `Service Accounts` section, click on the Email address of service account you just created. 
+6. Open `Details` tab and find `Show domain-wide delegation`, checkmark the `Enable Google Workspace Domain-wide Delegation`.
+7. On `Keys` tab click `+ Add key`, then click `Create new key`.
 
-Your new public/private key pair should be now generated and downloaded to your machine as `<credentials>.json` you can find it in the `Downloads` folder or somewhere else if you use another default destination for downloaded files.
-This file serves as the only copy of the private key. You are responsible for storing it securely.
+Your new public/private key pair should be now generated and downloaded to your machine as `<credentials>.json` you can find it in the `Downloads` folder or somewhere else if you use another default destination for downloaded files. This file serves as the only copy of the private key. You are responsible for storing it securely.
+If you lose this key pair, you will need to generate a new one!
+
+### Using the existing Service Account 
+1. Go to [API Console/Credentials](https://console.cloud.google.com/apis/credentials), check the `Service Accounts` section, click on the Email address of service account you just created.
+2. Click on `Details` tab and find `Show domain-wide delegation`, checkmark the `Enable Google Workspace Domain-wide Delegation`.
+2. On `Keys` tab click `+ Add key`, then click `Create new key`.
+
+Your new public/private key pair should be now generated and downloaded to your machine as `<credentials>.json` you can find it in the `Downloads` folder or somewhere else if you use another default destination for downloaded files. This file serves as the only copy of the private key. You are responsible for storing it securely.
 If you lose this key pair, you will need to generate a new one!
 
 ### Note
 You can return to the [API Console/Credentials](https://console.cloud.google.com/apis/credentials) at any time to view the email address, public key fingerprints, and other information, or to generate additional public/private key pairs. For more details about service account credentials in the API Console, see [Service accounts](https://cloud.google.com/iam/docs/understanding-service-accounts) in the API Console help file.
-
-### Using the existing Service Account 
-Go to [API Console/Credentials](https://console.cloud.google.com/apis/credentials), check the `Service Accounts` section, click on one of the service accounts that is available, make sure it has the granted Admin permissions.
 
 ### Create a Service Account with delegated domain-wide authority
 
