@@ -138,6 +138,7 @@ class SourceFilesAbstractSpec(BaseModel):
     @staticmethod
     def change_format_to_oneOf(schema: dict) -> dict:
         schema["properties"]["format"]["oneOf"] = deepcopy(schema["properties"]["format"]["anyOf"])
+        schema["properties"]["format"]["type"] = "object"
         del schema["properties"]["format"]["anyOf"]
         return schema
 
