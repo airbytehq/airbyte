@@ -22,8 +22,8 @@
 # SOFTWARE.
 #
 
-
 import concurrent.futures
+from functools import partial
 import json
 from datetime import datetime
 from typing import Dict, Generator
@@ -47,6 +47,19 @@ DATASET_ITEMS_STREAM_NAME = "DatasetItems"
 
 # Batch size for downloading dataset items from Apify dataset
 BATCH_SIZE = 50000
+
+def apify_get_dataset_items(dataset_client, clean, offset):
+    """
+    Wrapper around Apify dataset client that returns a single page with dataset items.
+    This function needs to be defined explicitly so it can be called in parallel in the main read function.
+
+    :param dataset_client: Apify dataset client
+    :param clean: whether to fetch only clean items (clean are non-empty ones excluding hidden columns)
+    :param offset: page offset
+
+    :return: dictionary where .items field contains the fetched dataset items
+    """
+    return dataset_client.list_items(offset=offset, limit=BATCH_SIZE, clean=clean)
 
 
 class SourceApifyDataset(Source):
@@ -134,10 +147,8 @@ class SourceApifyDataset(Source):
         dataset = dataset_client.get()
         num_items = dataset["itemCount"]
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-            apify_get_items_request = lambda offset: dataset_client.list_items(offset=offset, limit=BATCH_SIZE, clean=clean)
-
-            for result in executor.map(apify_get_items_request, range(0, num_items, BATCH_SIZE)):
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            for result in executor.map(partial(apify_get_dataset_items, dataset_client, clean), range(0, num_items, BATCH_SIZE)):
                 for data in result.items:
                     yield AirbyteMessage(
                         type=Type.RECORD,
