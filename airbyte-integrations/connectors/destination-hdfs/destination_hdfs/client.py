@@ -37,7 +37,6 @@ class HDFSClient:
         stream: str,
         overwrite: bool = False,
         port: int = 50070,
-        logger=None,
     ):
         self.host = host
         self.port = port
@@ -45,7 +44,6 @@ class HDFSClient:
         self.destination_path = destination_path
         self.stream = stream
         self.overwrite = overwrite
-        self.logger = logger
 
     def get_client(self) -> InsecureClient:
         return InsecureClient(f"http://{self.host}:{self.port}", user=self.user)
@@ -56,20 +54,18 @@ class HDFSClient:
 
     def write(self, data: Generator[str, None, None], overwrite: bool = False) -> None:
         _client = self.get_client()
-        path = self.path
         _client.makedirs(self.destination_path)
-        self.logger.info(f"Overwrite: {overwrite}")
         # HDFS does not handle the overwrite/append situation gracefully, so
         # we need to add some preliminary steps before writing
-        exists = _client.status(path, strict=False)
+        exists = _client.status(self.path, strict=False)
         if overwrite and exists:
             # Delete the file before writing
-            _client.delete(path)
+            _client.delete(self.path)
             exists = False
         if not exists:
             # Create an empty file for writing
-            _client.write(path, encoding="utf-8", data="")
-        _client.write(path, encoding="utf-8", data=data, append=True)
+            _client.write(self.path, encoding="utf-8", data="")
+        _client.write(self.path, encoding="utf-8", data=data, append=True)
 
     def check(self) -> None:
         filename = f"{self.destination_path}/_airbyte_test_{uuid.uuid4()}.txt"
