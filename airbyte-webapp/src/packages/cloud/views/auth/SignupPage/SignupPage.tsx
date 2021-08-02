@@ -10,7 +10,7 @@ import {
   Form,
   RowFieldItem,
 } from "../components/FormComponents";
-import { Button, H4, LabeledInput, LabeledToggle } from "components";
+import { Button, H5, LabeledInput, LabeledToggle } from "components";
 import { FormTitle } from "../components/FormTitle";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
@@ -35,7 +35,7 @@ const SignupPage: React.FC = () => {
   return (
     <div>
       <FormTitle bold>Activate your free beta access</FormTitle>
-      <H4>No credit card required. Free until official launch.</H4>
+      <H5>No credit card required. Free until official launch.</H5>
 
       <Formik
         initialValues={{

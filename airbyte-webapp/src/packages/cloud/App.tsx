@@ -6,7 +6,7 @@ import { CacheProvider } from "rest-hooks";
 import en from "locales/en.json";
 import cloudLocales from "./locales/en.json";
 import GlobalStyle from "global-styles";
-import { theme } from "theme";
+import { theme } from "./theme";
 
 import "packages/cloud/config/firebase";
 

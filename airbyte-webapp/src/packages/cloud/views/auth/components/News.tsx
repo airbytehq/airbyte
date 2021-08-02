@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 
-import { H2, H3, H4 } from "components";
+import { H2, H4, H5 } from "components";
 import NewsItem from "./NewsItem";
 
 const Icon = styled.div`
@@ -39,8 +39,8 @@ const News: React.FC = () => {
           {/*@ts-ignore github icon fails here*/}
           <GitIcon icon={faGithub} />
           <div>
-            <H3>Open-source</H3>
-            <H4>Deploy in your own infrastructure. Free forever. </H4>
+            <H4>Open-source</H4>
+            <H5>Deploy in your own infrastructure. Free forever. </H5>
           </div>
         </GitBlock>
       </div>

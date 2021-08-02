@@ -1,1 +1,6 @@
-{}
+{
+  "workspaces.title": "Select a workspace",
+  "workspaces.subtitle": "Workspaces let you collaborate with team members and share sources across your team under a shared billing account.",
+  "workspaces.create": "Create workspace",
+  "workspaces.createNew": "Create new workspace"
+}

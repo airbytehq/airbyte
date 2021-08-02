@@ -14,6 +14,7 @@ import ConnectionPage from "pages/ConnectionPage";
 import SettingsPage from "pages/SettingsPage";
 import LoadingPage from "components/LoadingPage";
 import MainView from "components/MainView";
+import { WorkspacesPage } from "./views/workspaces";
 import { useApiHealthPoll } from "components/hooks/services/Health";
 import { Auth } from "./views/auth";
 import { useAuthService } from "./services/auth/AuthService";
@@ -34,6 +35,7 @@ export enum Routes {
   Notifications = "/notifications",
   Metrics = "/metrics",
   Account = "/account",
+  Workspaces = "/workspaces",
   Root = "/",
 }
 
@@ -55,6 +57,9 @@ const MainViewRoutes = () => {
           </Route>
           <Route path={Routes.Settings}>
             <SettingsPage />
+          </Route>
+          <Route path={Routes.Workspaces}>
+            <WorkspacesPage />
           </Route>
           <Route exact path={Routes.Root}>
             <SourcesPage />
