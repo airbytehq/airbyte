@@ -122,7 +122,7 @@ Destinations: total: {destinations_len} / tested: {len(TESTED_DESTINATION)} / su
 
 
 def send_report(report):
-    webhook = WebhookClient(os.environ["BUILD_SLACK_WEBHOOK"])
+    webhook = WebhookClient(os.environ["SLACK_BUILD_REPORT"])
     try:
         def chunk_messages(report):
             """split report into messages with no more than 4000 chars each (slack limitation)"""
