@@ -21,7 +21,7 @@ jobs:
       - name: create and send report
         run: python ./tools/bin/build_report.py
         env:
-          SLACK_BUILD_MONITORING: ${{ secrets.BUILD_SLACK_WEBHOOK }}
+          BUILD_SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
       - name: Slack Notification - Failure
         if: failure()
         uses: rtCamp/action-slack-notify@master
