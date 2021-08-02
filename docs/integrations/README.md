@@ -14,6 +14,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |----|----|
 |[Amazon Seller Partner](./sources/amazon-seller-partner.md)| Alpha |
 |[Amplitude](./sources/amplitude.md)| Beta |
+|[Apify Dataset](./sources/apify-dataset.md)| Alpha |
 |[Appstore](./sources/appstore.md)| Alpha |
 |[Asana](./sources/asana.md) | Beta |
 |[AWS CloudTrail](./sources/aws-cloudtrail.md)| Beta |
