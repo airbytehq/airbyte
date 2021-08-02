@@ -10,7 +10,8 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on.
 
-7/30/2021
+## 7/30/2021
+
 New sources:
 * [**PrestaShop**](https://docs.airbyte.io/integrations/sources/prestashop)
 * [**Snapchat Marketing**](https://docs.airbyte.io/integrations/sources/snapchat-marketing)
@@ -28,8 +29,6 @@ New sources:
 * [**Woo Commerce**](https://docs.airbyte.io/integrations/sources/woo-commerce)
 * [**Wordpress**](https://docs.airbyte.io/integrations/sources/wordpress)
 * [**Zencart**](https://docs.airbyte.io/integrations/sources/zencart)
-
-New features:
 
 Bug fixes:
 * **Shopify** source: Fixed the `products` schema to be in accordance with the API.
