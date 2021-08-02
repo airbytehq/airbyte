@@ -3,14 +3,13 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useAsyncFn } from "react-use";
 
-import { Button, LoadingButton } from "components";
-import ContentCard from "components/ContentCard";
 import config from "config";
-import Link from "components/Link";
-import DeploymentService from "core/resources/DeploymentService";
+
+import { Button, LoadingButton, Link, ContentCard } from "components";
+import HeadTitle from "components/HeadTitle";
+import { deploymentService } from "core/resources/DeploymentService";
 import ImportConfigurationModal from "./components/ImportConfigurationModal";
 import LogsContent from "./components/LogsContent";
-import HeadTitle from "components/HeadTitle";
 
 const Content = styled.div`
   max-width: 813px;
@@ -62,7 +61,7 @@ const ConfigurationsPage: React.FC = () => {
             throw new Error("No file");
           }
           try {
-            await DeploymentService.importDeployment(file);
+            await deploymentService.importDeployment(file);
 
             window.location.reload();
             resolve(true);
@@ -77,7 +76,7 @@ const ConfigurationsPage: React.FC = () => {
   });
 
   const [{ loading: loadingExport }, onExport] = useAsyncFn(async () => {
-    const file = await DeploymentService.exportDeployment();
+    const file = await deploymentService.exportDeployment();
     window.location.assign(file);
   }, []);
 

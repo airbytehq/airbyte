@@ -1,5 +1,5 @@
 export interface User {
-  userId: string;
+  token: string;
 }
 
 export enum ErrorCodes {

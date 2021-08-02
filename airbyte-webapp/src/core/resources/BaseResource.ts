@@ -9,7 +9,10 @@ import {
   SchemaList,
 } from "rest-hooks";
 
-import { AirbyteRequestService } from "core/request/AirbyteRequestService";
+import {
+  AirbyteRequestService,
+  parseResponse,
+} from "core/request/AirbyteRequestService";
 
 // TODO: rename to crud resource after upgrade to rest-hook 5.0.0
 export default abstract class BaseResource extends Resource {
@@ -42,7 +45,7 @@ export default abstract class BaseResource extends Resource {
   ): Promise<T> {
     const response = await this.fetchResponse(method, url, body);
 
-    return AirbyteRequestService.parseResponse(response);
+    return parseResponse(response);
   }
 
   static listUrl<T extends typeof Resource>(this: T): string {

@@ -40,18 +40,19 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
   >(authStateReducer, initialState, actions);
 
   useEffect(() => {
-    firebaseApp.auth().onAuthStateChanged((a) => {
-      console.log(a);
-      if (state.currentUser === null && a) {
-        loggedIn(a as any);
+    firebaseApp.auth().onAuthStateChanged(async (currentUser) => {
+      if (state.currentUser === null && currentUser) {
+        const token = await currentUser.getIdToken();
+
+        // TODO: place token into right place
+        loggedIn({
+          token,
+        });
       } else {
         authInited();
       }
-      // if (a) {
-      //   loggedIn(a as any);
-      // }
     });
-  }, [state.currentUser, loggedIn]);
+  }, [state.currentUser, loggedIn, authInited]);
 
   const ctx: Context = useMemo(
     () => ({

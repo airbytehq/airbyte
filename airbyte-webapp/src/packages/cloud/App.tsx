@@ -16,8 +16,13 @@ import ApiErrorBoundary from "components/ApiErrorBoundary";
 import NotificationService from "components/hooks/services/Notification";
 import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
 import { AuthenticationProvider } from "./services/auth/AuthService";
+import { WorkspaceServiceProvider } from "./services/workspaces/WorkspacesService";
 
 const messages = Object.assign({}, en, cloudLocales);
+
+const customerIdProvider = () => {
+  return "";
+};
 
 const App: React.FC = () => {
   return (
@@ -29,11 +34,15 @@ const App: React.FC = () => {
             <Suspense fallback={<LoadingPage />}>
               <ApiErrorBoundary>
                 <NotificationService>
-                  <AnalyticsInitializer>
-                    <AuthenticationProvider>
-                      <Routing />
-                    </AuthenticationProvider>
-                  </AnalyticsInitializer>
+                  <AuthenticationProvider>
+                    <AnalyticsInitializer
+                      customerIdProvider={customerIdProvider}
+                    >
+                      <WorkspaceServiceProvider>
+                        <Routing />
+                      </WorkspaceServiceProvider>
+                    </AnalyticsInitializer>
+                  </AuthenticationProvider>
                 </NotificationService>
               </ApiErrorBoundary>
             </Suspense>
