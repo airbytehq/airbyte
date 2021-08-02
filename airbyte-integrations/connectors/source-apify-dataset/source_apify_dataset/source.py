@@ -135,11 +135,7 @@ class SourceApifyDataset(Source):
         num_items = dataset["itemCount"]
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-            apify_get_items_request = lambda offset: dataset_client.list_items(
-                    offset=offset,
-                    limit=BATCH_SIZE,
-                    clean=clean
-                )
+            apify_get_items_request = lambda offset: dataset_client.list_items(offset=offset, limit=BATCH_SIZE, clean=clean)
 
             for result in executor.map(apify_get_items_request, range(0, num_items, BATCH_SIZE)):
                 for data in result.items:
