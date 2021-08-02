@@ -7,16 +7,14 @@ import en from "locales/en.json";
 import GlobalStyle from "global-styles";
 import { theme } from "theme";
 
+import "packages/cloud/config/firebase";
+
 import { Routing } from "./routes";
 import LoadingPage from "components/LoadingPage";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 import NotificationService from "components/hooks/services/Notification";
 import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
 import { AuthenticationProvider } from "./services/auth/AuthService";
-import firebase from "firebase";
-
-const config = {};
-firebase.initializeApp(config);
 
 const App: React.FC = () => {
   return (

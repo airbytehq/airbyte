@@ -1,8 +1,15 @@
-import React, { useContext } from "react";
-import firebase from "firebase";
+import React, { useContext, useEffect, useMemo } from "react";
 
 import { User } from "./types";
 import { GoogleAuthService } from "./GoogleAuthService";
+import useTypesafeReducer from "components/hooks/useTypesafeReducer";
+import {
+  actions,
+  AuthServiceState,
+  authStateReducer,
+  initialState,
+} from "./reducer";
+import { firebaseApp } from "packages/cloud/config/firebase";
 
 type Context = {
   user: User | null;
@@ -24,40 +31,56 @@ const defaultState: Context = {
 
 export const AuthContext = React.createContext<Context>(defaultState);
 
+const authService = new GoogleAuthService();
+
 export const AuthenticationProvider: React.FC = ({ children }) => {
-  const authService = new GoogleAuthService();
+  const [state, { loggedIn, authInited }] = useTypesafeReducer<
+    AuthServiceState,
+    typeof actions
+  >(authStateReducer, initialState, actions);
 
-  firebase
-    .app()
-    .auth()
-    .onAuthStateChanged((a) => console.log(a));
+  useEffect(() => {
+    firebaseApp.auth().onAuthStateChanged((a) => {
+      console.log(a);
+      if (state.currentUser === null && a) {
+        loggedIn(a as any);
+      } else {
+        authInited();
+      }
+      // if (a) {
+      //   loggedIn(a as any);
+      // }
+    });
+  }, [state.currentUser, loggedIn]);
 
-  const ctx: Context = {
-    inited: false,
-    isLoading: false,
-    async login(values: {
-      email: string;
-      password: string;
-    }): Promise<User | null> {
-      const user = await authService.login(values.email, values.password);
+  const ctx: Context = useMemo(
+    () => ({
+      inited: state.inited,
+      isLoading: state.loading,
+      async login(values: {
+        email: string;
+        password: string;
+      }): Promise<User | null> {
+        const user = await authService.login(values.email, values.password);
+        return user;
+      },
+      async logout(): Promise<void> {
+        await authService.signOut();
+      },
+      async signUp(form: {
+        email: string;
+        password: string;
+      }): Promise<User | null> {
+        const user = await authService.signUp(form.email, form.password);
+        await Promise.resolve(() => console.log("add extra fields"));
 
-      console.log(user);
-      return user;
-    },
-    logout(): void {
-      // authService;
-    },
-    async signUp(form: {
-      email: string;
-      password: string;
-    }): Promise<User | null> {
-      const user = await authService.signUp(form.email, form.password);
-      await Promise.resolve(() => console.log("add extra fields"));
+        return user;
+      },
+      user: state.currentUser,
+    }),
+    [state]
+  );
 
-      return user;
-    },
-    user: null,
-  };
   return <AuthContext.Provider value={ctx}>{children}</AuthContext.Provider>;
 };
 

@@ -16,6 +16,7 @@ import LoadingPage from "components/LoadingPage";
 import MainView from "components/MainView";
 import { useApiHealthPoll } from "components/hooks/services/Health";
 import { Auth } from "./views/auth";
+import { useAuthService } from "./services/auth/AuthService";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -58,7 +59,7 @@ const MainViewRoutes = () => {
           <Route exact path={Routes.Root}>
             <SourcesPage />
           </Route>
-          <Redirect to="/login" />
+          <Redirect to={Routes.Connections} />
         </Switch>
       </Suspense>
     </MainView>
@@ -66,11 +67,18 @@ const MainViewRoutes = () => {
 };
 
 export const Routing: React.FC = () => {
+  const { user, inited } = useAuthService();
   return (
     <Router>
       <Suspense fallback={<LoadingPage />}>
-        <Auth />
-        <MainViewRoutes />
+        {inited ? (
+          <>
+            {user && <MainViewRoutes />}
+            {!user && <Auth />}
+          </>
+        ) : (
+          <LoadingPage />
+        )}
       </Suspense>
     </Router>
   );

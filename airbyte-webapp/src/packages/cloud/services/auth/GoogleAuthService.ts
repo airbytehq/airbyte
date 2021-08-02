@@ -4,6 +4,7 @@ import { ErrorCodes } from "./types";
 
 interface AuthService {
   login(email: string, password: string): Promise<any>;
+  signOut(): Promise<any>;
 
   signUp(email: string, password: string): Promise<any>;
 }
@@ -44,5 +45,9 @@ export class GoogleAuthService implements AuthService {
             throw new FieldError("password", ErrorCodes.Invalid);
         }
       });
+  }
+
+  signOut(): Promise<any> {
+    return Promise.resolve(undefined);
   }
 }
