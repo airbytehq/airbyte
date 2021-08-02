@@ -23,9 +23,9 @@
 #
 
 import concurrent.futures
-from functools import partial
 import json
 from datetime import datetime
+from functools import partial
 from typing import Dict, Generator
 
 from airbyte_cdk.logger import AirbyteLogger
@@ -47,6 +47,7 @@ DATASET_ITEMS_STREAM_NAME = "DatasetItems"
 
 # Batch size for downloading dataset items from Apify dataset
 BATCH_SIZE = 50000
+
 
 def apify_get_dataset_items(dataset_client, clean, offset):
     """
