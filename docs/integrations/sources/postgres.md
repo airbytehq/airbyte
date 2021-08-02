@@ -10,36 +10,63 @@ The Postgres source does not alter the schema present in your database. Dependin
 
 ### Data type mapping
 
-Postgres data types are mapped to the following data types when synchronizing data:
+Postgres data types are mapped to the following data types when synchronizing data. 
+You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/PostresSourceComprehensiveTest.java).
+If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
 | Postgres Type | Resulting Type | Notes |
 | :--- | :--- | :--- |
-| `bigint` | integer |  |
-| `bit` | boolean |  |
+| `bigint` | number |  |
+| `bigserial` | number |  |
+| `bit` | boolean | |
+| `blob` | boolean |  |
 | `boolean` | boolean |  |
+| `box` | string |  |
+| `bytea` | object |  |
 | `character` | string |  |
 | `character varying` | string |  |
 | `cidr` | string |  |
+| `circle` | string |  |
 | `citext` | string |  |
 | `date` | string |  |
 | `double precision` | string |  |
 | `enum` | number |  |
+| `float` | number |  |
+| `float8` | number |  |
 | `hstore` | object | may be de-nested depending on the destination you are syncing into |
 | `inet` | string |  |
-| `int` | integer |  |
+| `int` | number |  |
+| `interval` | string |  |
+| `inventory_item` | string |  |
 | `json` | string |  |
 | `jsonb` | string |  |
+| `line` | string |  |
+| `lseg` | string |  |
 | `macaddr` | string |  |
+| `macaddr8` | string |  |
 | `money` | string |  |
+| `mood` | string |  |
 | `numeric` | number |  |
+| `path` | string |  |
+| `point` | number |  |
+| `polygon` | number |  |
 | `real` | number |  |
-| `smallint` | integer |  |
+| `serial` | number |  |
+| `smallint` | number |  |
+| `smallserial` | number |  |
 | `text` | string |  |
+| `text[]` | string |  |
+| `time` | string |  |
+| `timez` | string |  |
 | `time with timezone` | string | may be written as a native date type depending on the destination |
 | `time without timezone` | string | may be written as a native date type depending on the destination |
 | `timestamp with timezone` | string | may be written as a native date type depending on the destination |
 | `timestamp without timezone` | string | may be written as a native date type depending on the destination |
+| `tsrange` | string |  |
+| `tsvector` | string |  |
 | `uuid` | string |  |
+| `varchar` | string |  |
+| `xml` | string |  |
 
 **Note:** arrays for all the above types as well as custom types are supported, although they may be de-nested depending on the destination. Byte arrays are currently unsupported.
 

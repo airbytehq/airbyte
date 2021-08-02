@@ -44,7 +44,6 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.notification.NotificationClient;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
@@ -66,8 +65,10 @@ class JobNotifierTest {
   private static final Instant NOW = Instant.now();
   private static final String TEST_DOCKER_REPO = "airbyte/test-image";
   private static final String TEST_DOCKER_TAG = "0.1.0";
+  private static final UUID WORKSPACE_ID = UUID.randomUUID();
 
   private ConfigRepository configRepository;
+  private WorkspaceHelper workspaceHelper;
   private JobNotifier jobNotifier;
   private NotificationClient notificationClient;
   private TrackingClient trackingClient;
@@ -75,15 +76,17 @@ class JobNotifierTest {
   @BeforeEach
   void setup() {
     configRepository = mock(ConfigRepository.class);
+    workspaceHelper = mock(WorkspaceHelper.class);
     trackingClient = mock(TrackingClient.class);
 
-    jobNotifier = spy(new JobNotifier(WEBAPP_URL, configRepository, trackingClient));
+    jobNotifier = spy(new JobNotifier(WEBAPP_URL, configRepository, workspaceHelper, trackingClient));
     notificationClient = mock(NotificationClient.class);
     when(jobNotifier.getNotificationClient(getSlackNotification())).thenReturn(notificationClient);
   }
 
   @Test
   void testFailJob() throws IOException, InterruptedException, JsonValidationException, ConfigNotFoundException {
+    final Job job = createJob();
     final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
         .withName("source-test")
         .withDockerRepository(TEST_DOCKER_REPO)
@@ -98,10 +101,10 @@ class JobNotifierTest {
     when(configRepository.getDestinationDefinitionFromConnection(any())).thenReturn(destinationDefinition);
     when(configRepository.getStandardSourceDefinition(any())).thenReturn(sourceDefinition);
     when(configRepository.getStandardDestinationDefinition(any())).thenReturn(destinationDefinition);
-    when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true)).thenReturn(getWorkspace());
+    when(configRepository.getStandardWorkspace(WORKSPACE_ID, true)).thenReturn(getWorkspace());
+    when(workspaceHelper.getWorkspaceForJobId(job.getId())).thenReturn(WORKSPACE_ID);
     when(notificationClient.notifyJobFailure(anyString(), anyString(), anyString(), anyString())).thenReturn(true);
 
-    final Job job = createJob();
     jobNotifier.failJob("JobNotifierTest was running", job);
     final DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).withZone(ZoneId.systemDefault());
     verify(notificationClient).notifyJobFailure(
@@ -120,7 +123,7 @@ class JobNotifierTest {
     metadata.put("connector_destination", "destination-test");
     metadata.put("connector_destination_version", TEST_DOCKER_TAG);
     metadata.put("notification_type", NotificationType.SLACK);
-    verify(trackingClient).track(JobNotifier.FAILURE_NOTIFICATION, metadata.build());
+    verify(trackingClient).track(WORKSPACE_ID, JobNotifier.FAILURE_NOTIFICATION, metadata.build());
   }
 
   private static StandardWorkspace getWorkspace() {

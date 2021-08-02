@@ -57,6 +57,10 @@ public interface Configs {
 
   String getConfigDatabaseUrl();
 
+  int getMaxRetriesPerAttempt();
+
+  int getMaxSyncJobAttempts();
+
   String getWebappUrl();
 
   String getWorkspaceDockerMount();

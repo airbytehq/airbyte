@@ -1,25 +1,94 @@
 # Changelog
 
+## 07/30/2021 Summary
+
+For this week's update, we got... a few new connectors this week in 0.29.0. We found that a lot of sources can pull data directly from the underlying db instance, which we naturally already supported.
+
+* New Source: PrestaShop ✨
+* New Source: Snapchat Marketing ✨
+* New Source: Drupal
+* New Source: Magento
+* New Source: Microsoft Dynamics AX
+* New Source: Microsoft Dynamics Customer Engagement
+* New Source: Microsoft Dynamics GP
+* New Source: Microsoft Dynamics NAV
+* New Source: Oracle PeopleSoft
+* New Source: Oracle Siebel CRM
+* New Source: SAP Business One
+* New Source: Spree Commerce
+* New Source: Sugar CRM
+* New Source: Wordpress
+* New Source: Zencart
+
+
+* 🐛 Shopify source: Fixed the products schema to be in accordance with the API
+* 🐛 BigQuery source: No longer fails with nested array data types.
+
+View the full release highlights here: [Platform](./platform.md), [Connectors](./connectors.md)
+
+And as always, thank you to our wonderful contributors: Madison Swain-Bowden, Brian Krausz, Apostol Tegko, Matej Hamas, Vladimir Remar, Oren Haliva, satishblotout, jacqueskpoty, wallies
+
+## 07/23/2021 Summary
+
+What's going on? We just released 0.28.0 and here's the main highlights.
+
+
+* New Destination: Google Cloud Storage ✨
+* New Destination: Kafka ✨ (contributed by @Mario Molina)
+* New Source: Pipedrive
+* New Source: US Census (contributed by @Daniel Mateus Pires (Earnest Research))
+
+
+* ✨ Google Ads source: Now supports Campaigns, Ads, AdGroups, and Accounts streams.
+* ✨ Stripe source: All subscription types (including expired and canceled ones) are now returned.
+* 🐛 Facebook source: Improved rate limit management
+* 🐛 Square source: The send_request method is no longer broken due to CDK changes
+* 🐛 MySQL destination: Does not fail on columns with JSON data now.
+
+View the full release highlights here: [Platform](./platform.md), [Connectors](./connectors.md)
+
+And as always, thank you to our wonderful contributors: Mario Molina, Daniel Mateus Pires (Earnest Research), gunu, Ankur Adhikari, Vladimir Remar, Madison Swain-Bowden, Maksym Pavlenok, Sam Crowder, mildbyte, avida, and gaart
+
+## 07/16/2021 Summary
+
+As for our changes this week...
+
+* New Source: Zendesk Sunshine
+* New Source: Dixa
+* New Source: Typeform
+
+
+* 💎 MySQL destination: Now supports normalization!  
+* 💎 MSSQL source: Now supports CDC (Change Data Capture)
+* ✨ Snowflake destination: Data coming from Airbyte is now identifiable
+* 🐛 GitHub source: Now uses the correct cursor field for the IssueEvents stream
+* 🐛 Square source: The send_request method is no longer broken due to CDK changes
+
+View the full release highlights here: [Platform](./platform.md), [Connectors](./connectors.md)
+
+As usual, thank you to our awesome community contributors this week: Oliver Meyer, Varun, Brian Krausz, shadabshaukat, Serhii Lazebnyi, Juliano Benvenuto Piovezan, mildbyte, and Sam Crowder!
+
 ## 07/09/2021 Summary
 
-New Source: PayPal Transaction
-New Source: Square
-New Source: SurveyMonkey
-New Source: CockroachDB
-New Source: Airbyte-Native GitHub
-New Source: Airbyte-Native GitLab
-New Source: Airbyte-Native Twilio
+* New Source: PayPal Transaction
+* New Source: Square
+* New Source: SurveyMonkey
+* New Source: CockroachDB
+* New Source: Airbyte-Native GitHub
+* New Source: Airbyte-Native GitLab
+* New Source: Airbyte-Native Twilio
 
-✨ S3 destination: Now supports anyOf, oneOf and allOf schema fields.
-✨ Instagram source: Migrated to the CDK and has improved error handling.
-✨ Shopify source: Add support for draft orders.
-✨ K8s Deployments: Now support logging to GCS.
-🐛 GitHub source: Fixed issue with locked breaking normalization of the pull_request stream.
-🐛 Okta source: Fix endless loop when syncing data from logs stream.
-🐛 PostgreSQL source: Fixed decimal handling with CDC.
-🐛 Fixed random silent source failures.
-📚 New document on how the CDK handles schemas.
-🏗️ Python CDK: Now allows setting of network adapter args on outgoing HTTP requests.
+
+* ✨ S3 destination: Now supports anyOf, oneOf and allOf schema fields.
+* ✨ Instagram source: Migrated to the CDK and has improved error handling.
+* ✨ Shopify source: Add support for draft orders.
+* ✨ K8s Deployments: Now support logging to GCS.
+* 🐛 GitHub source: Fixed issue with locked breaking normalization of the pull_request stream.
+* 🐛 Okta source: Fix endless loop when syncing data from logs stream.
+* 🐛 PostgreSQL source: Fixed decimal handling with CDC.
+* 🐛 Fixed random silent source failures.
+* 📚 New document on how the CDK handles schemas.
+* 🏗️ Python CDK: Now allows setting of network adapter args on outgoing HTTP requests.
 
 View the full release highlights here: [Platform](./platform.md), [Connectors](./connectors.md)
 

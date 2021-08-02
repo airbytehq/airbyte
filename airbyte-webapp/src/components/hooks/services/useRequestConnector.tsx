@@ -1,4 +1,4 @@
-import { AnalyticsService } from "core/analytics/AnalyticsService";
+import { useAnalytics } from "components/hooks/useAnalytics";
 
 type Values = {
   connectorType: string;
@@ -10,8 +10,10 @@ type Values = {
 const useRequestConnector = (): {
   requestConnector: (conn: Values) => void;
 } => {
+  const analyticsService = useAnalytics();
+
   const requestConnector = (values: Values) => {
-    AnalyticsService.track("Request a Connector", {
+    analyticsService.track("Request a Connector", {
       email: values.email,
       connector_site: values.website,
       connector_source: values.connectorType === "source" ? values.name : "",
