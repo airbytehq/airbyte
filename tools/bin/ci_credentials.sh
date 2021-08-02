@@ -38,6 +38,7 @@ write_standard_creds base-normalization "$SNOWFLAKE_INTEGRATION_TEST_CREDS" "sno
 write_standard_creds base-normalization "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS" "redshift.json"
 
 write_standard_creds source-amplitude "$AMPLITUDE_INTEGRATION_TEST_CREDS"
+write_standard_creds source-apify-dataset "$APIFY_INTEGRATION_TEST_CREDS"
 write_standard_creds source-asana "$SOURCE_ASANA_TEST_CREDS"
 write_standard_creds source-aws-cloudtrail "$SOURCE_AWS_CLOUDTRAIL_CREDS"
 write_standard_creds source-bigquery "$BIGQUERY_TEST_CREDS" "credentials.json"
