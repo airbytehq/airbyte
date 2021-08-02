@@ -35,13 +35,15 @@ import io.airbyte.migrate.migrations.MigrationV0_24_0;
 import io.airbyte.migrate.migrations.MigrationV0_25_0;
 import io.airbyte.migrate.migrations.MigrationV0_26_0;
 import io.airbyte.migrate.migrations.MigrationV0_27_0;
+import io.airbyte.migrate.migrations.MigrationV0_28_0;
+import io.airbyte.migrate.migrations.MigrationV0_29_0;
 import io.airbyte.migrate.migrations.NoOpMigration;
 import java.util.List;
 
 public class Migrations {
 
-  private static final MigrationV0_14_0 MIGRATION_V_0_14_0 = new MigrationV0_14_0();
-  private static final MigrationV0_14_3 MIGRATION_V_0_14_3 = new MigrationV0_14_3(MIGRATION_V_0_14_0);
+  private static final Migration MIGRATION_V_0_14_0 = new MigrationV0_14_0();
+  private static final Migration MIGRATION_V_0_14_3 = new MigrationV0_14_3(MIGRATION_V_0_14_0);
   private static final Migration MIGRATION_V_0_15_0 = new NoOpMigration(MIGRATION_V_0_14_3, "0.15.0-alpha");
   private static final Migration MIGRATION_V_0_16_0 = new NoOpMigration(MIGRATION_V_0_15_0, "0.16.0-alpha");
   private static final Migration MIGRATION_V_0_17_0 = new MigrationV0_17_0(MIGRATION_V_0_16_0);
@@ -55,6 +57,8 @@ public class Migrations {
   private static final Migration MIGRATION_V_0_25_0 = new MigrationV0_25_0(MIGRATION_V_0_24_0);
   private static final Migration MIGRATION_V_0_26_0 = new MigrationV0_26_0(MIGRATION_V_0_25_0);
   private static final Migration MIGRATION_V_0_27_0 = new MigrationV0_27_0(MIGRATION_V_0_26_0);
+  public static final Migration MIGRATION_V_0_28_0 = new MigrationV0_28_0(MIGRATION_V_0_27_0);
+  private static final Migration MIGRATION_V_0_29_0 = new MigrationV0_29_0(MIGRATION_V_0_28_0);
 
   // all migrations must be added to the list in the order that they should be applied.
   public static final List<Migration> MIGRATIONS = ImmutableList.of(
@@ -72,6 +76,8 @@ public class Migrations {
       MIGRATION_V_0_24_0,
       MIGRATION_V_0_25_0,
       MIGRATION_V_0_26_0,
-      MIGRATION_V_0_27_0);
+      MIGRATION_V_0_27_0,
+      MIGRATION_V_0_28_0,
+      MIGRATION_V_0_29_0);
 
 }

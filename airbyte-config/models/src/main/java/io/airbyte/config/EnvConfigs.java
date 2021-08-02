@@ -28,6 +28,7 @@ import com.google.common.base.Preconditions;
 import io.airbyte.config.helpers.LogClientSingleton;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -41,6 +42,7 @@ public class EnvConfigs implements Configs {
 
   public static final String AIRBYTE_ROLE = "AIRBYTE_ROLE";
   public static final String AIRBYTE_VERSION = "AIRBYTE_VERSION";
+  public static final String INTERNAL_API_HOST = "INTERNAL_API_HOST";
   public static final String WORKER_ENVIRONMENT = "WORKER_ENVIRONMENT";
   public static final String WORKSPACE_ROOT = "WORKSPACE_ROOT";
   public static final String WORKSPACE_DOCKER_MOUNT = "WORKSPACE_DOCKER_MOUNT";
@@ -56,6 +58,8 @@ public class EnvConfigs implements Configs {
   public static final String CONFIG_DATABASE_PASSWORD = "CONFIG_DATABASE_PASSWORD";
   public static final String CONFIG_DATABASE_URL = "CONFIG_DATABASE_URL";
   public static final String WEBAPP_URL = "WEBAPP_URL";
+  public static final String MAX_RETRIES_PER_ATTEMPT = "MAX_RETRIES_PER_ATTEMPT";
+  public static final String MAX_SYNC_JOB_ATTEMPTS = "MAX_SYNC_JOB_ATTEMPTS";
   private static final String MINIMUM_WORKSPACE_RETENTION_DAYS = "MINIMUM_WORKSPACE_RETENTION_DAYS";
   private static final String MAXIMUM_WORKSPACE_RETENTION_DAYS = "MAXIMUM_WORKSPACE_RETENTION_DAYS";
   private static final String MAXIMUM_WORKSPACE_SIZE_MB = "MAXIMUM_WORKSPACE_SIZE_MB";
@@ -89,6 +93,16 @@ public class EnvConfigs implements Configs {
   @Override
   public String getAirbyteRole() {
     return getEnv(AIRBYTE_ROLE);
+  }
+
+  @Override
+  public String getAirbyteApiUrl() {
+    return getEnsureEnv(INTERNAL_API_HOST).split(":")[0];
+  }
+
+  @Override
+  public int getAirbyteApiPort() {
+    return Integer.parseInt(getEnsureEnv(INTERNAL_API_HOST).split(":")[1]);
   }
 
   @Override
@@ -129,6 +143,16 @@ public class EnvConfigs implements Configs {
   @Override
   public String getDatabaseUrl() {
     return getEnsureEnv(DATABASE_URL);
+  }
+
+  @Override
+  public int getMaxRetriesPerAttempt() {
+    return Integer.parseInt(getEnvOrDefault(MAX_RETRIES_PER_ATTEMPT, "3"));
+  }
+
+  @Override
+  public int getMaxSyncJobAttempts() {
+    return Integer.parseInt(getEnvOrDefault(MAX_SYNC_JOB_ATTEMPTS, "3"));
   }
 
   @Override
@@ -202,9 +226,11 @@ public class EnvConfigs implements Configs {
 
   @Override
   public Set<Integer> getTemporalWorkerPorts() {
-    return Arrays.stream(getEnvOrDefault(TEMPORAL_WORKER_PORTS, "").split(","))
-        .map(Integer::valueOf)
-        .collect(Collectors.toSet());
+    var ports = getEnvOrDefault(TEMPORAL_WORKER_PORTS, "");
+    if (ports.isEmpty()) {
+      return new HashSet<>();
+    }
+    return Arrays.stream(ports.split(",")).map(Integer::valueOf).collect(Collectors.toSet());
   }
 
   @Override

@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import ContentCard from "components/ContentCard";
-import ServiceForm from "components/ServiceForm";
-import { AnalyticsService } from "core/analytics/AnalyticsService";
+import ServiceForm from "views/Connector/ServiceForm";
 import useRouter from "components/hooks/useRouterHook";
 import { useDestinationDefinitionSpecificationLoad } from "components/hooks/services/useDestinationHook";
 import { JobInfo } from "core/resources/Scheduler";
@@ -11,6 +10,7 @@ import { JobsLogItem } from "components/JobItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
+import { useAnalytics } from "components/hooks/useAnalytics";
 
 type IProps = {
   onSubmit: (values: {
@@ -35,6 +35,7 @@ const DestinationForm: React.FC<IProps> = ({
   afterSelectConnector,
 }) => {
   const { location } = useRouter();
+  const analyticsService = useAnalytics();
 
   const [destinationDefinitionId, setDestinationDefinitionId] = useState(
     location.state?.destinationDefinitionId || ""
@@ -53,7 +54,7 @@ const DestinationForm: React.FC<IProps> = ({
       afterSelectConnector();
     }
 
-    AnalyticsService.track("New Destination - Action", {
+    analyticsService.track("New Destination - Action", {
       action: "Select a connector",
       connector_destination_definition: connector?.name,
       connector_destination_definition_id: destinationDefinitionId,

@@ -27,6 +27,13 @@ This Source is capable of syncing the following core Streams:
 * [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
 * [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 
+### Notes
+
+The `created` field is used to organize Incremental streams. Filtration occurs by the date the entity was created, and it is impossible to filter by the update date, since:
+  * The Stripe API allows filtering only by the `created` field for all streams.
+  * There is no such field as `updated`.
+The only alternative way at the moment is to do a Full Refresh sync and filtering client side.
+
 ### Data type mapping
 
 The [Stripe API](https://stripe.com/docs/api) uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
@@ -64,6 +71,8 @@ If you would like to test Airbyte using test data on Stripe, `sk_test_` and `rk_
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.16   | 2021-07-28 | [4980](https://github.com/airbytehq/airbyte/pull/4980) | Remove Updated field from schemas |
+| 0.1.15   | 2021-07-21 | [4878](https://github.com/airbytehq/airbyte/pull/4878) | Fix incorrect percent_off and discounts data filed types|
 | 0.1.14   | 2021-07-09 | [4669](https://github.com/airbytehq/airbyte/pull/4669) | Subscriptions Stream now returns all kinds of subscriptions (including expired and canceled)|
 | 0.1.13   | 2021-07-03 | [4528](https://github.com/airbytehq/airbyte/pull/4528) | Remove regex for acc validation |
 | 0.1.12   | 2021-06-08 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |

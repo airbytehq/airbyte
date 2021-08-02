@@ -33,6 +33,10 @@ public interface Configs {
 
   String getAirbyteVersion();
 
+  String getAirbyteApiUrl();
+
+  int getAirbyteApiPort();
+
   String getAirbyteVersionOrWarning();
 
   Path getConfigRoot();
@@ -52,6 +56,10 @@ public interface Configs {
   String getConfigDatabasePassword();
 
   String getConfigDatabaseUrl();
+
+  int getMaxRetriesPerAttempt();
+
+  int getMaxSyncJobAttempts();
 
   String getWebappUrl();
 

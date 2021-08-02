@@ -63,7 +63,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 import org.apache.commons.io.output.NullOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,7 +135,6 @@ public class KubePodProcess extends Process {
   private Integer returnCode = null;
   private Long lastStatusCheck = null;
 
-  private final Consumer<Integer> portReleaser;
   private final ServerSocket stdoutServerSocket;
   private final int stdoutLocalPort;
   private final ServerSocket stderrServerSocket;
@@ -286,7 +284,6 @@ public class KubePodProcess extends Process {
 
   public KubePodProcess(ApiClient officialClient,
                         KubernetesClient fabricClient,
-                        Consumer<Integer> portReleaser,
                         String podName,
                         String namespace,
                         String image,
@@ -300,7 +297,6 @@ public class KubePodProcess extends Process {
                         final String... args)
       throws IOException, InterruptedException {
     this.fabricClient = fabricClient;
-    this.portReleaser = portReleaser;
     this.stdoutLocalPort = stdoutLocalPort;
     this.stderrLocalPort = stderrLocalPort;
 
@@ -528,20 +524,27 @@ public class KubePodProcess extends Process {
 
   /**
    * Close all open resource in the opposite order of resource creation.
+   *
+   * Null checks exist because certain local Kube clusters (e.g. Docker for Desktop) back this
+   * implementation with OS processes and resources, which are automatically reaped by the OS.
    */
   private void close() {
-    Exceptions.swallow(this.stdin::close);
-    Exceptions.swallow(this.stdout::close);
-    Exceptions.swallow(this.stderr::close);
+    if (this.stdin != null) {
+      Exceptions.swallow(this.stdin::close);
+    }
+    if (this.stdout != null) {
+      Exceptions.swallow(this.stdout::close);
+    }
+    if (this.stderr != null) {
+      Exceptions.swallow(this.stderr::close);
+    }
     Exceptions.swallow(this.stdoutServerSocket::close);
     Exceptions.swallow(this.stderrServerSocket::close);
     Exceptions.swallow(this.executorService::shutdownNow);
-    try {
-      portReleaser.accept(stdoutLocalPort);
-      portReleaser.accept(stderrLocalPort);
-    } catch (Exception e) {
-      LOGGER.error("Error releasing ports ", e);
-    }
+
+    KubePortManagerSingleton.offer(stdoutLocalPort);
+    KubePortManagerSingleton.offer(stderrLocalPort);
+
     LOGGER.debug("Closed {}", podDefinition.getMetadata().getName());
   }
 

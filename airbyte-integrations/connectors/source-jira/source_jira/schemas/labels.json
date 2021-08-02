@@ -1,45 +1,33 @@
 {
-  "type": [
-    "object",
-    "null"
-  ],
+  "$schema": "http://json-schema.org/schema#",
   "properties": {
-    "id": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "key": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "value": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "name": {
-      "type": [
-        "string",
-        "null"
-      ]
+    "allowedValues": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
     },
     "desc": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string"
+    },
+    "example": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "key": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
     },
     "type": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string"
+    },
+    "value": {
+      "type": "string"
     }
   },
-  "additionalProperties": true
+  "type": "object"
 }

@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from "react";
+import React, { Suspense, useEffect, useMemo } from "react";
 import {
   BrowserRouter as Router,
   Redirect,
@@ -19,14 +19,11 @@ import LoadingPage from "components/LoadingPage";
 import MainView from "components/MainView";
 import SupportChat from "components/SupportChat";
 
-import useSegment from "components/hooks/useSegment";
-import useFullStory from "components/hooks/useFullStory";
 import useRouter from "components/hooks/useRouterHook";
-import useWorkspace from "components/hooks/services/useWorkspaceHook";
-import { AnalyticsService } from "core/analytics/AnalyticsService";
+import useWorkspace from "components/hooks/services/useWorkspace";
 import { useNotificationService } from "components/hooks/services/Notification/NotificationService";
 import { useApiHealthPoll } from "components/hooks/services/Health";
-import useOpenReplay from "../components/hooks/useOpenReplay";
+import { useAnalytics } from "components/hooks/useAnalytics";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -105,12 +102,13 @@ const getPageName = (pathname: string) => {
 
 const MainViewRoutes = () => {
   const { pathname } = useRouter();
+  const analyticsService = useAnalytics();
   useEffect(() => {
     const pageName = getPageName(pathname);
     if (pageName) {
-      AnalyticsService.page(pageName);
+      analyticsService.page(pageName);
     }
-  }, [pathname]);
+  }, [analyticsService, pathname]);
 
   return (
     <MainView>
@@ -162,30 +160,22 @@ const OnboardingsRoutes = () => {
 
 export const Routing: React.FC = () => {
   useApiHealthPoll(config.healthCheckInterval);
-  useSegment(config.segment.token);
-  useFullStory(config.fullstory);
-  const tracker = useOpenReplay(config.openreplay.projectKey);
 
   const { workspace } = useWorkspace();
 
-  useEffect(() => {
-    if (workspace) {
-      AnalyticsService.identify(workspace.customerId);
-      tracker.setUserID(workspace.customerId);
-    }
-  }, [workspace]);
-
   const { formatMessage } = useIntl();
-  useNotificationService(
-    config.isDemo
-      ? {
-          id: "demo.message",
-          title: formatMessage({ id: "demo.message.title" }),
-          text: formatMessage({ id: "demo.message.body" }),
-          nonClosable: true,
-        }
-      : undefined
+
+  const demoNotification = useMemo(
+    () => ({
+      id: "demo.message",
+      title: formatMessage({ id: "demo.message.title" }),
+      text: formatMessage({ id: "demo.message.body" }),
+      nonClosable: true,
+    }),
+    [formatMessage]
   );
+
+  useNotificationService(config.isDemo ? demoNotification : undefined);
 
   return (
     <Router>

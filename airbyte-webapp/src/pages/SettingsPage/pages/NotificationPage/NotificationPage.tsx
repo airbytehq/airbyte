@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 import { ContentCard } from "components";
 import NotificationsForm from "./components/NotificationsForm";
-import useWorkspace from "components/hooks/services/useWorkspaceHook";
+import useWorkspace from "components/hooks/services/useWorkspace";
 import WebHookForm from "./components/WebHookForm";
 import HeadTitle from "components/HeadTitle";
 import useWorkspaceEditor from "../../components/useWorkspaceEditor";
