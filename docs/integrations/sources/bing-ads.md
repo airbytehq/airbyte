@@ -40,7 +40,9 @@ API limits number of requests for all Microsoft Advertising clients. You can fin
 
 ### Requirements
 
-* account_ids: list of account for which you a going to pull data. Use this [guide](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-ids) to find your account id
+* accounts: Has 2 options
+    - fetch data from all accounts to which you have access
+    - you need to provide specific account ids for which you a going to pull data. Use this [guide](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-ids) to find your account id
 * user_id:  Sign in to the Microsoft Advertising web application. The URL will contain a uid key/value pair in the query string that identifies your User ID
 * customer_id: Use this [guide](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-ids) to get this id
 * developer_token: You can find this token [here](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token)
