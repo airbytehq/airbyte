@@ -6,6 +6,7 @@
 | :--- | :--- |
 | Amazon Seller Partner  | [![source-amazon-seller-partner](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-amazon-seller-partner%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-amazon-seller-partner) |
 | Amplitude   | [![source-amplitude](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-amplitude%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-amplitude) |
+| Apify Dataset   | [![source-amplitude](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-apify-dataset%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-apify-dataset) |
 | AppsFlyer   | [![source-braintree-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-appsflyer-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-appsflyer-singer) |
 | App Store   | [![source-appstore-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-appstore-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-appstore-singer) |
 | Asana   | [![source-asana](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-asana%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-asana) |

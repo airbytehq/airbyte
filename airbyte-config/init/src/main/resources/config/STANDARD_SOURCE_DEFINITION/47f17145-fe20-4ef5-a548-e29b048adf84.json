@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "47f17145-fe20-4ef5-a548-e29b048adf84",
+  "name": "Apify Dataset",
+  "dockerRepository": "airbyte/source-apify-dataset",
+  "dockerImageTag": "0.1.1",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/apify-dataset"
+}
