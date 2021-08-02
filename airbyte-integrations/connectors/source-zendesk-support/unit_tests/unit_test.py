@@ -34,15 +34,7 @@ from source_zendesk_support.streams import Tags
 CONFIG_FILE = "secrets/config.json"
 
 
-class ZendeskSupportSettings:
-    @staticmethod
-    def prepare_stream_args():
-        """Generates streams settings from a file"""
-        with open(CONFIG_FILE, "r") as f:
-            return SourceZendeskSupport.convert_config2stream_args(json.loads(f.read()))
-
-
-class TestZendeskSupport(TestCase, ZendeskSupportSettings):
+class TestZendeskSupport(TestCase):
     """This test class provides a set of tests for different Zendesk streams.
     The Zendesk API has difference pagination and sorting mechanisms for streams.
     Let's try to check them

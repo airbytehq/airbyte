@@ -26,15 +26,23 @@ import json
 
 import pendulum
 import requests_mock
+from source_zendesk_support import SourceZendeskSupport
 from source_zendesk_support.streams import Macros, TicketAudits, TicketMetrics, Tickets, Users
-from unit_tests.unit_test import ZendeskSupportSettings
+
+CONFIG_FILE = "secrets/config.json"
 
 
-class TestIntegrationZendeskSupport(ZendeskSupportSettings):
+class TestIntegrationZendeskSupport:
     """This test class provides a set of tests for different Zendesk streams.
     The Zendesk API has difference pagination and sorting mechanisms for streams.
     Let's try to check them
     """
+
+    @staticmethod
+    def prepare_stream_args():
+        """Generates streams settings from a file"""
+        with open(CONFIG_FILE, "r") as f:
+            return SourceZendeskSupport.convert_config2stream_args(json.loads(f.read()))
 
     def _test_export_stream(self, stream_cls: type):
         stream = stream_cls(**self.prepare_stream_args())
