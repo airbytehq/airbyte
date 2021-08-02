@@ -74,9 +74,7 @@ class DestinationHdfs(Destination):
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
         for configured_stream in configured_catalog.streams:
-            client = HDFSClient(
-                **config, stream=configured_stream.stream.name, logger=self.logger
-            )
+            client = HDFSClient(**config, stream=configured_stream.stream.name)
             overwrite = (
                 configured_stream.destination_sync_mode == DestinationSyncMode.overwrite
             )
