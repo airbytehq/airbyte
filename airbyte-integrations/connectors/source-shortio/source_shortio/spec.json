@@ -4,18 +4,18 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Shortio Spec",
     "type": "object",
-    "required": ["secret_key", "domain_id", "start_date"],
+    "required": ["domain_id", "secret_key", "start_date"],
     "additionalProperties": false,
     "properties": {
-      "secret_key": {
-        "type": "string",
-        "description": "Short.io Secret key",
-        "airbyte_secret": true
-      },
       "domain_id": {
         "type": "string",
         "description": "Domain ID",
         "airbyte_secret": false
+      },
+      "secret_key": {
+        "type": "string",
+        "description": "Short.io Secret key",
+        "airbyte_secret": true
       },
       "start_date": {
         "type": "string",

@@ -33,7 +33,6 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from airbyte_cdk.logger import AirbyteLogger
 
 class BasicAuthenticator(TokenAuthenticator):
 
@@ -57,10 +56,10 @@ class Links(HttpStream, ABC):
         
         links = json.loads(response.text)['links']
         try:
-            id_string = sorted(links, key=lambda k: k['createdAt'], reverse=False)[0]['idString']
-            if self.before_id != id_string:
-                self.before_id = id_string        
-                return id_string
+            earliest_id_string = sorted(links, key=lambda k: k['createdAt'], reverse=False)[0]['idString']
+            if self.before_id != earliest_id_string:
+                self.before_id = earliest_id_string        
+                return earliest_id_string
             else:
                 return None
         except IndexError:
@@ -88,10 +87,10 @@ class Links(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
-        The short.io API can be incosistent in its inclusion of UTM parameters.
-        Here we specifically check if they've been provided and in case they haven't attempt to fetch from the URL directly.
+        The short.io API can be inconsistent in its inclusion of UTM parameters.
+        Here, we check if they've been provided and if they haven't, attempt to extract it from the original url.
         """
-        utm_params = {
+        utm_response_fields_to_utm_params = {
             # Passing secondary UTM Campaign in order to capture either or of the 2 args.
             'utmSource' : 'utm_source',
             'utmMedium' : 'utm_medium',
@@ -102,17 +101,18 @@ class Links(HttpStream, ABC):
         }
         links = json.loads(response.text)['links']
         for index, item in enumerate(links):
-            for k,v in utm_params.items():
-                if k not in item.keys():
-                    param = v + '='
+            for resp_field, param in utm_response_fields_to_utm_params.items():
+                if resp_field not in item.keys():
+                    param = param + '='
                     original_url = item['originalURL']
-                    # Link may not have all the necessary UTM attributes
                     param_value = None
                     try:
+                        # Extracting parameter value from original URL
+                        # i.e "talent" from http://airbyte.io/?utm_source=talent
                         param_value = original_url.split(param, 2)[1].split('&', 1)[0]
                     except IndexError:
                         pass
-                    item[k] = param_value
+                    item[resp_field] = param_value
             yield item 
 
 
@@ -125,7 +125,6 @@ class Clicks(HttpStream, ABC):
     url_base = "https://api-v2.short.cm/statistics/domain/"
     config = {}
     before_dt = datetime.datetime.now().__str__()
-    logger = AirbyteLogger()
     @property
     def http_method(self) -> str:
         return "POST"
@@ -215,8 +214,6 @@ class Clicks(HttpStream, ABC):
         else:
             payload['afterDate'] = self.config['start_date']
 
-        # Capturing request
-        self.logger.log(level='INFO', message=str(payload))
         return payload
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:

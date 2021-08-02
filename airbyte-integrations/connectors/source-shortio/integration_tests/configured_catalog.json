@@ -15,149 +15,77 @@
               "json_schema": {
                   "properties": {
                       "host": {
-                          "type": [
-                              "null",
-                              "string"
-                          ]
+                          "type": ["null","string"]
                       },
                       "path": {
-                          "type": [
-                              "null",
-                              "string"
-                          ]
+                          "type": ["null","string"]
                       },
                       "method": {
-                          "type": [
-                              "null",
-                              "string"
-                          ]
+                          "type": ["null","string"]
                       },
                       "url": {
-                          "type": [
-                              "null",
-                              "string"
-                          ]
+                          "type": ["null","string"]
                       },
                       "dt": {
-                          "type": [
-                              "null",
-                              "string"
-                          ],
+                          "type": ["null","string"],
                           "format": "date-time"
                       },
                       "st": {
-                          "type": [
-                              "null",
-                              "integer"
-                          ]
+                          "type": ["null","integer"]
                       },
                       "ip": {
-                          "type": [
-                              "null",
-                              "string"
-                          ]
+                          "type": ["null","string"]
                       },
                       "proto": {
-                          "type": [
-                              "null",
-                              "string"
-                          ]
+                          "type": ["null","string"]
                       },
                       "ref": {
-                          "type": [
-                              "null",
-                              "string"
-                          ]
+                          "type": ["null","string"]
                       },
                       "ua": {
-                          "type": [
-                              "null",
-                              "string"
-                          ]
+                          "type": ["null","string"]
                       },
                       "human": {
-                          "type": [
-                              "null",
-                              "boolean"
-                          ]
+                          "type": ["null","boolean"]
                       },
                       "browser": {
-                          "type": [
-                              "null",
-                              "string"
-                          ]
+                          "type": ["null","string"]
                       },
                       "browser_version": {
-                          "type": [
-                              "null",
-                              "string"
-                          ]
+                          "type": ["null","string"]
                       },
                       "country": {
-                          "type": [
-                              "null",
-                              "string"
-                          ]
+                          "type": ["null","string"]
                       },
                       "city": {
-                          "type": [
-                              "null",
-                              "string"
-                          ]
+                          "type": ["null","string"]
                       },
                       "social": {
-                          "type": [
-                              "null",
-                              "string"
-                          ]
+                          "type": ["null","string"]
                       },
                       "refhost": {
-                          "type": [
-                              "null",
-                              "string"
-                          ]
+                          "type": ["null","string"]
                       },
                       "os": {
-                          "type": [
-                              "null",
-                              "string"
-                          ]
+                          "type": ["null","string"]
                       },
                       "utm_source": {
-                          "type": [
-                              "null",
-                              "string"
-                          ]
+                          "type": ["null","string"]
                       },
                       "utm_medium": {
-                          "type": [
-                              "null",
-                              "string"
-                          ]
+                          "type": ["null","string"]
                       },
                       "utm_campaign": {
-                          "type": [
-                              "null",
-                              "string"
-                          ]
+                          "type": ["null","string"]
                       },
                       "goal_completed": {
-                          "type": [
-                              "null",
-                              "string"
-                          ]
+                          "type": ["null","string"]
                       },
                       "ab_path": {
-                          "type": [
-                              "null",
-                              "string"
-                          ]
+                          "type": ["null","string"]
                       },
                       "lcpath": {
-                          "type": [
-                              "null",
-                              "string"
-                          ]
+                          "type": ["null","string"]
                       }
                   }
               }
