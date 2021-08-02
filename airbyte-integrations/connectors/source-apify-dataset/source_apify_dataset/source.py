@@ -49,21 +49,20 @@ DATASET_ITEMS_STREAM_NAME = "DatasetItems"
 BATCH_SIZE = 50000
 
 
-def apify_get_dataset_items(dataset_client, clean, offset):
-    """
-    Wrapper around Apify dataset client that returns a single page with dataset items.
-    This function needs to be defined explicitly so it can be called in parallel in the main read function.
-
-    :param dataset_client: Apify dataset client
-    :param clean: whether to fetch only clean items (clean are non-empty ones excluding hidden columns)
-    :param offset: page offset
-
-    :return: dictionary where .items field contains the fetched dataset items
-    """
-    return dataset_client.list_items(offset=offset, limit=BATCH_SIZE, clean=clean)
-
-
 class SourceApifyDataset(Source):
+    def _apify_get_dataset_items(self, dataset_client, clean, offset):
+        """
+        Wrapper around Apify dataset client that returns a single page with dataset items.
+        This function needs to be defined explicitly so it can be called in parallel in the main read function.
+
+        :param dataset_client: Apify dataset client
+        :param clean: whether to fetch only clean items (clean are non-empty ones excluding hidden columns)
+        :param offset: page offset
+
+        :return: dictionary where .items field contains the fetched dataset items
+        """
+        return dataset_client.list_items(offset=offset, limit=BATCH_SIZE, clean=clean)
+
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the Apify integration.
@@ -149,7 +148,7 @@ class SourceApifyDataset(Source):
         num_items = dataset["itemCount"]
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            for result in executor.map(partial(apify_get_dataset_items, dataset_client, clean), range(0, num_items, BATCH_SIZE)):
+            for result in executor.map(partial(self._apify_get_dataset_items, dataset_client, clean), range(0, num_items, BATCH_SIZE)):
                 for data in result.items:
                     yield AirbyteMessage(
                         type=Type.RECORD,
