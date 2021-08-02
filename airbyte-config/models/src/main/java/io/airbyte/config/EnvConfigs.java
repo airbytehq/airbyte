@@ -147,12 +147,12 @@ public class EnvConfigs implements Configs {
 
   @Override
   public int getMaxRetriesPerAttempt() {
-    return Integer.parseInt(getEnsureEnv(MAX_RETRIES_PER_ATTEMPT));
+    return Integer.parseInt(getEnvOrDefault(MAX_RETRIES_PER_ATTEMPT, "3"));
   }
 
   @Override
   public int getMaxSyncJobAttempts() {
-    return Integer.parseInt(getEnsureEnv(MAX_SYNC_JOB_ATTEMPTS));
+    return Integer.parseInt(getEnvOrDefault(MAX_SYNC_JOB_ATTEMPTS, "3"));
   }
 
   @Override
