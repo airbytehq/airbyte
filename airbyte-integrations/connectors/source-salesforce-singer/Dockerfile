@@ -10,7 +10,7 @@ ENV AIRBYTE_IMPL_MODULE="source_salesforce_singer"
 ENV AIRBYTE_IMPL_PATH="SourceSalesforceSinger"
 ENV AIRBYTE_ENTRYPOINT "/airbyte/base.sh"
 
-LABEL io.airbyte.version=0.2.4
+LABEL io.airbyte.version=0.2.5
 LABEL io.airbyte.name=airbyte/source-salesforce-singer
 
 WORKDIR /airbyte/integration_code
