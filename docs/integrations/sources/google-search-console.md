@@ -68,7 +68,7 @@ A service account's credentials include a generated email address that is unique
 6. Open `Details` tab and find `Show domain-wide delegation`, checkmark the `Enable Google Workspace Domain-wide Delegation`.
 7. On `Keys` tab click `+ Add key`, then click `Create new key`.
 
-Your new public/private key pair should be now generated and downloaded to your machine as `<credentials>.json` you can find it in the `Downloads` folder or somewhere else if you use another default destination for downloaded files. This file serves as the only copy of the private key. You are responsible for storing it securely.
+Your new public/private key pair should be now generated and downloaded to your machine as `<project_id>.json` you can find it in the `Downloads` folder or somewhere else if you use another default destination for downloaded files. This file serves as the only copy of the private key. You are responsible for storing it securely.
 If you lose this key pair, you will need to generate a new one!
 
 ### Using the existing Service Account 
@@ -76,7 +76,7 @@ If you lose this key pair, you will need to generate a new one!
 2. Click on `Details` tab and find `Show domain-wide delegation`, checkmark the `Enable Google Workspace Domain-wide Delegation`.
 2. On `Keys` tab click `+ Add key`, then click `Create new key`.
 
-Your new public/private key pair should be now generated and downloaded to your machine as `<credentials>.json` you can find it in the `Downloads` folder or somewhere else if you use another default destination for downloaded files. This file serves as the only copy of the private key. You are responsible for storing it securely.
+Your new public/private key pair should be now generated and downloaded to your machine as `<project_id>.json` you can find it in the `Downloads` folder or somewhere else if you use another default destination for downloaded files. This file serves as the only copy of the private key. You are responsible for storing it securely.
 If you lose this key pair, you will need to generate a new one!
 
 ### Note
