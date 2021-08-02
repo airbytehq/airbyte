@@ -102,7 +102,7 @@ write_standard_creds source-typeform "$SOURCE_TYPEFORM_CREDS"
 write_standard_creds source-us-census "$SOURCE_US_CENSUS_TEST_CREDS"
 write_standard_creds source-zendesk-chat "$ZENDESK_CHAT_INTEGRATION_TEST_CREDS"
 write_standard_creds source-zendesk-sunshine "$ZENDESK_SUNSHINE_TEST_CREDS"
-write_standard_creds source-zendesk-support-singer "$ZENDESK_SECRETS_CREDS"
+write_standard_creds source-zendesk-support "$ZENDESK_SUPPORT_TEST_CREDS"
 write_standard_creds source-zendesk-talk "$ZENDESK_TALK_TEST_CREDS"
 write_standard_creds source-zoom-singer "$ZOOM_INTEGRATION_TEST_CREDS"
 
