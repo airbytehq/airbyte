@@ -70,7 +70,7 @@
 | Typeform   | [![source-typeform](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-typeform%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-typeform) |
 | US Census | [![source-us-census](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-us-census%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/2Fsource-us-census) |
 | Zendesk Chat   | [![source-zendesk-chat](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-zendesk-chat%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-zendesk-chat) |
-| Zendesk Support   | [![source-zendesk-support-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-zendesk-support-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-zendesk-support-singer) |
+| Zendesk Support   | [![source-zendesk-support](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-zendesk-support%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-zendesk-support) |
 | Zendesk Talk   | [![source-zendesk-talk](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-zendesk-talk%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-zendesk-talk) |
 | Zoom   | [![source-zoom-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-zoom-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-zoom-singer) |
 
