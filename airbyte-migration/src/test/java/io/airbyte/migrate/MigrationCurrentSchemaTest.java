@@ -67,7 +67,7 @@ public class MigrationCurrentSchemaTest {
   void testJobsOfLastMigrationMatchSource() {
     final Map<ResourceId, JsonNode> lastMigrationSchema = getSchemaOfLastMigration(ResourceType.JOB);
     final Map<ResourceId, JsonNode> currentSchema = MigrationUtils.getNameToSchemasFromResourcePath(
-        Path.of("tables"),
+        Path.of("jobs_database"),
         ResourceType.JOB,
         Enums.valuesAsStrings(JobKeys.class));
 
@@ -84,7 +84,7 @@ public class MigrationCurrentSchemaTest {
 
     // break out element-wise assertion so it is easier to read any failed tests.
     for (Map.Entry<ResourceId, JsonNode> lastMigrationEntry : lastMigrationOutputSchemaCleanedSorted) {
-      assertEquals(lastMigrationEntry.getValue(), currentSchemas.get(lastMigrationEntry.getKey()));
+      assertEquals(currentSchemas.get(lastMigrationEntry.getKey()), lastMigrationEntry.getValue());
     }
   }
 

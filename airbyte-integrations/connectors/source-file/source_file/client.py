@@ -119,7 +119,13 @@ class URLFile:
         elif storage in ("ssh://", "scp://", "sftp://"):
             user = self._provider["user"]
             host = self._provider["host"]
-            port = self._provider.get("port", 22)
+            # TODO: Remove int casting when https://github.com/airbytehq/airbyte/issues/4952 is addressed
+            # TODO: The "port" field in spec.json must also be changed
+            _port_value = self._provider.get("port", 22)
+            try:
+                port = int(_port_value)
+            except ValueError as err:
+                raise ValueError(f"{_port_value} is not a valid integer for the port") from err
             # Explicitly turn off ssh keys stored in ~/.ssh
             transport_params = {"connect_kwargs": {"look_for_keys": False}}
             if "password" in self._provider:

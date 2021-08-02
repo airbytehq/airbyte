@@ -26,7 +26,6 @@ package io.airbyte.migrate.migrations;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.migrate.Migration;
 import io.airbyte.migrate.MigrationUtils;
 import io.airbyte.migrate.ResourceId;
@@ -42,13 +41,14 @@ public class MigrationV0_28_0 extends BaseMigration implements Migration {
 
   private static final UUID DEFAULT_WORKSPACE_ID = UUID.fromString("5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6");
 
+  private static final Path RESOURCE_PATH = Path.of("migrations/migrationV0_28_0/airbyte_config");
+  private static final String MIGRATION_VERSION = "0.28.0-alpha";
+
   private static final ResourceId CONNECTION_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
   private static final ResourceId SOURCE_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "SOURCE_CONNECTION");
   private static final ResourceId OPERATION_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC_OPERATION");
 
-  private static final String MIGRATION_VERSION = "0.28.0-alpha";
-  @VisibleForTesting
-  protected final Migration previousMigration;
+  private final Migration previousMigration;
 
   public MigrationV0_28_0(Migration previousMigration) {
     super(previousMigration);
@@ -60,14 +60,10 @@ public class MigrationV0_28_0 extends BaseMigration implements Migration {
     return MIGRATION_VERSION;
   }
 
-  private static final Path RESOURCE_PATH = Path.of("migrations/migrationV0_28_0/airbyte_config");
-
   @Override
   public Map<ResourceId, JsonNode> getOutputSchema() {
     final Map<ResourceId, JsonNode> outputSchema = new HashMap<>(previousMigration.getOutputSchema());
-    outputSchema.put(
-        OPERATION_RESOURCE_ID,
-        MigrationUtils.getSchemaFromResourcePath(RESOURCE_PATH, OPERATION_RESOURCE_ID));
+    outputSchema.put(OPERATION_RESOURCE_ID, MigrationUtils.getSchemaFromResourcePath(RESOURCE_PATH, OPERATION_RESOURCE_ID));
     return outputSchema;
   }
 
@@ -91,7 +87,7 @@ public class MigrationV0_28_0 extends BaseMigration implements Migration {
 
     final Map<ResourceId, Stream<JsonNode>> inputData = new HashMap<>(inputDataImmutable);
     // process connections.
-    inputData.remove(CONNECTION_RESOURCE_ID).forEach(r -> {
+    inputData.getOrDefault(CONNECTION_RESOURCE_ID, Stream.empty()).forEach(r -> {
       final UUID connectionId = UUID.fromString(r.get("connectionId").asText());
       final UUID sourceId = UUID.fromString(r.get("sourceId").asText());
       connectionIdToSourceId.put(connectionId, sourceId);
@@ -104,16 +100,20 @@ public class MigrationV0_28_0 extends BaseMigration implements Migration {
 
       outputData.get(CONNECTION_RESOURCE_ID).accept(r);
     });
+    inputData.remove(CONNECTION_RESOURCE_ID);
+
     // process sources.
-    inputData.remove(SOURCE_RESOURCE_ID).forEach(r -> {
+    inputData.getOrDefault(SOURCE_RESOURCE_ID, Stream.empty()).forEach(r -> {
       final UUID sourceId = UUID.fromString(r.get("sourceId").asText());
       final UUID workspaceId = UUID.fromString(r.get("workspaceId").asText());
       sourceIdToWorkspaceId.put(sourceId, workspaceId);
 
       outputData.get(SOURCE_RESOURCE_ID).accept(r);
     });
+    inputData.remove(SOURCE_RESOURCE_ID);
+
     // process operations.
-    inputData.remove(OPERATION_RESOURCE_ID).forEach(r -> {
+    inputData.getOrDefault(OPERATION_RESOURCE_ID, Stream.empty()).forEach(r -> {
       final UUID operationId = UUID.fromString(r.get("operationId").asText());
 
       final UUID workspaceId;
@@ -128,6 +128,7 @@ public class MigrationV0_28_0 extends BaseMigration implements Migration {
 
       outputData.get(OPERATION_RESOURCE_ID).accept(r);
     });
+    inputData.remove(OPERATION_RESOURCE_ID);
 
     // process the remaining resources.
     for (final Map.Entry<ResourceId, Stream<JsonNode>> entry : inputData.entrySet()) {
