@@ -73,10 +73,12 @@ import org.slf4j.LoggerFactory;
 public class BigQueryDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestination.class);
+  private static final int MiB = 1024 * 1024;
   static final String CONFIG_DATASET_ID = "dataset_id";
   static final String CONFIG_PROJECT_ID = "project_id";
   static final String CONFIG_DATASET_LOCATION = "dataset_location";
   static final String CONFIG_CREDS = "credentials_json";
+  static final String BIG_QUERY_CLIENT_CHUNK_SIZE = "big_query_client_buffer_size_mb";
 
   private static final com.google.cloud.bigquery.Schema SCHEMA = com.google.cloud.bigquery.Schema.of(
       Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
@@ -123,6 +125,20 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     } else {
       return "US";
     }
+  }
+
+  // https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html
+  private Integer getBigQueryClientChunkSize(JsonNode config) {
+    Integer chunkSizeFromConfig = null;
+    if (config.has(BIG_QUERY_CLIENT_CHUNK_SIZE)) {
+      chunkSizeFromConfig = config.get(BIG_QUERY_CLIENT_CHUNK_SIZE).asInt();
+      if (chunkSizeFromConfig <= 0) {
+        LOGGER.error("BigQuery client Chunk (buffer) size must be a positive number (MB), but was:" + chunkSizeFromConfig);
+        throw new IllegalArgumentException("BigQuery client Chunk (buffer) size must be a positive number (MB)");
+      }
+      chunkSizeFromConfig = chunkSizeFromConfig * MiB;
+    }
+    return chunkSizeFromConfig;
   }
 
   private void createSchemaTable(BigQuery bigquery, String datasetId, String datasetLocation) {
@@ -215,6 +231,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .build();
 
       final TableDataWriteChannel writer = bigquery.writer(job, writeChannelConfiguration);
+
+      // this this optional value. If not set - use default client's value (15MiG)
+      final Integer bigQueryClientChunkSizeFomConfig = getBigQueryClientChunkSize(config);
+      if (bigQueryClientChunkSizeFomConfig != null) {
+        writer.setChunkSize(bigQueryClientChunkSizeFomConfig);
+      }
       final WriteDisposition syncMode = getWriteDisposition(configStream.getDestinationSyncMode());
 
       writeConfigs.put(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
