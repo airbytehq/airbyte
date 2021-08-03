@@ -9,7 +9,7 @@
     "title": "BigQuery Destination Spec",
     "type": "object",
     "required": ["project_id", "dataset_id"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "big_query_client_buffer_size_mb": {
         "title": "Google BigQuery client chunk size",

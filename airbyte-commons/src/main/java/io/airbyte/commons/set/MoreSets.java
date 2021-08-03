@@ -35,7 +35,7 @@ public class MoreSets {
     Preconditions.checkNotNull(set2);
 
     Preconditions.checkArgument(set1.equals(set2), String.format(
-        "Sets are not the same. Elements in set 1 and not in set 2: %s.  Elements in set 2 and not in set 1 %s",
+        "Sets are not the same. Elements in set 1 and not in set 2: %s.  Elements in set 2 and not in set 1: %s",
         Sets.difference(set1, set2), Sets.difference(set2, set1)));
   }
 

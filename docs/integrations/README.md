@@ -14,12 +14,14 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |----|----|
 |[Amazon Seller Partner](./sources/amazon-seller-partner.md)| Alpha |
 |[Amplitude](./sources/amplitude.md)| Beta |
+|[Apify Dataset](./sources/apify-dataset.md)| Alpha |
 |[Appstore](./sources/appstore.md)| Alpha |
 |[Asana](./sources/asana.md) | Beta |
 |[AWS CloudTrail](./sources/aws-cloudtrail.md)| Beta |
 |[Braintree](./sources/braintree.md)| Alpha |
 |[BigQuery](./sources/bigquery.md)| Beta |
 |[Cart](./sources/cart.md)| Beta |
+|[Chargebee](./sources/chargebee.md)| Alpha |
 |[ClickHouse](./sources/clickhouse.md)| Beta |
 |[CockroachDB](./sources/cockroachdb.md)| Beta |
 |[Db2](./sources/db2.md)| Beta |
@@ -75,6 +77,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Recharge](./sources/recharge.md)| Beta |
 |[Recurly](./sources/recurly.md)| Beta |
 |[Redshift](./sources/redshift.md)| Certified |
+|[S3](./sources/s3.md)| Alpha |
 |[Salesforce](./sources/salesforce.md)| Certified |
 |[SAP Business One](./sources/sap-business-one.md)| Beta |
 |[Sendgrid](./sources/sendgrid.md)| Certified |
