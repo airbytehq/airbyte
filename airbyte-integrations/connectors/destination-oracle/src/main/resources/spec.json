@@ -9,7 +9,7 @@
     "title": "Oracle Destination Spec",
     "type": "object",
     "required": ["host", "port", "username", "sid"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "host": {
         "title": "Host",
