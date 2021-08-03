@@ -44,6 +44,8 @@ class Client:
     # https://docs.microsoft.com/en-us/advertising/guides/operation-error-codes?view=bingads-13
     retry_on_codes: Iterator[int] = [117, 207, 4204, 109, 0]
     max_retries: int = 3
+    # A backoff factor to apply between attempts after the second try
+    # {retry_factor} * (2 ** ({number of total retries} - 1))
     retry_factor: int = 15
 
     def __init__(
@@ -94,7 +96,7 @@ class Client:
 
     def should_retry(self, error: WebFault) -> bool:
         error_code = errorcode_of_exception(error)
-        give_up = error_code in self.retry_on_codes
+        give_up = error_code not in self.retry_on_codes
         if give_up:
             self.logger.info(f"Giving up for returned error code: {error_code}")
         return give_up
@@ -151,6 +153,17 @@ class Client:
     def asdict(cls, suds_object: sudsobject.Object) -> Mapping[str, Any]:
         """
         Converts nested Suds Object into serializable format.
+        {
+            obj[] =
+                {
+                    value = 1
+                },
+                {
+                    value = "str"
+                },
+        }
+        =>
+        {'obj': [{'value': 1}, {'value': 'str'}]}
         """
         result: Mapping[str, Any] = {}
 

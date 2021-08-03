@@ -13,11 +13,8 @@
 | AWS CloudTrail   | [![source-aws-cloudtrail](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-aws-cloudtrail%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-aws-cloudtrail) |
 | Braintree   | [![source-braintree-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-braintree-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-braintree-singer) |
 | BigQuery   | [![source-bigquery](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-bigquery%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-bigquery/) |
-<<<<<<< HEAD
 | Bing Ads   [![source-bing-ads](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-bing-ads%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-bing-ads) |
-=======
 | Chargebee   | [![source-chargebee](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-chargebee%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-chargebee/) |
->>>>>>> 148d8ecfea886691ee69deff6cc202f96516cdda
 | Dixa   | [![source-dixa](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-dixa%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-dixa) |
 | Drift   | [![source-drift](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-drift%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-drift) |
 | Exchange Rates API   | [![source-exchangeratesapi-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-exchangeratesapi-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-exchangeratesapi-singer) |

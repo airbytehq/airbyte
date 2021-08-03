@@ -34,7 +34,7 @@ from source_bing_ads.cache import VcrCache
 from source_bing_ads.client import Client
 from suds import sudsobject
 
-cache: VcrCache = VcrCache()
+CACHE: VcrCache = VcrCache()
 
 
 class BingAdsStream(Stream, ABC):
@@ -50,21 +50,21 @@ class BingAdsStream(Stream, ABC):
         """
         Specifies root object name in a stream response
         """
-        raise NotImplementedError()
+        pass
 
     @abstractproperty
     def service_name(self) -> str:
         """
         Specifies bing ads service name for a current stream
         """
-        raise NotImplementedError()
+        pass
 
     @abstractproperty
     def operation_name(self) -> str:
         """
         Specifies operation name to use for a current stream
         """
-        raise NotImplementedError()
+        pass
 
     @abstractproperty
     def additional_fields(self) -> Optional[str]:
@@ -72,7 +72,7 @@ class BingAdsStream(Stream, ABC):
         Specifies which additional fields to fetch for a current stream.
         Expected format: field names separated by space
         """
-        raise NotImplementedError()
+        pass
 
     def next_page_token(self, response: sudsobject.Object, **kwargs: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
         """
@@ -87,7 +87,7 @@ class BingAdsStream(Stream, ABC):
         yield from []
 
     def send_request(self, params: Mapping[str, Any], account_id: str = None) -> Mapping[str, Any]:
-        with cache.use_cassette():
+        with CACHE.use_cassette():
             return self.client.request(
                 service_name=self.service_name, account_id=account_id, operation_name=self.operation_name, params=params
             )
@@ -101,9 +101,9 @@ class BingAdsStream(Stream, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
+        **kwargs: Mapping[str, Any],
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         next_page_token = None
@@ -149,9 +149,8 @@ class Accounts(BingAdsStream):
 
     def request_params(
         self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
+        **kwargs: Mapping[str, Any],
     ) -> MutableMapping[str, Any]:
         predicates = {
             "Predicate": [
@@ -200,9 +199,8 @@ class Campaigns(BingAdsStream):
 
     def request_params(
         self,
-        stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        **kwargs: Mapping[str, Any],
     ) -> MutableMapping[str, Any]:
         return {
             "AccountId": stream_slice["account_id"],
@@ -211,9 +209,7 @@ class Campaigns(BingAdsStream):
 
     def stream_slices(
         self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_state: Mapping[str, Any] = None,
+        **kwargs: Mapping[str, Any],
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         for account in Accounts(self.client, self.config).read_records(SyncMode.full_refresh):
             yield {"account_id": account["Id"]}
@@ -235,17 +231,14 @@ class AdGroups(BingAdsStream):
 
     def request_params(
         self,
-        stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        **kwargs: Mapping[str, Any],
     ) -> MutableMapping[str, Any]:
         return {"CampaignId": stream_slice["campaign_id"], "ReturnAdditionalFields": self.additional_fields}
 
     def stream_slices(
         self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_state: Mapping[str, Any] = None,
+        **kwargs: Mapping[str, Any],
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         campaigns = Campaigns(self.client, self.config)
         for account in Accounts(self.client, self.config).read_records(SyncMode.full_refresh):
@@ -279,9 +272,8 @@ class Ads(BingAdsStream):
 
     def request_params(
         self,
-        stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        **kwargs: Mapping[str, Any],
     ) -> MutableMapping[str, Any]:
         return {
             "AdGroupId": stream_slice["ad_group_id"],
@@ -291,9 +283,7 @@ class Ads(BingAdsStream):
 
     def stream_slices(
         self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_state: Mapping[str, Any] = None,
+        **kwargs: Mapping[str, Any],
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         ad_groups = AdGroups(self.client, self.config)
         for slice in ad_groups.stream_slices(sync_mode=SyncMode.full_refresh):
@@ -310,7 +300,18 @@ class SourceBingAds(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             client = Client(**config)
-            Accounts(client, config).read_records(SyncMode.full_refresh)
+            account_ids = {str(account["Id"]) for account in Accounts(client, config).read_records(SyncMode.full_refresh)}
+
+            if config["accounts"]["type"] == "subset":
+                config_account_ids = set(config["accounts"]["ids"])
+                if not config_account_ids.issubset(account_ids):
+                    not_found_accounts = config_account_ids.difference(account_ids)
+                    raise Exception(f"Accounts with id {not_found_accounts} not found.")
+            elif config["accounts"]["type"] == "all":
+                if not account_ids:
+                    raise Exception("You don't have accounts assigned to this user.")
+            else:
+                raise Exception("Incorrect account selection type.")
         except Exception as error:
             return False, error
 
