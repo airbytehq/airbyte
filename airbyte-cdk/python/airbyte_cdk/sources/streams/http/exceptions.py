@@ -32,6 +32,12 @@ class BaseBackoffException(requests.exceptions.HTTPError):
     pass
 
 
+class RequestBodyException(requests.exceptions.HTTPError):
+    """
+    Raises when there are some issues of request body
+    """
+
+
 class UserDefinedBackoffException(BaseBackoffException):
     """
     An exception that exposes how long it attempted to backoff
