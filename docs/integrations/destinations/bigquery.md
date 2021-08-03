@@ -114,7 +114,7 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
-| 0.3.11 | 2021-07-30 | [#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add optional arg to make a possibility to change the BigQuery client's chunk\buffer size |
+| 0.3.12 | 2021-07-30 | [#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add optional arg to make a possibility to change the BigQuery client's chunk\buffer size |
 | 0.3.10 | 2021-07-28 | [#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add extended logs and made JobId filled with region and projectId |
 | 0.3.9 | 2021-07-28 | [#5026](https://github.com/airbytehq/airbyte/pull/5026) | Add sanitized json fields in raw tables to handle quotes in column names |
 | 0.3.6 | 2021-06-18 | [#3947](https://github.com/airbytehq/airbyte/issues/3947) | Service account credentials are now optional. |
