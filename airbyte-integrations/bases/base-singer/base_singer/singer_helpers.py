@@ -27,6 +27,7 @@ import json
 import os
 import selectors
 import subprocess
+import sys
 from dataclasses import dataclass
 from datetime import datetime
 from io import TextIOWrapper
@@ -151,9 +152,13 @@ class SingerHelper:
             shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
         )
 
+        has_error = False
         for line in completed_process.stderr.splitlines():
             logger.log_by_prefix(line, "ERROR")
+            has_error = True
 
+        if has_error and not completed_process.stdout:
+            sys.exit(1)
         singer_catalog = json.loads(completed_process.stdout)
         streams = singer_catalog.get("streams", [])
         if streams and excluded_streams:

@@ -419,6 +419,7 @@ List of available streams.
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.2.5   | 2021-08-02 | [5100](https://github.com/airbytehq/airbyte/pull/5100) | Source salesforce: add configuration values for quota limit |
 | 0.2.4   | 2021-07-06 | [4539](https://github.com/airbytehq/airbyte/pull/4539) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
 | 0.2.3   | 2021-06-11 | [3708](https://github.com/airbytehq/airbyte/pull/3708) | Remove sensitive fields from logs |
 | 0.2.2   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE_ENTRYPOINT for Kubernetes support |
