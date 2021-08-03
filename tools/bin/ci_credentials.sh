@@ -38,6 +38,7 @@ write_standard_creds base-normalization "$SNOWFLAKE_INTEGRATION_TEST_CREDS" "sno
 write_standard_creds base-normalization "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS" "redshift.json"
 
 write_standard_creds source-amplitude "$AMPLITUDE_INTEGRATION_TEST_CREDS"
+write_standard_creds source-apify-dataset "$APIFY_INTEGRATION_TEST_CREDS"
 write_standard_creds source-asana "$SOURCE_ASANA_TEST_CREDS"
 write_standard_creds source-aws-cloudtrail "$SOURCE_AWS_CLOUDTRAIL_CREDS"
 write_standard_creds source-bigquery "$BIGQUERY_TEST_CREDS" "credentials.json"
@@ -103,7 +104,7 @@ write_standard_creds source-typeform "$SOURCE_TYPEFORM_CREDS"
 write_standard_creds source-us-census "$SOURCE_US_CENSUS_TEST_CREDS"
 write_standard_creds source-zendesk-chat "$ZENDESK_CHAT_INTEGRATION_TEST_CREDS"
 write_standard_creds source-zendesk-sunshine "$ZENDESK_SUNSHINE_TEST_CREDS"
-write_standard_creds source-zendesk-support-singer "$ZENDESK_SECRETS_CREDS"
+write_standard_creds source-zendesk-support "$ZENDESK_SUPPORT_TEST_CREDS"
 write_standard_creds source-zendesk-talk "$ZENDESK_TALK_TEST_CREDS"
 write_standard_creds source-zoom-singer "$ZOOM_INTEGRATION_TEST_CREDS"
 
