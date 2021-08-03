@@ -79,3 +79,5 @@ The following command will allow you to access the database instance using `psql
 ```shell
 docker exec -ti airbyte-db psql -U docker -d airbyte
 ```
+
+To access the configuration files for sources, destinations, and connections that have been added, simply query the `airbyte-configs` table.
