@@ -14,28 +14,40 @@ Any `secrets` directory in the entire repo is gitignored by default so there is 
 
 **AWS**
 
-Coming soon. 
+You'll find it useful to create an IAM user for yourself and put it in the terraform role, so that 
+you can use terraform apply directly against the correct subaccount.  This involves getting logged in to the 
+aws console using the lastpass credentials, and then go to IAM and create a user through the GUI.  Download your csv creds
+from there.  You can use `aws sts get-caller-identity` to make sure your custom user is recognized.
 
 **Azure**
 
 Coming soon. 
 
 #### Iteration Cycle
-To run terraform commands use the TF wrapper: 
+To run terraform commands, use the tfenv wrapper available through brew or download: 
 
-```
-# From the airbyte repo root
-./tools/terraform/terraform.sh ./terraform/<cloud-provider>/connectors/ <TF command>
-```
+    brew install tfenv
 
-_hint_: alias `atf` (short for `airbyte-terraform`) to `./tools/terraform/terraform.sh` to 10x your iteration speed.    
+Once you have tfenv and are in a directory with a .terraform-version file, just
+use the normal terraform commands:
 
-**If this is your first time running Terraform** run the `init` command 
+    terraform init
+    terraform plan
+    terraform apply
+
+**If this is your first time running Terraform** run the `init` command before plan or apply.
+
+To achieve isolation and minimize risks, infrastructure should be isolated by connector 
+where feasible (but use your judgment w.r.t costs of duplicate infra). 
 
 To create connector-related resources in any of the clouds:
  <!-- TODO make this iteration cycle clearer w.r.t generating a plan for the PR -->
  
-1. Repeatedly modify the relevant terraform and apply. To achieve isolation and minimize risks, infrastructure should be isolated by connector where feasible (but use your judgment w.r.t costs of duplicate infra). 
-2. Once satisfied, create a PR with your changes. Please post the output of the `plan` TF command to show what the diff in infrastructure between the master branch and your PR. This may require deleting all the infra you just created and running `terraform apply` one last time.
+1. Repeatedly modify the relevant terraform and apply as you work.
+
+2. Once satisfied, create a PR with your changes. Please post the 
+output of the `terraform plan` command to show the diff in infrastructure 
+between the master branch and your PR. This may require deleting all the 
+infra you just created and running `terraform apply` one last time.
 
 
