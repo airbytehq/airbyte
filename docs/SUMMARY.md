@@ -29,6 +29,7 @@
   * [Sources](integrations/sources/README.md)
     * [Amazon Seller Partner](integrations/sources/amazon-seller-partner.md)
     * [Amplitude](integrations/sources/amplitude.md)
+    * [Apify Dataset](integrations/sources/apify-dataset.md)
     * [Appstore](integrations/sources/appstore.md)
     * [Asana](integrations/sources/asana.md)
     * [AWS CloudTrail](integrations/sources/aws-cloudtrail.md)

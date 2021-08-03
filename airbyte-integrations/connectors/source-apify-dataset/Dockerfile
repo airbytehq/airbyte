@@ -4,7 +4,7 @@ FROM python:3.7-slim
 RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /airbyte/integration_code
-COPY source_intercom ./source_intercom
+COPY source_apify_dataset ./source_apify_dataset
 COPY main.py ./
 COPY setup.py ./
 RUN pip install .
@@ -13,4 +13,4 @@ ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
 LABEL io.airbyte.version=0.1.1
-LABEL io.airbyte.name=airbyte/source-intercom
+LABEL io.airbyte.name=airbyte/source-apify-dataset
