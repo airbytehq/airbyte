@@ -1,7 +1,7 @@
 # Facebook Pages Source
 
 This is the repository for the Facebook Pages source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/facebook).
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/facebook-pages).
 
 ## Local development
 
@@ -36,12 +36,12 @@ From the Airbyte repository root, run:
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/facebook)
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/facebook-pages)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_facebook_pages/spec.json` file.
 Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source facebook test creds`
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source facebook-pages test creds`
 and place them into `secrets/config.json`.
 
 ### Locally running the connector

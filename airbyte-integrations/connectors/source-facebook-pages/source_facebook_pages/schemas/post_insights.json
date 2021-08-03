@@ -1,100 +1,36 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": [
-    "null",
-    "object"
-  ],
+  "type": ["null", "object"],
   "properties": {
-    "data": {
-      "type": [
-        "null",
-        "array"
-      ],
+    "name": {
+      "type": ["null", "string"]
+    },
+    "period": {
+      "type": ["null", "string"]
+    },
+    "values": {
+      "type": ["null", "array"],
       "items": {
-        "type": [
-          "null",
-          "object"
-        ],
+        "type": ["null", "object"],
         "properties": {
-          "name": {
-            "type": [
-              "null",
-              "string"
-            ]
+          "value": {
+            "type": ["null", "object", "string", "integer"]
           },
-          "period": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "values": {
-            "type": [
-              "null",
-              "array"
-            ],
-            "items": {
-              "type": [
-                "null",
-                "object"
-              ],
-              "properties": {
-                "value": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
-                },
-                "end_time": {
-                  "type": [
-                    "null",
-                    "string"
-                  ],
-                  "format": "date-time"
-                }
-              }
-            }
-          },
-          "title": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "description": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "id": {
-            "type": [
-              "null",
-              "string"
-            ]
+          "end_time": {
+            "type": ["null", "string"],
+            "format": "date-time"
           }
         }
       }
     },
-    "paging": {
-      "type": [
-        "null",
-        "object"
-      ],
-      "properties": {
-        "previous": {
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "next": {
-          "type": [
-            "null",
-            "string"
-          ]
-        }
-      }
+    "title": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
     }
   }
 }
