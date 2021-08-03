@@ -25,12 +25,14 @@
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
+import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_amazon_seller_partner.auth import AWSSignature
 
-REPORTS_API_VERSION = "2020-09-04"
+REPORTS_API_VERSION = "2021-06-30"
 ORDERS_API_VERSION = "v0"
+VENDOR_API_VERSIONS = "v1"
 
 
 class AmazonSPStream(HttpStream, ABC):
@@ -70,7 +72,7 @@ class AmazonSPStream(HttpStream, ABC):
             return dict(next_page_token)
 
         params = {self.replication_start_date_field: self._replication_start_date, self.page_size_field: self.page_size}
-        if self._replication_start_date:
+        if self._replication_start_date and self.cursor_field:
             start_date = max(stream_state.get(self.cursor_field, self._replication_start_date), self._replication_start_date)
             params.update({self.replication_start_date_field: start_date})
         return params
@@ -139,6 +141,31 @@ class FbaInventoryReports(ReportsBase):
     name = "GET_FBA_INVENTORY_AGED_DATA"
 
 
+class FulfilledShipmentsReports(ReportsBase):
+    # Inventory
+    name = "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL"
+
+
+class FlatFileOpenListingsReports(ReportsBase):
+    # Shipments
+    name = "GET_FLAT_FILE_OPEN_LISTINGS_DATA"
+
+
+class FbaOrdersReports(ReportsBase):
+    # FBA Orders
+    name = "GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA"
+
+
+class FbaShipmentsReports(ReportsBase):
+    # FBA Shipments
+    name = "GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA"
+
+
+class VendorInventoryHealthReports(ReportsBase):
+    # Vendor Inventory
+    name = "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT"
+
+
 class Orders(AmazonSPStream):
     name = "Orders"
     primary_key = "AmazonOrderId"
@@ -151,7 +178,7 @@ class Orders(AmazonSPStream):
         super().__init__(**kwargs)
         self.marketplace_ids = marketplace_ids
 
-    def path(self, **kwargs):
+    def path(self, **kwargs) -> str:
         return f"/orders/{ORDERS_API_VERSION}/orders"
 
     def request_params(
@@ -167,3 +194,28 @@ class Orders(AmazonSPStream):
         :return an iterable containing each record in the response
         """
         yield from response.json().get(self.data_field, {}).get(self.name, [])
+
+
+class VendorDirectFulfillmentShipping(AmazonSPStream):
+    name = "VendorDirectFulfillmentShipping"
+    primary_key = [["labelData", "packageIdentifier"]]
+    replication_start_date_field = "createdAfter"
+    next_page_token_field = "nextToken"
+    page_size_field = "limit"
+
+    def path(self, **kwargs) -> str:
+        return f"/vendor/directFulfillment/shipping/{VENDOR_API_VERSIONS}/shippingLabels"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, next_page_token, **kwargs)
+        if not next_page_token:
+            params.update({"createdBefore": pendulum.now("utc").strftime("%Y-%m-%dT%H:%M:%SZ")})
+        return params
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        """
+        :return an iterable containing each record in the response
+        """
+        yield from response.json().get(self.data_field, {}).get("shippingLabels", [])

@@ -33,7 +33,18 @@ from pydantic import Field
 from pydantic.main import BaseModel
 from source_amazon_seller_partner.auth import AWSAuthenticator, AWSSignature
 from source_amazon_seller_partner.constants import AWSEnvironment, AWSRegion, get_marketplaces
-from source_amazon_seller_partner.streams import FbaInventoryReports, FlatFileOrdersReports, MerchantListingsReports, Orders
+from source_amazon_seller_partner.streams import (
+    FbaInventoryReports,
+    FbaOrdersReports,
+    FbaShipmentsReports,
+    FlatFileOpenListingsReports,
+    FlatFileOrdersReports,
+    FulfilledShipmentsReports,
+    MerchantListingsReports,
+    Orders,
+    VendorDirectFulfillmentShipping,
+    VendorInventoryHealthReports,
+)
 
 
 class ConnectorConfig(BaseModel):
@@ -106,10 +117,16 @@ class SourceAmazonSellerPartner(AbstractSource):
         stream_kwargs = self._get_stream_kwargs(config)
 
         return [
-            MerchantListingsReports(**stream_kwargs),
-            FlatFileOrdersReports(**stream_kwargs),
             FbaInventoryReports(**stream_kwargs),
+            FbaOrdersReports(**stream_kwargs),
+            FbaShipmentsReports(**stream_kwargs),
+            FlatFileOpenListingsReports(**stream_kwargs),
+            FlatFileOrdersReports(**stream_kwargs),
+            FulfilledShipmentsReports(**stream_kwargs),
+            MerchantListingsReports(**stream_kwargs),
             Orders(marketplace_ids=[self.marketplace_id], **stream_kwargs),
+            VendorDirectFulfillmentShipping(**stream_kwargs),
+            VendorInventoryHealthReports(**stream_kwargs),
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
