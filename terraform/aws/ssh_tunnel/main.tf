@@ -1,60 +1,29 @@
-# Create a bastion host with a user account we can ssh in as, for using an ssh tunnel.
+# Set up a subnet with bastion and postgres so we can test inbound ssh tunnel behavior from connectors.
 
-# The standard amazon-linux-2 ami will work fine. Don't care about version except stay recent-ish.
-data "aws_ami" "amazon-linux-2" {
-  owners = [137112412989]
-
-  filter {
-    name   = "owner-alias"
-    values = ["amazon"]
-  }
-
-  filter {
-    name   = "name"
-    values = ["amzn2-ami-hvm-2.0.20210701.0-x86_64-gp2"]
-  }
+# ec2-user needs login creds
+resource "aws_key_pair" "key" {
+  key_name   = "dbtunnel-bastion-ec2-user-ssh-key"
+  public_key = file("${path.module}/user_ssh_public_keys/dbtunnel-bastion-ec2-user_rsa.pub")
 }
 
-# Create a host we can ssh into for database ssh tunnel connections from airbyte connectors.
-resource "aws_instance" "dbtunnel-bastion" {
-  ami           = data.aws_ami.amazon-linux-2.id
-  instance_type = "t3.small"
+# Sets up the bastion host, an unprivileged airbyte shell user, and postgres
+module "ssh_tunnel_testing" {
+  source = "./module"
 
-  subnet_id = aws_subnet.main-subnet-public-dbtunnel.id
-  vpc_security_group_ids = [aws_security_group.ssh-and-egress-allowed.id]
-  key_name = var.sudo_keypair_name
-  user_data = file("${path.module}/userdata.sh")
+  airbyte_user_authorized_keys_local_filepath = "user_ssh_public_keys/dbtunnel-bastion-airbyte_rsa.pub"
+  
+  aws_vpc_id = "vpc-001ad881b80193126"
+  sudo_keypair_name = aws_key_pair.key.key_name
 
-  tags = {
-    Name = "dbtunnel-bastion"
-  }
+  subnet_az1 = "us-east-2a"
+  subnet_cidr_block1 = "10.0.40.0/24"
 
- provisioner "file" {
-  source      = var.airbyte_user_authorized_keys_local_filepath
-  destination = "/tmp/airbyte_authorized_keys"
-  connection {
-    type     = "ssh"
-    user     = "ec2-user"  # presumes you have the ssh key in your ssh-agent already
-    host     = aws_instance.dbtunnel-bastion.public_ip
-  }
- }
- provisioner "remote-exec" {
-  inline = [
-      "sudo bash -cx \"adduser airbyte -m && mkdir /home/airbyte/.ssh && chmod 700 /home/airbyte/.ssh && touch /home/airbyte/.ssh/authorized_keys && chmod 600 /home/airbyte/.ssh/authorized_keys && chown -R airbyte.airbyte /home/airbyte/.ssh && cat /tmp/airbyte_authorized_keys > /home/airbyte/.ssh/authorized_keys && rm /tmp/airbyte_authorized_keys\""
-  ]
-  connection {
-    type     = "ssh"
-    user     = "ec2-user"  # presumes you have the ssh private key in your ssh-agent already
-    host     = aws_instance.dbtunnel-bastion.public_ip
-  }
- }
+  subnet_az2 = "us-east-2b"
+  subnet_cidr_block2 = "10.0.41.0/24"
 
-}
+  rds_instance_class = "db.t3.small"
 
-# We're using a static IP for connector testing for now since dns isn't usable for this.
-# We would prefer DNS someday.
-resource "aws_eip" "dbtunnel-eip" {
-  vpc = true
-  instance = aws_instance.dbtunnel-bastion.id
+  // Outputs: bastion_ip_addr postgres_endpoint_fqdn_with_port
+
 }
 
