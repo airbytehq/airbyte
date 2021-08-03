@@ -63,7 +63,7 @@ class PaypalTransactionStream(HttpStream, ABC):
 
     # Date limits are needed to prevent API error: "Data for the given start date is not available"
     # API limit: (now() - start_date_min) <= start_date <= end_date <= last_refreshed_datetime <= now
-    start_date_min: Mapping[str, int] = {"hours": 3 * 365}  # API limit - 3 years
+    start_date_min: Mapping[str, int] = {"days": 3 * 365}  # API limit - 3 years
     last_refreshed_datetime: Optional[datetime] = None  # extracted from API response. Indicate the most resent possible start_date
     stream_slice_period: Mapping[str, int] = {"days": 1}  # max period is 31 days (API limit)
 
