@@ -15,12 +15,12 @@
       "organization": {
         "type": "string",
         "examples": ["airbytehq/airbyte"],
-        "description": "Space-delimited list of GitHub organizations. e.g. 'airbytehq' or 'singer-io'"
+        "description": "Space-delimited list of GitHub organizations. e.g. `airbytehq singer-io`"
       },
       "repository": {
         "type": "string",
         "examples": ["airbytehq/airbyte"],
-        "description": "Space-delimited list of GitHub repositories, e.g. airbytehq/airbyte singer-io/tap-github"
+        "description": "Space-delimited list of GitHub repositories, e.g. `airbytehq/airbyte singer-io/tap-github`"
       },
       "start_date": {
         "type": "string",

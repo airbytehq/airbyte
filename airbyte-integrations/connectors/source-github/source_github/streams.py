@@ -67,16 +67,16 @@ class GithubStream(HttpStream, ABC):
     #   - lists `[]`, like `labels`, `assignees` etc.
     fields_to_minimize = ()
 
-    def __init__(self, repositories: str, **kwargs):
+    def __init__(self, parent_entities: List[str], **kwargs):
         super().__init__(**kwargs)
-        self.repositories = repositories
+        self.parent_entities = parent_entities
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repo']}/{self.name}"
+        return f"repos/{stream_slice['parent_entity']}/{self.name}"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        for repo in self.repositories:
-            yield {"repo": repo}
+        for parent_entity in self.parent_entities:
+            yield {"parent_entity": parent_entity}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         links = response.links
@@ -117,13 +117,13 @@ class GithubStream(HttpStream, ABC):
             if e.response.status_code == requests.codes.FORBIDDEN:
                 error_msg = (
                     f"Syncing `{self.name}` stream isn't available for repository "
-                    f"`{stream_slice['repo']}` and your `access_token`, seems like you don't have permissions for "
+                    f"`{stream_slice['parent_entity']}` and your `access_token`, seems like you don't have permissions for "
                     f"this stream."
                 )
             elif e.response.status_code == requests.codes.NOT_FOUND and "/teams?" in error_msg:
                 # For private repositories `Teams` stream is not available and we get "404 Client Error: Not Found for
                 # url: https://api.github.com/orgs/sherifnada/teams?per_page=100" error.
-                error_msg = f"Syncing `Team` stream isn't available for repository `{stream_slice['repo']}`."
+                error_msg = f"Syncing `Team` stream isn't available for repository `{stream_slice['parent_entity']}`."
 
             self.logger.warn(error_msg)
 
@@ -154,7 +154,7 @@ class GithubStream(HttpStream, ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         for record in response.json():  # GitHub puts records in an array.
-            yield self.transform(record=record, repository=stream_slice["repo"])
+            yield self.transform(record=record, repository=stream_slice["parent_entity"])
 
     def transform(self, record: MutableMapping[str, Any], repository: str) -> MutableMapping[str, Any]:
         """
@@ -247,21 +247,31 @@ class SemiIncrementalGithubStream(GithubStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        start_point_map = {repo: self.get_starting_point(stream_state=stream_state, repository=repo) for repo in self.repositories}
+        start_point_map = {repo: self.get_starting_point(stream_state=stream_state, repository=repo) for repo in self.parent_entities}
         for record in super().read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
-            if record.get(self.cursor_field) > start_point_map[stream_slice["repo"]]:
+            if record.get(self.cursor_field) > start_point_map[stream_slice["parent_entity"]]:
                 yield record
-            elif self.is_sorted_descending and record.get(self.cursor_field) < start_point_map[stream_slice["repo"]]:
+            elif self.is_sorted_descending and record.get(self.cursor_field) < start_point_map[stream_slice["parent_entity"]]:
                 break
 
 
 class IncrementalGithubStream(SemiIncrementalGithubStream):
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
-        params["since"] = self.get_starting_point(stream_state=stream_state, repository=stream_slice["repo"])
+        params["since"] = self.get_starting_point(stream_state=stream_state, repository=stream_slice["parent_entity"])
         return params
+
+
+class Repositories(GithubStream):
+    """
+    This stream is technical and not intended for the user, it is used only to obtain repositories for organizations.
+    API docs: https://docs.github.com/en/rest/reference/repos#list-organization-repositories
+    """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"orgs/{stream_slice['parent_entity']}/repos"
 
 
 # Below are full refresh streams
@@ -283,14 +293,15 @@ class Reviews(GithubStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        pull_request_number = stream_slice["pull_request_number"]
-        return f"repos/{stream_slice['repo']}/pulls/{pull_request_number}/reviews"
+        return f"repos/{stream_slice['parent_entity']}/pulls/{stream_slice['pull_request_number']}/reviews"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         for stream_slice in super().stream_slices(**kwargs):
-            pull_requests_stream = PullRequests(authenticator=self.authenticator, repositories=[stream_slice["repo"]], start_date="")
+            pull_requests_stream = PullRequests(
+                authenticator=self.authenticator, parent_entities=[stream_slice["parent_entity"]], start_date=""
+            )
             for pull_request in pull_requests_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
-                yield {"pull_request_number": pull_request["number"], "repo": stream_slice["repo"]}
+                yield {"pull_request_number": pull_request["number"], "parent_entity": stream_slice["parent_entity"]}
 
 
 class Collaborators(GithubStream):
@@ -305,7 +316,7 @@ class IssueLabels(GithubStream):
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repo']}/labels"
+        return f"repos/{stream_slice['parent_entity']}/labels"
 
 
 class Teams(GithubStream):
@@ -314,7 +325,7 @@ class Teams(GithubStream):
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        owner, _ = stream_slice["repo"].split("/")
+        owner, _ = stream_slice["parent_entity"].split("/")
         return f"orgs/{owner}/teams"
 
 
@@ -382,7 +393,7 @@ class PullRequests(SemiIncrementalGithubStream):
             yield from super().read_records(stream_state=stream_state, **kwargs)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repo']}/pulls"
+        return f"repos/{stream_slice['parent_entity']}/pulls"
 
     def transform(self, record: MutableMapping[str, Any], repository: str) -> MutableMapping[str, Any]:
         record = super().transform(record=record, repository=repository)
@@ -418,7 +429,7 @@ class CommitComments(SemiIncrementalGithubStream):
     fields_to_minimize = ("user",)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repo']}/comments"
+        return f"repos/{stream_slice['parent_entity']}/comments"
 
 
 class IssueMilestones(SemiIncrementalGithubStream):
@@ -435,7 +446,7 @@ class IssueMilestones(SemiIncrementalGithubStream):
     }
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repo']}/milestones"
+        return f"repos/{stream_slice['parent_entity']}/milestones"
 
 
 class Stargazers(SemiIncrementalGithubStream):
@@ -487,7 +498,7 @@ class IssueEvents(SemiIncrementalGithubStream):
     )
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repo']}/issues/events"
+        return f"repos/{stream_slice['parent_entity']}/issues/events"
 
 
 # Below are incremental streams
@@ -502,7 +513,7 @@ class Comments(IncrementalGithubStream):
     page_size = 30  # `comments` is a large stream so it's better to set smaller page size.
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repo']}/issues/comments"
+        return f"repos/{stream_slice['parent_entity']}/issues/comments"
 
 
 class Commits(IncrementalGithubStream):

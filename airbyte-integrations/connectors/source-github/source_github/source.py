@@ -25,7 +25,6 @@
 
 from typing import Any, List, Mapping, Tuple
 
-import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -46,6 +45,7 @@ from .streams import (
     Projects,
     PullRequests,
     Releases,
+    Repositories,
     Reviews,
     Stargazers,
     Teams,
@@ -59,11 +59,11 @@ class SourceGithub(AbstractSource):
 
         if org_ids:
             org_repositories = []
-            for org in org_ids:
-                response = requests.get(f"https://api.github.com/orgs/{org}/repos", headers=authenticator.get_auth_header())
-                if response.status_code != 200:
-                    raise Exception(response.text)
-                org_repositories += [repository["full_name"] for repository in response.json()]
+            repos = Repositories(authenticator=authenticator, parent_entities=org_ids)
+            for stream in repos.stream_slices(sync_mode=SyncMode.full_refresh):
+                org_repositories += [
+                    repository["full_name"] for repository in repos.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream)
+                ]
             return org_repositories
         elif repo_ids:
             return repo_ids
@@ -74,9 +74,10 @@ class SourceGithub(AbstractSource):
         try:
             authenticator = TokenAuthenticator(token=config["access_token"], auth_method="token")
             repositories = self._generate_repositories(config=config, authenticator=authenticator)
-            projects_stream = Projects(authenticator=authenticator, repositories=repositories, start_date=config["start_date"])
+
+            # We should use the most poorly filled stream to use the `list` method, because when using the `next` method, we can get the `StopIteration` error.
+            projects_stream = Projects(authenticator=authenticator, parent_entities=repositories, start_date=config["start_date"])
             for stream in projects_stream.stream_slices(sync_mode=SyncMode.full_refresh):
-                # We should use the most poorly filled stream to use the `list` method, because when using the `next` method, we can get the `StopIteration` error.
                 list(projects_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream))
             return True, None
         except Exception as e:
@@ -85,7 +86,7 @@ class SourceGithub(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(token=config["access_token"], auth_method="token")
         repositories = self._generate_repositories(config=config, authenticator=authenticator)
-        full_refresh_args = {"authenticator": authenticator, "repositories": repositories}
+        full_refresh_args = {"authenticator": authenticator, "parent_entities": repositories}
         incremental_args = {**full_refresh_args, "start_date": config["start_date"]}
 
         return [
