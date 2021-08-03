@@ -60,4 +60,4 @@ This connector supports only authentication with API Key. To obtain API key for 
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.6   | 2021-07-27 | [4913](https://github.com/airbytehq/airbyte/pull/4913) | Update fields schema |
+| 0.1.7   | 2021-07-27 | [4913](https://github.com/airbytehq/airbyte/pull/4913) | Update fields schema |
