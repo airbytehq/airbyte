@@ -14,10 +14,19 @@ All infrastructure for this is kept separate from other airbyte
 infrastructure, as it's meant to simulate a client's corporate
 environment and private databases.
 
+This configuration uses the 'tfenv' wrapper on terraform for versioning.
+Each directory contains a .terraform-version file specifying the compatibility
+for that terraform instance.
+
+    brew install tfenv  # install
+    terraform plan      # should use the tfenv wrapper's version of terraform
+
+
 ## Public Keys
 
 The bastion host requires an ec2-user (always) and preferably also a non-root capable
-user named airbyte.  The airbyte user is used for ssh tunnel from the connectors, and should not be a priviledged user.
+user named airbyte.  The airbyte user is used for ssh tunnel from the connectors, and should not be a 
+priviledged user.  These are in the integration test secrets store under the 'infra' prefix.
 
 To create a fresh ssh keypair and set its comment (where the email usually shows), use a command like this:
 
@@ -26,6 +35,12 @@ To create a fresh ssh keypair and set its comment (where the email usually shows
 
 The public key from that is used for ec2 instance creation, but the private key should be kept secret.
 
-TODO: The airbyte user might also need to usable with a password; check this from the connector side.
+TODO: The airbyte user will also need password auth allowed on the ssh connection, once we're ready for that.
 
+## Database Setup
+
+We don't have yet automation for running the database configuration scripts
+from infrastructure as code.  The sql scripts included should be run once by hand
+when setting up from scratch.  Note that the sql script creating a user has a place to
+manually change the password.
 
