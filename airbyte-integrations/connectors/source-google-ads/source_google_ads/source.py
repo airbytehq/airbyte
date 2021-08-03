@@ -48,6 +48,8 @@ from .streams import (
 class SourceGoogleAds(AbstractSource):
     def get_credentials(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
         credentials = config["credentials"]
+
+        # https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid
         if "login_customer_id" in config and config["login_customer_id"].strip():
             credentials["login_customer_id"] = config["login_customer_id"]
         return credentials

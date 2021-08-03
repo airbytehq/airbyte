@@ -51,7 +51,7 @@ Google Ads Account with an approved Developer Token \(note: In order to get API 
 * refresh_token
 * start_date
 * customer_id
-* login_customer_id (more information about this field you can find in [Google Ads docs](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid))
+* login_customer_id (you can find more information about this field in [Google Ads docs](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid))
 
 ### Setup guide
 
