@@ -31,15 +31,14 @@ import com.rockset.client.RocksetClient;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testng.collections.Sets;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testng.collections.Sets;
 
 public class RocksetDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -67,11 +66,11 @@ public class RocksetDestinationAcceptanceTest extends DestinationAcceptanceTest 
 
   @Override
   protected List<JsonNode> retrieveRecords(
-      TestDestinationEnv testEnv,
-      String streamName,
-      String namespace,
-      JsonNode streamSchema
-  ) throws Exception {
+                                           TestDestinationEnv testEnv,
+                                           String streamName,
+                                           String namespace,
+                                           JsonNode streamSchema)
+      throws Exception {
 
     try {
       // As Rockset is not a transactional database, we have to wait a few seconds to be extra sure
@@ -86,7 +85,7 @@ public class RocksetDestinationAcceptanceTest extends DestinationAcceptanceTest 
 
     final RocksetClient client = RocksetUtils.clientFromConfig(getConfig());
     String ws = getConfig().get("workspace").asText();
-    String sqlText = String.format("SELECT * FROM %s.%s;", ws, streamName);
+    String sqlText = String.format("SELECT * FROM %s.%s ORDER BY _event_time ASC;", ws, streamName);
 
     return RocksetUtils.query(client, sqlText).stream()
         // remove rockset added fields

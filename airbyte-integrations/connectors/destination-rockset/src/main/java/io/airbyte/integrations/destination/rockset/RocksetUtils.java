@@ -25,12 +25,9 @@
 package io.airbyte.integrations.destination.rockset;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.Lists;
-import com.google.gson.internal.LinkedTreeMap;
 import com.rockset.client.ApiClient;
 import com.rockset.client.ApiException;
 import com.rockset.client.RocksetClient;
-import com.rockset.client.api.QueriesApi;
 import com.rockset.client.model.Collection;
 import com.rockset.client.model.CreateCollectionRequest;
 import com.rockset.client.model.CreateWorkspaceRequest;
@@ -41,12 +38,9 @@ import com.rockset.client.model.GetCollectionResponse;
 import com.rockset.client.model.QueryRequest;
 import com.rockset.client.model.QueryRequestSql;
 import com.rockset.client.model.QueryResponse;
-
+import io.airbyte.commons.json.Jsons;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import com.squareup.okhttp.Response;
-import io.airbyte.commons.json.Jsons;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,9 +84,9 @@ public class RocksetUtils {
 
   // Assumes the workspace exists
   public static void createCollectionIfNotExists(
-      RocksetClient client,
-      String workspace,
-      String cname)
+                                                 RocksetClient client,
+                                                 String workspace,
+                                                 String cname)
       throws Exception {
     CreateCollectionRequest request = new CreateCollectionRequest().name(cname);
     try {
@@ -110,9 +104,9 @@ public class RocksetUtils {
 
   // Assumes the collection exists
   public static void deleteCollectionIfExists(
-      RocksetClient client,
-      String workspace,
-      String cname)
+                                              RocksetClient client,
+                                              String workspace,
+                                              String cname)
       throws Exception {
     try {
       client.deleteCollection(workspace, cname);
@@ -204,4 +198,5 @@ public class RocksetUtils {
 
     client.deleteDocuments(workspace, collection, new DeleteDocumentsRequest().data(documentsToDelete));
   }
+
 }

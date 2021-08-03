@@ -154,7 +154,7 @@ public abstract class DestinationAcceptanceTest {
    * the configuration's 'schema' field, as this is how most of our destinations implement this.
    * Destinations are free to appropriately override this. The return value is used to assert
    * correctness.
-   *
+   * <p>
    * If not applicable, Destinations are free to ignore this.
    *
    * @param config - integration-specific configuration returned by {@link #getConfig()}.
@@ -399,8 +399,6 @@ public abstract class DestinationAcceptanceTest {
                     .put("id", 1)
                     .put("currency", "USD")
                     .put("date", "2020-03-31T00:00:00Z")
-                    // TODO(sherifnada) hack: write decimals with sigfigs because Snowflake stores 10.1 as "10" which
-                    // fails destination tests
                     .put("HKD", 10.1)
                     .put("NZD", 700.1)
                     .build()))),
@@ -434,8 +432,6 @@ public abstract class DestinationAcceptanceTest {
                     .put("id", 1)
                     .put("currency", "USD\u2028")
                     .put("date", "2020-03-\n31T00:00:00Z\r")
-                    // TODO(sherifnada) hack: write decimals with sigfigs because Snowflake stores 10.1 as "10" which
-                    // fails destination tests
                     .put("HKD", 10.1)
                     .put("NZD", 700.1)
                     .build()))),
@@ -501,8 +497,6 @@ public abstract class DestinationAcceptanceTest {
                     .put("id", 1)
                     .put("currency", "USD")
                     .put("date", "2020-03-31T00:00:00Z")
-                    // TODO(sherifnada) hack: write decimals with sigfigs because Snowflake stores 10.1 as "10" which
-                    // fails destination tests
                     .put("HKD", 10.1)
                     .put("NZD", 700.1)
                     .build()))),
@@ -546,7 +540,7 @@ public abstract class DestinationAcceptanceTest {
   /**
    * Verify that the integration successfully writes records successfully both raw and normalized and
    * run dedupe transformations.
-   *
+   * <p>
    * Although this test assumes append-dedup requires normalization, and almost all our Destinations
    * do so, this is not necessarily true. This explains {@link #implementsAppendDedup()}.
    */
@@ -640,7 +634,7 @@ public abstract class DestinationAcceptanceTest {
    * This test is running a sync using the exchange rate catalog and messages. However it also
    * generates and adds two extra messages with big records (near the destination limit as defined by
    * getMaxValueLengthLimit()
-   *
+   * <p>
    * The first big message should be small enough to fit into the destination while the second message
    * would be too big and fails to replicate.
    */
@@ -1048,7 +1042,12 @@ public abstract class DestinationAcceptanceTest {
 
   // Allows subclasses to implement custom comparison asserts
   protected void assertSameValue(JsonNode expectedValue, JsonNode actualValue) {
-    assertEquals(expectedValue, actualValue);
+    if (expectedValue.isNumber() && actualValue.isNumber()) {
+      // some destinations serialize ints as doubles. Assure JUnit that 1.0 == 1
+      assertEquals(expectedValue.asDouble(), actualValue.asDouble());
+    } else {
+      assertEquals(expectedValue, actualValue);
+    }
   }
 
   protected List<AirbyteRecordMessage> retrieveNormalizedRecords(AirbyteCatalog catalog, String defaultSchema) throws Exception {

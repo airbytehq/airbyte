@@ -35,11 +35,9 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.DestinationSyncMode;
-
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,9 +56,9 @@ public class RocksetWriteApiConsumer implements AirbyteMessageConsumer {
   private RocksetClient client;
 
   public RocksetWriteApiConsumer(
-      JsonNode config,
-      ConfiguredAirbyteCatalog catalog,
-      Consumer<AirbyteMessage> outputRecordCollector) {
+                                 JsonNode config,
+                                 ConfiguredAirbyteCatalog catalog,
+                                 Consumer<AirbyteMessage> outputRecordCollector) {
     this.apiKey = config.get(API_KEY_ID).asText();
     this.workspace = config.get(WORKSPACE_ID).asText();
 
