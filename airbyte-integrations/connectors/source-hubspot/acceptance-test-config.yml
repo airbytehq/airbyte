@@ -6,7 +6,7 @@ tests:
     - config_path: "secrets/config.json"
       status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
-      status: "exception"
+      status: "failed"
 #  discovery: fixme (eugene): contacts schema does not match
 #    - config_path: "secrets/config.json"
   basic_read:

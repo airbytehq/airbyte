@@ -12,8 +12,7 @@
           "type": "string"
         },
         "timestamp": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": "integer"
         },
         "versions": {
           "type": ["null", "array"],

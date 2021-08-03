@@ -91,8 +91,7 @@
       "type": ["null", "object"],
       "properties": {
         "created": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": "integer"
         },
         "id": {
           "type": ["null", "string"]
