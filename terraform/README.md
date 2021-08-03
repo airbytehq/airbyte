@@ -3,6 +3,34 @@
 ## Connector Development Infrastructure
 We use Terraform to manage any persistent infrastructure used for developing or testing connectors.
 
+Directory structure is roughly as follows:
+
+    ├── aws
+    │   ├── demo
+    │   │   ├── core
+    │   │   └── lb
+    │   ├── shared
+    │   └── ssh_tunnel
+    │       ├── module
+    │       │   ├── secrets
+    │       │   └── sql
+    │       └── user_ssh_public_keys
+    └── gcp
+
+Top level is which provider the terraform is for.  Next level is a 
+directory containing the project name, or 'shared' for infrastructure (like 
+the backend for terraform itself) that crosses projects.
+
+Within each project directory, the top level main.tf contains the infrastructure
+for that project, in a high-level format.  The module within it contains the
+fine grained details.
+
+Do not place terraform in the top level per-provider directory, as that results in
+a monorepo where 'terraform destroy' has a too-wide blast radius.  Instead, create
+a separate small terraform instance for each project.  Then plan and destroy only affect
+that project and not other unrelated infrastructure.
+
+
 ### Workflow
 
 #### Setup Credentials
@@ -22,6 +50,8 @@ from there.  You can use `aws sts get-caller-identity` to make sure your custom 
 **Azure**
 
 Coming soon. 
+
+
 
 #### Iteration Cycle
 To run terraform commands, use the tfenv wrapper available through brew or download: 
