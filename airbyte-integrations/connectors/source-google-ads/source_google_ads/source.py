@@ -26,8 +26,10 @@
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from google.ads.googleads.errors import GoogleAdsException
 
 from .google_ads import GoogleAds
 from .streams import (
@@ -47,10 +49,12 @@ class SourceGoogleAds(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             logger.info("Checking the config")
-            GoogleAds(credentials=config["credentials"], customer_id=config["customer_id"])
+            google_api = GoogleAds(credentials=config["credentials"], customer_id=config["customer_id"])
+            account_stream = Accounts(api=google_api)
+            list(account_stream.read_records(sync_mode=SyncMode.full_refresh))
             return True, None
-        except Exception as error:
-            return False, f"Unable to connect to Google Ads API with the provided credentials - {repr(error)}"
+        except GoogleAdsException as error:
+            return False, f"Unable to connect to Google Ads API with the provided credentials - {repr(error.failure)}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         google_api = GoogleAds(credentials=config["credentials"], customer_id=config["customer_id"])

@@ -46,6 +46,8 @@ class GoogleAds:
     DEFAULT_PAGE_SIZE = 1000
 
     def __init__(self, credentials: Mapping[str, Any], customer_id: str):
+        if "login_customer_id" in credentials and not credentials["login_customer_id"].strip():
+            credentials.pop("login_customer_id")
         self.client = GoogleAdsClient.load_from_dict(credentials)
         self.customer_id = customer_id
         self.ga_service = self.client.get_service("GoogleAdsService")
