@@ -132,6 +132,7 @@
     * [Oracle DB](integrations/destinations/oracle.md)
     * [Postgres](integrations/destinations/postgres.md)
     * [Redshift](integrations/destinations/redshift.md)
+    * [Rockset](integrations/destinations/rockset.md)
     * [S3](integrations/destinations/s3.md)
     * [Snowflake](integrations/destinations/snowflake.md)
   * [Custom or New Connector](integrations/custom-connectors.md)
