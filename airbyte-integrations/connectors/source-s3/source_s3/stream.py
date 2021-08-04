@@ -26,6 +26,7 @@
 from typing import Any, Iterator, Mapping
 
 from airbyte_cdk.logger import AirbyteLogger
+import boto3
 from boto3 import session as boto3session
 from botocore import UNSIGNED
 from botocore.config import Config
@@ -73,7 +74,7 @@ class IncrementalFileStreamS3(IncrementalFileStream):
             else:
                 for c in content:
                     key = c["Key"]
-                    if accept_key(key) and client.get_bucket(provider["bucket"].lookup("key")).size != 0:
+                    if accept_key(key) and client.get_object(Bucket=provider["bucket"], Key=key)["ContentLength"] != 0:
                         yield key
             ctoken = response.get("NextContinuationToken", None)
             if not ctoken:
