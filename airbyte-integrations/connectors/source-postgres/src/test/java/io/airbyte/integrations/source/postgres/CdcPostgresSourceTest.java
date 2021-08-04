@@ -58,6 +58,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 class CdcPostgresSourceTest extends CdcSourceTest {
@@ -79,7 +80,8 @@ class CdcPostgresSourceTest extends CdcSourceTest {
 
   @BeforeEach
   protected void setup() throws SQLException {
-    container = new PostgreSQLContainer<>("postgres:13-alpine")
+    DockerImageName myImage = DockerImageName.parse("debezium/postgres:13-alpine").asCompatibleSubstituteFor("postgres");
+    container = new PostgreSQLContainer<>(myImage)
         .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"), "/etc/postgresql/postgresql.conf")
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
     container.start();
@@ -94,7 +96,7 @@ class CdcPostgresSourceTest extends CdcSourceTest {
     final String fullReplicationSlot = SLOT_NAME_BASE + "_" + dbName;
     database = getDatabaseFromConfig(config);
     database.query(ctx -> {
-      ctx.execute("SELECT pg_create_logical_replication_slot('" + fullReplicationSlot + "', 'pgoutput');");
+      ctx.execute("SELECT pg_create_logical_replication_slot('" + fullReplicationSlot + "', 'wal2json');");
       ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
 
       return null;
