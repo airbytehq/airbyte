@@ -25,10 +25,15 @@
 import json
 from abc import ABC, abstractmethod
 from typing import Any, BinaryIO, Iterator, Mapping, TextIO, Union
+import multiprocessing as mp
 
 import pyarrow as pa
 from airbyte_cdk.logger import AirbyteLogger
 from pyarrow import csv as pa_csv
+
+
+def multiprocess_queuer(func, q, *args, **kwargs):
+    q.put(func(*args, **kwargs))
 
 
 class FileFormatParser(ABC):
@@ -165,9 +170,30 @@ class CsvParser(FileFormatParser):
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html
         Note: this reads just the first block (as defined in _read_options() block_size) to infer the schema
         """
-        streaming_reader = pa_csv.open_csv(file, self._read_options(), self._parse_options(), self._convert_options())
-        schema_dict = {field.name: field.type for field in streaming_reader.schema}
-        return self.json_schema_to_pyarrow_schema(schema_dict, reverse=True)
+        def get_schema(read_opts, parse_opts, convert_opts):
+            from pyarrow import csv as pa_csv
+            streaming_reader = pa_csv.open_csv(file, read_opts, parse_opts, convert_opts)
+            schema_dict = {field.name: field.type for field in streaming_reader.schema}
+            return self.json_schema_to_pyarrow_schema(schema_dict, reverse=True)
+
+        q_worker = mp.Queue()
+        proc = mp.Process(
+            target=multiprocess_queuer,
+            args=(get_schema, q_worker, self._read_options(), self._parse_options(), self._convert_options())
+        )
+        proc.start()
+        try:
+            res = q_worker.get(timeout=20)
+            return res
+        except mp.queues.Empty:
+            raise TimeoutError()
+        finally:
+            try:
+                proc.terminate()
+            except:
+                pass
+
+        
 
     def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
         """
