@@ -112,6 +112,16 @@
                       }
                     }
                   }
+                },
+                "column`_'with\"_quotes": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "properties": {
+                      "currency": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
                 }
               }
             }

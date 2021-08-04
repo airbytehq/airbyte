@@ -5,11 +5,11 @@ import { ImplementationTable } from "components/EntityTable";
 import { Routes } from "pages/routes";
 import useRouter from "components/hooks/useRouterHook";
 import ConnectionResource from "core/resources/Connection";
-import config from "config";
 import { Destination } from "core/resources/Destination";
 import { getEntityTableData } from "components/EntityTable/utils";
 import { EntityTableDataItem } from "components/EntityTable/types";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+import useWorkspace from "components/hooks/services/useWorkspace";
 
 type IProps = {
   destinations: Destination[];
@@ -17,15 +17,15 @@ type IProps = {
 
 const DestinationsTable: React.FC<IProps> = ({ destinations }) => {
   const { push } = useRouter();
-
+  const { workspace } = useWorkspace();
   const { connections } = useResource(ConnectionResource.listShape(), {
-    workspaceId: config.ui.workspaceId,
+    workspaceId: workspace.workspaceId,
   });
 
   const { destinationDefinitions } = useResource(
     DestinationDefinitionResource.listShape(),
     {
-      workspaceId: config.ui.workspaceId,
+      workspaceId: workspace.workspaceId,
     }
   );
 

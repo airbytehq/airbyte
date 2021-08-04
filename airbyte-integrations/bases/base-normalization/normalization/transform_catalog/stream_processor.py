@@ -29,7 +29,7 @@ from typing import Dict, List, Optional, Tuple
 from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMode
 from jinja2 import Template
 from normalization.destination_type import DestinationType
-from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer
+from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer, transform_json_naming
 from normalization.transform_catalog.table_name_registry import TableNameRegistry
 from normalization.transform_catalog.utils import (
     is_airbyte_column,
@@ -107,7 +107,6 @@ class StreamProcessor(object):
         self.sql_outputs: Dict[str, str] = {}
         self.parent: Optional["StreamProcessor"] = None
         self.is_nested_array: bool = False
-        self.table_alias: str = "table_alias"
 
     @staticmethod
     def create_from_parent(
@@ -323,7 +322,7 @@ select
     {{ field }},
   {%- endfor %}
     _airbyte_emitted_at
-from {{ from_table }} as table_alias
+from {{ from_table }}
 {{ unnesting_after_query }}
 {{ sql_table_comment }}
 """
@@ -334,30 +333,30 @@ from {{ from_table }} as table_alias
             fields=self.extract_json_columns(column_names),
             from_table=jinja_call(from_table),
             unnesting_after_query=self.unnesting_after_query(),
-            sql_table_comment=self.sql_table_comment()
+            sql_table_comment=self.sql_table_comment(),
         )
         return sql
 
     def extract_json_columns(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
         return [
-            StreamProcessor.extract_json_column(
-                field, self.json_column_name, self.properties[field], column_names[field][0], self.table_alias
-            )
+            StreamProcessor.extract_json_column(field, self.json_column_name, self.properties[field], column_names[field][0])
             for field in column_names
         ]
 
     @staticmethod
-    def extract_json_column(property_name: str, json_column_name: str, definition: Dict, column_name: str, table_alias: str) -> str:
+    def extract_json_column(property_name: str, json_column_name: str, definition: Dict, column_name: str) -> str:
         json_path = [property_name]
-        table_alias = f"{table_alias}"
-        json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path})")
+        # In some cases, some destination aren't able to parse the JSON blob using the original property name
+        # we make their life easier by using a pre-populated and sanitized column name instead...
+        normalized_json_path = [transform_json_naming(property_name)]
+        json_extract = jinja_call(f"json_extract({json_column_name}, {json_path}, {normalized_json_path})")
         if "type" in definition:
             if is_array(definition["type"]):
-                json_extract = jinja_call(f"json_extract_array({json_column_name}, {json_path})")
+                json_extract = jinja_call(f"json_extract_array({json_column_name}, {json_path}, {normalized_json_path})")
             elif is_object(definition["type"]):
-                json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path})")
+                json_extract = jinja_call(f"json_extract({json_column_name}, {json_path}, {normalized_json_path})")
             elif is_simple_property(definition["type"]):
-                json_extract = jinja_call(f"json_extract_scalar({json_column_name}, {json_path})")
+                json_extract = jinja_call(f"json_extract_scalar({json_column_name}, {json_path}, {normalized_json_path})")
         return f"{json_extract} as {column_name}"
 
     def generate_column_typing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
@@ -372,7 +371,7 @@ select
     {{ field }},
   {%- endfor %}
     _airbyte_emitted_at
-from {{ from_table }} as table_alias
+from {{ from_table }}
 {{ sql_table_comment }}
     """
         )
@@ -473,7 +472,6 @@ from {{ from_table }}
             hash_id=self.hash_id(),
             from_table=jinja_call(from_table),
             sql_table_comment=self.sql_table_comment(include_from_table=True),
-            table_alias=self.table_alias,
         )
         return sql
 
@@ -520,7 +518,6 @@ from {{ from_table }}
             sql_table_comment=self.sql_table_comment(include_from_table=True),
             cdc_active_row=cdc_active_row_pattern,
             cdc_updated_at_order=cdc_updated_order_pattern,
-            table_alias=self.table_alias,
         )
         return sql
 
@@ -587,7 +584,6 @@ from {{ from_table }}
             hash_id=self.hash_id(),
             from_table=jinja_call(from_table),
             sql_table_comment=self.sql_table_comment(include_from_table=True),
-            table_alias=self.table_alias,
         )
         return sql
 
@@ -663,14 +659,9 @@ from {{ from_table }}
         return result
 
     def hash_id(self) -> str:
-        # level = len(self.json_path)
-        # return self.name_transformer.normalize_column_name(f"_airbyte_{self.normalized_stream_name()}_{level}_hashid")
-        if self.parent:
-            if self.normalized_stream_name().lower() == self.parent.stream_name.lower():
-                level = len(self.json_path)
-                return self.name_transformer.normalize_column_name(f"_airbyte_{self.normalized_stream_name()}_{level}_hashid")
-
         return self.name_transformer.normalize_column_name(f"_airbyte_{self.normalized_stream_name()}_hashid")
+
+    # Nested Streams
 
     def parent_hash_id(self) -> str:
         if self.parent:
