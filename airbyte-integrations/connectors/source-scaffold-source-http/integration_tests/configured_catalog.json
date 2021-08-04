@@ -1,4 +1,3 @@
-// TODO: Construct a configured catalog that can be used for testing. Each stream's `json_schema` field should match the corresponding json schema file.
 {
   "streams": [
     {
