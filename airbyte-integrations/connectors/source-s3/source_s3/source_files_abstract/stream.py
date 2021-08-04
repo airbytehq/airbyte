@@ -31,8 +31,6 @@ from datetime import datetime
 from operator import itemgetter
 from traceback import format_exc
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
-import time
-import multiprocessing as mp
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import SyncMode
@@ -232,29 +230,8 @@ class FileStream(Stream, ABC):
             file_reader = self.fileformatparser_class(self._format)
             # time order isn't necessary here but we might as well use this method so we cache the list for later use
             for _, storagefile in self.time_ordered_storagefile_iterator():
-
-                # DEBUG
-                def schema_func(storagefile, file_reader):
-                    with storagefile.open(file_reader.is_binary) as f:
-                        this_schema = file_reader.get_inferred_schema(f)
-                    return this_schema
-
-                def process_queuer(func, q, *args, **kwargs):
-                    q.put(func(*args, **kwargs))
-
-                q_worker = mp.Queue()
-                proc = mp.Process(target=process_queuer, args=(schema_func, q_worker, storagefile, file_reader))
-                proc.start()
-                try:
-                    res = q_worker.get(timeout=20)
-                    this_schema = res
-                except mp.queues.Empty:
-                    raise TimeoutError()
-                finally:
-                    try:
-                        proc.terminate()
-                    except:
-                        pass
+                with storagefile.open(file_reader.is_binary) as f:
+                    this_schema = file_reader.get_inferred_schema(f)
 
                 if this_schema == master_schema:
                     continue  # exact schema match so go to next file
