@@ -305,8 +305,7 @@ class SourceBingAds(AbstractSource):
             if config["accounts"]["type"] == "subset":
                 config_account_ids = set(config["accounts"]["ids"])
                 if not config_account_ids.issubset(account_ids):
-                    not_found_accounts = config_account_ids.difference(account_ids)
-                    raise Exception(f"Accounts with id {not_found_accounts} not found.")
+                    raise Exception(f"Accounts with ids: {config_account_ids.difference(account_ids)} not found on this user.")
             elif config["accounts"]["type"] == "all":
                 if not account_ids:
                     raise Exception("You don't have accounts assigned to this user.")

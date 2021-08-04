@@ -105,8 +105,9 @@ class Client:
         _, exc, _ = sys.exc_info()
         error = self.asdict(exc.fault) if hasattr(exc, "fault") else exc
 
-        self.logger.info(str(error))
-        self.logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...")
+        self.logger.info(
+            f"Caught retryable error: {str(error)} after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+        )
 
     def request(self, **kwargs: Mapping[str, Any]) -> Mapping[str, Any]:
         return backoff.on_exception(
@@ -153,6 +154,7 @@ class Client:
     def asdict(cls, suds_object: sudsobject.Object) -> Mapping[str, Any]:
         """
         Converts nested Suds Object into serializable format.
+        Input sample:
         {
             obj[] =
                 {
@@ -162,7 +164,7 @@ class Client:
                     value = "str"
                 },
         }
-        =>
+        Output sample: =>
         {'obj': [{'value': 1}, {'value': 'str'}]}
         """
         result: Mapping[str, Any] = {}
