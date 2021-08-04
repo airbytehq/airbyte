@@ -2,6 +2,43 @@
 The [connector specification](../understanding-airbyte/airbyte-specification.md#spec) describes what inputs can be used to configure a connector. Like the rest of the Airbyte Protocol, it uses [JsonSchema](https://json-schema.org), but with some slight modifications.  
 
 
+### Secret obfuscation
+By default, any fields in a connector's specification are visible can be read in the UI. However, if you want to obfuscate fields in the UI and API (for example when working with a password), add the `airbyte_secret` annotation to your connector's `spec.json` e.g: 
+
+```
+"password": {
+  "type": "string",
+  "examples": ["hunter2"],
+  "airbyte_secret": true
+},
+```
+
+### Multi-line String inputs
+Sometimes when a user is inputting a string field into a connector, newlines need to be preserveed. For example, if we want a connector to use an RSA key which looks like this: 
+
+```
+---- BEGIN PRIVATE KEY ----
+123
+456
+789
+---- END PRIVATE KEY ----
+```
+
+we need to preserve the line-breaks. In other words, the string `---- BEGIN PRIVATE KEY ----123456789---- END PRIVATE KEY ----` is not equivalent to the one above since it loses linebreaks. 
+
+By default, string inputs in the UI can lose their linebreaks. In order to accept multi-line strings in the UI, annotate your string field with `multiline: true` e.g: 
+
+```
+"private_key": {
+  "type": "string",
+  "description": "RSA private key to use for SSH connection",
+  "airbyte_secret": true,
+  "multiline": true
+},
+```
+
+this will display a multi-line textbox in the UI. 
+
 ### Using `oneOf`s 
 In some cases, a connector needs to accept one out of many options. For example, a connector might need to know the compression codec of the file it will read, which will render in the Airbyte UI as a list of the available codecs. In JSONSchema, this can be expressed using the [oneOf](https://json-schema.org/understanding-json-schema/reference/combining.html#oneof) keyword.
 
