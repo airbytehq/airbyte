@@ -96,6 +96,6 @@ class IncrementalFileStreamS3(IncrementalFileStream):
         logger.info(msg + f" with prefix: '{prefix}' " if prefix != "" else msg)
 
         for blob in IncrementalFileStreamS3._list_bucket(
-            provider=provider, accept_key=lambda k: not k.endswith("/")  # filter out 'folders', we just want actual blobs
+            provider=provider, accept_key=lambda k: not k.endswith("/") and '_sql' not in k  # filter out 'folders', we just want actual blobs
         ):
             yield blob
