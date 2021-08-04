@@ -78,7 +78,7 @@ def setup_test_path(request):
 # @pytest.mark.parametrize("destination_type", [DestinationType.POSTGRES, DestinationType.POSTGRES])
 # Run tests on all destinations:
 # @pytest.mark.parametrize("destination_type", list(DestinationType))
-@pytest.mark.parametrize("destination_type", [DestinationType.BIGQUERY])
+@pytest.mark.parametrize("destination_type", [DestinationType.BIGQUERY, DestinationType.MYSQL])
 def test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
     print("Testing normalization")
     integration_type = destination_type.value
