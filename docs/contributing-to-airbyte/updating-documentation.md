@@ -6,7 +6,8 @@ Our documentation uses [GitBook](https://gitbook.com), and all the [Markdown](ht
 
 1. Modify docs using Git or the Github UI (All docs live in the `docs/` folder in the [Airbyte repository](github.com/airbytehq/airbyte))
 2. If you're adding new files, update `docs/SUMMARY.md`.
-3. Create a Pull Request
+3. If you're moving existing pages, add redirects in the [`.gitbook.yaml` file](https://github.com/airbytehq/airbyte/blob/master/.gitbook.yaml) in the Airbyte repository root directory
+4. Create a Pull Request
 
 ### Modify in the Github UI
 1. Directly edit the docs you want to edit [in the Github UI](https://docs.github.com/en/github/managing-files-in-a-repository/managing-files-on-github/editing-files-in-your-repository)
