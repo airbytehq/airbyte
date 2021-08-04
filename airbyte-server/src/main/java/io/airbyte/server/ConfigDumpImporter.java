@@ -95,10 +95,6 @@ public class ConfigDumpImporter {
     this.configRepository = configRepository;
   }
 
-  public ImportRead importData(String targetVersion, File archive) {
-    return importDataInternal(targetVersion, archive, Optional.empty());
-  }
-
   public ImportRead importDataWithSeed(String targetVersion, File archive, Path seedPath) {
     return importDataInternal(targetVersion, archive, Optional.of(seedPath));
   }
