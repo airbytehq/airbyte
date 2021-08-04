@@ -57,7 +57,6 @@
     * [Google Sheets](integrations/sources/google-sheets.md)
     * [Google Workspace Admin Reports](integrations/sources/google-workspace-admin-reports.md)
     * [Greenhouse](integrations/sources/greenhouse.md)
-    * [HTTP Request](integrations/sources/http-request.md)
     * [Harvest](integrations/sources/harvest.md)
     * [Hubspot](integrations/sources/hubspot.md)
     * [Instagram](integrations/sources/instagram.md)
