@@ -60,3 +60,33 @@
 {% macro mysql__type_timestamp() %}
     time
 {% endmacro %}
+
+
+{# timestamp with time zone  -------------------------------------------------     #}
+
+{%- macro type_timestamp_with_timezone() -%}
+  {{ adapter.dispatch('type_timestamp_with_timezone')() }}
+{%- endmacro -%}
+
+{% macro default__type_timestamp_with_timezone() %}
+    timestamp with time zone
+{% endmacro %}
+
+{% macro bigquery__type_timestamp_with_timezone() %}
+    timestamp
+{% endmacro %}
+
+{%- macro mysql__type_timestamp_with_timezone() -%}
+    char
+{%- endmacro -%}
+
+
+{# date  -------------------------------------------------     #}
+
+{%- macro type_date() -%}
+  {{ adapter.dispatch('type_date')() }}
+{%- endmacro -%}
+
+{% macro default__type_date() %}
+    date
+{% endmacro %}
