@@ -23,7 +23,7 @@
 #
 
 
-from abc import ABC, abstractproperty
+from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 from airbyte_cdk import AirbyteLogger
@@ -45,28 +45,32 @@ class BingAdsStream(Stream, ABC):
         self.client = client
         self.config = config
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def data_field(self) -> str:
         """
         Specifies root object name in a stream response
         """
         pass
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def service_name(self) -> str:
         """
         Specifies bing ads service name for a current stream
         """
         pass
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def operation_name(self) -> str:
         """
         Specifies operation name to use for a current stream
         """
         pass
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def additional_fields(self) -> Optional[str]:
         """
         Specifies which additional fields to fetch for a current stream.
