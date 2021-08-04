@@ -16,6 +16,15 @@ class CloudWorkspacesService extends AirbyteRequestService {
     return workspaces;
   }
 
+  public async listByUser(userId: string): Promise<CloudWorkspace[]> {
+    const { workspaces } = await this.fetch<{ workspaces: CloudWorkspace[] }>(
+      `/web_backend/permissions/list_workspaces_by_user`,
+      { userId }
+    );
+
+    return workspaces;
+  }
+
   public async get(workspaceId: string): Promise<CloudWorkspace> {
     const cloudWorkspace = await this.fetch<CloudWorkspace>(`${this.url}/get`, {
       workspaceId,
@@ -26,7 +35,7 @@ class CloudWorkspacesService extends AirbyteRequestService {
 
   public async create(cloudWorkspaceCreatePayload: {
     name: string;
-    billingUsedId: string;
+    billingUserId: string;
     workspaceId: string;
   }): Promise<CloudWorkspace> {
     return await this.fetch<CloudWorkspace>(

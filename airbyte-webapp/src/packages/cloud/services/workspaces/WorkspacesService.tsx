@@ -35,8 +35,9 @@ function useGetWorkspaceService() {
 
 export function useListWorkspaces() {
   const service = useGetWorkspaceService();
+  const user = useCurrentUser();
 
-  return useQuery("workspaces", service.list.bind(service), {
+  return useQuery("workspaces", () => service.listByUser(user.userId), {
     suspense: true,
   });
 }
@@ -46,12 +47,15 @@ export function useCreateWorkspace() {
   const service = useGetWorkspaceService();
 
   return useMutation(
-    async (payload: { name: string; billingUsedId: string }) => {
+    async (payload: { name: string; billingUserId: string }) => {
       // TODO: temp workaround for https://github.com/airbytehq/airbyte/issues/5191
       const workspaceService = new WorkspaceService(requestAuthMiddleware);
       const workspace = await workspaceService.create({ name: payload.name });
 
-      return service.create({ ...payload, workspaceId: workspace.workspaceId });
+      return service.create({
+        ...payload,
+        workspaceId: workspace!.workspaceId,
+      });
     }
   ).mutate;
 }
@@ -75,7 +79,7 @@ export const WorkspaceServiceProvider: React.FC = ({ children }) => {
       createWorkspace: async (name: string) => {
         await createWorkspace({
           name,
-          billingUsedId: user.userId,
+          billingUserId: user.userId,
         });
       },
       selectWorkspace: setCurrentWorkspaceId,
