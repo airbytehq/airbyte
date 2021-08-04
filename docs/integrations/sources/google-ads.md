@@ -51,6 +51,7 @@ Google Ads Account with an approved Developer Token \(note: In order to get API 
 * refresh_token
 * start_date
 * customer_id
+* login_customer_id (you can find more information about this field in [Google Ads docs](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid))
 
 ### Setup guide
 
@@ -86,6 +87,7 @@ The Google Ads Query Language can query the Google Ads API. Check out [Google Ad
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| `0.1.5` | 2021-08-03 | [#5159](https://github.com/airbytehq/airbyte/pull/5159) | Add field `login_customer_id` to spec |
 | `0.1.4` | 2021-07-28 | [#4962](https://github.com/airbytehq/airbyte/pull/4962) | Support new Report streams |
 | `0.1.3` | 2021-07-23 | [#4788](https://github.com/airbytehq/airbyte/pull/4788) | Support main streams, fix bug with exception `DATE_RANGE_TOO_NARROW` for incremental streams |
 | `0.1.2` | 2021-07-06 | [#4539](https://github.com/airbytehq/airbyte/pull/4539) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
