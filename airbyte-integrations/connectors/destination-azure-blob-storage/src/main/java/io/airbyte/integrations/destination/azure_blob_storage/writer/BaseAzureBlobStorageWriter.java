@@ -47,67 +47,14 @@ public abstract class BaseAzureBlobStorageWriter implements AzureBlobStorageWrit
   protected final AppendBlobClient appendBlobClient;
   protected final AirbyteStream stream;
   protected final DestinationSyncMode syncMode;
-  // protected final String outputPrefix;
 
   protected BaseAzureBlobStorageWriter(AzureBlobStorageDestinationConfig config,
-                                       AppendBlobClient appendBlobClient,
-                                       ConfiguredAirbyteStream configuredStream) {
+      AppendBlobClient appendBlobClient,
+      ConfiguredAirbyteStream configuredStream) {
     this.config = config;
     this.appendBlobClient = appendBlobClient;
     this.stream = configuredStream.getStream();
     this.syncMode = configuredStream.getDestinationSyncMode();
-  }
-
-  /**
-   * <li>1. Create bucket if necessary.</li>
-   * <li>2. Under OVERWRITE mode, delete all objects with the output prefix.</li>
-   */
-  @Override
-  public void initialize() {
-    // TODO configured stream contains "stream" and "sync_mode" and we need to use it for client
-    // creation
-    // String bucket = config.getBucketName();
-    // if (!s3Client.doesBucketExistV2(bucket)) {
-    // LOGGER.info("Bucket {} does not exist; creating...", bucket);
-    // s3Client.createBucket(bucket);
-    // LOGGER.info("Bucket {} has been created.", bucket);
-    // }
-    //
-    // if (syncMode == DestinationSyncMode.OVERWRITE) {
-    // LOGGER.info("Overwrite mode");
-    // List<KeyVersion> keysToDelete = new LinkedList<>();
-    // List<S3ObjectSummary> objects = s3Client.listObjects(bucket, outputPrefix)
-    // .getObjectSummaries();
-    // for (S3ObjectSummary object : objects) {
-    // keysToDelete.add(new KeyVersion(object.getKey()));
-    // }
-    //
-    // if (keysToDelete.size() > 0) {
-    // LOGGER.info("Purging non-empty output path for stream '{}' under OVERWRITE mode...",
-    // stream.getName());
-    // DeleteObjectsResult result = s3Client
-    // .deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));
-    // LOGGER.info("Deleted {} file(s) for stream '{}'.", result.getDeletedObjects().size(),
-    // stream.getName());
-    // }
-    // }
-
-    // TODO to check how to handle exception example
-
-    // try{
-    // containerClient1.create();
-    // containerClient2.create();
-    // } catch (BlobStorageException e){
-    // if(BlobErrorCode.CONTAINER_ALREADY_EXISTS.equals(e.getErrorCode())){
-    // // do nothing. This might happens of container was created from other thread after we
-    // // checked if it exists
-    // System.out.println("AAAAAAAAAAAAAAAaa");
-    // System.out.println(e.getMessage());
-    // System.out.println("BBBBBBBBBBBBB");
-    // } else {
-    // throw new BlobStorageException(e.getMessage(), e.getResponse(), e.getErrorCode());
-    // }
-
   }
 
   /**
@@ -139,16 +86,5 @@ public abstract class BaseAzureBlobStorageWriter implements AzureBlobStorageWrit
   protected void closeWhenFail() throws IOException {
     // Do nothing by default
   }
-
-  // // Filename: <upload-date>_<upload-millis>_0.<format-extension>
-  // public static String getOutputFilename(Timestamp timestamp, S3Format format) {
-  // DateFormat formatter = new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
-  // formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-  // return String.format(
-  // "%s_%d_0.%s",
-  // formatter.format(timestamp),
-  // timestamp.getTime(),
-  // format.getFileExtension());
-  // }
 
 }

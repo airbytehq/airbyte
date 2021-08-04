@@ -35,11 +35,6 @@ import java.util.UUID;
 public interface AzureBlobStorageWriter {
 
   /**
-   * Prepare an AzureBlobStorage writer for the stream.
-   */
-  void initialize() throws IOException;
-
-  /**
    * Write an Airbyte record message to an AzureBlobStorage object.
    */
   void write(UUID id, AirbyteRecordMessage recordMessage) throws IOException;
