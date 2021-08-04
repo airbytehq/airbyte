@@ -31,7 +31,7 @@ from datetime import datetime
 from operator import itemgetter
 from traceback import format_exc
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
-import dill
+import time
 import multiprocessing as mp
 
 from airbyte_cdk.logger import AirbyteLogger
@@ -240,10 +240,10 @@ class FileStream(Stream, ABC):
                     return this_schema
 
                 def process_queuer(func, q, *args, **kwargs):
-                    q.put(dill.loads(func)(*args, **kwargs))
+                    q.put(func(*args, **kwargs))
 
                 q_worker = mp.Queue()
-                proc = mp.Process(target=process_queuer, args=(dill.dumps(schema_func), q_worker, storagefile, file_reader))
+                proc = mp.Process(target=process_queuer, args=(schema_func, q_worker, storagefile, file_reader))
                 proc.start()
                 try:
                     res = q_worker.get(timeout=20)
