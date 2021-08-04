@@ -61,10 +61,10 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
   private AirbyteMessage lastStateMessage = null;
 
   public AzureBlobStorageConsumer(
-                                  AzureBlobStorageDestinationConfig azureBlobStorageDestinationConfig,
-                                  ConfiguredAirbyteCatalog configuredCatalog,
-                                  AzureBlobStorageWriterFactory writerFactory,
-                                  Consumer<AirbyteMessage> outputRecordCollector) {
+      AzureBlobStorageDestinationConfig azureBlobStorageDestinationConfig,
+      ConfiguredAirbyteCatalog configuredCatalog,
+      AzureBlobStorageWriterFactory writerFactory,
+      Consumer<AirbyteMessage> outputRecordCollector) {
     this.azureBlobStorageDestinationConfig = azureBlobStorageDestinationConfig;
     this.configuredCatalog = configuredCatalog;
     this.writerFactory = writerFactory;
@@ -87,14 +87,6 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
 
     Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
-    // TODO configured stream contains "stream" and "sync_mode" and we need to use it for client
-    // creation
-
-    // TODO do we need to created buckets here?????????? to check
-    // TODO Add buckets\schemas creation here if absent !!!!!!!!!!!
-    // TODO Add buckets\schemas creation here if absent !!!!!!!!!!!
-    // TODO Add buckets\schemas creation here if absent !!!!!!!!!!!
-
     for (ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
 
       AppendBlobClient appendBlobClient = specializedBlobClientBuilder
@@ -108,11 +100,19 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
       }
 
       // create a storage container if absent (aka Table is SQL BD)
-      if (!appendBlobClient.exists()) {
-        appendBlobClient.create(configuredStream.getSyncMode().equals(SyncMode.FULL_REFRESH));
-        LOGGER.debug("blobContainerClient created");
+      LOGGER.info("Sync mode: " + configuredStream.getSyncMode());
+
+      if (configuredStream.getSyncMode().equals(SyncMode.FULL_REFRESH)) {
+        // full refresh sync. Create blob and override if any
+        appendBlobClient.create(true);
       } else {
-        LOGGER.info("blobContainerClient already exists");
+        // incremental sync. Create new container only if still absent
+        if (!appendBlobClient.exists()) {
+          appendBlobClient.create(false);
+          LOGGER.info(appendBlobClient.getBlobName() + " blob has been created");
+        } else {
+          LOGGER.info(appendBlobClient.getBlobName() + " already exists");
+        }
       }
 
       AzureBlobStorageWriter writer = writerFactory
@@ -155,10 +155,8 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
       streamNameAndNamespaceToWriters.get(pair).write(UUID.randomUUID(), recordMessage);
 
     } catch (Exception e) {
-      LOGGER.error("!!!! Failed on write in acceptTracked. Exception:" + e);
-      LOGGER.error(
-          "!!!! Failed on write in acceptTracked. streamNameAndNamespaceToWriters.get(pair):"
-              + streamNameAndNamespaceToWriters.get(pair));
+      LOGGER.error(String.format("Failed to write messagefor stream %s, details: %s",
+          streamNameAndNamespaceToWriters.get(pair), e.getMessage()));
       throw new RuntimeException(e);
     }
   }

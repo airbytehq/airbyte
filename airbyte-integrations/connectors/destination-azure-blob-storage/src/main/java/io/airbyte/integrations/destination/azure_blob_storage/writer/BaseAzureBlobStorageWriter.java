@@ -56,7 +56,6 @@ public abstract class BaseAzureBlobStorageWriter implements AzureBlobStorageWrit
     this.appendBlobClient = appendBlobClient;
     this.stream = configuredStream.getStream();
     this.syncMode = configuredStream.getDestinationSyncMode();
-    // this.outputPrefix = S3OutputPathHelper.getOutputPrefix(config.getBucketPath(), stream);
   }
 
   /**

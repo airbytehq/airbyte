@@ -24,6 +24,12 @@
 
 package io.airbyte.integrations.destination.azure_blob_storage;
 
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.BlobServiceClient;
+import com.azure.storage.blob.BlobServiceClientBuilder;
+import com.azure.storage.blob.specialized.AppendBlobClient;
+import com.azure.storage.blob.specialized.SpecializedBlobClientBuilder;
+import com.azure.storage.common.StorageSharedKeyCredential;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
@@ -31,6 +37,8 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +52,10 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
   protected final String secretFilePath = "secrets/config.json";
   protected final AzureBlobStorageFormat outputFormat;
   protected JsonNode configJson;
-  protected AzureBlobStorageDestinationConfig config;
+  protected AzureBlobStorageDestinationConfig azureBlobStorageDestinationConfig;
+  protected SpecializedBlobClientBuilder specializedBlobClientBuilder;
+  protected StorageSharedKeyCredential credential;
+//  private AppendBlobClient appendBlobClient;
 
   protected AzureBlobStorageDestinationAcceptanceTest(AzureBlobStorageFormat outputFormat) {
     this.outputFormat = outputFormat;
@@ -74,31 +85,30 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
         .build());
   }
 
-  // /**
-  // * Helper method to retrieve all synced objects inside the configured bucket path.
-  // */
-  // protected List<S3ObjectSummary> getAllSyncedObjects(String streamName, String namespace) {
-  // String outputPrefix = S3OutputPathHelper
-  // .getOutputPrefix(config.getBucketPath(), namespace, streamName);
-  // List<S3ObjectSummary> objectSummaries = s3Client
-  // .listObjects(config.getBucketName(), outputPrefix)
-  // .getObjectSummaries()
-  // .stream()
-  // .sorted(Comparator.comparingLong(o -> o.getLastModified().getTime()))
-  // .collect(Collectors.toList());
-  // LOGGER.info(
-  // "All objects: {}",
-  // objectSummaries.stream().map(o -> String.format("%s/%s", o.getBucketName(),
-  // o.getKey())).collect(Collectors.toList()));
-  // return objectSummaries;
-  // }
+  /**
+   * Helper method to retrieve all synced objects inside the configured bucket path.
+   */
+  protected String getAllSyncedObjects(String streamName) {
+//    this.appendBlobClient = specializedBlobClientBuilder
+    AppendBlobClient appendBlobClient = specializedBlobClientBuilder
+        .blobName(streamName)
+        .buildAppendBlobClient();
+
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    appendBlobClient.download(outputStream);
+    String result = new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
+
+    LOGGER.info("All objects: " + result);
+    return result;
+
+  }
 
   protected abstract JsonNode getFormatConfig();
 
   /**
    * This method does the following:
-   * <li>Construct the S3 destination config.</li>
-   * <li>Construct the S3 client.</li>
+   * <li>Construct the Azure Blob destination config.</li>
+   * <li>Construct the Azure Blob client.</li>
    */
   @Override
   protected void setup(TestDestinationEnv testEnv) {
@@ -111,68 +121,64 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
         .put("azure_blob_storage_endpoint_domain_name",
             baseConfigJson.get("azure_blob_storage_endpoint_domain_name"))
         .put("azure_blob_storage_container_name",
-            baseConfigJson.get("azure_blob_storage_container_name"))
+            baseConfigJson.get("azure_blob_storage_container_name").asText()
+                + System.currentTimeMillis())
         .put("azure_blob_storage_blob_name",
             baseConfigJson.get("azure_blob_storage_blob_name"))
         .put("format", getFormatConfig())
         .build());
-    // // Set a random s3 bucket path for each integration test
-    // JsonNode configJson = Jsons.clone(baseConfigJson);
-    // String testBucketPath = String.format(
-    // "%s_test_%s",
-    // outputFormat.name().toLowerCase(Locale.ROOT),
-    // RandomStringUtils.randomAlphanumeric(5));
-    // ((ObjectNode) configJson)
-    // .put("s3_bucket_path", testBucketPath)
-    // .set("format", getFormatConfig());
-    // this.configJson = configJson;
-    // this.config = S3DestinationConfig.getS3DestinationConfig(configJson);
-    // LOGGER.info("Test full path: {}/{}", config.getBucketName(), config.getBucketPath());
-    //
-    // AWSCredentials awsCreds = new BasicAWSCredentials(config.getAccessKeyId(),
-    // config.getSecretAccessKey());
-    // String endpoint = config.getEndpoint();
-    //
-    // if (endpoint.isEmpty()) {
-    // this.s3Client = AmazonS3ClientBuilder.standard()
-    // .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-    // .withRegion(config.getBucketRegion())
-    // .build();
-    // } else {
-    // ClientConfiguration clientConfiguration = new ClientConfiguration();
-    // clientConfiguration.setSignerOverride("AWSS3V4SignerType");
-    //
-    // this.s3Client = AmazonS3ClientBuilder
-    // .standard()
-    // .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint,
-    // config.getBucketRegion()))
-    // .withPathStyleAccessEnabled(true)
-    // .withClientConfiguration(clientConfiguration)
-    // .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-    // .build();
-    // }
+
+    this.azureBlobStorageDestinationConfig = AzureBlobStorageDestinationConfig
+        .getAzureBlobStorageConfig(configJson);
+
+    this.credential = new StorageSharedKeyCredential(
+        azureBlobStorageDestinationConfig.getAccountName(),
+        azureBlobStorageDestinationConfig.getAccountKey());
+
+    this.specializedBlobClientBuilder = new SpecializedBlobClientBuilder()
+        .endpoint(azureBlobStorageDestinationConfig.getEndpointUrl())
+        .credential(credential)
+        // TODO !!!!!!!!!!!!!!!!!!!!!! make container name unique fo testing
+        .containerName(
+            azureBlobStorageDestinationConfig.getContainerName());// Like user\schema in DB
+
   }
 
   /**
-   * Remove all the S3 output from the tests.
+   * Remove all the Container output from the tests.
    */
   @Override
   protected void tearDown(TestDestinationEnv testEnv) {
-    // List<KeyVersion> keysToDelete = new LinkedList<>();
-    // List<S3ObjectSummary> objects = s3Client
-    // .listObjects(config.getBucketName(), config.getBucketPath())
-    // .getObjectSummaries();
-    // for (S3ObjectSummary object : objects) {
-    // keysToDelete.add(new KeyVersion(object.getKey()));
-    // }
-    //
-    // if (keysToDelete.size() > 0) {
-    // LOGGER.info("Tearing down test bucket path: {}/{}", config.getBucketName(),
-    // config.getBucketPath());
-    // DeleteObjectsResult result = s3Client
-    // .deleteObjects(new DeleteObjectsRequest(config.getBucketName()).withKeys(keysToDelete));
-    // LOGGER.info("Deleted {} file(s).", result.getDeletedObjects().size());
-    // }
+
+//    // TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//    // TODO Add teardown logic
+//    // TODO make unique
+
+    BlobServiceClient storageClient =
+        new BlobServiceClientBuilder()
+            .endpoint(azureBlobStorageDestinationConfig.getEndpointUrl())
+            .credential(credential)
+            .buildClient();
+
+    BlobContainerClient blobContainerClient = storageClient
+        .getBlobContainerClient(azureBlobStorageDestinationConfig.getContainerName());
+
+    if (blobContainerClient.exists()) {
+      LOGGER.info("Deleting test env: " + azureBlobStorageDestinationConfig.getContainerName());
+      blobContainerClient.delete();
+    }
+
+    // dlete all containers
+//    storageClient
+//        .listBlobContainers()
+//        .forEach(
+//            c -> {
+//              BlobContainerClient blobContainerClient =
+//                  storageClient.getBlobContainerClient(c.getName());
+//              System.out.println("Deleting: " + c.getName());
+//              blobContainerClient.delete();
+//            });
+
   }
 
 }

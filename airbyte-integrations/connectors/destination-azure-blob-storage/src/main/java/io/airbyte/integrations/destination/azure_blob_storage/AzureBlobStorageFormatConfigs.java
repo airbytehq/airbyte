@@ -43,18 +43,18 @@ public class AzureBlobStorageFormatConfigs {
 
     switch (formatType) {
       case AVRO -> {
-        // return new S3AvroFormatConfig(formatConfig);
+        // return new AzureBlobStorageAvroFormatConfig(formatConfig);
         throw new RuntimeException("NOT IMPLEMENTED YET output format: " + Jsons.serialize(config));
       }
       case CSV -> {
-        // return new S3CsvFormatConfig(formatConfig);
+        // return new AzureBlobStorageCsvFormatConfig(formatConfig);
         throw new RuntimeException("NOT IMPLEMENTED YET output format: " + Jsons.serialize(config));
       }
       case JSONL -> {
         return new AzureBlobStorageJsonlFormatConfig();
       }
       case PARQUET -> {
-        // return new S3ParquetFormatConfig(formatConfig);
+        // return new AzureBlobStorageParquetFormatConfig(formatConfig);
         throw new RuntimeException("NOT IMPLEMENTED YET output format: " + Jsons.serialize(config));
       }
       default -> {

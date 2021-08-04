@@ -62,7 +62,6 @@ public class AzureBlobStorageJsonlWriter extends BaseAzureBlobStorageWriter impl
                                      Timestamp uploadTimestamp) { // TODO if timestamp is needed here????????
     super(config, appendBlobClient, configuredStream);
     // at this moment we already receive appendBlobClient initialized
-
     this.blobOutputStream = appendBlobClient.getBlobOutputStream();
     this.printWriter = new PrintWriter(blobOutputStream, true, StandardCharsets.UTF_8);
   }
