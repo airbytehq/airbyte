@@ -2,15 +2,20 @@ import { useEffect, useMemo } from "react";
 
 import { RequestMiddleware } from "core/request/RequestMiddleware";
 import { RequestAuthMiddleware } from "packages/cloud/lib/auth/RequestAuthMiddleware";
-import { jwtProvider } from "packages/cloud/services/auth/JwtProvider";
 import { useRequestMiddlewareProvider } from "core/request/useRequestMiddlewareProvider";
+import firebaseApp from "packages/cloud/config/firebase";
 
 /**
  * This hook is responsible for registering RequestMiddlewares used in BaseRequest
  */
 export const useDefaultRequestMiddlewares = (): RequestMiddleware[] => {
   const requestAuthMiddleware = useMemo(
-    () => RequestAuthMiddleware(jwtProvider),
+    () =>
+      RequestAuthMiddleware({
+        getValue(): string | Promise<string> {
+          return firebaseApp.auth().currentUser?.getIdToken() ?? "";
+        },
+      }),
     []
   );
 

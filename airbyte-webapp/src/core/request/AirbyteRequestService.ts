@@ -32,10 +32,11 @@ abstract class AirbyteRequestService {
       options
     );
 
-    const preparedOptions: RequestInit = this.middlewares.reduce(
-      (acc, v) => v(acc),
-      requestOptions
-    );
+    let preparedOptions: RequestInit = requestOptions;
+
+    for (const middleware of this.middlewares) {
+      preparedOptions = await middleware(preparedOptions);
+    }
     const response = await fetch(path, preparedOptions);
 
     return parseResponse(response);

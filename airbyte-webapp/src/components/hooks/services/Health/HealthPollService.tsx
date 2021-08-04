@@ -9,7 +9,7 @@ const HEALTHCHECK_MAX_COUNT = 3;
 
 function useApiHealthPoll(
   pollPeriod: number,
-  healthService = new HealthService()
+  healthService: HealthService
 ): void {
   const [count, setCount] = useState(0);
   const { formatMessage } = useIntl();

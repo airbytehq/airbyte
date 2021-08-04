@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React, { Suspense, useMemo } from "react";
 import {
   BrowserRouter as Router,
   Redirect,
@@ -25,7 +25,7 @@ import {
   WorkspaceServiceProvider,
 } from "./services/workspaces/WorkspacesService";
 import { HealthService } from "core/health/HealthService";
-import { useDefaultRequestMiddlewares } from "./services/workspaces/useDefaultRequestMiddlewares";
+import { useDefaultRequestMiddlewares } from "./services/useDefaultRequestMiddlewares";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -39,11 +39,8 @@ export enum Routes {
   SourceNew = "/new-source",
   DestinationNew = "/new-destination",
   Settings = "/settings",
-  Configuration = "/configuration",
-  Notifications = "/notifications",
   Metrics = "/metrics",
   Account = "/account",
-  Workspaces = "/workspaces",
   Signup = "/signup",
   Login = "/login",
   ResetPassword = "/reset-password",
@@ -70,9 +67,6 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
       <Route path={Routes.Settings}>
         <SettingsPage />
       </Route>
-      <Route path={Routes.Workspaces}>
-        <WorkspacesPage />
-      </Route>
       <Route exact path={Routes.Root}>
         <SourcesPage />
       </Route>
@@ -83,8 +77,11 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
 
 const MainViewRoutes = () => {
   const middlewares = useDefaultRequestMiddlewares();
+  const healthService = useMemo(() => new HealthService(middlewares), [
+    middlewares,
+  ]);
 
-  useApiHealthPoll(config.healthCheckInterval, new HealthService(middlewares));
+  useApiHealthPoll(config.healthCheckInterval, healthService);
   const { currentWorkspaceId } = useWorkspaceService();
 
   return (

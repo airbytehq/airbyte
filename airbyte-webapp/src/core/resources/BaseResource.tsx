@@ -17,10 +17,15 @@ import { getMiddlewares } from "core/request/useRequestMiddlewareProvider";
 
 // TODO: rename to crud resource after upgrade to rest-hook 5.0.0
 export default abstract class BaseResource extends Resource {
-  static useFetchInit = (init: RequestInit): RequestInit => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    return getMiddlewares().reduce((acc, v) => v(acc), init);
-  };
+  static async useFetchInit(init: RequestInit): Promise<RequestInit> {
+    let preparedOptions: RequestInit = init;
+
+    for (const middleware of getMiddlewares()) {
+      preparedOptions = await middleware(preparedOptions);
+    }
+
+    return preparedOptions;
+  }
 
   /** Perform network request and resolve with HTTP Response */
   static async fetchResponse(
@@ -41,7 +46,7 @@ export default abstract class BaseResource extends Resource {
       options.body = JSON.stringify(body);
     }
 
-    const op = this.useFetchInit(options);
+    const op = await this.useFetchInit(options);
     return fetch(url, op);
   }
 

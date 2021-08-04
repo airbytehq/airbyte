@@ -4,8 +4,8 @@ import { useMutation, useQuery } from "react-query";
 import { CloudWorkspacesService } from "packages/cloud/lib/domain/cloudWorkspaces/CloudWorkspacesService";
 import { api } from "packages/cloud/config/api";
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
-import { useDefaultRequestMiddlewares } from "./useDefaultRequestMiddlewares";
-import { WorkspaceService } from "../../lib/domain/cloudWorkspaces/WorkspaceService";
+import { useDefaultRequestMiddlewares } from "packages/cloud/services/useDefaultRequestMiddlewares";
+import { WorkspaceService } from "packages/cloud/lib/domain/cloudWorkspaces/WorkspaceService";
 
 type Context = {
   currentWorkspaceId?: string;

@@ -23,6 +23,7 @@ import { useWorkspace } from "components/hooks/services/useWorkspace";
 import { useNotificationService } from "components/hooks/services/Notification/NotificationService";
 import { useApiHealthPoll } from "components/hooks/services/Health";
 import { WithPageAnalytics } from "./withPageAnalytics";
+import { HealthService } from "core/health/HealthService";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -102,8 +103,10 @@ function useDemo() {
   useNotificationService(config.isDemo ? demoNotification : undefined);
 }
 
+const healthService = new HealthService();
+
 export const Routing: React.FC = () => {
-  useApiHealthPoll(config.healthCheckInterval);
+  useApiHealthPoll(config.healthCheckInterval, healthService);
   useDemo();
 
   const { workspace } = useWorkspace();

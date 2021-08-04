@@ -13,17 +13,21 @@ import "packages/cloud/config/firebase";
 
 import { Routing } from "./routes";
 import LoadingPage from "components/LoadingPage";
-// import ApiErrorBoundary from "components/ApiErrorBoundary";
+import ApiErrorBoundary from "components/ApiErrorBoundary";
 import NotificationServiceProvider from "components/hooks/services/Notification";
 import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
-import { AuthenticationProvider } from "./services/auth/AuthService";
+import {
+  AuthenticationProvider,
+  useAuthService,
+} from "./services/auth/AuthService";
 
 const queryClient = new QueryClient();
 
 const messages = Object.assign({}, en, cloudLocales);
 
-const customerIdProvider = () => {
-  return "";
+const useCustomerIdProvider = () => {
+  const { user } = useAuthService();
+  return user?.userId ?? "";
 };
 
 const App: React.FC = () => {
@@ -35,15 +39,17 @@ const App: React.FC = () => {
           <QueryClientProvider client={queryClient}>
             <CacheProvider>
               <Suspense fallback={<LoadingPage />}>
-                <NotificationServiceProvider>
-                  <AuthenticationProvider>
-                    <AnalyticsInitializer
-                      customerIdProvider={customerIdProvider}
-                    >
-                      <Routing />
-                    </AnalyticsInitializer>
-                  </AuthenticationProvider>
-                </NotificationServiceProvider>
+                <ApiErrorBoundary>
+                  <NotificationServiceProvider>
+                    <AuthenticationProvider>
+                      <AnalyticsInitializer
+                        customerIdProvider={useCustomerIdProvider}
+                      >
+                        <Routing />
+                      </AnalyticsInitializer>
+                    </AuthenticationProvider>
+                  </NotificationServiceProvider>
+                </ApiErrorBoundary>
               </Suspense>
             </CacheProvider>
           </QueryClientProvider>
