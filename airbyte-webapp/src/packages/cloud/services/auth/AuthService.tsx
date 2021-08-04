@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useMemo } from "react";
 
 import { User } from "./types";
-import { GoogleAuthService } from "./GoogleAuthService";
+import { GoogleAuthService } from "packages/cloud/lib/auth/GoogleAuthService";
 import useTypesafeReducer from "components/hooks/useTypesafeReducer";
 import {
   actions,
@@ -10,6 +10,10 @@ import {
   initialState,
 } from "./reducer";
 import { firebaseApp } from "packages/cloud/config/firebase";
+import { UserService } from "packages/cloud/lib/domain/users";
+import { RequestAuthMiddleware } from "packages/cloud/lib/auth/RequestAuthMiddleware";
+import { AuthProviders } from "packages/cloud/lib/auth/AuthProviders";
+import { api } from "packages/cloud/config/api";
 
 type Context = {
   user: User | null;
@@ -31,7 +35,21 @@ const defaultState: Context = {
 
 export const AuthContext = React.createContext<Context>(defaultState);
 
+// TODO: place token into right place
+export let token = "";
+
+// TODO: add proper DI service
 const authService = new GoogleAuthService();
+const userService = new UserService(
+  [
+    RequestAuthMiddleware({
+      getValue(): string {
+        return token;
+      },
+    }),
+  ],
+  api.cloud
+);
 
 export const AuthenticationProvider: React.FC = ({ children }) => {
   const [state, { loggedIn, authInited }] = useTypesafeReducer<
@@ -42,12 +60,27 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
   useEffect(() => {
     firebaseApp.auth().onAuthStateChanged(async (currentUser) => {
       if (state.currentUser === null && currentUser) {
-        const token = await currentUser.getIdToken();
+        token = await currentUser.getIdToken();
 
-        // TODO: place token into right place
-        loggedIn({
-          token,
-        });
+        console.log(currentUser);
+
+        try {
+          const user = await userService.getByAuthId(
+            currentUser.uid,
+            AuthProviders.GoogleIdentityPlatform
+          );
+          loggedIn(user);
+        } catch (err) {
+          if (currentUser.email) {
+            const user = await userService.create({
+              authProvider: AuthProviders.GoogleIdentityPlatform,
+              authUserId: currentUser.uid,
+              email: currentUser.email,
+              name: currentUser.email,
+            });
+            loggedIn(user);
+          }
+        }
       } else {
         authInited();
       }
@@ -62,8 +95,9 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         email: string;
         password: string;
       }): Promise<User | null> {
-        const user = await authService.login(values.email, values.password);
-        return user;
+        await authService.login(values.email, values.password);
+
+        return null;
       },
       async logout(): Promise<void> {
         await authService.signOut();
@@ -72,10 +106,15 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         email: string;
         password: string;
       }): Promise<User | null> {
-        const user = await authService.signUp(form.email, form.password);
-        await Promise.resolve(() => console.log("add extra fields"));
+        await authService.signUp(form.email, form.password);
+        // const user = await userService.create({
+        //   authProvider: AuthProviders.GoogleIdentityPlatform,
+        //   authUserId: fbUser.user!.uid,
+        //   email: form.email,
+        //   name: form.email,
+        // });
 
-        return user;
+        return null;
       },
       user: state.currentUser,
     }),
@@ -94,4 +133,13 @@ export const useAuthService = (): Context => {
   }
 
   return authService;
+};
+
+export const useCurrentUser = (): User => {
+  const { user } = useAuthService();
+  if (!user) {
+    throw new Error("useCurrentUser must be used only within authorised flow");
+  }
+
+  return user;
 };

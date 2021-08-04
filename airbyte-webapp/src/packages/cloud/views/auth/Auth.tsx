@@ -10,7 +10,7 @@ import News from "./components/News";
 import { LoginPage } from "./LoginPage";
 import { SignupPage } from "./SignupPage";
 import { ResetPasswordPage } from "./ResetPasswordPage";
-import { Routes } from "../../routes";
+import { Routes } from "packages/cloud/routes";
 
 const Content = styled.div`
   width: 100%;

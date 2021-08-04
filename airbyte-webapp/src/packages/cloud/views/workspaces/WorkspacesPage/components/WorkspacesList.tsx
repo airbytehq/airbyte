@@ -3,6 +3,7 @@ import styled from "styled-components";
 
 import WorkspaceItem from "./WorkspaceItem";
 import WorkspacesControl from "./WorkspacesControl";
+import { useListWorkspaces } from "packages/cloud/services/workspaces/WorkspacesService";
 
 const Content = styled.div`
   width: 100%;
@@ -11,11 +12,11 @@ const Content = styled.div`
 `;
 
 const WorkspacesList: React.FC = () => {
-  //TODO: add real data
-  const workspaces = [{ name: "Test", workspaceId: "test" }];
+  const { data: workspaces } = useListWorkspaces();
+
   return (
     <Content>
-      {workspaces.length
+      {workspaces?.length
         ? workspaces.map((workspace) => (
             <WorkspaceItem key={workspace.workspaceId}>
               {workspace.name}

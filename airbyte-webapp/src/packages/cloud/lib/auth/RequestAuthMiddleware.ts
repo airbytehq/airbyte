@@ -1,6 +1,6 @@
 import merge from "lodash.merge";
 
-interface JwtProvider {
+export interface JwtProvider {
   getValue(): string;
 }
 

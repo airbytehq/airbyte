@@ -1,1 +1,4 @@
-export interface CloudWorkspace {}
+export interface CloudWorkspace {
+  name: string;
+  workspaceId: string;
+}

@@ -19,6 +19,14 @@ import { useApiHealthPoll } from "components/hooks/services/Health";
 import { Auth } from "./views/auth";
 import { useAuthService } from "./services/auth/AuthService";
 
+import {
+  useDefaultRequestMiddlewares,
+  useGetWorkspace,
+  useWorkspaceService,
+  WorkspaceServiceProvider,
+} from "./services/workspaces/WorkspacesService";
+import { HealthService } from "core/health/HealthService";
+
 export enum Routes {
   Preferences = "/preferences",
   Onboarding = "/onboarding",
@@ -42,35 +50,54 @@ export enum Routes {
   Root = "/",
 }
 
-const MainViewRoutes = () => {
-  useApiHealthPoll(config.healthCheckInterval);
+const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
+  currentWorkspaceId,
+}) => {
+  useGetWorkspace(currentWorkspaceId);
 
   return (
-    <MainView>
-      <Suspense fallback={<LoadingPage />}>
-        <Switch>
-          <Route path={Routes.Destination}>
-            <DestinationPage />
-          </Route>
-          <Route path={Routes.Source}>
-            <SourcesPage />
-          </Route>
-          <Route path={Routes.Connections}>
-            <ConnectionPage />
-          </Route>
-          <Route path={Routes.Settings}>
-            <SettingsPage />
-          </Route>
-          <Route path={Routes.Workspaces}>
-            <WorkspacesPage />
-          </Route>
-          <Route exact path={Routes.Root}>
-            <SourcesPage />
-          </Route>
-          <Redirect to={Routes.Connections} />
-        </Switch>
-      </Suspense>
-    </MainView>
+    <Switch>
+      <Route path={Routes.Destination}>
+        <DestinationPage />
+      </Route>
+      <Route path={Routes.Source}>
+        <SourcesPage />
+      </Route>
+      <Route path={Routes.Connections}>
+        <ConnectionPage />
+      </Route>
+      <Route path={Routes.Settings}>
+        <SettingsPage />
+      </Route>
+      <Route path={Routes.Workspaces}>
+        <WorkspacesPage />
+      </Route>
+      <Route exact path={Routes.Root}>
+        <SourcesPage />
+      </Route>
+      <Redirect to={Routes.Connections} />
+    </Switch>
+  );
+};
+
+const MainViewRoutes = () => {
+  const middlewares = useDefaultRequestMiddlewares();
+
+  useApiHealthPoll(config.healthCheckInterval, new HealthService(middlewares));
+  const { currentWorkspaceId } = useWorkspaceService();
+
+  return (
+    <>
+      {currentWorkspaceId ? (
+        <MainView>
+          <Suspense fallback={<LoadingPage />}>
+            <MainRoutes currentWorkspaceId={currentWorkspaceId} />
+          </Suspense>
+        </MainView>
+      ) : (
+        <WorkspacesPage />
+      )}
+    </>
   );
 };
 
@@ -81,7 +108,11 @@ export const Routing: React.FC = () => {
       <Suspense fallback={<LoadingPage />}>
         {inited ? (
           <>
-            {user && <MainViewRoutes />}
+            {user && (
+              <WorkspaceServiceProvider>
+                <MainViewRoutes />
+              </WorkspaceServiceProvider>
+            )}
             {!user && <Auth />}
           </>
         ) : (

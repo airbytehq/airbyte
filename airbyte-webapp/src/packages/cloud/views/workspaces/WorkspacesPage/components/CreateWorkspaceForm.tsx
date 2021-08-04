@@ -7,7 +7,7 @@ import * as yup from "yup";
 import { Button, Input } from "components";
 
 type CreateWorkspaceFormProps = {
-  onSubmit: ({ name }: { name: string }) => void;
+  onSubmit: (values: { name: string }) => void;
 };
 
 const CreateWorkspaceFormValidationSchema = yup.object().shape({
@@ -45,7 +45,7 @@ const CreateWorkspaceForm: React.FC<CreateWorkspaceFormProps> = ({
         name: "",
       }}
       validationSchema={CreateWorkspaceFormValidationSchema}
-      onSubmit={(values) => onSubmit(values)}
+      onSubmit={onSubmit}
       validateOnBlur={true}
     >
       {() => (

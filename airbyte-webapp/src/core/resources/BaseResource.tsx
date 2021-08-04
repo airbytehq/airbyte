@@ -1,21 +1,27 @@
 import {
+  AbstractInstanceType,
   Method,
   MutateShape,
-  Resource,
-  AbstractInstanceType,
   ReadShape,
-  schemas,
+  Resource,
   SchemaDetail,
   SchemaList,
+  schemas,
 } from "rest-hooks";
 
 import {
   AirbyteRequestService,
   parseResponse,
 } from "core/request/AirbyteRequestService";
+import { getMiddlewares } from "core/request/useRequestMiddlewareProvider";
 
 // TODO: rename to crud resource after upgrade to rest-hook 5.0.0
 export default abstract class BaseResource extends Resource {
+  static useFetchInit = (init: RequestInit): RequestInit => {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return getMiddlewares().reduce((acc, v) => v(acc), init);
+  };
+
   /** Perform network request and resolve with HTTP Response */
   static async fetchResponse(
     _: Method,
@@ -34,7 +40,9 @@ export default abstract class BaseResource extends Resource {
     if (body) {
       options.body = JSON.stringify(body);
     }
-    return fetch(url, options);
+
+    const op = this.useFetchInit(options);
+    return fetch(url, op);
   }
 
   /** Perform network request and resolve with json body */

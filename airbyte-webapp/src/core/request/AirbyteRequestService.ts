@@ -21,16 +21,16 @@ abstract class AirbyteRequestService {
   ): Promise<Response> {
     const path = `${this.rootUrl}${url}`;
 
-    const requestOptions: RequestInit = {
-      method: "POST",
-      body: body ? JSON.stringify(body) : undefined,
-      ...merge(options, {
+    const requestOptions: RequestInit = merge(
+      {
+        method: "POST",
+        body: body ? JSON.stringify(body) : undefined,
         headers: {
           "Content-Type": "application/json",
-          ...(options?.headers ?? {}),
         },
-      }),
-    };
+      },
+      options
+    );
 
     const preparedOptions: RequestInit = this.middlewares.reduce(
       (acc, v) => v(acc),

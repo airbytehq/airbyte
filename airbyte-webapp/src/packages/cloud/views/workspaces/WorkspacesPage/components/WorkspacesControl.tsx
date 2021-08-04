@@ -1,6 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import { useToggle } from "react-use";
+
+import { useCreateWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
 
 import { Button, ContentCard } from "components";
 import CreateWorkspaceForm from "./CreateWorkspaceForm";
@@ -13,11 +16,12 @@ const FormContent = styled(ContentCard)`
 `;
 
 const WorkspacesControl: React.FC = () => {
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [isEditMode, toggleMode] = useToggle(false);
+  const createWorkspace = useCreateWorkspace();
 
-  //TODO: add action
-  const onSubmit = () => {
-    setIsEditMode(false);
+  const onSubmit = async (values: { name: string }) => {
+    await createWorkspace(values);
+    toggleMode();
   };
 
   return isEditMode ? (
@@ -25,7 +29,7 @@ const WorkspacesControl: React.FC = () => {
       <CreateWorkspaceForm onSubmit={onSubmit} />
     </FormContent>
   ) : (
-    <CreateButton onClick={() => setIsEditMode(true)}>
+    <CreateButton onClick={toggleMode}>
       <FormattedMessage id="workspaces.createNew" />
     </CreateButton>
   );

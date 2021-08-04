@@ -1,20 +1,25 @@
 import firebase from "firebase";
+
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
-import { ErrorCodes } from "./types";
+import { ErrorCodes } from "packages/cloud/services/auth/types";
+import firebaseApp from "packages/cloud/config/firebase";
+
+type UserCredential = any;
 
 interface AuthService {
   login(email: string, password: string): Promise<any>;
+
   signOut(): Promise<any>;
 
   signUp(email: string, password: string): Promise<any>;
 }
 
 export class GoogleAuthService implements AuthService {
-  getCurrentUser(): any {
-    return firebase.auth().currentUser;
+  getCurrentUser(): firebase.User | null {
+    return firebaseApp.auth().currentUser;
   }
-  async login(email: string, password: string): Promise<any> {
-    return firebase
+  async login(email: string, password: string): Promise<UserCredential> {
+    return firebaseApp
       .auth()
       .signInWithEmailAndPassword(email, password)
       .catch((err) => {
@@ -28,11 +33,13 @@ export class GoogleAuthService implements AuthService {
           case "auth/wrong-password":
             throw new FieldError("password", ErrorCodes.Invalid);
         }
+
+        throw err;
       });
   }
 
-  async signUp(email: string, password: string): Promise<any> {
-    return firebase
+  async signUp(email: string, password: string): Promise<UserCredential> {
+    return firebaseApp
       .auth()
       .createUserWithEmailAndPassword(email, password)
       .catch((err) => {
@@ -44,6 +51,8 @@ export class GoogleAuthService implements AuthService {
           case "auth/weak-password":
             throw new FieldError("password", ErrorCodes.Invalid);
         }
+
+        throw err;
       });
   }
 
