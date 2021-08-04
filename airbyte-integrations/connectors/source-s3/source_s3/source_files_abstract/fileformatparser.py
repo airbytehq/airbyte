@@ -23,19 +23,19 @@
 #
 
 import json
+import multiprocessing as mp
 from abc import ABC, abstractmethod
 from typing import Any, BinaryIO, Iterator, Mapping, TextIO, Union
-import multiprocessing as mp
-import dill
-import tempfile
 
+import dill
 import pyarrow as pa
 from airbyte_cdk.logger import AirbyteLogger
 from pyarrow import csv as pa_csv
 
 
-def multiprocess_queuer(func, q, *args, **kwargs):
-    q.put(dill.loads(func)(*args, **kwargs))
+def multiprocess_queuer(func, queue, *args, **kwargs):
+    """ this is our multiprocesser helper function, lives at top-level to be Windows-compatible """
+    queue.put(dill.loads(func)(*args, **kwargs))
 
 
 class FileFormatParser(ABC):
@@ -141,7 +141,7 @@ class CsvParser(FileFormatParser):
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html
         """
         # return pa.csv.ReadOptions(block_size=10000, encoding=self._format.get("encoding", "utf8"))
-        return {'block_size':10000, 'encoding':self._format.get("encoding", "utf8")}
+        return {"block_size": 10000, "encoding": self._format.get("encoding", "utf8")}
 
     def _parse_options(self):
         """
@@ -156,11 +156,11 @@ class CsvParser(FileFormatParser):
         #     newlines_in_values=self._format.get("newlines_in_values", False),
         # )
         return {
-            'delimiter':self._format.get("delimiter", ","),
-            'quote_char':quote_char,
-            'double_quote':self._format.get("double_quote", True),
-            'escape_char':self._format.get("escape_char", False),
-            'newlines_in_values':self._format.get("newlines_in_values", False),
+            "delimiter": self._format.get("delimiter", ","),
+            "quote_char": quote_char,
+            "double_quote": self._format.get("double_quote", True),
+            "escape_char": self._format.get("escape_char", False),
+            "newlines_in_values": self._format.get("newlines_in_values", False),
         }
 
     def _convert_options(self, json_schema: Mapping[str, Any] = None):
@@ -175,18 +175,26 @@ class CsvParser(FileFormatParser):
         #     check_utf8=check_utf8, column_types=convert_schema, **json.loads(self._format.get("additional_reader_options", "{}"))
         # )
         return {
-            **{"check_utf8":check_utf8, "column_types":convert_schema}, 
-            **json.loads(self._format.get("additional_reader_options", "{}"))
+            **{"check_utf8": check_utf8, "column_types": convert_schema},
+            **json.loads(self._format.get("additional_reader_options", "{}")),
         }
 
     def get_inferred_schema(self, file: Union[TextIO, BinaryIO]) -> dict:
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html
-        Note: this reads just the first block (as defined in _read_options() block_size) to infer the schema
+
+        This now uses multiprocessing in order to timeout the schema inference as it can hang.
+        Since the hanging code is resistant to signal interrupts, threading/futures doesn't help so needed to multiprocess.
+        https://issues.apache.org/jira/browse/ARROW-11853?page=com.atlassian.jira.plugin.system.issuetabpanels%3Aall-tabpanel
         """
-        def get_schema(file_sample, read_opts, parse_opts, convert_opts):
+
+        def get_schema(file_sample: str, read_opts: dict, parse_opts: dict, convert_opts: dict) -> dict:
+            """ we need to reimport here to be functional on Windows systems since it doesn't have fork()"""
             import tempfile
+
             import pyarrow as pa
+
+            # writing our file_sample to a temporary file to then read in and schema infer as before
             with tempfile.TemporaryFile() as fp:
                 fp.write(file_sample)
                 fp.seek(0)
@@ -195,27 +203,42 @@ class CsvParser(FileFormatParser):
                 )
                 schema_dict = {field.name: field.type for field in streaming_reader.schema}
             return schema_dict
-        
-        q_worker = mp.Queue()
-        file_sample = file.read(self._read_options().get("block_size", 10000))
-        proc = mp.Process(
-            target=multiprocess_queuer,
-            args=(dill.dumps(get_schema), q_worker, file_sample, self._read_options(), self._parse_options(), self._convert_options())
-        )
-        proc.start()
-        try:
-            schema_dict = q_worker.get(timeout=20)
-            return self.json_schema_to_pyarrow_schema(schema_dict, reverse=True)
-        except mp.queues.Empty:
-            raise TimeoutError()
-        finally:
-            try:
-                proc.terminate()
-            except:
-                pass
-        
 
-        
+        # boto3 stuff can't be pickled and so we can't multiprocess with the actual fileobject on Windows systems
+        # we're reading block_size*2 bytes here, which we can then pass in and infer schema from block_size bytes
+        # the *2 is to give us a buffer as pyarrow figures out where lines actually end so it gets schema correct
+        file_sample = file.read(self._read_options()["block_size"] * 2)
+        schema_dict = None
+        fail_count = 0
+        while schema_dict is None:
+            q_worker = mp.Queue()
+            proc = mp.Process(
+                target=multiprocess_queuer,
+                args=(
+                    dill.dumps(get_schema),  # use dill to pickle the get_schema function for Windows-compatibility
+                    q_worker,
+                    file_sample,
+                    self._read_options(),
+                    self._parse_options(),
+                    self._convert_options(),
+                ),
+            )
+            proc.start()
+            try:
+                # this attempts to get return value from function with a 20 second timeout
+                schema_dict = q_worker.get(timeout=20)
+            except mp.queues.Empty:
+                fail_count += 1
+                if fail_count > 2:
+                    raise TimeoutError("Timed out 3 times while trying to infer schema")
+                self.logger.info("timed out on schema inference, retrying...")
+            finally:
+                try:
+                    proc.terminate()
+                except Exception as e:
+                    self.logger.info(f"infer schema proc unterminated, error: {e}")
+
+        return self.json_schema_to_pyarrow_schema(schema_dict, reverse=True)
 
     def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
         """
@@ -223,10 +246,10 @@ class CsvParser(FileFormatParser):
         PyArrow returns lists of values for each column so we zip() these up into records which we then yield
         """
         streaming_reader = pa_csv.open_csv(
-            file, 
-            pa.csv.ReadOptions(**self._read_options()), 
-            pa.csv.ParseOptions(**self._parse_options()), 
-            pa.csv.ConvertOptions(**self._convert_options(self._master_schema))
+            file,
+            pa.csv.ReadOptions(**self._read_options()),
+            pa.csv.ParseOptions(**self._parse_options()),
+            pa.csv.ConvertOptions(**self._convert_options(self._master_schema)),
         )
         still_reading = True
         while still_reading:
