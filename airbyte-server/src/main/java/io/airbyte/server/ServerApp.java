@@ -133,21 +133,23 @@ public class ServerApp implements ServerRunnable {
     server.join();
   }
 
-  private static void createDeploymentIfNoneExists(final JobPersistence jobPersistence) throws IOException {
+  private static UUID createDeploymentIfNoneExists(final JobPersistence jobPersistence) throws IOException {
     final Optional<UUID> deploymentOptional = jobPersistence.getDeployment();
     if (deploymentOptional.isPresent()) {
       LOGGER.info("running deployment: {}", deploymentOptional.get());
+      return deploymentOptional.get();
     } else {
       final UUID deploymentId = UUID.randomUUID();
       jobPersistence.setDeployment(deploymentId);
       LOGGER.info("created deployment: {}", deploymentId);
+      return deploymentId;
     }
   }
 
-  private static void createWorkspaceIfNoneExists(final ConfigRepository configRepository) throws JsonValidationException, IOException {
+  private static Optional<StandardWorkspace> createNewWorkspaceIfNoneExists(final ConfigRepository configRepository) throws JsonValidationException, IOException {
     if (!configRepository.listStandardWorkspaces(true).isEmpty()) {
       LOGGER.info("workspace already exists for the deployment.");
-      return;
+      return Optional.empty();
     }
 
     final UUID workspaceId = UUID.randomUUID();
@@ -160,7 +162,7 @@ public class ServerApp implements ServerRunnable {
         .withDisplaySetupWizard(true)
         .withTombstone(false);
     configRepository.writeStandardWorkspace(workspace);
-    TrackingClientSingleton.get().identify(workspaceId);
+    return Optional.of(workspace);
   }
 
   public static ServerRunnable getServer(ServerFactory apiFactory) throws Exception {
@@ -180,19 +182,21 @@ public class ServerApp implements ServerRunnable {
             .getAndInitialize();
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
 
-    createDeploymentIfNoneExists(jobPersistence);
+    UUID deploymentId = createDeploymentIfNoneExists(jobPersistence);
 
-    // must happen after deployment id is set
+    // if no workspace exists, we create one so the user starts out with a place to add configuration.
+    Optional<StandardWorkspace> newWorkspace = createNewWorkspaceIfNoneExists(configRepository);
+
+    // must happen after the workspace is created, because the tracking identity depends on it.
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
-        new Deployment(DeploymentMode.OSS, jobPersistence.getDeployment().orElseThrow(), configs.getWorkerEnvironment()),
+        new Deployment(DeploymentMode.OSS, deploymentId, configs.getWorkerEnvironment()),
         configs.getAirbyteRole(),
         configs.getAirbyteVersion(),
         configRepository);
 
     // must happen after the tracking client is initialized.
-    // if no workspace exists, we create one so the user starts out with a place to add configuration.
-    createWorkspaceIfNoneExists(configRepository);
+    newWorkspace.ifPresent(workspace -> TrackingClientSingleton.get().identify(workspace.getWorkspaceId()));
 
     final String airbyteVersion = configs.getAirbyteVersion();
     if (jobPersistence.getVersion().isEmpty()) {

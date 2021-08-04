@@ -101,4 +101,16 @@ public class TrackingIdentity {
     return Objects.hash(customerId, email, anonymousDataCollection, news, securityUpdates);
   }
 
+  @Override
+  public String toString() {
+    return "class TrackingIdentity {"
+        + "airbyteVersion: " + airbyteVersion + ", "
+        + "customerId: " + customerId + ", "
+        + "email: " + email + ", "
+        + "anonymousDataCollection: " + anonymousDataCollection + ", "
+        + "news: " + news + ", "
+        + "securityUpdates: " + securityUpdates
+        + "}";
+  }
+
 }
