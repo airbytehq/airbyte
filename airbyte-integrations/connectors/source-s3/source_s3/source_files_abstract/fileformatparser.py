@@ -33,7 +33,7 @@ from airbyte_cdk.logger import AirbyteLogger
 from pyarrow import csv as pa_csv
 
 
-def multiprocess_queuer(func, queue, *args, **kwargs):
+def multiprocess_queuer(func, queue: mp.Queue, *args, **kwargs):
     """ this is our multiprocesser helper function, lives at top-level to be Windows-compatible """
     queue.put(dill.loads(func)(*args, **kwargs))
 
@@ -139,22 +139,18 @@ class CsvParser(FileFormatParser):
     def _read_options(self):
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html
+
+        build ReadOptions object like: pa.csv.ReadOptions(**self._read_options())
         """
-        # return pa.csv.ReadOptions(block_size=10000, encoding=self._format.get("encoding", "utf8"))
         return {"block_size": 10000, "encoding": self._format.get("encoding", "utf8")}
 
     def _parse_options(self):
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.ParseOptions.html
+
+        build ParseOptions object like: pa.csv.ParseOptions(**self._parse_options())
         """
         quote_char = self._format.get("quote_char", False) if self._format.get("quote_char", False) != "" else False
-        # return pa.csv.ParseOptions(
-        #     delimiter=self._format.get("delimiter", ","),
-        #     quote_char=quote_char,
-        #     double_quote=self._format.get("double_quote", True),
-        #     escape_char=self._format.get("escape_char", False),
-        #     newlines_in_values=self._format.get("newlines_in_values", False),
-        # )
         return {
             "delimiter": self._format.get("delimiter", ","),
             "quote_char": quote_char,
@@ -167,13 +163,12 @@ class CsvParser(FileFormatParser):
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.ConvertOptions.html
 
+        build ConvertOptions object like: pa.csv.ConvertOptions(**self._convert_options())
+
         :param json_schema: if this is passed in, pyarrow will attempt to enforce this schema on read, defaults to None
         """
         check_utf8 = True if self._format.get("encoding", "utf8").lower().replace("-", "") == "utf8" else False
         convert_schema = self.json_schema_to_pyarrow_schema(json_schema) if json_schema is not None else None
-        # return pa.csv.ConvertOptions(
-        #     check_utf8=check_utf8, column_types=convert_schema, **json.loads(self._format.get("additional_reader_options", "{}"))
-        # )
         return {
             **{"check_utf8": check_utf8, "column_types": convert_schema},
             **json.loads(self._format.get("additional_reader_options", "{}")),
@@ -189,7 +184,10 @@ class CsvParser(FileFormatParser):
         """
 
         def get_schema(file_sample: str, read_opts: dict, parse_opts: dict, convert_opts: dict) -> dict:
-            """ we need to reimport here to be functional on Windows systems since it doesn't have fork()"""
+            """
+            we need to reimport here to be functional on Windows systems since it doesn't have fork()
+            https://docs.python.org/3.7/library/multiprocessing.html#contexts-and-start-methods
+            """
             import tempfile
 
             import pyarrow as pa
