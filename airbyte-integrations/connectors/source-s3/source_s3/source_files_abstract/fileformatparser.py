@@ -27,6 +27,7 @@ from abc import ABC, abstractmethod
 from typing import Any, BinaryIO, Iterator, Mapping, TextIO, Union
 import multiprocessing as mp
 import dill
+import tempfile
 
 import pyarrow as pa
 from airbyte_cdk.logger import AirbyteLogger
@@ -183,18 +184,23 @@ class CsvParser(FileFormatParser):
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html
         Note: this reads just the first block (as defined in _read_options() block_size) to infer the schema
         """
-        def get_schema(file, read_opts, parse_opts, convert_opts):
+        def get_schema(file_sample, read_opts, parse_opts, convert_opts):
+            import tempfile
             import pyarrow as pa
-            streaming_reader = pa.csv.open_csv(
-                file, pa.csv.ReadOptions(**read_opts), pa.csv.ParseOptions(**parse_opts), pa.csv.ConvertOptions(**convert_opts)
-            )
-            schema_dict = {field.name: field.type for field in streaming_reader.schema}
+            with tempfile.TemporaryFile() as fp:
+                fp.write(file_sample)
+                fp.seek(0)
+                streaming_reader = pa.csv.open_csv(
+                    fp, pa.csv.ReadOptions(**read_opts), pa.csv.ParseOptions(**parse_opts), pa.csv.ConvertOptions(**convert_opts)
+                )
+                schema_dict = {field.name: field.type for field in streaming_reader.schema}
             return schema_dict
         
         q_worker = mp.Queue()
+        file_sample = file.read(self._read_options().get("block_size", 10000))
         proc = mp.Process(
             target=multiprocess_queuer,
-            args=(dill.dumps(get_schema), q_worker, file, self._read_options(), self._parse_options(), self._convert_options())
+            args=(dill.dumps(get_schema), q_worker, file_sample, self._read_options(), self._parse_options(), self._convert_options())
         )
         proc.start()
         try:
@@ -207,6 +213,7 @@ class CsvParser(FileFormatParser):
                 proc.terminate()
             except:
                 pass
+        
 
         
 
