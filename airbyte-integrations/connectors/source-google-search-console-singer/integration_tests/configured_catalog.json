@@ -3,18 +3,7 @@
     {
       "stream": {
         "name": "sites",
-        "json_schema": {
-          "properties": {
-            "permission_level": {
-              "type": ["null", "string"]
-            },
-            "site_url": {
-              "type": ["null", "string"]
-            }
-          },
-          "type": "object",
-          "additionalProperties": false
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false
       },
@@ -24,66 +13,7 @@
     {
       "stream": {
         "name": "sitemaps",
-        "json_schema": {
-          "properties": {
-            "site_url": {
-              "type": ["null", "string"]
-            },
-            "path": {
-              "type": ["null", "string"]
-            },
-            "last_submitted": {
-              "format": "date-time",
-              "type": ["null", "string"]
-            },
-            "is_pending": {
-              "type": ["null", "boolean"]
-            },
-            "is_sitemaps_index": {
-              "type": ["null", "boolean"]
-            },
-            "type": {
-              "type": ["null", "string"]
-            },
-            "last_downloaded": {
-              "format": "date-time",
-              "type": ["null", "string"]
-            },
-            "warnings": {
-              "type": ["null", "integer"]
-            },
-            "errors": {
-              "type": ["null", "integer"]
-            },
-            "contents": {
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                      "type": {
-                        "type": ["null", "string"]
-                      },
-                      "submitted": {
-                        "type": ["null", "integer"]
-                      },
-                      "indexed": {
-                        "type": ["null", "integer"]
-                      }
-                    }
-                  }
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            }
-          },
-          "type": "object",
-          "additionalProperties": false
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false
       },
@@ -93,51 +23,7 @@
     {
       "stream": {
         "name": "performance_report_custom",
-        "json_schema": {
-          "properties": {
-            "site_url": {
-              "type": ["null", "string"]
-            },
-            "search_type": {
-              "type": ["null", "string"]
-            },
-            "dimensions_hash_key": {
-              "type": ["null", "string"]
-            },
-            "date": {
-              "format": "date-time",
-              "type": ["null", "string"]
-            },
-            "country": {
-              "type": ["null", "string"]
-            },
-            "device": {
-              "type": ["null", "string"]
-            },
-            "page": {
-              "type": ["null", "string"]
-            },
-            "query": {
-              "type": ["null", "string"]
-            },
-            "clicks": {
-              "type": ["null", "integer"]
-            },
-            "impressions": {
-              "type": ["null", "integer"]
-            },
-            "ctr": {
-              "multipleOf": 1e-25,
-              "type": ["null", "number"]
-            },
-            "position": {
-              "multipleOf": 1e-25,
-              "type": ["null", "number"]
-            }
-          },
-          "type": "object",
-          "additionalProperties": false
-        },
+        "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date"]
@@ -149,39 +35,7 @@
     {
       "stream": {
         "name": "performance_report_country",
-        "json_schema": {
-          "properties": {
-            "site_url": {
-              "type": ["null", "string"]
-            },
-            "search_type": {
-              "type": ["null", "string"]
-            },
-            "date": {
-              "format": "date-time",
-              "type": ["null", "string"]
-            },
-            "country": {
-              "type": ["null", "string"]
-            },
-            "clicks": {
-              "type": ["null", "integer"]
-            },
-            "impressions": {
-              "type": ["null", "integer"]
-            },
-            "ctr": {
-              "multipleOf": 1e-25,
-              "type": ["null", "number"]
-            },
-            "position": {
-              "multipleOf": 1e-25,
-              "type": ["null", "number"]
-            }
-          },
-          "type": "object",
-          "additionalProperties": false
-        },
+        "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date"]
@@ -193,39 +47,7 @@
     {
       "stream": {
         "name": "performance_report_device",
-        "json_schema": {
-          "properties": {
-            "site_url": {
-              "type": ["null", "string"]
-            },
-            "search_type": {
-              "type": ["null", "string"]
-            },
-            "date": {
-              "format": "date-time",
-              "type": ["null", "string"]
-            },
-            "device": {
-              "type": ["null", "string"]
-            },
-            "clicks": {
-              "type": ["null", "integer"]
-            },
-            "impressions": {
-              "type": ["null", "integer"]
-            },
-            "ctr": {
-              "multipleOf": 1e-25,
-              "type": ["null", "number"]
-            },
-            "position": {
-              "multipleOf": 1e-25,
-              "type": ["null", "number"]
-            }
-          },
-          "type": "object",
-          "additionalProperties": false
-        },
+        "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date"]
@@ -237,39 +59,7 @@
     {
       "stream": {
         "name": "performance_report_page",
-        "json_schema": {
-          "properties": {
-            "site_url": {
-              "type": ["null", "string"]
-            },
-            "search_type": {
-              "type": ["null", "string"]
-            },
-            "date": {
-              "format": "date-time",
-              "type": ["null", "string"]
-            },
-            "page": {
-              "type": ["null", "string"]
-            },
-            "clicks": {
-              "type": ["null", "integer"]
-            },
-            "impressions": {
-              "type": ["null", "integer"]
-            },
-            "ctr": {
-              "multipleOf": 1e-25,
-              "type": ["null", "number"]
-            },
-            "position": {
-              "multipleOf": 1e-25,
-              "type": ["null", "number"]
-            }
-          },
-          "type": "object",
-          "additionalProperties": false
-        },
+        "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date"]
@@ -281,39 +71,7 @@
     {
       "stream": {
         "name": "performance_report_query",
-        "json_schema": {
-          "properties": {
-            "site_url": {
-              "type": ["null", "string"]
-            },
-            "search_type": {
-              "type": ["null", "string"]
-            },
-            "date": {
-              "format": "date-time",
-              "type": ["null", "string"]
-            },
-            "query": {
-              "type": ["null", "string"]
-            },
-            "clicks": {
-              "type": ["null", "integer"]
-            },
-            "impressions": {
-              "type": ["null", "integer"]
-            },
-            "ctr": {
-              "multipleOf": 1e-25,
-              "type": ["null", "number"]
-            },
-            "position": {
-              "multipleOf": 1e-25,
-              "type": ["null", "number"]
-            }
-          },
-          "type": "object",
-          "additionalProperties": false
-        },
+        "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date"]

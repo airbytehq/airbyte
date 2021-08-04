@@ -3,39 +3,7 @@
     {
       "stream": {
         "name": "clients",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "name": {
-              "type": ["null", "string"]
-            },
-            "is_active": {
-              "type": ["null", "boolean"]
-            },
-            "address": {
-              "type": ["null", "string"]
-            },
-            "statement_key": {
-              "type": ["null", "string"]
-            },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "currency": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"]
@@ -47,55 +15,7 @@
     {
       "stream": {
         "name": "contacts",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "title": {
-              "type": ["null", "string"]
-            },
-            "first_name": {
-              "type": ["null", "string"]
-            },
-            "last_name": {
-              "type": ["null", "string"]
-            },
-            "email": {
-              "type": ["null", "string"]
-            },
-            "phone_office": {
-              "type": ["null", "string"]
-            },
-            "phone_mobile": {
-              "type": ["null", "string"]
-            },
-            "fax": {
-              "type": ["null", "string"]
-            },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "client": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "name": {
-                  "type": ["null", "string"]
-                }
-              }
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"]
@@ -107,63 +27,7 @@
     {
       "stream": {
         "name": "company",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "base_uri": {
-              "type": ["null", "string"]
-            },
-            "full_domain": {
-              "type": ["null", "string"]
-            },
-            "name": {
-              "type": ["null", "string"]
-            },
-            "is_active": {
-              "type": ["null", "boolean"]
-            },
-            "week_start_day": {
-              "type": ["null", "string"]
-            },
-            "wants_timestamp_timers": {
-              "type": ["null", "boolean"]
-            },
-            "time_format": {
-              "type": ["null", "string"]
-            },
-            "plan_type": {
-              "type": ["null", "string"]
-            },
-            "expense_feature": {
-              "type": ["null", "boolean"]
-            },
-            "invoice_feature": {
-              "type": ["null", "boolean"]
-            },
-            "estimate_feature": {
-              "type": ["null", "boolean"]
-            },
-            "approval_required": {
-              "type": ["null", "boolean"]
-            },
-            "clock": {
-              "type": ["null", "string"]
-            },
-            "decimal_symbol": {
-              "type": ["null", "string"]
-            },
-            "thousands_separator": {
-              "type": ["null", "string"]
-            },
-            "color_scheme": {
-              "type": ["null", "string"]
-            },
-            "weekly_capacity": {
-              "type": ["null", "integer"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
@@ -172,147 +36,7 @@
     {
       "stream": {
         "name": "invoices",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "client_key": {
-              "type": ["null", "string"]
-            },
-            "number": {
-              "type": ["null", "string"]
-            },
-            "purchase_order": {
-              "type": ["null", "string"]
-            },
-            "amount": {
-              "type": ["null", "number"]
-            },
-            "due_amount": {
-              "type": ["null", "number"]
-            },
-            "tax": {
-              "type": ["null", "integer"]
-            },
-            "tax_amount": {
-              "type": ["null", "number"]
-            },
-            "tax2": {
-              "type": ["null", "integer"]
-            },
-            "tax2_amount": {
-              "type": ["null", "number"]
-            },
-            "discount": {
-              "type": ["null", "integer"]
-            },
-            "discount_amount": {
-              "type": ["null", "integer"]
-            },
-            "subject": {
-              "type": ["null", "string"]
-            },
-            "notes": {
-              "type": ["null", "string"]
-            },
-            "state": {
-              "type": ["null", "string"]
-            },
-            "period_start": {
-              "type": ["null", "string"],
-              "format": "date"
-            },
-            "period_end": {
-              "type": ["null", "string"],
-              "format": "date"
-            },
-            "issue_date": {
-              "type": ["null", "string"],
-              "format": "date"
-            },
-            "due_date": {
-              "type": ["null", "string"],
-              "format": "date"
-            },
-            "payment_term": {
-              "type": ["null", "string"]
-            },
-            "sent_at": {
-              "type": ["null", "string"],
-              "format": "date"
-            },
-            "paid_at": {
-              "type": ["null", "string"]
-            },
-            "paid_date": {
-              "type": ["null", "string"]
-            },
-            "closed_at": {
-              "type": ["null", "string"]
-            },
-            "recurring_invoice_id": {
-              "type": ["null", "string"]
-            },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date"
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date"
-            },
-            "currency": {
-              "type": ["null", "string"]
-            },
-            "client": {
-              "type": ["null", "string"]
-            },
-            "estimate": {
-              "type": ["null", "string"]
-            },
-            "retainer": {
-              "type": ["null", "string"]
-            },
-            "creator": {
-              "type": ["null", "string"]
-            },
-            "line_items": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "kind": {
-                  "type": ["null", "string"]
-                },
-                "description": {
-                  "type": ["null", "string"]
-                },
-                "quantity": {
-                  "type": ["null", "integer"]
-                },
-                "unit_price": {
-                  "type": ["null", "integer"]
-                },
-                "amount": {
-                  "type": ["null", "integer"]
-                },
-                "taxed": {
-                  "type": ["null", "boolean"]
-                },
-                "taxed2": {
-                  "type": ["null", "boolean"]
-                },
-                "project": {
-                  "type": ["null", "string"]
-                }
-              }
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"]
@@ -324,73 +48,7 @@
     {
       "stream": {
         "name": "invoice_messages",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "sent_by": {
-              "type": ["null", "string"]
-            },
-            "sent_by_email": {
-              "type": ["null", "string"]
-            },
-            "sent_from": {
-              "type": ["null", "string"]
-            },
-            "sent_from_email": {
-              "type": ["null", "string"]
-            },
-            "include_link_to_client_invoice": {
-              "type": ["null", "boolean"]
-            },
-            "send_me_a_copy": {
-              "type": ["null", "boolean"]
-            },
-            "thank_you": {
-              "type": ["null", "boolean"]
-            },
-            "reminder": {
-              "type": ["null", "boolean"]
-            },
-            "send_reminder_on": {
-              "type": ["null", "string"]
-            },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date"
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date"
-            },
-            "attach_pdf": {
-              "type": ["null", "boolean"]
-            },
-            "event_type": {
-              "type": ["null", "string"]
-            },
-            "recipients": {
-              "type": ["null", "object"],
-              "properties": {
-                "name": {
-                  "type": ["null", "string"]
-                },
-                "email": {
-                  "type": ["null", "string"]
-                }
-              }
-            },
-            "subject": {
-              "type": ["null", "string"]
-            },
-            "body": {
-              "type": ["null", "string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"]
@@ -402,57 +60,7 @@
     {
       "stream": {
         "name": "invoice_payments",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "amount": {
-              "type": ["null", "integer"]
-            },
-            "paid_at": {
-              "type": ["null", "string"],
-              "format": "date"
-            },
-            "paid_date": {
-              "type": ["null", "string"],
-              "format": "date"
-            },
-            "recorded_by": {
-              "type": ["null", "string"]
-            },
-            "recorded_by_email": {
-              "type": ["null", "string"]
-            },
-            "notes": {
-              "type": ["null", "string"]
-            },
-            "transaction_id": {
-              "type": ["null", "string"]
-            },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date"
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date"
-            },
-            "payment_gateway": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "name": {
-                  "type": ["null", "string"]
-                }
-              }
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"]
@@ -464,32 +72,7 @@
     {
       "stream": {
         "name": "invoice_item_categories",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "name": {
-              "type": ["null", "string"]
-            },
-            "use_as_service": {
-              "type": ["null", "boolean"]
-            },
-            "use_as_expense": {
-              "type": ["null", "boolean"]
-            },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"]
@@ -501,104 +84,7 @@
     {
       "stream": {
         "name": "estimates",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "client_key": {
-              "type": ["null", "string"]
-            },
-            "number": {
-              "type": ["null", "string"]
-            },
-            "purchase_order": {
-              "type": ["null", "string"]
-            },
-            "amount": {
-              "type": ["null", "number"]
-            },
-            "tax": {
-              "type": ["null", "number"]
-            },
-            "tax_amount": {
-              "type": ["null", "number"]
-            },
-            "tax2": {
-              "type": ["null", "number"]
-            },
-            "tax2_amount": {
-              "type": ["null", "number"]
-            },
-            "discount": {
-              "type": ["null", "number"]
-            },
-            "discount_amount": {
-              "type": ["null", "number"]
-            },
-            "subject": {
-              "type": ["null", "string"]
-            },
-            "notes": {
-              "type": ["null", "string"]
-            },
-            "state": {
-              "type": ["null", "string"]
-            },
-            "issue_date": {
-              "type": ["null", "string"],
-              "format": "date"
-            },
-            "sent_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "accepted_at": {
-              "type": ["null", "string"]
-            },
-            "declined_at": {
-              "type": ["null", "string"]
-            },
-            "currency": {
-              "type": ["null", "string"]
-            },
-            "client": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "name": {
-                  "type": ["null", "string"]
-                }
-              }
-            },
-            "creator": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "name": {
-                  "type": ["null", "string"]
-                }
-              }
-            },
-            "line_items": {
-              "type": ["null", "array"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"]
@@ -610,50 +96,7 @@
     {
       "stream": {
         "name": "estimate_messages",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "sent_by": {
-              "type": ["null", "string"]
-            },
-            "sent_by_email": {
-              "type": ["null", "string"]
-            },
-            "sent_from": {
-              "type": ["null", "string"]
-            },
-            "sent_from_email": {
-              "type": ["null", "string"]
-            },
-            "send_me_a_copy": {
-              "type": ["null", "boolean"]
-            },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "recipients": {
-              "type": ["null", "array"]
-            },
-            "event_type": {
-              "type": ["null", "string"]
-            },
-            "subject": {
-              "type": ["null", "string"]
-            },
-            "body": {
-              "type": ["null", "string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"]
@@ -665,26 +108,7 @@
     {
       "stream": {
         "name": "estimate_item_categories",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "name": {
-              "type": ["null", "string"]
-            },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"]
@@ -696,163 +120,7 @@
     {
       "stream": {
         "name": "expenses",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "notes": {
-              "type": ["null", "string"]
-            },
-            "total_cost": {
-              "type": ["null", "number"]
-            },
-            "units": {
-              "type": ["null", "number"]
-            },
-            "is_closed": {
-              "type": ["null", "boolean"]
-            },
-            "is_locked": {
-              "type": ["null", "boolean"]
-            },
-            "is_billed": {
-              "type": ["null", "boolean"]
-            },
-            "locked_reason": {
-              "type": ["null", "string"]
-            },
-            "spent_date": {
-              "type": ["null", "string"],
-              "format": "date"
-            },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "billable": {
-              "type": ["null", "boolean"]
-            },
-            "receipt": {
-              "type": ["null", "object"],
-              "properties": {
-                "url": {
-                  "type": ["null", "string"]
-                },
-                "file_name": {
-                  "type": ["null", "string"]
-                },
-                "file_size": {
-                  "type": ["null", "integer"]
-                },
-                "content_type": {
-                  "type": ["null", "string"]
-                }
-              }
-            },
-            "user": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "name": {
-                  "type": ["null", "string"]
-                }
-              }
-            },
-            "user_assignment": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "is_project_manager": {
-                  "type": ["null", "boolean"]
-                },
-                "is_active": {
-                  "type": ["null", "boolean"]
-                },
-                "budget": {
-                  "type": ["null", "string"]
-                },
-                "created_at": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
-                },
-                "updated_at": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
-                },
-                "hourly_rate": {
-                  "type": ["null", "number"]
-                }
-              }
-            },
-            "project": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "name": {
-                  "type": ["null", "string"]
-                },
-                "code": {
-                  "type": ["null", "string"]
-                }
-              }
-            },
-            "expense_category": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "name": {
-                  "type": ["null", "string"]
-                },
-                "unit_price": {
-                  "type": ["null", "string"]
-                },
-                "unit_name": {
-                  "type": ["null", "string"]
-                }
-              }
-            },
-            "client": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "name": {
-                  "type": ["null", "string"]
-                },
-                "currency": {
-                  "type": ["null", "string"]
-                }
-              }
-            },
-            "invoice": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "number": {
-                  "type": ["null", "string"]
-                }
-              }
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"]
@@ -864,35 +132,7 @@
     {
       "stream": {
         "name": "expense_categories",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "name": {
-              "type": ["null", "string"]
-            },
-            "unit_name": {
-              "type": ["null", "string"]
-            },
-            "unit_price": {
-              "type": ["null", "number"]
-            },
-            "is_active": {
-              "type": ["null", "boolean"]
-            },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"]
@@ -904,38 +144,7 @@
     {
       "stream": {
         "name": "tasks",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "name": {
-              "type": ["null", "string"]
-            },
-            "billable_by_default": {
-              "type": ["null", "boolean"]
-            },
-            "default_hourly_rate": {
-              "type": ["null", "number"]
-            },
-            "is_default": {
-              "type": ["null", "boolean"]
-            },
-            "is_active": {
-              "type": ["null", "boolean"]
-            },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"]
@@ -947,180 +156,7 @@
     {
       "stream": {
         "name": "time_entries",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "spent_date": {
-              "type": ["null", "string"],
-              "format": "date"
-            },
-            "user": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "name": {
-                  "type": ["null", "string"]
-                }
-              }
-            },
-            "client": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "name": {
-                  "type": ["null", "string"]
-                }
-              }
-            },
-            "project": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "name": {
-                  "type": ["null", "string"]
-                }
-              }
-            },
-            "task": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "name": {
-                  "type": ["null", "string"]
-                }
-              }
-            },
-            "user_assignment": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "is_project_manager": {
-                  "type": ["null", "boolean"]
-                },
-                "is_active": {
-                  "type": ["null", "boolean"]
-                },
-                "budget": {
-                  "type": ["null", "string"]
-                },
-                "created_at": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
-                },
-                "updated_at": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
-                },
-                "hourly_rate": {
-                  "type": ["null", "number"]
-                }
-              }
-            },
-            "task_assignment": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "billable": {
-                  "type": ["null", "boolean"]
-                },
-                "is_active": {
-                  "type": ["null", "boolean"]
-                },
-                "created_at": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
-                },
-                "updated_at": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
-                },
-                "hourly_rate": {
-                  "type": ["null", "number"]
-                },
-                "budget": {
-                  "type": ["null", "string"]
-                }
-              }
-            },
-            "hours": {
-              "type": ["null", "number"]
-            },
-            "rounded_hours": {
-              "type": ["null", "number"]
-            },
-            "notes": {
-              "type": ["null", "string"]
-            },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "is_locked": {
-              "type": ["null", "boolean"]
-            },
-            "locked_reason": {
-              "type": ["null", "string"]
-            },
-            "is_closed": {
-              "type": ["null", "boolean"]
-            },
-            "is_billed": {
-              "type": ["null", "boolean"]
-            },
-            "timer_started_at": {
-              "type": ["null", "string"]
-            },
-            "started_time": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "ended_time": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "is_running": {
-              "type": ["null", "boolean"]
-            },
-            "invoice": {
-              "type": ["null", "string"]
-            },
-            "external_reference": {
-              "type": ["null", "string"]
-            },
-            "billable": {
-              "type": ["null", "boolean"]
-            },
-            "budgeted": {
-              "type": ["null", "boolean"]
-            },
-            "billable_rate": {
-              "type": ["null", "number"]
-            },
-            "cost_rate": {
-              "type": ["null", "number"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"]
@@ -1132,63 +168,7 @@
     {
       "stream": {
         "name": "user_assignments",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "is_project_manager": {
-              "type": ["null", "boolean"]
-            },
-            "is_active": {
-              "type": ["null", "boolean"]
-            },
-            "use_default_rates": {
-              "type": ["null", "boolean"]
-            },
-            "budget": {
-              "type": ["null", "number"]
-            },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "hourly_rate": {
-              "type": ["null", "number"]
-            },
-            "project": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "name": {
-                  "type": ["null", "string"]
-                },
-                "code": {
-                  "type": ["null", "string"]
-                }
-              }
-            },
-            "user": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "name": {
-                  "type": ["null", "string"]
-                }
-              }
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"]
@@ -1200,60 +180,7 @@
     {
       "stream": {
         "name": "task_assignments",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "billable": {
-              "type": ["null", "boolean"]
-            },
-            "is_active": {
-              "type": ["null", "boolean"]
-            },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "hourly_rate": {
-              "type": ["null", "number"]
-            },
-            "budget": {
-              "type": ["null", "string"]
-            },
-            "project": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "name": {
-                  "type": ["null", "string"]
-                },
-                "code": {
-                  "type": ["null", "string"]
-                }
-              }
-            },
-            "task": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "name": {
-                  "type": ["null", "string"]
-                }
-              }
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"]
@@ -1265,99 +192,7 @@
     {
       "stream": {
         "name": "projects",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "name": {
-              "type": ["null", "string"]
-            },
-            "code": {
-              "type": ["null", "string"]
-            },
-            "is_active": {
-              "type": ["null", "boolean"]
-            },
-            "bill_by": {
-              "type": ["null", "string"]
-            },
-            "budget": {
-              "type": ["null", "number"]
-            },
-            "budget_by": {
-              "type": ["null", "string"]
-            },
-            "budget_is_monthly": {
-              "type": ["null", "boolean"]
-            },
-            "notify_when_over_budget": {
-              "type": ["null", "boolean"]
-            },
-            "over_budget_notification_percentage": {
-              "type": ["null", "number"]
-            },
-            "over_budget_notification_date": {
-              "type": ["null", "string"],
-              "format": "date"
-            },
-            "show_budget_to_all": {
-              "type": ["null", "boolean"]
-            },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "starts_on": {
-              "type": ["null", "string"],
-              "format": "date"
-            },
-            "ends_on": {
-              "type": ["null", "string"]
-            },
-            "is_billable": {
-              "type": ["null", "boolean"]
-            },
-            "is_fixed_fee": {
-              "type": ["null", "boolean"]
-            },
-            "notes": {
-              "type": ["null", "string"]
-            },
-            "client": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "name": {
-                  "type": ["null", "string"]
-                },
-                "currency": {
-                  "type": ["null", "string"]
-                }
-              }
-            },
-            "cost_budget": {
-              "type": ["null", "string"]
-            },
-            "cost_budget_include_expenses": {
-              "type": ["null", "boolean"]
-            },
-            "hourly_rate": {
-              "type": ["null", "number"]
-            },
-            "fee": {
-              "type": ["null", "string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"]
@@ -1369,29 +204,7 @@
     {
       "stream": {
         "name": "roles",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "name": {
-              "type": ["null", "string"]
-            },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "user_ids": {
-              "type": ["null", "array"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"]
@@ -1403,77 +216,7 @@
     {
       "stream": {
         "name": "users",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "first_name": {
-              "type": ["null", "string"]
-            },
-            "last_name": {
-              "type": ["null", "string"]
-            },
-            "email": {
-              "type": ["null", "string"]
-            },
-            "telephone": {
-              "type": ["null", "string"]
-            },
-            "timezone": {
-              "type": ["null", "string"]
-            },
-            "has_access_to_all_future_projects": {
-              "type": ["null", "boolean"]
-            },
-            "is_contractor": {
-              "type": ["null", "boolean"]
-            },
-            "is_admin": {
-              "type": ["null", "boolean"]
-            },
-            "is_project_manager": {
-              "type": ["null", "boolean"]
-            },
-            "can_see_rates": {
-              "type": ["null", "boolean"]
-            },
-            "can_create_projects": {
-              "type": ["null", "boolean"]
-            },
-            "can_create_invoices": {
-              "type": ["null", "boolean"]
-            },
-            "is_active": {
-              "type": ["null", "boolean"]
-            },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "weekly_capacity": {
-              "type": ["null", "integer"]
-            },
-            "default_hourly_rate": {
-              "type": ["null", "number"]
-            },
-            "cost_rate": {
-              "type": ["null", "number"]
-            },
-            "roles": {
-              "type": ["null", "array"]
-            },
-            "avatar_url": {
-              "type": ["null", "string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"]
@@ -1485,34 +228,7 @@
     {
       "stream": {
         "name": "billable_rates",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "amount": {
-              "type": ["null", "number"]
-            },
-            "start_date": {
-              "type": ["null", "string"],
-              "format": "date"
-            },
-            "end_date": {
-              "type": ["null", "string"],
-              "format": "date"
-            },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
@@ -1521,34 +237,7 @@
     {
       "stream": {
         "name": "cost_rates",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "amount": {
-              "type": ["null", "number"]
-            },
-            "start_date": {
-              "type": ["null", "string"],
-              "format": "date"
-            },
-            "end_date": {
-              "type": ["null", "string"],
-              "format": "date"
-            },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
@@ -1557,66 +246,7 @@
     {
       "stream": {
         "name": "project_assignments",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "is_project_manager": {
-              "type": ["null", "boolean"]
-            },
-            "is_active": {
-              "type": ["null", "boolean"]
-            },
-            "use_default_rates": {
-              "type": ["null", "boolean"]
-            },
-            "budget": {
-              "type": ["null", "string"]
-            },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "hourly_rate": {
-              "type": ["null", "number"]
-            },
-            "project": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "name": {
-                  "type": ["null", "string"]
-                },
-                "code": {
-                  "type": ["null", "string"]
-                }
-              }
-            },
-            "client": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "name": {
-                  "type": ["null", "string"]
-                }
-              }
-            },
-            "task_assignments": {
-              "type": ["null", "array"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"]
@@ -1628,33 +258,7 @@
     {
       "stream": {
         "name": "expenses_clients",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "client_id": {
-              "type": ["null", "integer"]
-            },
-            "client_name": {
-              "type": ["null", "string"]
-            },
-            "total_amount": {
-              "type": ["null", "integer"]
-            },
-            "billable_amount": {
-              "type": ["null", "integer"]
-            },
-            "currency": {
-              "type": ["null", "string"]
-            },
-            "from": {
-              "type": ["null", "string"]
-            },
-            "to": {
-              "type": ["null", "string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["to"]
@@ -1666,39 +270,7 @@
     {
       "stream": {
         "name": "expenses_projects",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "client_id": {
-              "type": ["null", "integer"]
-            },
-            "client_name": {
-              "type": ["null", "string"]
-            },
-            "project_id": {
-              "type": ["null", "integer"]
-            },
-            "project_name": {
-              "type": ["null", "string"]
-            },
-            "total_amount": {
-              "type": ["null", "number"]
-            },
-            "billable_amount": {
-              "type": ["null", "number"]
-            },
-            "currency": {
-              "type": ["null", "string"]
-            },
-            "from": {
-              "type": ["null", "string"]
-            },
-            "to": {
-              "type": ["null", "string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["to"]
@@ -1710,33 +282,7 @@
     {
       "stream": {
         "name": "expenses_categories",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "expense_category_id": {
-              "type": ["null", "integer"]
-            },
-            "expense_category_name": {
-              "type": ["null", "string"]
-            },
-            "total_amount": {
-              "type": ["null", "integer"]
-            },
-            "billable_amount": {
-              "type": ["null", "integer"]
-            },
-            "currency": {
-              "type": ["null", "string"]
-            },
-            "from": {
-              "type": ["null", "string"]
-            },
-            "to": {
-              "type": ["null", "string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["to"]
@@ -1748,36 +294,7 @@
     {
       "stream": {
         "name": "expenses_team",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "user_id": {
-              "type": ["null", "integer"]
-            },
-            "user_name": {
-              "type": ["null", "string"]
-            },
-            "is_contractor": {
-              "type": ["null", "boolean"]
-            },
-            "total_amount": {
-              "type": ["null", "integer"]
-            },
-            "billable_amount": {
-              "type": ["null", "integer"]
-            },
-            "currency": {
-              "type": ["null", "string"]
-            },
-            "from": {
-              "type": ["null", "string"]
-            },
-            "to": {
-              "type": ["null", "string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["to"]
@@ -1789,45 +306,7 @@
     {
       "stream": {
         "name": "uninvoiced",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "client_id": {
-              "type": ["null", "integer"]
-            },
-            "client_name": {
-              "type": ["null", "string"]
-            },
-            "project_id": {
-              "type": ["null", "integer"]
-            },
-            "project_name": {
-              "type": ["null", "string"]
-            },
-            "currency": {
-              "type": ["null", "string"]
-            },
-            "total_hours": {
-              "type": ["null", "integer"]
-            },
-            "uninvoiced_hours": {
-              "type": ["null", "integer"]
-            },
-            "uninvoiced_expenses": {
-              "type": ["null", "integer"]
-            },
-            "uninvoiced_amount": {
-              "type": ["null", "integer"]
-            },
-            "from": {
-              "type": ["null", "string"]
-            },
-            "to": {
-              "type": ["null", "string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
@@ -1836,36 +315,7 @@
     {
       "stream": {
         "name": "time_clients",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "client_id": {
-              "type": ["null", "integer"]
-            },
-            "client_name": {
-              "type": ["null", "string"]
-            },
-            "total_hours": {
-              "type": ["null", "number"]
-            },
-            "billable_hours": {
-              "type": ["null", "number"]
-            },
-            "currency": {
-              "type": ["null", "string"]
-            },
-            "billable_amount": {
-              "type": ["null", "integer"]
-            },
-            "from": {
-              "type": ["null", "string"]
-            },
-            "to": {
-              "type": ["null", "string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["to"]
@@ -1877,42 +327,7 @@
     {
       "stream": {
         "name": "time_projects",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "project_id": {
-              "type": ["null", "integer"]
-            },
-            "project_name": {
-              "type": ["null", "string"]
-            },
-            "client_id": {
-              "type": ["null", "integer"]
-            },
-            "client_name": {
-              "type": ["null", "string"]
-            },
-            "total_hours": {
-              "type": ["null", "integer"]
-            },
-            "billable_hours": {
-              "type": ["null", "integer"]
-            },
-            "currency": {
-              "type": ["null", "string"]
-            },
-            "billable_amount": {
-              "type": ["null", "integer"]
-            },
-            "from": {
-              "type": ["null", "string"]
-            },
-            "to": {
-              "type": ["null", "string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["to"]
@@ -1924,36 +339,7 @@
     {
       "stream": {
         "name": "time_tasks",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "task_id": {
-              "type": ["null", "integer"]
-            },
-            "task_name": {
-              "type": ["null", "string"]
-            },
-            "total_hours": {
-              "type": ["null", "integer"]
-            },
-            "billable_hours": {
-              "type": ["null", "integer"]
-            },
-            "currency": {
-              "type": ["null", "string"]
-            },
-            "billable_amount": {
-              "type": ["null", "integer"]
-            },
-            "from": {
-              "type": ["null", "string"]
-            },
-            "to": {
-              "type": ["null", "string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["to"]
@@ -1965,39 +351,7 @@
     {
       "stream": {
         "name": "time_team",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "user_id": {
-              "type": ["null", "integer"]
-            },
-            "user_name": {
-              "type": ["null", "string"]
-            },
-            "is_contractor": {
-              "type": ["null", "boolean"]
-            },
-            "total_hours": {
-              "type": ["null", "number"]
-            },
-            "billable_hours": {
-              "type": ["null", "number"]
-            },
-            "currency": {
-              "type": ["null", "string"]
-            },
-            "billable_amount": {
-              "type": ["null", "integer"]
-            },
-            "from": {
-              "type": ["null", "string"]
-            },
-            "to": {
-              "type": ["null", "string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["to"]
@@ -2009,48 +363,7 @@
     {
       "stream": {
         "name": "project_budget",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "project_id": {
-              "type": ["null", "integer"]
-            },
-            "project_name": {
-              "type": ["null", "string"]
-            },
-            "client_id": {
-              "type": ["null", "integer"]
-            },
-            "client_name": {
-              "type": ["null", "string"]
-            },
-            "budget_is_monthly": {
-              "type": ["null", "boolean"]
-            },
-            "budget_by": {
-              "type": ["null", "string"]
-            },
-            "is_active": {
-              "type": ["null", "boolean"]
-            },
-            "budget": {
-              "type": ["null", "integer"]
-            },
-            "budget_spent": {
-              "type": ["null", "integer"]
-            },
-            "budget_remaining": {
-              "type": ["null", "integer"]
-            },
-            "from": {
-              "type": ["null", "string"]
-            },
-            "to": {
-              "type": ["null", "string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
