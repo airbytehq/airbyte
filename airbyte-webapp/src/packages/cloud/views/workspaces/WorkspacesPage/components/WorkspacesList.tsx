@@ -3,7 +3,10 @@ import styled from "styled-components";
 
 import WorkspaceItem from "./WorkspaceItem";
 import WorkspacesControl from "./WorkspacesControl";
-import { useListWorkspaces } from "packages/cloud/services/workspaces/WorkspacesService";
+import {
+  useListWorkspaces,
+  useWorkspaceService,
+} from "packages/cloud/services/workspaces/WorkspacesService";
 
 const Content = styled.div`
   width: 100%;
@@ -13,17 +16,22 @@ const Content = styled.div`
 
 const WorkspacesList: React.FC = () => {
   const { data: workspaces } = useListWorkspaces();
+  const { selectWorkspace, createWorkspace } = useWorkspaceService();
 
   return (
     <Content>
       {workspaces?.length
         ? workspaces.map((workspace) => (
-            <WorkspaceItem key={workspace.workspaceId}>
+            <WorkspaceItem
+              key={workspace.workspaceId}
+              id={workspace.workspaceId}
+              onClick={selectWorkspace}
+            >
               {workspace.name}
             </WorkspaceItem>
           ))
         : null}
-      <WorkspacesControl />
+      <WorkspacesControl onSubmit={createWorkspace} />
     </Content>
   );
 };

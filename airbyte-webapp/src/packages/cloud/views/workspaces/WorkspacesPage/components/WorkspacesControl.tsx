@@ -3,8 +3,6 @@ import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 import { useToggle } from "react-use";
 
-import { useCreateWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
-
 import { Button, ContentCard } from "components";
 import CreateWorkspaceForm from "./CreateWorkspaceForm";
 
@@ -15,12 +13,13 @@ const FormContent = styled(ContentCard)`
   padding: 15px 20px 16px 20px;
 `;
 
-const WorkspacesControl: React.FC = () => {
+const WorkspacesControl: React.FC<{
+  onSubmit: (name: string) => Promise<void>;
+}> = (props) => {
   const [isEditMode, toggleMode] = useToggle(false);
-  const createWorkspace = useCreateWorkspace();
 
   const onSubmit = async (values: { name: string }) => {
-    await createWorkspace(values);
+    await props.onSubmit(values.name);
     toggleMode();
   };
 

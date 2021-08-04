@@ -14,11 +14,11 @@ abstract class AirbyteRequestService {
   ) {}
 
   /** Perform network request */
-  public async fetch(
+  public async fetch<T = Response>(
     url: string,
     body?: unknown,
     options?: Partial<RequestInit>
-  ): Promise<Response> {
+  ): Promise<T> {
     const path = `${this.rootUrl}${url}`;
 
     const requestOptions: RequestInit = merge(

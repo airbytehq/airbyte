@@ -1,45 +1,28 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import { useMutation, useQuery } from "react-query";
 
 import { CloudWorkspacesService } from "packages/cloud/lib/domain/cloudWorkspaces/CloudWorkspacesService";
-import { RequestAuthMiddleware } from "packages/cloud/lib/auth/RequestAuthMiddleware";
 import { api } from "packages/cloud/config/api";
-import { useRequestMiddlewareProvider } from "core/request/useRequestMiddlewareProvider";
-import { RequestMiddleware } from "core/request/RequestMiddleware";
-import { jwtProvider } from "packages/cloud/services/auth/JwtProvider";
+import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
+import { useDefaultRequestMiddlewares } from "./useDefaultRequestMiddlewares";
+import { WorkspaceService } from "../../lib/domain/cloudWorkspaces/WorkspaceService";
 
 type Context = {
   currentWorkspaceId?: string;
   selectWorkspace: (workspaceId: string) => void;
-  createWorkspace: (name: string) => void;
+  createWorkspace: (name: string) => Promise<void>;
 };
 
 const defaultState: Context = {
-  createWorkspace: (_: string) => ({}),
+  createWorkspace: async (_: string) => {
+    throw new Error("createWorkspace was not specified");
+  },
   selectWorkspace: (_: string) => ({}),
 };
 
 export const WorkspaceServiceContext = React.createContext<Context>(
   defaultState
 );
-
-export const useDefaultRequestMiddlewares = (): RequestMiddleware[] => {
-  const requestAuthMiddleware = useMemo(
-    () => RequestAuthMiddleware(jwtProvider),
-    []
-  );
-
-  const { register, unregister } = useRequestMiddlewareProvider();
-
-  // This is done only to allow injecting middlewares for static fields of BaseResource
-  useEffect(() => {
-    register("AuthMiddleware", requestAuthMiddleware);
-
-    return () => unregister("AuthMiddleware");
-  }, [register, unregister, requestAuthMiddleware]);
-
-  return useMemo(() => [requestAuthMiddleware], [requestAuthMiddleware]);
-};
 
 function useGetWorkspaceService() {
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
@@ -59,9 +42,18 @@ export function useListWorkspaces() {
 }
 
 export function useCreateWorkspace() {
+  const requestAuthMiddleware = useDefaultRequestMiddlewares();
   const service = useGetWorkspaceService();
 
-  return useMutation(service.create.bind(service)).mutate;
+  return useMutation(
+    async (payload: { name: string; billingUsedId: string }) => {
+      // TODO: temp workaround for https://github.com/airbytehq/airbyte/issues/5191
+      const workspaceService = new WorkspaceService(requestAuthMiddleware);
+      const workspace = await workspaceService.create({ name: payload.name });
+
+      return service.create({ ...payload, workspaceId: workspace.workspaceId });
+    }
+  ).mutate;
 }
 
 export function useGetWorkspace(workspaceId: string) {
@@ -75,15 +67,20 @@ export function useGetWorkspace(workspaceId: string) {
 export const WorkspaceServiceProvider: React.FC = ({ children }) => {
   const [currentWorkspaceId, setCurrentWorkspaceId] = useState("");
   const createWorkspace = useCreateWorkspace();
+  const user = useCurrentUser();
+
   const ctx: Context = useMemo(
     () => ({
       currentWorkspaceId,
       createWorkspace: async (name: string) => {
-        await createWorkspace({ name });
+        await createWorkspace({
+          name,
+          billingUsedId: user.userId,
+        });
       },
       selectWorkspace: setCurrentWorkspaceId,
     }),
-    [currentWorkspaceId, createWorkspace]
+    [currentWorkspaceId, user, createWorkspace]
   );
 
   return (

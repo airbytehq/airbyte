@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useMemo } from "react";
 
-import { User } from "./types";
 import { GoogleAuthService } from "packages/cloud/lib/auth/GoogleAuthService";
 import useTypesafeReducer from "components/hooks/useTypesafeReducer";
 import {
@@ -10,7 +9,7 @@ import {
   initialState,
 } from "./reducer";
 import { firebaseApp } from "packages/cloud/config/firebase";
-import { UserService } from "packages/cloud/lib/domain/users";
+import { User, UserService } from "packages/cloud/lib/domain/users";
 import { RequestAuthMiddleware } from "packages/cloud/lib/auth/RequestAuthMiddleware";
 import { AuthProviders } from "packages/cloud/lib/auth/AuthProviders";
 import { api } from "packages/cloud/config/api";
@@ -62,24 +61,26 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       if (state.currentUser === null && currentUser) {
         token = await currentUser.getIdToken();
 
-        console.log(currentUser);
+        let user: User | undefined;
 
         try {
-          const user = await userService.getByAuthId(
+          user = await userService.getByAuthId(
             currentUser.uid,
             AuthProviders.GoogleIdentityPlatform
           );
-          loggedIn(user);
         } catch (err) {
           if (currentUser.email) {
-            const user = await userService.create({
+            user = await userService.create({
               authProvider: AuthProviders.GoogleIdentityPlatform,
               authUserId: currentUser.uid,
               email: currentUser.email,
               name: currentUser.email,
             });
-            loggedIn(user);
           }
+        }
+
+        if (user) {
+          loggedIn(user);
         }
       } else {
         authInited();

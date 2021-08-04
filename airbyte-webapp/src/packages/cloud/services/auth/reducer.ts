@@ -1,5 +1,5 @@
 import { ActionType, createAction, createReducer } from "typesafe-actions";
-import { User } from "./types";
+import { User } from "packages/cloud/lib/domain/users";
 
 export const actions = {
   authInited: createAction("AUTH_INITED")<void>(),

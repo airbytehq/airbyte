@@ -11,15 +11,18 @@ const Item = styled(ContentCard)`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
+  cursor: pointer;
 `;
 
 const Arrow = styled(FontAwesomeIcon)`
   color: ${({ theme }) => theme.primaryColor};
 `;
 
-const WorkspaceItem: React.FC = (props) => {
+const WorkspaceItem: React.FC<{ onClick: (id: string) => void; id: string }> = (
+  props
+) => {
   return (
-    <Item>
+    <Item onClick={() => props.onClick(props.id)}>
       <H5 bold>{props.children}</H5>
       <Arrow icon={faChevronRight} />
     </Item>

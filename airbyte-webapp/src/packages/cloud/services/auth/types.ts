@@ -1,7 +1,3 @@
-export interface User {
-  email: string;
-}
-
 export enum ErrorCodes {
   DuplicateEmail = "email.duplicate",
   InvalidEmail = "email.invalid",

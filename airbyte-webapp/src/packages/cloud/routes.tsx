@@ -20,12 +20,12 @@ import { Auth } from "./views/auth";
 import { useAuthService } from "./services/auth/AuthService";
 
 import {
-  useDefaultRequestMiddlewares,
   useGetWorkspace,
   useWorkspaceService,
   WorkspaceServiceProvider,
 } from "./services/workspaces/WorkspacesService";
 import { HealthService } from "core/health/HealthService";
+import { useDefaultRequestMiddlewares } from "./services/workspaces/useDefaultRequestMiddlewares";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -48,6 +48,7 @@ export enum Routes {
   Login = "/login",
   ResetPassword = "/reset-password",
   Root = "/",
+  SelectWorkspace = "/workspaces",
 }
 
 const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
@@ -95,7 +96,12 @@ const MainViewRoutes = () => {
           </Suspense>
         </MainView>
       ) : (
-        <WorkspacesPage />
+        <Switch>
+          <Route exact path={Routes.SelectWorkspace}>
+            <WorkspacesPage />
+          </Route>
+          <Redirect to={Routes.SelectWorkspace} />
+        </Switch>
       )}
     </>
   );

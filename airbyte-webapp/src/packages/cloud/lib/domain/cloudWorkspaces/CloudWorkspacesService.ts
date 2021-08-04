@@ -8,31 +8,31 @@ class CloudWorkspacesService extends AirbyteRequestService {
   }
 
   public async list(): Promise<CloudWorkspace[]> {
-    const rs = ((await this.fetch(
+    const { workspaces } = await this.fetch<{ workspaces: CloudWorkspace[] }>(
       `${this.url}/list`,
       {}
-    )) as any) as CloudWorkspace[];
+    );
 
-    return rs;
+    return workspaces;
   }
 
   public async get(workspaceId: string): Promise<CloudWorkspace> {
-    const rs = ((await this.fetch(`${this.url}/get`, {
+    const cloudWorkspace = await this.fetch<CloudWorkspace>(`${this.url}/get`, {
       workspaceId,
-    })) as any) as CloudWorkspace;
+    });
 
-    return rs;
+    return cloudWorkspace;
   }
 
-  public async create(cloudWorkspace: {
+  public async create(cloudWorkspaceCreatePayload: {
     name: string;
+    billingUsedId: string;
+    workspaceId: string;
   }): Promise<CloudWorkspace> {
-    const rs = ((await this.fetch(
+    return await this.fetch<CloudWorkspace>(
       `${this.url}/create`,
-      cloudWorkspace
-    )) as any) as CloudWorkspace;
-
-    return rs;
+      cloudWorkspaceCreatePayload
+    );
   }
 }
 
