@@ -59,7 +59,7 @@ class SourceGithub(AbstractSource):
 
         if org_ids:
             org_repositories = []
-            repos = Repositories(authenticator=authenticator, parent_entities=org_ids)
+            repos = Repositories(authenticator=authenticator, organizations=org_ids)
             for stream in repos.stream_slices(sync_mode=SyncMode.full_refresh):
                 org_repositories += [
                     repository["full_name"] for repository in repos.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream)
@@ -76,7 +76,7 @@ class SourceGithub(AbstractSource):
             repositories = self._generate_repositories(config=config, authenticator=authenticator)
 
             # We should use the most poorly filled stream to use the `list` method, because when using the `next` method, we can get the `StopIteration` error.
-            projects_stream = Projects(authenticator=authenticator, parent_entities=repositories, start_date=config["start_date"])
+            projects_stream = Projects(authenticator=authenticator, repositories=repositories, start_date=config["start_date"])
             for stream in projects_stream.stream_slices(sync_mode=SyncMode.full_refresh):
                 list(projects_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream))
             return True, None
@@ -86,7 +86,7 @@ class SourceGithub(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(token=config["access_token"], auth_method="token")
         repositories = self._generate_repositories(config=config, authenticator=authenticator)
-        full_refresh_args = {"authenticator": authenticator, "parent_entities": repositories}
+        full_refresh_args = {"authenticator": authenticator, "repositories": repositories}
         incremental_args = {**full_refresh_args, "start_date": config["start_date"]}
 
         return [
