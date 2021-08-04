@@ -9,8 +9,13 @@ export type SideMenuItem = {
   indicatorCount?: number;
 };
 
+export type CategoryItem = {
+  category?: string | React.ReactNode;
+  routes: SideMenuItem[];
+};
+
 type SideMenuProps = {
-  data: SideMenuItem[];
+  data: CategoryItem[];
   activeItem?: string;
   onSelect: (id: string) => void;
 };
@@ -19,17 +24,37 @@ const Content = styled.nav`
   min-width: 147px;
 `;
 
+const Category = styled.div`
+  margin-bottom: 30px;
+`;
+
+const CategoryName = styled.div`
+  padding: 5px 8px;
+  font-weight: 500;
+  font-size: 10px;
+  line-height: 12px;
+  opacity: 0.5;
+  text-transform: uppercase;
+`;
+
 const SideMenu: React.FC<SideMenuProps> = ({ data, onSelect, activeItem }) => {
   return (
     <Content>
-      {data.map((item) => (
-        <MenuItem
-          key={item.id}
-          name={item.name}
-          isActive={item.id === activeItem}
-          count={item.indicatorCount}
-          onClick={() => onSelect(item.id)}
-        />
+      {data.map((categoryItem) => (
+        <Category>
+          {categoryItem.category ? (
+            <CategoryName>{categoryItem.category}</CategoryName>
+          ) : null}
+          {categoryItem.routes.map((item) => (
+            <MenuItem
+              key={item.id}
+              name={item.name}
+              isActive={item.id === activeItem}
+              count={item.indicatorCount}
+              onClick={() => onSelect(item.id)}
+            />
+          ))}
+        </Category>
       ))}
     </Content>
   );

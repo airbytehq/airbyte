@@ -16,6 +16,7 @@ import ConfigurationsPage from "./pages/ConfigurationsPage";
 import MetricsPage from "./pages/MetricsPage";
 import AccountPage from "./pages/AccountPage";
 import { DestinationsPage, SourcesPage } from "./pages/ConnectorsPage";
+import { CategoryItem } from "components/SideMenu/SideMenu";
 
 const Content = styled.div`
   margin: 0 33px 0 27px;
@@ -28,36 +29,46 @@ const MainView = styled.div`
   margin-left: 47px;
 `;
 
-const SettingsPage: React.FC = () => {
+type SettingsPageProps = {
+  pageConfig?: {
+    menuConfig: CategoryItem[];
+  };
+};
+
+const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   const { push, pathname } = useRouter();
   const { countNewSourceVersion, countNewDestinationVersion } = useConnector();
 
-  const menuItems = [
+  const menuItems = pageConfig?.menuConfig || [
     {
-      id: `${Routes.Settings}${Routes.Account}`,
-      name: <FormattedMessage id="settings.account" />,
-    },
-    {
-      id: `${Routes.Settings}${Routes.Source}`,
-      name: <FormattedMessage id="tables.sources" />,
-      indicatorCount: countNewSourceVersion,
-    },
-    {
-      id: `${Routes.Settings}${Routes.Destination}`,
-      name: <FormattedMessage id="tables.destinations" />,
-      indicatorCount: countNewDestinationVersion,
-    },
-    {
-      id: `${Routes.Settings}${Routes.Configuration}`,
-      name: <FormattedMessage id="admin.configuration" />,
-    },
-    {
-      id: `${Routes.Settings}${Routes.Notifications}`,
-      name: <FormattedMessage id="settings.notifications" />,
-    },
-    {
-      id: `${Routes.Settings}${Routes.Metrics}`,
-      name: <FormattedMessage id="settings.metrics" />,
+      routes: [
+        {
+          id: `${Routes.Settings}${Routes.Account}`,
+          name: <FormattedMessage id="settings.account" />,
+        },
+        {
+          id: `${Routes.Settings}${Routes.Source}`,
+          name: <FormattedMessage id="tables.sources" />,
+          indicatorCount: countNewSourceVersion,
+        },
+        {
+          id: `${Routes.Settings}${Routes.Destination}`,
+          name: <FormattedMessage id="tables.destinations" />,
+          indicatorCount: countNewDestinationVersion,
+        },
+        {
+          id: `${Routes.Settings}${Routes.Configuration}`,
+          name: <FormattedMessage id="admin.configuration" />,
+        },
+        {
+          id: `${Routes.Settings}${Routes.Notifications}`,
+          name: <FormattedMessage id="settings.notifications" />,
+        },
+        {
+          id: `${Routes.Settings}${Routes.Metrics}`,
+          name: <FormattedMessage id="settings.metrics" />,
+        },
+      ],
     },
   ];
 

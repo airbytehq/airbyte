@@ -5,6 +5,7 @@ import {
   Route,
   Switch,
 } from "react-router-dom";
+import { FormattedMessage } from "react-intl";
 
 import config from "config";
 
@@ -18,6 +19,7 @@ import { WorkspacesPage } from "./views/workspaces";
 import { useApiHealthPoll } from "components/hooks/services/Health";
 import { Auth } from "./views/auth";
 import { useAuthService } from "./services/auth/AuthService";
+import useConnector from "../../components/hooks/services/useConnector";
 
 import {
   useGetWorkspace,
@@ -46,12 +48,50 @@ export enum Routes {
   ResetPassword = "/reset-password",
   Root = "/",
   SelectWorkspace = "/workspaces",
+  Configuration = "/configuration",
+  Notifications = "/notifications",
 }
 
 const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
   currentWorkspaceId,
 }) => {
   useGetWorkspace(currentWorkspaceId);
+  const { countNewSourceVersion, countNewDestinationVersion } = useConnector();
+
+  const menuItems = [
+    {
+      category: <FormattedMessage id="settings.userSettings" />,
+      routes: [
+        {
+          id: `${Routes.Settings}${Routes.Account}`,
+          name: <FormattedMessage id="settings.account" />,
+        },
+      ],
+    },
+    {
+      category: <FormattedMessage id="settings.workspaceSettings" />,
+      routes: [
+        {
+          id: `${Routes.Settings}${Routes.Source}`,
+          name: <FormattedMessage id="tables.sources" />,
+          indicatorCount: countNewSourceVersion,
+        },
+        {
+          id: `${Routes.Settings}${Routes.Destination}`,
+          name: <FormattedMessage id="tables.destinations" />,
+          indicatorCount: countNewDestinationVersion,
+        },
+        {
+          id: `${Routes.Settings}${Routes.Configuration}`,
+          name: <FormattedMessage id="admin.configuration" />,
+        },
+        {
+          id: `${Routes.Settings}${Routes.Notifications}`,
+          name: <FormattedMessage id="settings.notifications" />,
+        },
+      ],
+    },
+  ];
 
   return (
     <Switch>
@@ -65,7 +105,7 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
         <ConnectionPage />
       </Route>
       <Route path={Routes.Settings}>
-        <SettingsPage />
+        <SettingsPage pageConfig={{ menuConfig: menuItems }} />
       </Route>
       <Route exact path={Routes.Root}>
         <SourcesPage />
