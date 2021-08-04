@@ -73,7 +73,7 @@ class IncrementalFileStreamS3(IncrementalFileStream):
             else:
                 for c in content:
                     key = c["Key"]
-                    if accept_key(key):
+                    if accept_key(key) and client.get_bucket(provider["bucket"].lookup("key")).size != 0:
                         yield key
             ctoken = response.get("NextContinuationToken", None)
             if not ctoken:
