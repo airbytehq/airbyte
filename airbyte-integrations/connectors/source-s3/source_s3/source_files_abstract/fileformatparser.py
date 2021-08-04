@@ -139,20 +139,28 @@ class CsvParser(FileFormatParser):
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html
         """
-        return pa.csv.ReadOptions(block_size=10000, encoding=self._format.get("encoding", "utf8"))
+        # return pa.csv.ReadOptions(block_size=10000, encoding=self._format.get("encoding", "utf8"))
+        return {'block_size':10000, 'encoding':self._format.get("encoding", "utf8")}
 
     def _parse_options(self):
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.ParseOptions.html
         """
         quote_char = self._format.get("quote_char", False) if self._format.get("quote_char", False) != "" else False
-        return pa.csv.ParseOptions(
-            delimiter=self._format.get("delimiter", ","),
-            quote_char=quote_char,
-            double_quote=self._format.get("double_quote", True),
-            escape_char=self._format.get("escape_char", False),
-            newlines_in_values=self._format.get("newlines_in_values", False),
-        )
+        # return pa.csv.ParseOptions(
+        #     delimiter=self._format.get("delimiter", ","),
+        #     quote_char=quote_char,
+        #     double_quote=self._format.get("double_quote", True),
+        #     escape_char=self._format.get("escape_char", False),
+        #     newlines_in_values=self._format.get("newlines_in_values", False),
+        # )
+        return {
+            'delimiter':self._format.get("delimiter", ","),
+            'quote_char':quote_char,
+            'double_quote':self._format.get("double_quote", True),
+            'escape_char':self._format.get("escape_char", False),
+            'newlines_in_values':self._format.get("newlines_in_values", False),
+        }
 
     def _convert_options(self, json_schema: Mapping[str, Any] = None):
         """
@@ -162,24 +170,31 @@ class CsvParser(FileFormatParser):
         """
         check_utf8 = True if self._format.get("encoding", "utf8").lower().replace("-", "") == "utf8" else False
         convert_schema = self.json_schema_to_pyarrow_schema(json_schema) if json_schema is not None else None
-        return pa.csv.ConvertOptions(
-            check_utf8=check_utf8, column_types=convert_schema, **json.loads(self._format.get("additional_reader_options", "{}"))
-        )
+        # return pa.csv.ConvertOptions(
+        #     check_utf8=check_utf8, column_types=convert_schema, **json.loads(self._format.get("additional_reader_options", "{}"))
+        # )
+        return {
+            **{"check_utf8":check_utf8, "column_types":convert_schema}, 
+            **json.loads(self._format.get("additional_reader_options", "{}"))
+        }
 
     def get_inferred_schema(self, file: Union[TextIO, BinaryIO]) -> dict:
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html
         Note: this reads just the first block (as defined in _read_options() block_size) to infer the schema
         """
-        def get_schema(streaming_reader):
+        def get_schema(file, read_opts, parse_opts, convert_opts):
+            import pyarrow as pa
+            streaming_reader = pa.csv.open_csv(
+                file, pa.csv.ReadOptions(**read_opts), pa.csv.ParseOptions(**parse_opts), pa.csv.ConvertOptions(**convert_opts)
+            )
             schema_dict = {field.name: field.type for field in streaming_reader.schema}
             return schema_dict
-
-        streaming_reader = pa_csv.open_csv(file, self._read_options(), self._parse_options(), self._convert_options())
+        
         q_worker = mp.Queue()
         proc = mp.Process(
             target=multiprocess_queuer,
-            args=(dill.dumps(get_schema), q_worker, streaming_reader)
+            args=(dill.dumps(get_schema), q_worker, file, self._read_options(), self._parse_options(), self._convert_options())
         )
         proc.start()
         try:
@@ -200,7 +215,12 @@ class CsvParser(FileFormatParser):
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html
         PyArrow returns lists of values for each column so we zip() these up into records which we then yield
         """
-        streaming_reader = pa_csv.open_csv(file, self._read_options(), self._parse_options(), self._convert_options(self._master_schema))
+        streaming_reader = pa_csv.open_csv(
+            file, 
+            pa.csv.ReadOptions(**self._read_options()), 
+            pa.csv.ParseOptions(**self._parse_options()), 
+            pa.csv.ConvertOptions(**self._convert_options(self._master_schema))
+        )
         still_reading = True
         while still_reading:
             try:
