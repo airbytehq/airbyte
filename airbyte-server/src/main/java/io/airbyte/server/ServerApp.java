@@ -195,7 +195,7 @@ public class ServerApp implements ServerRunnable {
         configs.getAirbyteVersion(),
         configRepository);
 
-    // must happen after the tracking client is initialized.
+    // this is only necessary for new workspace; must happen after the tracking client is initialized.
     newWorkspace.ifPresent(workspace -> TrackingClientSingleton.get().identify(workspace.getWorkspaceId()));
 
     final String airbyteVersion = configs.getAirbyteVersion();
