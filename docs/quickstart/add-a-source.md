@@ -12,3 +12,4 @@ You might have to wait ~30 seconds before the fields show up because it is the f
 
 ![](../.gitbook/assets/getting-started-source.png)
 
+Can't find the connectors that you want? Try your hand at easily building one yourself using our [Python CDK for HTTP API sources!](../connector-development/cdk-python)
