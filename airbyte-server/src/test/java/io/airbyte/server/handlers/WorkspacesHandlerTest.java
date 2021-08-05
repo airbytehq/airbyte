@@ -25,6 +25,8 @@
 package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,6 +44,7 @@ import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.api.model.WorkspaceRead;
 import io.airbyte.api.model.WorkspaceReadList;
 import io.airbyte.api.model.WorkspaceUpdate;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
 import io.airbyte.config.SlackNotificationConfiguration;
@@ -87,7 +90,7 @@ class WorkspacesHandlerTest {
         .withCustomerId(UUID.randomUUID())
         .withEmail("test@airbyte.io")
         .withName("test workspace")
-        .withSlug("default")
+        .withSlug("test-workspace")
         .withInitialSetupComplete(false)
         .withDisplaySetupWizard(true)
         .withNews(false)
@@ -112,9 +115,8 @@ class WorkspacesHandlerTest {
   }
 
   @Test
-  void testCreateWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configRepository.listStandardWorkspaces(false))
-        .thenReturn(Collections.singletonList(workspace));
+  void testCreateWorkspace() throws JsonValidationException, IOException {
+    when(configRepository.listStandardWorkspaces(false)).thenReturn(Collections.singletonList(workspace));
 
     final UUID uuid = UUID.randomUUID();
     when(uuidSupplier.get()).thenReturn(uuid);
@@ -144,6 +146,42 @@ class WorkspacesHandlerTest {
         .notifications(List.of(generateApiNotification()));
 
     assertEquals(expectedRead, actualRead);
+  }
+
+  @Test
+  void testCreateWorkspaceDuplicateSlug() throws JsonValidationException, IOException {
+    when(configRepository.listStandardWorkspaces(true)).thenReturn(Collections.singletonList(workspace));
+
+    final UUID uuid = UUID.randomUUID();
+    when(uuidSupplier.get()).thenReturn(uuid);
+
+    configRepository.writeStandardWorkspace(workspace);
+
+    final WorkspaceCreate workspaceCreate = new WorkspaceCreate()
+        .name(workspace.getName())
+        .email("test@airbyte.io")
+        .news(false)
+        .anonymousDataCollection(false)
+        .securityUpdates(false)
+        .notifications(Collections.emptyList());
+
+    final WorkspaceRead actualRead = workspacesHandler.createWorkspace(workspaceCreate);
+    final WorkspaceRead expectedRead = new WorkspaceRead()
+        .workspaceId(uuid)
+        .customerId(uuid)
+        .email("test@airbyte.io")
+        .name(workspace.getName())
+        .slug(workspace.getSlug())
+        .initialSetupComplete(false)
+        .displaySetupWizard(false)
+        .news(false)
+        .anonymousDataCollection(false)
+        .securityUpdates(false)
+        .notifications(Collections.emptyList());
+
+    assertTrue(actualRead.getSlug().startsWith(workspace.getSlug()));
+    assertNotEquals(workspace.getSlug(), actualRead.getSlug());
+    assertEquals(Jsons.clone(expectedRead).slug(null), Jsons.clone(actualRead).slug(null));
   }
 
   @Test
@@ -183,7 +221,7 @@ class WorkspacesHandlerTest {
     when(configRepository.listStandardWorkspaces(false))
         .thenReturn(Lists.newArrayList(workspace, workspace2));
 
-    WorkspaceRead expectedWorkspaceRead1 = new WorkspaceRead()
+    final WorkspaceRead expectedWorkspaceRead1 = new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
         .customerId(workspace.getCustomerId())
         .email(workspace.getEmail())
@@ -196,7 +234,7 @@ class WorkspacesHandlerTest {
         .securityUpdates(workspace.getSecurityUpdates())
         .notifications(List.of(generateApiNotification()));
 
-    WorkspaceRead expectedWorkspaceRead2 = new WorkspaceRead()
+    final WorkspaceRead expectedWorkspaceRead2 = new WorkspaceRead()
         .workspaceId(workspace2.getWorkspaceId())
         .customerId(workspace2.getCustomerId())
         .email(workspace2.getEmail())
@@ -217,8 +255,7 @@ class WorkspacesHandlerTest {
 
   @Test
   void testGetWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false))
-        .thenReturn(workspace);
+    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false)).thenReturn(workspace);
 
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(workspace.getWorkspaceId());
 
@@ -240,8 +277,7 @@ class WorkspacesHandlerTest {
 
   @Test
   void testGetWorkspaceBySlug() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configRepository.getWorkspaceBySlug("default", false))
-        .thenReturn(workspace);
+    when(configRepository.getWorkspaceBySlug("default", false)).thenReturn(workspace);
 
     final SlugRequestBody slugRequestBody = new SlugRequestBody().slug("default");
     final WorkspaceRead workspaceRead = new WorkspaceRead()

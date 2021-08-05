@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.RandomStringUtils;
 
 public class WorkspacesHandler {
 
@@ -83,7 +84,7 @@ public class WorkspacesHandler {
   }
 
   public WorkspaceRead createWorkspace(final WorkspaceCreate workspaceCreate)
-      throws JsonValidationException, IOException, ConfigNotFoundException, ValueConflictKnownException {
+      throws JsonValidationException, IOException, ValueConflictKnownException {
 
     final String email = workspaceCreate.getEmail();
     final Boolean anonymousDataCollection = workspaceCreate.getAnonymousDataCollection();
@@ -94,7 +95,7 @@ public class WorkspacesHandler {
         .withWorkspaceId(uuidSupplier.get())
         .withCustomerId(uuidSupplier.get())
         .withName(workspaceCreate.getName())
-        .withSlug(slugify.slugify(workspaceCreate.getName()))
+        .withSlug(generateUniqueSlug(workspaceCreate.getName()))
         .withInitialSetupComplete(false)
         .withAnonymousDataCollection(anonymousDataCollection != null ? anonymousDataCollection : false)
         .withNews(news != null ? news : false)
@@ -105,14 +106,6 @@ public class WorkspacesHandler {
 
     if (!Strings.isNullOrEmpty(email)) {
       workspace.withEmail(email);
-    }
-
-    try {
-      if (configRepository.getWorkspaceBySlug(workspace.getSlug(), false) != null) {
-        throw new ValueConflictKnownException("A workspace already exists with the same name");
-      }
-    } catch (ConfigNotFoundException e) {
-      // no workspace exists with the slug, lets create ours
     }
 
     configRepository.writeStandardWorkspace(workspace);
@@ -126,17 +119,17 @@ public class WorkspacesHandler {
     final StandardWorkspace persistedWorkspace = configRepository.getStandardWorkspace(workspaceIdRequestBody.getWorkspaceId(), false);
 
     // disable all connections associated with this workspace
-    for (ConnectionRead connectionRead : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
+    for (final ConnectionRead connectionRead : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
       connectionsHandler.deleteConnection(connectionRead);
     }
 
     // disable all destinations associated with this workspace
-    for (DestinationRead destinationRead : destinationHandler.listDestinationsForWorkspace(workspaceIdRequestBody).getDestinations()) {
+    for (final DestinationRead destinationRead : destinationHandler.listDestinationsForWorkspace(workspaceIdRequestBody).getDestinations()) {
       destinationHandler.deleteDestination(destinationRead);
     }
 
     // disable all sources associated with this workspace
-    for (SourceRead sourceRead : sourceHandler.listSourcesForWorkspace(workspaceIdRequestBody).getSources()) {
+    for (final SourceRead sourceRead : sourceHandler.listSourcesForWorkspace(workspaceIdRequestBody).getSources()) {
       sourceHandler.deleteSource(sourceRead);
     }
 
@@ -151,7 +144,7 @@ public class WorkspacesHandler {
     return new WorkspaceReadList().workspaces(reads);
   }
 
-  public WorkspaceRead getWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody)
+  public WorkspaceRead getWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final UUID workspaceId = workspaceIdRequestBody.getWorkspaceId();
     final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, false);
@@ -159,13 +152,14 @@ public class WorkspacesHandler {
   }
 
   @SuppressWarnings("unused")
-  public WorkspaceRead getWorkspaceBySlug(SlugRequestBody slugRequestBody) throws JsonValidationException, IOException, ConfigNotFoundException {
+  public WorkspaceRead getWorkspaceBySlug(final SlugRequestBody slugRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     // for now we assume there is one workspace and it has a default uuid.
     final StandardWorkspace workspace = configRepository.getWorkspaceBySlug(slugRequestBody.getSlug(), false);
     return buildWorkspaceRead(workspace);
   }
 
-  public WorkspaceRead updateWorkspace(WorkspaceUpdate workspaceUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
+  public WorkspaceRead updateWorkspace(final WorkspaceUpdate workspaceUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID workspaceId = workspaceUpdate.getWorkspaceId();
 
     final StandardWorkspace persistedWorkspace = configRepository.getStandardWorkspace(workspaceId, false);
@@ -190,7 +184,7 @@ public class WorkspacesHandler {
     return buildWorkspaceReadFromId(workspaceUpdate.getWorkspaceId());
   }
 
-  public NotificationRead tryNotification(Notification notification) {
+  public NotificationRead tryNotification(final Notification notification) {
     try {
       final NotificationClient notificationClient = NotificationClient.createNotificationClient(NotificationConverter.toConfig(notification));
       final String message = String.format("Hello World! This is a test from Airbyte to try %s notification settings",
@@ -198,20 +192,35 @@ public class WorkspacesHandler {
       if (notificationClient.notify(message)) {
         return new NotificationRead().status(StatusEnum.SUCCEEDED);
       }
-    } catch (IllegalArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       throw new IdNotFoundKnownException(e.getMessage(), notification.getNotificationType().name());
-    } catch (IOException | InterruptedException e) {
+    } catch (final IOException | InterruptedException e) {
       return new NotificationRead().status(StatusEnum.FAILED).message(e.getMessage());
     }
     return new NotificationRead().status(StatusEnum.FAILED);
   }
 
-  private WorkspaceRead buildWorkspaceReadFromId(UUID workspaceId) throws ConfigNotFoundException, IOException, JsonValidationException {
+  private WorkspaceRead buildWorkspaceReadFromId(final UUID workspaceId) throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, false);
     return buildWorkspaceRead(workspace);
   }
 
-  private static WorkspaceRead buildWorkspaceRead(StandardWorkspace workspace) {
+  private String generateUniqueSlug(final String workspaceName) throws JsonValidationException, IOException, ConfigNotFoundException {
+    final String proposedSlug = slugify.slugify(workspaceName);
+
+    // todo (cgardens) - this is going to be too expensive once there are too many workspaces. needs to
+    // be replaced with an actual sql query.
+    // e.g. SELECT COUNT(*) WHERE slug=%s;
+    final boolean isSlugUsed = configRepository.getWorkspaceBySlug(proposedSlug, true) != null;
+
+    if (isSlugUsed) {
+      return proposedSlug + "-" + RandomStringUtils.randomAlphabetic(8);
+    } else {
+      return proposedSlug;
+    }
+  }
+
+  private static WorkspaceRead buildWorkspaceRead(final StandardWorkspace workspace) {
     return new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
         .customerId(workspace.getCustomerId())
