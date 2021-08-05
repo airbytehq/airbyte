@@ -25,7 +25,7 @@
 import json
 import multiprocessing as mp
 from abc import ABC, abstractmethod
-from typing import Any, BinaryIO, Iterator, Mapping, TextIO, Union
+from typing import Any, BinaryIO, Iterator, Mapping, Optional, TextIO, Tuple, Union
 
 import dill
 import pyarrow as pa
@@ -142,7 +142,7 @@ class CsvParser(FileFormatParser):
 
         build ReadOptions object like: pa.csv.ReadOptions(**self._read_options())
         """
-        return {"block_size": 10000, "encoding": self._format.get("encoding", "utf8")}
+        return {"block_size": self._format.get("block_size", 10000), "encoding": self._format.get("encoding", "utf8")}
 
     def _parse_options(self):
         """
@@ -174,6 +174,41 @@ class CsvParser(FileFormatParser):
             **json.loads(self._format.get("additional_reader_options", "{}")),
         }
 
+    def _run_in_external_process(self, fn, timeout: int, max_timeout: int, *args) -> Any:
+        """
+        fn passed in must return a tuple of (desired return value, Exception OR None)
+        This allows propagating any errors from the process up and raising accordingly
+
+        """
+        result = None
+        while result is None:
+            q_worker = mp.Queue()
+            proc = mp.Process(
+                target=multiprocess_queuer,
+                args=(dill.dumps(fn), q_worker, *args),  # use dill to pickle the function for Windows-compatibility
+            )
+            proc.start()
+            try:
+                # this attempts to get return value from function with our specified timeout up to max
+                result, potential_error = q_worker.get(timeout=min(timeout, max_timeout))
+            except mp.queues.Empty:
+                if timeout >= max_timeout:  # if we've got to max_timeout and tried once with that value
+                    raise TimeoutError(
+                        f"Timed out too many times while running {fn.__name__}, max timeout of {max_timeout} seconds reached."
+                    )
+                self.logger.info(f"timed out while running {fn.__name__} after {timeout} seconds, retrying...")
+                timeout *= 2  # double timeout and try again
+            else:
+                if potential_error is not None:
+                    raise potential_error
+                else:
+                    return result
+            finally:
+                try:
+                    proc.terminate()
+                except Exception as e:
+                    self.logger.info(f"'{fn.__name__}' proc unterminated, error: {e}")
+
     def get_inferred_schema(self, file: Union[TextIO, BinaryIO]) -> dict:
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html
@@ -183,59 +218,45 @@ class CsvParser(FileFormatParser):
         https://issues.apache.org/jira/browse/ARROW-11853?page=com.atlassian.jira.plugin.system.issuetabpanels%3Aall-tabpanel
         """
 
-        def get_schema(file_sample: str, read_opts: dict, parse_opts: dict, convert_opts: dict) -> dict:
+        def infer_schema_process(
+            file_sample: str, read_opts: dict, parse_opts: dict, convert_opts: dict
+        ) -> Tuple[dict, Optional[Exception]]:
             """
             we need to reimport here to be functional on Windows systems since it doesn't have fork()
             https://docs.python.org/3.7/library/multiprocessing.html#contexts-and-start-methods
+
+            This returns a tuple of (schema_dict, None OR Exception).
+            If return[1] is not None and holds an exception we then raise this in the main process.
+            This lets us propagate up any errors (that aren't timeouts) and raise correctly.
             """
-            import tempfile
+            try:
+                import tempfile
 
-            import pyarrow as pa
+                import pyarrow as pa
 
-            # writing our file_sample to a temporary file to then read in and schema infer as before
-            with tempfile.TemporaryFile() as fp:
-                fp.write(file_sample)
-                fp.seek(0)
-                streaming_reader = pa.csv.open_csv(
-                    fp, pa.csv.ReadOptions(**read_opts), pa.csv.ParseOptions(**parse_opts), pa.csv.ConvertOptions(**convert_opts)
-                )
-                schema_dict = {field.name: field.type for field in streaming_reader.schema}
-            return schema_dict
+                # writing our file_sample to a temporary file to then read in and schema infer as before
+                with tempfile.TemporaryFile() as fp:
+                    fp.write(file_sample)
+                    fp.seek(0)
+                    streaming_reader = pa.csv.open_csv(
+                        fp, pa.csv.ReadOptions(**read_opts), pa.csv.ParseOptions(**parse_opts), pa.csv.ConvertOptions(**convert_opts)
+                    )
+                    schema_dict = {field.name: field.type for field in streaming_reader.schema}
 
-        # boto3 stuff can't be pickled and so we can't multiprocess with the actual fileobject on Windows systems
+            except Exception as e:
+                # we pass the traceback up otherwise the main process won't know the exact method+line of error
+                return (None, e)
+            else:
+                return (schema_dict, None)
+
+        # boto3 objects can't be pickled (https://github.com/boto/boto3/issues/678)
+        # and so we can't multiprocess with the actual fileobject on Windows systems
         # we're reading block_size*2 bytes here, which we can then pass in and infer schema from block_size bytes
         # the *2 is to give us a buffer as pyarrow figures out where lines actually end so it gets schema correct
         file_sample = file.read(self._read_options()["block_size"] * 2)
-        schema_dict = None
-        fail_count = 0
-        while schema_dict is None:
-            q_worker = mp.Queue()
-            proc = mp.Process(
-                target=multiprocess_queuer,
-                args=(
-                    dill.dumps(get_schema),  # use dill to pickle the get_schema function for Windows-compatibility
-                    q_worker,
-                    file_sample,
-                    self._read_options(),
-                    self._parse_options(),
-                    self._convert_options(),
-                ),
-            )
-            proc.start()
-            try:
-                # this attempts to get return value from function with a 20 second timeout
-                schema_dict = q_worker.get(timeout=20)
-            except mp.queues.Empty:
-                fail_count += 1
-                if fail_count > 2:
-                    raise TimeoutError("Timed out 3 times while trying to infer schema")
-                self.logger.info("timed out on schema inference, retrying...")
-            finally:
-                try:
-                    proc.terminate()
-                except Exception as e:
-                    self.logger.info(f"infer schema proc unterminated, error: {e}")
-
+        schema_dict = self._run_in_external_process(
+            infer_schema_process, 4, 60, file_sample, self._read_options(), self._parse_options(), self._convert_options()
+        )
         return self.json_schema_to_pyarrow_schema(schema_dict, reverse=True)
 
     def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
