@@ -23,12 +23,26 @@
 #
 
 
-import pytest
+from setuptools import find_packages, setup
 
-pytest_plugins = ("source_acceptance_test.plugin",)
+MAIN_REQUIREMENTS = [
+    "airbyte-cdk",
+    "pendulum",
+]
 
+TEST_REQUIREMENTS = [
+    "source-acceptance-test",
+]
 
-@pytest.fixture(scope="session", autouse=True)
-def connector_setup():
-    """This fixture is a placeholder for external resources that acceptance test might require."""
-    yield
+setup(
+    name="source_zuora",
+    description="Airbyte source-connector for Zuora.",
+    author="Airbyte",
+    author_email="contact@airbyte.io",
+    packages=find_packages(),
+    install_requires=MAIN_REQUIREMENTS,
+    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
+    extras_require={
+        "tests": TEST_REQUIREMENTS,
+    },
+)

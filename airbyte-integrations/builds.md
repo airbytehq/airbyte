@@ -74,6 +74,7 @@
 | Zendesk Support   | [![source-zendesk-support](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-zendesk-support%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-zendesk-support) |
 | Zendesk Talk   | [![source-zendesk-talk](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-zendesk-talk%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-zendesk-talk) |
 | Zoom   | [![source-zoom-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-zoom-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-zoom-singer) |
+| Zuora   | [![source-zoom-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-zuora%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-zuora) |
 
 # Destinations
 

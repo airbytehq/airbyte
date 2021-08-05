@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "3dc3037c-5ce8-4661-adc2-f7a9e3c5ece5",
+  "name": "Zuora",
+  "dockerRepository": "airbyte/source-zuora",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/zuora"
+}

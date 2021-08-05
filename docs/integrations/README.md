@@ -101,6 +101,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Zendesk Support](./sources/zendesk-support.md)| Certified |
 |[Zendesk Talk](./sources/zendesk-talk.md)| Certified |
 |[Zoom](./sources/zoom.md)| Beta |
+|[Zuora](./sources/zuora.md)| Beta |
 
 ### Destinations
 | Connector | Grade |

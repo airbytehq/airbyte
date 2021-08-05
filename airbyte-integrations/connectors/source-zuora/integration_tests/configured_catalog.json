@@ -1,0 +1,5999 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "account",
+        "json_schema": {
+          "properties": {
+            "taxexempteffectivedate": {
+              "type": ["string", "null"]
+            },
+            "invoicetemplateid": {
+              "type": ["string", "null"]
+            },
+            "totaldebitmemobalance": {
+              "type": ["number", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "taxexemptissuingjurisdiction": {
+              "type": ["string", "null"]
+            },
+            "currency": {
+              "type": ["string", "null"]
+            },
+            "taxexemptcertificateid": {
+              "type": ["string", "null"]
+            },
+            "crmid": {
+              "type": ["string", "null"]
+            },
+            "defaultpaymentmethodid": {
+              "type": ["string", "null"]
+            },
+            "status": {
+              "type": ["string", "null"]
+            },
+            "creditmemotemplateid": {
+              "type": ["string", "null"]
+            },
+            "debitmemotemplateid": {
+              "type": ["string", "null"]
+            },
+            "communicationprofileid": {
+              "type": ["string", "null"]
+            },
+            "invoicedeliveryprefsemail": {
+              "type": ["boolean", "null"]
+            },
+            "bcdsettingoption": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "unappliedcreditmemoamount": {
+              "type": ["number", "null"]
+            },
+            "taxcompanycode": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "balance": {
+              "type": ["number", "null"]
+            },
+            "soldtoid": {
+              "type": ["string", "null"]
+            },
+            "unappliedbalance": {
+              "type": ["number", "null"]
+            },
+            "invoicedeliveryprefsprint": {
+              "type": ["boolean", "null"]
+            },
+            "sequencesetid": {
+              "type": ["string", "null"]
+            },
+            "additionalemailaddresses": {
+              "type": ["string", "null"]
+            },
+            "mrr": {
+              "type": ["number", "null"]
+            },
+            "taxexemptexpirationdate": {
+              "type": ["string", "null"]
+            },
+            "incollections__c": {
+              "type": ["string", "null"]
+            },
+            "totalinvoicebalance": {
+              "type": ["number", "null"]
+            },
+            "taxexemptentityusecode": {
+              "type": ["string", "null"]
+            },
+            "batch": {
+              "type": ["string", "null"]
+            },
+            "paymentgateway": {
+              "type": ["string", "null"]
+            },
+            "billcycleday": {
+              "type": ["number", "null"]
+            },
+            "billtoid": {
+              "type": ["string", "null"]
+            },
+            "notes": {
+              "type": ["string", "null"]
+            },
+            "vatid": {
+              "type": ["string", "null"]
+            },
+            "parentid": {
+              "type": ["string", "null"]
+            },
+            "purchaseordernumber": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "creditbalance": {
+              "type": ["number", "null"]
+            },
+            "autopay": {
+              "type": ["boolean", "null"]
+            },
+            "customerservicerepname": {
+              "type": ["string", "null"]
+            },
+            "paymentterm": {
+              "type": ["string", "null"]
+            },
+            "entity__c": {
+              "type": ["string", "null"]
+            },
+            "lastinvoicedate": {
+              "type": ["string", "null"]
+            },
+            "accountnumber": {
+              "type": ["string", "null"]
+            },
+            "taxexemptstatus": {
+              "type": ["string", "null"]
+            },
+            "taxexemptcertificatetype": {
+              "type": ["string", "null"]
+            },
+            "salesrepname": {
+              "type": ["string", "null"]
+            },
+            "taxexemptdescription": {
+              "type": ["string", "null"]
+            },
+            "allowinvoiceedit": {
+              "type": ["boolean", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "accountingperiod",
+        "json_schema": {
+          "properties": {
+            "startdate": {
+              "type": ["string", "null"]
+            },
+            "status": {
+              "type": ["string", "null"]
+            },
+            "fiscalquarter": {
+              "type": ["number", "null"]
+            },
+            "fiscalyear": {
+              "type": ["number", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "enddate": {
+              "type": ["string", "null"]
+            },
+            "notes": {
+              "type": ["string", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "amendment",
+        "json_schema": {
+          "properties": {
+            "currenttermperiodtype": {
+              "type": ["string", "null"]
+            },
+            "description": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "autorenew": {
+              "type": ["boolean", "null"]
+            },
+            "renewaltermperiodtype": {
+              "type": ["string", "null"]
+            },
+            "serviceactivationdate": {
+              "type": ["string", "null"]
+            },
+            "resumedate": {
+              "type": ["string", "null"]
+            },
+            "suspenddate": {
+              "type": ["string", "null"]
+            },
+            "termtype": {
+              "type": ["string", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            },
+            "contracteffectivedate": {
+              "type": ["string", "null"]
+            },
+            "customeracceptancedate": {
+              "type": ["string", "null"]
+            },
+            "subscriptionid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "currentterm": {
+              "type": ["number", "null"]
+            },
+            "status": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "renewalsetting": {
+              "type": ["string", "null"]
+            },
+            "specificupdatedate": {
+              "type": ["string", "null"]
+            },
+            "code": {
+              "type": ["string", "null"]
+            },
+            "type": {
+              "type": ["string", "null"]
+            },
+            "termstartdate": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "renewalterm": {
+              "type": ["number", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "effectivedate": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "applicationgroup",
+        "json_schema": {
+          "properties": {
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "operationdate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "paymentid": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "refundid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "aquatasklog",
+        "json_schema": {
+          "properties": {
+            "status": {
+              "type": ["string", "null"]
+            },
+            "query": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            },
+            "recordsprocessed": {
+              "type": ["number", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "processingtime": {
+              "type": ["number", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "fileid": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "querytype": {
+              "type": ["string", "null"]
+            },
+            "jobid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "billingrun",
+        "json_schema": {
+          "properties": {
+            "executeddate": {
+              "type": ["string", "null"]
+            },
+            "numberofaccounts": {
+              "type": ["number", "null"]
+            },
+            "accountid": {
+              "type": ["string", "null"]
+            },
+            "runtime": {
+              "type": ["number", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "repeatto": {
+              "type": ["string", "null"]
+            },
+            "autoemail": {
+              "type": ["boolean", "null"]
+            },
+            "targetdateoffset": {
+              "type": ["number", "null"]
+            },
+            "startdate": {
+              "type": ["string", "null"]
+            },
+            "invoicedateoffset": {
+              "type": ["number", "null"]
+            },
+            "chargetypetoexclude": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "autopost": {
+              "type": ["boolean", "null"]
+            },
+            "billcycleday": {
+              "type": ["string", "null"]
+            },
+            "lastemailsenttime": {
+              "type": ["string", "null"]
+            },
+            "targettype": {
+              "type": ["string", "null"]
+            },
+            "totaltime": {
+              "type": ["number", "null"]
+            },
+            "noemailforzeroamountinvoice": {
+              "type": ["boolean", "null"]
+            },
+            "invoicedate": {
+              "type": ["string", "null"]
+            },
+            "monthlyonday": {
+              "type": ["string", "null"]
+            },
+            "numberofcreditmemos": {
+              "type": ["number", "null"]
+            },
+            "billingruntype": {
+              "type": ["string", "null"]
+            },
+            "numberofinvoices": {
+              "type": ["number", "null"]
+            },
+            "status": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "weeklyonday": {
+              "type": ["string", "null"]
+            },
+            "repeatfrom": {
+              "type": ["string", "null"]
+            },
+            "enddate": {
+              "type": ["string", "null"]
+            },
+            "invoicesemailed": {
+              "type": ["boolean", "null"]
+            },
+            "timezone": {
+              "type": ["string", "null"]
+            },
+            "autorenewal": {
+              "type": ["boolean", "null"]
+            },
+            "targetdate": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "billingrunnumber": {
+              "type": ["string", "null"]
+            },
+            "posteddate": {
+              "type": ["string", "null"]
+            },
+            "batches": {
+              "type": ["string", "null"]
+            },
+            "repeattype": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "errormessage": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "chargemetrics",
+        "json_schema": {
+          "properties": {
+            "subscriptionowneraccountnumber": {
+              "type": ["string", "null"]
+            },
+            "tcvdiscountamount": {
+              "type": ["number", "null"]
+            },
+            "tcvgrossamount": {
+              "type": ["number", "null"]
+            },
+            "amendmentid": {
+              "type": ["string", "null"]
+            },
+            "rateplanchargeid": {
+              "type": ["string", "null"]
+            },
+            "mrrgrossamount": {
+              "type": ["number", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "amendmenttype": {
+              "type": ["string", "null"]
+            },
+            "productrateplanid": {
+              "type": ["string", "null"]
+            },
+            "productid": {
+              "type": ["string", "null"]
+            },
+            "subscriptionname": {
+              "type": ["string", "null"]
+            },
+            "enddate": {
+              "type": ["string", "null"]
+            },
+            "startdate": {
+              "type": ["string", "null"]
+            },
+            "productrateplanchargeid": {
+              "type": ["string", "null"]
+            },
+            "mrrnetamount": {
+              "type": ["number", "null"]
+            },
+            "tcvnetamount": {
+              "type": ["number", "null"]
+            },
+            "currency": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "invoiceowneraccountnumber": {
+              "type": ["string", "null"]
+            },
+            "chargenumber": {
+              "type": ["string", "null"]
+            },
+            "mrrdiscountamount": {
+              "type": ["number", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "chargemetricsdiscountallocationdetail",
+        "json_schema": {
+          "properties": {
+            "subscriptionowneraccountnumber": {
+              "type": ["string", "null"]
+            },
+            "amendmentid": {
+              "type": ["string", "null"]
+            },
+            "discountmrr": {
+              "type": ["number", "null"]
+            },
+            "rateplanchargeid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "amendmenttype": {
+              "type": ["string", "null"]
+            },
+            "productrateplanid": {
+              "type": ["string", "null"]
+            },
+            "chargemetricsid": {
+              "type": ["string", "null"]
+            },
+            "discounttcv": {
+              "type": ["number", "null"]
+            },
+            "productid": {
+              "type": ["string", "null"]
+            },
+            "subscriptionname": {
+              "type": ["string", "null"]
+            },
+            "enddate": {
+              "type": ["string", "null"]
+            },
+            "startdate": {
+              "type": ["string", "null"]
+            },
+            "productrateplanchargeid": {
+              "type": ["string", "null"]
+            },
+            "discountchargenumber": {
+              "type": ["string", "null"]
+            },
+            "currency": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "invoiceowneraccountnumber": {
+              "type": ["string", "null"]
+            },
+            "chargenumber": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "contact",
+        "json_schema": {
+          "properties": {
+            "taxregion": {
+              "type": ["string", "null"]
+            },
+            "otherphone": {
+              "type": ["string", "null"]
+            },
+            "accountid": {
+              "type": ["string", "null"]
+            },
+            "description": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "postalcode": {
+              "type": ["string", "null"]
+            },
+            "county": {
+              "type": ["string", "null"]
+            },
+            "mobilephone": {
+              "type": ["string", "null"]
+            },
+            "personalemail": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "workphone": {
+              "type": ["string", "null"]
+            },
+            "firstname": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "address2": {
+              "type": ["string", "null"]
+            },
+            "address1": {
+              "type": ["string", "null"]
+            },
+            "city": {
+              "type": ["string", "null"]
+            },
+            "workemail": {
+              "type": ["string", "null"]
+            },
+            "nickname": {
+              "type": ["string", "null"]
+            },
+            "homephone": {
+              "type": ["string", "null"]
+            },
+            "state": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "country": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "lastname": {
+              "type": ["string", "null"]
+            },
+            "fax": {
+              "type": ["string", "null"]
+            },
+            "otherphonetype": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "contactsnapshot",
+        "json_schema": {
+          "properties": {
+            "taxregion": {
+              "type": ["string", "null"]
+            },
+            "otherphone": {
+              "type": ["string", "null"]
+            },
+            "accountid": {
+              "type": ["string", "null"]
+            },
+            "description": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "postalcode": {
+              "type": ["string", "null"]
+            },
+            "contactid": {
+              "type": ["string", "null"]
+            },
+            "county": {
+              "type": ["string", "null"]
+            },
+            "mobilephone": {
+              "type": ["string", "null"]
+            },
+            "personalemail": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "workphone": {
+              "type": ["string", "null"]
+            },
+            "firstname": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "address2": {
+              "type": ["string", "null"]
+            },
+            "address1": {
+              "type": ["string", "null"]
+            },
+            "city": {
+              "type": ["string", "null"]
+            },
+            "workemail": {
+              "type": ["string", "null"]
+            },
+            "nickname": {
+              "type": ["string", "null"]
+            },
+            "homephone": {
+              "type": ["string", "null"]
+            },
+            "state": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "country": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "lastname": {
+              "type": ["string", "null"]
+            },
+            "fax": {
+              "type": ["string", "null"]
+            },
+            "otherphonetype": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "creditmemo",
+        "json_schema": {
+          "properties": {
+            "postedbyid": {
+              "type": ["string", "null"]
+            },
+            "accountid": {
+              "type": ["string", "null"]
+            },
+            "cancelledbyid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "sourceid": {
+              "type": ["string", "null"]
+            },
+            "transferredtoaccounting": {
+              "type": ["string", "null"]
+            },
+            "totaltaxexemptamount": {
+              "type": ["number", "null"]
+            },
+            "memonumber": {
+              "type": ["string", "null"]
+            },
+            "taxmessage": {
+              "type": ["string", "null"]
+            },
+            "invoiceid": {
+              "type": ["string", "null"]
+            },
+            "source": {
+              "type": ["string", "null"]
+            },
+            "taxamount": {
+              "type": ["number", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "exchangeratedate": {
+              "type": ["string", "null"]
+            },
+            "cancelledon": {
+              "type": ["string", "null"]
+            },
+            "totalamountwithouttax": {
+              "type": ["number", "null"]
+            },
+            "postedon": {
+              "type": ["string", "null"]
+            },
+            "billtocontactsnapshotid": {
+              "type": ["string", "null"]
+            },
+            "status": {
+              "type": ["string", "null"]
+            },
+            "memodate": {
+              "type": ["string", "null"]
+            },
+            "comments": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "appliedamount": {
+              "type": ["number", "null"]
+            },
+            "refundamount": {
+              "type": ["number", "null"]
+            },
+            "totalamount": {
+              "type": ["number", "null"]
+            },
+            "soldtocontactsnapshotid": {
+              "type": ["string", "null"]
+            },
+            "reasoncode": {
+              "type": ["string", "null"]
+            },
+            "discountamount": {
+              "type": ["number", "null"]
+            },
+            "targetdate": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "taxstatus": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "balance": {
+              "type": ["number", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "creditmemoapplication",
+        "json_schema": {
+          "properties": {
+            "debitmemoid": {
+              "type": ["string", "null"]
+            },
+            "accountid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "invoiceid": {
+              "type": ["string", "null"]
+            },
+            "creditmemoid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "applicationgroupid": {
+              "type": ["string", "null"]
+            },
+            "effectivedate": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "creditmemoapplicationitem",
+        "json_schema": {
+          "properties": {
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "invoiceitemid": {
+              "type": ["string", "null"]
+            },
+            "debitmemoitemid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "credittaxationitemid": {
+              "type": ["string", "null"]
+            },
+            "debittaxationitemid": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "creditmemoitemid": {
+              "type": ["string", "null"]
+            },
+            "journalentryid": {
+              "type": ["string", "null"]
+            },
+            "taxationitemid": {
+              "type": ["string", "null"]
+            },
+            "applicationgroupid": {
+              "type": ["string", "null"]
+            },
+            "creditmemoapplicationid": {
+              "type": ["string", "null"]
+            },
+            "effectivedate": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "creditmemoitem",
+        "json_schema": {
+          "properties": {
+            "description": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "creditmemoid": {
+              "type": ["string", "null"]
+            },
+            "taxcodename": {
+              "type": ["string", "null"]
+            },
+            "taxamount": {
+              "type": ["number", "null"]
+            },
+            "subscriptionid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "servicestartdate": {
+              "type": ["string", "null"]
+            },
+            "taxexemptamount": {
+              "type": ["number", "null"]
+            },
+            "unappliedamount": {
+              "type": ["number", "null"]
+            },
+            "journalentryid": {
+              "type": ["string", "null"]
+            },
+            "creditfromitemsource": {
+              "type": ["string", "null"]
+            },
+            "taxmode": {
+              "type": ["string", "null"]
+            },
+            "billtocontactsnapshotid": {
+              "type": ["string", "null"]
+            },
+            "rateplanchargeid": {
+              "type": ["string", "null"]
+            },
+            "unitofmeasure": {
+              "type": ["string", "null"]
+            },
+            "serviceenddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "beappliedbyothersamount": {
+              "type": ["number", "null"]
+            },
+            "deferredrevenueaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "invoiceitemid": {
+              "type": ["string", "null"]
+            },
+            "quantity": {
+              "type": ["number", "null"]
+            },
+            "chargename": {
+              "type": ["string", "null"]
+            },
+            "recognizedrevenueaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "appliedtoothersamount": {
+              "type": ["number", "null"]
+            },
+            "soldtocontactsnapshotid": {
+              "type": ["string", "null"]
+            },
+            "onaccountaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "chargedate": {
+              "type": ["string", "null"]
+            },
+            "unitprice": {
+              "type": ["number", "null"]
+            },
+            "productrateplanchargeid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "processingtype": {
+              "type": ["string", "null"]
+            },
+            "appliedtoitemid": {
+              "type": ["string", "null"]
+            },
+            "creditfromitemid": {
+              "type": ["string", "null"]
+            },
+            "amountwithouttax": {
+              "type": ["number", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "sku": {
+              "type": ["string", "null"]
+            },
+            "accountreceivableaccountingcodeid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "creditmemopart",
+        "json_schema": {
+          "properties": {
+            "debitmemoid": {
+              "type": ["string", "null"]
+            },
+            "accountid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "invoiceid": {
+              "type": ["string", "null"]
+            },
+            "creditmemoid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "creditmemopartitem",
+        "json_schema": {
+          "properties": {
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "invoiceitemid": {
+              "type": ["string", "null"]
+            },
+            "debitmemoitemid": {
+              "type": ["string", "null"]
+            },
+            "creditmemopartid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "credittaxationitemid": {
+              "type": ["string", "null"]
+            },
+            "debittaxationitemid": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "creditmemoitemid": {
+              "type": ["string", "null"]
+            },
+            "taxationitemid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "credittaxationitem",
+        "json_schema": {
+          "properties": {
+            "accountingcode": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            },
+            "exemptamount": {
+              "type": ["number", "null"]
+            },
+            "salestaxpayableaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "taxamount": {
+              "type": ["number", "null"]
+            },
+            "taxcodedescription": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "taxcode": {
+              "type": ["string", "null"]
+            },
+            "taxdate": {
+              "type": ["string", "null"]
+            },
+            "taxrate": {
+              "type": ["number", "null"]
+            },
+            "unappliedamount": {
+              "type": ["number", "null"]
+            },
+            "creditmemoitemid": {
+              "type": ["string", "null"]
+            },
+            "journalentryid": {
+              "type": ["string", "null"]
+            },
+            "taxratetype": {
+              "type": ["string", "null"]
+            },
+            "taxationitemid": {
+              "type": ["string", "null"]
+            },
+            "taxmode": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "appliedamount": {
+              "type": ["number", "null"]
+            },
+            "locationcode": {
+              "type": ["string", "null"]
+            },
+            "refundamount": {
+              "type": ["number", "null"]
+            },
+            "onaccountaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "jurisdiction": {
+              "type": ["string", "null"]
+            },
+            "taxratedescription": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "taxableitemsnapshotid": {
+              "type": ["string", "null"]
+            },
+            "accountreceivableaccountingcodeid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "invoice",
+        "json_schema": {
+          "properties": {
+            "accountid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "includesrecurring": {
+              "type": ["boolean", "null"]
+            },
+            "sourceid": {
+              "type": ["string", "null"]
+            },
+            "transferredtoaccounting": {
+              "type": ["string", "null"]
+            },
+            "taxmessage": {
+              "type": ["string", "null"]
+            },
+            "paymentamount": {
+              "type": ["number", "null"]
+            },
+            "source": {
+              "type": ["string", "null"]
+            },
+            "taxamount": {
+              "type": ["number", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "postedby": {
+              "type": ["string", "null"]
+            },
+            "adjustmentamount": {
+              "type": ["number", "null"]
+            },
+            "taxexemptamount": {
+              "type": ["number", "null"]
+            },
+            "invoicedate": {
+              "type": ["string", "null"]
+            },
+            "invoicenumber": {
+              "type": ["string", "null"]
+            },
+            "duedate": {
+              "type": ["string", "null"]
+            },
+            "billtocontactsnapshotid": {
+              "type": ["string", "null"]
+            },
+            "lastemailsentdate": {
+              "type": ["string", "null"]
+            },
+            "status": {
+              "type": ["string", "null"]
+            },
+            "comments": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "includesusage": {
+              "type": ["boolean", "null"]
+            },
+            "refundamount": {
+              "type": ["number", "null"]
+            },
+            "autopay": {
+              "type": ["boolean", "null"]
+            },
+            "soldtocontactsnapshotid": {
+              "type": ["string", "null"]
+            },
+            "reversed": {
+              "type": ["boolean", "null"]
+            },
+            "targetdate": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "includesonetime": {
+              "type": ["boolean", "null"]
+            },
+            "posteddate": {
+              "type": ["string", "null"]
+            },
+            "taxstatus": {
+              "type": ["string", "null"]
+            },
+            "amountwithouttax": {
+              "type": ["number", "null"]
+            },
+            "creditbalanceadjustmentamount": {
+              "type": ["number", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "balance": {
+              "type": ["number", "null"]
+            },
+            "retrystatus__c": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "invoicehistory",
+        "json_schema": {
+          "properties": {
+            "transactiontime": {
+              "type": ["string", "null"]
+            },
+            "type": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "invoiceid": {
+              "type": ["string", "null"]
+            },
+            "source": {
+              "type": ["string", "null"]
+            },
+            "result": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["createddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["createddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "invoiceitem",
+        "json_schema": {
+          "properties": {
+            "soldtocontactid": {
+              "type": ["string", "null"]
+            },
+            "accountid": {
+              "type": ["string", "null"]
+            },
+            "description": {
+              "type": ["string", "null"]
+            },
+            "accountingcode": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "productid": {
+              "type": ["string", "null"]
+            },
+            "invoiceid": {
+              "type": ["string", "null"]
+            },
+            "chargeamount": {
+              "type": ["number", "null"]
+            },
+            "taxamount": {
+              "type": ["number", "null"]
+            },
+            "subscriptionid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "taxcode": {
+              "type": ["string", "null"]
+            },
+            "revrecstartdate": {
+              "type": ["string", "null"]
+            },
+            "servicestartdate": {
+              "type": ["string", "null"]
+            },
+            "taxexemptamount": {
+              "type": ["number", "null"]
+            },
+            "journalentryid": {
+              "type": ["string", "null"]
+            },
+            "defaultpaymentmethodid": {
+              "type": ["string", "null"]
+            },
+            "parentaccountid": {
+              "type": ["string", "null"]
+            },
+            "taxmode": {
+              "type": ["string", "null"]
+            },
+            "billtocontactsnapshotid": {
+              "type": ["string", "null"]
+            },
+            "amendmentid": {
+              "type": ["string", "null"]
+            },
+            "appliedtoinvoiceitemid": {
+              "type": ["string", "null"]
+            },
+            "rateplanchargeid": {
+              "type": ["string", "null"]
+            },
+            "serviceenddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "deferredrevenueaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "productrateplanid": {
+              "type": ["string", "null"]
+            },
+            "quantity": {
+              "type": ["number", "null"]
+            },
+            "chargename": {
+              "type": ["string", "null"]
+            },
+            "recognizedrevenueaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "billtocontactid": {
+              "type": ["string", "null"]
+            },
+            "soldtocontactsnapshotid": {
+              "type": ["string", "null"]
+            },
+            "rateplanid": {
+              "type": ["string", "null"]
+            },
+            "chargedate": {
+              "type": ["string", "null"]
+            },
+            "uom": {
+              "type": ["string", "null"]
+            },
+            "unitprice": {
+              "type": ["number", "null"]
+            },
+            "productrateplanchargeid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "processingtype": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "sku": {
+              "type": ["string", "null"]
+            },
+            "balance": {
+              "type": ["number", "null"]
+            },
+            "accountreceivableaccountingcodeid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "journalentry",
+        "json_schema": {
+          "properties": {
+            "status": {
+              "type": ["string", "null"]
+            },
+            "transactiontype": {
+              "type": ["string", "null"]
+            },
+            "transferredby": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "transferredtoaccounting": {
+              "type": ["string", "null"]
+            },
+            "product__s": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "number": {
+              "type": ["string", "null"]
+            },
+            "currency": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "transferdate": {
+              "type": ["string", "null"]
+            },
+            "journalentrydate": {
+              "type": ["string", "null"]
+            },
+            "homecurrency": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "accountingperiodid": {
+              "type": ["string", "null"]
+            },
+            "entity__s": {
+              "type": ["string", "null"]
+            },
+            "notes": {
+              "type": ["string", "null"]
+            },
+            "journalrunid": {
+              "type": ["string", "null"]
+            },
+            "transactioncount": {
+              "type": ["number", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "journalentryitem",
+        "json_schema": {
+          "properties": {
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "type": {
+              "type": ["string", "null"]
+            },
+            "amounthomecurrency": {
+              "type": ["number", "null"]
+            },
+            "accountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "currency": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "homecurrency": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "journalentryid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "journalrun",
+        "json_schema": {
+          "properties": {
+            "status": {
+              "type": ["string", "null"]
+            },
+            "targetstartdate": {
+              "type": ["string", "null"]
+            },
+            "processenddatetime": {
+              "type": ["string", "null"]
+            },
+            "targetdatetype": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "targetenddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "totaljournalentrycount": {
+              "type": ["number", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "number": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "processstartdatetime": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "memohistory",
+        "json_schema": {
+          "properties": {
+            "transactiontime": {
+              "type": ["string", "null"]
+            },
+            "memoid": {
+              "type": ["string", "null"]
+            },
+            "type": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "source": {
+              "type": ["string", "null"]
+            },
+            "result": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["createddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["createddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "orderaction",
+        "json_schema": {
+          "properties": {
+            "currenttermperiodtype": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "autorenew": {
+              "type": ["boolean", "null"]
+            },
+            "renewaltermperiodtype": {
+              "type": ["string", "null"]
+            },
+            "serviceactivationdate": {
+              "type": ["string", "null"]
+            },
+            "resumedate": {
+              "type": ["string", "null"]
+            },
+            "suspenddate": {
+              "type": ["string", "null"]
+            },
+            "termtype": {
+              "type": ["string", "null"]
+            },
+            "renewsetting": {
+              "type": ["string", "null"]
+            },
+            "contracteffectivedate": {
+              "type": ["string", "null"]
+            },
+            "subscriptionversionamendmentid": {
+              "type": ["string", "null"]
+            },
+            "customeracceptancedate": {
+              "type": ["string", "null"]
+            },
+            "subscriptionid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "currentterm": {
+              "type": ["number", "null"]
+            },
+            "cancellationpolicy": {
+              "type": ["string", "null"]
+            },
+            "cancellationeffectivedate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "sequence": {
+              "type": ["number", "null"]
+            },
+            "orderid": {
+              "type": ["string", "null"]
+            },
+            "type": {
+              "type": ["string", "null"]
+            },
+            "termstartdate": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "renewalterm": {
+              "type": ["number", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "orderactionrateplan",
+        "json_schema": {
+          "properties": {
+            "rateplanid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "orderactionid": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "orderelp",
+        "json_schema": {
+          "properties": {
+            "rateplanchargeid": {
+              "type": ["string", "null"]
+            },
+            "subscriptionownerid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "orderactionid": {
+              "type": ["string", "null"]
+            },
+            "tax": {
+              "type": ["number", "null"]
+            },
+            "term": {
+              "type": ["number", "null"]
+            },
+            "enddate": {
+              "type": ["string", "null"]
+            },
+            "generatedreason": {
+              "type": ["string", "null"]
+            },
+            "startdate": {
+              "type": ["string", "null"]
+            },
+            "type": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "value": {
+              "type": ["number", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "invoiceownerid": {
+              "type": ["string", "null"]
+            },
+            "orderitemid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "orderitem",
+        "json_schema": {
+          "properties": {
+            "startdate": {
+              "type": ["string", "null"]
+            },
+            "rateplanchargeid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "orderactionid": {
+              "type": ["string", "null"]
+            },
+            "quantity": {
+              "type": ["number", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "enddate": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ordermrr",
+        "json_schema": {
+          "properties": {
+            "rateplanchargeid": {
+              "type": ["string", "null"]
+            },
+            "subscriptionownerid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "orderactionid": {
+              "type": ["string", "null"]
+            },
+            "discountchargeid": {
+              "type": ["string", "null"]
+            },
+            "term": {
+              "type": ["number", "null"]
+            },
+            "enddate": {
+              "type": ["string", "null"]
+            },
+            "generatedreason": {
+              "type": ["string", "null"]
+            },
+            "startdate": {
+              "type": ["string", "null"]
+            },
+            "type": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "value": {
+              "type": ["number", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "invoiceownerid": {
+              "type": ["string", "null"]
+            },
+            "orderitemid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "orderquantity",
+        "json_schema": {
+          "properties": {
+            "rateplanchargeid": {
+              "type": ["string", "null"]
+            },
+            "subscriptionownerid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "orderactionid": {
+              "type": ["string", "null"]
+            },
+            "term": {
+              "type": ["number", "null"]
+            },
+            "enddate": {
+              "type": ["string", "null"]
+            },
+            "generatedreason": {
+              "type": ["string", "null"]
+            },
+            "startdate": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "value": {
+              "type": ["number", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "invoiceownerid": {
+              "type": ["string", "null"]
+            },
+            "orderitemid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "orders",
+        "json_schema": {
+          "properties": {
+            "status": {
+              "type": ["string", "null"]
+            },
+            "createdbymigration": {
+              "type": ["boolean", "null"]
+            },
+            "accountid": {
+              "type": ["string", "null"]
+            },
+            "description": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "my_custom_field_2__c": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "ordernumber": {
+              "type": ["string", "null"]
+            },
+            "orderdate": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "my_custom_filed_1__c": {
+              "type": ["string", "null"]
+            },
+            "state": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ordertcb",
+        "json_schema": {
+          "properties": {
+            "rateplanchargeid": {
+              "type": ["string", "null"]
+            },
+            "subscriptionownerid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "orderactionid": {
+              "type": ["string", "null"]
+            },
+            "tax": {
+              "type": ["number", "null"]
+            },
+            "discountchargeid": {
+              "type": ["string", "null"]
+            },
+            "term": {
+              "type": ["number", "null"]
+            },
+            "enddate": {
+              "type": ["string", "null"]
+            },
+            "generatedreason": {
+              "type": ["string", "null"]
+            },
+            "startdate": {
+              "type": ["string", "null"]
+            },
+            "type": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "value": {
+              "type": ["number", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "invoiceownerid": {
+              "type": ["string", "null"]
+            },
+            "orderitemid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ordertcv",
+        "json_schema": {
+          "properties": {
+            "rateplanchargeid": {
+              "type": ["string", "null"]
+            },
+            "subscriptionownerid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "orderactionid": {
+              "type": ["string", "null"]
+            },
+            "discountchargeid": {
+              "type": ["string", "null"]
+            },
+            "term": {
+              "type": ["number", "null"]
+            },
+            "enddate": {
+              "type": ["string", "null"]
+            },
+            "generatedreason": {
+              "type": ["string", "null"]
+            },
+            "startdate": {
+              "type": ["string", "null"]
+            },
+            "type": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "value": {
+              "type": ["number", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "invoiceownerid": {
+              "type": ["string", "null"]
+            },
+            "orderitemid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "payment",
+        "json_schema": {
+          "properties": {
+            "accountid": {
+              "type": ["string", "null"]
+            },
+            "accountingcode": {
+              "type": ["string", "null"]
+            },
+            "paymentmethodid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "markedforsubmissionon": {
+              "type": ["string", "null"]
+            },
+            "transferredtoaccounting": {
+              "type": ["string", "null"]
+            },
+            "appliedcreditbalanceamount": {
+              "type": ["number", "null"]
+            },
+            "isstandalone": {
+              "type": ["boolean", "null"]
+            },
+            "referencedpaymentid": {
+              "type": ["string", "null"]
+            },
+            "softdescriptor": {
+              "type": ["string", "null"]
+            },
+            "source": {
+              "type": ["string", "null"]
+            },
+            "secondpaymentreferenceid": {
+              "type": ["string", "null"]
+            },
+            "gatewayreconciliationreason": {
+              "type": ["string", "null"]
+            },
+            "gatewaystate": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "referenceid": {
+              "type": ["string", "null"]
+            },
+            "softdescriptorphone": {
+              "type": ["string", "null"]
+            },
+            "gateway": {
+              "type": ["string", "null"]
+            },
+            "currency": {
+              "type": ["string", "null"]
+            },
+            "gatewayreconciliationstatus": {
+              "type": ["string", "null"]
+            },
+            "authtransactionid": {
+              "type": ["string", "null"]
+            },
+            "bankidentificationnumber": {
+              "type": ["string", "null"]
+            },
+            "unappliedamount": {
+              "type": ["number", "null"]
+            },
+            "cancelledon": {
+              "type": ["string", "null"]
+            },
+            "gatewayresponsecode": {
+              "type": ["string", "null"]
+            },
+            "gatewayresponse": {
+              "type": ["string", "null"]
+            },
+            "status": {
+              "type": ["string", "null"]
+            },
+            "comment": {
+              "type": ["string", "null"]
+            },
+            "retrynumber__c": {
+              "type": ["string", "null"]
+            },
+            "submittedon": {
+              "type": ["string", "null"]
+            },
+            "gatewayorderid": {
+              "type": ["string", "null"]
+            },
+            "payoutid": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "appliedamount": {
+              "type": ["number", "null"]
+            },
+            "sourcename": {
+              "type": ["string", "null"]
+            },
+            "refundamount": {
+              "type": ["number", "null"]
+            },
+            "type": {
+              "type": ["string", "null"]
+            },
+            "paymentmethodsnapshotid": {
+              "type": ["string", "null"]
+            },
+            "settledon": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "paymentnumber": {
+              "type": ["string", "null"]
+            },
+            "effectivedate": {
+              "type": ["string", "null"]
+            },
+            "retrystatus__c": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "paymentapplication",
+        "json_schema": {
+          "properties": {
+            "debitmemoid": {
+              "type": ["string", "null"]
+            },
+            "paymentapplicationstatus": {
+              "type": ["string", "null"]
+            },
+            "accountid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "paymentid": {
+              "type": ["string", "null"]
+            },
+            "invoiceid": {
+              "type": ["string", "null"]
+            },
+            "billingdocumentownerid": {
+              "type": ["string", "null"]
+            },
+            "cashaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "applyamount": {
+              "type": ["number", "null"]
+            },
+            "unappliedpaymentaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "journalentryid": {
+              "type": ["string", "null"]
+            },
+            "applicationgroupid": {
+              "type": ["string", "null"]
+            },
+            "accountreceivableaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "effectivedate": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "paymentapplicationitem",
+        "json_schema": {
+          "properties": {
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "invoiceitemid": {
+              "type": ["string", "null"]
+            },
+            "debitmemoitemid": {
+              "type": ["string", "null"]
+            },
+            "cashaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "paymentapplicationid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "unappliedpaymentaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "debittaxationitemid": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "journalentryid": {
+              "type": ["string", "null"]
+            },
+            "taxationitemid": {
+              "type": ["string", "null"]
+            },
+            "applicationgroupid": {
+              "type": ["string", "null"]
+            },
+            "accountreceivableaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "effectivedate": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "paymentmethod",
+        "json_schema": {
+          "properties": {
+            "bankname": {
+              "type": ["string", "null"]
+            },
+            "secondtokenid": {
+              "type": ["string", "null"]
+            },
+            "streetname": {
+              "type": ["string", "null"]
+            },
+            "accountid": {
+              "type": ["string", "null"]
+            },
+            "email": {
+              "type": ["string", "null"]
+            },
+            "mandateid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "achaccountnumbermask": {
+              "type": ["string", "null"]
+            },
+            "creditcardexpirationmonth": {
+              "type": ["number", "null"]
+            },
+            "creditcardexpirationyear": {
+              "type": ["number", "null"]
+            },
+            "bankstreetnumber": {
+              "type": ["string", "null"]
+            },
+            "creditcardholdername": {
+              "type": ["string", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            },
+            "creditcardaddress2": {
+              "type": ["string", "null"]
+            },
+            "paymentmethodstatus": {
+              "type": ["string", "null"]
+            },
+            "companyname": {
+              "type": ["string", "null"]
+            },
+            "creditcardaddress1": {
+              "type": ["string", "null"]
+            },
+            "creditcardcity": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "paymentretrywindow": {
+              "type": ["number", "null"]
+            },
+            "banktransfertype": {
+              "type": ["string", "null"]
+            },
+            "streetnumber": {
+              "type": ["string", "null"]
+            },
+            "achabacode": {
+              "type": ["string", "null"]
+            },
+            "bankbranchcode": {
+              "type": ["string", "null"]
+            },
+            "achbankname": {
+              "type": ["string", "null"]
+            },
+            "banktransferaccounttype": {
+              "type": ["string", "null"]
+            },
+            "bankpostalcode": {
+              "type": ["string", "null"]
+            },
+            "iban": {
+              "type": ["string", "null"]
+            },
+            "bankstreetname": {
+              "type": ["string", "null"]
+            },
+            "mandatereceived": {
+              "type": ["string", "null"]
+            },
+            "bankcheckdigit": {
+              "type": ["string", "null"]
+            },
+            "city": {
+              "type": ["string", "null"]
+            },
+            "mandatecreationdate": {
+              "type": ["string", "null"]
+            },
+            "lastfailedsaletransactiondate": {
+              "type": ["string", "null"]
+            },
+            "active": {
+              "type": ["boolean", "null"]
+            },
+            "existingmandate": {
+              "type": ["string", "null"]
+            },
+            "achcountry": {
+              "type": ["string", "null"]
+            },
+            "state": {
+              "type": ["string", "null"]
+            },
+            "achaddress1": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "country": {
+              "type": ["string", "null"]
+            },
+            "creditcardpostalcode": {
+              "type": ["string", "null"]
+            },
+            "issystem": {
+              "type": ["boolean", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "lastname": {
+              "type": ["string", "null"]
+            },
+            "achaccountname": {
+              "type": ["string", "null"]
+            },
+            "achstate": {
+              "type": ["string", "null"]
+            },
+            "achaddress2": {
+              "type": ["string", "null"]
+            },
+            "paypalpreapprovalkey": {
+              "type": ["string", "null"]
+            },
+            "creditcardstate": {
+              "type": ["string", "null"]
+            },
+            "banktransferaccountnumbermask": {
+              "type": ["string", "null"]
+            },
+            "numconsecutivefailures": {
+              "type": ["number", "null"]
+            },
+            "paypaltype": {
+              "type": ["string", "null"]
+            },
+            "maxconsecutivepaymentfailures": {
+              "type": ["number", "null"]
+            },
+            "postalcode": {
+              "type": ["string", "null"]
+            },
+            "creditcardcountry": {
+              "type": ["string", "null"]
+            },
+            "businessidentificationcode": {
+              "type": ["string", "null"]
+            },
+            "achcity": {
+              "type": ["string", "null"]
+            },
+            "achpostalcode": {
+              "type": ["string", "null"]
+            },
+            "mandateupdatedate": {
+              "type": ["string", "null"]
+            },
+            "creditcardmasknumber": {
+              "type": ["string", "null"]
+            },
+            "mandatestatus": {
+              "type": ["string", "null"]
+            },
+            "phone": {
+              "type": ["string", "null"]
+            },
+            "bankidentificationnumber": {
+              "type": ["string", "null"]
+            },
+            "iscompany": {
+              "type": ["boolean", "null"]
+            },
+            "devicesessionid": {
+              "type": ["string", "null"]
+            },
+            "totalnumberofprocessedpayments": {
+              "type": ["number", "null"]
+            },
+            "tokenid": {
+              "type": ["string", "null"]
+            },
+            "usedefaultretryrule": {
+              "type": ["boolean", "null"]
+            },
+            "lasttransactiondatetime": {
+              "type": ["string", "null"]
+            },
+            "lasttransactionstatus": {
+              "type": ["string", "null"]
+            },
+            "bankcity": {
+              "type": ["string", "null"]
+            },
+            "firstname": {
+              "type": ["string", "null"]
+            },
+            "paypalemail": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "bankcode": {
+              "type": ["string", "null"]
+            },
+            "creditcardtype": {
+              "type": ["string", "null"]
+            },
+            "paypalbaid": {
+              "type": ["string", "null"]
+            },
+            "mandatereason": {
+              "type": ["string", "null"]
+            },
+            "achaccounttype": {
+              "type": ["string", "null"]
+            },
+            "banktransferaccountname": {
+              "type": ["string", "null"]
+            },
+            "type": {
+              "type": ["string", "null"]
+            },
+            "totalnumberoferrorpayments": {
+              "type": ["number", "null"]
+            },
+            "ipaddress": {
+              "type": ["string", "null"]
+            },
+            "identitynumber": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "paymentmethodsnapshot",
+        "json_schema": {
+          "properties": {
+            "bankname": {
+              "type": ["string", "null"]
+            },
+            "secondtokenid": {
+              "type": ["string", "null"]
+            },
+            "streetname": {
+              "type": ["string", "null"]
+            },
+            "accountid": {
+              "type": ["string", "null"]
+            },
+            "email": {
+              "type": ["string", "null"]
+            },
+            "mandateid": {
+              "type": ["string", "null"]
+            },
+            "paymentmethodid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "achaccountnumbermask": {
+              "type": ["string", "null"]
+            },
+            "creditcardexpirationmonth": {
+              "type": ["number", "null"]
+            },
+            "creditcardexpirationyear": {
+              "type": ["number", "null"]
+            },
+            "bankstreetnumber": {
+              "type": ["string", "null"]
+            },
+            "creditcardholdername": {
+              "type": ["string", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            },
+            "creditcardaddress2": {
+              "type": ["string", "null"]
+            },
+            "paymentmethodstatus": {
+              "type": ["string", "null"]
+            },
+            "companyname": {
+              "type": ["string", "null"]
+            },
+            "creditcardaddress1": {
+              "type": ["string", "null"]
+            },
+            "creditcardcity": {
+              "type": ["string", "null"]
+            },
+            "paymentretrywindow": {
+              "type": ["number", "null"]
+            },
+            "banktransfertype": {
+              "type": ["string", "null"]
+            },
+            "streetnumber": {
+              "type": ["string", "null"]
+            },
+            "achabacode": {
+              "type": ["string", "null"]
+            },
+            "bankbranchcode": {
+              "type": ["string", "null"]
+            },
+            "achbankname": {
+              "type": ["string", "null"]
+            },
+            "banktransferaccounttype": {
+              "type": ["string", "null"]
+            },
+            "bankpostalcode": {
+              "type": ["string", "null"]
+            },
+            "iban": {
+              "type": ["string", "null"]
+            },
+            "bankstreetname": {
+              "type": ["string", "null"]
+            },
+            "mandatereceived": {
+              "type": ["string", "null"]
+            },
+            "bankcheckdigit": {
+              "type": ["string", "null"]
+            },
+            "city": {
+              "type": ["string", "null"]
+            },
+            "mandatecreationdate": {
+              "type": ["string", "null"]
+            },
+            "lastfailedsaletransactiondate": {
+              "type": ["string", "null"]
+            },
+            "existingmandate": {
+              "type": ["string", "null"]
+            },
+            "state": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "country": {
+              "type": ["string", "null"]
+            },
+            "creditcardpostalcode": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "lastname": {
+              "type": ["string", "null"]
+            },
+            "achaccountname": {
+              "type": ["string", "null"]
+            },
+            "paypalpreapprovalkey": {
+              "type": ["string", "null"]
+            },
+            "creditcardstate": {
+              "type": ["string", "null"]
+            },
+            "banktransferaccountnumbermask": {
+              "type": ["string", "null"]
+            },
+            "numconsecutivefailures": {
+              "type": ["number", "null"]
+            },
+            "paypaltype": {
+              "type": ["string", "null"]
+            },
+            "maxconsecutivepaymentfailures": {
+              "type": ["number", "null"]
+            },
+            "postalcode": {
+              "type": ["string", "null"]
+            },
+            "creditcardcountry": {
+              "type": ["string", "null"]
+            },
+            "businessidentificationcode": {
+              "type": ["string", "null"]
+            },
+            "mandateupdatedate": {
+              "type": ["string", "null"]
+            },
+            "creditcardmasknumber": {
+              "type": ["string", "null"]
+            },
+            "mandatestatus": {
+              "type": ["string", "null"]
+            },
+            "phone": {
+              "type": ["string", "null"]
+            },
+            "bankidentificationnumber": {
+              "type": ["string", "null"]
+            },
+            "iscompany": {
+              "type": ["boolean", "null"]
+            },
+            "devicesessionid": {
+              "type": ["string", "null"]
+            },
+            "totalnumberofprocessedpayments": {
+              "type": ["number", "null"]
+            },
+            "tokenid": {
+              "type": ["string", "null"]
+            },
+            "usedefaultretryrule": {
+              "type": ["boolean", "null"]
+            },
+            "lasttransactiondatetime": {
+              "type": ["string", "null"]
+            },
+            "lasttransactionstatus": {
+              "type": ["string", "null"]
+            },
+            "bankcity": {
+              "type": ["string", "null"]
+            },
+            "firstname": {
+              "type": ["string", "null"]
+            },
+            "paypalemail": {
+              "type": ["string", "null"]
+            },
+            "bankcode": {
+              "type": ["string", "null"]
+            },
+            "creditcardtype": {
+              "type": ["string", "null"]
+            },
+            "paypalbaid": {
+              "type": ["string", "null"]
+            },
+            "mandatereason": {
+              "type": ["string", "null"]
+            },
+            "achaccounttype": {
+              "type": ["string", "null"]
+            },
+            "banktransferaccountname": {
+              "type": ["string", "null"]
+            },
+            "type": {
+              "type": ["string", "null"]
+            },
+            "totalnumberoferrorpayments": {
+              "type": ["number", "null"]
+            },
+            "ipaddress": {
+              "type": ["string", "null"]
+            },
+            "identitynumber": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "paymentpart",
+        "json_schema": {
+          "properties": {
+            "debitmemoid": {
+              "type": ["string", "null"]
+            },
+            "accountid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "paymentid": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "invoiceid": {
+              "type": ["string", "null"]
+            },
+            "billingdocumentownerid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "paymentpartitem",
+        "json_schema": {
+          "properties": {
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "paymentpartid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "debittaxationitemid": {
+              "type": ["string", "null"]
+            },
+            "invoiceitemid": {
+              "type": ["string", "null"]
+            },
+            "debitmemoitemid": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "taxationitemid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "paymentrun",
+        "json_schema": {
+          "properties": {
+            "executeddate": {
+              "type": ["string", "null"]
+            },
+            "numberofdebitmemosunprocessed": {
+              "type": ["number", "null"]
+            },
+            "autoapplyunappliedpayment": {
+              "type": ["boolean", "null"]
+            },
+            "numberofunappliedpayments": {
+              "type": ["number", "null"]
+            },
+            "accountid": {
+              "type": ["string", "null"]
+            },
+            "runtime": {
+              "type": ["number", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "consolidatedpayment": {
+              "type": ["boolean", "null"]
+            },
+            "repeatto": {
+              "type": ["string", "null"]
+            },
+            "applycreditbalance": {
+              "type": ["boolean", "null"]
+            },
+            "collectpayment": {
+              "type": ["boolean", "null"]
+            },
+            "billingrunid": {
+              "type": ["string", "null"]
+            },
+            "numberofdebitmemos": {
+              "type": ["number", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "batch": {
+              "type": ["string", "null"]
+            },
+            "paymentgatewayid": {
+              "type": ["string", "null"]
+            },
+            "currency": {
+              "type": ["string", "null"]
+            },
+            "paymentrunnumber": {
+              "type": ["string", "null"]
+            },
+            "monthlyonday": {
+              "type": ["string", "null"]
+            },
+            "numberofunprocessed": {
+              "type": ["number", "null"]
+            },
+            "numberofcreditmemos": {
+              "type": ["number", "null"]
+            },
+            "numberofpayments": {
+              "type": ["number", "null"]
+            },
+            "numberofinvoices": {
+              "type": ["number", "null"]
+            },
+            "numberoferrors": {
+              "type": ["number", "null"]
+            },
+            "status": {
+              "type": ["string", "null"]
+            },
+            "billingcycleday": {
+              "type": ["string", "null"]
+            },
+            "totalexecutiontime": {
+              "type": ["number", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "weeklyonday": {
+              "type": ["string", "null"]
+            },
+            "repeatfrom": {
+              "type": ["string", "null"]
+            },
+            "enddate": {
+              "type": ["string", "null"]
+            },
+            "rundate": {
+              "type": ["string", "null"]
+            },
+            "numberofcreditbalanceadjustments": {
+              "type": ["number", "null"]
+            },
+            "timezone": {
+              "type": ["string", "null"]
+            },
+            "targetdate": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "repeattype": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "autoapplycreditmemo": {
+              "type": ["boolean", "null"]
+            },
+            "errormessage": {
+              "type": ["string", "null"]
+            },
+            "nextrunon": {
+              "type": ["string", "null"]
+            },
+            "processpaymentwithclosedpm": {
+              "type": ["boolean", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "paymenttransactionlog",
+        "json_schema": {
+          "properties": {
+            "accountid": {
+              "type": ["string", "null"]
+            },
+            "requeststring": {
+              "type": ["string", "null"]
+            },
+            "batchid": {
+              "type": ["string", "null"]
+            },
+            "gatewaytransactiontype": {
+              "type": ["string", "null"]
+            },
+            "paymentid": {
+              "type": ["string", "null"]
+            },
+            "cvvresponsecode": {
+              "type": ["string", "null"]
+            },
+            "gatewayreasoncode": {
+              "type": ["string", "null"]
+            },
+            "transactionid": {
+              "type": ["string", "null"]
+            },
+            "avsresponsecode": {
+              "type": ["string", "null"]
+            },
+            "gatewaystate": {
+              "type": ["string", "null"]
+            },
+            "gateway": {
+              "type": ["string", "null"]
+            },
+            "gatewayreasoncodedescription": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "responsestring": {
+              "type": ["string", "null"]
+            },
+            "transactiondate": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["createddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["createddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "processedusage",
+        "json_schema": {
+          "properties": {
+            "billingperiodenddate": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "billingperiodstartdate": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "invoiceitemid": {
+              "type": ["string", "null"]
+            },
+            "usageid": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "product",
+        "json_schema": {
+          "properties": {
+            "category": {
+              "type": ["string", "null"]
+            },
+            "description": {
+              "type": ["string", "null"]
+            },
+            "upgradepathsku__c": {
+              "type": ["string", "null"]
+            },
+            "effectiveenddate": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            },
+            "downgradepathsku__c": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "productmanager__c": {
+              "type": ["string", "null"]
+            },
+            "allowfeaturechanges": {
+              "type": ["boolean", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "partnercommission__c": {
+              "type": ["string", "null"]
+            },
+            "sku": {
+              "type": ["string", "null"]
+            },
+            "effectivestartdate": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "productrateplan",
+        "json_schema": {
+          "properties": {
+            "description": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "effectiveenddate": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "productid": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "promotioncode__c": {
+              "type": ["string", "null"]
+            },
+            "effectivestartdate": {
+              "type": ["string", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "productrateplancharge",
+        "json_schema": {
+          "properties": {
+            "discountclassid": {
+              "type": ["string", "null"]
+            },
+            "discountlevel": {
+              "type": ["string", "null"]
+            },
+            "ratinggroup": {
+              "type": ["string", "null"]
+            },
+            "accountingcode": {
+              "type": ["string", "null"]
+            },
+            "specificbillingperiod": {
+              "type": ["number", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "adjustmentliabilityaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            },
+            "billingperiodalignment": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "uptoperiodstype": {
+              "type": ["string", "null"]
+            },
+            "revenuerecognitionrulename": {
+              "type": ["string", "null"]
+            },
+            "numberofperiod": {
+              "type": ["number", "null"]
+            },
+            "overagecalculationoption": {
+              "type": ["string", "null"]
+            },
+            "maxquantity": {
+              "type": ["number", "null"]
+            },
+            "enddatecondition": {
+              "type": ["string", "null"]
+            },
+            "taxmode": {
+              "type": ["string", "null"]
+            },
+            "legacyrevenuereporting": {
+              "type": ["boolean", "null"]
+            },
+            "weeklybillcycleday": {
+              "type": ["string", "null"]
+            },
+            "billingperiod": {
+              "type": ["string", "null"]
+            },
+            "usediscountspecificaccountingcode": {
+              "type": ["boolean", "null"]
+            },
+            "triggerevent": {
+              "type": ["string", "null"]
+            },
+            "billcycletype": {
+              "type": ["string", "null"]
+            },
+            "productrateplanid": {
+              "type": ["string", "null"]
+            },
+            "recognizedrevenueaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "revrectriggercondition": {
+              "type": ["string", "null"]
+            },
+            "pricechangeoption": {
+              "type": ["string", "null"]
+            },
+            "contractliabilityaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "uptoperiods": {
+              "type": ["number", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "overageunusedunitscreditoption": {
+              "type": ["string", "null"]
+            },
+            "adjustmentrevenueaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "taxable": {
+              "type": ["boolean", "null"]
+            },
+            "contractrecognizedrevenueaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "description": {
+              "type": ["string", "null"]
+            },
+            "includedunits": {
+              "type": ["number", "null"]
+            },
+            "contractassetaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "smoothingmodel": {
+              "type": ["string", "null"]
+            },
+            "usagerecordratingoption": {
+              "type": ["string", "null"]
+            },
+            "recognizedrevenueaccount": {
+              "type": ["string", "null"]
+            },
+            "minquantity": {
+              "type": ["number", "null"]
+            },
+            "deferredrevenueaccount": {
+              "type": ["string", "null"]
+            },
+            "taxcode": {
+              "type": ["string", "null"]
+            },
+            "unbilledreceivablesaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "billcycleday": {
+              "type": ["number", "null"]
+            },
+            "defaultquantity": {
+              "type": ["number", "null"]
+            },
+            "priceincreasepercentage": {
+              "type": ["number", "null"]
+            },
+            "chargemodel": {
+              "type": ["string", "null"]
+            },
+            "revreccode": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "applydiscountto": {
+              "type": ["string", "null"]
+            },
+            "billingtiming": {
+              "type": ["string", "null"]
+            },
+            "deferredrevenueaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "listpricebase": {
+              "type": ["string", "null"]
+            },
+            "uom": {
+              "type": ["string", "null"]
+            },
+            "chargetype": {
+              "type": ["string", "null"]
+            },
+            "usetenantdefaultforpricechange": {
+              "type": ["boolean", "null"]
+            },
+            "accountreceivableaccountingcodeid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "productrateplanchargetier",
+        "json_schema": {
+          "properties": {
+            "startingunit": {
+              "type": ["number", "null"]
+            },
+            "includedunits": {
+              "type": ["number", "null"]
+            },
+            "tier": {
+              "type": ["number", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "overageprice": {
+              "type": ["number", "null"]
+            },
+            "priceformat": {
+              "type": ["string", "null"]
+            },
+            "discountamount": {
+              "type": ["number", "null"]
+            },
+            "active": {
+              "type": ["boolean", "null"]
+            },
+            "productrateplanchargeid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "discountpercentage": {
+              "type": ["number", "null"]
+            },
+            "endingunit": {
+              "type": ["number", "null"]
+            },
+            "price": {
+              "type": ["number", "null"]
+            },
+            "currency": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "productrateplancurrency",
+        "json_schema": {
+          "properties": {
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "isactive": {
+              "type": ["boolean", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "currency": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "productrateplanid": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "rateplan",
+        "json_schema": {
+          "properties": {
+            "amendmentid": {
+              "type": ["string", "null"]
+            },
+            "subscriptionid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "amendmenttype": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "productrateplanid": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "rateplancharge",
+        "json_schema": {
+          "properties": {
+            "discountlevel": {
+              "type": ["string", "null"]
+            },
+            "ratinggroup": {
+              "type": ["string", "null"]
+            },
+            "accountingcode": {
+              "type": ["string", "null"]
+            },
+            "specificbillingperiod": {
+              "type": ["number", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "processedthroughdate": {
+              "type": ["string", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            },
+            "billingperiodalignment": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "uptoperiodstype": {
+              "type": ["string", "null"]
+            },
+            "islastsegment": {
+              "type": ["boolean", "null"]
+            },
+            "version": {
+              "type": ["number", "null"]
+            },
+            "revenuerecognitionrulename": {
+              "type": ["string", "null"]
+            },
+            "numberofperiods": {
+              "type": ["number", "null"]
+            },
+            "overagecalculationoption": {
+              "type": ["string", "null"]
+            },
+            "enddatecondition": {
+              "type": ["string", "null"]
+            },
+            "weeklybillcycleday": {
+              "type": ["string", "null"]
+            },
+            "dtcv": {
+              "type": ["number", "null"]
+            },
+            "billingperiod": {
+              "type": ["string", "null"]
+            },
+            "effectiveenddate": {
+              "type": ["string", "null"]
+            },
+            "triggerevent": {
+              "type": ["string", "null"]
+            },
+            "billcycletype": {
+              "type": ["string", "null"]
+            },
+            "recognizedrevenueaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "chargedthroughdate": {
+              "type": ["string", "null"]
+            },
+            "triggerdate": {
+              "type": ["string", "null"]
+            },
+            "revrectriggercondition": {
+              "type": ["string", "null"]
+            },
+            "pricechangeoption": {
+              "type": ["string", "null"]
+            },
+            "rateplanid": {
+              "type": ["string", "null"]
+            },
+            "productrateplanchargeid": {
+              "type": ["string", "null"]
+            },
+            "uptoperiods": {
+              "type": ["number", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "overageunusedunitscreditoption": {
+              "type": ["string", "null"]
+            },
+            "isprocessed": {
+              "type": ["boolean", "null"]
+            },
+            "description": {
+              "type": ["string", "null"]
+            },
+            "tcv": {
+              "type": ["number", "null"]
+            },
+            "mrr": {
+              "type": ["number", "null"]
+            },
+            "segment": {
+              "type": ["number", "null"]
+            },
+            "billcycleday": {
+              "type": ["number", "null"]
+            },
+            "dmrc": {
+              "type": ["number", "null"]
+            },
+            "specificenddate": {
+              "type": ["string", "null"]
+            },
+            "chargenumber": {
+              "type": ["string", "null"]
+            },
+            "priceincreasepercentage": {
+              "type": ["number", "null"]
+            },
+            "chargemodel": {
+              "type": ["string", "null"]
+            },
+            "originalid": {
+              "type": ["string", "null"]
+            },
+            "revreccode": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "applydiscountto": {
+              "type": ["string", "null"]
+            },
+            "billingtiming": {
+              "type": ["string", "null"]
+            },
+            "deferredrevenueaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "listpricebase": {
+              "type": ["string", "null"]
+            },
+            "quantity": {
+              "type": ["number", "null"]
+            },
+            "uom": {
+              "type": ["string", "null"]
+            },
+            "chargetype": {
+              "type": ["string", "null"]
+            },
+            "effectivestartdate": {
+              "type": ["string", "null"]
+            },
+            "accountreceivableaccountingcodeid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "rateplanchargetier",
+        "json_schema": {
+          "properties": {
+            "startingunit": {
+              "type": ["number", "null"]
+            },
+            "rateplanchargeid": {
+              "type": ["string", "null"]
+            },
+            "includedunits": {
+              "type": ["number", "null"]
+            },
+            "tier": {
+              "type": ["number", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "overageprice": {
+              "type": ["number", "null"]
+            },
+            "priceformat": {
+              "type": ["string", "null"]
+            },
+            "discountamount": {
+              "type": ["number", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "discountpercentage": {
+              "type": ["number", "null"]
+            },
+            "endingunit": {
+              "type": ["number", "null"]
+            },
+            "price": {
+              "type": ["number", "null"]
+            },
+            "currency": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "refund",
+        "json_schema": {
+          "properties": {
+            "accountid": {
+              "type": ["string", "null"]
+            },
+            "accountingcode": {
+              "type": ["string", "null"]
+            },
+            "paymentmethodid": {
+              "type": ["string", "null"]
+            },
+            "secondrefundreferenceid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "markedforsubmissionon": {
+              "type": ["string", "null"]
+            },
+            "sourcetype": {
+              "type": ["string", "null"]
+            },
+            "transferredtoaccounting": {
+              "type": ["string", "null"]
+            },
+            "softdescriptor": {
+              "type": ["string", "null"]
+            },
+            "gatewayreconciliationreason": {
+              "type": ["string", "null"]
+            },
+            "gatewaystate": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "softdescriptorphone": {
+              "type": ["string", "null"]
+            },
+            "gateway": {
+              "type": ["string", "null"]
+            },
+            "gatewayreconciliationstatus": {
+              "type": ["string", "null"]
+            },
+            "refundnumber": {
+              "type": ["string", "null"]
+            },
+            "cancelledon": {
+              "type": ["string", "null"]
+            },
+            "gatewayresponsecode": {
+              "type": ["string", "null"]
+            },
+            "gatewayresponse": {
+              "type": ["string", "null"]
+            },
+            "status": {
+              "type": ["string", "null"]
+            },
+            "comment": {
+              "type": ["string", "null"]
+            },
+            "methodtype": {
+              "type": ["string", "null"]
+            },
+            "submittedon": {
+              "type": ["string", "null"]
+            },
+            "payoutid": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "refundtransactiontime": {
+              "type": ["string", "null"]
+            },
+            "refunddate": {
+              "type": ["string", "null"]
+            },
+            "reasoncode": {
+              "type": ["string", "null"]
+            },
+            "type": {
+              "type": ["string", "null"]
+            },
+            "paymentmethodsnapshotid": {
+              "type": ["string", "null"]
+            },
+            "referenceid": {
+              "type": ["string", "null"]
+            },
+            "settledon": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "refundapplication",
+        "json_schema": {
+          "properties": {
+            "accountid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "paymentid": {
+              "type": ["string", "null"]
+            },
+            "invoiceid": {
+              "type": ["string", "null"]
+            },
+            "cashaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "creditmemoid": {
+              "type": ["string", "null"]
+            },
+            "onaccountaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "applyamount": {
+              "type": ["number", "null"]
+            },
+            "unappliedpaymentaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "refundid": {
+              "type": ["string", "null"]
+            },
+            "journalentryid": {
+              "type": ["string", "null"]
+            },
+            "applicationgroupid": {
+              "type": ["string", "null"]
+            },
+            "accountreceivableaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "effectivedate": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "refundapplicationitem",
+        "json_schema": {
+          "properties": {
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "refundapplicationid": {
+              "type": ["string", "null"]
+            },
+            "cashaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "onaccountaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "unappliedpaymentaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "credittaxationitemid": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "creditmemoitemid": {
+              "type": ["string", "null"]
+            },
+            "journalentryid": {
+              "type": ["string", "null"]
+            },
+            "applicationgroupid": {
+              "type": ["string", "null"]
+            },
+            "accountreceivableaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "effectivedate": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "refundpart",
+        "json_schema": {
+          "properties": {
+            "accountid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "paymentid": {
+              "type": ["string", "null"]
+            },
+            "refundamount": {
+              "type": ["number", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "refundid": {
+              "type": ["string", "null"]
+            },
+            "creditmemoid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "refundpartitem",
+        "json_schema": {
+          "properties": {
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "creditmemoitemid": {
+              "type": ["string", "null"]
+            },
+            "refundpartid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "revenuechargesummary",
+        "json_schema": {
+          "properties": {
+            "accountid": {
+              "type": ["string", "null"]
+            },
+            "description": {
+              "type": ["string", "null"]
+            },
+            "rateplanchargeid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "number": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "currency": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "revenuechargesummaryitem",
+        "json_schema": {
+          "properties": {
+            "revenuechargesummaryid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "currency": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "accountingperiodid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "revenueevent",
+        "json_schema": {
+          "properties": {
+            "recognitionstart": {
+              "type": ["string", "null"]
+            },
+            "revenuescheduleid": {
+              "type": ["string", "null"]
+            },
+            "description": {
+              "type": ["string", "null"]
+            },
+            "revenueeventtypeid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "recognitionend": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "number": {
+              "type": ["string", "null"]
+            },
+            "currency": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "revenueeventcreditmemoitem",
+        "json_schema": {
+          "properties": {
+            "recognitionstart": {
+              "type": ["string", "null"]
+            },
+            "description": {
+              "type": ["string", "null"]
+            },
+            "revenueeventtypeid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "revenueschedulecreditmemoitemid": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "recognitionend": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "number": {
+              "type": ["string", "null"]
+            },
+            "currency": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "revenueeventinvoiceitem",
+        "json_schema": {
+          "properties": {
+            "recognitionstart": {
+              "type": ["string", "null"]
+            },
+            "description": {
+              "type": ["string", "null"]
+            },
+            "revenueeventtypeid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "revenuescheduleinvoiceitemid": {
+              "type": ["string", "null"]
+            },
+            "recognitionend": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "number": {
+              "type": ["string", "null"]
+            },
+            "currency": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "revenueeventitem",
+        "json_schema": {
+          "properties": {
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "deferredrevenueaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "revenueeventid": {
+              "type": ["string", "null"]
+            },
+            "recognizedrevenueaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "currency": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "accountingperiodid": {
+              "type": ["string", "null"]
+            },
+            "journalentryid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "revenueeventitemcreditmemoitem",
+        "json_schema": {
+          "properties": {
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "deferredrevenueaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "recognizedrevenueaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "revenueeventcreditmemoitemid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "currency": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "accountingperiodid": {
+              "type": ["string", "null"]
+            },
+            "journalentryid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "revenueeventiteminvoiceitem",
+        "json_schema": {
+          "properties": {
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "deferredrevenueaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "recognizedrevenueaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "currency": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "accountingperiodid": {
+              "type": ["string", "null"]
+            },
+            "journalentryid": {
+              "type": ["string", "null"]
+            },
+            "revenueeventinvoiceitemid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "revenueeventtype",
+        "json_schema": {
+          "properties": {
+            "active": {
+              "type": ["boolean", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "systemid": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "revenueschedule",
+        "json_schema": {
+          "properties": {
+            "billingtransactionid": {
+              "type": ["string", "null"]
+            },
+            "revenuechargesummaryid": {
+              "type": ["string", "null"]
+            },
+            "accountid": {
+              "type": ["string", "null"]
+            },
+            "description": {
+              "type": ["string", "null"]
+            },
+            "transactionnumber": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "financetransactiontype": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "number": {
+              "type": ["string", "null"]
+            },
+            "referenceid": {
+              "type": ["string", "null"]
+            },
+            "currency": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "exchangeratedate": {
+              "type": ["string", "null"]
+            },
+            "recognitionperiodend": {
+              "type": ["string", "null"]
+            },
+            "revenuescheduledate": {
+              "type": ["string", "null"]
+            },
+            "undistributedamount": {
+              "type": ["number", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "rule": {
+              "type": ["string", "null"]
+            },
+            "recognitionperiodstart": {
+              "type": ["string", "null"]
+            },
+            "transactiondate": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "revenueschedulecreditmemoitem",
+        "json_schema": {
+          "properties": {
+            "revenuechargesummaryid": {
+              "type": ["string", "null"]
+            },
+            "accountid": {
+              "type": ["string", "null"]
+            },
+            "description": {
+              "type": ["string", "null"]
+            },
+            "transactionnumber": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "financetransactiontype": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "number": {
+              "type": ["string", "null"]
+            },
+            "referenceid": {
+              "type": ["string", "null"]
+            },
+            "currency": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "exchangeratedate": {
+              "type": ["string", "null"]
+            },
+            "recognitionperiodend": {
+              "type": ["string", "null"]
+            },
+            "revenuescheduledate": {
+              "type": ["string", "null"]
+            },
+            "undistributedamount": {
+              "type": ["number", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "rule": {
+              "type": ["string", "null"]
+            },
+            "creditmemoitemid": {
+              "type": ["string", "null"]
+            },
+            "recognitionperiodstart": {
+              "type": ["string", "null"]
+            },
+            "transactiondate": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "revenuescheduleinvoiceitem",
+        "json_schema": {
+          "properties": {
+            "revenuechargesummaryid": {
+              "type": ["string", "null"]
+            },
+            "accountid": {
+              "type": ["string", "null"]
+            },
+            "description": {
+              "type": ["string", "null"]
+            },
+            "transactionnumber": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "invoiceitemid": {
+              "type": ["string", "null"]
+            },
+            "financetransactiontype": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "number": {
+              "type": ["string", "null"]
+            },
+            "referenceid": {
+              "type": ["string", "null"]
+            },
+            "currency": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "exchangeratedate": {
+              "type": ["string", "null"]
+            },
+            "recognitionperiodend": {
+              "type": ["string", "null"]
+            },
+            "revenuescheduledate": {
+              "type": ["string", "null"]
+            },
+            "undistributedamount": {
+              "type": ["number", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "rule": {
+              "type": ["string", "null"]
+            },
+            "recognitionperiodstart": {
+              "type": ["string", "null"]
+            },
+            "transactiondate": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "revenuescheduleitem",
+        "json_schema": {
+          "properties": {
+            "revenuescheduleid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "currency": {
+              "type": ["string", "null"]
+            },
+            "deferredrevenueaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "recognizedrevenueaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "accountingperiodid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "revenuescheduleitemcreditmemoitem",
+        "json_schema": {
+          "properties": {
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "revenueschedulecreditmemoitemid": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "currency": {
+              "type": ["string", "null"]
+            },
+            "deferredrevenueaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "recognizedrevenueaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "accountingperiodid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "revenuescheduleiteminvoiceitem",
+        "json_schema": {
+          "properties": {
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "amount": {
+              "type": ["number", "null"]
+            },
+            "currency": {
+              "type": ["string", "null"]
+            },
+            "deferredrevenueaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "revenuescheduleinvoiceitemid": {
+              "type": ["string", "null"]
+            },
+            "recognizedrevenueaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "accountingperiodid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "subscription",
+        "json_schema": {
+          "properties": {
+            "currenttermperiodtype": {
+              "type": ["string", "null"]
+            },
+            "quotenumber__qt": {
+              "type": ["string", "null"]
+            },
+            "subscriptionstartdate": {
+              "type": ["string", "null"]
+            },
+            "accountid": {
+              "type": ["string", "null"]
+            },
+            "opportunityname__qt": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "partnerid__c": {
+              "type": ["string", "null"]
+            },
+            "autorenew": {
+              "type": ["boolean", "null"]
+            },
+            "creatorinvoiceownerid": {
+              "type": ["string", "null"]
+            },
+            "renewaltermperiodtype": {
+              "type": ["string", "null"]
+            },
+            "serviceactivationdate": {
+              "type": ["string", "null"]
+            },
+            "creatoraccountid": {
+              "type": ["string", "null"]
+            },
+            "termtype": {
+              "type": ["string", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            },
+            "contracteffectivedate": {
+              "type": ["string", "null"]
+            },
+            "subscriptionversionamendmentid": {
+              "type": ["string", "null"]
+            },
+            "contractacceptancedate": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "version": {
+              "type": ["number", "null"]
+            },
+            "currentterm": {
+              "type": ["number", "null"]
+            },
+            "rampid": {
+              "type": ["string", "null"]
+            },
+            "cpqbundlejsonid__qt": {
+              "type": ["string", "null"]
+            },
+            "quotetype__qt": {
+              "type": ["string", "null"]
+            },
+            "initialterm": {
+              "type": ["number", "null"]
+            },
+            "notes": {
+              "type": ["string", "null"]
+            },
+            "cancelleddate": {
+              "type": ["string", "null"]
+            },
+            "status": {
+              "type": ["string", "null"]
+            },
+            "quotebusinesstype__qt": {
+              "type": ["string", "null"]
+            },
+            "previoussubscriptionid": {
+              "type": ["string", "null"]
+            },
+            "originalid": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "renewalsetting": {
+              "type": ["string", "null"]
+            },
+            "isinvoiceseparate": {
+              "type": ["boolean", "null"]
+            },
+            "opportunityclosedate__qt": {
+              "type": ["string", "null"]
+            },
+            "subscriptionenddate": {
+              "type": ["string", "null"]
+            },
+            "revision": {
+              "type": ["string", "null"]
+            },
+            "cmrr": {
+              "type": ["number", "null"]
+            },
+            "termstartdate": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "renewalterm": {
+              "type": ["number", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "originalcreateddate": {
+              "type": ["string", "null"]
+            },
+            "initialtermperiodtype": {
+              "type": ["string", "null"]
+            },
+            "invoiceownerid": {
+              "type": ["string", "null"]
+            },
+            "termenddate": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "subscriptionproductfeature",
+        "json_schema": {
+          "properties": {
+            "featureid": {
+              "type": ["string", "null"]
+            },
+            "rateplanid": {
+              "type": ["string", "null"]
+            },
+            "description": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "taxationitem",
+        "json_schema": {
+          "properties": {
+            "accountingcode": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "creditamount": {
+              "type": ["number", "null"]
+            },
+            "paymentamount": {
+              "type": ["number", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            },
+            "exemptamount": {
+              "type": ["number", "null"]
+            },
+            "salestaxpayableaccountingcodeid": {
+              "type": ["string", "null"]
+            },
+            "taxamount": {
+              "type": ["number", "null"]
+            },
+            "taxcodedescription": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "taxcode": {
+              "type": ["string", "null"]
+            },
+            "taxdate": {
+              "type": ["string", "null"]
+            },
+            "taxrate": {
+              "type": ["number", "null"]
+            },
+            "journalentryid": {
+              "type": ["string", "null"]
+            },
+            "taxratetype": {
+              "type": ["string", "null"]
+            },
+            "taxmode": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "invoiceitemid": {
+              "type": ["string", "null"]
+            },
+            "locationcode": {
+              "type": ["string", "null"]
+            },
+            "jurisdiction": {
+              "type": ["string", "null"]
+            },
+            "taxratedescription": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "balance": {
+              "type": ["number", "null"]
+            },
+            "taxableitemsnapshotid": {
+              "type": ["string", "null"]
+            },
+            "accountreceivableaccountingcodeid": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "usage",
+        "json_schema": {
+          "properties": {
+            "rbestatus": {
+              "type": ["string", "null"]
+            },
+            "accountid": {
+              "type": ["string", "null"]
+            },
+            "description": {
+              "type": ["string", "null"]
+            },
+            "rateplanchargeid": {
+              "type": ["string", "null"]
+            },
+            "updateddate": {
+              "type": ["string", "null"]
+            },
+            "updatedbyid": {
+              "type": ["string", "null"]
+            },
+            "sourcetype": {
+              "type": ["string", "null"]
+            },
+            "quantity": {
+              "type": ["number", "null"]
+            },
+            "importid": {
+              "type": ["string", "null"]
+            },
+            "accountnumber": {
+              "type": ["string", "null"]
+            },
+            "submissiondatetime": {
+              "type": ["string", "null"]
+            },
+            "uom": {
+              "type": ["string", "null"]
+            },
+            "startdatetime": {
+              "type": ["string", "null"]
+            },
+            "subscriptionid": {
+              "type": ["string", "null"]
+            },
+            "createdbyid": {
+              "type": ["string", "null"]
+            },
+            "enddatetime": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updateddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updateddate"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "user",
+        "json_schema": {
+          "properties": {
+            "email": {
+              "type": ["string", "null"]
+            },
+            "username": {
+              "type": ["string", "null"]
+            },
+            "firstname": {
+              "type": ["string", "null"]
+            },
+            "createddate": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "lastname": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["createddate"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["createddate"],
+      "destination_sync_mode": "append"
+    }
+  ]
+}

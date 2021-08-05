@@ -119,6 +119,7 @@
     * [Zendesk Support](integrations/sources/zendesk-support.md)
     * [Zendesk Talk](integrations/sources/zendesk-talk.md)
     * [Zoom](integrations/sources/zoom.md)
+    * [Zuora](integrations/sources/zuora.md)
   * [Destinations](integrations/destinations/README.md)
     * [BigQuery](integrations/destinations/bigquery.md)
     * [Google Cloud Storage (GCS)](integrations/destinations/gcs.md)
