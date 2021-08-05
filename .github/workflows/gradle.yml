@@ -435,7 +435,7 @@ jobs:
           sudo apt-get install socat
 
       - name: KIND Kubernetes Cluster Setup
-        uses: helm/kind-action@v1.1.0
+        uses: helm/kind-action@v1.2.0
         # In case of self-hosted EC2 errors, remove this env block.
         env:
           USER: root
