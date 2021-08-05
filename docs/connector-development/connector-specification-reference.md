@@ -13,6 +13,10 @@ By default, any fields in a connector's specification are visible can be read in
 },
 ```
 
+Here is an example of what the password field would look like: 
+<img width="806" alt="Screen Shot 2021-08-04 at 11 15 04 PM" src="https://user-images.githubusercontent.com/6246757/128300633-7f379b05-5f4a-46e8-ad88-88155e7f4260.png">
+
+
 ### Multi-line String inputs
 Sometimes when a user is inputting a string field into a connector, newlines need to be preserveed. For example, if we want a connector to use an RSA key which looks like this: 
 
