@@ -163,7 +163,7 @@ public class ServerApp implements ServerRunnable {
     TrackingClientSingleton.get().identify(workspaceId);
   }
 
-  public static ServerRunnable getServer(final ServerFactory apiFactory, final DeploymentMode deploymentMode) throws Exception {
+  public static ServerRunnable getServer(ServerFactory apiFactory) throws Exception {
     final Configs configs = new EnvConfigs();
 
     MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, LogClientSingleton.getServerLogsRoot(configs).toString());
@@ -185,7 +185,7 @@ public class ServerApp implements ServerRunnable {
     // must happen after deployment id is set
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
-        new Deployment(deploymentMode, jobPersistence.getDeployment().orElseThrow(), configs.getWorkerEnvironment()),
+        new Deployment(DeploymentMode.OSS, jobPersistence.getDeployment().orElseThrow(), configs.getWorkerEnvironment()),
         configs.getAirbyteRole(),
         configs.getAirbyteVersion(),
         configRepository);
@@ -237,8 +237,8 @@ public class ServerApp implements ServerRunnable {
     }
   }
 
-  public static void main(final String[] args) throws Exception {
-    getServer(new ServerFactory.Api(), DeploymentMode.OSS).start();
+  public static void main(String[] args) throws Exception {
+    getServer(new ServerFactory.Api()).start();
   }
 
   /**
