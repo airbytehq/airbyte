@@ -37,7 +37,9 @@ By default, string inputs in the UI can lose their linebreaks. In order to accep
 },
 ```
 
-this will display a multi-line textbox in the UI. 
+this will display a multi-line textbox in the UI like the following screenshot: 
+<img width="796" alt="Screen Shot 2021-08-04 at 11 13 09 PM" src="https://user-images.githubusercontent.com/6246757/128300404-1dc35323-bceb-4f93-9b81-b23cc4beb670.png">
+
 
 ### Using `oneOf`s 
 In some cases, a connector needs to accept one out of many options. For example, a connector might need to know the compression codec of the file it will read, which will render in the Airbyte UI as a list of the available codecs. In JSONSchema, this can be expressed using the [oneOf](https://json-schema.org/understanding-json-schema/reference/combining.html#oneof) keyword.
