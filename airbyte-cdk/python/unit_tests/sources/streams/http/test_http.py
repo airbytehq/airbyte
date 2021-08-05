@@ -23,18 +23,15 @@
 #
 
 
+import json
 from typing import Any, Iterable, Mapping, Optional
 from unittest.mock import ANY
 
 import pytest
 import requests
-import json
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.exceptions import (
-    UserDefinedBackoffException,
-    RequestBodyException
-)
+from airbyte_cdk.sources.streams.http.exceptions import RequestBodyException, UserDefinedBackoffException
 
 
 class StubBasicReadHttpStream(HttpStream):
@@ -162,27 +159,19 @@ def test_stub_custom_backoff_http_stream(mocker):
 class PostHttpStream(StubBasicReadHttpStream):
     http_method = "POST"
 
-    def parse_response(
-        self,
-        response: requests.Response,
-        **kwargs
-    ) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """Returns response data as is"""
         yield response.json()
 
 
 class TestRequestBody:
     """Suite of different tests for request bodies"""
-    json_body = {
-        "key": "value"
-    }
+
+    json_body = {"key": "value"}
     data_body = "key:value"
 
     def request2response(self, request, context):
-        return json.dumps({
-            "body": request.text,
-            "content_type": request.headers.get("Content-Type")
-        })
+        return json.dumps({"body": request.text, "content_type": request.headers.get("Content-Type")})
 
     def test_json_body(self, mocker, requests_mock):
 
@@ -192,8 +181,8 @@ class TestRequestBody:
         requests_mock.register_uri("POST", stream.url_base, text=self.request2response)
         response = list(stream.read_records(sync_mode=SyncMode.full_refresh))[0]
 
-        assert response['content_type'] == 'application/json'
-        assert json.loads(response['body']) == self.json_body
+        assert response["content_type"] == "application/json"
+        assert json.loads(response["body"]) == self.json_body
 
     def test_text_body(self, mocker, requests_mock):
 
@@ -203,8 +192,8 @@ class TestRequestBody:
         requests_mock.register_uri("POST", stream.url_base, text=self.request2response)
         response = list(stream.read_records(sync_mode=SyncMode.full_refresh))[0]
 
-        assert response['content_type'] is None
-        assert response['body'] == self.data_body
+        assert response["content_type"] is None
+        assert response["body"] == self.data_body
 
     def test_text_json_body(self, mocker, requests_mock):
         """checks a exception if both functions were overridden"""
@@ -232,6 +221,6 @@ class TestRequestBody:
             requests_mock.register_uri(method, stream.url_base, text=self.request2response)
             response = list(stream.read_records(sync_mode=SyncMode.full_refresh))[0]
             if with_body:
-                assert response['body'] == self.data_body
+                assert response["body"] == self.data_body
             else:
-                assert response['body'] is None
+                assert response["body"] is None

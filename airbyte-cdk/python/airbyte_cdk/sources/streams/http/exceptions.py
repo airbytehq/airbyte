@@ -32,7 +32,7 @@ class BaseBackoffException(requests.exceptions.HTTPError):
     pass
 
 
-class RequestBodyException(requests.exceptions.HTTPError):
+class RequestBodyException(Exception):
     """
     Raises when there are some issues of request body
     """

@@ -31,11 +31,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import Stream
 
 from .auth.core import HttpAuthenticator, NoAuth
-from .exceptions import (
-    DefaultBackoffException,
-    UserDefinedBackoffException,
-    RequestBodyException
-)
+from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
 
 # list of all possible HTTP methods which can be used for sending of request bodies
@@ -106,10 +102,7 @@ class HttpStream(Stream, ABC):
         return {}
 
     def request_headers(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         """
         Override to return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
@@ -196,23 +189,14 @@ class HttpStream(Stream, ABC):
         return None
 
     def _create_prepared_request(
-        self,
-        path: str,
-        headers: Mapping = None,
-        params: Mapping = None,
-        json: Any = None,
-        data: Any = None
+        self, path: str, headers: Mapping = None, params: Mapping = None, json: Any = None, data: Any = None
     ) -> requests.PreparedRequest:
-        args = {
-            "method": self.http_method,
-            "url": self.url_base + path,
-            "headers": headers,
-            "params": params
-        }
+        args = {"method": self.http_method, "url": self.url_base + path, "headers": headers, "params": params}
         if self.http_method.upper() in BODY_REQUEST_METHODS:
             if json and data:
-                raise RequestBodyException("At the same time only one of the 'request_body_data' and "
-                                           "'request_body_json' functions can return data")
+                raise RequestBodyException(
+                    "At the same time only one of the 'request_body_data' and 'request_body_json' functions can return data"
+                )
             elif json:
                 args["json"] = json
             elif data:
