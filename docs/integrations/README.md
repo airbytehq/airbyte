@@ -42,14 +42,14 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Google Sheets](./sources/google-sheets.md)| Certified |
 |[Google Workspace Admin Reports](./sources/google-workspace-admin-reports.md)| Certified |
 |[Greenhouse](./sources/greenhouse.md)| Beta |
-|[HTTP Request](./sources/http-request.md)| Alpha |
 |[Hubspot](./sources/hubspot.md)| Certified |
 |[Instagram](./sources/instagram.md)| Certified |
 |[Intercom](./sources/intercom.md)| Beta |
 |[Iterable](./sources/iterable.md)| Beta |
 |[Jira](./sources/jira.md)| Certified |
-|[Looker](./sources/looker.md)| Beta |
 |[Klaviyo](./sources/klaviyo.md)| Beta |
+|[Klaviyo](./sources/kustomer.md)| Alpha |
+|[Looker](./sources/looker.md)| Beta |
 |[Magento](./sources/magento.md)| Beta |
 |[Mailchimp](./sources/mailchimp.md)| Certified |
 |[Marketo](./sources/marketo.md)| Certified |
