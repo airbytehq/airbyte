@@ -19,6 +19,8 @@ If you have any questions about the Airbyte setup and deployment process, head o
 - Where can I see my data once I've run a sync?
 - Can I set a start time for my sync?
 
+If there are any questions that we couldn't answer here, we'd love to help you get started. [Join our Slack](https://airbytehq.slack.com/ssb/redirect) and feel free to ask your questions in the #getting-started channel.
+
 ----
 
 If you want to schedule a 20-min call with our team to get you set up, don't hesitate to select [some time here](https://calendly.com/nataliekwong/airbyte-onboarding). 
