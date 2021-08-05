@@ -30,13 +30,14 @@
 | Google Workspace Admin   | [![source-google-workspace-admin-reports](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-google-workspace-admin-reports%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-google-workspace-admin-reports) |
 | Greenhouse   | [![source-greenhouse](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-greenhouse%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-greenhouse) |
 | Hubspot   | [![source-hubspot-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-hubspot%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-hubspot) |
-| Klaviyo   | [![source-klaviyo](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-klaviyo%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-klaviyo) |
 | IBM Db2   | [![source-db2](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-db2%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-db2) |
 | Instagram   | [![source-instagram](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-instagram%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-instagram) |
 | Intercom   | [![source-intercom](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-intercom-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-intercom) |
 | Iterable   | [![source-iterable](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-iterable%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-iterable) |
 | Jira   | [![source-jira](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-jira%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-jira) |
 | Looker   | [![source-looker](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-looker%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-looker) |
+| Klaviyo   | [![source-klaviyo](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-klaviyo%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-klaviyo) |
+| Kustomer | [![source-kustomer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-kustomer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-kustomer) |
 | Mailchimp   | [![source-mailchimp](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-mailchimp%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-mailchimp) |
 | Marketo   | [![source-marketo-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-marketo-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-marketo-singer) |
 | Microsoft SQL Server \(MSSQL\)   | [![source-mssql](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-mssql%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-mssql) |
@@ -73,7 +74,6 @@
 | Zendesk Support   | [![source-zendesk-support](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-zendesk-support%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-zendesk-support) |
 | Zendesk Talk   | [![source-zendesk-talk](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-zendesk-talk%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-zendesk-talk) |
 | Zoom   | [![source-zoom-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-zoom-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-zoom-singer) |
-
 
 # Destinations
 
