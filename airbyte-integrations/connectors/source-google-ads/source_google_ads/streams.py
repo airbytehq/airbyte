@@ -192,3 +192,55 @@ class ShoppingPerformanceReport(IncrementalGoogleAdsStream):
     ShoppingPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v8/shopping_performance_view
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance
     """
+
+class CustomQueryFullRefresh(GoogleAdsStream):
+    """
+    Class that should sync by custom user query to Google Ads API
+    """
+    name = "custom_query"
+    def __init__(self, custom_query_config, **kwargs):
+        self.custom_query_config = custom_query_config
+        self.user_defined_query = custom_query_config["query"]
+        super().__init__(api=kwargs["api"])
+
+    @property
+    def primary_key(self) -> str:
+        return self.custom_query_config["query"] or None
+
+    def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
+        return self.user_defined_query
+
+class CustomQueryIncremental(IncrementalGoogleAdsStream):
+    """
+    Class that should sync by custom user query to Google Ads API
+    """
+    name = "custom_query"
+    def __init__(self, custom_query_config, **kwargs):
+        self.custom_query_config = custom_query_config
+        self.user_defined_query = custom_query_config["query"]
+        super().__init__(**kwargs)
+
+    @property
+    def primary_key(self) -> str:
+        return self.custom_query_config["query"] or None
+
+    @property
+    def cursor_field(self) -> str:
+        return self.custom_query_config["cursor_field"]
+
+    def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
+        start_date, end_date = self.get_date_params(stream_slice, self.cursor_field)
+
+        final_query = self.user_defined_query + f"\nWHERE {self.cursor_field} > '{start_date}' AND {self.cursor_field} < '{end_date}' ORDER BY {self.cursor_field} ASC"
+
+        print('DEBUG: gotta query:', final_query)
+        return final_query
+
+class CustomQuery:
+    def __new__(cls, *args, **kwargs):
+        if kwargs.get("custom_query_config", {}).get("cursor_field"):
+            print('instance of incremental')
+            return CustomQueryIncremental(*args, **kwargs)
+        else:
+            print('instance of full_refresh')
+            return CustomQueryFullRefresh(*args, **kwargs)

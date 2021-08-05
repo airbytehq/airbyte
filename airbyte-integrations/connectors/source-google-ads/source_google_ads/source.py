@@ -42,6 +42,7 @@ from .streams import (
     DisplayKeywordPerformanceReport,
     DisplayTopicsPerformanceReport,
     ShoppingPerformanceReport,
+    CustomQuery
 )
 
 
@@ -70,13 +71,14 @@ class SourceGoogleAds(AbstractSource):
             api=google_api, conversion_window_days=config["conversion_window_days"], start_date=config["start_date"]
         )
         return [
-            AccountPerformanceReport(**incremental_stream_config),
-            DisplayTopicsPerformanceReport(**incremental_stream_config),
-            DisplayKeywordPerformanceReport(**incremental_stream_config),
-            ShoppingPerformanceReport(**incremental_stream_config),
-            AdGroupAdReport(**incremental_stream_config),
-            AdGroupAds(api=google_api),
-            AdGroups(api=google_api),
-            Accounts(api=google_api),
-            Campaigns(api=google_api),
+            #AccountPerformanceReport(**incremental_stream_config),
+            #DisplayTopicsPerformanceReport(**incremental_stream_config),
+            #DisplayKeywordPerformanceReport(**incremental_stream_config),
+            #ShoppingPerformanceReport(**incremental_stream_config),
+            #AdGroupAdReport(**incremental_stream_config),
+            #AdGroupAds(api=google_api),
+            #AdGroups(api=google_api),
+            #Accounts(api=google_api),
+            #Campaigns(api=google_api),
+            CustomQuery(custom_query_config=config["custom_query"], **incremental_stream_config)
         ]
