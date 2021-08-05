@@ -18,8 +18,8 @@
       "azure_blob_storage_endpoint_domain_name": {
         "title": "Endpoint Domain Name",
         "type": "string",
-        "default": "",
-        "description": "This is Azure Blob Storage endpoint domain name, just leave empty to use Microsoft native from example).",
+        "default": "blob.core.windows.net",
+        "description": "This is Azure Blob Storage endpoint domain name. Leave default value (or leave it empty if run container from command line) to use Microsoft native from example.",
         "examples": ["blob.core.windows.net"]
       },
       "azure_blob_storage_container_name": {
