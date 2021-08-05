@@ -72,7 +72,7 @@
                     "type": ["null", "string"]
                   },
                   "amount": {
-                    "type": ["null", "string"]
+                    "type": ["null", "number"]
                   }
                 },
                 "type": ["null", "object"]
@@ -83,7 +83,7 @@
                     "type": ["null", "string"]
                   },
                   "amount": {
-                    "type": ["null", "string"]
+                    "type": ["null", "number"]
                   }
                 },
                 "type": ["null", "object"]
@@ -99,7 +99,7 @@
                     "type": ["null", "string"]
                   },
                   "amount": {
-                    "type": ["null", "string"]
+                    "type": ["null", "number"]
                   }
                 },
                 "type": ["null", "object"]
@@ -110,7 +110,7 @@
                     "type": ["null", "string"]
                   },
                   "amount": {
-                    "type": ["null", "string"]
+                    "type": ["null", "number"]
                   }
                 },
                 "type": ["null", "object"]
@@ -136,7 +136,7 @@
                 "type": ["null", "boolean"]
               },
               "price": {
-                "type": ["null", "string"]
+                "type": ["null", "number"]
               },
               "tax_lines": {
                 "type": ["null", "array"],
@@ -150,7 +150,7 @@
                               "type": ["null", "string"]
                             },
                             "amount": {
-                              "type": ["null", "string"]
+                              "type": ["null", "number"]
                             }
                           },
                           "type": ["null", "object"]
@@ -161,7 +161,7 @@
                               "type": ["null", "string"]
                             },
                             "amount": {
-                              "type": ["null", "string"]
+                              "type": ["null", "number"]
                             }
                           },
                           "type": ["null", "object"]
@@ -170,7 +170,7 @@
                       "type": ["null", "object"]
                     },
                     "price": {
-                      "type": ["null", "string"]
+                      "type": ["null", "number"]
                     },
                     "title": {
                       "type": ["null", "string"]
@@ -228,7 +228,7 @@
                         "type": ["null", "string"]
                       },
                       "amount": {
-                        "type": ["null", "string"]
+                        "type": ["null", "number"]
                       }
                     },
                     "type": ["null", "object"]
@@ -239,7 +239,7 @@
                         "type": ["null", "string"]
                       },
                       "amount": {
-                        "type": ["null", "string"]
+                        "type": ["null", "number"]
                       }
                     },
                     "type": ["null", "object"]
@@ -251,7 +251,7 @@
                 "type": ["null", "string"]
               },
               "pre_tax_price": {
-                "type": ["null", "string"]
+                "type": ["null", "number"]
               },
               "variant_title": {
                 "type": ["null", "string"]
@@ -264,7 +264,7 @@
                         "type": ["null", "string"]
                       },
                       "amount": {
-                        "type": ["null", "string"]
+                        "type": ["null", "number"]
                       }
                     },
                     "type": ["null", "object"]
@@ -275,7 +275,7 @@
                         "type": ["null", "string"]
                       },
                       "amount": {
-                        "type": ["null", "string"]
+                        "type": ["null", "number"]
                       }
                     },
                     "type": ["null", "object"]
@@ -288,7 +288,7 @@
                 "items": {
                   "properties": {
                     "amount": {
-                      "type": ["null", "string"]
+                      "type": ["null", "number"]
                     },
                     "amount_set": {
                       "properties": {
@@ -298,7 +298,7 @@
                               "type": ["null", "string"]
                             },
                             "amount": {
-                              "type": ["null", "string"]
+                              "type": ["null", "number"]
                             }
                           },
                           "type": ["null", "object"]
@@ -309,7 +309,7 @@
                               "type": ["null", "string"]
                             },
                             "amount": {
-                              "type": ["null", "string"]
+                              "type": ["null", "number"]
                             }
                           },
                           "type": ["null", "object"]
@@ -332,7 +332,7 @@
                         "type": ["null", "string"]
                       },
                       "amount": {
-                        "type": ["null", "string"]
+                        "type": ["null", "number"]
                       }
                     },
                     "type": ["null", "object"]
@@ -343,7 +343,7 @@
                         "type": ["null", "string"]
                       },
                       "amount": {
-                        "type": ["null", "string"]
+                        "type": ["null", "number"]
                       }
                     },
                     "type": ["null", "object"]
@@ -361,7 +361,7 @@
                 "type": ["null", "string"]
               },
               "total_discount": {
-                "type": ["null", "string"]
+                "type": ["null", "number"]
               },
               "name": {
                 "type": ["null", "string"]

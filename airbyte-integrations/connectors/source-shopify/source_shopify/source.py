@@ -23,6 +23,7 @@
 #
 
 from abc import ABC, abstractmethod
+from decimal import Decimal
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
@@ -48,9 +49,49 @@ class ShopifyStream(HttpStream, ABC):
 
     def __init__(self, shop: str, start_date: str, api_password: str, **kwargs):
         super().__init__(**kwargs)
+        self._schema = self.get_json_schema()
         self.start_date = start_date
         self.shop = shop
         self.api_password = api_password
+
+    @staticmethod
+    def _get_json_types(value_type) -> str:
+        json_types = {
+            str: ["string"],
+            int: ["integer", "number"],
+            float: ["number"],
+            dict: ["object"],
+            list: ["array"],
+            bool: ["boolean"],
+            type(None): ["null", ]
+        }
+        return json_types.get(value_type)
+
+    def _set_value(self,  record: Mapping[str, Any], path: List[str], value: Any):
+        pass
+
+    @staticmethod
+    def _convert(value: Any, convert_type: str):
+        if convert_type == "number":
+            value = Decimal(value)
+        return value
+
+    def _transform(self, records: List[Mapping[str, Any]]) -> Mapping[str, Any]:
+        stream_properties = self._schema.get("properties", {})
+        for record in records:
+            for record_property, value in record.items():
+                if record_property in stream_properties:
+                    schema_types = stream_properties.get(record_property).get("type", [])
+                    if not schema_types:
+                        continue
+                    value_json_types = self._get_json_types(type(value))
+                    if not any(value_json_type in schema_types for value_json_type in value_json_types):
+                        if "null" in schema_types:
+                            schema_types.remove("null")
+                        if schema_types:
+                            convert_type = schema_types[0]
+                            record[record_property] = self._convert(value, convert_type)
+        return records
 
     @property
     def url_base(self) -> str:
@@ -76,7 +117,7 @@ class ShopifyStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
         records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
-        yield from records
+        yield from self._transform(records)
 
     @property
     @abstractmethod
