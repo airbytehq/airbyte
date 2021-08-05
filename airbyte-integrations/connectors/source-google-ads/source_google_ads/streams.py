@@ -32,7 +32,8 @@ from google.ads.googleads.v8.services.services.google_ads_service.pagers import 
 from .google_ads import GoogleAds
 
 
-def chunk_date_range(start_date: str, conversion_window: int, field: str, end_date: str = None) -> Iterable[Mapping[str, any]]:
+def chunk_date_range(start_date: str, conversion_window: int, field: str, end_date: str = None) -> Iterable[
+    Mapping[str, any]]:
     """
     Passing optional parameter end_date for testing
     Returns a list of the beginning and ending timetsamps of each month between the start date and now.
@@ -84,7 +85,8 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         stream_state = stream_state or {}
         start_date = stream_state.get(self.cursor_field) or self._start_date
 
-        return chunk_date_range(start_date=start_date, conversion_window=self.conversion_window_days, field=self.cursor_field)
+        return chunk_date_range(start_date=start_date, conversion_window=self.conversion_window_days,
+                                field=self.cursor_field)
 
     @staticmethod
     def get_date_params(stream_slice: Mapping[str, Any], cursor_field: str, end_date: pendulum.datetime = None):
@@ -100,7 +102,8 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
             return start_date.add(days=1).to_date_string(), start_date.add(days=2).to_date_string()
         return start_date.add(days=1).to_date_string(), end_date.to_date_string()
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
+    Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
 
         # When state is none return date from latest record
@@ -119,7 +122,8 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
         start_date, end_date = self.get_date_params(stream_slice, self.cursor_field)
         query = GoogleAds.convert_schema_into_query(
-            schema=self.get_json_schema(), report_name=self.name, from_date=start_date, to_date=end_date, cursor_field=self.cursor_field
+            schema=self.get_json_schema(), report_name=self.name, from_date=start_date, to_date=end_date,
+            cursor_field=self.cursor_field
         )
         return query
 
@@ -143,3 +147,8 @@ class AdGroups(GoogleAdsStream):
 
 class AdGroupAds(GoogleAdsStream):
     primary_key = "ad_group_ad.ad.id"
+
+
+class ClickView(IncrementalGoogleAdsStream):
+    cursor_field = "segments.date"
+    primary_key = None
