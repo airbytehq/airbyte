@@ -952,7 +952,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/OperationCreateOrUpdate"
+              $ref: "#/components/schemas/OperatorConfiguration"
         required: true
       responses:
         "200":
@@ -1687,17 +1687,21 @@ components:
         connectionConfiguration:
           $ref: "#/components/schemas/SourceConfiguration"
     SourceCreate:
-      allOf:
-        - $ref: "#/components/schemas/SourceCoreConfig"
-        - type: object
-          required:
-            - workspaceId
-            - name
-          properties:
-            workspaceId:
-              $ref: "#/components/schemas/WorkspaceId"
-            name:
-              type: string
+      type: object
+      required:
+        - workspaceId
+        - name
+        - sourceDefinitionId
+        - connectionConfiguration
+      properties:
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+        connectionConfiguration:
+          $ref: "#/components/schemas/SourceConfiguration"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        name:
+          type: string
     SourceRecreate:
       type: object
       required:
@@ -1894,17 +1898,22 @@ components:
         connectionConfiguration:
           $ref: "#/components/schemas/DestinationConfiguration"
     DestinationCreate:
-      allOf:
-        - $ref: "#/components/schemas/DestinationCoreConfig"
-        - type: object
-          required:
-            - workspaceId
-            - name
-          properties:
-            workspaceId:
-              $ref: "#/components/schemas/WorkspaceId"
-            name:
-              type: string
+      type: object
+      required:
+        - workspaceId
+        - name
+        - workspaceId
+        - destinationDefinitionId
+        - connectionConfiguration
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        name:
+          type: string
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
+        connectionConfiguration:
+          $ref: "#/components/schemas/DestinationConfiguration"
     DestinationRecreate:
       type: object
       required:
@@ -2025,14 +2034,46 @@ components:
         resourceRequirements:
           $ref: "#/components/schemas/ResourceRequirements"
     WebBackendConnectionCreate:
-      allOf:
-        - $ref: "#/components/schemas/ConnectionCreate"
-        - type: object
-          properties:
-            operations:
-              type: array
-              items:
-                $ref: "#/components/schemas/OperationCreate"
+      type: object
+      required:
+        - connection
+        - sourceId
+        - destinationId
+        - status
+      properties:
+        name:
+          type: string
+          description: Optional name of the connection
+        namespaceDefinition:
+          $ref: "#/components/schemas/NamespaceDefinitionType"
+        namespaceFormat:
+          type: string
+          description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
+          default: null
+          example: "${SOURCE_NAMESPACE}"
+        prefix:
+          type: string
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+        operationIds:
+          type: array
+          items:
+            $ref: "#/components/schemas/OperationId"
+        syncCatalog:
+          $ref: "#/components/schemas/AirbyteCatalog"
+        schedule:
+          $ref: "#/components/schemas/ConnectionSchedule"
+        status:
+          $ref: "#/components/schemas/ConnectionStatus"
+        resourceRequirements:
+          $ref: "#/components/schemas/ResourceRequirements"
+        operations:
+          type: array
+          items:
+            $ref: "#/components/schemas/OperationCreate"
     ConnectionUpdate:
       type: object
       required:
@@ -2065,16 +2106,42 @@ components:
         resourceRequirements:
           $ref: "#/components/schemas/ResourceRequirements"
     WebBackendConnectionUpdate:
-      allOf:
-        - $ref: "#/components/schemas/ConnectionUpdate"
-        - type: object
-          properties:
-            withRefreshedCatalog:
-              type: boolean
-            operations:
-              type: array
-              items:
-                $ref: "#/components/schemas/OperationCreateOrUpdate"
+      type: object
+      required:
+        - connectionId
+        - syncCatalog
+        - status
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        namespaceDefinition:
+          $ref: "#/components/schemas/NamespaceDefinitionType"
+        namespaceFormat:
+          type: string
+          description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
+          default: null
+          example: "${SOURCE_NAMESPACE}"
+        prefix:
+          type: string
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
+        operationIds:
+          type: array
+          items:
+            $ref: "#/components/schemas/OperationId"
+        syncCatalog:
+          $ref: "#/components/schemas/AirbyteCatalog"
+        schedule:
+          $ref: "#/components/schemas/ConnectionSchedule"
+        status:
+          $ref: "#/components/schemas/ConnectionStatus"
+        resourceRequirements:
+          $ref: "#/components/schemas/ResourceRequirements"
+        withRefreshedCatalog:
+          type: boolean
+        operations:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebBackendOperationCreateOrUpdate"
     ConnectionRead:
       type: object
       required:
@@ -2173,7 +2240,10 @@ components:
       required:
         - name
         - operatorConfiguration
+        - workspaceId
       properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
         name:
           type: string
         operatorConfiguration:
@@ -2191,14 +2261,17 @@ components:
           type: string
         operatorConfiguration:
           $ref: "#/components/schemas/OperatorConfiguration"
-    OperationCreateOrUpdate:
+    WebBackendOperationCreateOrUpdate:
       type: object
       required:
         - name
         - operatorConfiguration
+        - workspaceId
       properties:
         operationId:
           $ref: "#/components/schemas/OperationId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
         name:
           type: string
         operatorConfiguration:
@@ -2209,7 +2282,10 @@ components:
         - operationId
         - name
         - operatorConfiguration
+        - workspaceId
       properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
         operationId:
           $ref: "#/components/schemas/OperationId"
         name:
