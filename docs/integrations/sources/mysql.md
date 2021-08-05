@@ -109,6 +109,11 @@ For `STANDARD` replication method this is not applicable. If you select the `CDC
 
 Your database user should now be ready for use with Airbyte.
 
+#### Note: 
+
+There may be problems with mapping values in MYSQL's datetime field to other relational data stores. MySQL permits zero values for date/time instead of NULL which may not be accepted by other data stores. To work around this problem, you can pass the following key value pair in the JDBC connector of the source setting:
+```zerodatetimebehavior=Converttonull```
+
 ## Change Data Capture \(CDC\)
 
 * If you need a record of deletions and can accept the limitations posted below, you should be able to use CDC for MySQL.
