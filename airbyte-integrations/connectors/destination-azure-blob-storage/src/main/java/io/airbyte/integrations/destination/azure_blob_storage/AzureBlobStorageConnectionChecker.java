@@ -28,111 +28,88 @@ import com.azure.core.http.rest.PagedIterable;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.models.BlobItem;
 import com.azure.storage.blob.specialized.AppendBlobClient;
-import com.azure.storage.blob.specialized.BlobOutputStream;
 import com.azure.storage.blob.specialized.SpecializedBlobClientBuilder;
 import com.azure.storage.common.StorageSharedKeyCredential;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Deprecated
-public class AzureBlobStorageClient {
+public class AzureBlobStorageConnectionChecker {
 
-  private final BlobContainerClient containerClient; // schema in SQL DBs controller
-  private final AppendBlobClient storageClient; // aka "SQL Table" controller
+  private static final String TEST_BLOB_NAME_PREFIX = "testConnectionBlob";
+  private BlobContainerClient containerClient; // schema in SQL DBs controller
+  private final AppendBlobClient appendBlobClient; // aka "SQL Table" controller
   private final boolean overwriteDataInStream;
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(AzureBlobStorageClient.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(
+      AzureBlobStorageConnectionChecker.class);
 
-  public AzureBlobStorageClient(AzureBlobStorageDestinationConfig azureBlobStorageConfig,
-                                boolean overwriteDataInStream) {
+  public AzureBlobStorageConnectionChecker(
+                                           AzureBlobStorageDestinationConfig azureBlobStorageConfig,
+                                           boolean overwriteDataInStream) {
 
     this.overwriteDataInStream = overwriteDataInStream;
 
     StorageSharedKeyCredential credential = new StorageSharedKeyCredential(
         azureBlobStorageConfig.getAccountName(),
         azureBlobStorageConfig.getAccountKey());
-    storageClient =
+
+    this.appendBlobClient =
         new SpecializedBlobClientBuilder()
             .endpoint(azureBlobStorageConfig.getEndpointUrl())
             .credential(credential)
             .containerName(azureBlobStorageConfig.getContainerName()) // Like schema in DB
-            .blobName(azureBlobStorageConfig.getBlobName()) // Like table in DB
+            .blobName(TEST_BLOB_NAME_PREFIX + UUID.randomUUID()) // Like table in DB
             .buildAppendBlobClient();
+  }
 
+  // this a kinda test method that is used in CHECK operation to make sure all works fine with the
+  // current config
+  public void attemptWriteAndDelete() {
+    initTestContainerAndBlob();
+    writeUsingAppendBlock("Some test data");
+    listBlobsInContainer()
+        .forEach(
+            blobItem -> LOGGER.debug(
+                "Blob name: " + blobItem.getName() + "Snapshot: " + blobItem.getSnapshot()));
+
+    deleteBlob();
+  }
+
+  private void initTestContainerAndBlob() {
     // create container if absent (aka SQl Schema)
-    this.containerClient = storageClient.getContainerClient();
+    this.containerClient = appendBlobClient.getContainerClient();
     if (!containerClient.exists()) {
       containerClient.create();
     }
 
     // create a storage container if absent (aka Table is SQL BD)
-    if (!storageClient.exists()) {
-      storageClient.create(overwriteDataInStream);
+    if (!appendBlobClient.exists()) {
+      appendBlobClient.create(overwriteDataInStream);
       LOGGER.debug("blobContainerClient created");
     } else {
       LOGGER.debug("blobContainerClient already exists");
     }
   }
 
-  public BlobOutputStream getBlobOutputStream() {
-    return storageClient.getBlobOutputStream();
-  }
-
-  // TODO !!!!!!!!!!!!!!!fails for empty lines !!!!!!!!!!!!!!!!!!!!!!!!!
-  // this options may be used to write and flush right away.
+  // this options may be used to write and flush right away. fails for empty lines, but those are not
+  // supposed to be written here
   public void writeUsingAppendBlock(String data) {
-    LOGGER.debug("Writing data to Azure Blob storage: " + data);
+    LOGGER.info("Writing test data to Azure Blob storage: " + data);
     if (overwriteDataInStream) {
       LOGGER.debug("Override option is enabled. Old data is will be removed");
-      storageClient.delete();
-      storageClient.create();
+      appendBlobClient.delete();
+      appendBlobClient.create();
     }
     InputStream dataStream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
 
-    Integer blobCommittedBlockCount = storageClient.appendBlock(dataStream, data.length())
+    Integer blobCommittedBlockCount = appendBlobClient.appendBlock(dataStream, data.length())
         .getBlobCommittedBlockCount();
 
     LOGGER.debug("blobCommittedBlockCount: " + blobCommittedBlockCount);
-  }
-
-  public void writeUsingStreams(List<String> strings) throws IOException {
-    LOGGER.debug("Writing data to Azure Blob storage: " + strings);
-    if (overwriteDataInStream) {
-      LOGGER.debug("Override option is enbaled. Old data is will be removed");
-      storageClient.delete();
-      storageClient.create();
-    }
-
-    final BlobOutputStream blobOutputStream = storageClient.getBlobOutputStream();
-
-    strings.forEach(
-        s -> {
-          blobOutputStream.write((s + "\n").getBytes());
-        });
-
-    blobOutputStream.close();
-  }
-
-  public void writeUsingStreams(String data) throws IOException {
-    LOGGER.debug("Writing data to Azure Blob storage: " + data);
-    if (overwriteDataInStream) {
-      LOGGER.debug("Override option is enbaled. Old data is will be removed");
-      storageClient.delete();
-      storageClient.create();
-    }
-
-    final BlobOutputStream blobOutputStream = storageClient.getBlobOutputStream();
-
-    blobOutputStream.write((data).getBytes());
-    // blobOutputStream.write((data + "\n").getBytes());
-
-    blobOutputStream.flush();
-    blobOutputStream.close();
   }
 
   /*
@@ -140,15 +117,14 @@ public class AzureBlobStorageClient {
    */
   public PagedIterable<BlobItem> listBlobsInContainer() {
     return containerClient.listBlobs();
-
   }
 
   /*
    * Delete the blob we created earlier.
    */
   public void deleteBlob() {
-    LOGGER.info("Deleting blob: " + storageClient.getBlobName());
-    storageClient.delete(); // remove aka "SQL Table" used
+    LOGGER.info("Deleting blob: " + appendBlobClient.getBlobName());
+    appendBlobClient.delete(); // remove aka "SQL Table" used
   }
 
   /*
@@ -159,21 +135,6 @@ public class AzureBlobStorageClient {
   public void deleteContainer() {
     LOGGER.info("Deleting blob: " + containerClient.getBlobContainerName());
     containerClient.delete(); // remove aka "SQL Schema" used
-  }
-
-  // this a kinda test method that is used in CHECK operation to make sure all works fine with the
-  // currect config
-  public void attemptWriteAndDelete() throws IOException {
-    // List<String> strings = Arrays.asList("Test12", "Test22", "Test32", null);
-    // writeUsingStreams(strings);
-
-    writeUsingAppendBlock("Some test data");
-    listBlobsInContainer()
-        .forEach(
-            blobItem -> LOGGER.debug(
-                "Blob name: " + blobItem.getName() + "Snapshot: " + blobItem.getSnapshot()));
-
-    deleteBlob();
   }
 
 }

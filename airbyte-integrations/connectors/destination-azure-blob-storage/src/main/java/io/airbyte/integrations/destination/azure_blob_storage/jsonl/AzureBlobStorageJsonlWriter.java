@@ -57,9 +57,9 @@ public class AzureBlobStorageJsonlWriter extends BaseAzureBlobStorageWriter impl
   private final PrintWriter printWriter;
 
   public AzureBlobStorageJsonlWriter(AzureBlobStorageDestinationConfig config,
-      AppendBlobClient appendBlobClient,
-      ConfiguredAirbyteStream configuredStream,
-      Timestamp uploadTimestamp) { // TODO if timestamp is needed here????????
+                                     AppendBlobClient appendBlobClient,
+                                     ConfiguredAirbyteStream configuredStream,
+                                     Timestamp uploadTimestamp) { // TODO if timestamp is needed here????????
     super(config, appendBlobClient, configuredStream);
     // at this moment we already receive appendBlobClient initialized
     this.blobOutputStream = appendBlobClient.getBlobOutputStream();

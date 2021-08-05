@@ -72,7 +72,8 @@ public class ProductionWriterFactory implements AzureBlobStorageWriterFactory {
     if (format == AzureBlobStorageFormat.CSV) {
       // TODO to implement
       throw new Exception("Not implemented");
-      // return new AzureBlobStorageCsvWriter(config, AzureBlobStorageClient, configuredStream, uploadTimestamp);
+      // return new AzureBlobStorageCsvWriter(config, AzureBlobStorageClient, configuredStream,
+      // uploadTimestamp);
     }
 
     if (format == AzureBlobStorageFormat.JSONL) {

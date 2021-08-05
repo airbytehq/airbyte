@@ -55,7 +55,7 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
   protected AzureBlobStorageDestinationConfig azureBlobStorageDestinationConfig;
   protected SpecializedBlobClientBuilder specializedBlobClientBuilder;
   protected StorageSharedKeyCredential credential;
-//  private AppendBlobClient appendBlobClient;
+  // private AppendBlobClient appendBlobClient;
 
   protected AzureBlobStorageDestinationAcceptanceTest(AzureBlobStorageFormat outputFormat) {
     this.outputFormat = outputFormat;
@@ -89,7 +89,7 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
    * Helper method to retrieve all synced objects inside the configured bucket path.
    */
   protected String getAllSyncedObjects(String streamName) {
-//    this.appendBlobClient = specializedBlobClientBuilder
+    // this.appendBlobClient = specializedBlobClientBuilder
     AppendBlobClient appendBlobClient = specializedBlobClientBuilder
         .blobName(streamName)
         .buildAppendBlobClient();
@@ -123,8 +123,6 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
         .put("azure_blob_storage_container_name",
             baseConfigJson.get("azure_blob_storage_container_name").asText()
                 + System.currentTimeMillis())
-        .put("azure_blob_storage_blob_name",
-            baseConfigJson.get("azure_blob_storage_blob_name"))
         .put("format", getFormatConfig())
         .build());
 
@@ -150,9 +148,9 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
   @Override
   protected void tearDown(TestDestinationEnv testEnv) {
 
-//    // TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//    // TODO Add teardown logic
-//    // TODO make unique
+    // // TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // // TODO Add teardown logic
+    // // TODO make unique
 
     BlobServiceClient storageClient =
         new BlobServiceClientBuilder()
@@ -169,15 +167,15 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
     }
 
     // dlete all containers
-//    storageClient
-//        .listBlobContainers()
-//        .forEach(
-//            c -> {
-//              BlobContainerClient blobContainerClient =
-//                  storageClient.getBlobContainerClient(c.getName());
-//              System.out.println("Deleting: " + c.getName());
-//              blobContainerClient.delete();
-//            });
+    // storageClient
+    // .listBlobContainers()
+    // .forEach(
+    // c -> {
+    // BlobContainerClient blobContainerClient =
+    // storageClient.getBlobContainerClient(c.getName());
+    // System.out.println("Deleting: " + c.getName());
+    // blobContainerClient.delete();
+    // });
 
   }
 

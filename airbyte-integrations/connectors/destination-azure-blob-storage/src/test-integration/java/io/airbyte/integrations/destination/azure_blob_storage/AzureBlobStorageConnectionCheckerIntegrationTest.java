@@ -24,21 +24,14 @@
 
 package io.airbyte.integrations.destination.azure_blob_storage;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import com.azure.core.http.rest.PagedIterable;
-import com.azure.storage.blob.models.BlobItem;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import java.nio.file.Path;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
-public class AzureBlobStorageClientIntegrationTest {
+public class AzureBlobStorageConnectionCheckerIntegrationTest {
 
   protected final String secretFilePath = "secrets/config.json";
   // TODO fix file path!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -60,21 +53,21 @@ public class AzureBlobStorageClientIntegrationTest {
         .getAzureBlobStorageConfig(config);
   }
 
-  @Test
-  public void testSingleRun() {
-    AzureBlobStorageClient c = new AzureBlobStorageClient(azureBlobStorageConfig, false);
-    c.writeUsingAppendBlock("Some test text to write");
-
-    PagedIterable<BlobItem> blobItems = c.listBlobsInContainer();
-    Optional<BlobItem> first = blobItems.stream()
-        .filter(blobItem -> blobItem.getName().equals(azureBlobStorageConfig.getBlobName()))
-        .findFirst();
-
-    c.deleteBlob();
-
-    assertTrue(first.isPresent());
-    assertEquals(azureBlobStorageConfig.getBlobName(), first.get().getName());
-  }
+  // @Test
+  // public void testSingleRun() {
+  // AzureBlobStorageClient c = new AzureBlobStorageClient(azureBlobStorageConfig, false);
+  // c.writeUsingAppendBlock("Some test text to write");
+  //
+  // PagedIterable<BlobItem> blobItems = c.listBlobsInContainer();
+  // Optional<BlobItem> first = blobItems.stream()
+  // .filter(blobItem -> blobItem.getName().equals(azureBlobStorageConfig.getBlobName()))
+  // .findFirst();
+  //
+  // c.deleteBlob();
+  //
+  // assertTrue(first.isPresent());
+  // assertEquals(azureBlobStorageConfig.getBlobName(), first.get().getName());
+  // }
 
   // @Test
   // public void testUploadFromFileRun() throws IOException {

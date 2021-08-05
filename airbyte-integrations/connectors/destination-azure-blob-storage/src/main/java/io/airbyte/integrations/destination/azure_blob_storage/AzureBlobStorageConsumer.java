@@ -61,10 +61,10 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
   private AirbyteMessage lastStateMessage = null;
 
   public AzureBlobStorageConsumer(
-      AzureBlobStorageDestinationConfig azureBlobStorageDestinationConfig,
-      ConfiguredAirbyteCatalog configuredCatalog,
-      AzureBlobStorageWriterFactory writerFactory,
-      Consumer<AirbyteMessage> outputRecordCollector) {
+                                  AzureBlobStorageDestinationConfig azureBlobStorageDestinationConfig,
+                                  ConfiguredAirbyteCatalog configuredCatalog,
+                                  AzureBlobStorageWriterFactory writerFactory,
+                                  Consumer<AirbyteMessage> outputRecordCollector) {
     this.azureBlobStorageDestinationConfig = azureBlobStorageDestinationConfig;
     this.configuredCatalog = configuredCatalog;
     this.writerFactory = writerFactory;
@@ -108,7 +108,7 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
   }
 
   private void createContainers(AppendBlobClient appendBlobClient,
-      ConfiguredAirbyteStream configuredStream) {
+                                ConfiguredAirbyteStream configuredStream) {
     // create container if absent (aka SQl Schema)
     final BlobContainerClient containerClient = appendBlobClient.getContainerClient();
     if (!containerClient.exists()) {
@@ -120,7 +120,7 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
       // full refresh sync. Create blob and override if any
       LOGGER.info("Sync mode is selected to OVERRIDE mode. New container will be automatically"
           + " created or all data would be overridden (if any) for stream:" + configuredStream
-          .getStream().getName());
+              .getStream().getName());
       appendBlobClient.create(true);
     } else {
       // incremental sync. Create new container only if still absent

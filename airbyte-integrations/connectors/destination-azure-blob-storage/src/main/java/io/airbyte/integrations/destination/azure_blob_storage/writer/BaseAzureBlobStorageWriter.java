@@ -49,8 +49,8 @@ public abstract class BaseAzureBlobStorageWriter implements AzureBlobStorageWrit
   protected final DestinationSyncMode syncMode;
 
   protected BaseAzureBlobStorageWriter(AzureBlobStorageDestinationConfig config,
-      AppendBlobClient appendBlobClient,
-      ConfiguredAirbyteStream configuredStream) {
+                                       AppendBlobClient appendBlobClient,
+                                       ConfiguredAirbyteStream configuredStream) {
     this.config = config;
     this.appendBlobClient = appendBlobClient;
     this.stream = configuredStream.getStream();

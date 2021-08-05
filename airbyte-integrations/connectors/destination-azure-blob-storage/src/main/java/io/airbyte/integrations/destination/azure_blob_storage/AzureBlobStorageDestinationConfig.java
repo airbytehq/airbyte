@@ -35,7 +35,6 @@ public class AzureBlobStorageDestinationConfig {
   private final String accountName;
   private final String accountKey;
   private final String containerName;
-  private final String blobName;
   private final AzureBlobStorageFormatConfig formatConfig;
 
   public AzureBlobStorageDestinationConfig(
@@ -43,13 +42,11 @@ public class AzureBlobStorageDestinationConfig {
                                            String accountName,
                                            String accountKey,
                                            String containerName,
-                                           String blobName,
                                            AzureBlobStorageFormatConfig formatConfig) {
     this.endpointUrl = endpointUrl;
     this.accountName = accountName;
     this.accountKey = accountKey;
     this.containerName = containerName;
-    this.blobName = blobName;
     this.formatConfig = formatConfig;
   }
 
@@ -67,10 +64,6 @@ public class AzureBlobStorageDestinationConfig {
 
   public String getContainerName() {
     return containerName;
-  }
-
-  public String getBlobName() {
-    return blobName;
   }
 
   public AzureBlobStorageFormatConfig getFormatConfig() {
@@ -94,15 +87,11 @@ public class AzureBlobStorageDestinationConfig {
     final String containerNameComputed =
         containerName == null ? DEFAULT_STORAGE_CONTAINER_NAME : containerName.asText();
 
-    final String blobNameComputed =
-        blobName == null ? DEFAULT_STORAGE_BLOB_NAME : blobName.asText();
-
     return new AzureBlobStorageDestinationConfig(
         endpointComputed,
         accountNameFomConfig,
         accountKeyFromConfig,
         containerNameComputed,
-        blobNameComputed,
         AzureBlobStorageFormatConfigs.getAzureBlobStorageFormatConfig(config));
   }
 

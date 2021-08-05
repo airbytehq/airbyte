@@ -29,8 +29,8 @@ import java.io.IOException;
 import java.util.UUID;
 
 /**
- * {@link AzureBlobStorageWriter} is responsible for writing Airbyte stream data to an AzureBlobStorage location
- * in a specific format.
+ * {@link AzureBlobStorageWriter} is responsible for writing Airbyte stream data to an
+ * AzureBlobStorage location in a specific format.
  */
 public interface AzureBlobStorageWriter {
 

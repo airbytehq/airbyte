@@ -71,10 +71,11 @@ public class AzureBlobDestinationTest {
         .put("azure_blob_storage_account_key", "accKey")
         .put("format", getFormatConfig())
         .build());
-    final AzureBlobStorageDestinationConfig azureBlobStorageConfig = AzureBlobStorageDestinationConfig
-        .getAzureBlobStorageConfig(config);
+    final AzureBlobStorageDestinationConfig azureBlobStorageConfig =
+        AzureBlobStorageDestinationConfig
+            .getAzureBlobStorageConfig(config);
 
-    assertEquals("airbyteblob", azureBlobStorageConfig.getBlobName());
+    assertNotNull(azureBlobStorageConfig);
   }
 
   @Test
@@ -95,10 +96,6 @@ public class AzureBlobDestinationTest {
     final AzureBlobStorageDestination azureBlobStorageDestination = new AzureBlobStorageDestination();
     final ConnectorSpecification spec = azureBlobStorageDestination.spec();
     final JsonNode connectionSpecification = spec.getConnectionSpecification();
-
-    // // if not fail and not null - then we have all mandatory params in schema
-    // AzureBlobStorageDestinationConfig properties = AzureBlobStorageDestinationConfig
-    // .getAzureBlobStorageConfig(connectionSpecification.get("properties"));
 
     assertNotNull(connectionSpecification);
   }

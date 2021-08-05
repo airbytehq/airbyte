@@ -50,7 +50,7 @@ public class AzureBlobStorageDestination extends BaseConnector implements Destin
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
     try {
-      AzureBlobStorageClient client = new AzureBlobStorageClient(
+      AzureBlobStorageConnectionChecker client = new AzureBlobStorageConnectionChecker(
           AzureBlobStorageDestinationConfig.getAzureBlobStorageConfig(config), false);
       client.attemptWriteAndDelete();
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
