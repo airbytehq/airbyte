@@ -29,7 +29,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import MultipleTokenAuthenticator, TokenAuthenticator
 
 from .streams import (
     Assignees,
@@ -51,10 +51,16 @@ from .streams import (
 )
 
 
+TOKEN_SEPARATOR = ","
+
+
 class SourceGithub(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
-            authenticator = TokenAuthenticator(token=config["access_token"], auth_method="token")
+            if TOKEN_SEPARATOR in config["access_token"]:
+                authenticator = MultipleTokenAuthenticator(tokens=config["access_token"], auth_method="token")
+            else:
+                authenticator = TokenAuthenticator(token=config["access_token"], auth_method="token")
             commits_stream = Commits(authenticator=authenticator, repository=config["repository"], start_date=config["start_date"])
             next(commits_stream.read_records(sync_mode=SyncMode.full_refresh))
             return True, None
@@ -62,7 +68,10 @@ class SourceGithub(AbstractSource):
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        authenticator = TokenAuthenticator(token=config["access_token"], auth_method="token")
+        if TOKEN_SEPARATOR in config["access_token"]:
+            authenticator = MultipleTokenAuthenticator(tokens=config["access_token"], auth_method="token")
+        else:
+            authenticator = TokenAuthenticator(token=config["access_token"], auth_method="token")
         full_refresh_args = {"authenticator": authenticator, "repository": config["repository"]}
         incremental_args = {**full_refresh_args, "start_date": config["start_date"]}
 

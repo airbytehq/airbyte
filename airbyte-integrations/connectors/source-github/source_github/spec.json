@@ -9,7 +9,7 @@
     "properties": {
       "access_token": {
         "type": "string",
-        "description": "Log into Github and then generate a <a href=\"https://github.com/settings/tokens\"> personal access token</a>.",
+        "description": "Log into Github and then generate a <a href=\"https://github.com/settings/tokens\"> personal access token</a>. Separate multiple tokens with \",\"",
         "airbyte_secret": true
       },
       "repository": {
