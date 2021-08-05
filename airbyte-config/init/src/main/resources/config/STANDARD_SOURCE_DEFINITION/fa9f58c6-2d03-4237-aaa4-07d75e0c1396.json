@@ -3,5 +3,5 @@
   "name": "Amplitude",
   "dockerRepository": "airbyte/source-amplitude",
   "dockerImageTag": "0.1.1",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-amplitude"
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/amplitude"
 }

@@ -3,5 +3,5 @@
   "name": "Cockroachdb",
   "dockerRepository": "airbyte/source-cockroachdb",
   "dockerImageTag": "0.1.1",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-cockroachdb"
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/cockroachdb"
 }

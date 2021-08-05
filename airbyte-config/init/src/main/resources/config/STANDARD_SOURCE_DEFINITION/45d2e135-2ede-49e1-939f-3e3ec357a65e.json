@@ -3,5 +3,5 @@
   "name": "Recharge",
   "dockerRepository": "airbyte/source-recharge",
   "dockerImageTag": "0.1.1",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-recharge"
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/recharge"
 }

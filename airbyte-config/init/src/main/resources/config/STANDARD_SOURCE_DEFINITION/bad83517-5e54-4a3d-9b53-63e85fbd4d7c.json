@@ -3,5 +3,5 @@
   "name": "ClickHouse",
   "dockerRepository": "airbyte/source-clickhouse",
   "dockerImageTag": "0.1.1",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-clickhouse"
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/clickhouse"
 }
