@@ -205,19 +205,21 @@ public class WorkspacesHandler {
     return buildWorkspaceRead(workspace);
   }
 
-  private String generateUniqueSlug(final String workspaceName) throws JsonValidationException, IOException, ConfigNotFoundException {
+  private String generateUniqueSlug(final String workspaceName) throws JsonValidationException, IOException {
     final String proposedSlug = slugify.slugify(workspaceName);
 
     // todo (cgardens) - this is going to be too expensive once there are too many workspaces. needs to
-    // be replaced with an actual sql query.
-    // e.g. SELECT COUNT(*) WHERE slug=%s;
-    final boolean isSlugUsed = configRepository.getWorkspaceBySlug(proposedSlug, true) != null;
-
-    if (isSlugUsed) {
-      return proposedSlug + "-" + RandomStringUtils.randomAlphabetic(8);
-    } else {
-      return proposedSlug;
+    // be replaced with an actual sql query. e.g. SELECT COUNT(*) WHERE slug=%s;
+    boolean isSlugUsed = configRepository.getWorkspaceBySlugOptional(proposedSlug, true).isPresent();
+    String resolvedSlug = proposedSlug;
+    final int count = 0;
+    while(isSlugUsed && count < 10) {
+      // todo (cgardens) - this is still susceptible to a race condition where we randomly generate the same slug in two different threads. this should be very unlikely. we can fix this by exposing database transaction, but that is not something we can do quickly.
+      resolvedSlug = proposedSlug + "-" + RandomStringUtils.randomAlphabetic(8);
+      isSlugUsed = configRepository.getWorkspaceBySlugOptional(proposedSlug, true).isPresent();
     }
+
+    return resolvedSlug;
   }
 
   private static WorkspaceRead buildWorkspaceRead(final StandardWorkspace workspace) {

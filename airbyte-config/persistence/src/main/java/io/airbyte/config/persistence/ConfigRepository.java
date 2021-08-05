@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -62,15 +63,17 @@ public class ConfigRepository {
     throw new ConfigNotFoundException(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString());
   }
 
-  public StandardWorkspace getWorkspaceBySlug(final String slug, final boolean includeTombstone)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
+  public Optional<StandardWorkspace> getWorkspaceBySlugOptional(final String slug, final boolean includeTombstone) throws JsonValidationException, IOException {
     for (final StandardWorkspace workspace : listStandardWorkspaces(includeTombstone)) {
       if (workspace.getSlug().equals(slug)) {
-        return workspace;
+        return Optional.of(workspace);
       }
     }
+    return Optional.empty();
+  }
 
-    throw new ConfigNotFoundException(ConfigSchema.STANDARD_WORKSPACE, slug);
+  public StandardWorkspace getWorkspaceBySlug(final String slug, final boolean includeTombstone) throws JsonValidationException, IOException, ConfigNotFoundException {
+    return getWorkspaceBySlugOptional(slug, includeTombstone).orElseThrow(() -> new ConfigNotFoundException(ConfigSchema.STANDARD_WORKSPACE, slug));
   }
 
   public List<StandardWorkspace> listStandardWorkspaces(final boolean includeTombstone) throws JsonValidationException, IOException {

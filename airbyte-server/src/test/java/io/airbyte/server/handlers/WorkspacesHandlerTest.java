@@ -192,11 +192,9 @@ class WorkspacesHandlerTest {
     final DestinationRead destination = new DestinationRead();
     final SourceRead source = new SourceRead();
 
-    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false))
-        .thenReturn(workspace);
+    when(configRepository.getStandardWorkspace(workspace.getWorkspaceId(), false)).thenReturn(workspace);
 
-    when(configRepository.listStandardWorkspaces(false))
-        .thenReturn(Collections.singletonList(workspace));
+    when(configRepository.listStandardWorkspaces(false)).thenReturn(Collections.singletonList(workspace));
 
     when(connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody))
         .thenReturn(new ConnectionReadList().connections(Collections.singletonList(connection)));
@@ -218,8 +216,7 @@ class WorkspacesHandlerTest {
   void testListWorkspaces() throws JsonValidationException, IOException {
     final StandardWorkspace workspace2 = generateWorkspace();
 
-    when(configRepository.listStandardWorkspaces(false))
-        .thenReturn(Lists.newArrayList(workspace, workspace2));
+    when(configRepository.listStandardWorkspaces(false)).thenReturn(Lists.newArrayList(workspace, workspace2));
 
     final WorkspaceRead expectedWorkspaceRead1 = new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
