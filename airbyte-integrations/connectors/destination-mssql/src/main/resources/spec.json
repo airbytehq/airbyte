@@ -9,7 +9,7 @@
     "title": "Postgres Destination Spec",
     "type": "object",
     "required": ["host", "port", "username", "database", "schema"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "host": {
         "title": "Host",
@@ -65,6 +65,7 @@
             "additionalProperties": false,
             "description": "Data transfer will not be encrypted.",
             "required": ["ssl_method"],
+            "type": "object",
             "properties": {
               "ssl_method": {
                 "type": "string",
@@ -78,6 +79,7 @@
             "additionalProperties": false,
             "description": "Use the cert provided by the server without verification.  (For testing purposes only!)",
             "required": ["ssl_method"],
+            "type": "object",
             "properties": {
               "ssl_method": {
                 "type": "string",
@@ -91,6 +93,7 @@
             "additionalProperties": false,
             "description": "Verify and use the cert provided by the server.",
             "required": ["ssl_method", "trustStoreName", "trustStorePassword"],
+            "type": "object",
             "properties": {
               "ssl_method": {
                 "type": "string",

@@ -63,8 +63,7 @@ AWS_SECRET_ACCESS_KEY=
 # Endpoint where Minio is deployed at.
 S3_MINIO_ENDPOINT=
 ```
-The `S3_PATH_STYLE_ACCESS` should remain `true`. Although `S3_LOG_BUCKET_REGION` is used to create the Minio client, it's value is not actually used
-and can remain untouched.
+The `S3_PATH_STYLE_ACCESS` variable should remain `true`. The `S3_LOG_BUCKET_REGION` variable should remain empty.
 
 #### Configuring Custom S3 Log Location
 Replace the following variables in the `.env` file in the `kube/overlays/stable` directory:
@@ -221,7 +220,7 @@ See [Upgrading K8s](../operator-guides/upgrading-airbyte.md).
 
 ### Resizing Volumes
 To resize a volume, change the `.spec.resources.requests.storage` value. After re-applying, the mount should be extended if that operation is supported
-for your type of mount. For a production instance, it's useful to track the usage of volumes to ensure they don't run out of space.
+for your type of mount. For a production deployment, it's useful to track the usage of volumes to ensure they don't run out of space.
 
 ### Copy Files To/From Volumes
 See the documentation for [`kubectl cp`](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#cp).

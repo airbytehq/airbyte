@@ -23,9 +23,10 @@
 #
 
 from datetime import datetime
-from typing import Any, List, Mapping, Tuple, Type
+from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple
 
-from airbyte_cdk.models import ConnectorSpecification, DestinationSyncMode
+from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, DestinationSyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from pydantic import BaseModel, Field
@@ -70,7 +71,16 @@ class SourceInstagram(AbstractSource):
 
         return ok, error_msg
 
-    def streams(self, config: Mapping[str, Any]) -> List[Type[Stream]]:
+    def read(
+        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
+    ) -> Iterator[AirbyteMessage]:
+        for stream in self.streams(config):
+            state_key = str(stream.name)
+            if state_key in state and hasattr(stream, "upgrade_state_to_latest_format"):
+                state[state_key] = stream.upgrade_state_to_latest_format(state[state_key])
+        return super().read(logger, config, catalog, state)
+
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """Discovery method, returns available streams
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.

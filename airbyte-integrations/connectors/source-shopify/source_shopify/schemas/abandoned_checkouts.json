@@ -117,15 +117,13 @@
         "properties": {
           "price_set": {},
           "price": {
-            "type": ["null", "number"],
-            "multipleOf": 1e-10
+            "type": ["null", "string"]
           },
           "title": {
             "type": ["null", "string"]
           },
           "rate": {
-            "type": ["null", "number"],
-            "multipleOf": 1e-10
+            "type": ["null", "number"]
           },
           "compare_at": {
             "type": ["null", "string"]
@@ -145,8 +143,7 @@
       "type": ["null", "array"]
     },
     "total_line_items_price": {
-      "type": ["null", "number"],
-      "multipleOf": 1e-10
+      "type": ["null", "string"]
     },
     "closed_at": {
       "type": ["null", "string"],
@@ -168,12 +165,10 @@
       "type": ["null", "string"]
     },
     "total_tax": {
-      "type": ["null", "number"],
-      "multipleOf": 1e-10
+      "type": ["null", "string"]
     },
     "subtotal_price": {
-      "type": ["null", "number"],
-      "multipleOf": 1e-10
+      "type": ["null", "string"]
     },
     "line_items": {
       "items": {
@@ -242,7 +237,7 @@
                 },
                 "amount_set": {},
                 "amount": {
-                  "type": ["null", "number"]
+                  "type": ["null", "string"]
                 }
               },
               "type": ["null", "object"]
@@ -288,18 +283,16 @@
               "properties": {
                 "price_set": {},
                 "price": {
-                  "type": ["null", "number"],
-                  "multipleOf": 1e-10
+                  "type": ["null", "string"]
                 },
                 "title": {
                   "type": ["null", "string"]
                 },
                 "rate": {
-                  "type": ["null", "number"],
-                  "multipleOf": 1e-10
+                  "type": ["null", "number"]
                 },
                 "compare_at": {
-                  "type": ["null", "string"]
+                  "type": ["null", "number"]
                 },
                 "position": {
                   "type": ["null", "integer"]
@@ -345,8 +338,7 @@
             "type": ["null", "object"]
           },
           "price": {
-            "type": ["null", "number"],
-            "multipleOf": 1e-10
+            "type": ["null", "string"]
           },
           "requires_shipping": {
             "type": ["null", "boolean"]
@@ -407,8 +399,7 @@
       "type": ["null", "string"]
     },
     "total_discounts": {
-      "type": ["null", "number"],
-      "multipleOf": 1e-10
+      "type": ["null", "string"]
     },
     "note": {
       "type": ["null", "string"]
@@ -439,8 +430,7 @@
             "type": ["null", "integer"]
           },
           "price": {
-            "type": ["null", "number"],
-            "multipleOf": 1e-10
+            "type": ["null", "string"]
           },
           "requested_fulfillment_service_id": {
             "type": ["null", "string"]
@@ -456,8 +446,7 @@
               "properties": {
                 "price_set": {},
                 "price": {
-                  "type": ["null", "number"],
-                  "multipleOf": 1e-10
+                  "type": ["null", "string"]
                 },
                 "title": {
                   "type": ["null", "string"]
@@ -757,8 +746,7 @@
       }
     },
     "total_price": {
-      "type": ["null", "number"],
-      "multipleOf": 1e-10
+      "type": ["null", "string"]
     },
     "cart_token": {
       "type": ["null", "string"]

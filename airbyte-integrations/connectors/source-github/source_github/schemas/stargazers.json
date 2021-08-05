@@ -11,6 +11,9 @@
     "starred_at": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "user": {
+      "$ref": "user.json"
     }
   }
 }

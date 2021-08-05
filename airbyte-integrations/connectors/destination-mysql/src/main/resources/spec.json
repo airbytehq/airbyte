@@ -9,7 +9,7 @@
     "title": "MySQL Destination Spec",
     "type": "object",
     "required": ["host", "port", "username", "database"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "host": {
         "title": "Host",
