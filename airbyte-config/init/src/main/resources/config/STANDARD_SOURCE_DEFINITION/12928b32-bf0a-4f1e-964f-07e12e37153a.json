@@ -3,6 +3,6 @@
   "name": "Mixpanel",
   "dockerRepository": "airbyte/source-mixpanel",
   "dockerImageTag": "0.1.0",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-mixpanel",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/mixpanel",
   "icon": "mixpanel.svg"
 }
