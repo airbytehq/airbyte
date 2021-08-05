@@ -38,6 +38,9 @@
     "title": {
       "type": ["null", "string"]
     },
+    "user": {
+      "$ref": "user.json"
+    },
     "body": {
       "type": ["null", "string"]
     },

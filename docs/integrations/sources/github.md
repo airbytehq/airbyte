@@ -41,7 +41,7 @@ meaning that they:
 
     Please, consider this behaviour when using those 8 incremental streams because it may affect you API call limits.
 
-1. We are passing few parameters (`since`, `sort` and `direction`) to GitHub in order to filter records and sometimes
+2. We are passing few parameters (`since`, `sort` and `direction`) to GitHub in order to filter records and sometimes
    for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub
    instead of records (respective `WARN` log message will be outputted). In this case Specifying more recent
    `start_date` may help.
@@ -83,6 +83,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.3   | 2021-08-03 | [5156](https://github.com/airbytehq/airbyte/pull/5156) | Extended existing schemas with `users` property for certain streams |
 | 0.1.2   | 2021-07-13 | [4708](https://github.com/airbytehq/airbyte/pull/4708) | Fix bug with IssueEvents stream and add handling for rate limiting |
 | 0.1.1   | 2021-07-07 | [4590](https://github.com/airbytehq/airbyte/pull/4590) | Fix schema in the `pull_request` stream |
 | 0.1.0   | 2021-07-06 | [4174](https://github.com/airbytehq/airbyte/pull/4174) | New Source: GitHub |

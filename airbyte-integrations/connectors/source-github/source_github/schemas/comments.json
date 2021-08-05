@@ -11,6 +11,9 @@
     "node_id": {
       "type": ["null", "string"]
     },
+    "user": {
+      "$ref": "user.json"
+    },
     "url": {
       "type": ["null", "string"]
     },
