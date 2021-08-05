@@ -27,6 +27,8 @@ package io.airbyte.server.handlers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -56,6 +58,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -150,7 +153,10 @@ class WorkspacesHandlerTest {
 
   @Test
   void testCreateWorkspaceDuplicateSlug() throws JsonValidationException, IOException {
-    when(configRepository.listStandardWorkspaces(true)).thenReturn(Collections.singletonList(workspace));
+    when(configRepository.getWorkspaceBySlugOptional(any(String.class), eq(true)))
+        .thenReturn(Optional.of(workspace))
+        .thenReturn(Optional.of(workspace))
+        .thenReturn(Optional.empty());
 
     final UUID uuid = UUID.randomUUID();
     when(uuidSupplier.get()).thenReturn(uuid);
@@ -261,7 +267,7 @@ class WorkspacesHandlerTest {
         .customerId(workspace.getCustomerId())
         .email("test@airbyte.io")
         .name("test workspace")
-        .slug("default")
+        .slug("test-workspace")
         .initialSetupComplete(false)
         .displaySetupWizard(true)
         .news(false)
@@ -313,7 +319,7 @@ class WorkspacesHandlerTest {
         .withCustomerId(workspace.getCustomerId())
         .withEmail("test@airbyte.io")
         .withName("test workspace")
-        .withSlug("default")
+        .withSlug("test-workspace")
         .withAnonymousDataCollection(true)
         .withSecurityUpdates(false)
         .withNews(false)
@@ -335,7 +341,7 @@ class WorkspacesHandlerTest {
         .customerId(workspace.getCustomerId())
         .email("test@airbyte.io")
         .name("test workspace")
-        .slug("default")
+        .slug("test-workspace")
         .initialSetupComplete(true)
         .displaySetupWizard(false)
         .news(false)
