@@ -87,7 +87,7 @@ public class ArchiveHandlerTest {
     // make sure it cleans up the file.
     assertFalse(Files.exists(file.toPath()));
 
-    verify(configDumpImporter).importData(VERSION, file);
+    verify(configDumpImporter).importDataWithSeed(VERSION, file, ArchiveHandler.SEEDS_PATH);
   }
 
 }
