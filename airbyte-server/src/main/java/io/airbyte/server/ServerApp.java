@@ -53,13 +53,13 @@ import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
 import io.airbyte.server.errors.KnownExceptionMapper;
 import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
+import io.airbyte.server.handlers.ArchiveHandler;
 import io.airbyte.server.version_mismatch.VersionMismatchServer;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -250,13 +250,12 @@ public class ServerApp implements ServerRunnable {
                                             String airbyteVersion,
                                             String airbyteDatabaseVersion) {
     LOGGER.info("Running Automatic Migration from version : " + airbyteDatabaseVersion + " to version : " + airbyteVersion);
-    final Path latestSeedsPath = Path.of(System.getProperty("user.dir")).resolve("latest_seeds");
-    LOGGER.info("Last seeds dir: {}", latestSeedsPath);
+    LOGGER.info("Last seeds dir: {}", ArchiveHandler.SEEDS_PATH);
     try (final RunMigration runMigration = new RunMigration(
         jobPersistence,
         configRepository,
         airbyteVersion,
-        latestSeedsPath)) {
+        ArchiveHandler.SEEDS_PATH)) {
       runMigration.run();
     } catch (Exception e) {
       LOGGER.error("Automatic Migration failed ", e);
