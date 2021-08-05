@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -63,6 +64,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class WorkspacesHandlerTest {
 
@@ -188,6 +190,13 @@ class WorkspacesHandlerTest {
     assertTrue(actualRead.getSlug().startsWith(workspace.getSlug()));
     assertNotEquals(workspace.getSlug(), actualRead.getSlug());
     assertEquals(Jsons.clone(expectedRead).slug(null), Jsons.clone(actualRead).slug(null));
+    final ArgumentCaptor<String> slugCaptor = ArgumentCaptor.forClass(String.class);
+    verify(configRepository, times(3)).getWorkspaceBySlugOptional(slugCaptor.capture(), eq(true));
+    assertEquals(3, slugCaptor.getAllValues().size());
+    assertEquals(workspace.getSlug(), slugCaptor.getAllValues().get(0));
+    assertTrue(slugCaptor.getAllValues().get(1).startsWith(workspace.getSlug()));
+    assertTrue(slugCaptor.getAllValues().get(2).startsWith(workspace.getSlug()));
+
   }
 
   @Test
