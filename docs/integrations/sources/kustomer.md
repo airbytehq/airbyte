@@ -34,6 +34,9 @@ This Source is capable of syncing the following core Streams:
 
 Kustomer has some [rate limit restrictions](https://developer.kustomer.com/kustomer-api-docs/reference/rate-limiting).
 
+## Requirements
+* **Kustomer API token**. See the [Kustomer docs](https://help.kustomer.com/api-keys-SJs5YTIWX) for information on how to obtain an API token. 
+
 ## Changelog
 
 | Version | Date       | Pull Request                                           | Subject                       |

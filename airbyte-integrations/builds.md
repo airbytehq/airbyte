@@ -49,8 +49,6 @@
 
  Hubspot   [![source-hubspot-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-hubspot%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-hubspot) 
 
- Klaviyo   [![source-klaviyo](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-klaviyo%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-klaviyo) 
-
  IBM Db2   [![source-db2](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-db2%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-db2)
 
  Instagram   [![source-instagram](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-instagram%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-instagram) 
@@ -60,6 +58,10 @@
  Iterable   [![source-iterable](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-iterable%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-iterable) 
 
  Jira   [![source-jira](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-jira%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-jira) 
+
+ Klaviyo   [![source-klaviyo](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-klaviyo%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-klaviyo) 
+ 
+  Kustomer   [![source-kustomer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-kustomer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-kustomer) 
 
  Looker   [![source-looker](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-looker%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-looker) 
 
