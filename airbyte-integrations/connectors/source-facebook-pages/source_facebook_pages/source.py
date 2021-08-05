@@ -51,13 +51,14 @@ class SourceFacebookPages(AbstractSource):
             "access_token": config["access_token"],
             "page_id": config["page_id"],
         }
-        incremental_stream_kwargs = {**stream_kwargs}
+
         if config.get("start_date"):
-            incremental_stream_kwargs["start_date"] = pendulum.parse(config["start_date"])
+            stream_kwargs["start_date"] = pendulum.parse(config["start_date"])
+
         streams = [
-            Post(**incremental_stream_kwargs),
-            Page(**incremental_stream_kwargs),
-            PostInsights(**incremental_stream_kwargs),
-            PageInsights(**incremental_stream_kwargs),
+            Post(**stream_kwargs),
+            Page(**stream_kwargs),
+            PostInsights(**stream_kwargs),
+            PageInsights(**stream_kwargs),
         ]
         return streams

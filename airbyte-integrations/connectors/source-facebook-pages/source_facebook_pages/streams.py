@@ -28,7 +28,7 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
-from source_facebook_pages.metrics import PAGE_METRICS, POST_METRICS
+from .metrics import PAGE_FIELDS, PAGE_METRICS, POST_FIELDS, POST_METRICS
 
 
 class FacebookStream(HttpStream, ABC):
@@ -47,7 +47,6 @@ class FacebookStream(HttpStream, ABC):
         self._access_token = access_token
         self._start_date = start_date
         self._page_id = page_id
-        self._query_field_param = []
 
     @property
     def path_param(self):
@@ -67,67 +66,6 @@ class FacebookStream(HttpStream, ABC):
 
         return params
 
-    def get_params(self, request_url):
-        """
-        Return all fields which correspond granted user permissions.
-        We use this because we have to define which fields are returns from Facebook API
-        """
-        url = self.url_base + request_url
-        params = {"access_token": self._access_token}
-
-        for field in self._get_query_field_params(url):
-            params["fields"] = field
-            response = requests.get(url, params=params)
-            if response.status_code == 200:
-                self._query_field_param.append(field)
-
-        params["fields"] = ",".join(self._get_query_field_params(url))
-        return params
-
-    def _get_query_field_params(self, url):
-        if self._query_field_param:
-            fields = self._query_field_param
-        else:
-            fields = self.get_all_fields(url)
-
-        return fields
-
-    def get_all_fields(self, url):
-        """
-        Return all available fields for some stream.
-        We use this because we have to define which fields are returns from Facebook API
-        """
-        response = requests.get(url, params={"metadata": 1, "access_token": self._access_token})
-
-        if response.status_code != 200:
-            return []
-
-        data = response.json()
-        result = self._parse_fields(data)
-
-        return result
-
-    @staticmethod
-    def _parse_fields(data):
-        result = []
-        try:
-            connections = data["metadata"]["connections"]
-            temp_fields = data["metadata"]["fields"]
-
-            for field in temp_fields:
-                result.append(field["name"])
-            for conn_name in connections.keys():
-                result.append(conn_name)
-
-            if "access_token" in result:
-                result.remove("access_token")
-
-            return result
-
-        except Exception:
-            # fixme
-            return []
-
 
 class Page(FacebookStream):
     """
@@ -144,7 +82,12 @@ class Page(FacebookStream):
         stream_slice: Mapping[str, any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = self.get_params(request_url=self._page_id)
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        # we have to define which fields will return from Facebook API
+        # because FB API doesn't provide opportunity to get fields dynamically without delays
+        # so in PAGE_FIELDS we define fields that user can get from API
+        params["fields"] = PAGE_FIELDS
+
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -165,31 +108,14 @@ class Post(FacebookStream):
         for record in records:
             yield record
 
-    def get_post_url(self):
-        response = requests.get(
-            url=f"{self.url_base}/{self.path()}",
-            params={"access_token": self._access_token},
-        )
-        try:
-            # Take the first post url so we can extract metadata from it
-            first_post = response.json().get("data")[0]
-            url_first_post = first_post.get("id")
-            return url_first_post
-
-        except Exception:
-            raise AttributeError
-
     def request_params(
         self,
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        try:
-            post_url = self.get_post_url()
-            params = self.get_params(request_url=post_url)
-        except AttributeError:
-            params = super().request_params(stream_state, stream_slice, next_page_token)
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params["fields"] = POST_FIELDS
 
         return params
 
