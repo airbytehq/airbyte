@@ -146,8 +146,8 @@ class SingerHelper:
             if name in primary_key_overrides:
                 airbyte_stream.source_defined_primary_key = [[k] for k in primary_key_overrides[name]]
             else:
-                if schema.get("key_properties"):
-                    airbyte_stream.source_defined_primary_key = [[k] for k in schema["key_properties"]]
+                if stream.get("key_properties"):
+                    airbyte_stream.source_defined_primary_key = [[k] for k in stream["key_properties"]]
 
             airbyte_streams += [airbyte_stream]
         return AirbyteCatalog(streams=airbyte_streams)
