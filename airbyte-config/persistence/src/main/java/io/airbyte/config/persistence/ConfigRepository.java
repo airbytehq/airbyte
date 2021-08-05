@@ -63,7 +63,8 @@ public class ConfigRepository {
     throw new ConfigNotFoundException(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString());
   }
 
-  public Optional<StandardWorkspace> getWorkspaceBySlugOptional(final String slug, final boolean includeTombstone) throws JsonValidationException, IOException {
+  public Optional<StandardWorkspace> getWorkspaceBySlugOptional(final String slug, final boolean includeTombstone)
+      throws JsonValidationException, IOException {
     for (final StandardWorkspace workspace : listStandardWorkspaces(includeTombstone)) {
       if (workspace.getSlug().equals(slug)) {
         return Optional.of(workspace);
@@ -72,7 +73,8 @@ public class ConfigRepository {
     return Optional.empty();
   }
 
-  public StandardWorkspace getWorkspaceBySlug(final String slug, final boolean includeTombstone) throws JsonValidationException, IOException, ConfigNotFoundException {
+  public StandardWorkspace getWorkspaceBySlug(final String slug, final boolean includeTombstone)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     return getWorkspaceBySlugOptional(slug, includeTombstone).orElseThrow(() -> new ConfigNotFoundException(ConfigSchema.STANDARD_WORKSPACE, slug));
   }
 

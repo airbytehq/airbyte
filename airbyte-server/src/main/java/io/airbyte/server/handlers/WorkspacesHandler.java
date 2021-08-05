@@ -45,6 +45,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.notification.NotificationClient;
 import io.airbyte.server.converters.NotificationConverter;
 import io.airbyte.server.errors.IdNotFoundKnownException;
+import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.server.errors.ValueConflictKnownException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -212,11 +213,17 @@ public class WorkspacesHandler {
     // be replaced with an actual sql query. e.g. SELECT COUNT(*) WHERE slug=%s;
     boolean isSlugUsed = configRepository.getWorkspaceBySlugOptional(proposedSlug, true).isPresent();
     String resolvedSlug = proposedSlug;
-    final int count = 0;
-    while(isSlugUsed && count < 10) {
-      // todo (cgardens) - this is still susceptible to a race condition where we randomly generate the same slug in two different threads. this should be very unlikely. we can fix this by exposing database transaction, but that is not something we can do quickly.
+    final int MAX_ATTEMPTS = 10;
+    int count = 0;
+    while (isSlugUsed) {
+      // todo (cgardens) - this is still susceptible to a race condition where we randomly generate the
+      // same slug in two different threads. this should be very unlikely. we can fix this by exposing
+      // database transaction, but that is not something we can do quickly.
       resolvedSlug = proposedSlug + "-" + RandomStringUtils.randomAlphabetic(8);
       isSlugUsed = configRepository.getWorkspaceBySlugOptional(proposedSlug, true).isPresent();
+      if (count++ > MAX_ATTEMPTS) {
+        throw new InternalServerKnownException(String.format("could not generate a valid slug after %s tries.", MAX_ATTEMPTS));
+      }
     }
 
     return resolvedSlug;
