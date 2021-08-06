@@ -169,6 +169,8 @@ class TestRequestBody:
 
     json_body = {"key": "value"}
     data_body = "key:value"
+    form_body = {"key1": "value1", "key2": 1234}
+    urlencoded_form_body = "key1=value1&key2=1234"
 
     def request2response(self, request, context):
         return json.dumps({"body": request.text, "content_type": request.headers.get("Content-Type")})
@@ -194,6 +196,17 @@ class TestRequestBody:
 
         assert response["content_type"] is None
         assert response["body"] == self.data_body
+
+    def test_form_body(self, mocker, requests_mock):
+
+        stream = PostHttpStream()
+        mocker.patch.object(stream, "request_body_data", return_value=self.form_body)
+
+        requests_mock.register_uri("POST", stream.url_base, text=self.request2response)
+        response = list(stream.read_records(sync_mode=SyncMode.full_refresh))[0]
+
+        assert response["content_type"] == "application/x-www-form-urlencoded"
+        assert response["body"] == self.urlencoded_form_body
 
     def test_text_json_body(self, mocker, requests_mock):
         """checks a exception if both functions were overridden"""

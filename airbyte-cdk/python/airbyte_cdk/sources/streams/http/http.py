@@ -24,7 +24,7 @@
 
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.models import SyncMode
@@ -114,11 +114,14 @@ class HttpStream(Stream, ABC):
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ) -> Optional[str]:
+    ) -> Optional[Union[Mapping, str]]:
         """
         Override when creating POST/PUT/PATCH requests to populate the body of the request with a non-JSON payload.
 
-        Returns a ready text that it will be sent as is.
+        If returns a ready text that it will be sent as is.
+        If returns a dict that it will be converted to a urlencoded form.
+           E.g. {"key1": "value1", "key2": "value2"} => "key1=value1&key2=value2"
+
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
         return None

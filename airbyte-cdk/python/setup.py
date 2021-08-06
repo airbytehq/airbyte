@@ -66,7 +66,7 @@ setup(
     packages=find_packages(exclude=("unit_tests",)),
     install_requires=[
         "backoff",
-        "jsonschema==3.2.0",
+        "jsonschema~=3.2.0",
         "pendulum",
         "pydantic~=1.6",
         "PyYAML~=5.4",
