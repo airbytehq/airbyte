@@ -12,7 +12,7 @@
 ## Pre-merge Checklist
 Expand the relevant checklist and delete the others.
 
-<details><summary> <strong> New Connector </strong></summary>
+<details><summary> <strong> New Template </strong></summary>
 <p>
 
 - [ ] PR naming conventions for ([link](https://docs.airbyte.io/contributing-to-airbyte/updating-documentation#issues-and-pull-requests)):
