@@ -10,6 +10,31 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on.
 
+## 7/30/2021
+
+New sources:
+* [**PrestaShop**](https://docs.airbyte.io/integrations/sources/prestashop)
+* [**Snapchat Marketing**](https://docs.airbyte.io/integrations/sources/snapchat-marketing)
+* [**Drupal**](https://docs.airbyte.io/integrations/sources/drupal)
+* [**Magento**](https://docs.airbyte.io/integrations/sources/magento)
+* [**Microsoft Dynamics AX**](https://docs.airbyte.io/integrations/sources/microsoft-dynamics-ax)
+* [**Microsoft Dynamics Customer Engagement**](https://docs.airbyte.io/integrations/sources/microsoft-dynamics-customer-engagement)
+* [**Microsoft Dynamics GP**](https://docs.airbyte.io/integrations/sources/microsoft-dynamics-gp)
+* [**Microsoft Dynamics NAV**](https://docs.airbyte.io/integrations/sources/microsoft-dynamics-nav)
+* [**Oracle PeopleSoft**](https://docs.airbyte.io/integrations/sources/oracle-peoplesoft)
+* [**Oracle Siebel CRM**](https://docs.airbyte.io/integrations/sources/oracle-siebel-crm)
+* [**SAP Business One**](https://docs.airbyte.io/integrations/sources/sap-business-one)
+* [**Spree Commerce**](https://docs.airbyte.io/integrations/sources/spree-commerce)
+* [**Sugar CRM**](https://docs.airbyte.io/integrations/sources/sugar-crm)
+* [**Woo Commerce**](https://docs.airbyte.io/integrations/sources/woo-commerce)
+* [**Wordpress**](https://docs.airbyte.io/integrations/sources/wordpress)
+* [**Zencart**](https://docs.airbyte.io/integrations/sources/zencart)
+
+Bug fixes:
+* **Shopify** source: Fixed the `products` schema to be in accordance with the API.
+* **BigQuery** source: No longer fails with `Array of Records` data types.
+* **BigQuery** destination: Improved logging, Job IDs are now filled with location and Project IDs.
+
 ## 7/23/2021
 
 New sources:

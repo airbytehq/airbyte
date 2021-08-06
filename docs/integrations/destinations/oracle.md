@@ -53,4 +53,6 @@ You should now have all the requirements needed to configure Oracle as a destina
 ## Changelog
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
+| 0.1.4 | 2021-07-30 | [#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
+| 0.1.3 | 2021-07-21 | [#3555](https://github.com/airbytehq/airbyte/pull/3555) | Partial Success in BufferedStreamConsumer |
 | 0.1.2 | 2021-07-20 | [4874](https://github.com/airbytehq/airbyte/pull/4874) | Require `sid` instead of `database` in connector specification |

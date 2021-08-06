@@ -3,5 +3,5 @@
   "name": "Zendesk Talk",
   "dockerRepository": "airbyte/source-zendesk-talk",
   "dockerImageTag": "0.1.2",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-zendesk-talk"
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/zendesk-talk"
 }

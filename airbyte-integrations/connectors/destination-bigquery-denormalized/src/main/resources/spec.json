@@ -9,7 +9,7 @@
     "title": "BigQuery Denormalized Typed Struct Destination Spec",
     "type": "object",
     "required": ["project_id", "dataset_id", "credentials_json"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "project_id": {
         "type": "string",
