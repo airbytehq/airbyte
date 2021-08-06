@@ -37,6 +37,7 @@ write_standard_creds base-normalization "$BIGQUERY_INTEGRATION_TEST_CREDS" "bigq
 write_standard_creds base-normalization "$SNOWFLAKE_INTEGRATION_TEST_CREDS" "snowflake.json"
 write_standard_creds base-normalization "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS" "redshift.json"
 
+write_standard_creds source-amazon-seller-partner "$AMAZON_SELLER_PARTNER_TEST_CREDS"
 write_standard_creds source-amplitude "$AMPLITUDE_INTEGRATION_TEST_CREDS"
 write_standard_creds source-apify-dataset "$APIFY_INTEGRATION_TEST_CREDS"
 write_standard_creds source-asana "$SOURCE_ASANA_TEST_CREDS"

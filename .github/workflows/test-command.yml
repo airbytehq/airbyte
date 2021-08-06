@@ -69,6 +69,7 @@ jobs:
       - name: Write Integration Test Credentials
         run: ./tools/bin/ci_credentials.sh
         env:
+          AMAZON_SELLER_PARTNER_TEST_CREDS: ${{ secrets.AMAZON_SELLER_PARTNER_TEST_CREDS }}
           AMPLITUDE_INTEGRATION_TEST_CREDS: ${{ secrets.AMPLITUDE_INTEGRATION_TEST_CREDS }}
           ADWORDS_INTEGRATION_TEST_CREDS: ${{ secrets.ADWORDS_INTEGRATION_TEST_CREDS }}
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}

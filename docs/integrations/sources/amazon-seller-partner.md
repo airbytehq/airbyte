@@ -8,8 +8,10 @@ This source can sync data for the [Amazon Seller Partner API](https://github.com
 
 This source is capable of syncing the following streams:
 
-* [Orders](https://github.com/amzn/selling-partner-api-docs/blob/main/references/orders-api/ordersV0.md)
-* [GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reportType_string_array_values.md#order-tracking-reports)
+* [Orders](https://github.com/amzn/selling-partner-api-docs/blob/main/references/orders-api/ordersV0.md) (incremental)
+* [GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#order-tracking-reports) (incremental)
+* [GET_MERCHANT_LISTINGS_ALL_DATA](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#inventory-reports) (incremental)
+* [GET_FBA_INVENTORY_AGED_DATA](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#fulfillment-by-amazon-fba-reports) (incremental)
 
 
 ### Data type mapping
@@ -39,15 +41,15 @@ Information about rate limits you may find [here](https://github.com/amzn/sellin
 
 ### Requirements
 
+* replication_start_date
 * refresh_token
 * lwa_app_id
 * lwa_client_secret
-* AWS USER ACCESS KEY
-* AWS USER SECRET KEY
+* aws_access_key
+* aws_secret_key
 * role_arn
-* seller_id
-
-Amazon doesn't return seller_id in the response thus seller_id is added to each row as an identifier. Note: It is not used in querying the data.
+* aws_environment
+* region
 
 ### Setup guide
 
@@ -57,5 +59,6 @@ Information about how to get credentials you may find [here](https://github.com/
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| `0.2.0` | 2021-08-06 | [#4863](https://github.com/airbytehq/airbyte/pull/4863) | `Rebuild source with airbyte-cdk` |
 | `0.1.3` | 2021-06-23 | [#4288](https://github.com/airbytehq/airbyte/pull/4288) | `Bugfix failing connection check` |
 | `0.1.2` | 2021-06-15 | [#4108](https://github.com/airbytehq/airbyte/pull/4108) | `Fixed: Sync fails with timeout when create report is CANCELLED` |

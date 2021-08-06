@@ -25,7 +25,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "python-amazon-sp-api", "pendulum"]
+MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "boto3~=1.16", "pendulum~=2.1"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
