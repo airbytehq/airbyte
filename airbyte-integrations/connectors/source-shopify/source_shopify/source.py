@@ -67,30 +67,53 @@ class ShopifyStream(HttpStream, ABC):
         }
         return json_types.get(value_type)
 
-    def _set_value(self,  record: Mapping[str, Any], path: List[str], value: Any):
-        pass
-
     @staticmethod
     def _convert(value: Any, convert_type: str):
         if convert_type == "number":
             value = Decimal(value)
         return value
 
-    def _transform(self, records: List[Mapping[str, Any]]) -> Mapping[str, Any]:
+    @staticmethod
+    def _find_schema_type(schema_types: List[str]) -> str:
+        not_null_types = schema_types.copy()
+        if "null" in not_null_types:
+            not_null_types.remove("null")
+        return not_null_types[0]
+
+    def _transform_array(self, array: List[Any], item_properties: Mapping[str, Any]):
+        item_types = item_properties.get("type", [])
+        if item_types:
+            schema_type = self._find_schema_type(item_types)
+            nested_properties = item_properties.get("properties", {})
+            for item in array:
+                if schema_type == "object":
+                    self._transform_object(item, nested_properties)
+
+    def _transform_object(self, transform_object: Mapping[str, Any], properties: Mapping[str, Any]):
+        for object_property, value in transform_object.items():
+            if object_property in properties:
+                object_properties = properties.get(object_property)
+                schema_types = object_properties.get("type", [])
+                if not isinstance(schema_types, list):
+                    schema_types = [schema_types, ]
+                if not schema_types:
+                    continue
+                value_json_types = self._get_json_types(type(value))
+                schema_type = self._find_schema_type(schema_types)
+                if not any(value_json_type in schema_types for value_json_type in value_json_types):
+                    if schema_type == "number":
+                        transform_object[object_property] = self._convert(value, schema_type)
+                if schema_type == "object":
+                    nested_properties = object_properties.get("properties", {})
+                    self._transform_object(value, nested_properties)
+                if schema_type == "array":
+                    item_properties = object_properties.get("items", {})
+                    self._transform_array(value, item_properties)
+
+    def _transform(self, records: List[Mapping[str, Any]]) -> List[Mapping[str, Any]]:
         stream_properties = self._schema.get("properties", {})
         for record in records:
-            for record_property, value in record.items():
-                if record_property in stream_properties:
-                    schema_types = stream_properties.get(record_property).get("type", [])
-                    if not schema_types:
-                        continue
-                    value_json_types = self._get_json_types(type(value))
-                    if not any(value_json_type in schema_types for value_json_type in value_json_types):
-                        if "null" in schema_types:
-                            schema_types.remove("null")
-                        if schema_types:
-                            convert_type = schema_types[0]
-                            record[record_property] = self._convert(value, convert_type)
+            self._transform_object(record, stream_properties)
         return records
 
     @property
