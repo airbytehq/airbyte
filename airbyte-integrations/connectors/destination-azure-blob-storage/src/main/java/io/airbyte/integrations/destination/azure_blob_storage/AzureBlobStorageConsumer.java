@@ -40,7 +40,6 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
-import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -86,19 +85,17 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
             azureBlobStorageDestinationConfig
                 .getContainerName());// Like schema (or even oracle user) in DB
 
-    Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
-
     for (ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
 
       AppendBlobClient appendBlobClient = specializedBlobClientBuilder
           .blobName(configuredStream.getStream().getName())
           .buildAppendBlobClient();
 
-      createContainers(appendBlobClient, configuredStream);
+      boolean isNewlyCreatedBlob = createContainers(appendBlobClient, configuredStream);
 
       AzureBlobStorageWriter writer = writerFactory
           .create(azureBlobStorageDestinationConfig, appendBlobClient, configuredStream,
-              uploadTimestamp);
+              isNewlyCreatedBlob);
 
       AirbyteStream stream = configuredStream.getStream();
       AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair
@@ -107,14 +104,13 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
     }
   }
 
-  private void createContainers(AppendBlobClient appendBlobClient,
-                                ConfiguredAirbyteStream configuredStream) {
+  private boolean createContainers(AppendBlobClient appendBlobClient,
+                                   ConfiguredAirbyteStream configuredStream) {
     // create container if absent (aka SQl Schema)
     final BlobContainerClient containerClient = appendBlobClient.getContainerClient();
     if (!containerClient.exists()) {
       containerClient.create();
     }
-
     // create a storage container if absent (aka Table is SQL BD)
     if (configuredStream.getSyncMode().equals(SyncMode.FULL_REFRESH)) {
       // full refresh sync. Create blob and override if any
@@ -122,6 +118,7 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
           + " created or all data would be overridden (if any) for stream:" + configuredStream
               .getStream().getName());
       appendBlobClient.create(true);
+      return true;
     } else {
       // incremental sync. Create new container only if still absent
       if (!appendBlobClient.exists()) {
@@ -129,6 +126,7 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
             + " created for stream:" + configuredStream.getStream().getName());
         appendBlobClient.create(false);
         LOGGER.info(appendBlobClient.getBlobName() + " blob has been created");
+        return true;
       } else {
         LOGGER.info(String.format(
             "Sync mode is selected to APPEND mode. Container %s already exists. Append mode is "
@@ -136,6 +134,7 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
                 + " https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction#blobs",
             configuredStream.getStream().getName()));
         LOGGER.info(appendBlobClient.getBlobName() + " already exists");
+        return false;
       }
     }
   }

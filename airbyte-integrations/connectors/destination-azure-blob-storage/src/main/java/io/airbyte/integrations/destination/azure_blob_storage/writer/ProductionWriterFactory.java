@@ -27,9 +27,9 @@ package io.airbyte.integrations.destination.azure_blob_storage.writer;
 import com.azure.storage.blob.specialized.AppendBlobClient;
 import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDestinationConfig;
 import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageFormat;
+import io.airbyte.integrations.destination.azure_blob_storage.csv.AzureBlobStorageCsvWriter;
 import io.airbyte.integrations.destination.azure_blob_storage.jsonl.AzureBlobStorageJsonlWriter;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import java.sql.Timestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +41,7 @@ public class ProductionWriterFactory implements AzureBlobStorageWriterFactory {
   public AzureBlobStorageWriter create(AzureBlobStorageDestinationConfig config,
                                        AppendBlobClient appendBlobClient,
                                        ConfiguredAirbyteStream configuredStream,
-                                       Timestamp uploadTimestamp)
+                                       boolean isNewlyCreatedBlob)
       throws Exception {
     AzureBlobStorageFormat format = config.getFormatConfig().getFormat();
 
@@ -71,14 +71,13 @@ public class ProductionWriterFactory implements AzureBlobStorageWriterFactory {
 
     if (format == AzureBlobStorageFormat.CSV) {
       // TODO to implement
-      throw new Exception("Not implemented");
-      // return new AzureBlobStorageCsvWriter(config, AzureBlobStorageClient, configuredStream,
-      // uploadTimestamp);
+      return new AzureBlobStorageCsvWriter(config, appendBlobClient, configuredStream,
+          isNewlyCreatedBlob);
     }
 
     if (format == AzureBlobStorageFormat.JSONL) {
       LOGGER.debug("Picked up JSONL format writer");
-      return new AzureBlobStorageJsonlWriter(config, appendBlobClient, configuredStream, uploadTimestamp);
+      return new AzureBlobStorageJsonlWriter(config, appendBlobClient, configuredStream, isNewlyCreatedBlob);
     }
 
     throw new RuntimeException("Unexpected AzureBlobStorage destination format: " + format);

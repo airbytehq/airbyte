@@ -22,22 +22,31 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.azure_blob_storage.writer;
+package io.airbyte.integrations.destination.azure_blob_storage.csv;
 
-import com.azure.storage.blob.specialized.AppendBlobClient;
-import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDestinationConfig;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Lists;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.JavaBaseConstants;
+import java.util.Collections;
+import java.util.List;
 
-/**
- * Create different {@link AzureBlobStorageWriter} based on
- * {@link AzureBlobStorageDestinationConfig}.
- */
-public interface AzureBlobStorageWriterFactory {
+public class NoFlatteningSheetGenerator extends BaseSheetGenerator implements CsvSheetGenerator {
 
-  AzureBlobStorageWriter create(AzureBlobStorageDestinationConfig config,
-                                AppendBlobClient appendBlobClient,
-                                ConfiguredAirbyteStream configuredStream,
-                                boolean isNewlyCreatedBlob)
-      throws Exception;
+  @Override
+  public List<String> getHeaderRow() {
+    return Lists.newArrayList(
+        JavaBaseConstants.COLUMN_NAME_AB_ID,
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
+        JavaBaseConstants.COLUMN_NAME_DATA);
+  }
+
+  /**
+   * When no flattening is needed, the record column is just one json blob.
+   */
+  @Override
+  List<String> getRecordColumns(JsonNode json) {
+    return Collections.singletonList(Jsons.serialize(json));
+  }
 
 }

@@ -22,16 +22,10 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.azure_blob_storage.jsonl;
+package io.airbyte.integrations.destination.azure_blob_storage.csv;
 
 import com.azure.storage.blob.specialized.AppendBlobClient;
 import com.azure.storage.blob.specialized.BlobOutputStream;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.commons.jackson.MoreMappers;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDestinationConfig;
 import io.airbyte.integrations.destination.azure_blob_storage.writer.AzureBlobStorageWriter;
 import io.airbyte.integrations.destination.azure_blob_storage.writer.BaseAzureBlobStorageWriter;
@@ -41,51 +35,64 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.QuoteMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AzureBlobStorageJsonlWriter extends BaseAzureBlobStorageWriter implements
+public class AzureBlobStorageCsvWriter extends BaseAzureBlobStorageWriter implements
     AzureBlobStorageWriter {
 
-  protected static final Logger LOGGER = LoggerFactory.getLogger(AzureBlobStorageJsonlWriter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AzureBlobStorageCsvWriter.class);
 
-  private static final ObjectMapper MAPPER = MoreMappers.initMapper();
-  private static final ObjectWriter WRITER = MAPPER.writer();
-
+  private final CsvSheetGenerator csvSheetGenerator;
+  private final CSVPrinter csvPrinter;
   private final BlobOutputStream blobOutputStream;
-  private final PrintWriter printWriter;
 
-  public AzureBlobStorageJsonlWriter(AzureBlobStorageDestinationConfig config,
-                                     AppendBlobClient appendBlobClient,
-                                     ConfiguredAirbyteStream configuredStream,
-                                     boolean isNewlyCreatedBlob) {
+  public AzureBlobStorageCsvWriter(AzureBlobStorageDestinationConfig config,
+                                   AppendBlobClient appendBlobClient,
+                                   ConfiguredAirbyteStream configuredStream,
+                                   boolean isNewlyCreatedBlob)
+      throws IOException {
     super(config, appendBlobClient, configuredStream);
-    // at this moment we already receive appendBlobClient initialized
+
+    AzureBlobStorageCsvFormatConfig formatConfig = (AzureBlobStorageCsvFormatConfig) config
+        .getFormatConfig();
+
+    this.csvSheetGenerator = CsvSheetGenerator.Factory
+        .create(configuredStream.getStream().getJsonSchema(),
+            formatConfig);
+
     this.blobOutputStream = appendBlobClient.getBlobOutputStream();
-    this.printWriter = new PrintWriter(blobOutputStream, true, StandardCharsets.UTF_8);
+
+    if (isNewlyCreatedBlob) {
+      this.csvPrinter = new CSVPrinter(
+          new PrintWriter(blobOutputStream, true, StandardCharsets.UTF_8),
+          CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
+              .withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0])));
+    } else {
+      // no header required for append
+      this.csvPrinter = new CSVPrinter(
+          new PrintWriter(blobOutputStream, true, StandardCharsets.UTF_8),
+          CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL));
+    }
   }
 
   @Override
-  public void write(UUID id, AirbyteRecordMessage recordMessage) {
-    ObjectNode json = MAPPER.createObjectNode();
-    json.put(JavaBaseConstants.COLUMN_NAME_AB_ID, id.toString());
-    json.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
-    json.set(JavaBaseConstants.COLUMN_NAME_DATA, recordMessage.getData());
-
-    LOGGER.debug("Writing msg in write method. SerializedMessage:" + Jsons.serialize(json));
-    printWriter.println(Jsons.serialize(json));
+  public void write(UUID id, AirbyteRecordMessage recordMessage) throws IOException {
+    LOGGER.debug("Writing message: " + recordMessage);
+    csvPrinter.printRecord(csvSheetGenerator.getDataRow(id, recordMessage));
   }
 
   @Override
   protected void closeWhenSucceed() throws IOException {
-    // this would also close the blobOutputStream
-    printWriter.close();
+    csvPrinter.close();
   }
 
   @Override
   protected void closeWhenFail() throws IOException {
-    // this would also close the blobOutputStream
-    printWriter.close();
+    csvPrinter.close();
   }
 
 }

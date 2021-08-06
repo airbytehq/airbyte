@@ -26,6 +26,7 @@ package io.airbyte.integrations.destination.azure_blob_storage;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.azure_blob_storage.csv.AzureBlobStorageCsvFormatConfig;
 import io.airbyte.integrations.destination.azure_blob_storage.jsonl.AzureBlobStorageJsonlFormatConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,8 +48,7 @@ public class AzureBlobStorageFormatConfigs {
         throw new RuntimeException("NOT IMPLEMENTED YET output format: " + Jsons.serialize(config));
       }
       case CSV -> {
-        // return new AzureBlobStorageCsvFormatConfig(formatConfig);
-        throw new RuntimeException("NOT IMPLEMENTED YET output format: " + Jsons.serialize(config));
+        return new AzureBlobStorageCsvFormatConfig(formatConfig);
       }
       case JSONL -> {
         return new AzureBlobStorageJsonlFormatConfig();

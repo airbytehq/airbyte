@@ -22,22 +22,37 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.azure_blob_storage.writer;
+package io.airbyte.integrations.destination.azure_blob_storage.csv;
 
-import com.azure.storage.blob.specialized.AppendBlobClient;
-import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDestinationConfig;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.integrations.destination.azure_blob_storage.csv.AzureBlobStorageCsvFormatConfig.Flattening;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import java.util.List;
+import java.util.UUID;
 
 /**
- * Create different {@link AzureBlobStorageWriter} based on
- * {@link AzureBlobStorageDestinationConfig}.
+ * This class takes case of the generation of the CSV data sheet, including the header row and the
+ * data row.
  */
-public interface AzureBlobStorageWriterFactory {
+public interface CsvSheetGenerator {
 
-  AzureBlobStorageWriter create(AzureBlobStorageDestinationConfig config,
-                                AppendBlobClient appendBlobClient,
-                                ConfiguredAirbyteStream configuredStream,
-                                boolean isNewlyCreatedBlob)
-      throws Exception;
+  List<String> getHeaderRow();
+
+  List<Object> getDataRow(UUID id, AirbyteRecordMessage recordMessage);
+
+  final class Factory {
+
+    public static CsvSheetGenerator create(JsonNode jsonSchema, AzureBlobStorageCsvFormatConfig formatConfig) {
+      if (formatConfig.getFlattening() == Flattening.NO) {
+        return new NoFlatteningSheetGenerator();
+      } else if (formatConfig.getFlattening() == Flattening.ROOT_LEVEL) {
+        return new RootLevelFlatteningSheetGenerator(jsonSchema);
+      } else {
+        throw new IllegalArgumentException(
+            "Unexpected flattening config: " + formatConfig.getFlattening());
+      }
+    }
+
+  }
 
 }
