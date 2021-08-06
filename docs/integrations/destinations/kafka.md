@@ -114,4 +114,5 @@ More info about this can be found in the [Kafka producer configs documentation s
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.1   | 2021-07-30 | [#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
 | 0.1.0   | 2021-07-21 | [3746](https://github.com/airbytehq/airbyte/pull/3746) | Initial Release |

@@ -109,6 +109,11 @@ For `STANDARD` replication method this is not applicable. If you select the `CDC
 
 Your database user should now be ready for use with Airbyte.
 
+#### Note: 
+
+There may be problems with mapping values in MYSQL's datetime field to other relational data stores. MySQL permits zero values for date/time instead of NULL which may not be accepted by other data stores. To work around this problem, you can pass the following key value pair in the JDBC connector of the source setting:
+```zerodatetimebehavior=Converttonull```
+
 ## Change Data Capture \(CDC\)
 
 * If you need a record of deletions and can accept the limitations posted below, you should be able to use CDC for MySQL.
@@ -160,6 +165,7 @@ But in order for the sync to work without any error/unexpected behaviour, it is 
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.4.1   | 2021-07-23 | [4956](https://github.com/airbytehq/airbyte/pull/4956) | Fix log link |
 | 0.3.7   | 2021-06-09 | [3179](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE_ENTRYPOINT for Kubernetes support |
 | 0.3.6   | 2021-06-09 | [3966](https://github.com/airbytehq/airbyte/pull/3966) | Fix excessive logging for CDC method |
 | 0.3.5   | 2021-06-07 | [3890](https://github.com/airbytehq/airbyte/pull/3890) | Fix CDC handle tinyint(1) and boolean types |

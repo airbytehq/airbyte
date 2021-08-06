@@ -39,11 +39,11 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.yaml.Yamls;
+import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -73,7 +73,6 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class ConfigDumpImporter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigDumpImporter.class);
@@ -95,31 +94,9 @@ public class ConfigDumpImporter {
     this.configRepository = configRepository;
   }
 
-  @VisibleForTesting
-  public Optional<UUID> getCurrentCustomerId() {
-    try {
-      return Optional.of(configRepository
-          .getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true).getCustomerId());
-    } catch (Exception e) {
-      // because this is used for tracking we prefer to log instead of killing the import.
-      LOGGER.error("failed to fetch current customerId.", e);
-      return Optional.empty();
-    }
-  }
-
-  public ImportRead importData(String targetVersion, File archive) {
-    return importDataInternal(targetVersion, archive, Optional.empty());
-  }
-
   public ImportRead importDataWithSeed(String targetVersion, File archive, Path seedPath) {
-    return importDataInternal(targetVersion, archive, Optional.of(seedPath));
-  }
-
-  // seedPath - if present, merge with the import. otherwise just use the data in the import.
-  private ImportRead importDataInternal(String targetVersion, File archive, Optional<Path> seedPath) {
     Preconditions.checkNotNull(seedPath);
 
-    final Optional<UUID> previousCustomerIdOptional = getCurrentCustomerId();
     ImportRead result;
     try {
       final Path sourceRoot = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive");
@@ -154,9 +131,7 @@ public class ConfigDumpImporter {
       }
 
       // identify this instance as the new customer id.
-      TrackingClientSingleton.get().identify();
-      // report that the previous customer id is now superseded by the imported one.
-      previousCustomerIdOptional.ifPresent(previousCustomerId -> TrackingClientSingleton.get().alias(previousCustomerId.toString()));
+      configRepository.listStandardWorkspaces(true).forEach(workspace -> TrackingClientSingleton.get().identify(workspace.getWorkspaceId()));
     } catch (IOException | JsonValidationException | RuntimeException e) {
       LOGGER.error("Import failed", e);
       result = new ImportRead().status(StatusEnum.FAILED).reason(e.getMessage());
@@ -165,7 +140,7 @@ public class ConfigDumpImporter {
     return result;
   }
 
-  private void checkImport(String targetVersion, Path tempFolder, Optional<Path> seed) throws IOException, JsonValidationException {
+  private void checkImport(String targetVersion, Path tempFolder, Path seed) throws IOException, JsonValidationException {
     final Path versionFile = tempFolder.resolve(VERSION_FILE_NAME);
     final String importVersion = Files.readString(versionFile, Charset.defaultCharset())
         .replace("\n", "").strip();
@@ -187,7 +162,7 @@ public class ConfigDumpImporter {
     }
   }
 
-  private <T> void importConfigsFromArchive(final Path sourceRoot, Optional<Path> seedPath, final boolean dryRun)
+  private <T> void importConfigsFromArchive(final Path sourceRoot, Path seedPath, final boolean dryRun)
       throws IOException, JsonValidationException {
     final List<String> sourceDefinitionsToMigrate = new ArrayList<>();
     final List<String> destinationDefinitionsToMigrate = new ArrayList<>();
@@ -198,15 +173,11 @@ public class ConfigDumpImporter {
     // STANDARD_SOURCE_DEFINITION and DESTINATION_CONNECTION before STANDARD_DESTINATION_DEFINITION
     // so that we can identify which definitions should not be upgraded to the latest version
     Collections.sort(directories);
-    final Map<ConfigSchema, Stream<T>> data = new LinkedHashMap<>();
+    final Map<AirbyteConfig, Stream<T>> data = new LinkedHashMap<>();
 
-    final Map<ConfigSchema, Map<String, T>> seed;
-    if (seedPath.isPresent()) {
-      seed = getSeed(seedPath.get());
-    } else {
-      seed = new HashMap<>();
-    }
-    for (String directory : directories) {
+    final Map<ConfigSchema, Map<String, T>> seed = getSeed(seedPath);
+
+    for (final String directory : directories) {
       final Optional<ConfigSchema> configSchemaOptional = Enums.toEnum(directory.replace(".yaml", ""), ConfigSchema.class);
 
       if (configSchemaOptional.isEmpty()) {
@@ -330,7 +301,7 @@ public class ConfigDumpImporter {
   }
 
   private <T> void validateJson(final T config, final ConfigSchema configType) throws JsonValidationException {
-    JsonNode schema = JsonSchemaValidator.getSchema(configType.getFile());
+    JsonNode schema = JsonSchemaValidator.getSchema(configType.getConfigSchemaFile());
     jsonSchemaValidator.ensure(schema, Jsons.jsonNode(config));
   }
 

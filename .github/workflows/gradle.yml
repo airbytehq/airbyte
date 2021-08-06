@@ -104,7 +104,7 @@ jobs:
         run: SUB_BUILD=CONNECTORS_BASE ./gradlew build --scan
 
       - name: Ensure no file change
-        run: git status --porcelain && test -z "$(git status --porcelain)"
+        run: git --no-pager diff && test -z "$(git --no-pager diff)"
 
       - name: Slack Notification - Failure
         if: failure() && github.ref == 'refs/heads/master'
@@ -229,13 +229,13 @@ jobs:
         run: SUB_BUILD=PLATFORM ./gradlew format --scan --info --stacktrace
 
       - name: Ensure no file change
-        run: git status --porcelain && test -z "$(git status --porcelain)"
+        run: git --no-pager diff && test -z "$(git --no-pager diff)"
 
       - name: Build
         run: SUB_BUILD=PLATFORM ./gradlew build --scan
 
       - name: Ensure no file change
-        run: git status --porcelain && test -z "$(git status --porcelain)"
+        run: git --no-pager diff && test -z "$(git --no-pager diff)"
 
       # todo (cgardens) - scope by platform.
       - name: Check documentation
@@ -435,7 +435,7 @@ jobs:
           sudo apt-get install socat
 
       - name: KIND Kubernetes Cluster Setup
-        uses: helm/kind-action@v1.1.0
+        uses: helm/kind-action@v1.2.0
         # In case of self-hosted EC2 errors, remove this env block.
         env:
           USER: root
