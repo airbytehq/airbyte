@@ -34,7 +34,7 @@ class BaseBackoffException(requests.exceptions.HTTPError):
 
 class RequestBodyException(Exception):
     """
-    Raises when there are some issues of request body
+    Raised when there are issues in configuring a request body
     """
 
 
