@@ -75,7 +75,7 @@ If you are upgrading from  (i.e. your current version of Airbyte is) Airbyte ver
    docker run --rm -v <path to directory containing downloaded airbyte_archive.tar.gz>:/config airbyte/migration:<version you are upgrading to> --\
      --input /config/airbyte_archive.tar.gz\
      --output <path to where migrated archive will be written (should end in .tar.gz)>\
-     [ --target-version <version you are migrating to or empty for latest> ]
+     --target-version <version you are migrating to or empty for latest>
    ```
 
    Here's an example of what it might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
@@ -84,6 +84,7 @@ If you are upgrading from  (i.e. your current version of Airbyte is) Airbyte ver
    docker run --rm -v /tmp:/config airbyte/migration:0.29.2-alpha --\
    --input /config/airbyte_archive.tar.gz\
    --output /config/airbyte_archive_migrated.tar.gz
+   --target-version=0.29.2-alpha
    ```
 
 3. Turn off Airbyte fully and **\(see warning\)** delete the existing Airbyte Kubernetes volumes.
