@@ -103,7 +103,7 @@ class AmazonSPStream(HttpStream, ABC):
         return {self.cursor_field: latest_benchmark}
 
     def _create_prepared_request(
-        self, path: str, headers: Mapping = None, params: Mapping = None, json: Any = None
+        self, path: str, headers: Mapping = None, params: Mapping = None, json: Any = None, data: Any = None
     ) -> requests.PreparedRequest:
         """
         Override to prepare request for AWS API.
