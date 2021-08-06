@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.7
+## 0.1.8
 Allow to fetch primary key info from singer catalog
 
 ## 0.1.6
