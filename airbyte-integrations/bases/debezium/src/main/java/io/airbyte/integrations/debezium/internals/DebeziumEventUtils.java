@@ -32,6 +32,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.debezium.engine.ChangeEvent;
 import java.time.Instant;
+import java.sql.Timestamp;
 
 public class DebeziumEventUtils {
 
@@ -64,14 +65,15 @@ public class DebeziumEventUtils {
     final ObjectNode base = (ObjectNode) (after.isNull() ? before : after);
 
     long transactionMillis = source.get("ts_ms").asLong();
+    Timestamp transactionTimestamp = new Timestamp(transactionMillis);
 
-    base.put(CDC_UPDATED_AT, transactionMillis);
+    base.put(CDC_UPDATED_AT, transactionTimestamp);
     cdcMetadataInjector.addMetaData(base, source);
 
     if (after.isNull()) {
-      base.put(CDC_DELETED_AT, transactionMillis);
+      base.put(CDC_DELETED_AT, transactionTimestamp);
     } else {
-      base.put(CDC_DELETED_AT, (Long) null);
+      base.put(CDC_DELETED_AT, (Timestamp) null);
     }
 
     return base;
