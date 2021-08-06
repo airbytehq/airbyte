@@ -252,9 +252,10 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
 
     final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
+    final JsonNode timestampType = Jsons.jsonNode(ImmutableMap.of("type", "timestamp"));
     properties.set(CDC_LSN, numberType);
-    properties.set(CDC_UPDATED_AT, numberType);
-    properties.set(CDC_DELETED_AT, numberType);
+    properties.set(CDC_UPDATED_AT, timestampType);
+    properties.set(CDC_DELETED_AT, timestampType);
 
     return stream;
   }
