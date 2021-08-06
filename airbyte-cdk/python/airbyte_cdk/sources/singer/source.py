@@ -101,7 +101,8 @@ class SingerSource(Source):
     def _discover_internal(self, logger: AirbyteLogger, config_path: str) -> Catalogs:
         cmd = self.discover_cmd(logger, config_path)
         catalogs = SingerHelper.get_catalogs(
-            logger, cmd, self.get_sync_mode_overrides(), self.get_primary_key_overrides(), self.get_excluded_streams())
+            logger, cmd, self.get_sync_mode_overrides(), self.get_primary_key_overrides(), self.get_excluded_streams()
+        )
         return catalogs
 
     def check(self, logger: AirbyteLogger, config_container: ConfigContainer) -> AirbyteConnectionStatus:
