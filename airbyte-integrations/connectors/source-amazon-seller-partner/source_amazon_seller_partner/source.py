@@ -26,7 +26,7 @@ from typing import Any, List, Mapping, Tuple
 
 import boto3
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import ConnectorSpecification, DestinationSyncMode, SyncMode
+from airbyte_cdk.models import ConnectorSpecification, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from pydantic import Field
@@ -134,10 +134,13 @@ class SourceAmazonSellerPartner(AbstractSource):
         Returns the spec for this integration. The spec is a JSON-Schema object describing the required
         configurations (e.g: username and password) required to run this integration.
         """
+        # FIXME: airbyte-cdk does not parse pydantic $ref correctly. This override won't be needed after the fix
+        schema = ConnectorConfig.schema()
+        schema["properties"]["aws_environment"] = schema["definitions"]["AWSEnvironment"]
+        schema["properties"]["region"] = schema["definitions"]["AWSRegion"]
+
         return ConnectorSpecification(
             documentationUrl="https://docs.airbyte.io/integrations/sources/amazon-seller-partner",
             changelogUrl="https://docs.airbyte.io/integrations/sources/amazon-seller-partner",
-            supportsIncremental=True,
-            supported_destination_sync_modes=[DestinationSyncMode.append],
-            connectionSpecification=ConnectorConfig.schema(),
+            connectionSpecification=schema,
         )

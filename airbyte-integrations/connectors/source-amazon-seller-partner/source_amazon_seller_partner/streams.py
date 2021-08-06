@@ -23,7 +23,7 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
@@ -65,6 +65,11 @@ class AmazonSPStream(HttpStream, ABC):
     def page_size_field(self) -> str:
         pass
 
+    @property
+    @abstractmethod
+    def cursor_field(self) -> Union[str, List[str]]:
+        pass
+
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
@@ -100,8 +105,14 @@ class AmazonSPStream(HttpStream, ABC):
         return {self.cursor_field: latest_benchmark}
 
     def _create_prepared_request(
-        self, path: str, headers: Mapping = None, params: Mapping = None, json: Any = None
+        self, path: str, headers: Mapping = None, params: Mapping = None, json: Any = None, data: Any = None
     ) -> requests.PreparedRequest:
+        """
+        Override to prepare request for AWS API.
+        AWS signature flow require prepared request to correctly generate `authorization` header.
+        Add `auth` arg to sign all the requests with AWS signature.
+        """
+
         return self._session.prepare_request(
             requests.Request(method=self.http_method, url=self.url_base + path, headers=headers, params=params, auth=self._aws_signature)
         )

@@ -49,10 +49,38 @@
         "type": "string"
       },
       "aws_environment": {
-        "$ref": "#/definitions/AWSEnvironment"
+        "title": "AWSEnvironment",
+        "description": "An enumeration.",
+        "enum": ["PRODUCTION", "SANDBOX"],
+        "type": "string"
       },
       "region": {
-        "$ref": "#/definitions/AWSRegion"
+        "title": "AWSRegion",
+        "description": "An enumeration.",
+        "enum": [
+          "AE",
+          "DE",
+          "PL",
+          "EG",
+          "ES",
+          "FR",
+          "IN",
+          "IT",
+          "NL",
+          "SA",
+          "SE",
+          "TR",
+          "UK",
+          "AU",
+          "JP",
+          "SG",
+          "US",
+          "BR",
+          "CA",
+          "MX",
+          "GB"
+        ],
+        "type": "string"
       }
     },
     "required": [
@@ -102,7 +130,5 @@
         "type": "string"
       }
     }
-  },
-  "supportsIncremental": true,
-  "supported_destination_sync_modes": ["append"]
+  }
 }

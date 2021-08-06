@@ -14,12 +14,14 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |----|----|
 |[Amazon Seller Partner](./sources/amazon-seller-partner.md)| Alpha |
 |[Amplitude](./sources/amplitude.md)| Beta |
+|[Apify Dataset](./sources/apify-dataset.md)| Alpha |
 |[Appstore](./sources/appstore.md)| Alpha |
 |[Asana](./sources/asana.md) | Beta |
 |[AWS CloudTrail](./sources/aws-cloudtrail.md)| Beta |
 |[Braintree](./sources/braintree.md)| Alpha |
 |[BigQuery](./sources/bigquery.md)| Beta |
 |[Cart](./sources/cart.md)| Beta |
+|[Chargebee](./sources/chargebee.md)| Alpha |
 |[ClickHouse](./sources/clickhouse.md)| Beta |
 |[CockroachDB](./sources/cockroachdb.md)| Beta |
 |[Db2](./sources/db2.md)| Beta |
@@ -40,14 +42,14 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Google Sheets](./sources/google-sheets.md)| Certified |
 |[Google Workspace Admin Reports](./sources/google-workspace-admin-reports.md)| Certified |
 |[Greenhouse](./sources/greenhouse.md)| Beta |
-|[HTTP Request](./sources/http-request.md)| Alpha |
 |[Hubspot](./sources/hubspot.md)| Certified |
 |[Instagram](./sources/instagram.md)| Certified |
 |[Intercom](./sources/intercom.md)| Beta |
 |[Iterable](./sources/iterable.md)| Beta |
 |[Jira](./sources/jira.md)| Certified |
-|[Looker](./sources/looker.md)| Beta |
 |[Klaviyo](./sources/klaviyo.md)| Beta |
+|[Klaviyo](./sources/kustomer.md)| Alpha |
+|[Looker](./sources/looker.md)| Beta |
 |[Magento](./sources/magento.md)| Beta |
 |[Mailchimp](./sources/mailchimp.md)| Certified |
 |[Marketo](./sources/marketo.md)| Certified |
@@ -99,6 +101,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Zendesk Support](./sources/zendesk-support.md)| Certified |
 |[Zendesk Talk](./sources/zendesk-talk.md)| Certified |
 |[Zoom](./sources/zoom.md)| Beta |
+|[Zuora](./sources/zuora.md)| Beta |
 
 ### Destinations
 | Connector | Grade |
