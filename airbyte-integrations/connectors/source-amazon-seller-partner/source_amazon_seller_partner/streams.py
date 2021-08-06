@@ -23,7 +23,7 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -61,6 +61,11 @@ class AmazonSPStream(HttpStream, ABC):
     @property
     @abstractmethod
     def page_size_field(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
+    def cursor_field(self) -> Union[str, List[str]]:
         pass
 
     def request_params(
