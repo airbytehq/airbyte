@@ -25,7 +25,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "pyarrow==4.0.1", "smart-open[s3]==5.1.0", "wcmatch==8.2"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "pyarrow==4.0.1", "smart-open[s3]==5.1.0", "wcmatch==8.2", "dill==0.3.4"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
