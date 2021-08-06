@@ -19,7 +19,7 @@ checkPlatformImages() {
 checkConnectorImages() {
   echo "Checking connector images exist..."
 
-  CONFIG_FILES=$(find airbyte-config/init | grep json | grep -v STANDARD_WORKSPACE | grep -v build)
+  CONFIG_FILES=$(find airbyte-config/config-init | grep json | grep -v STANDARD_WORKSPACE | grep -v build)
   [ -z "$CONFIG_FILES" ] && echo "ERROR: Could not find any config files." && exit 1
 
   while IFS= read -r file; do
