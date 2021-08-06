@@ -1,0 +1,46 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/s3",
+  "supportsIncremental": true,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": ["overwrite", "append"],
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "S3 Destination Spec",
+    "type": "object",
+    "required": [
+      "s3_bucket_name",
+      "s3_access_key_id",
+      "s3_secret_access_key",
+      "s3_bucket_path"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "s3_bucket_name": {
+        "title": "S3 Bucket Name",
+        "type": "string",
+        "description": "The name of the S3 bucket.",
+        "examples": ["airbyte_sync"]
+      },
+      "s3_bucket_path": {
+        "description": "Directory under the S3 bucket where data will be written.",
+        "type": "string",
+        "examples": ["data_sync/test"]
+      },
+      "s3_access_key_id": {
+        "type": "string",
+        "description": "The access key id to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket.",
+        "title": "S3 Key Id",
+        "airbyte_secret": true,
+        "examples": ["A012345678910EXAMPLE"]
+      },
+      "s3_secret_access_key": {
+        "type": "string",
+        "description": "The corresponding secret to the access key id.",
+        "title": "S3 Access Key",
+        "airbyte_secret": true,
+        "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"]
+      }
+    }
+  }
+}
