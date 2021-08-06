@@ -33,7 +33,7 @@ Expand the relevant checklist and delete the others.
   - [ ] `.github/workflows/test-command.yml`
 - [ ] Passed on GH [link](https://docs.airbyte.io/connector-development#updating-an-existing-connector):
   - [ ] automatic build
-  - [ ] `/test connector=connectors/<name>` 
+  - [ ] `/test connector=connectors/<name>` (PR comment)
 - [ ] Update index / bump version [link](https://docs.airbyte.io/connector-development#publishing-a-connector)
   - [ ] `airbyte-integrations/connectors/<name>/Dockerfile`
   - [ ] `airbyte-config/init/src/main/resources/seed/<source_or_destination>_definitions.yaml`
@@ -46,10 +46,10 @@ Expand the relevant checklist and delete the others.
     - [ ] `airbyte-integrations/builds.md`
 - [ ] Code reviews completed
 - [ ] Publish to DockerHub [link](https://docs.airbyte.io/connector-development#updating-an-existing-connector):
-  - `/publish connector=connectors/<name>` 
+  - `/publish connector=connectors/<name>` (PR comment)
 - [ ] Passed on GH [link](https://docs.airbyte.io/connector-development#updating-an-existing-connector):
   - [ ] automatic build
-  - [ ] `/test connector=connectors/<name>`
+  - [ ] `/test connector=connectors/<name>` (PR comment)
 #### Community member or Airbyter
    
 - [ ] Grant edit access to maintainers ([instructions](https://docs.github.com/en/github/collaborating-with-pull-requests/working-with-forks/allowing-changes-to-a-pull-request-branch-created-from-a-fork#enabling-repository-maintainer-permissions-on-existing-pull-requests))
