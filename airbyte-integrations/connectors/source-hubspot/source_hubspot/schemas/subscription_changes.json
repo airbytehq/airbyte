@@ -3,8 +3,7 @@
   "type": "object",
   "properties": {
     "timestamp": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": "integer"
     },
     "portalId": {
       "type": ["null", "integer"]
@@ -21,8 +20,7 @@
             "type": ["null", "string"]
           },
           "timestamp": {
-            "type": ["null", "string"],
-            "format": "date-time"
+            "type": "integer"
           },
           "source": {
             "type": ["null", "string"]
@@ -43,8 +41,7 @@
                 "type": ["null", "string"]
               },
               "created": {
-                "type": ["null", "string"],
-                "format": "date-time"
+                "type": "integer"
               }
             }
           }

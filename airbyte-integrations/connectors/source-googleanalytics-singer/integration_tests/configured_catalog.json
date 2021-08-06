@@ -3,51 +3,7 @@
     {
       "stream": {
         "name": "website_overview",
-        "json_schema": {
-          "type": ["null", "object"],
-          "additionalProperties": false,
-          "properties": {
-            "ga_date": {
-              "type": ["string"]
-            },
-            "ga_users": {
-              "type": ["null", "integer"]
-            },
-            "ga_newUsers": {
-              "type": ["null", "integer"]
-            },
-            "ga_sessions": {
-              "type": ["null", "integer"]
-            },
-            "ga_sessionsPerUser": {
-              "type": ["null", "number"]
-            },
-            "ga_avgSessionDuration": {
-              "type": ["null", "number"]
-            },
-            "ga_pageviews": {
-              "type": ["null", "integer"]
-            },
-            "ga_pageviewsPerSession": {
-              "type": ["null", "number"]
-            },
-            "ga_avgTimeOnPage": {
-              "type": ["null", "number"]
-            },
-            "ga_bounceRate": {
-              "type": ["null", "number"]
-            },
-            "ga_exitRate": {
-              "type": ["null", "number"]
-            },
-            "report_start_date": {
-              "type": ["string"]
-            },
-            "report_end_date": {
-              "type": ["string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true
       },
@@ -58,60 +14,7 @@
     {
       "stream": {
         "name": "traffic_sources",
-        "json_schema": {
-          "type": ["null", "object"],
-          "additionalProperties": false,
-          "properties": {
-            "ga_date": {
-              "type": ["string"]
-            },
-            "ga_source": {
-              "type": ["string"]
-            },
-            "ga_medium": {
-              "type": ["string"]
-            },
-            "ga_socialNetwork": {
-              "type": ["string"]
-            },
-            "ga_users": {
-              "type": ["null", "integer"]
-            },
-            "ga_newUsers": {
-              "type": ["null", "integer"]
-            },
-            "ga_sessions": {
-              "type": ["null", "integer"]
-            },
-            "ga_sessionsPerUser": {
-              "type": ["null", "number"]
-            },
-            "ga_avgSessionDuration": {
-              "type": ["null", "number"]
-            },
-            "ga_pageviews": {
-              "type": ["null", "integer"]
-            },
-            "ga_pageviewsPerSession": {
-              "type": ["null", "number"]
-            },
-            "ga_avgTimeOnPage": {
-              "type": ["null", "number"]
-            },
-            "ga_bounceRate": {
-              "type": ["null", "number"]
-            },
-            "ga_exitRate": {
-              "type": ["null", "number"]
-            },
-            "report_start_date": {
-              "type": ["string"]
-            },
-            "report_end_date": {
-              "type": ["string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true
       },
@@ -122,51 +25,7 @@
     {
       "stream": {
         "name": "pages",
-        "json_schema": {
-          "type": ["null", "object"],
-          "additionalProperties": false,
-          "properties": {
-            "ga_date": {
-              "type": ["string"]
-            },
-            "ga_hostname": {
-              "type": ["string"]
-            },
-            "ga_pagePath": {
-              "type": ["string"]
-            },
-            "ga_pageviews": {
-              "type": ["null", "integer"]
-            },
-            "ga_uniquePageviews": {
-              "type": ["null", "integer"]
-            },
-            "ga_avgTimeOnPage": {
-              "type": ["null", "number"]
-            },
-            "ga_entrances": {
-              "type": ["null", "integer"]
-            },
-            "ga_entranceRate": {
-              "type": ["null", "number"]
-            },
-            "ga_bounceRate": {
-              "type": ["null", "number"]
-            },
-            "ga_exits": {
-              "type": ["null", "integer"]
-            },
-            "ga_exitRate": {
-              "type": ["null", "number"]
-            },
-            "report_start_date": {
-              "type": ["string"]
-            },
-            "report_end_date": {
-              "type": ["string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true
       },
@@ -177,69 +36,7 @@
     {
       "stream": {
         "name": "locations",
-        "json_schema": {
-          "type": ["null", "object"],
-          "additionalProperties": false,
-          "properties": {
-            "ga_date": {
-              "type": ["string"]
-            },
-            "ga_continent": {
-              "type": ["string"]
-            },
-            "ga_subContinent": {
-              "type": ["string"]
-            },
-            "ga_country": {
-              "type": ["string"]
-            },
-            "ga_region": {
-              "type": ["string"]
-            },
-            "ga_metro": {
-              "type": ["string"]
-            },
-            "ga_city": {
-              "type": ["string"]
-            },
-            "ga_users": {
-              "type": ["null", "integer"]
-            },
-            "ga_newUsers": {
-              "type": ["null", "integer"]
-            },
-            "ga_sessions": {
-              "type": ["null", "integer"]
-            },
-            "ga_sessionsPerUser": {
-              "type": ["null", "number"]
-            },
-            "ga_avgSessionDuration": {
-              "type": ["null", "number"]
-            },
-            "ga_pageviews": {
-              "type": ["null", "integer"]
-            },
-            "ga_pageviewsPerSession": {
-              "type": ["null", "number"]
-            },
-            "ga_avgTimeOnPage": {
-              "type": ["null", "number"]
-            },
-            "ga_bounceRate": {
-              "type": ["null", "number"]
-            },
-            "ga_exitRate": {
-              "type": ["null", "number"]
-            },
-            "report_start_date": {
-              "type": ["string"]
-            },
-            "report_end_date": {
-              "type": ["string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true
       },
@@ -250,24 +47,7 @@
     {
       "stream": {
         "name": "monthly_active_users",
-        "json_schema": {
-          "type": ["null", "object"],
-          "additionalProperties": false,
-          "properties": {
-            "ga_date": {
-              "type": ["string"]
-            },
-            "ga_30dayUsers": {
-              "type": ["null", "integer"]
-            },
-            "report_start_date": {
-              "type": ["string"]
-            },
-            "report_end_date": {
-              "type": ["string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true
       },
@@ -278,24 +58,7 @@
     {
       "stream": {
         "name": "four_weekly_active_users",
-        "json_schema": {
-          "type": ["null", "object"],
-          "additionalProperties": false,
-          "properties": {
-            "ga_date": {
-              "type": ["string"]
-            },
-            "ga_28dayUsers": {
-              "type": ["null", "integer"]
-            },
-            "report_start_date": {
-              "type": ["string"]
-            },
-            "report_end_date": {
-              "type": ["string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true
       },
@@ -306,24 +69,7 @@
     {
       "stream": {
         "name": "two_weekly_active_users",
-        "json_schema": {
-          "type": ["null", "object"],
-          "additionalProperties": false,
-          "properties": {
-            "ga_date": {
-              "type": ["string"]
-            },
-            "ga_14dayUsers": {
-              "type": ["null", "integer"]
-            },
-            "report_start_date": {
-              "type": ["string"]
-            },
-            "report_end_date": {
-              "type": ["string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true
       },
@@ -334,24 +80,7 @@
     {
       "stream": {
         "name": "weekly_active_users",
-        "json_schema": {
-          "type": ["null", "object"],
-          "additionalProperties": false,
-          "properties": {
-            "ga_date": {
-              "type": ["string"]
-            },
-            "ga_7dayUsers": {
-              "type": ["null", "integer"]
-            },
-            "report_start_date": {
-              "type": ["string"]
-            },
-            "report_end_date": {
-              "type": ["string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true
       },
@@ -362,24 +91,7 @@
     {
       "stream": {
         "name": "daily_active_users",
-        "json_schema": {
-          "type": ["null", "object"],
-          "additionalProperties": false,
-          "properties": {
-            "ga_date": {
-              "type": ["string"]
-            },
-            "ga_1dayUsers": {
-              "type": ["null", "integer"]
-            },
-            "report_start_date": {
-              "type": ["string"]
-            },
-            "report_end_date": {
-              "type": ["string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true
       },
@@ -390,60 +102,7 @@
     {
       "stream": {
         "name": "devices",
-        "json_schema": {
-          "type": ["null", "object"],
-          "additionalProperties": false,
-          "properties": {
-            "ga_date": {
-              "type": ["string"]
-            },
-            "ga_deviceCategory": {
-              "type": ["string"]
-            },
-            "ga_operatingSystem": {
-              "type": ["string"]
-            },
-            "ga_browser": {
-              "type": ["string"]
-            },
-            "ga_users": {
-              "type": ["null", "integer"]
-            },
-            "ga_newUsers": {
-              "type": ["null", "integer"]
-            },
-            "ga_sessions": {
-              "type": ["null", "integer"]
-            },
-            "ga_sessionsPerUser": {
-              "type": ["null", "number"]
-            },
-            "ga_avgSessionDuration": {
-              "type": ["null", "number"]
-            },
-            "ga_pageviews": {
-              "type": ["null", "integer"]
-            },
-            "ga_pageviewsPerSession": {
-              "type": ["null", "number"]
-            },
-            "ga_avgTimeOnPage": {
-              "type": ["null", "number"]
-            },
-            "ga_bounceRate": {
-              "type": ["null", "number"]
-            },
-            "ga_exitRate": {
-              "type": ["null", "number"]
-            },
-            "report_start_date": {
-              "type": ["string"]
-            },
-            "report_end_date": {
-              "type": ["string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true
       },
@@ -454,27 +113,7 @@
     {
       "stream": {
         "name": "users_per_day",
-        "json_schema": {
-          "type": ["null", "object"],
-          "additionalProperties": false,
-          "properties": {
-            "ga_date": {
-              "type": ["string"]
-            },
-            "ga_users": {
-              "type": ["null", "integer"]
-            },
-            "ga_newUsers": {
-              "type": ["null", "integer"]
-            },
-            "report_start_date": {
-              "type": ["string"]
-            },
-            "report_end_date": {
-              "type": ["string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true
       },
@@ -485,33 +124,7 @@
     {
       "stream": {
         "name": "sessions_per_country_day",
-        "json_schema": {
-          "type": ["null", "object"],
-          "additionalProperties": false,
-          "properties": {
-            "ga_date": {
-              "type": ["string"]
-            },
-            "ga_country": {
-              "type": ["string"]
-            },
-            "ga_sessions": {
-              "type": ["null", "integer"]
-            },
-            "ga_sessionsPerUser": {
-              "type": ["null", "number"]
-            },
-            "ga_avgSessionDuration": {
-              "type": ["null", "number"]
-            },
-            "report_start_date": {
-              "type": ["string"]
-            },
-            "report_end_date": {
-              "type": ["string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true
       },
