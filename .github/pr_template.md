@@ -10,40 +10,46 @@
 2. `y.python`
 
 ## Pre-merge Checklist
-Expand the relevant checklist and delete the others. 
+Expand the relevant checklist and delete the others.
 
 <details><summary> <strong> New Connector </strong></summary>
 <p>
 
-- [ ] PR naming conventions [Link](https://docs.airbyte.io/contributing-to-airbyte/updating-documentation#issues-and-pull-requests)
-  
-  | Update type | Name format |
-  |----|----|
-  | Core/Connectors/Features | 🎉 `<Component>: description` |
-  | Bugfix | 🐛 `<Component>: description` |
-  | Docs | 📝 description |
-  | Refactors | description |
+- [ ] PR naming conventions for [Link](https://docs.airbyte.io/contributing-to-airbyte/updating-documentation#issues-and-pull-requests)
+  - Core: 🎉 `Component: description`
+  - New Connectors: 🎉 `New Source: <name>` 
+  - Connector update: 🎉 `Source <name>: <description>` 
+  - Bugfix: 🐛 `<Component>: description` 
+  - Docs: 📝 `some description` 
+  - Refactors: `description`
 - [ ] Passed locally:
   - [ ] `./gradlew format`
   - [ ] `./gradlew :airbyte-integrations:connectors:<name>:build`
   - [ ] `./gradlew :airbyte-integrations:connectors:<name>:integrationTest`
 - [ ] GH secrets added [Link](https://docs.airbyte.io/connector-development#using-credentials-in-ci)
   - [ ] Add new `"SOURCE_<NAME>_CREDS"` secret to "more-secrets" env
+  - [ ] `tools/bin/ci_credentials.sh`
   - [ ] `.github/workflows/publish-command.yml`
   - [ ] `.github/workflows/test-command.yml`
-- [ ] Passed on GH:
+- [ ] Passed on GH [link](https://docs.airbyte.io/connector-development#updating-an-existing-connector):
   - [ ] automatic build
-  - [ ] `/test connector=connectors/<name>` [link](https://docs.airbyte.io/connector-development#updating-an-existing-connector)
+  - [ ] `/test connector=connectors/<name>` 
 - [ ] Update index / bump version [link](https://docs.airbyte.io/connector-development#publishing-a-connector)
   - [ ] `airbyte-integrations/connectors/<name>/Dockerfile`
-  - [ ] `airbyte-config/init/src/main/resources/seed/<source or destination>_definitions.yaml`
-  - [ ] `airbyte-config/init/src/main/resources/config/STANDARD_<SOURCE or DESTINATION>_DEFINITION/<uuid>.json`
-- [ ] Documentation updated 
+  - [ ] `airbyte-config/init/src/main/resources/seed/<source_or_destination>_definitions.yaml`
+  - [ ] `airbyte-config/init/src/main/resources/config/STANDARD_<SOURCE_or_DESTINATION>_DEFINITION/<uuid>.json`
+- [ ] Documentation/changelog updated [example](https://docs.airbyte.io/integrations/sources/stripe#changelog)
     - [ ] Connector's `README.md`
     - [ ] `docs/SUMMARY.md`
-    - [ ] `docs/integrations/<source or destination>/<name>.md` including changelog. See changelog [example](https://docs.airbyte.io/integrations/sources/stripe#changelog)
+    - [ ] `docs/integrations/<source_or_destination>/<name>.md`
     - [ ] `docs/integrations/README.md`
     - [ ] `airbyte-integrations/builds.md`
+- [ ] Code reviews completed
+- [ ] Publish to DockerHub [link](https://docs.airbyte.io/connector-development#updating-an-existing-connector):
+  - `/publish connector=connectors/<name>` 
+- [ ] Passed on GH [link](https://docs.airbyte.io/connector-development#updating-an-existing-connector):
+  - [ ] automatic build
+  - [ ] `/test connector=connectors/<name>`
 #### Community member or Airbyter
    
 - [ ] Grant edit access to maintainers ([instructions](https://docs.github.com/en/github/collaborating-with-pull-requests/working-with-forks/allowing-changes-to-a-pull-request-branch-created-from-a-fork#enabling-repository-maintainer-permissions-on-existing-pull-requests))
