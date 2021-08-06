@@ -114,7 +114,7 @@ class HttpStream(Stream, ABC):
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ) -> str:
+    ) -> Optional[str]:
         """
         Override when creating POST/PUT/PATCH requests to populate the body of the request with a non-JSON payload.
 
