@@ -15,7 +15,7 @@ Expand the relevant checklist and delete the others.
 <details><summary> <strong> New Connector </strong></summary>
 <p>
 
-- [ ] PR naming conventions for [Link](https://docs.airbyte.io/contributing-to-airbyte/updating-documentation#issues-and-pull-requests):
+- [ ] PR naming conventions for ([link](https://docs.airbyte.io/contributing-to-airbyte/updating-documentation#issues-and-pull-requests)):
   - New connector: `🎉 New Source: <name>` 
   - Update connector/core: `🎉 <connector_name> or <core_component>: description...`
   - Bugfix: `🐛 <connector_name> or <core_component>: description...` 
@@ -25,28 +25,28 @@ Expand the relevant checklist and delete the others.
   - [ ] `./gradlew format`
   - [ ] `./gradlew :airbyte-integrations:connectors:<name>:build`
   - [ ] `./gradlew :airbyte-integrations:connectors:<name>:integrationTest`
-- [ ] GH secrets added [Link](https://docs.airbyte.io/connector-development#using-credentials-in-ci):
+- [ ] GH secrets added ([Link](https://docs.airbyte.io/connector-development#using-credentials-in-ci)):
   - [ ] Add new `"SOURCE_<NAME>_CREDS"` secret to "more-secrets" env
   - [ ] `tools/bin/ci_credentials.sh`
   - [ ] `.github/workflows/publish-command.yml`
   - [ ] `.github/workflows/test-command.yml`
-- [ ] Passed on GH [link](https://docs.airbyte.io/connector-development#updating-an-existing-connector):
+- [ ] Passed on GH ([link](https://docs.airbyte.io/connector-development#updating-an-existing-connector)):
   - [ ] automatic build
   - [ ] `/test connector=connectors/<name>` (in PR comment)
-- [ ] Update index / bump version [link](https://docs.airbyte.io/connector-development#publishing-a-connector):
+- [ ] Update index / bump version ([link](https://docs.airbyte.io/connector-development#publishing-a-connector)):
   - [ ] `airbyte-integrations/connectors/<name>/Dockerfile`
   - [ ] `airbyte-config/init/src/main/resources/seed/<source_or_destination>_definitions.yaml`
   - [ ] `airbyte-config/init/src/main/resources/config/STANDARD_<SOURCE_or_DESTINATION>_DEFINITION/<uuid>.json`
-- [ ] Documentation/changelog updated [example](https://docs.airbyte.io/integrations/sources/stripe#changelog):
+- [ ] Docs:
     - [ ] Connector's `README.md`
     - [ ] `docs/SUMMARY.md`
-    - [ ] `docs/integrations/<source_or_destination>/<name>.md`
+    - [ ] `docs/integrations/<source_or_destination>/<name>.md` (+ [changelog](https://docs.airbyte.io/integrations/sources/stripe#changelog))
     - [ ] `docs/integrations/README.md`
     - [ ] `airbyte-integrations/builds.md`
 - [ ] Code reviews completed
-- [ ] Publish to DockerHub [link](https://docs.airbyte.io/connector-development#updating-an-existing-connector):
+- [ ] Publish to DockerHub ([link](https://docs.airbyte.io/connector-development#updating-an-existing-connector)):
   - `/publish connector=connectors/<name>` (in PR comment)
-- [ ] Passed on GH [link](https://docs.airbyte.io/connector-development#updating-an-existing-connector):
+- [ ] Passed on GH ([link](https://docs.airbyte.io/connector-development#updating-an-existing-connector)):
   - [ ] automatic build
   - [ ] `/test connector=connectors/<name>` (in PR comment)
 #### Community member or Airbyter
