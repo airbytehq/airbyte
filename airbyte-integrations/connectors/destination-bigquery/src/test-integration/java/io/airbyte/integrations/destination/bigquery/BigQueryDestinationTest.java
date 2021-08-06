@@ -83,6 +83,7 @@ class BigQueryDestinationTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationTest.class);
 
+  private static final String BIG_QUERY_CLIENT_CHUNK_SIZE = "big_query_client_buffer_size_mb";
   private static final Instant NOW = Instant.now();
   private static final String USERS_STREAM_NAME = "users";
   private static final String TASKS_STREAM_NAME = "tasks";
@@ -150,7 +151,7 @@ class BigQueryDestinationTest {
                 .of("id", JsonSchemaPrimitive.STRING)),
         CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, datasetId, Field.of("goal", JsonSchemaPrimitive.STRING))));
 
-    final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).build();
+    final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
     dataset = bigquery.create(datasetInfo);
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -158,6 +159,7 @@ class BigQueryDestinationTest {
         .put(BigQueryDestination.CONFIG_CREDS, credentialsJsonString)
         .put(BigQueryDestination.CONFIG_DATASET_ID, datasetId)
         .put(BigQueryDestination.CONFIG_DATASET_LOCATION, datasetLocation)
+        .put(BIG_QUERY_CLIENT_CHUNK_SIZE, 10)
         .build());
 
     tornDown = false;
