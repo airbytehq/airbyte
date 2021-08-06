@@ -280,7 +280,7 @@ class Stream(ABC):
         try:
             casted_value = target_type(field_value)
         except ValueError:
-            logger.exception(f"Could not cast {field_value} to {target_type}")
+            logger.exception(f"Could not cast `{field_value}` to `{target_type}`")
             return field_value
 
         return casted_value
