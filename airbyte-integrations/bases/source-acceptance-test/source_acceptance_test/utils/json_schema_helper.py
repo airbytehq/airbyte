@@ -99,7 +99,7 @@ class JsonSchemaHelper:
                 variant_pathes.append(path)
             for item in _schema:
                 next_obj = _schema[item] if isinstance(_schema, dict) else item
-                if type(next_obj) in [list, dict]:
+                if isinstance(next_obj, (list, dict)):
                     traverse_schema(next_obj, [*path, item])
 
         traverse_schema(self._schema)
