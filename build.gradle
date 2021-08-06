@@ -16,6 +16,19 @@ if (!env.containsKey('VERSION')) {
     throw new Exception('Version not specified in .env file...')
 }
 
+// Enforce unique Java directories names to prevent published Jars from overriding each other. The alternative is adding Gradle logic
+// to each subproject - this is messy.
+Set<String> s = []
+subprojects.forEach  {
+    // Ignore intermediate directories and connectors.
+    if (!it.path.contains("integrations") && it.getChildProjects().size() == 0) {
+        if (s.contains(it.name)) {
+            throw new Exception('Duplicate subproject names are not allowed: ' + it.path)
+        }
+        s.add(it.name)
+    }
+}
+
 def createLicenseWith = { File license, String startComment, String endComment, String lineComment, boolean isPython ->
     /*
     In java, we don't have a second linter/styling tool other than spotless so it doesn't really
