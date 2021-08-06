@@ -41,8 +41,9 @@ logger = AirbyteLogger()
 def default_backoff_handler(max_tries: int, factor: int, **kwargs):
     def log_retry_attempt(details):
         _, exc, _ = sys.exc_info()
-        logger.info(str(exc))
-        logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...")
+        logger.info(
+            f"Caught retryable error '{str(exc)}' after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+        )
 
     def should_give_up(exc):
         # If a non-rate-limiting related 4XX error makes it this far, it means it was unexpected and probably consistent, so we shouldn't back off
