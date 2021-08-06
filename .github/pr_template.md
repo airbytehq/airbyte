@@ -16,12 +16,11 @@ Expand the relevant checklist and delete the others.
 <p>
 
 - [ ] PR naming conventions for [Link](https://docs.airbyte.io/contributing-to-airbyte/updating-documentation#issues-and-pull-requests)
-  - Core: `🎉 <component>: description...`
-  - New Connectors: `🎉 New Source: <name>` 
-  - Connector update: `🎉 Source <name>: description...` 
-  - Bugfix: `🐛 <Component>: description...` 
+  - New connector: `🎉 New Source: <name>` 
+  - Update connector/core: `🎉 <connector_name> or <core_component>: description...`
+  - Bugfix: `🐛 <connector_name> or <core_component>: description...` 
   - Docs: `📝 description...` 
-  - Refactors: `description ...`
+  - Refactors: `description...`
 - [ ] Passed locally:
   - [ ] `./gradlew format`
   - [ ] `./gradlew :airbyte-integrations:connectors:<name>:build`
