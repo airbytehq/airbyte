@@ -22,10 +22,7 @@
       "pattern": "https://docs.github.com/en/rest/reference/repos/"
     },
     {
-      "pattern": "$"
-    },
-    {
-      "pattern": "{"
+      "pattern": "\\$"
     },
     {
       "reason": "Test only scaffold connector",
