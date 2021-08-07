@@ -134,8 +134,6 @@ public class ServerApp {
 
     ResourceConfig rc =
         new ResourceConfig()
-            // todo (cgardens) - the CORs settings are wide open. will need to revisit when we add auth.
-            // cors
             .register(new CorsFilter())
             .register(new AuthenticationFilter())
             // request logging

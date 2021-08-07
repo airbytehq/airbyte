@@ -42,25 +42,25 @@ import org.slf4j.LoggerFactory;
 
 public class BlotoutAuthentication {
 
-  private final Configs configs = new EnvConfigs();
+    private final Configs configs = new EnvConfigs();
 
-  private static final HttpClient httpClient = HttpClient.newHttpClient();
-  private static final Logger LOGGER = LoggerFactory.getLogger(BlotoutAuthentication.class);
+    private static final HttpClient httpClient = HttpClient.newHttpClient();
+    private static final Logger LOGGER = LoggerFactory.getLogger(BlotoutAuthentication.class);
 
-  public boolean validateToken(String token) throws IOException, InterruptedException {
-    final var request = HttpRequest
-        .newBuilder(URI.create(configs.getBlotoutBaseUrl() + configs.getBlotoutAuthEndpoint()))
-        .timeout(Duration.ofSeconds(30))
-        .header("Content-Type", "application/json") // connect type
-        .header("token", token) // validate token
-        .build();
-    HttpResponse response = httpClient.send(request, BodyHandlers.ofString());
-    LOGGER.info(" response " + response.body());
-    if (response.statusCode() == 200) {
-      return true;
-    } else {
-      return false;
+    public boolean validateToken(String token) throws IOException, InterruptedException {
+        final var request = HttpRequest
+                .newBuilder(URI.create(configs.getBlotoutBaseUrl() + configs.getBlotoutAuthEndpoint()))
+                .timeout(Duration.ofSeconds(30))
+                .header("Content-Type", "application/json") // connect type
+                .header("token", token) // validate token
+                .build();
+        HttpResponse response = httpClient.send(request, BodyHandlers.ofString());
+        LOGGER.info(" response " + response.body());
+        if (response.statusCode() == 200) {
+            return true;
+        } else {
+            return false;
+        }
     }
-  }
 
 }
