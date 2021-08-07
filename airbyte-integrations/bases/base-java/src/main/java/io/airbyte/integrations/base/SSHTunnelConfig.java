@@ -52,4 +52,16 @@ public class SSHTunnelConfig {
   public String getPassword() {
     return password;
   }
+
+  @Override
+  public String toString() {
+    return "SSHTunnelConfig{" +
+        "method='" + method + '\'' +
+        ", host='" + host + '\'' +
+        ", tunnel_ssh_port='" + tunnel_ssh_port + '\'' +
+        ", destinationPort='" + destinationPort + '\'' +
+        ", user='" + user + '\'' +
+        ", sshkey='" + sshkey + '\'' +
+        '}';
+  }
 }

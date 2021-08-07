@@ -153,7 +153,7 @@
               "tunnel_db_remote_host": {
                 "title": "Remote Database Host",
                 "description": "Hostname or static IP address of the database to port-forward, as recognized from the jump server.",
-                "type": "String",
+                "type": "string",
                 "order": 5
               },
               "tunnel_db_remote_port": {
@@ -234,7 +234,7 @@
               "tunnel_db_remote_host": {
                 "title": "Remote Database Host",
                 "description": "Hostname or static IP address of the database to port-forward, as recognized from the jump server.",
-                "type": "String",
+                "type": "string",
                 "order": 5
               },
               "tunnel_db_remote_port": {
