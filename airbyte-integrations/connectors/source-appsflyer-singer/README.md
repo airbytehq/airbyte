@@ -1,7 +1,6 @@
 # Source Appsflyer Singer
 
 This is the repository for the Appsflyer source connector, based on a Singer tap.
-For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/sources/appsflyer).
 
 ## Local development
 

@@ -26,6 +26,22 @@
     },
     {
       "pattern": "{"
+    },
+    {
+      "reason": "Test only scaffold connector",
+      "pattern": "sources/scaffold-"
+    },
+    {
+      "reason": "Test only scaffold connector",
+      "pattern": "sources/python-"
+    },
+    {
+      "reason": "Test only scaffold connector",
+      "pattern": "sources/javascript-"
+    },
+    {
+      "reason": "Test only scaffold connector",
+      "pattern": "destinations/scaffold-"
     }
   ],
   "retryOn429": false,
