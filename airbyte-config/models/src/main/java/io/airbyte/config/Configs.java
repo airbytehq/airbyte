@@ -71,6 +71,8 @@ public interface Configs {
 
   TrackingStrategy getTrackingStrategy();
 
+  DeploymentMode getDeploymentMode();
+
   WorkerEnvironment getWorkerEnvironment();
 
   WorkspaceRetentionConfig getWorkspaceRetentionConfig();
@@ -115,6 +117,11 @@ public interface Configs {
   enum WorkerEnvironment {
     DOCKER,
     KUBERNETES
+  }
+
+  enum DeploymentMode {
+    OSS,
+    CLOUD
   }
 
 }
