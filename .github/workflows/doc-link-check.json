@@ -8,8 +8,17 @@
     },
     {
       "pattern": "https://github.com/airbytehq/airbyte/pull"
+    },
+    {
+      "pattern": "https://github.com/airbytehq/airbyte/issues"
+    },
+    {
+      "pattern": "file://"
+    },
+    {
+      "pattern": "https://github.com/airbytehq/airbyte/settings"
     }
   ],
   "retryOn429": false,
-  "aliveStatusCodes": [200, 206]
+  "aliveStatusCodes": [200, 206, 429]
 }

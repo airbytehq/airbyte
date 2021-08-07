@@ -25,7 +25,7 @@ Until Airbyte has this system in place, here is what you can do:
   and file an issue with the detailed logs copied in the issue’s description. The team will be notified about your issue and will update
   it for any progress or comment on it.  
 * Fix the issue yourself: Airbyte is open source so you don’t need to wait for anybody to fix your issue if it is important to you.
-  To do so, just fork the [GitHub project](http://github.com/airbytehq/airbyte) and fix the piece of code that need fixing. If you’re okay
+  To do so, just fork the [GitHub project](https://github.com/airbytehq/airbyte) and fix the piece of code that need fixing. If you’re okay
   with contributing your fix to the community, you can submit a pull request. We will review it ASAP.
 * Ask on Slack: don’t hesitate to ping the team on [Slack](https://slack.airbyte.io).
 
