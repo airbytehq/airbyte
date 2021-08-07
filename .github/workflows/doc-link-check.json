@@ -4,21 +4,30 @@
       "pattern": "localhost"
     },
     {
-      "pattern": "slack.airbyte.io"
-    },
-    {
-      "pattern": "https://github.com/airbytehq/airbyte/pull"
-    },
-    {
-      "pattern": "https://github.com/airbytehq/airbyte/issues"
-    },
-    {
       "pattern": "file://"
     },
     {
+      "pattern": "slack.airbyte.io"
+    },
+    {
+      "reason": "Return 429 frequently",
+      "pattern": "https://github.com/airbytehq/airbyte"
+    },
+    {
+      "reason": "Private page without public access",
       "pattern": "https://github.com/airbytehq/airbyte/settings"
+    },
+    {
+      "reason": "Page too large and very slow",
+      "pattern": "https://docs.github.com/en/rest/reference/repos/"
+    },
+    {
+      "pattern": "$"
+    },
+    {
+      "pattern": "{"
     }
   ],
   "retryOn429": false,
-  "aliveStatusCodes": [200, 206, 429]
+  "aliveStatusCodes": [200, 206, 403, 429, 503]
 }

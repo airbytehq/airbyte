@@ -89,7 +89,7 @@ You can either:
 
 * Submit a [connector request](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=area%2Fintegration%2C+new-integration&template=new-integration-request.md&title=) on our Github project, and be notified once we or the community build a connector for it. 
 * Build a connector yourself by forking our [GitHub project](https://github.com/airbytehq/airbyte) and submitting a pull request. Here
-  are the [instructions how to build a connector](../contributing-to-airbyte/building-new-connector/).
+  are the [instructions how to build a connector](../contributing-to-airbyte/README.md).
 * Ask on Slack: don’t hesitate to ping the team on [Slack](https://slack.airbyte.io).
 
 ## **What kind of notifications do I get?**
