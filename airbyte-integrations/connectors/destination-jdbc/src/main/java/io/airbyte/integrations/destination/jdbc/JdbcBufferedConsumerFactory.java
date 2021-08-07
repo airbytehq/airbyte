@@ -30,6 +30,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.integrations.base.SSHTunnelConfig;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
@@ -67,6 +68,7 @@ public class JdbcBufferedConsumerFactory {
 
   public static AirbyteMessageConsumer create(Consumer<AirbyteMessage> outputRecordCollector,
                                               JdbcDatabase database,
+                                              SSHTunnelConfig sshTunnelConfig,
                                               SqlOperations sqlOperations,
                                               NamingConventionTransformer namingResolver,
                                               JsonNode config,
@@ -75,9 +77,9 @@ public class JdbcBufferedConsumerFactory {
 
     return new BufferedStreamConsumer(
         outputRecordCollector,
-        onStartFunction(database, sqlOperations, writeConfigs),
+        onStartFunction(database, sshTunnelConfig, sqlOperations, writeConfigs),
         recordWriterFunction(database, sqlOperations, writeConfigs, catalog),
-        onCloseFunction(database, sqlOperations, writeConfigs),
+        onCloseFunction(database, sshTunnelConfig, sqlOperations, writeConfigs),
         catalog,
         sqlOperations::isValidData,
         MAX_BATCH_SIZE);
@@ -134,7 +136,7 @@ public class JdbcBufferedConsumerFactory {
     return defaultDestSchema;
   }
 
-  private static OnStartFunction onStartFunction(JdbcDatabase database, SqlOperations sqlOperations, List<WriteConfig> writeConfigs) {
+  private static OnStartFunction onStartFunction(JdbcDatabase database, SSHTunnelConfig sshTunnelConfig, SqlOperations sqlOperations, List<WriteConfig> writeConfigs) {
     return () -> {
       LOGGER.info("Preparing tmp tables in destination started for {} streams", writeConfigs.size());
       for (final WriteConfig writeConfig : writeConfigs) {
@@ -168,7 +170,7 @@ public class JdbcBufferedConsumerFactory {
     };
   }
 
-  private static OnCloseFunction onCloseFunction(JdbcDatabase database, SqlOperations sqlOperations, List<WriteConfig> writeConfigs) {
+  private static OnCloseFunction onCloseFunction(JdbcDatabase database, SSHTunnelConfig sshTunnelConfig, SqlOperations sqlOperations, List<WriteConfig> writeConfigs) {
     return (hasFailed) -> {
       // copy data
       if (!hasFailed) {
