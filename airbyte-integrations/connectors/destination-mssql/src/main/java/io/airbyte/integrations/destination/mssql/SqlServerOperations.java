@@ -80,6 +80,8 @@ public class SqlServerOperations implements SqlOperations {
 
   @Override
   public void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tempTableName) {
+    // MSSQL has a limitation of 2100 parameters used in a query
+    // Airbyte inserts data with 3 columns (raw table) this limits to 700 records.
 
     final String insertQueryComponent = String.format(
         "INSERT INTO %s.%s (%s, %s, %s) VALUES\n",
