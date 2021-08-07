@@ -4,6 +4,8 @@
 
 ![](docs/.gitbook/assets/airbyte_new_logo.svg)
 
+Test [invalid link](https://airbyte.io/invalid).
+
 **Data integration made simple, secure and extensible.**  
 The new open-source standard to sync data from applications, APIs & databases to warehouses, lakes & other destinations.
 
