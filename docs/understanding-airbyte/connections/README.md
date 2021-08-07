@@ -38,7 +38,7 @@ Stream names refer to table names in a typical RDBMS. But it can also be the nam
 
 ## Stream-specific customization
 
-All the customization of namespace and stream names described above will be equally applied to all streams selected for replication in a catalog per connection. If you need more granular customization, stream by stream, for example, or with different logic rules, then you could follow the tutorial on [customizing transformations with dbt](../../tutorials/transformation-and-normalization/transformations-with-dbt.md).
+All the customization of namespace and stream names described above will be equally applied to all streams selected for replication in a catalog per connection. If you need more granular customization, stream by stream, for example, or with different logic rules, then you could follow the tutorial on [customizing transformations with dbt](../../operator-guides/transformation-and-normalization/transformations-with-dbt.md).
 
 ## Sync modes
 
