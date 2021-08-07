@@ -45,7 +45,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
