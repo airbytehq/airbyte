@@ -27,9 +27,14 @@ package io.airbyte.integrations.destination.azure_blob_storage.writer;
 import com.azure.storage.blob.specialized.AppendBlobClient;
 import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDestinationConfig;
 import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageFormat;
+import io.airbyte.integrations.destination.azure_blob_storage.avro.AzureBlobStorageAvroWriter;
+import io.airbyte.integrations.destination.azure_blob_storage.avro.JsonFieldNameUpdater;
+import io.airbyte.integrations.destination.azure_blob_storage.avro.JsonToAvroSchemaConverter;
 import io.airbyte.integrations.destination.azure_blob_storage.csv.AzureBlobStorageCsvWriter;
 import io.airbyte.integrations.destination.azure_blob_storage.jsonl.AzureBlobStorageJsonlWriter;
+import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import org.apache.avro.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,27 +51,29 @@ public class ProductionWriterFactory implements AzureBlobStorageWriterFactory {
     AzureBlobStorageFormat format = config.getFormatConfig().getFormat();
 
     if (format == AzureBlobStorageFormat.AVRO || format == AzureBlobStorageFormat.PARQUET) {
-      // AirbyteStream stream = configuredStream.getStream();
-      // JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
-      // Schema avroSchema = schemaConverter.getAvroSchema(stream.getJsonSchema(), stream.getName(),
-      // stream.getNamespace(), true);
-      // JsonFieldNameUpdater nameUpdater = new
-      // JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
-      //
-      // LOGGER.info("Avro schema for stream {}: {}", stream.getName(), avroSchema.toString(false));
-      // if (nameUpdater.hasNameUpdate()) {
-      // LOGGER.info("The following field names will be standardized: {}", nameUpdater);
-      // }
-      //
-      // if (format == AzureBlobStorageFormat.AVRO) {
-      // return new AzureBlobStorageAvroWriter(config, s3Client, configuredStream, uploadTimestamp,
-      // avroSchema, nameUpdater);
-      // } else {
-      // return new AzureBlobStorageParquetWriter(config, s3Client, configuredStream, uploadTimestamp,
-      // avroSchema, nameUpdater);
-      // }
-      // TODO to implement
-      throw new Exception("Not implemented");
+      AirbyteStream stream = configuredStream.getStream();
+      JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
+      Schema avroSchema = schemaConverter.getAvroSchema(stream.getJsonSchema(), stream.getName(),
+          stream.getNamespace(), true);
+      JsonFieldNameUpdater nameUpdater = new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
+
+      LOGGER.info("Avro schema for stream {}: {}", stream.getName(), avroSchema.toString(false));
+      if (nameUpdater.hasNameUpdate()) {
+        LOGGER.info("The following field names will be standardized: {}", nameUpdater);
+      }
+
+      if (format == AzureBlobStorageFormat.AVRO) {
+        return new AzureBlobStorageAvroWriter(config, appendBlobClient, configuredStream,
+            isNewlyCreatedBlob,
+            avroSchema, nameUpdater);
+      } else {
+        // TODO to implement !!!!!!!!
+        // return new AzureBlobStorageParquetWriter(config, appendBlobClient, configuredStream,
+        // isNewlyCreatedBlob,
+        // avroSchema, nameUpdater);
+
+        throw new Exception("Parquet Not implemented");
+      }
     }
 
     if (format == AzureBlobStorageFormat.CSV) {
@@ -77,7 +84,8 @@ public class ProductionWriterFactory implements AzureBlobStorageWriterFactory {
 
     if (format == AzureBlobStorageFormat.JSONL) {
       LOGGER.debug("Picked up JSONL format writer");
-      return new AzureBlobStorageJsonlWriter(config, appendBlobClient, configuredStream, isNewlyCreatedBlob);
+      return new AzureBlobStorageJsonlWriter(config, appendBlobClient, configuredStream,
+          isNewlyCreatedBlob);
     }
 
     throw new RuntimeException("Unexpected AzureBlobStorage destination format: " + format);

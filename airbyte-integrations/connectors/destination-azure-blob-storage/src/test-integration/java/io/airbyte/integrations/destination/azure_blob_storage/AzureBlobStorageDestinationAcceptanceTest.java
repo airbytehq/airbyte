@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.destination.azure_blob_storage;
 
+import com.azure.core.util.BinaryData;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
@@ -88,6 +89,7 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
   /**
    * Helper method to retrieve all synced objects inside the configured bucket path.
    */
+  @Deprecated
   protected String getAllSyncedObjects(String streamName) {
     // this.appendBlobClient = specializedBlobClientBuilder
     AppendBlobClient appendBlobClient = specializedBlobClientBuilder
@@ -101,6 +103,19 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
     LOGGER.info("All objects: " + result);
     return result;
 
+  }
+
+  /**
+   * Helper method to retrieve all synced objects inside the configured bucket path.
+   *
+   * @return
+   */
+  protected BinaryData getAllSyncedObjects1(String streamName) {
+    AppendBlobClient appendBlobClient = specializedBlobClientBuilder
+        .blobName(streamName)
+        .buildAppendBlobClient();
+
+    return appendBlobClient.downloadContent();
   }
 
   protected abstract JsonNode getFormatConfig();
