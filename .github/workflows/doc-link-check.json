@@ -5,6 +5,9 @@
     },
     {
       "pattern": "slack.airbyte.io"
+    },
+    {
+      "pattern": "https://github.com/airbytehq/airbyte/pull"
     }
   ],
   "retryOn429": false,
