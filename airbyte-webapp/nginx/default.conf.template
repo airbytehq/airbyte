@@ -12,7 +12,7 @@ server {
 
     location /airbyte {
         root   /usr/share/nginx/html;
-        # try_files $uri $uri/ /airbyte/index.html;
+        try_files $uri $uri/ /airbyte/index.html?$query_string;
 
         sub_filter </head>
                 '</head><script language="javascript"\>
