@@ -31,7 +31,7 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.SSHTunnelConfig;
+import io.airbyte.integrations.base.SSHTunnel;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -74,7 +74,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   public AirbyteConnectionStatus check(JsonNode config) {
 
     try (final JdbcDatabase database = getDatabase(config)) {
-      SSHTunnelConfig tunnelConfig = getSSHTunnelConfig(config);
+      SSHTunnel tunnelConfig = getSSHTunnelConfig(config);
       String outputSchema = namingResolver.getIdentifier(config.get("schema").asText());
       attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations);
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
@@ -112,16 +112,18 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
         driverClass);
   }
 
-  protected SSHTunnelConfig getSSHTunnelConfig(JsonNode config) {
+  protected SSHTunnel getSSHTunnelConfig(JsonNode config) {
     LOGGER.error("Getting SSH Tunnel config");
-    SSHTunnelConfig sshconfig = new SSHTunnelConfig(
+    SSHTunnel sshconfig = new SSHTunnel(
         config.get("tunnel_method").asText(),
         config.get("tunnel_host").asText(),
         config.get("tunnel_ssh_port").asText(),
-        config.get("tunnel_localport").asText(),
         config.get("tunnel_user").asText(),
         config.has("tunnel_usersshkey") ? config.get("tunnel_usersshkey").asText() : null,
-        config.has("tunnel_userpass") ? config.get("tunnel_userpass").asText() : null
+        config.has("tunnel_userpass") ? config.get("tunnel_userpass").asText() : null,
+        config.get("tunnel_db_remote_host").asText(),
+        config.get("tunnel_db_remote_port").asText(),
+        config.get("tunnel_localport").asText()
     );
     LOGGER.error("Got SSH Tunnel config " + sshconfig); // TODO
     return sshconfig;
