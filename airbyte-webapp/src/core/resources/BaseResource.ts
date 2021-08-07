@@ -19,9 +19,11 @@ export default abstract class BaseResource extends Resource {
     url: string,
     body?: Readonly<Record<string, unknown> | Array<unknown> | string>
   ): Promise<Response> {
+    const token = localStorage.getItem("bo_token");
     let options: RequestInit = {
       method: "POST",
       headers: {
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     };
