@@ -10,9 +10,9 @@ server {
     #charset koi8-r;
     #access_log  /var/log/nginx/host.access.log  main;
 
-    location / {
+    location /airbyte {
         root   /usr/share/nginx/html;
-        try_files $uri $uri/ /index.html;
+        try_files $uri $uri/ /airbyte/index.html?$query_string;
 
         sub_filter </head>
                 '</head><script language="javascript"\>
@@ -27,16 +27,16 @@ server {
         sub_filter_once on;
     }
 
-    #error_page  404              /404.html;
+    #error_page  404              /airbyte/404.html;
 
     # redirect server error pages to the static page /50x.html
     #
-    error_page   500 502 503 504  /50x.html;
-    location = /50x.html {
+    error_page   500 502 503 504  /airbyte/50x.html;
+    location = /airbyte/50x.html {
         root   /usr/share/nginx/html;
     }
 
-    location /api/ {
+    location /airbyte/api/ {
         fastcgi_read_timeout 1h;
         proxy_read_timeout 1h;
         client_max_body_size 200M;

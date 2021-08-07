@@ -29,22 +29,22 @@ import { useApiHealthPoll } from "components/hooks/services/Health";
 import useOpenReplay from "../components/hooks/useOpenReplay";
 
 export enum Routes {
-  Preferences = "/preferences",
-  Onboarding = "/onboarding",
+  Preferences = "/airbyte/preferences",
+  Onboarding = "/airbyte/onboarding",
 
-  Connections = "/connections",
-  Destination = "/destination",
-  Source = "/source",
-  Connection = "/connection",
-  ConnectionNew = "/new-connection",
-  SourceNew = "/new-source",
-  DestinationNew = "/new-destination",
-  Settings = "/settings",
-  Configuration = "/configuration",
-  Notifications = "/notifications",
-  Metrics = "/metrics",
-  Account = "/account",
-  Root = "/",
+  Connections = "/airbyte/connections",
+  Destination = "/airbyte/destination",
+  Source = "/airbyte/source",
+  Connection = "/airbyte/connection",
+  ConnectionNew = "/airbyte/new-connection",
+  SourceNew = "/airbyte/new-source",
+  DestinationNew = "/airbyte/new-destination",
+  Settings = "/airbyte/settings",
+  Configuration = "/airbyte/configuration",
+  Notifications = "/airbyte/notifications",
+  Metrics = "/airbyte/metrics",
+  Account = "/airbyte/account",
+  Root = "airbyte",
 }
 
 const getPageName = (pathname: string) => {
@@ -173,10 +173,6 @@ export const Routing: React.FC = () => {
       AnalyticsService.identify(workspace.customerId);
       tracker.setUserID(workspace.customerId);
     }
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const authParam = urlParams.get("token") || "";
-    localStorage.setItem("token", authParam);
   }, [workspace]);
 
   const { formatMessage } = useIntl();
