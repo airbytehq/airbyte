@@ -79,7 +79,7 @@
     case when json_extract_path_text({{ from_table }}.{{ json_column }}, {{ format_json_path(json_path_list) }}, true) != '' then json_extract_path_text({{ from_table }}.{{ json_column }}, {{ format_json_path(json_path_list) }}, true) end
 {%- endmacro %}
 
-{% macro snowflake__json_extract(json_column, json_path_list, normalized_json_path) -%}
+{% macro snowflake__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
     get_path(parse_json({{ from_table }}.{{ json_column }}), {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 

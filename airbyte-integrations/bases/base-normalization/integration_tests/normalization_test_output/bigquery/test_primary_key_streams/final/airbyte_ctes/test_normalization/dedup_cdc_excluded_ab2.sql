@@ -21,6 +21,6 @@ select
     float64
 ) as _ab_cdc_deleted_at,
     _airbyte_emitted_at
-from `dataline-integration-testing`._airbyte_test_normalization.`dedup_cdc_excluded_ab1`
+from `dataline-integration-testing`._airbyte_test_normalization.`dedup_cdc_excluded_ab1` as table_alias
 -- dedup_cdc_excluded;
 

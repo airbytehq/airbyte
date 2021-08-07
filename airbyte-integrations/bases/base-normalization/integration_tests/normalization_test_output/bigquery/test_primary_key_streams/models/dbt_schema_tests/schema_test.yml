@@ -43,14 +43,14 @@ models:
             - currency
             - NZD
 
-  - name: nested_stream_with_complex_columns_resulting_into_long_names_partition
-    tests:
-      - dbt_utils.expression_is_true:
-          expression: "double_array_data is null"
-      - dbt_utils.expression_is_true:
-          expression: "array_length(DATA) > 0"
-      - dbt_utils.expression_is_true:
-          expression: "array_length(column___with__quotes) > 0"
+#  - name: nested_stream_with_complex_columns_resulting_into_long_names_partition
+#    tests:
+#      - dbt_utils.expression_is_true:
+#          expression: "array_length(double_array_data) > 0"
+#      - dbt_utils.expression_is_true:
+#          expression: "array_length(DATA) > 0"
+#      - dbt_utils.expression_is_true:
+#          expression: "array_length(column___with__quotes) > 0"
   - name: nested_stream_with_complex_columns_resulting_into_long_names_partition_DATA
     columns:
       - name: currency

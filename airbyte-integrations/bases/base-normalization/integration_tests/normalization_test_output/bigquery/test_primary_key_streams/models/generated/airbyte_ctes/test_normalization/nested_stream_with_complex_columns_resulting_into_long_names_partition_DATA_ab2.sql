@@ -4,6 +4,6 @@ select
     _airbyte_partition_hashid,
     cast(currency as {{ dbt_utils.type_string() }}) as currency,
     _airbyte_emitted_at
-from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_partition_DATA_ab1') }}
+from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_partition_DATA_ab1') }} as table_alias
 -- DATA at nested_stream_with_complex_columns_resulting_into_long_names/partition/DATA
 
