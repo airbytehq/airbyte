@@ -39,6 +39,8 @@ CACHE: VcrCache = VcrCache()
 
 class BingAdsStream(Stream, ABC):
     primary_key = "Id"
+    # indicates whether stream should cache incoming responses via VcrCache
+    use_cache = True
 
     def __init__(self, client: Client, config: Mapping[str, Any]) -> None:
         super().__init__()
@@ -91,10 +93,17 @@ class BingAdsStream(Stream, ABC):
         yield from []
 
     def send_request(self, params: Mapping[str, Any], account_id: str = None) -> Mapping[str, Any]:
+        request_kwargs = {
+            "service_name": self.service_name,
+            "account_id": account_id,
+            "operation_name": self.operation_name,
+            "params": params,
+        }
+        if not self.use_cache:
+            return self.client.request(**request_kwargs)
+
         with CACHE.use_cassette():
-            return self.client.request(
-                service_name=self.service_name, account_id=account_id, operation_name=self.operation_name, params=params
-            )
+            return self.client.request(**request_kwargs)
 
     def get_account_id(self, stream_slice: Mapping[str, Any] = None) -> Optional[str]:
         """
@@ -135,6 +144,7 @@ class Accounts(BingAdsStream):
     Searches for accounts that the current authenticated user can access.
     API doc: https://docs.microsoft.com/en-us/advertising/customer-management-service/searchaccounts?view=bingads-13
     Account schema: https://docs.microsoft.com/en-us/advertising/customer-management-service/advertiseraccount?view=bingads-13
+    Stream caches incoming responses to avoid duplicated http requests
     """
 
     data_field: str = "AdvertiserAccount"
@@ -142,12 +152,12 @@ class Accounts(BingAdsStream):
     operation_name: str = "SearchAccounts"
     additional_fields: str = "TaxCertificate AccountMode"
     # maximum page size
-    limit: int = 1000
+    page_size_limit: int = 1000
 
     def next_page_token(self, response: sudsobject.Object, current_page_token: Optional[int]) -> Optional[Mapping[str, Any]]:
         current_page_token = current_page_token or 0
         if response is not None and hasattr(response, self.data_field):
-            return None if self.limit > len(response[self.data_field]) else current_page_token + 1
+            return None if self.page_size_limit > len(response[self.data_field]) else current_page_token + 1
         else:
             return None
 
@@ -177,7 +187,7 @@ class Accounts(BingAdsStream):
 
         paging = self.client.get_service(service_name=self.service_name).factory.create("ns5:Paging")
         paging.Index = next_page_token or 0
-        paging.Size = self.limit
+        paging.Size = self.page_size_limit
         return {
             "PageInfo": paging,
             "Predicates": predicates,
@@ -190,6 +200,7 @@ class Campaigns(BingAdsStream):
     Gets the campaigns for all provided accounts.
     API doc: https://docs.microsoft.com/en-us/advertising/campaign-management-service/getcampaignsbyaccountid?view=bingads-13
     Campaign schema: https://docs.microsoft.com/en-us/advertising/campaign-management-service/campaign?view=bingads-13
+    Stream caches incoming responses to avoid duplicated http requests
     """
 
     data_field: str = "Campaign"
@@ -226,6 +237,7 @@ class AdGroups(BingAdsStream):
     Gets the ad groups for all provided accounts.
     API doc: https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadgroupsbycampaignid?view=bingads-13
     AdGroup schema: https://docs.microsoft.com/en-us/advertising/campaign-management-service/adgroup?view=bingads-13
+    Stream caches incoming responses to avoid duplicated http requests
     """
 
     data_field: str = "AdGroup"
@@ -259,6 +271,7 @@ class Ads(BingAdsStream):
     Ad schema: https://docs.microsoft.com/en-us/advertising/campaign-management-service/ad?view=bingads-13
     """
 
+    use_cache = False
     data_field: str = "Ad"
     service_name: str = "CampaignManagement"
     operation_name: str = "GetAdsByAdGroupId"
@@ -322,4 +335,9 @@ class SourceBingAds(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         client = Client(**config)
-        return [Accounts(client, config), AdGroups(client, config), Ads(client, config), Campaigns(client, config)]
+        return [
+            Accounts(client, config),
+            AdGroups(client, config),
+            Ads(client, config),
+            Campaigns(client, config),
+        ]

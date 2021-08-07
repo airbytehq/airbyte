@@ -31,7 +31,7 @@ import vcr
 def _matcher(r1: vcr.request.Request, r2: vcr.request.Request) -> None:
     """
     Defines algorithm to compare two bing ads requests.
-    Makes sure that uri, body and headers are equeal in both reuqests
+    Makes sure that uri, body and headers are equal in both requests
     """
     assert r1.uri == r2.uri and r1.body == r2.body and r1.headers == r2.headers
 
