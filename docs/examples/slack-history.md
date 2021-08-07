@@ -45,7 +45,7 @@ cd airbyte
 docker-compose up
 ```
 
-If you run into any problems, feel free to check out our more extensive [getting started](https://docs.airbyte.io/getting-started) for more help.
+If you run into any problems, feel free to check out our more extensive [getting started](https://docs.airbyte.io/faq/getting-started) for more help.
 
 Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000/](http://localhost:8000/). Once you have set your user preferences, you will be brought to a page that asks you to set up a source. In the next step, we'll go over how to do that.
 
@@ -94,7 +94,7 @@ curl 'http://localhost:7700/indexes/messages/search' --data '{ "q": "welcome to"
 
 Making curl requests to search your Slack History is a little clunky, so we have modified the example UI that MeiliSearch provides in [their docs](https://docs.meilisearch.com/learn/tutorials/getting_started.html#integrate-with-your-project) to search through the Slack results.
 
-Download \(or copy and paste\) this [html file](https://github.com/airbytehq/airbyte/blob/master/docs/tutorials/slack-history/index.html) to your workstation. Then, open it using a browser. You should now be able to write search terms in the search bar and get results instantly!
+Download \(or copy and paste\) this [html file](https://github.com/airbytehq/airbyte/blob/master/docs/examples/slack-history/index.html) to your workstation. Then, open it using a browser. You should now be able to write search terms in the search bar and get results instantly!
 
 ![](../.gitbook/assets/slack-history-ui.png)
 

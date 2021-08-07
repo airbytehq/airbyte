@@ -6,7 +6,7 @@ The Shopify source supports both Full Refresh and Incremental syncs. You can cho
 
 This source can sync data for the [Shopify API](https://help.shopify.com/en/api/reference).
 
-This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/contributing-to-airbyte/python).
+This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
 
 ### Output schema
 

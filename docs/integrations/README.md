@@ -72,7 +72,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[PokéAPI](./sources/pokeapi.md)| Beta |
 |[Postgres](./sources/postgres.md)| Certified |
 |[PostHog](./sources/posthog.md)| Beta |
-|[PrestaShop](./sources/prestashop.md)| Beta |
+|[PrestaShop](./sources/presta-shop.md)| Beta |
 |[Quickbooks](./sources/quickbooks.md)| Beta |
 |[Recharge](./sources/recharge.md)| Beta |
 |[Recurly](./sources/recurly.md)| Beta |

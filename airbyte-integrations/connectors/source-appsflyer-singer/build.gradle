@@ -9,7 +9,7 @@ airbytePython {
 }
 
 airbyteStandardSourceTestFile {
-    // For more information on standard source tests, see https://docs.airbyte.io/contributing-to-airbyte/building-new-connector/testing-connectors
+    // For more information on standard source tests, see https://docs.airbyte.io/connector-development/testing-connectors
 
     // All these input paths must live inside this connector's directory (or subdirectories)
     // TODO update the spec JSON file

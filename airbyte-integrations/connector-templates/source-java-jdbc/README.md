@@ -15,7 +15,7 @@ From the Airbyte repository root, run:
 **If you are a community contributor**, generate the necessary credentials and place them in `secrets/config.json` conforming to the spec file in `src/main/resources/spec.json`.
 Note that the `secrets` directory is git-ignored by default, so there is no danger of accidentally checking in sensitive information.
 
-**If you are an Airbyte core member**, follow the [instructions](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector#using-credentials-in-ci) to set up the credentials.
+**If you are an Airbyte core member**, follow the [instructions](https://docs.airbyte.io/connector-development#using-credentials-in-ci) to set up the credentials.
 
 ### Locally running the connector docker image
 

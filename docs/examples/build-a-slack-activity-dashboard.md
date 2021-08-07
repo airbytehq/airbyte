@@ -26,7 +26,7 @@ Got it? Now let’s get started.
 
 ### a. Deploying Airbyte
 
-There are several easy ways to deploy Airbyte, as listed [here](https://docs.airbyte.io/). For this tutorial, I will just use the [Docker Compose method](https://docs.airbyte.io/deploying-airbyte/on-your-workstation) from my workstation:
+There are several easy ways to deploy Airbyte, as listed [here](https://docs.airbyte.io/). For this tutorial, I will just use the [Docker Compose method](https://docs.airbyte.io/deploying-airbyte/local-deployment) from my workstation:
 
 ```text
 # In your workstation terminal
