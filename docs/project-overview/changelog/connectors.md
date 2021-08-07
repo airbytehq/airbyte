@@ -13,7 +13,7 @@ Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/
 ## 7/30/2021
 
 New sources:
-* [**PrestaShop**](https://docs.airbyte.io/integrations/sources/prestashop)
+* [**PrestaShop**](https://docs.airbyte.io/integrations/sources/presta-shop)
 * [**Snapchat Marketing**](https://docs.airbyte.io/integrations/sources/snapchat-marketing)
 * [**Drupal**](https://docs.airbyte.io/integrations/sources/drupal)
 * [**Magento**](https://docs.airbyte.io/integrations/sources/magento)
