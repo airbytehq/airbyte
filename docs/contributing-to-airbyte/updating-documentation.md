@@ -4,7 +4,7 @@ Our documentation uses [GitBook](https://gitbook.com), and all the [Markdown](ht
 
 ## Workflow for updating docs
 
-1. Modify docs using Git or the Github UI (All docs live in the `docs/` folder in the [Airbyte repository](github.com/airbytehq/airbyte))
+1. Modify docs using Git or the Github UI (All docs live in the `docs/` folder in the [Airbyte repository](https://github.com/airbytehq/airbyte))
 2. If you're adding new files, update `docs/SUMMARY.md`.
 3. If you're moving existing pages, add redirects in the [`.gitbook.yaml` file](https://github.com/airbytehq/airbyte/blob/master/.gitbook.yaml) in the Airbyte repository root directory
 4. Create a Pull Request
