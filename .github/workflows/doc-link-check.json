@@ -19,7 +19,7 @@
     },
     {
       "reason": "Page too large and very slow",
-      "pattern": "https://docs.github.com/en/rest/reference/repos/"
+      "pattern": "https://docs.github.com/en/rest/reference/repos"
     },
     {
       "reason": "Links with bash variable",
