@@ -2,6 +2,9 @@
   "ignorePatterns": [
     {
       "pattern": "localhost"
+    },
+    {
+      "pattern": "slack.airbyte.io"
     }
   ],
   "retryOn429": false,
