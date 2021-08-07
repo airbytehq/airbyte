@@ -82,7 +82,7 @@ public class SqlServerOperations implements SqlOperations {
   public void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tempTableName) {
     // MSSQL has a limitation of 2100 parameters used in a query
     // Airbyte inserts data with 3 columns (raw table) this limits to 700 records.
-
+    final int MAX_BATCH_SIZE = 700;
     final String insertQueryComponent = String.format(
         "INSERT INTO %s.%s (%s, %s, %s) VALUES\n",
         schemaName,
@@ -91,7 +91,7 @@ public class SqlServerOperations implements SqlOperations {
         JavaBaseConstants.COLUMN_NAME_DATA,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     final String recordQueryComponent = "(?, ?, ?),\n";
-    final List<List<AirbyteRecordMessage>> batches = Lists.partition(records, 700);
+    final List<List<AirbyteRecordMessage>> batches = Lists.partition(records, MAX_BATCH_SIZE);
     batches.forEach(record -> {
       try {
         SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, database, record);
