@@ -22,7 +22,12 @@
       "pattern": "https://docs.github.com/en/rest/reference/repos/"
     },
     {
+      "reason": "Links with bash variable",
       "pattern": "\\$"
+    },
+    {
+      "reason": "Links in HBS templates",
+      "pattern": "\\{"
     },
     {
       "reason": "Test only scaffold connector",
