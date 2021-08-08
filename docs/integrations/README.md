@@ -14,6 +14,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |----|----|
 |[Amazon Seller Partner](./sources/amazon-seller-partner.md)| Alpha |
 |[Amplitude](./sources/amplitude.md)| Beta |
+|[Apify Dataset](./sources/apify-dataset.md)| Alpha |
 |[Appstore](./sources/appstore.md)| Alpha |
 |[Asana](./sources/asana.md) | Beta |
 |[AWS CloudTrail](./sources/aws-cloudtrail.md)| Beta |
@@ -41,14 +42,14 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Google Sheets](./sources/google-sheets.md)| Certified |
 |[Google Workspace Admin Reports](./sources/google-workspace-admin-reports.md)| Certified |
 |[Greenhouse](./sources/greenhouse.md)| Beta |
-|[HTTP Request](./sources/http-request.md)| Alpha |
 |[Hubspot](./sources/hubspot.md)| Certified |
 |[Instagram](./sources/instagram.md)| Certified |
 |[Intercom](./sources/intercom.md)| Beta |
 |[Iterable](./sources/iterable.md)| Beta |
 |[Jira](./sources/jira.md)| Certified |
-|[Looker](./sources/looker.md)| Beta |
 |[Klaviyo](./sources/klaviyo.md)| Beta |
+|[Klaviyo](./sources/kustomer.md)| Alpha |
+|[Looker](./sources/looker.md)| Beta |
 |[Magento](./sources/magento.md)| Beta |
 |[Mailchimp](./sources/mailchimp.md)| Certified |
 |[Marketo](./sources/marketo.md)| Certified |
@@ -71,7 +72,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[PokéAPI](./sources/pokeapi.md)| Beta |
 |[Postgres](./sources/postgres.md)| Certified |
 |[PostHog](./sources/posthog.md)| Beta |
-|[PrestaShop](./sources/prestashop.md)| Beta |
+|[PrestaShop](./sources/presta-shop.md)| Beta |
 |[Quickbooks](./sources/quickbooks.md)| Beta |
 |[Recharge](./sources/recharge.md)| Beta |
 |[Recurly](./sources/recurly.md)| Beta |
@@ -100,6 +101,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Zendesk Support](./sources/zendesk-support.md)| Certified |
 |[Zendesk Talk](./sources/zendesk-talk.md)| Certified |
 |[Zoom](./sources/zoom.md)| Beta |
+|[Zuora](./sources/zuora.md)| Beta |
 
 ### Destinations
 | Connector | Grade |

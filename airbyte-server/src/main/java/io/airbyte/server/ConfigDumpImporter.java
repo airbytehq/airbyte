@@ -73,7 +73,6 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class ConfigDumpImporter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigDumpImporter.class);
@@ -95,16 +94,7 @@ public class ConfigDumpImporter {
     this.configRepository = configRepository;
   }
 
-  public ImportRead importData(String targetVersion, File archive) {
-    return importDataInternal(targetVersion, archive, Optional.empty());
-  }
-
   public ImportRead importDataWithSeed(String targetVersion, File archive, Path seedPath) {
-    return importDataInternal(targetVersion, archive, Optional.of(seedPath));
-  }
-
-  // seedPath - if present, merge with the import. otherwise just use the data in the import.
-  private ImportRead importDataInternal(String targetVersion, File archive, Optional<Path> seedPath) {
     Preconditions.checkNotNull(seedPath);
 
     ImportRead result;
@@ -150,7 +140,7 @@ public class ConfigDumpImporter {
     return result;
   }
 
-  private void checkImport(String targetVersion, Path tempFolder, Optional<Path> seed) throws IOException, JsonValidationException {
+  private void checkImport(String targetVersion, Path tempFolder, Path seed) throws IOException, JsonValidationException {
     final Path versionFile = tempFolder.resolve(VERSION_FILE_NAME);
     final String importVersion = Files.readString(versionFile, Charset.defaultCharset())
         .replace("\n", "").strip();
@@ -172,7 +162,7 @@ public class ConfigDumpImporter {
     }
   }
 
-  private <T> void importConfigsFromArchive(final Path sourceRoot, Optional<Path> seedPath, final boolean dryRun)
+  private <T> void importConfigsFromArchive(final Path sourceRoot, Path seedPath, final boolean dryRun)
       throws IOException, JsonValidationException {
     final List<String> sourceDefinitionsToMigrate = new ArrayList<>();
     final List<String> destinationDefinitionsToMigrate = new ArrayList<>();
@@ -185,12 +175,8 @@ public class ConfigDumpImporter {
     Collections.sort(directories);
     final Map<AirbyteConfig, Stream<T>> data = new LinkedHashMap<>();
 
-    final Map<ConfigSchema, Map<String, T>> seed;
-    if (seedPath.isPresent()) {
-      seed = getSeed(seedPath.get());
-    } else {
-      seed = new HashMap<>();
-    }
+    final Map<ConfigSchema, Map<String, T>> seed = getSeed(seedPath);
+
     for (final String directory : directories) {
       final Optional<ConfigSchema> configSchemaOptional = Enums.toEnum(directory.replace(".yaml", ""), ConfigSchema.class);
 
