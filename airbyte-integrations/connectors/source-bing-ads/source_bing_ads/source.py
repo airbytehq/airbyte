@@ -38,9 +38,9 @@ CACHE: VcrCache = VcrCache()
 
 
 class BingAdsStream(Stream, ABC):
-    primary_key = "Id"
+    primary_key: str = "Id"
     # indicates whether stream should cache incoming responses via VcrCache
-    use_cache = True
+    use_cache: bool = False
 
     def __init__(self, client: Client, config: Mapping[str, Any]) -> None:
         super().__init__()
@@ -144,9 +144,10 @@ class Accounts(BingAdsStream):
     Searches for accounts that the current authenticated user can access.
     API doc: https://docs.microsoft.com/en-us/advertising/customer-management-service/searchaccounts?view=bingads-13
     Account schema: https://docs.microsoft.com/en-us/advertising/customer-management-service/advertiseraccount?view=bingads-13
-    Stream caches incoming responses to avoid duplicated http requests
     """
 
+    # Stream caches incoming responses to avoid duplicated http requests
+    use_cache: bool = True
     data_field: str = "AdvertiserAccount"
     service_name: str = "CustomerManagementService"
     operation_name: str = "SearchAccounts"
@@ -200,9 +201,10 @@ class Campaigns(BingAdsStream):
     Gets the campaigns for all provided accounts.
     API doc: https://docs.microsoft.com/en-us/advertising/campaign-management-service/getcampaignsbyaccountid?view=bingads-13
     Campaign schema: https://docs.microsoft.com/en-us/advertising/campaign-management-service/campaign?view=bingads-13
-    Stream caches incoming responses to avoid duplicated http requests
     """
 
+    # Stream caches incoming responses to avoid duplicated http requests
+    use_cache: bool = True
     data_field: str = "Campaign"
     service_name: str = "CampaignManagement"
     operation_name: str = "GetCampaignsByAccountId"
@@ -237,9 +239,10 @@ class AdGroups(BingAdsStream):
     Gets the ad groups for all provided accounts.
     API doc: https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadgroupsbycampaignid?view=bingads-13
     AdGroup schema: https://docs.microsoft.com/en-us/advertising/campaign-management-service/adgroup?view=bingads-13
-    Stream caches incoming responses to avoid duplicated http requests
     """
 
+    # Stream caches incoming responses to avoid duplicated http requests
+    use_cache: bool = True
     data_field: str = "AdGroup"
     service_name: str = "CampaignManagement"
     operation_name: str = "GetAdGroupsByCampaignId"
@@ -271,7 +274,6 @@ class Ads(BingAdsStream):
     Ad schema: https://docs.microsoft.com/en-us/advertising/campaign-management-service/ad?view=bingads-13
     """
 
-    use_cache = False
     data_field: str = "Ad"
     service_name: str = "CampaignManagement"
     operation_name: str = "GetAdsByAdGroupId"
