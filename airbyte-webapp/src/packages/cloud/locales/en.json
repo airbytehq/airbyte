@@ -29,7 +29,19 @@
   "workspaces.create": "Create workspace",
   "workspaces.createNew": "Create new workspace",
 
+  "settings.accountSettings.logoutLabel": "Sign out",
+  "settings.accountSettings.logoutText": "Sign out",
   "settings.userSettings": "User settings",
   "settings.workspaceSettings": "Workspace settings",
-  "settings.generalSettings": "General Settings"
+  "settings.generalSettings": "General Settings",
+  "settings.generalSettings.changeWorkspace": "Change Workspace",
+  "settings.generalSettings.form.name.label": "Workspace name",
+  "settings.generalSettings.form.name.placeholder": "Workspace name",
+  "settings.generalSettings.deleteLabel": "Delete your workspace",
+  "settings.generalSettings.deleteText": "Delete",
+  "settings.accessManagementSettings": "Access Management",
+  "userSettings.table.column.fullname": "Full Name",
+  "userSettings.table.column.email": "Email",
+  "userSettings.table.column.role": "Role",
+  "userSettings.table.column.action": "Action"
 }

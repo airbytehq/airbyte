@@ -29,50 +29,59 @@ const MainView = styled.div`
   margin-left: 47px;
 `;
 
+export type PageConfig = {
+  menuConfig: CategoryItem[];
+};
+
 type SettingsPageProps = {
-  pageConfig?: {
-    menuConfig: CategoryItem[];
-  };
+  pageConfig?: PageConfig;
 };
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   const { push, pathname } = useRouter();
   const { countNewSourceVersion, countNewDestinationVersion } = useConnector();
 
-  const menuItems = pageConfig?.menuConfig || [
+  const menuItems: CategoryItem[] = pageConfig?.menuConfig || [
     {
       routes: [
         {
-          id: `${Routes.Settings}${Routes.Account}`,
+          path: `${Routes.Settings}${Routes.Account}`,
           name: <FormattedMessage id="settings.account" />,
+          component: AccountPage,
         },
         {
-          id: `${Routes.Settings}${Routes.Source}`,
+          path: `${Routes.Settings}${Routes.Source}`,
           name: <FormattedMessage id="tables.sources" />,
           indicatorCount: countNewSourceVersion,
+          component: SourcesPage,
         },
         {
-          id: `${Routes.Settings}${Routes.Destination}`,
+          path: `${Routes.Settings}${Routes.Destination}`,
           name: <FormattedMessage id="tables.destinations" />,
           indicatorCount: countNewDestinationVersion,
+          component: DestinationsPage,
         },
         {
-          id: `${Routes.Settings}${Routes.Configuration}`,
+          path: `${Routes.Settings}${Routes.Configuration}`,
           name: <FormattedMessage id="admin.configuration" />,
+          component: ConfigurationsPage,
         },
         {
-          id: `${Routes.Settings}${Routes.Notifications}`,
+          path: `${Routes.Settings}${Routes.Notifications}`,
           name: <FormattedMessage id="settings.notifications" />,
+          component: NotificationPage,
         },
         {
-          id: `${Routes.Settings}${Routes.Metrics}`,
+          path: `${Routes.Settings}${Routes.Metrics}`,
           name: <FormattedMessage id="settings.metrics" />,
+          component: MetricsPage,
         },
       ],
     },
   ];
 
   const onSelectMenuItem = (newPath: string) => push(newPath);
+  const firstRoute = menuItems?.[0].routes?.[0]?.path;
 
   return (
     <MainPageWithScroll
@@ -94,26 +103,23 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
         <MainView>
           <Suspense fallback={<LoadingPage />}>
             <Switch>
-              <Route path={`${Routes.Settings}${Routes.Account}`}>
-                <AccountPage />
-              </Route>
-              <Route path={`${Routes.Settings}${Routes.Source}`}>
-                <SourcesPage />
-              </Route>
-              <Route path={`${Routes.Settings}${Routes.Destination}`}>
-                <DestinationsPage />
-              </Route>
-              <Route path={`${Routes.Settings}${Routes.Configuration}`}>
-                <ConfigurationsPage />
-              </Route>
-              <Route path={`${Routes.Settings}${Routes.Notifications}`}>
-                <NotificationPage />
-              </Route>
-              <Route path={`${Routes.Settings}${Routes.Metrics}`}>
-                <MetricsPage />
-              </Route>
+              {menuItems.flatMap((menuItem) =>
+                menuItem.routes.map((route) => (
+                  <Route
+                    key={`${route.path}`}
+                    path={`${route.path}`}
+                    component={route.component}
+                  />
+                ))
+              )}
 
-              <Redirect to={`${Routes.Settings}${Routes.Account}`} />
+              <Redirect
+                to={
+                  firstRoute
+                    ? `${menuItems?.[0].routes?.[0]?.path}`
+                    : Routes.Root
+                }
+              />
             </Switch>
           </Suspense>
         </MainView>

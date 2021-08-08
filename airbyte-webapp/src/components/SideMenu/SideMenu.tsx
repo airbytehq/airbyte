@@ -4,9 +4,10 @@ import styled from "styled-components";
 import MenuItem from "./components/MenuItem";
 
 export type SideMenuItem = {
-  id: string;
+  path: string;
   name: string | React.ReactNode;
   indicatorCount?: number;
+  component: React.ComponentType<any>;
 };
 
 export type CategoryItem = {
@@ -40,18 +41,18 @@ const CategoryName = styled.div`
 const SideMenu: React.FC<SideMenuProps> = ({ data, onSelect, activeItem }) => {
   return (
     <Content>
-      {data.map((categoryItem) => (
-        <Category>
-          {categoryItem.category ? (
+      {data.map((categoryItem, index) => (
+        <Category key={index}>
+          {categoryItem.category && (
             <CategoryName>{categoryItem.category}</CategoryName>
-          ) : null}
-          {categoryItem.routes.map((item) => (
+          )}
+          {categoryItem.routes.map((route) => (
             <MenuItem
-              key={item.id}
-              name={item.name}
-              isActive={item.id === activeItem}
-              count={item.indicatorCount}
-              onClick={() => onSelect(item.id)}
+              key={route.path}
+              name={route.name}
+              isActive={route.path === activeItem}
+              count={route.indicatorCount}
+              onClick={() => onSelect(route.path)}
             />
           ))}
         </Category>

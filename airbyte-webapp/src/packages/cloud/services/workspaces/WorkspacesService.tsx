@@ -5,7 +5,6 @@ import { CloudWorkspacesService } from "packages/cloud/lib/domain/cloudWorkspace
 import { api } from "packages/cloud/config/api";
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
 import { useDefaultRequestMiddlewares } from "packages/cloud/services/useDefaultRequestMiddlewares";
-import { WorkspaceService } from "packages/cloud/lib/domain/cloudWorkspaces/WorkspaceService";
 
 type Context = {
   currentWorkspaceId?: string;
@@ -43,20 +42,10 @@ export function useListWorkspaces() {
 }
 
 export function useCreateWorkspace() {
-  const requestAuthMiddleware = useDefaultRequestMiddlewares();
   const service = useGetWorkspaceService();
 
-  return useMutation(
-    async (payload: { name: string; billingUserId: string }) => {
-      // TODO: temp workaround for https://github.com/airbytehq/airbyte/issues/5191
-      const workspaceService = new WorkspaceService(requestAuthMiddleware);
-      const workspace = await workspaceService.create({ name: payload.name });
-
-      return service.create({
-        ...payload,
-        workspaceId: workspace!.workspaceId,
-      });
-    }
+  return useMutation(async (payload: { name: string; userId: string }) =>
+    service.create(payload)
   ).mutate;
 }
 
@@ -79,7 +68,7 @@ export const WorkspaceServiceProvider: React.FC = ({ children }) => {
       createWorkspace: async (name: string) => {
         await createWorkspace({
           name,
-          billingUserId: user.userId,
+          userId: user.userId,
         });
       },
       selectWorkspace: setCurrentWorkspaceId,

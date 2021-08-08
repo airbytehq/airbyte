@@ -40,6 +40,15 @@ class UserService extends AirbyteRequestService {
 
     return rs;
   }
+
+  public async listByWorkspaceId(workspaceId: string): Promise<User[]> {
+    return (
+      await this.fetch<{ users: User[] }>(
+        `web_backend/permissions/list_users_by_workspace`,
+        { workspaceId }
+      )
+    ).users;
+  }
 }
 
 export { UserService };

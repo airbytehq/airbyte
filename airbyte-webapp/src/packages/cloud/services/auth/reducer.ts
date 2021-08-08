@@ -4,7 +4,7 @@ import { User } from "packages/cloud/lib/domain/users";
 export const actions = {
   authInited: createAction("AUTH_INITED")<void>(),
   loggedIn: createAction("LOGGED_IN")<User>(),
-  loggedOut: createAction("LOGGED_OUT")<null>(),
+  loggedOut: createAction("LOGGED_OUT")<void>(),
 };
 
 type Actions = ActionType<typeof actions>;

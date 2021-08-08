@@ -26,7 +26,7 @@ const Subtitle = styled(H3)`
 const WorkspacesPage: React.FC = () => {
   return (
     <MainContent>
-      <Logo src="/cloud/main-logo.svg" width={186} />
+      <Logo src="/cloud-main-logo.svg" width={186} />
       <H1 center bold>
         <FormattedMessage id="workspaces.title" />
       </H1>

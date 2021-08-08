@@ -33,13 +33,18 @@ class CloudWorkspacesService extends AirbyteRequestService {
     return cloudWorkspace;
   }
 
+  public async remove(workspaceId: string): Promise<CloudWorkspace> {
+    return this.fetch<CloudWorkspace>(`web_backend/cloud_/remove`, {
+      workspaceId,
+    });
+  }
+
   public async create(cloudWorkspaceCreatePayload: {
     name: string;
-    billingUserId: string;
-    workspaceId: string;
+    userId: string;
   }): Promise<CloudWorkspace> {
-    return await this.fetch<CloudWorkspace>(
-      `${this.url}/create`,
+    return this.fetch<CloudWorkspace>(
+      `web_backend/permissioned_cloud_workspace/create`,
       cloudWorkspaceCreatePayload
     );
   }

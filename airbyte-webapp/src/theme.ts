@@ -20,6 +20,7 @@ export const theme = {
   successColor20: "rgba(69, 230, 152, .2)",
   backgroundColor: "#F8F8FF",
   shadowColor: "rgba(0, 0, 0, 0.25)",
+  cardShadowColor: "rgba(26, 25, 77, 0.12)",
 
   textColor: "#1A1A21",
   textColor90: "rgba(26,26,33, .9)",

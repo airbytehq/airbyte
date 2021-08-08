@@ -2,11 +2,13 @@ import React from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
+import { FormattedMessage } from "react-intl";
+
+import config from "config";
+import { news } from "packages/cloud/data/news";
 
 import { H2, H4, H5 } from "components";
 import NewsItem from "./NewsItem";
-import { FormattedMessage } from "react-intl";
-import config from "config";
 
 const Icon = styled.img`
   height: 214px;
@@ -31,14 +33,18 @@ const GitLink = styled.a`
   color: ${({ theme }) => theme.textColor};
 `;
 
+const NewsItemStyled = styled(NewsItem)`
+  margin-bottom: 12px;
+`;
+
 const News: React.FC = () => {
   return (
     <>
       <div>
-        <Icon src="/cloud/hello.png" width={184} />
-        <NewsItem />
-        <NewsItem />
-        <NewsItem />
+        <Icon src="/cloud-hello.png" width={184} />
+        {news.map((n, i) => (
+          <NewsItemStyled key={i} {...n} />
+        ))}
       </div>
       <GitLink href={config.ui.gitLink} target="_blank">
         <H2>

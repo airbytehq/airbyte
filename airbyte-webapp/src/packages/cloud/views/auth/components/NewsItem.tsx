@@ -1,12 +1,10 @@
 import React from "react";
 import styled from "styled-components";
+import dayjs from "dayjs";
+import { Card } from "components";
 
-const Item = styled.div`
-  box-shadow: 0 2px 4px 0 rgba(26, 25, 77, 0.12);
-  border-radius: 12px;
-  background: ${({ theme }) => theme.whiteColor};
+const NewsCard = styled(Card)`
   padding: 23px 23px 20px 15px;
-  margin-bottom: 12px;
   font-weight: 500;
   font-size: 18px;
   line-height: 22px;
@@ -16,6 +14,7 @@ const BottomBlock = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  margin-top: 7px;
 `;
 
 const Date = styled.div`
@@ -24,17 +23,25 @@ const Date = styled.div`
   font-weight: 500;
   font-size: 14px;
   line-height: 17px;
+  align-self: center;
 `;
 
-const NewsItem: React.FC = () => {
+const NewsItem: React.FC<{
+  className?: string;
+  text: string;
+  date: dayjs.Dayjs;
+  icon: string;
+}> = (props) => {
   return (
-    <Item>
-      TEXT
+    <NewsCard className={props.className}>
+      {props.text}
       <BottomBlock>
-        <Date>01/01/2020</Date>
-        <div>icon</div>
+        <Date>{props.date.format("MM/DD/YYYY")}</Date>
+        <div>
+          <img src={props.icon} alt="Logo" />
+        </div>
       </BottomBlock>
-    </Item>
+    </NewsCard>
   );
 };
 

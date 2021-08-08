@@ -13,6 +13,7 @@ import { User, UserService } from "packages/cloud/lib/domain/users";
 import { RequestAuthMiddleware } from "packages/cloud/lib/auth/RequestAuthMiddleware";
 import { AuthProviders } from "packages/cloud/lib/auth/AuthProviders";
 import { api } from "packages/cloud/config/api";
+import { useQueryClient } from "react-query";
 
 type Context = {
   user: User | null;
@@ -51,7 +52,7 @@ const userService = new UserService(
 );
 
 export const AuthenticationProvider: React.FC = ({ children }) => {
-  const [state, { loggedIn, authInited }] = useTypesafeReducer<
+  const [state, { loggedIn, authInited, loggedOut }] = useTypesafeReducer<
     AuthServiceState,
     typeof actions
   >(authStateReducer, initialState, actions);
@@ -88,6 +89,8 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
     });
   }, [state.currentUser, loggedIn, authInited]);
 
+  const queryClient = useQueryClient();
+
   const ctx: Context = useMemo(
     () => ({
       inited: state.inited,
@@ -102,6 +105,8 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       },
       async logout(): Promise<void> {
         await authService.signOut();
+        loggedOut();
+        await queryClient.invalidateQueries();
       },
       async signUp(form: {
         email: string;

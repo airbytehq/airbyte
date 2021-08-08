@@ -56,7 +56,7 @@ export class GoogleAuthService implements AuthService {
       });
   }
 
-  signOut(): Promise<any> {
-    return Promise.resolve(undefined);
+  signOut(): Promise<void> {
+    return firebaseApp.auth().signOut();
   }
 }

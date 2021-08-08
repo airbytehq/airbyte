@@ -6,10 +6,14 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
 import { LabeledInput, Link, LoadingButton } from "components";
-import { BottomBlock, FieldItem, Form } from "../components/FormComponents";
-import { FormTitle } from "../components/FormTitle";
-import { FieldError } from "../../../lib/errors/FieldError";
-import { Routes } from "../../../routes";
+import {
+  BottomBlock,
+  FieldItem,
+  Form,
+} from "packages/cloud/views/auth/components/FormComponents";
+import { FormTitle } from "packages/cloud/views/auth/components/FormTitle";
+import { FieldError } from "packages/cloud/lib/errors/FieldError";
+import { Routes } from "packages/cloud/routes";
 
 const LoginPageValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),

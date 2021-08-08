@@ -11,15 +11,22 @@ import config from "config";
 
 import SourcesPage from "pages/SourcesPage";
 import DestinationPage from "pages/DestinationPage";
+import {
+  SourcesPage as SettingsSourcesPage,
+  DestinationsPage as SettingsDestinationPage,
+} from "pages/SettingsPage/pages/ConnectorsPage";
 import ConnectionPage from "pages/ConnectionPage";
 import SettingsPage from "pages/SettingsPage";
+import ConfigurationsPage from "pages/SettingsPage/pages/ConfigurationsPage";
+import NotificationPage from "pages/SettingsPage/pages/NotificationPage";
+
 import LoadingPage from "components/LoadingPage";
 import MainView from "components/MainView";
 import { WorkspacesPage } from "./views/workspaces";
 import { useApiHealthPoll } from "components/hooks/services/Health";
 import { Auth } from "./views/auth";
 import { useAuthService } from "./services/auth/AuthService";
-import useConnector from "../../components/hooks/services/useConnector";
+import useConnector from "components/hooks/services/useConnector";
 
 import {
   useGetWorkspace,
@@ -28,6 +35,10 @@ import {
 } from "./services/workspaces/WorkspacesService";
 import { HealthService } from "core/health/HealthService";
 import { useDefaultRequestMiddlewares } from "./services/useDefaultRequestMiddlewares";
+import { PageConfig } from "pages/SettingsPage/SettingsPage";
+import { WorkspaceSettingsView } from "./views/workspaces/WorkspaceSettingsView";
+import { UsersSettingsView } from "./views/users/UsersSettingsView/UsersSettingsView";
+import { AccountSettingsView } from "./views/users/AccountSettingsView/AccountSettingsView";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -36,6 +47,7 @@ export enum Routes {
   Connections = "/connections",
   Destination = "/destination",
   Source = "/source",
+  Workspace = "/workspaces",
   Connection = "/connection",
   ConnectionNew = "/new-connection",
   SourceNew = "/new-source",
@@ -49,6 +61,7 @@ export enum Routes {
   Root = "/",
   SelectWorkspace = "/workspaces",
   Configuration = "/configuration",
+  AccessManagement = "/access-management",
   Notifications = "/notifications",
 }
 
@@ -58,40 +71,60 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
   useGetWorkspace(currentWorkspaceId);
   const { countNewSourceVersion, countNewDestinationVersion } = useConnector();
 
-  const menuItems = [
-    {
-      category: <FormattedMessage id="settings.userSettings" />,
-      routes: [
+  const pageConfig = useMemo<PageConfig>(
+    () => ({
+      menuConfig: [
         {
-          id: `${Routes.Settings}${Routes.Account}`,
-          name: <FormattedMessage id="settings.account" />,
+          category: <FormattedMessage id="settings.userSettings" />,
+          routes: [
+            {
+              path: `${Routes.Settings}${Routes.Account}`,
+              name: <FormattedMessage id="settings.account" />,
+              component: AccountSettingsView,
+            },
+          ],
+        },
+        {
+          category: <FormattedMessage id="settings.workspaceSettings" />,
+          routes: [
+            {
+              path: `${Routes.Settings}${Routes.Workspace}`,
+              name: <FormattedMessage id="settings.generalSettings" />,
+              component: WorkspaceSettingsView,
+            },
+            {
+              path: `${Routes.Settings}${Routes.Source}`,
+              name: <FormattedMessage id="tables.sources" />,
+              indicatorCount: countNewSourceVersion,
+              component: SettingsSourcesPage,
+            },
+            {
+              path: `${Routes.Settings}${Routes.Destination}`,
+              name: <FormattedMessage id="tables.destinations" />,
+              indicatorCount: countNewDestinationVersion,
+              component: SettingsDestinationPage,
+            },
+            {
+              path: `${Routes.Settings}${Routes.Configuration}`,
+              name: <FormattedMessage id="admin.configuration" />,
+              component: ConfigurationsPage,
+            },
+            {
+              path: `${Routes.Settings}${Routes.AccessManagement}`,
+              name: <FormattedMessage id="settings.accessManagementSettings" />,
+              component: UsersSettingsView,
+            },
+            {
+              path: `${Routes.Settings}${Routes.Notifications}`,
+              name: <FormattedMessage id="settings.notifications" />,
+              component: NotificationPage,
+            },
+          ],
         },
       ],
-    },
-    {
-      category: <FormattedMessage id="settings.workspaceSettings" />,
-      routes: [
-        {
-          id: `${Routes.Settings}${Routes.Source}`,
-          name: <FormattedMessage id="tables.sources" />,
-          indicatorCount: countNewSourceVersion,
-        },
-        {
-          id: `${Routes.Settings}${Routes.Destination}`,
-          name: <FormattedMessage id="tables.destinations" />,
-          indicatorCount: countNewDestinationVersion,
-        },
-        {
-          id: `${Routes.Settings}${Routes.Configuration}`,
-          name: <FormattedMessage id="admin.configuration" />,
-        },
-        {
-          id: `${Routes.Settings}${Routes.Notifications}`,
-          name: <FormattedMessage id="settings.notifications" />,
-        },
-      ],
-    },
-  ];
+    }),
+    [countNewSourceVersion, countNewDestinationVersion]
+  );
 
   return (
     <Switch>
@@ -105,7 +138,7 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
         <ConnectionPage />
       </Route>
       <Route path={Routes.Settings}>
-        <SettingsPage pageConfig={{ menuConfig: menuItems }} />
+        <SettingsPage pageConfig={pageConfig} />
       </Route>
       <Route exact path={Routes.Root}>
         <SourcesPage />

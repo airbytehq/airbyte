@@ -27,7 +27,7 @@ const FormContent: React.FC<{ toLogin?: boolean }> = (props) => {
       <Header toLogin={props.toLogin} />
       <MainBlock>
         <FormContainer>
-          <Logo src="/cloud/main-logo.svg" width={186} />
+          <Logo src="/cloud-main-logo.svg" width={186} />
           {props.children}
         </FormContainer>
       </MainBlock>
