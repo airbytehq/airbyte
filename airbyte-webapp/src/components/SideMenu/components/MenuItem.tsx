@@ -18,7 +18,7 @@ const Item = styled.div<{
   background: ${({ theme, isActive }) =>
     isActive ? theme.primaryColor12 : "none"};
   font-style: normal;
-  font-weight: 500;
+  font-weight: ${({ isActive }) => (isActive ? "bold" : "500")};
   font-size: 12px;
   line-height: 15px;
   color: ${({ theme, isActive }) =>
