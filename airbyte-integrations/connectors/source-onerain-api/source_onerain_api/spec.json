@@ -109,14 +109,6 @@
                     "type":"string",
                     "description":"end of the device reading time period (yyyy-mm-dd hh:mm:ss)"
                 },
-                "receive_start": {
-                    "type":"string",
-                    "description":"start of the receiving period (yyyy-mm-dd hh:mm:ss)"
-                },
-                "receive_end": {
-                    "type":"string",
-                    "description":"start of the receiving period (yyyy-mm-dd hh:mm:ss)"
-                },
                 "timezone": {"$ref":"#/definitions/tmezone"},
                 "class": {"$ref": "#/definitions/class"}
             }

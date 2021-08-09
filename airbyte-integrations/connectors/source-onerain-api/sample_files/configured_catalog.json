@@ -1,23 +1,280 @@
 {
-  "streams": [
-    {
-      "stream": {
-        "name": "table_name",
+    "streams": [
+      {"stream":{
+        "name": "GetSiteMetaData",
         "json_schema": {
-          "properties": {
-            "column_name": {
-              "type": "string"
-            }
-          },
+          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
-          "additionalProperties": false
+          "properties": {
+            "or_site_id": {
+              "type": "integer",
+              "description": "OneRain Contrail Site ID."
+            },
+            "site_id": {
+              "type": "string",
+              "description": "descriptive alias to or_site_id."
+            },
+            "location": {
+              "desription": "descriptive site location",
+              "type": "string"
+            },
+            "owner": {
+              "desription": "site owner",
+              "type": "string"
+            },
+            "system_id": {
+              "description": "system id?",
+              "type": "number"
+            },
+            "client_id": {
+              "description": "???",
+              "type": "string"
+            },
+            "latitude_dec": {
+              "description": "decimal latitude",
+              "type": "number"
+            },
+            "longitude_dec": {
+              "description": "decimal longitude",
+              "type": "number"
+            },
+            "elevation": {
+              "description": "site elevation (in units of ???)",
+              "type": "number"
+            }
+          }
         },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "default_cursor_field": ["column_name"]
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_cursor": false
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    }
-  ]
+      "sync_mode":"full_refresh"},
+      {"stream":{
+        "name": "GetSensorMetaData",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "site_id": {
+              "type": "string",
+              "description": "descriptive alias to or_site_id."
+            },
+            "sensor_id": {
+              "type": "string",
+              "description": "descriptive alias to or_sensor_id."
+            },
+            "or_site_id": {
+              "type": "integer",
+              "description": "OneRain Contrail Site ID."
+            },
+            "or_sensor_id": {
+              "type": "integer",
+              "description": "OneRain Contrail Sensor ID."
+            },
+            "location": {
+              "description": "",
+              "type": "string"
+            },
+            "description": {
+              "description": "",
+              "type": "string"
+            },
+            "sensor_class": {
+              "type": "integer",
+              "description": "numeric Sensor class as defined in Contrail"
+            },
+            "sensor_type": {
+              "description": "Sensor type",
+              "type": "string"
+            },
+            "units": {
+              "type": "string",
+              "description": "unit type used in measurement"
+            },
+            "translate": {
+              "description": "",
+              "type": "boolean"
+            },
+            "precision": {
+              "description": "",
+              "type": "integer"
+            },
+            "last_time": {
+              "description": "",
+              "type": "string"
+            },
+            "last_value": {
+              "description": "",
+              "type": "number"
+            },
+            "last_time_received": {
+              "description": "",
+              "type": "string"
+            },
+            "last_value_received": {
+              "description": "",
+              "type": "number"
+            },
+            "last_raw_value": {
+              "description": "",
+              "type": "number"
+            },
+            "last_raw_value_received": {
+              "description": "",
+              "type": "number"
+            },
+            "change_time": {
+              "description": "",
+              "type": "string"
+            },
+            "normal": {
+              "description": "",
+              "type": "integer"
+            },
+            "active": {
+              "description": "",
+              "type": "integer"
+            },
+            "valid": {
+              "description": "",
+              "type": "integer"
+            },
+            "change_rate": {
+              "description": "",
+              "type": "number"
+            },
+            "time_min_consec_zeros": {
+              "description": "",
+              "type": "integer"
+            },
+            "validation": {
+              "description": "",
+              "type": "string"
+            },
+            "value_max": {
+              "description": "",
+              "type": "number"
+            },
+            "value_min": {
+              "description": "",
+              "type": "number"
+            },
+            "delta_pos": {
+              "description": "",
+              "type": "number"
+            },
+            "delta_neg": {
+              "description": "",
+              "type": "number"
+            },
+            "rate_pos": {
+              "description": "",
+              "type": "number"
+            },
+            "rate_neg": {
+              "description": "",
+              "type": "number"
+            },
+            "time_max": {
+              "description": "",
+              "type": "integer"
+            },
+            "time_min": {
+              "description": "",
+              "type": "integer"
+            },
+            "slope": {
+              "description": "",
+              "type": "number"
+            },
+            "offset": {
+              "description": "",
+              "type": "number"
+            },
+            "reference": {
+              "description": "",
+              "type": "number"
+            },
+            "utc_offset": {
+              "description": "",
+              "type": "integer"
+            },
+            "using_dst": {
+              "description": "",
+              "type": "boolean"
+            },
+            "conversion": {
+              "description": "",
+              "type": "string"
+            },
+            "usage": {
+              "description": "",
+              "type": "string"
+            },
+            "protocol": {
+              "description": "",
+              "type": "integer"
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_cursor": false
+      },
+      "sync_mode":"full_refresh"},
+      {"stream":{
+        "name": "GetSensorData",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "site_id": {
+              "type": "string",
+              "description": "descriptive alias to or_site_id."
+            },
+            "sensor_id": {
+              "type": "string",
+              "description": "descriptive alias to or_sensor_id."
+            },
+            "or_site_id": {
+              "type": "integer",
+              "description": "OneRain Contrail Site ID."
+            },
+            "or_sensor_id": {
+              "type": "integer",
+              "description": "OneRain Contrail Sensor ID."
+            },
+            "sensor_class": {
+              "type": "integer",
+              "description": "numeric Sensor class as defined in Contrail"
+            },
+            "data_time": {
+              "type": "string",
+              "description": "date/time data was captured",
+              "pattern": "^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2} [0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}"
+            },
+            "data_value": {
+              "type": "number",
+              "description": "data value"
+            },
+            "raw_value": {
+              "type": "number",
+              "description": "raw data value"
+            },
+            "units": {
+              "type": "string",
+              "description": "unit type used in measurement"
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true
+      },
+      "sync_mode":"full_refresh"}
+    ]
 }
