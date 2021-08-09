@@ -1,4 +1,4 @@
-FROM python:3.7-slim
+FROM python:3.9-slim
 
 WORKDIR /airbyte/integration_code
 COPY destination_sftp_json ./destination_sftp_json
