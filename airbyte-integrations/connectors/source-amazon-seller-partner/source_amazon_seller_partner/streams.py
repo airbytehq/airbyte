@@ -153,28 +153,23 @@ class FbaInventoryReports(ReportsBase):
 
 
 class FulfilledShipmentsReports(ReportsBase):
-    # Inventory
     name = "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL"
 
 
 class FlatFileOpenListingsReports(ReportsBase):
-    # Shipments
     name = "GET_FLAT_FILE_OPEN_LISTINGS_DATA"
 
 
 class FbaOrdersReports(ReportsBase):
-    # FBA Orders
     name = "GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA"
 
 
 class FbaShipmentsReports(ReportsBase):
-    # FBA Shipments
     name = "GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA"
 
 
 class VendorInventoryHealthReports(ReportsBase):
-    # Vendor Inventory
-    name = "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT"
+    name = "GET_VENDOR_INVENTORY_HEALTH_REPORT"
 
 
 class Orders(AmazonSPStream):
@@ -213,6 +208,7 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
     replication_start_date_field = "createdAfter"
     next_page_token_field = "nextToken"
     page_size_field = "limit"
+    cursor_field = None
 
     def path(self, **kwargs) -> str:
         return f"/vendor/directFulfillment/shipping/{VENDOR_API_VERSIONS}/shippingLabels"
