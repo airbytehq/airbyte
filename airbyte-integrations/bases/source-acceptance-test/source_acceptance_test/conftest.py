@@ -86,9 +86,18 @@ def configured_catalog_fixture(configured_catalog_path, catalog_schemas) -> Opti
 
 
 @pytest.fixture(name="catalog")
-def catalog_fixture(configured_catalog: ConfiguredAirbyteCatalog) -> Optional[AirbyteCatalog]:
+def catalog_fixture(
+    configured_catalog: ConfiguredAirbyteCatalog, docker_runner: ConnectorRunner, connector_config: SecretDict
+) -> Optional[AirbyteCatalog]:
+    """Generates `AirbyteCatalog`, based on `discover` output"""
+
     if configured_catalog:
-        return AirbyteCatalog(streams=[stream.stream for stream in configured_catalog.streams])
+        output = docker_runner.call_discover(config=connector_config)
+        catalog_messages = [message for message in output if message.type == Type.CATALOG]
+        if catalog_messages:
+            catalog = catalog_messages[0].catalog
+            configured_stream_names = [stream.stream.name for stream in configured_catalog.streams]
+            return AirbyteCatalog(streams=[stream for stream in catalog.streams if stream.name in configured_stream_names])
     return None
 
 
