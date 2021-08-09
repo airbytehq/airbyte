@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRocket, faBook, faCog } from "@fortawesome/free-solid-svg-icons";
+import { faBook, faCog } from "@fortawesome/free-solid-svg-icons";
 import { faSlack } from "@fortawesome/free-brands-svg-icons";
 import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
@@ -10,13 +10,14 @@ import { Routes } from "pages/routes";
 import config from "config";
 
 import useConnector from "components/hooks/services/useConnector";
-import { Link } from "components";
-import Version from "components/Version";
+import { Link, Popout } from "components";
 import Indicator from "components/Indicator";
 
 import Source from "./components/SourceIcon";
 import Connections from "./components/ConnectionsIcon";
 import Destination from "./components/DestinationIcon";
+import { useCurrentWorkspace } from "../../../../../components/hooks/services/useWorkspace";
+import { useListWorkspaces } from "../../../services/workspaces/WorkspacesService";
 
 const Bar = styled.nav`
   width: 100px;
@@ -100,8 +101,24 @@ const Notification = styled(Indicator)`
   right: 23px;
 `;
 
+const WorkspaceButton = styled.div`
+  font-size: 9px;
+  line-height: 11px;
+  height: 21px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: ${({ theme }) => theme.whiteColor};
+  border-radius: 10px;
+  margin-top: 13px;
+  background: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+`;
+
 const SideBar: React.FC = () => {
   const { hasNewVersions } = useConnector();
+  const { name } = useCurrentWorkspace();
+  const { data: workspaces } = useListWorkspaces();
 
   return (
     <Bar>
@@ -109,6 +126,16 @@ const SideBar: React.FC = () => {
         <Link to={Routes.Root}>
           <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
         </Link>
+        <Popout
+          targetComponent={({ onOpen }) => (
+            <WorkspaceButton onClick={onOpen}>{name}</WorkspaceButton>
+          )}
+          isSearchable={false}
+          options={workspaces?.map((workspace) => ({
+            value: workspace.workspaceId,
+            label: workspace.name,
+          }))}
+        />
         <Menu>
           <li>
             <MenuItem to={Routes.Connections} activeClassName="active">
@@ -161,14 +188,6 @@ const SideBar: React.FC = () => {
       </div>
       <Menu>
         <li>
-          <MenuLinkItem href={config.ui.updateLink} target="_blank">
-            <HelpIcon icon={faRocket} />
-            <Text>
-              <FormattedMessage id="sidebar.update" />
-            </Text>
-          </MenuLinkItem>
-        </li>
-        <li>
           <MenuLinkItem href={config.ui.slackLink} target="_blank">
             {/*@ts-ignore slack icon fails here*/}
             <HelpIcon icon={faSlack} />
@@ -185,11 +204,6 @@ const SideBar: React.FC = () => {
             </Text>
           </MenuLinkItem>
         </li>
-        {config.version ? (
-          <li>
-            <Version primary />
-          </li>
-        ) : null}
       </Menu>
     </Bar>
   );

@@ -74,7 +74,7 @@ export const WorkspaceSettingsView: React.FC = () => {
             <LoadingButton
               isLoading={removeWorkspace.isLoading}
               danger
-              onClick={() => removeWorkspace.mutate(workspaceId)}
+              onClick={() => removeWorkspace.mutateAsync(workspaceId)}
             >
               <FormattedMessage id="settings.generalSettings.deleteText" />
             </LoadingButton>

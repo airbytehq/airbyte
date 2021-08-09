@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useState } from "react";
+import React, { useContext, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
 import { CloudWorkspacesService } from "packages/cloud/lib/domain/cloudWorkspaces/CloudWorkspacesService";
@@ -6,13 +6,14 @@ import { api } from "packages/cloud/config/api";
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
 import { useDefaultRequestMiddlewares } from "packages/cloud/services/useDefaultRequestMiddlewares";
 import { CloudWorkspace } from "packages/cloud/lib/domain/cloudWorkspaces/types";
+import { useLocalStorage } from "react-use";
 
 type Context = {
   currentWorkspaceId?: string;
   selectWorkspace: (workspaceId: string) => void;
-  createWorkspace: (name: string) => Promise<void>;
+  createWorkspace: (name: string) => Promise<CloudWorkspace>;
   removeWorkspace: {
-    mutate: (workspaceId: string) => void;
+    mutateAsync: (workspaceId: string) => Promise<void>;
     isLoading: boolean;
   };
 };
@@ -56,7 +57,7 @@ export function useCreateWorkspace() {
         ]);
       },
     }
-  ).mutate;
+  ).mutateAsync;
 }
 
 export function useRemoveWorkspace() {
@@ -86,10 +87,13 @@ export function useGetWorkspace(workspaceId: string) {
 }
 
 export const WorkspaceServiceProvider: React.FC = ({ children }) => {
-  const [currentWorkspaceId, setCurrentWorkspaceId] = useState("");
+  const user = useCurrentUser();
+  const [currentWorkspaceId, setCurrentWorkspaceId] = useLocalStorage(
+    `${user.userId}/workspaceId`,
+    ""
+  );
   const createWorkspace = useCreateWorkspace();
   const removeWorkspace = useRemoveWorkspace();
-  const user = useCurrentUser();
 
   const ctx = useMemo<Context>(
     () => ({
