@@ -30,7 +30,7 @@ import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_amazon_seller_partner.auth import AWSSignature
 
-REPORTS_API_VERSION = "2021-06-30"
+REPORTS_API_VERSION = "2020-09-04"
 ORDERS_API_VERSION = "v0"
 VENDOR_API_VERSIONS = "v1"
 
@@ -208,7 +208,7 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
     replication_start_date_field = "createdAfter"
     next_page_token_field = "nextToken"
     page_size_field = "limit"
-    cursor_field = None
+    cursor_field = []
 
     def path(self, **kwargs) -> str:
         return f"/vendor/directFulfillment/shipping/{VENDOR_API_VERSIONS}/shippingLabels"
