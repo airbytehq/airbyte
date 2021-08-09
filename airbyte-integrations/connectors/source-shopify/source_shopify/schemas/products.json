@@ -12,6 +12,9 @@
     "published_scope": {
       "type": ["null", "string"]
     },
+    "status": {
+      "type": ["null", "string"]
+    },
     "vendor": {
       "type": ["null", "string"]
     },
