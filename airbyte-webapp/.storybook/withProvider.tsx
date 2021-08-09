@@ -1,9 +1,13 @@
 import { Router } from "react-router-dom";
 import * as React from "react";
+import { IntlProvider } from "react-intl";
 import { createMemoryHistory } from "history";
 import { ThemeProvider } from "styled-components";
 
-import { Theme } from "../src/theme";
+// TODO: theme was not working correctly so imported directly
+import { theme, Theme } from "../src/theme";
+import GlobalStyle from "../src/global-styles";
+import messages from "../src/locales/en.json";
 
 interface Props {
   theme?: Theme;
@@ -16,11 +20,16 @@ interface Props {
 
 class WithProviders extends React.Component<Props> {
   render() {
-    const { theme, children } = this.props;
+    const { children } = this.props;
 
     return (
       <Router history={createMemoryHistory()}>
-        <ThemeProvider theme={theme}>{children}</ThemeProvider>
+        <IntlProvider messages={messages} locale={"en"}>
+          <ThemeProvider theme={theme}>
+            <GlobalStyle />
+            {children}
+          </ThemeProvider>
+        </IntlProvider>
       </Router>
     );
   }

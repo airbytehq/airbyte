@@ -26,15 +26,11 @@ package io.airbyte.analytics;
 
 import com.google.common.base.Preconditions;
 import io.airbyte.config.Configs;
+import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import java.util.UUID;
 
 public class Deployment {
-
-  public enum DeploymentMode {
-    OSS,
-    CLOUD
-  }
 
   /**
    * deployment - deployment tracking info.

@@ -26,7 +26,6 @@ package io.airbyte.scheduler.app;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.airbyte.analytics.Deployment;
-import io.airbyte.analytics.Deployment.DeploymentMode;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.commons.version.AirbyteVersion;
@@ -259,9 +258,7 @@ public class SchedulerApp {
 
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
-        // todo (cgardens) - we need to do the `#runServer` pattern here that we do in `ServerApp` so that
-        // the deployment mode can be set by the cloud version.
-        new Deployment(DeploymentMode.OSS, jobPersistence.getDeployment().orElseThrow(), configs.getWorkerEnvironment()),
+        new Deployment(configs.getDeploymentMode(), jobPersistence.getDeployment().orElseThrow(), configs.getWorkerEnvironment()),
         configs.getAirbyteRole(),
         configs.getAirbyteVersion(),
         configRepository);
