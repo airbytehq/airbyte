@@ -12,18 +12,10 @@ This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/contri
 
 This Source is capable of syncing the following core Streams:
 
-* [Abandoned Checkouts](https://help.shopify.com/en/api/reference/orders/abandoned_checkouts)
-* [Collects](https://help.shopify.com/en/api/reference/products/collect)
-* [Custom Collections](https://help.shopify.com/en/api/reference/products/customcollection)
-* [Customers](https://help.shopify.com/en/api/reference/customers)
-* [Draft Orders](https://help.shopify.com/en/api/reference/orders/draftorder)
-* [Discount Codes](https://shopify.dev/docs/admin-api/rest/reference/discounts/discountcode)
-* [Metafields](https://help.shopify.com/en/api/reference/metafield)
-* [Orders](https://help.shopify.com/en/api/reference/orders)
-* [Products](https://help.shopify.com/en/api/reference/products)
-* [Transactions](https://help.shopify.com/en/api/reference/orders/transaction)
-* [Pages](https://help.shopify.com/en/api/reference/online-store/page)
-* [Price Rules](https://help.shopify.com/en/api/reference/discounts/pricerule)
+* [Customers](https://woocommerce.github.io/woocommerce-rest-api-docs/#list-all-customers)
+* [Orders](https://woocommerce.github.io/woocommerce-rest-api-docs/#list-all-orders)
+* [Coupons](https://woocommerce.github.io/woocommerce-rest-api-docs/#list-all-coupons)
+
 
 ### Data type mapping
 
@@ -58,4 +50,4 @@ This Source is capable of syncing the following core Streams:
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.0   | 2021-07-30 | [3787](https://github.com/airbytehq/airbyte/pull/3787) | Add woocommerce Source Connector |
+| 0.1.0   | 2021-07-30 | [3787](https://github.com/airbytehq/airbyte/pull/3787) | Initial Release. Source WooCommerce |
