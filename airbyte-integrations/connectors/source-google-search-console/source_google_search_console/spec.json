@@ -4,12 +4,34 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Search Console Spec",
     "type": "object",
-    "required": ["fix-me"],
+    "required": ["client_id", "client_secret", "refresh_token", "user_agent", "site_urls", "start_date"],
     "additionalProperties": false,
     "properties": {
-      "fix-me": {
+      "client_id": {
         "type": "string",
-        "description": "describe me"
+        "airbyte_secret": true
+      },
+      "client_secret": {
+        "type": "string",
+        "airbyte_secret": true
+      },
+      "refresh_token": {
+        "type": "string"
+      },
+      "user_agent": {
+        "type": "string",
+        "description": "Tap name with the api user email address"
+      },
+      "site_urls": {
+        "type": "string",
+        "description": "Website URL properties in a comma delimited list; do not include the domain-level property in the list",
+        "examples": "https://example.com, https://www.example.com, http://example.com, http://www.example.com, sc-domain:example.com"
+      },
+      "start_date": {
+        "type": "string",
+        "description": "The date from which you'd like to replicate data in the format YYYY-MM-DDT00:00:00Z.",
+        "examples": ["2021-03-01T00:00:00Z"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
       }
     }
   }
