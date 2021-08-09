@@ -104,7 +104,6 @@ class DestinationSftpJson(Destination):
                 writer.delete(stream)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
-            traceback.print_exc()
             return AirbyteConnectionStatus(
                 status=Status.FAILED,
                 message=f"An exception occurred: {e}. \nStacktrace: \n{traceback.format_exc()}",

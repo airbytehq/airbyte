@@ -94,7 +94,10 @@ class SftpClient:
 
     def read_data(self, stream: str) -> List[Dict]:
         with self._open(stream) as file:
+            pos = file.tell()
+            file.seek(0)
             lines = file.readlines()
+            file.seek(pos)
             data = [json.loads(line.strip()) for line in lines]
         return data
 

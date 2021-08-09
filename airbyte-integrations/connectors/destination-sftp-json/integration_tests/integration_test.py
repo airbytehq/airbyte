@@ -21,8 +21,8 @@
 # SOFTWARE.
 
 import json
+from pathlib import Path
 from typing import Any, Dict, List, Mapping
-from unittest import mock
 
 import pytest
 from airbyte_cdk import AirbyteLogger
@@ -44,32 +44,38 @@ from destination_sftp_json.client import SftpClient
 
 @pytest.fixture(name="config")
 def config_fixture() -> Mapping[str, Any]:
-    with open("secrets/config.json", "r") as f:
+    with (Path(__file__).parents[1] / "secrets/config.json").open("r") as f:
         return json.loads(f.read())
 
 
-@pytest.fixture(name="configured_catalog", params=["append", "overwrite"])
-def configured_catalog_fixture(request) -> ConfiguredAirbyteCatalog:
-    stream_schema = {}
-    destination_sync_mode = request.param
-    mode = getattr(DestinationSyncMode, destination_sync_mode)
-    stream = ConfiguredAirbyteStream(
-        stream=AirbyteStream(
-            name=f"{destination_sync_mode}_stream", json_schema=stream_schema
-        ),
+@pytest.fixture(name="configured_catalog")
+def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
+    stream_schema = {
+        "type": "object",
+        "properties": {"string_col": {"type": "str"}, "int_col": {"type": "integer"}},
+    }
+
+    append_stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(name="append_stream", json_schema=stream_schema),
         sync_mode=SyncMode.incremental,
-        destination_sync_mode=mode,
+        destination_sync_mode=DestinationSyncMode.append,
     )
-    return ConfiguredAirbyteCatalog(streams=[stream])
+
+    overwrite_stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(name="overwrite_stream", json_schema=stream_schema),
+        sync_mode=SyncMode.incremental,
+        destination_sync_mode=DestinationSyncMode.overwrite,
+    )
+
+    return ConfiguredAirbyteCatalog(streams=[append_stream, overwrite_stream])
 
 
 @pytest.fixture(name="client")
-def client_fixture(config) -> SftpClient:
-    # with mock.patch("patchramiko.SSHClient"), mock.patch("smart_open.open"):
-    client = SftpClient(**config)
-    yield client
-    client.delete()
-    client.close()
+def client_fixture(config, configured_catalog) -> SftpClient:
+    with SftpClient(**config) as client:
+        yield client
+        for stream in configured_catalog.streams:
+            client.delete(stream.stream.name)
 
 
 def test_check_valid_config(config: Mapping):
@@ -84,15 +90,37 @@ def test_check_invalid_config(config):
     assert outcome.status == Status.FAILED
 
 
-def _state(data: Dict[str, Any]) -> AirbyteMessage:
+def _state(data: Dict[str, Any]) -> AirbyteStateMessage:
     return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=data))
 
 
-def _record(stream: str, value: Any) -> AirbyteMessage:
+def _record(stream: str, str_value: str, int_value: int) -> AirbyteRecordMessage:
     return AirbyteMessage(
         type=Type.RECORD,
-        record=AirbyteRecordMessage(stream=stream, data={"data": value}, emitted_at=0),
+        record=AirbyteRecordMessage(
+            stream=stream,
+            data={"str_col": str_value, "int_col": int_value},
+            emitted_at=0,
+        ),
     )
+
+
+def _sort(messages: List[AirbyteRecordMessage]) -> List[AirbyteRecordMessage]:
+    return sorted(messages, key=lambda x: x.record.stream)
+
+
+def retrieve_all_records(
+    client: SftpClient, streams: List[str]
+) -> List[AirbyteRecordMessage]:
+    """retrieves and formats all records on the SFTP server as Airbyte messages"""
+    all_records = []
+    for stream in streams:
+        for data in client.read_data(stream):
+            all_records.append((stream, data))
+    out = []
+    for stream, record in all_records:
+        out.append(_record(stream, record["str_col"], record["int_col"]))
+    return _sort(out)
 
 
 def test_write(
@@ -104,13 +132,20 @@ def test_write(
         2. writing a stream in "append" mode appends new records without deleting the old ones
         3. The correct state message is output by the connector at the end of the sync
     """
-    stream = configured_catalog.streams[0].stream.name
-    overwrite = "overwrite" in stream
+    append_stream, overwrite_stream = (
+        configured_catalog.streams[0].stream.name,
+        configured_catalog.streams[1].stream.name,
+    )
+    streams = [append_stream, overwrite_stream]
     first_state_message = _state({"state": "1"})
-    first_record_chunk = [_record(stream, i) for i in range(5)]
+    first_record_chunk = [_record(append_stream, str(i), i) for i in range(5)] + [
+        _record(overwrite_stream, str(i), i) for i in range(5)
+    ]
 
     second_state_message = _state({"state": "2"})
-    second_record_chunk = [_record(stream, i) for i in range(5, 10)]
+    second_record_chunk = [_record(append_stream, str(i), i) for i in range(5, 10)] + [
+        _record(overwrite_stream, str(i), i) for i in range(5, 10)
+    ]
 
     destination = DestinationSftpJson()
 
@@ -131,20 +166,19 @@ def test_write(
         expected_states == output_states
     ), "Checkpoint state messages were expected from the destination"
 
-    expected_records = [_record(stream, i) for i in range(10)]
-    records_in_destination = [
-        _record(stream, line["data"]) for line in client.read_data()
+    expected_records = [_record(append_stream, str(i), i) for i in range(10)] + [
+        _record(overwrite_stream, str(i), i) for i in range(10)
     ]
+    records_in_destination = retrieve_all_records(client, streams)
     assert (
-        expected_records == records_in_destination
+        _sort(expected_records) == records_in_destination
     ), "Records in destination should match records expected"
 
     # After this sync we expect the append stream to have 15 messages and the overwrite stream to have 5
     third_state_message = _state({"state": "3"})
-    third_record_chunk = [_record(stream, i) for i in range(10, 15)]
-
-    # Need to close the file so the destination can flush the buffer
-    client.close()
+    third_record_chunk = [_record(append_stream, str(i), i) for i in range(10, 15)] + [
+        _record(overwrite_stream, str(i), i) for i in range(10, 15)
+    ]
 
     output_states = list(
         destination.write(
@@ -153,9 +187,8 @@ def test_write(
     )
     assert [third_state_message] == output_states
 
-    records_in_destination = [
-        _record(stream, line["data"]) for line in client.read_data()
+    records_in_destination = retrieve_all_records(client, streams)
+    expected_records = [_record(append_stream, str(i), i) for i in range(15)] + [
+        _record(overwrite_stream, str(i), i) for i in range(10, 15)
     ]
-    expected_range = range(10, 15) if overwrite else range(15)
-    expected_records = [_record(stream, i) for i in expected_range]
-    assert expected_records == records_in_destination
+    assert _sort(expected_records) == records_in_destination
