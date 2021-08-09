@@ -3,6 +3,6 @@
   "name": "Slack",
   "dockerRepository": "airbyte/source-slack",
   "dockerImageTag": "0.1.9",
-  "documentationUrl": "https://hub.docker.com/repository/docker/airbyte/source-slack",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/slack",
   "icon": "slack.svg"
 }
