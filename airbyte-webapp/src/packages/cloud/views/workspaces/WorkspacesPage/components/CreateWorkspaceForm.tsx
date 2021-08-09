@@ -4,10 +4,10 @@ import styled from "styled-components";
 import { Field, FieldProps, Formik, Form } from "formik";
 import * as yup from "yup";
 
-import { Button, Input } from "components";
+import { LoadingButton, Input } from "components";
 
 type CreateWorkspaceFormProps = {
-  onSubmit: (values: { name: string }) => void;
+  onSubmit: (values: { name: string }) => Promise<void>;
 };
 
 const CreateWorkspaceFormValidationSchema = yup.object().shape({
@@ -48,7 +48,7 @@ const CreateWorkspaceForm: React.FC<CreateWorkspaceFormProps> = ({
       onSubmit={onSubmit}
       validateOnBlur={true}
     >
-      {() => (
+      {({ isSubmitting }) => (
         <CreationForm>
           <Field name="name">
             {({ field, meta }: FieldProps<string>) => (
@@ -60,9 +60,9 @@ const CreateWorkspaceForm: React.FC<CreateWorkspaceFormProps> = ({
               />
             )}
           </Field>
-          <Button type="submit">
+          <LoadingButton type="submit" isLoading={isSubmitting}>
             <FormattedMessage id="workspaces.create" />
-          </Button>
+          </LoadingButton>
         </CreationForm>
       )}
     </Formik>

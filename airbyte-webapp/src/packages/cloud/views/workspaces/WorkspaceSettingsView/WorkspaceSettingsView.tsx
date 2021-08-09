@@ -7,7 +7,7 @@ import {
   Content,
   SettingsCard,
 } from "pages/SettingsPage/pages/SettingsComponents";
-import { Button, LabeledInput } from "components";
+import { Button, LabeledInput, LoadingButton } from "components";
 import { useWorkspaceService } from "packages/cloud/services/workspaces/WorkspacesService";
 import { useCurrentWorkspace } from "components/hooks/services/useWorkspace";
 
@@ -19,8 +19,8 @@ const Header = styled.div`
 export const WorkspaceSettingsView: React.FC = () => {
   const formatMessage = useIntl().formatMessage;
 
-  const { selectWorkspace } = useWorkspaceService();
-  const { name } = useCurrentWorkspace();
+  const { selectWorkspace, removeWorkspace } = useWorkspaceService();
+  const { name, workspaceId } = useCurrentWorkspace();
   return (
     <>
       <SettingsCard
@@ -36,7 +36,7 @@ export const WorkspaceSettingsView: React.FC = () => {
         <Formik
           initialValues={{ name: name }}
           onSubmit={(_, formikHelpers) =>
-            formikHelpers.setFieldError("name", "Not implemeneted")
+            formikHelpers.setFieldError("name", "Not implemented")
           }
         >
           {() => (
@@ -71,9 +71,13 @@ export const WorkspaceSettingsView: React.FC = () => {
         title={
           <Header>
             <FormattedMessage id="settings.generalSettings.deleteLabel" />
-            <Button danger>
+            <LoadingButton
+              isLoading={removeWorkspace.isLoading}
+              danger
+              onClick={() => removeWorkspace.mutate(workspaceId)}
+            >
               <FormattedMessage id="settings.generalSettings.deleteText" />
-            </Button>
+            </LoadingButton>
           </Header>
         }
       />

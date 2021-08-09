@@ -34,7 +34,7 @@ class CloudWorkspacesService extends AirbyteRequestService {
   }
 
   public async remove(workspaceId: string): Promise<CloudWorkspace> {
-    return this.fetch<CloudWorkspace>(`web_backend/cloud_/remove`, {
+    return this.fetch<CloudWorkspace>(`web_backend/cloud_workspaces/delete`, {
       workspaceId,
     });
   }
