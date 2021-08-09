@@ -39,6 +39,7 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.FileSystemConfigPersistence;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -108,7 +109,7 @@ class WorkspaceHelperTest {
 
   @Test
   public void testObjectsThatDoNotExist() {
-    assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForSourceId(UUID.randomUUID()));
+    assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForSourceIdNoExceptions(UUID.randomUUID()));
     assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForDestinationId(UUID.randomUUID()));
     assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForConnectionId(UUID.randomUUID()));
     assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForConnection(UUID.randomUUID(), UUID.randomUUID()));
@@ -121,13 +122,18 @@ class WorkspaceHelperTest {
     configRepository.writeStandardSource(SOURCE_DEF);
     configRepository.writeSourceConnection(SOURCE);
 
-    final UUID retrievedWorkspace = workspaceHelper.getWorkspaceForSourceId(SOURCE_ID);
+    final UUID retrievedWorkspace = workspaceHelper.getWorkspaceForSourceIdNoExceptions(SOURCE_ID);
     assertEquals(WORKSPACE_ID, retrievedWorkspace);
 
     // check that caching is working
     configRepository.writeSourceConnection(Jsons.clone(SOURCE).withWorkspaceId(UUID.randomUUID()));
-    final UUID retrievedWorkspaceAfterUpdate = workspaceHelper.getWorkspaceForSourceId(SOURCE_ID);
+    final UUID retrievedWorkspaceAfterUpdate = workspaceHelper.getWorkspaceForSourceIdNoExceptions(SOURCE_ID);
     assertEquals(WORKSPACE_ID, retrievedWorkspaceAfterUpdate);
+  }
+
+  @Test
+  public void testSourceMissing() {
+    assertThrows(ConfigNotFoundException.class, () -> workspaceHelper.getWorkspaceForSourceId(UUID.randomUUID()));
   }
 
   @Test

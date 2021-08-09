@@ -132,7 +132,7 @@ class ConnectionsHandlerTest {
     workspaceHelper = mock(WorkspaceHelper.class);
     connectionsHandler = new ConnectionsHandler(configRepository, uuidGenerator, workspaceHelper);
 
-    when(workspaceHelper.getWorkspaceForSourceId(sourceId)).thenReturn(workspaceId);
+    when(workspaceHelper.getWorkspaceForSourceIdNoExceptions(sourceId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForDestinationId(destinationId)).thenReturn(workspaceId);
     when(workspaceHelper.getWorkspaceForOperationId(operationId)).thenReturn(workspaceId);
   }
@@ -380,7 +380,7 @@ class ConnectionsHandlerTest {
 
   @Test
   void failOnUnmatchedWorkspacesInCreate() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(workspaceHelper.getWorkspaceForSourceId(standardSync.getSourceId())).thenReturn(UUID.randomUUID());
+    when(workspaceHelper.getWorkspaceForSourceIdNoExceptions(standardSync.getSourceId())).thenReturn(UUID.randomUUID());
     when(workspaceHelper.getWorkspaceForDestinationId(standardSync.getDestinationId())).thenReturn(UUID.randomUUID());
 
     when(uuidGenerator.get()).thenReturn(standardSync.getConnectionId());

@@ -43,11 +43,15 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // todo (cgardens) - this class is in an unintuitive module. it is weird that you need to import
 // scheduler:persistence in order to get workspace ids for configs (e.g. source). Our options are to
 // split this helper by database or put it in a new module.
 public class WorkspaceHelper {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(WorkspaceHelper.class);
 
   private final LoadingCache<UUID, UUID> sourceToWorkspaceCache;
   private final LoadingCache<UUID, UUID> destinationToWorkspaceCache;
@@ -114,8 +118,12 @@ public class WorkspaceHelper {
     });
   }
 
-  public UUID getWorkspaceForSourceId(UUID sourceId) {
-    return swallowExecutionException(() -> sourceToWorkspaceCache.get(sourceId));
+  public UUID getWorkspaceForSourceId(UUID sourceId) throws ConfigNotFoundException, JsonValidationException {
+    return handleCacheExceptions(() -> sourceToWorkspaceCache.get(sourceId));
+  }
+
+  public UUID getWorkspaceForSourceIdNoExceptions(UUID sourceId) {
+    return swallowExecutionException(() -> getWorkspaceForSourceId(sourceId));
   }
 
   public UUID getWorkspaceForDestinationId(UUID destinationId) {
@@ -127,7 +135,7 @@ public class WorkspaceHelper {
   }
 
   public UUID getWorkspaceForConnection(UUID sourceId, UUID destinationId) {
-    final UUID sourceWorkspace = getWorkspaceForSourceId(sourceId);
+    final UUID sourceWorkspace = getWorkspaceForSourceIdNoExceptions(sourceId);
     final UUID destinationWorkspace = getWorkspaceForDestinationId(destinationId);
 
     Preconditions.checkArgument(Objects.equals(sourceWorkspace, destinationWorkspace), "Source and destination must be from the same workspace!");
@@ -142,12 +150,28 @@ public class WorkspaceHelper {
     return swallowExecutionException(() -> operationToWorkspaceCache.get(operationId));
   }
 
-  // the ExecutionException is an implementation detail the helper and does not need to be handled by
-  // callers.
-  private static UUID swallowExecutionException(CheckedSupplier<UUID, ExecutionException> supplier) {
+  private static UUID handleCacheExceptions(CheckedSupplier<UUID, ExecutionException> supplier)
+      throws ConfigNotFoundException, JsonValidationException {
     try {
       return supplier.get();
     } catch (ExecutionException e) {
+      LOGGER.error("Error retrieving cache:", e.getCause());
+      if (e.getCause() instanceof ConfigNotFoundException) {
+        throw (ConfigNotFoundException) e.getCause();
+      }
+      if (e.getCause() instanceof JsonValidationException) {
+        throw (JsonValidationException) e.getCause();
+      }
+      throw new RuntimeException(e.getCause());
+    }
+  }
+
+  // the ExecutionException is an implementation detail the helper and does not need to be handled by
+  // callers.
+  private static UUID swallowExecutionException(CheckedSupplier<UUID, Throwable> supplier) {
+    try {
+      return supplier.get();
+    } catch (Throwable e) {
       throw new RuntimeException(e);
     }
   }

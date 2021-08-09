@@ -85,7 +85,7 @@ public class ConnectionsHandler {
   }
 
   private void validateWorkspace(UUID sourceId, UUID destinationId, Set<UUID> operationIds) {
-    final UUID sourceWorkspace = workspaceHelper.getWorkspaceForSourceId(sourceId);
+    final UUID sourceWorkspace = workspaceHelper.getWorkspaceForSourceIdNoExceptions(sourceId);
     final UUID destinationWorkspace = workspaceHelper.getWorkspaceForDestinationId(destinationId);
 
     Preconditions.checkArgument(

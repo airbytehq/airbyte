@@ -297,7 +297,7 @@ public class AcceptanceTests {
   }
 
   @Test
-  @Order(-1)
+  @Order(-2)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
   public void testGetDestinationSpec() throws ApiException {
@@ -306,6 +306,15 @@ public class AcceptanceTests {
         .getDestinationDefinitionSpecification(new DestinationDefinitionIdRequestBody().destinationDefinitionId(destinationDefinitionId));
     assertEquals(destinationDefinitionId, spec.getDestinationDefinitionId());
     assertNotNull(spec.getConnectionSpecification());
+  }
+
+  @Test
+  @Order(-1)
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "true")
+  public void testFailedGet404() throws ApiException {
+    var spec = apiClient.getDestinationDefinitionSpecificationApi()
+        .getDestinationDefinitionSpecification(new DestinationDefinitionIdRequestBody().destinationDefinitionId(UUID.randomUUID()));
   }
 
   @Test
