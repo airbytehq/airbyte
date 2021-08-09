@@ -9,17 +9,7 @@ class CloudWorkspacesService extends AirbyteRequestService {
 
   public async list(): Promise<CloudWorkspace[]> {
     const { workspaces } = await this.fetch<{ workspaces: CloudWorkspace[] }>(
-      `${this.url}/list`,
-      {}
-    );
-
-    return workspaces;
-  }
-
-  public async listByUser(userId: string): Promise<CloudWorkspace[]> {
-    const { workspaces } = await this.fetch<{ workspaces: CloudWorkspace[] }>(
-      `/web_backend/permissions/list_workspaces_by_user`,
-      { userId }
+      `${this.url}/list`
     );
 
     return workspaces;
@@ -34,9 +24,18 @@ class CloudWorkspacesService extends AirbyteRequestService {
   }
 
   public async remove(workspaceId: string): Promise<CloudWorkspace> {
-    return this.fetch<CloudWorkspace>(`web_backend/cloud_workspaces/delete`, {
+    return this.fetch<CloudWorkspace>(`${this.url}/delete`, {
       workspaceId,
     });
+  }
+
+  public async listByUser(userId: string): Promise<CloudWorkspace[]> {
+    const { workspaces } = await this.fetch<{ workspaces: CloudWorkspace[] }>(
+      `web_backend/permissions/list_workspaces_by_user`,
+      { userId }
+    );
+
+    return workspaces;
   }
 
   public async create(cloudWorkspaceCreatePayload: {
