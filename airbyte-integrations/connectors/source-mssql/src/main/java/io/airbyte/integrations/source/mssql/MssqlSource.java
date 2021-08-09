@@ -281,7 +281,6 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
     ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
     ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
 
-
     final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
     properties.set(CDC_LSN, stringType);
     properties.set(CDC_UPDATED_AT, stringType);

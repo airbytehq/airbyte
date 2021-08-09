@@ -96,7 +96,6 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
 
     final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
     final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
-
     properties.set(CDC_LOG_FILE, stringType);
     properties.set(CDC_LOG_POS, numberType);
     properties.set(CDC_UPDATED_AT, stringType);
