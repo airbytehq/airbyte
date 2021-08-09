@@ -91,6 +91,8 @@ class ShopifyStream(HttpStream, ABC):
 
     def _transform_object(self, transform_object: Mapping[str, Any], properties: Mapping[str, Any]):
         for object_property, value in transform_object.items():
+            if not value:
+                continue
             if object_property in properties:
                 object_properties = properties.get(object_property)
                 schema_types = object_properties.get("type", [])
