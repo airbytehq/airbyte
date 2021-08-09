@@ -22,7 +22,7 @@
 import contextlib
 import errno
 import json
-from typing import TextIO, Dict, Iterator, List
+from typing import TextIO, Dict, List
 
 import paramiko
 import smart_open
@@ -34,7 +34,7 @@ def sftp_client(
     port: int,
     username: str,
     password: str,
-) -> Iterator[paramiko.SFTPClient]:
+) -> paramiko.SFTPClient:
     with paramiko.SSHClient() as client:
         client.load_system_host_keys()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
