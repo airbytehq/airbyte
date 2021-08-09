@@ -171,7 +171,7 @@ class Helpers(object):
     def get_sheet_row_count(client, spreadsheet_id: str) -> Dict[str, int]:
         spreadsheet_metadata = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=False))
         # filter out sheets without gridProperties (like in diagram sheets)
-        data_sheets = [sheet for sheet in spreadsheet_metadata.sheets if hasattr(sheet.properties, 'gridProperties')]
+        data_sheets = [sheet for sheet in spreadsheet_metadata.sheets if hasattr(sheet.properties, "gridProperties")]
         return {sheet.properties.title: sheet.properties.gridProperties["rowCount"] for sheet in data_sheets}
 
     @staticmethod
