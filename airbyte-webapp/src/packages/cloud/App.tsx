@@ -25,6 +25,7 @@ const queryClient = new QueryClient();
 
 const messages = Object.assign({}, en, cloudLocales);
 
+// TODO: move to proper place
 const useCustomerIdProvider = () => {
   const { user } = useAuthService();
   return user?.userId ?? "";
