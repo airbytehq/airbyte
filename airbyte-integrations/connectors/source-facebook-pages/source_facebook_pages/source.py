@@ -26,8 +26,8 @@
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
-import requests
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
@@ -36,15 +36,21 @@ from .streams import Page, PageInsights, Post, PostInsights
 
 class SourceFacebookPages(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        params = {
-            "access_token": config["access_token"],
-        }
+        ok = False
+        error_msg = None
 
-        response = requests.get("https://graph.facebook.com/v11.0/me", params=params)
-        if response.status_code == 200:
-            return True, None
-        else:
-            return False, f"Unable to connect to Facebook API with the provided credentials {response.content}"
+        try:
+            _ = list(Page(
+                access_token=config["access_token"],
+                page_id=config["page_id"]
+            ).read_records(
+                sync_mode=SyncMode.full_refresh
+            ))
+            ok = True
+        except Exception as e:
+            error_msg = repr(e)
+
+        return ok, error_msg
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         stream_kwargs = {

@@ -28,10 +28,10 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
-from .metrics import PAGE_FIELDS, PAGE_METRICS, POST_FIELDS, POST_METRICS
+from source_facebook_pages.metrics import PAGE_FIELDS, PAGE_METRICS, POST_FIELDS, POST_METRICS
 
 
-class FacebookStream(HttpStream, ABC):
+class FacebookPagesStream(HttpStream, ABC):
     url_base = "https://graph.facebook.com/v11.0/"
     primary_key = "id"
     data_field = "data"
@@ -67,7 +67,7 @@ class FacebookStream(HttpStream, ABC):
         return params
 
 
-class Page(FacebookStream):
+class Page(FacebookPagesStream):
     """
     API docs: https://developers.facebook.com/docs/graph-api/reference/page/,
     """
@@ -94,17 +94,16 @@ class Page(FacebookStream):
         yield response.json()
 
 
-class Post(FacebookStream):
+class Post(FacebookPagesStream):
     """
     API docs: https://developers.facebook.com/docs/graph-api/reference/post/,
     """
 
     def path(self, **kwargs) -> str:
-        if self._page_id:
-            return f"{self._page_id}/posts"
+        return f"{self._page_id}/posts"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        records = response.json().get(self.data_field) or []
+        records = response.json().get(self.data_field, []) or []
         for record in records:
             yield record
 
@@ -120,7 +119,7 @@ class Post(FacebookStream):
         return params
 
 
-class PageInsights(FacebookStream):
+class PageInsights(FacebookPagesStream):
     """
     API docs: https://developers.facebook.com/docs/graph-api/reference/page/insights/,
     """
@@ -145,7 +144,7 @@ class PageInsights(FacebookStream):
             yield record
 
 
-class PostInsights(FacebookStream):
+class PostInsights(FacebookPagesStream):
     """
     API docs: https://developers.facebook.com/docs/graph-api/reference/post/insights/,
     """
