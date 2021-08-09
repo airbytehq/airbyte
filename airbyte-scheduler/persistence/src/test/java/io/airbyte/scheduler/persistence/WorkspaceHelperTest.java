@@ -108,13 +108,23 @@ class WorkspaceHelperTest {
   }
 
   @Test
-  public void testObjectsThatDoNotExist() {
-    assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForSourceIdNoExceptions(UUID.randomUUID()));
-    assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForDestinationId(UUID.randomUUID()));
-    assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForConnectionId(UUID.randomUUID()));
-    assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForConnection(UUID.randomUUID(), UUID.randomUUID()));
-    assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForOperationId(UUID.randomUUID()));
-    assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForJobId(0L));
+  public void testMissingObjectsRuntimeException() {
+    assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(UUID.randomUUID()));
+    assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(UUID.randomUUID()));
+    assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForConnectionIdIgnoreExceptions(UUID.randomUUID()));
+    assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForConnectionIgnoreExceptions(UUID.randomUUID(), UUID.randomUUID()));
+    assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(UUID.randomUUID()));
+    assertThrows(RuntimeException.class, () -> workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(0L));
+  }
+
+  @Test
+  public void testMissingObjectsProperException() {
+    assertThrows(ConfigNotFoundException.class, () -> workspaceHelper.getWorkspaceForSourceId(UUID.randomUUID()));
+    assertThrows(ConfigNotFoundException.class, () -> workspaceHelper.getWorkspaceForDestinationId(UUID.randomUUID()));
+    assertThrows(ConfigNotFoundException.class, () -> workspaceHelper.getWorkspaceForConnectionId(UUID.randomUUID()));
+    assertThrows(ConfigNotFoundException.class, () -> workspaceHelper.getWorkspaceForConnection(UUID.randomUUID(), UUID.randomUUID()));
+    assertThrows(ConfigNotFoundException.class, () -> workspaceHelper.getWorkspaceForOperationId(UUID.randomUUID()));
+    assertThrows(ConfigNotFoundException.class, () -> workspaceHelper.getWorkspaceForJobId(0L));
   }
 
   @Test
@@ -122,18 +132,13 @@ class WorkspaceHelperTest {
     configRepository.writeStandardSource(SOURCE_DEF);
     configRepository.writeSourceConnection(SOURCE);
 
-    final UUID retrievedWorkspace = workspaceHelper.getWorkspaceForSourceIdNoExceptions(SOURCE_ID);
+    final UUID retrievedWorkspace = workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(SOURCE_ID);
     assertEquals(WORKSPACE_ID, retrievedWorkspace);
 
     // check that caching is working
     configRepository.writeSourceConnection(Jsons.clone(SOURCE).withWorkspaceId(UUID.randomUUID()));
-    final UUID retrievedWorkspaceAfterUpdate = workspaceHelper.getWorkspaceForSourceIdNoExceptions(SOURCE_ID);
+    final UUID retrievedWorkspaceAfterUpdate = workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(SOURCE_ID);
     assertEquals(WORKSPACE_ID, retrievedWorkspaceAfterUpdate);
-  }
-
-  @Test
-  public void testSourceMissing() {
-    assertThrows(ConfigNotFoundException.class, () -> workspaceHelper.getWorkspaceForSourceId(UUID.randomUUID()));
   }
 
   @Test
@@ -141,12 +146,12 @@ class WorkspaceHelperTest {
     configRepository.writeStandardDestinationDefinition(DEST_DEF);
     configRepository.writeDestinationConnection(DEST);
 
-    final UUID retrievedWorkspace = workspaceHelper.getWorkspaceForDestinationId(DEST_ID);
+    final UUID retrievedWorkspace = workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(DEST_ID);
     assertEquals(WORKSPACE_ID, retrievedWorkspace);
 
     // check that caching is working
     configRepository.writeDestinationConnection(Jsons.clone(DEST).withWorkspaceId(UUID.randomUUID()));
-    final UUID retrievedWorkspaceAfterUpdate = workspaceHelper.getWorkspaceForDestinationId(DEST_ID);
+    final UUID retrievedWorkspaceAfterUpdate = workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(DEST_ID);
     assertEquals(WORKSPACE_ID, retrievedWorkspaceAfterUpdate);
   }
 
@@ -161,18 +166,18 @@ class WorkspaceHelperTest {
     configRepository.writeStandardSync(CONNECTION);
 
     // test retrieving by connection id
-    final UUID retrievedWorkspace = workspaceHelper.getWorkspaceForConnectionId(CONNECTION_ID);
+    final UUID retrievedWorkspace = workspaceHelper.getWorkspaceForConnectionIdIgnoreExceptions(CONNECTION_ID);
     assertEquals(WORKSPACE_ID, retrievedWorkspace);
 
     // test retrieving by source and destination ids
-    final UUID retrievedWorkspaceBySourceAndDestination = workspaceHelper.getWorkspaceForConnectionId(CONNECTION_ID);
+    final UUID retrievedWorkspaceBySourceAndDestination = workspaceHelper.getWorkspaceForConnectionIdIgnoreExceptions(CONNECTION_ID);
     assertEquals(WORKSPACE_ID, retrievedWorkspaceBySourceAndDestination);
 
     // check that caching is working
     final UUID newWorkspace = UUID.randomUUID();
     configRepository.writeSourceConnection(Jsons.clone(SOURCE).withWorkspaceId(newWorkspace));
     configRepository.writeDestinationConnection(Jsons.clone(DEST).withWorkspaceId(newWorkspace));
-    final UUID retrievedWorkspaceAfterUpdate = workspaceHelper.getWorkspaceForDestinationId(DEST_ID);
+    final UUID retrievedWorkspaceAfterUpdate = workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(DEST_ID);
     assertEquals(WORKSPACE_ID, retrievedWorkspaceAfterUpdate);
   }
 
@@ -181,12 +186,12 @@ class WorkspaceHelperTest {
     configRepository.writeStandardSyncOperation(OPERATION);
 
     // test retrieving by connection id
-    final UUID retrievedWorkspace = workspaceHelper.getWorkspaceForOperationId(OPERATION_ID);
+    final UUID retrievedWorkspace = workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(OPERATION_ID);
     assertEquals(WORKSPACE_ID, retrievedWorkspace);
 
     // check that caching is working
     configRepository.writeStandardSyncOperation(Jsons.clone(OPERATION).withWorkspaceId(UUID.randomUUID()));
-    final UUID retrievedWorkspaceAfterUpdate = workspaceHelper.getWorkspaceForOperationId(OPERATION_ID);
+    final UUID retrievedWorkspaceAfterUpdate = workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(OPERATION_ID);
     assertEquals(WORKSPACE_ID, retrievedWorkspaceAfterUpdate);
   }
 
@@ -212,7 +217,7 @@ class WorkspaceHelperTest {
         System.currentTimeMillis());
     when(jobPersistence.getJob(jobId)).thenReturn(job);
 
-    final UUID jobWorkspace = workspaceHelper.getWorkspaceForJobId(jobId);
+    final UUID jobWorkspace = workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(jobId);
     assertEquals(WORKSPACE_ID, jobWorkspace);
   }
 
