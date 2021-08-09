@@ -1,4 +1,3 @@
-#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -20,12 +19,10 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-#
 import contextlib
 import errno
 import json
-from pathlib import Path
-from typing import TextIO, Optional, Dict, Iterator, List
+from typing import TextIO, Dict, Iterator, List
 
 import paramiko
 import smart_open
@@ -59,61 +56,53 @@ class SftpClient:
         username: str,
         password: str,
         destination_path: str,
-        filename: str = "data",
         port: int = 22,
     ):
         self.host = host
         self.port = port
         self.username = username
         self.password = password
-        self.file_path = Path(destination_path) / f"{filename}.jsonl"
-        self._file: Optional[TextIO] = None
+        self.destination_path = destination_path
+        self._files: Dict[str, TextIO] = {}
 
     def __enter__(self):
-        return self.open()
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
-    def _get_uri(self) -> str:
-        return f"sftp://{self.username}:{self.password}@{self.host}:{self.port}/{self.file_path}"
+    def _get_path(self, stream: str) -> str:
+        return f"{self.destination_path}/airbyte_json_{stream}.jsonl"
 
-    def _open(self) -> TextIO:
-        uri = self._get_uri()
+    def _get_uri(self, stream: str) -> str:
+        path = self._get_path(stream)
+        return f"sftp://{self.username}:{self.password}@{self.host}:{self.port}/{path}"
+
+    def _open(self, stream: str) -> TextIO:
+        uri = self._get_uri(stream)
         return smart_open.open(uri, mode="a+")
 
-    @property
-    def file(self):
-        if self._file is None:
-            self.open()
-        return self._file
-
     def close(self):
-        if self._file:
-            self._file.close()
-            self._file = None
+        for file in self._files.values():
+            file.close()
 
-    def open(self):
-        self.close()
-        self._file = self._open()
-        return self
-
-    def write(self, record: Dict) -> None:
+    def write(self, stream: str, record: Dict) -> None:
+        if stream not in self._files:
+            self._files[stream] = self._open(stream)
         text = json.dumps(record)
-        self.file.write(f"{text}\n")
+        self._files[stream].write(f"{text}\n")
 
-    def read_data(self) -> List[Dict]:
-        pos = self.file.tell()
-        self.file.seek(0)
-        lines = self.file.readlines()
-        self.file.seek(pos)
-        data = [json.loads(line.strip()) for line in lines]
+    def read_data(self, stream: str) -> List[Dict]:
+        with self._open(stream) as file:
+            lines = file.readlines()
+            data = [json.loads(line.strip()) for line in lines]
         return data
 
-    def delete(self) -> None:
+    def delete(self, stream: str) -> None:
         with sftp_client(self.host, self.port, self.username, self.password) as sftp:
             try:
-                sftp.remove(str(self.file_path))
+                path = self._get_path(stream)
+                sftp.remove(path)
             except IOError as err:
                 # Ignore the case where the file doesn't exist, only raise the
                 # exception if it's something else

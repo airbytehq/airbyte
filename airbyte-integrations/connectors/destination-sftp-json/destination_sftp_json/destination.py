@@ -58,17 +58,14 @@ class DestinationSftpJson(Destination):
         :param input_messages: The stream of input messages received from the source
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
-        # Apply default filename if one is not defined
-        config = dict(config)
-        filename = config.get("filename") or configured_catalog.streams[0].stream.name
-        config["filename"] = filename
-        writer = SftpClient(**config)
+        with SftpClient(**config) as writer:
+            for configured_stream in configured_catalog.streams:
+                if (
+                    configured_stream.destination_sync_mode
+                    == DestinationSyncMode.overwrite
+                ):
+                    writer.delete(configured_stream.stream.name)
 
-        for configured_stream in configured_catalog.streams:
-            if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                writer.delete()
-
-        with writer:
             for message in input_messages:
                 if message.type == Type.STATE:
                     # Emitting a state message indicates that all records which came
@@ -77,7 +74,7 @@ class DestinationSftpJson(Destination):
                     yield message
                 elif message.type == Type.RECORD:
                     record = message.record
-                    writer.write(record.data)
+                    writer.write(record.stream, record.data)
                 else:
                     # ignore other message types for now
                     continue
@@ -98,12 +95,13 @@ class DestinationSftpJson(Destination):
         """
         try:
             # Verify write access by attempting to write then delete
-            filename = str(uuid.uuid4())
+            stream = str(uuid.uuid4())
             # Can't override destination_path because we cannot assume we have write
             # access anywhere else
-            writer = SftpClient(**{**config, "filename": filename})
-            writer.write({"value": "_airbyte_connection_check"})
-            writer.delete()
+
+            with SftpClient(**config) as writer:
+                writer.write(stream, {"value": "_airbyte_connection_check"})
+                writer.delete(stream)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             traceback.print_exc()
