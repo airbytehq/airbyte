@@ -1,27 +1,12 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
-
-import { ContentCard } from "components";
 import NotificationsForm from "./components/NotificationsForm";
 import useWorkspace from "components/hooks/services/useWorkspace";
 import WebHookForm from "./components/WebHookForm";
 import HeadTitle from "components/HeadTitle";
-import useWorkspaceEditor from "../../components/useWorkspaceEditor";
+import useWorkspaceEditor from "pages/SettingsPage/components/useWorkspaceEditor";
 
-const SettingsCard = styled(ContentCard)`
-  max-width: 638px;
-  width: 100%;
-  margin-top: 12px;
-
-  &:first-child {
-    margin-top: 0;
-  }
-`;
-
-const Content = styled.div`
-  padding: 27px 26px 15px;
-`;
+import { Content, SettingsCard } from "../SettingsComponents";
 
 const NotificationPage: React.FC = () => {
   const { workspace, updateWebhook, testWebhook } = useWorkspace();

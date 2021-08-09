@@ -7,7 +7,6 @@ import AnalyticsServiceProvider, {
   useAnalytics,
 } from "components/hooks/useAnalytics";
 import useTracker from "components/hooks/useOpenReplay";
-import { useCurrentWorkspace } from "components/hooks/services/useWorkspace";
 
 function WithAnalytics({
   customerId,
@@ -36,17 +35,15 @@ function WithAnalytics({
   return null;
 }
 
-const AnalyticsInitializer: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const workspace = useCurrentWorkspace();
+const AnalyticsInitializer: React.FC<{
+  children: React.ReactNode;
+  customerIdProvider: () => string;
+}> = ({ children, customerIdProvider }) => {
+  const customerId = customerIdProvider();
 
   return (
-    <AnalyticsServiceProvider
-      userId={workspace.workspaceId}
-      version={config.version}
-    >
-      <WithAnalytics customerId={workspace.customerId} />
+    <AnalyticsServiceProvider userId={customerId} version={config.version}>
+      <WithAnalytics customerId={customerId} />
       {children}
     </AnalyticsServiceProvider>
   );

@@ -32,6 +32,7 @@ const CheckBox: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
 ) => (
   <CheckBoxContainer
     onClick={(event: React.SyntheticEvent) => event.stopPropagation()}
+    className={props.className}
   >
     <CheckBoxInput {...props} type="checkbox" />
     {props.checked && <FontAwesomeIcon icon={faCheck} />}

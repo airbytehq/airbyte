@@ -1,18 +1,32 @@
 import {
+  AbstractInstanceType,
   Method,
   MutateShape,
-  Resource,
-  AbstractInstanceType,
   ReadShape,
-  schemas,
+  Resource,
   SchemaDetail,
   SchemaList,
+  schemas,
 } from "rest-hooks";
 
-import { AirbyteRequestService } from "core/request/AirbyteRequestService";
+import {
+  AirbyteRequestService,
+  parseResponse,
+} from "core/request/AirbyteRequestService";
+import { getMiddlewares } from "core/request/useRequestMiddlewareProvider";
 
 // TODO: rename to crud resource after upgrade to rest-hook 5.0.0
 export default abstract class BaseResource extends Resource {
+  static async useFetchInit(init: RequestInit): Promise<RequestInit> {
+    let preparedOptions: RequestInit = init;
+
+    for (const middleware of getMiddlewares()) {
+      preparedOptions = await middleware(preparedOptions);
+    }
+
+    return preparedOptions;
+  }
+
   /** Perform network request and resolve with HTTP Response */
   static async fetchResponse(
     _: Method,
@@ -31,7 +45,9 @@ export default abstract class BaseResource extends Resource {
     if (body) {
       options.body = JSON.stringify(body);
     }
-    return fetch(url, options);
+
+    const op = await this.useFetchInit(options);
+    return fetch(url, op);
   }
 
   /** Perform network request and resolve with json body */
@@ -42,7 +58,7 @@ export default abstract class BaseResource extends Resource {
   ): Promise<T> {
     const response = await this.fetchResponse(method, url, body);
 
-    return AirbyteRequestService.parseResponse(response);
+    return parseResponse(response);
   }
 
   static listUrl<T extends typeof Resource>(this: T): string {

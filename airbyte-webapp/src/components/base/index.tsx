@@ -1,4 +1,5 @@
 export * from "./Button";
+export * from "./Card";
 export * from "./CheckBox";
 export * from "./DropDown";
 export * from "./Popout";

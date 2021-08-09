@@ -9,6 +9,8 @@ import {
   useTable,
 } from "react-table";
 
+import { Card } from "components";
+
 type IHeaderProps = {
   headerHighlighted?: boolean;
   collapse?: boolean;
@@ -25,14 +27,10 @@ type IThProps = {
   customWidth?: number;
 } & React.ThHTMLAttributes<HTMLTableHeaderCellElement>;
 
-const TableView = styled.table`
+const TableView = styled(Card).attrs({ as: "table" })`
   border-spacing: 0;
   width: 100%;
   overflow: hidden;
-  background: ${({ theme }) => theme.whiteColor};
-  border: 1px solid ${({ theme }) => theme.greyColor20};
-  box-shadow: 0 1px 2px 0 ${({ theme }) => theme.shadowColor};
-  border-radius: 8px;
   max-width: 100%;
 `;
 

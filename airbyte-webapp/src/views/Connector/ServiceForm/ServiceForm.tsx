@@ -21,6 +21,7 @@ import { isSourceDefinition } from "core/domain/connector/source";
 
 type ServiceFormProps = {
   formType: "source" | "destination";
+  availableServices: (SourceDefinition | DestinationDefinition)[];
   onSubmit: (values: ServiceFormValues) => void;
   onRetest?: (values: ServiceFormValues) => void;
   specifications?: JSONSchema7;
@@ -33,7 +34,6 @@ type ServiceFormProps = {
   additionBottomControls?: React.ReactNode;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
-  availableServices: (SourceDefinition | DestinationDefinition)[];
   onServiceSelect?: (id: string) => void;
 };
 
