@@ -26,7 +26,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "tap-quickbooks @ https://github.com/vitaliizazmic/tap-quickbooks/tarball/vitalii/4292_number_data_types",
+    "tap-quickbooks @ https://github.com/airbytehq//tap-quickbooks/tarball/v1.0.5-airbyte",
     "airbyte-cdk",
 ]
 
