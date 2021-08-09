@@ -3,6 +3,9 @@
 ## 0.1.8
 Allow to fetch primary key info from singer catalog
 
+## 0.1.7
+Allow to use non-JSON payloads in request body for http source
+
 ## 0.1.6
 Add abstraction for creating destinations.
 
