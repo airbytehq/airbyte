@@ -13,7 +13,7 @@ Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/
 ## 7/30/2021
 
 New sources:
-* [**PrestaShop**](https://docs.airbyte.io/integrations/sources/prestashop)
+* [**PrestaShop**](https://docs.airbyte.io/integrations/sources/presta-shop)
 * [**Snapchat Marketing**](https://docs.airbyte.io/integrations/sources/snapchat-marketing)
 * [**Drupal**](https://docs.airbyte.io/integrations/sources/drupal)
 * [**Magento**](https://docs.airbyte.io/integrations/sources/magento)
@@ -288,7 +288,7 @@ Other progress on connectors:
 ## 03/22/2021
 
 * 2 new source connectors: [**Gitlab**](https://docs.airbyte.io/integrations/sources/gitlab) and [**Airbyte-native Hubspot**](https://docs.airbyte.io/integrations/sources/hubspot)
-* Developing connectors now requires almost no interaction with Gradle, Airbyte’s  monorepo build tool. If you’re building a Python connector, you never have to worry about developing outside your typical flow. See [the updated documentation](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector).
+* Developing connectors now requires almost no interaction with Gradle, Airbyte’s monorepo build tool. If you’re building a Python connector, you never have to worry about developing outside your typical flow. See [the updated documentation](https://docs.airbyte.io/connector-development).
 
 ## 03/15/2021
 
