@@ -20,78 +20,26 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from pathlib import Path
-from unittest import mock
-
 import pytest
 
 from destination_sftp_json.client import SftpClient
 
 
-expected_paths = pytest.mark.parametrize(
-    "config, expected_file_path",
-    [
-        ({"destination_path": "/destination"}, Path("/destination/data.jsonl")),
-        (
-            {"destination_path": "/destination", "filename": "new_filename"},
-            Path("/destination/new_filename.jsonl"),
-        ),
-    ],
-)
+@pytest.fixture
+def client() -> SftpClient:
+    return SftpClient(
+        "sample-host", "sample-username", "sample-password", "/sample/path"
+    )
 
 
-@expected_paths
-def test_initialized_parameters(config, expected_file_path):
-    sftp = SftpClient(host="sftp-host", username="me", password="supersecret", **config)
-    assert sftp.file_path == expected_file_path
+def test_get_path(client):
+    path = client._get_path("mystream")
+    assert path == "/sample/path/airbyte_json_mystream.jsonl"
 
 
-@pytest.mark.parametrize(
-    "config, expected_uri",
-    [
-        # Using defaults
-        (
-            {
-                "host": "sftp-host",
-                "username": "me",
-                "password": "supersecret",
-                "destination_path": "/dest",
-            },
-            "sftp://me:supersecret@sftp-host:22//dest/data.jsonl",
-        ),
-        # Different filename
-        (
-            {
-                "host": "sftp-host",
-                "username": "me",
-                "password": "supersecret",
-                "destination_path": "/dest",
-                "filename": "other-filename",
-            },
-            "sftp://me:supersecret@sftp-host:22//dest/other-filename.jsonl",
-        ),
-        # Different port
-        (
-            {
-                "host": "sftp-host",
-                "username": "me",
-                "password": "supersecret",
-                "destination_path": "/dest",
-                "port": 33,
-            },
-            "sftp://me:supersecret@sftp-host:33//dest/data.jsonl",
-        ),
-    ],
-)
-def test_get_uri(config, expected_uri):
-    sftp = SftpClient(**config)
-    assert sftp._get_uri() == expected_uri
-
-
-@expected_paths
-def test_correct_file_deleted(config, expected_file_path):
-    sftp = SftpClient(host="sftp-host", username="me", password="supersecret", **config)
-    with mock.patch("paramiko.SSHClient") as SSHClient:
-        sftp_mock = SSHClient.return_value.__enter__.return_value.open_sftp.return_value
-        sftp.delete()
-        sftp_mock.remove.assert_called_with(str(expected_file_path))
+def test_get_uri(client):
+    uri = client._get_uri("mystream2")
+    assert (
+        uri
+        == "sftp://sample-username:sample-password@sample-host:22//sample/path/airbyte_json_mystream2.jsonl"
+    )
