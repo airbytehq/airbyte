@@ -9,6 +9,6 @@ select
     cast(nzd as {{ dbt_utils.type_float() }}) as nzd,
     cast(usd as {{ dbt_utils.type_float() }}) as usd,
     _airbyte_emitted_at
-from {{ ref('exchange_rate_ab1') }} as table_alias
+from {{ ref('exchange_rate_ab1') }}
 -- exchange_rate
 

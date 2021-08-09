@@ -10,6 +10,6 @@ select
     varchar
 ) as "date",
     _airbyte_emitted_at
-from "postgres"._airbyte_test_normalization_namespace."simple_stream_with_n__lting_into_long_names_ab1" as table_alias
+from "postgres"._airbyte_test_normalization_namespace."simple_stream_with_n__lting_into_long_names_ab1"
 -- simple_stream_with_n__lting_into_long_names
   );

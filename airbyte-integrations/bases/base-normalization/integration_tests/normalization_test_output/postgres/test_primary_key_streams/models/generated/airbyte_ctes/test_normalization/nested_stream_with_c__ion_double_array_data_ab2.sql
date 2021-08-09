@@ -4,6 +4,6 @@ select
     _airbyte_partition_hashid,
     cast({{ adapter.quote('id') }} as {{ dbt_utils.type_string() }}) as {{ adapter.quote('id') }},
     _airbyte_emitted_at
-from {{ ref('nested_stream_with_c__ion_double_array_data_ab1') }} as table_alias
+from {{ ref('nested_stream_with_c__ion_double_array_data_ab1') }}
 -- double_array_data at nested_stream_with_complex_columns_resulting_into_long_names/partition/double_array_data
 

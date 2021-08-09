@@ -68,7 +68,7 @@ select
     _airbyte_partition_hashid,
     cast(id as varchar) as id,
     _airbyte_emitted_at
-from __dbt__CTE__nested_stream_with_complex_columns_resulting_into_long_names_partition_double_array_data_ab1 as table_alias
+from __dbt__CTE__nested_stream_with_complex_columns_resulting_into_long_names_partition_double_array_data_ab1
 -- double_array_data at nested_stream_with_complex_columns_resulting_into_long_names/partition/double_array_data
 ),  __dbt__CTE__nested_stream_with_complex_columns_resulting_into_long_names_partition_double_array_data_ab3 as (
 

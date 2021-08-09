@@ -375,7 +375,7 @@ select
     {{ field }},
   {%- endfor %}
     _airbyte_emitted_at
-from {{ from_table }} as table_alias
+from {{ from_table }}
 {{ sql_table_comment }}
     """
         )

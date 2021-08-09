@@ -10,6 +10,6 @@ select
     jsonb
 ) as conflict_stream_name,
     _airbyte_emitted_at
-from "postgres"._airbyte_test_normalization."conflict_stream_name_ab1" as table_alias
+from "postgres"._airbyte_test_normalization."conflict_stream_name_ab1"
 -- conflict_stream_name
   );

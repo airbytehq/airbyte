@@ -4,6 +4,6 @@ select
     cast(id as {{ dbt_utils.type_string() }}) as id,
     cast(date as {{ dbt_utils.type_string() }}) as date,
     _airbyte_emitted_at
-from {{ ref('simple_stream_with_namespace_resulting_into_long_names_ab1') }} as table_alias
+from {{ ref('simple_stream_with_namespace_resulting_into_long_names_ab1') }}
 -- simple_stream_with_namespace_resulting_into_long_names
 

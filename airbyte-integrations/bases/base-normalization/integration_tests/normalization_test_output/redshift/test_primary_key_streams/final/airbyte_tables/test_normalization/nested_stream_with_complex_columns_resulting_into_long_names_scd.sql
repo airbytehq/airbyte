@@ -24,7 +24,7 @@ select
     cast(date as varchar) as date,
     cast("partition" as varchar) as "partition",
     _airbyte_emitted_at
-from __dbt__CTE__nested_stream_with_complex_columns_resulting_into_long_names_ab1 as table_alias
+from __dbt__CTE__nested_stream_with_complex_columns_resulting_into_long_names_ab1
 -- nested_stream_with_complex_columns_resulting_into_long_names
 ),  __dbt__CTE__nested_stream_with_complex_columns_resulting_into_long_names_ab3 as (
 

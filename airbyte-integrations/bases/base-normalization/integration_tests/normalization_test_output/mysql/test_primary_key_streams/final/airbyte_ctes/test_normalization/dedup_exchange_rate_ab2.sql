@@ -19,6 +19,6 @@ select
     float
 ) as usd,
     _airbyte_emitted_at
-from _airbyte_test_normalization.`dedup_exchange_rate_ab1` as table_alias
+from _airbyte_test_normalization.`dedup_exchange_rate_ab1`
 -- dedup_exchange_rate
   );

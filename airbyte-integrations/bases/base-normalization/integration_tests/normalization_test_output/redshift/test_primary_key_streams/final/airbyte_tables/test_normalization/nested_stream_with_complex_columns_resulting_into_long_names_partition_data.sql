@@ -68,7 +68,7 @@ select
     _airbyte_partition_hashid,
     cast(currency as varchar) as currency,
     _airbyte_emitted_at
-from __dbt__CTE__nested_stream_with_complex_columns_resulting_into_long_names_partition_data_ab1 as table_alias
+from __dbt__CTE__nested_stream_with_complex_columns_resulting_into_long_names_partition_data_ab1
 -- data at nested_stream_with_complex_columns_resulting_into_long_names/partition/DATA
 ),  __dbt__CTE__nested_stream_with_complex_columns_resulting_into_long_names_partition_data_ab3 as (
 

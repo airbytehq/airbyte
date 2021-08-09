@@ -22,7 +22,7 @@ select
     cast(id as varchar) as id,
     cast(date as varchar) as date,
     _airbyte_emitted_at
-from __dbt__CTE__non_nested_stream_without_namespace_resulting_into_long_names_ab1 as table_alias
+from __dbt__CTE__non_nested_stream_without_namespace_resulting_into_long_names_ab1
 -- non_nested_stream_without_namespace_resulting_into_long_names
 ),  __dbt__CTE__non_nested_stream_without_namespace_resulting_into_long_names_ab3 as (
 

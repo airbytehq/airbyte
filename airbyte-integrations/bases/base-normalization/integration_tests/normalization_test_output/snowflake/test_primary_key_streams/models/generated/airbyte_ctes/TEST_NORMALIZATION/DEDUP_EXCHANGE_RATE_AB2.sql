@@ -9,6 +9,6 @@ select
     cast(NZD as {{ dbt_utils.type_float() }}) as NZD,
     cast(USD as {{ dbt_utils.type_float() }}) as USD,
     _airbyte_emitted_at
-from {{ ref('DEDUP_EXCHANGE_RATE_AB1') }} as table_alias
+from {{ ref('DEDUP_EXCHANGE_RATE_AB1') }}
 -- DEDUP_EXCHANGE_RATE
 

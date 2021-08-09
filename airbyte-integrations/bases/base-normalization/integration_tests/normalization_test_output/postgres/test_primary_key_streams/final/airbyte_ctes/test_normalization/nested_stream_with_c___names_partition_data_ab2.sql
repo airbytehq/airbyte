@@ -8,6 +8,6 @@ select
     varchar
 ) as currency,
     _airbyte_emitted_at
-from "postgres"._airbyte_test_normalization."nested_stream_with_c___names_partition_data_ab1" as table_alias
+from "postgres"._airbyte_test_normalization."nested_stream_with_c___names_partition_data_ab1"
 -- DATA at nested_stream_with_complex_columns_resulting_into_long_names/partition/DATA
   );

@@ -88,35 +88,41 @@ class DestinationNameTransformer:
         return self.__normalize_non_column_identifier_name(input_name=schema_name, in_jinja=in_jinja, truncate=truncate)
 
     def normalize_table_name(
-        self, table_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_solver: int = 0
+        self, table_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
     ) -> str:
         """
         @param table_name is the table to normalize
         @param in_jinja is a boolean to specify if the returned normalized will be used inside a jinja macro or not
         @param truncate force ignoring truncate operation on resulting normalized name. For example, if we don't
         control how the name would be normalized
+        @param conflict if there is a conflict between stream name and fields
+        @param conflict_level is the json_path level conflict happened
         """
         return self.__normalize_non_column_identifier_name(
-            input_name=table_name, in_jinja=in_jinja, truncate=truncate, conflict=conflict, conflict_solver=conflict_solver
+            input_name=table_name, in_jinja=in_jinja, truncate=truncate, conflict=conflict, conflict_level=conflict_level
         )
 
     def normalize_column_name(
-        self, column_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_solver: int = 0
+        self, column_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
     ) -> str:
         """
         @param column_name is the column to normalize
         @param in_jinja is a boolean to specify if the returned normalized will be used inside a jinja macro or not
         @param truncate force ignoring truncate operation on resulting normalized name. For example, if we don't
         control how the name would be normalized
+        @param conflict if there is a conflict between stream name and fields
+        @param conflict_level is the json_path level conflict happened
         """
         return self.__normalize_identifier_name(
-            column_name=column_name, in_jinja=in_jinja, truncate=truncate, conflict=conflict, conflict_solver=conflict_solver
+            column_name=column_name, in_jinja=in_jinja, truncate=truncate, conflict=conflict, conflict_level=conflict_level
         )
 
-    def truncate_identifier_name(self, input_name: str, custom_limit: int = -1, conflict: bool = False, conflict_solver: int = 0) -> str:
+    def truncate_identifier_name(self, input_name: str, custom_limit: int = -1, conflict: bool = False, conflict_level: int = 0) -> str:
         """
         @param input_name is the identifier name to middle truncate
         @param custom_limit uses a custom length as the max instead of the destination max length
+        @param conflict if there is a conflict between stream name and fields
+        @param conflict_level is the json_path level conflict happened
         """
         limit = custom_limit - 1 if custom_limit > 0 else self.get_name_max_length()
 
@@ -129,13 +135,11 @@ class DestinationNameTransformer:
             print(f"Truncating {input_name} (#{len(input_name)}) to {prefix}_{suffix} (#{2 + len(prefix) + len(suffix)})")
             mid = "__"
             if conflict:
-                mid = f"_{conflict_solver}"
+                mid = f"_{conflict_level}"
             input_name = f"{prefix}{mid}{suffix}"
 
         return input_name
 
-    # conflict_stream_name____conflict_stream_name_ab3 => conflict_stream_name___flict_stream_name_ab3
-    # conflict_stream_name_conflict_stream_name_ab3    => conflict_stream_name___flict_stream_name_ab3
     def get_name_max_length(self):
         if self.destination_type.value in DESTINATION_SIZE_LIMITS:
             destination_limit = DESTINATION_SIZE_LIMITS[self.destination_type.value]
@@ -146,22 +150,22 @@ class DestinationNameTransformer:
     # Private methods
 
     def __normalize_non_column_identifier_name(
-        self, input_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_solver: int = 0
+        self, input_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
     ) -> str:
         # We force standard naming for non column names (see issue #1785)
         result = transform_standard_naming(input_name)
         result = self.__normalize_naming_conventions(result)
         if truncate:
-            result = self.truncate_identifier_name(input_name=result, conflict=conflict, conflict_solver=conflict_solver)
+            result = self.truncate_identifier_name(input_name=result, conflict=conflict, conflict_level=conflict_level)
         result = self.__normalize_identifier_case(result, is_quoted=False)
         return result
 
     def __normalize_identifier_name(
-        self, column_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_solver: int = 0
+        self, column_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
     ) -> str:
         result = self.__normalize_naming_conventions(column_name)
         if truncate:
-            result = self.truncate_identifier_name(input_name=result, conflict=conflict, conflict_solver=conflict_solver)
+            result = self.truncate_identifier_name(input_name=result, conflict=conflict, conflict_level=conflict_level)
         if self.needs_quotes(result):
             if self.destination_type.value != DestinationType.MYSQL.value:
                 result = result.replace('"', '""')

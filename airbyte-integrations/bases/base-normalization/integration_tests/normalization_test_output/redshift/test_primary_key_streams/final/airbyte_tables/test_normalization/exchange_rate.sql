@@ -40,7 +40,7 @@ select
     float
 ) as usd,
     _airbyte_emitted_at
-from __dbt__CTE__exchange_rate_ab1 as table_alias
+from __dbt__CTE__exchange_rate_ab1
 -- exchange_rate
 ),  __dbt__CTE__exchange_rate_ab3 as (
 

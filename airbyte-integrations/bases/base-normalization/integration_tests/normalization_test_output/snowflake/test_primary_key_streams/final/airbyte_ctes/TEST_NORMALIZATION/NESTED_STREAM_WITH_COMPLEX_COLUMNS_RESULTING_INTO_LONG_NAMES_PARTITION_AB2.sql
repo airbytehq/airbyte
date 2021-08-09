@@ -8,6 +8,6 @@ select
     DATA,
     "column`_'with""_quotes",
     _airbyte_emitted_at
-from "AIRBYTE_DATABASE"._AIRBYTE_TEST_NORMALIZATION."NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION_AB1" as table_alias
+from "AIRBYTE_DATABASE"._AIRBYTE_TEST_NORMALIZATION."NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION_AB1"
 -- PARTITION at nested_stream_with_complex_columns_resulting_into_long_names/partition
   );

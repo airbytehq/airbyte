@@ -7,6 +7,6 @@ select
     cast(`date` as char) as `date`,
     cast(`partition` as json) as `partition`,
     _airbyte_emitted_at
-from _airbyte_test_normalization.`nested_stream_with_co_1g_into_long_names_ab1` as table_alias
+from _airbyte_test_normalization.`nested_stream_with_co_1g_into_long_names_ab1`
 -- nested_stream_with_co__lting_into_long_names
   );

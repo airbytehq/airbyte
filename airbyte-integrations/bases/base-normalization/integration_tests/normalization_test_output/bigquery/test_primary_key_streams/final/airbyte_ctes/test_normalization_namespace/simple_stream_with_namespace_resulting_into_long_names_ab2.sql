@@ -12,6 +12,6 @@ select
     string
 ) as date,
     _airbyte_emitted_at
-from `dataline-integration-testing`._airbyte_test_normalization_namespace.`simple_stream_with_namespace_resulting_into_long_names_ab1` as table_alias
+from `dataline-integration-testing`._airbyte_test_normalization_namespace.`simple_stream_with_namespace_resulting_into_long_names_ab1`
 -- simple_stream_with_namespace_resulting_into_long_names;
 

@@ -5,6 +5,6 @@ select
     cast({{ adapter.quote('date') }} as {{ dbt_utils.type_string() }}) as {{ adapter.quote('date') }},
     cast({{ adapter.quote('partition') }} as {{ type_json() }}) as {{ adapter.quote('partition') }},
     _airbyte_emitted_at
-from {{ ref('nested_stream_with_c__lting_into_long_names_ab1') }} as table_alias
+from {{ ref('nested_stream_with_c__lting_into_long_names_ab1') }}
 -- nested_stream_with_c__lting_into_long_names
 

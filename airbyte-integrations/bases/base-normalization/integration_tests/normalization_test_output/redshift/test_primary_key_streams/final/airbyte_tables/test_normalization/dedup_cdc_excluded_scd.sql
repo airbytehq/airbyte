@@ -36,7 +36,7 @@ select
     float
 ) as _ab_cdc_deleted_at,
     _airbyte_emitted_at
-from __dbt__CTE__dedup_cdc_excluded_ab1 as table_alias
+from __dbt__CTE__dedup_cdc_excluded_ab1
 -- dedup_cdc_excluded
 ),  __dbt__CTE__dedup_cdc_excluded_ab3 as (
 

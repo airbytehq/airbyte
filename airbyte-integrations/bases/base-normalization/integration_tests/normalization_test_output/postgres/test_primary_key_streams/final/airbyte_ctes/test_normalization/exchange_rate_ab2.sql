@@ -25,6 +25,6 @@ select
     float
 ) as usd,
     _airbyte_emitted_at
-from "postgres"._airbyte_test_normalization."exchange_rate_ab1" as table_alias
+from "postgres"._airbyte_test_normalization."exchange_rate_ab1"
 -- exchange_rate
   );

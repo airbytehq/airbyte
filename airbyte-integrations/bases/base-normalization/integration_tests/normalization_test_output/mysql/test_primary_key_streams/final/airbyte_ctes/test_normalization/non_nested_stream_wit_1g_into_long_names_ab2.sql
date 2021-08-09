@@ -6,6 +6,6 @@ select
     cast(id as char) as id,
     cast(`date` as char) as `date`,
     _airbyte_emitted_at
-from _airbyte_test_normalization.`non_nested_stream_wit_1g_into_long_names_ab1` as table_alias
+from _airbyte_test_normalization.`non_nested_stream_wit_1g_into_long_names_ab1`
 -- non_nested_stream_wit__lting_into_long_names
   );

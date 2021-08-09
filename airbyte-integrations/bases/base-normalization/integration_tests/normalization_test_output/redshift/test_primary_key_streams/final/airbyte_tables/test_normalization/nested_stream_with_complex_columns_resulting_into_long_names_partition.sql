@@ -27,7 +27,7 @@ select
     data,
     "column`_'with""_quotes",
     _airbyte_emitted_at
-from __dbt__CTE__nested_stream_with_complex_columns_resulting_into_long_names_partition_ab1 as table_alias
+from __dbt__CTE__nested_stream_with_complex_columns_resulting_into_long_names_partition_ab1
 -- partition at nested_stream_with_complex_columns_resulting_into_long_names/partition
 ),  __dbt__CTE__nested_stream_with_complex_columns_resulting_into_long_names_partition_ab3 as (
 

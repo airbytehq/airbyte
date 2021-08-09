@@ -6,6 +6,6 @@ select
     {{ adapter.quote('DATA') }},
     {{ adapter.quote('column`_\'with""_quotes') }},
     _airbyte_emitted_at
-from {{ ref('nested_stream_with_c___long_names_partition_ab1') }} as table_alias
+from {{ ref('nested_stream_with_c___long_names_partition_ab1') }}
 -- partition at nested_stream_with_complex_columns_resulting_into_long_names/partition
 
