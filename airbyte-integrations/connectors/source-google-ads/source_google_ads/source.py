@@ -23,6 +23,7 @@
 #
 
 
+import json
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk import AirbyteLogger
@@ -47,7 +48,8 @@ from .streams import (
 
 class SourceGoogleAds(AbstractSource):
     def get_credentials(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
-        credentials = config["credentials"]
+        print("I was called.")
+        credentials = json.loads(config["credentials"])
 
         # https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid
         if "login_customer_id" in config and config["login_customer_id"].strip():
