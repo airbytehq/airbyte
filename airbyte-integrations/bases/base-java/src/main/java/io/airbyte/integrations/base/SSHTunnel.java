@@ -22,6 +22,7 @@ import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.common.util.net.SshdSocketAddress;
 import org.apache.sshd.server.forward.AcceptAllForwardingFilter;
+import org.bouncycastle.openssl.PEMKeyPair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,12 +91,11 @@ public class SSHTunnel {
     return user;
   }
 
-  // TODO: Determine if we can lock down the access on credentials a bit tighter
-  String getSSHKey() {
+  private String getSSHKey() {
     return sshkey;
   }
 
-  public String getPassword() {
+  private String getPassword() {
     return password;
   }
 
@@ -112,24 +112,28 @@ public class SSHTunnel {
   }
 
   /**
-   * From the pem format private key string, parse the private key, discover the public key, and return the pair for auth use.
+   * From the RSA format private key string, parse the private key,
+   * discover the public key, and return the pair for auth use.
    *
    * @return
-   * @throws InvalidKeySpecException
    * @throws NoSuchAlgorithmException
    * @throws URISyntaxException
-   */
-  protected KeyPair getPrivateKeyPair() throws InvalidKeySpecException, NoSuchAlgorithmException {
+  */
+  protected KeyPair getPrivateKeyPair() throws NoSuchAlgorithmException, IOException {
     KeyFactory kf = KeyFactory.getInstance("RSA");
     String privateKeyContent = getSSHKey()
         .replaceAll("\\n", "")
-        .replace("-----BEGIN PRIVATE KEY-----", "")
-        .replace("-----END PRIVATE KEY-----", "");
-    RSAPrivateKey privKey = (RSAPrivateKey) kf.generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(privateKeyContent)));
-    RSAPublicKey pubKey = (RSAPublicKey) kf.generatePublic(kf.getKeySpec(privKey, X509EncodedKeySpec.class));
+        .replace("-----BEGIN RSA PRIVATE KEY-----", "")
+        .replace("-----END RSA PRIVATE KEY-----", "");
+    PEMParser pemParser = new PEMParser(new StringReader(getSSHKey()));
+    JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
+    PEMKeyPair keypair = (PEMKeyPair) pemParser.readObject();
+    PrivateKeyInfo privKeyInfo = keypair.getPrivateKeyInfo();
+    SubjectPublicKeyInfo pubKeyInfo = keypair.getPublicKeyInfo();
+    RSAPrivateKey privKey = (RSAPrivateKey) converter.getPrivateKey(privKeyInfo);
+    RSAPublicKey pubKey = (RSAPublicKey) converter.getPublicKey(SubjectPublicKeyInfo.getInstance(pubKeyInfo));
     return new KeyPair(pubKey, privKey);
   }
-
 
   /**
    * Generates a new ssh client and returns it, with forwarding set to accept all types; use this before opening a tunnel.
