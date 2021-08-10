@@ -10,9 +10,13 @@ description: >-
 
 The Airbyte BigQuery destination allows you to sync data to BigQuery. BigQuery is a serverless, highly scalable, and cost-effective data warehouse offered by Google Cloud Provider.
 
+There are two flavors of connectors for this destination:
+1. `destination-bigquery`: This is producing the standard Airbyte outputs using a `_airbyte_raw_*` tables storing the JSON blob data first. Afterward, these are transformed and normalized into separate tables, potentially "exploding" nested streams into their own tables if [basic normalization](../../understanding-airbyte/basic-normalization.md) is configured. 
+2. `destination-bigquery-denormalized`: Instead of splitting the final data into multiple tables, this destination leverages BigQuery capabilities with [Structured and Repeated fields](https://cloud.google.com/bigquery/docs/nested-repeated) to produce a single "big" table per stream. This does not write the `_airbyte_raw_*` tables in the destination and normalization from this connector is not supported at this time.
+
 ### Sync overview
 
-#### Output schema
+#### Output schema of `destination-bigquery`
 
 Each stream will be output into its own table in BigQuery. Each table will contain 3 columns:
 
@@ -83,6 +87,7 @@ You should now have all the requirements needed to configure BigQuery as a desti
 * **Dataset Location**
 * **Dataset ID**: the name of the schema where the tables will be created.
 * **Service Account Key**: the contents of your Service Account Key JSON file
+* **Google BigQuery client chunk size**: Google BigQuery client's chunk(buffer) size (MIN=1, MAX = 15) for each table. The default 15MiB value is used if not set explicitly. It's recommended to decrease value for big data sets migration for less HEAP memory consumption and avoiding crashes. For more details refer to https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html
 
 Once you've configured BigQuery as a destination, delete the Service Account Key from your computer.
 
@@ -101,3 +106,25 @@ When you create a dataset in BigQuery, the dataset name must be unique for each 
 * Dataset names cannot contain spaces or special characters such as -, &, @, or %.
 
 Therefore, Airbyte BigQuery destination will convert any invalid characters into '\_' characters when writing data.
+
+## CHANGELOG
+
+### destination-bigquery
+
+| Version | Date | Pull Request | Subject |
+| :--- | :---  | :--- | :--- |
+| 0.3.12 | 2021-08-03 | [#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add optional arg to make a possibility to change the BigQuery client's chunk\buffer size |
+| 0.3.11 | 2021-07-30 | [#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
+| 0.3.10 | 2021-07-28 | [#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add extended logs and made JobId filled with region and projectId |
+| 0.3.9 | 2021-07-28 | [#5026](https://github.com/airbytehq/airbyte/pull/5026) | Add sanitized json fields in raw tables to handle quotes in column names |
+| 0.3.6 | 2021-06-18 | [#3947](https://github.com/airbytehq/airbyte/issues/3947) | Service account credentials are now optional. |
+| 0.3.4 | 2021-06-07 | [#3277](https://github.com/airbytehq/airbyte/issues/3277) | Add dataset location option |
+
+### destination-bigquery-denormalized
+
+| Version | Date | Pull Request | Subject |
+| :--- | :---  | :--- | :--- |
+| 0.1.3 | 2021-08-07 | [#5261](https://github.com/airbytehq/airbyte/pull/5261) | 🐛 Destination BigQuery(Denormalized): Fix processing arrays of records |
+| 0.1.2 | 2021-07-30 | [#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
+| 0.1.1 | 2021-06-21 | [#3555](https://github.com/airbytehq/airbyte/pull/3555) | Partial Success in BufferedStreamConsumer |
+| 0.1.0 | 2021-06-21 | [#4176](https://github.com/airbytehq/airbyte/pull/4176) | Destination using Typed Struct and Repeated fields |

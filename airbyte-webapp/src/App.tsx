@@ -11,6 +11,14 @@ import { Routing } from "./pages/routes";
 import LoadingPage from "./components/LoadingPage";
 import ApiErrorBoundary from "./components/ApiErrorBoundary";
 import NotificationService from "components/hooks/services/Notification";
+import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
+import { useCurrentWorkspace } from "components/hooks/services/useWorkspace";
+
+function useCustomerIdProvider() {
+  const workspace = useCurrentWorkspace();
+
+  return workspace.customerId;
+}
 
 const App: React.FC = () => {
   return (
@@ -22,7 +30,11 @@ const App: React.FC = () => {
             <Suspense fallback={<LoadingPage />}>
               <ApiErrorBoundary>
                 <NotificationService>
-                  <Routing />
+                  <AnalyticsInitializer
+                    customerIdProvider={useCustomerIdProvider}
+                  >
+                    <Routing />
+                  </AnalyticsInitializer>
                 </NotificationService>
               </ApiErrorBoundary>
             </Suspense>

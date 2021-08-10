@@ -173,7 +173,7 @@ class PostgresSourceTest {
 
   @Test
   public void testCanReadUtf8() throws Exception {
-    // force the db server to start with sql_ascii encoding to verify the tap can read UTF8 even when
+    // force the db server to start with sql_ascii encoding to verify the source can read UTF8 even when
     // default settings are in another encoding
     try (PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine").withCommand("postgres -c client_encoding=sql_ascii")) {
       db.start();

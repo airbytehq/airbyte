@@ -27,6 +27,7 @@ package io.airbyte.scheduler.persistence;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.State;
+import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import java.io.IOException;
@@ -38,6 +39,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+/**
+ * TODO Introduce a locking mechanism so that no DB operation is allowed when automatic migration is
+ * running
+ */
 public interface JobPersistence {
 
   Job getJob(long jobId) throws IOException;
@@ -128,7 +133,9 @@ public interface JobPersistence {
    * @return lists job in descending order by created_at
    * @throws IOException - what you do when you IO
    */
-  List<Job> listJobs(JobConfig.ConfigType configType, String configId) throws IOException;
+  List<Job> listJobs(Set<JobConfig.ConfigType> configTypes, String configId, int limit, int offset) throws IOException;
+
+  List<Job> listJobs(JobConfig.ConfigType configType, String configId, int limit, int offset) throws IOException;
 
   List<Job> listJobsWithStatus(JobStatus status) throws IOException;
 
@@ -156,20 +163,34 @@ public interface JobPersistence {
   /// ARCHIVE
 
   /**
-   * Returns the AirbyteVersion stored in the database
+   * Returns the AirbyteVersion.
    */
   Optional<String> getVersion() throws IOException;
 
   /**
-   * Set the database to @param AirbyteVersion
+   * Set the airbyte version
    */
   void setVersion(String airbyteVersion) throws IOException;
+
+  /**
+   * Returns a deployment UUID.
+   */
+  Optional<UUID> getDeployment() throws IOException;
+  // a deployment references a setup of airbyte. it is created the first time the docker compose or
+  // K8s is ready.
+
+  /**
+   * Set deployment id. If one is already set, the new value is ignored.
+   */
+  void setDeployment(UUID uuid) throws IOException;
 
   /**
    * Export all SQL tables from @param schema into streams of JsonNode objects. This returns a Map of
    * table schemas to the associated streams of records that is being exported.
    */
-  Map<DatabaseSchema, Stream<JsonNode>> exportDatabase() throws IOException;
+  Map<JobsDatabaseSchema, Stream<JsonNode>> exportDatabase() throws IOException;
+
+  Map<String, Stream<JsonNode>> dump() throws IOException;
 
   /**
    * Import all SQL tables from streams of JsonNode objects.
@@ -178,6 +199,13 @@ public interface JobPersistence {
    * @param airbyteVersion is the version of the files to be imported and should match the Airbyte
    *        version in the Database.
    */
-  void importDatabase(String airbyteVersion, Map<DatabaseSchema, Stream<JsonNode>> data) throws IOException;
+  void importDatabase(String airbyteVersion, Map<JobsDatabaseSchema, Stream<JsonNode>> data) throws IOException;
+
+  /**
+   * Purges job history while ensuring that the latest saved-state information is maintained.
+   *
+   * @throws IOException
+   */
+  void purgeJobHistory();
 
 }

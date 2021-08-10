@@ -15,9 +15,17 @@ dependencies {
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
+    // csv
     implementation 'com.amazonaws:aws-java-sdk-s3:1.11.978'
     implementation 'org.apache.commons:commons-csv:1.4'
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
+
+    // parquet
+    implementation group: 'org.apache.hadoop', name: 'hadoop-common', version: '3.3.0'
+    implementation group: 'org.apache.hadoop', name: 'hadoop-aws', version: '3.3.0'
+    implementation group: 'org.apache.hadoop', name: 'hadoop-mapreduce-client-core', version: '3.3.0'
+    implementation group: 'org.apache.parquet', name: 'parquet-avro', version: '1.12.0'
+    implementation group: 'tech.allegro.schema.json2avro', name: 'converter', version: '0.2.10'
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
 

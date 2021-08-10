@@ -117,7 +117,8 @@ public class TemporalClient {
         .withDestinationConfiguration(config.getDestinationConfiguration())
         .withOperationSequence(config.getOperationSequence())
         .withCatalog(config.getConfiguredAirbyteCatalog())
-        .withState(config.getState());
+        .withState(config.getState())
+        .withResourceRequirements(config.getResourceRequirements());
 
     return execute(jobRunConfig,
         () -> getWorkflowStub(SyncWorkflow.class, TemporalJobType.SYNC).run(

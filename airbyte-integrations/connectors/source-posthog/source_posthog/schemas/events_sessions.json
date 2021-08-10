@@ -176,7 +176,7 @@
       }
     },
     "email": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "session_recordings": {
       "type": "array",

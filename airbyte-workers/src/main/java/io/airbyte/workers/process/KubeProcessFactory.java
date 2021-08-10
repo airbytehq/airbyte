@@ -24,14 +24,13 @@
 
 package io.airbyte.workers.process;
 
+import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerException;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.kubernetes.client.openapi.ApiClient;
 import java.nio.file.Path;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.function.Consumer;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,14 +40,26 @@ public class KubeProcessFactory implements ProcessFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessFactory.class);
 
   private final String namespace;
-  private final KubernetesClient kubeClient;
-  private final BlockingQueue<Integer> ports;
-  private final Set<Integer> claimedPorts = new HashSet<>();
+  private final ApiClient officialClient;
+  private final KubernetesClient fabricClient;
+  private final String kubeHeartbeatUrl;
 
-  public KubeProcessFactory(String namespace, KubernetesClient kubeClient, BlockingQueue<Integer> ports) {
+  /**
+   * @param namespace kubernetes namespace where spawned pods will live
+   * @param officialClient official kubernetes client
+   * @param fabricClient fabric8 kubernetes client
+   * @param kubeHeartbeatUrl a url where if the response is not 200 the spawned process will fail
+   *        itself
+   * @param workerPorts a set of ports that can be used for IO socket servers
+   */
+  public KubeProcessFactory(String namespace,
+                            ApiClient officialClient,
+                            KubernetesClient fabricClient,
+                            String kubeHeartbeatUrl) {
     this.namespace = namespace;
-    this.kubeClient = kubeClient;
-    this.ports = ports;
+    this.officialClient = officialClient;
+    this.fabricClient = fabricClient;
+    this.kubeHeartbeatUrl = kubeHeartbeatUrl;
   }
 
   @Override
@@ -59,45 +70,71 @@ public class KubeProcessFactory implements ProcessFactory {
                         final boolean usesStdin,
                         final Map<String, String> files,
                         final String entrypoint,
+                        final ResourceRequirements resourceRequirements,
                         final String... args)
       throws WorkerException {
     try {
       // used to differentiate source and destination processes with the same id and attempt
-      final String suffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
-      final String podName = "airbyte-worker-" + jobId + "-" + attempt + "-" + suffix;
 
-      final int stdoutLocalPort = ports.take();
-      claimedPorts.add(stdoutLocalPort);
-      LOGGER.info("stdoutLocalPort = " + stdoutLocalPort);
+      final String podName = createPodName(imageName, jobId, attempt);
 
-      final int stderrLocalPort = ports.take();
-      claimedPorts.add(stderrLocalPort);
-      LOGGER.info("stderrLocalPort = " + stderrLocalPort);
+      final int stdoutLocalPort = KubePortManagerSingleton.take();
+      LOGGER.info("{} stdoutLocalPort = {}", podName, stdoutLocalPort);
 
-      final Consumer<Integer> portReleaser = port -> {
-        if (!ports.contains(port)) {
-          ports.add(port);
-          LOGGER.info("Port consumer releasing: " + port);
-        } else {
-          LOGGER.info("Port consumer skipping releasing: " + port);
-        }
-      };
+      final int stderrLocalPort = KubePortManagerSingleton.take();
+      LOGGER.info("{} stderrLocalPort = {}", podName, stderrLocalPort);
 
       return new KubePodProcess(
-          kubeClient,
-          portReleaser,
+          officialClient,
+          fabricClient,
           podName,
           namespace,
           imageName,
           stdoutLocalPort,
           stderrLocalPort,
+          kubeHeartbeatUrl,
           usesStdin,
           files,
           entrypoint,
+          resourceRequirements,
           args);
     } catch (Exception e) {
-      throw new WorkerException(e.getMessage());
+      throw new WorkerException(e.getMessage(), e);
     }
+  }
+
+  /**
+   * Docker image names are by convention separated by slashes. The last portion is the image's name.
+   * This is followed by a colon and a version number. e.g. airbyte/scheduler:v1 or
+   * gcr.io/my-project/image-name:v2.
+   *
+   * Kubernetes has a maximum pod name length of 63 characters.
+   *
+   * With these two facts, attempt to construct a unique Pod name with the image name present for
+   * easier operations.
+   */
+  @VisibleForTesting
+  protected static String createPodName(String fullImagePath, String jobId, int attempt) {
+    var versionDelimiter = ":";
+    var noVersion = fullImagePath.split(versionDelimiter)[0];
+
+    var dockerDelimiter = "/";
+    var nameParts = noVersion.split(dockerDelimiter);
+    var imageName = nameParts[nameParts.length - 1];
+
+    var randSuffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
+    final String suffix = "worker-" + jobId + "-" + attempt + "-" + randSuffix;
+
+    var podName = imageName + "-" + suffix;
+
+    var podNameLenLimit = 63;
+    if (podName.length() > podNameLenLimit) {
+      var extra = podName.length() - podNameLenLimit;
+      imageName = imageName.substring(extra);
+      podName = imageName + "-" + suffix;
+    }
+
+    return podName;
   }
 
 }

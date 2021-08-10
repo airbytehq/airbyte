@@ -32,6 +32,8 @@ import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.JobInfo.CreateDisposition;
 import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import com.google.cloud.bigquery.QueryParameterValue;
+import com.google.cloud.bigquery.Schema;
+import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableId;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
@@ -41,11 +43,14 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.UUID;
@@ -60,14 +65,14 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryRecordConsumer.class);
 
   private final BigQuery bigquery;
-  private final Map<AirbyteStreamNameNamespacePair, WriteConfig> writeConfigs;
+  private final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs;
   private final ConfiguredAirbyteCatalog catalog;
   private final Consumer<AirbyteMessage> outputRecordCollector;
 
   private AirbyteMessage lastStateMessage = null;
 
   public BigQueryRecordConsumer(BigQuery bigquery,
-                                Map<AirbyteStreamNameNamespacePair, WriteConfig> writeConfigs,
+                                Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
                                 ConfiguredAirbyteCatalog catalog,
                                 Consumer<AirbyteMessage> outputRecordCollector) {
     this.bigquery = bigquery;
@@ -95,20 +100,15 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
             String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
                 Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
       }
-
-      // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds then
-      // use BQ helpers to string-format correctly.
-      long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
-      final String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
-
-      final JsonNode data = Jsons.jsonNode(ImmutableMap.of(
-          JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(),
-          JavaBaseConstants.COLUMN_NAME_DATA, Jsons.serialize(recordMessage.getData()),
-          JavaBaseConstants.COLUMN_NAME_EMITTED_AT, formattedEmittedAt));
+      final BigQueryWriteConfig writer = writeConfigs.get(pair);
       try {
-        writeConfigs.get(pair).getWriter()
-            .write(ByteBuffer.wrap((Jsons.serialize(data) + "\n").getBytes(Charsets.UTF_8)));
-      } catch (IOException e) {
+        writer.getWriter().write(ByteBuffer.wrap((Jsons.serialize(formatRecord(writer.getSchema(), recordMessage)) + "\n").getBytes(Charsets.UTF_8)));
+      } catch (IOException | RuntimeException e) {
+        LOGGER.error("Got an error while writing message:" + e.getMessage());
+        LOGGER.error(String.format(
+            "Failed to process a message for job: %s, \nStreams numbers: %s, \nSyncMode: %s, \nTableName: %s, \nTmpTableName: %s, \nAirbyteMessage: %s",
+            writer.getWriter().getJob(), catalog.getStreams().size(), writer.getSyncMode(), writer.getTable(), writer.getTmpTable(), message));
+        printHeapMemoryConsumption();
         throw new RuntimeException(e);
       }
     } else {
@@ -116,26 +116,66 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     }
   }
 
+  protected JsonNode formatRecord(Schema schema, AirbyteRecordMessage recordMessage) {
+    // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds then
+    // use BQ helpers to string-format correctly.
+    long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
+    final String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
+    final JsonNode formattedData = StandardNameTransformer.formatJsonPath(recordMessage.getData());
+    return Jsons.jsonNode(ImmutableMap.of(
+        JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(),
+        JavaBaseConstants.COLUMN_NAME_DATA, Jsons.serialize(formattedData),
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT, formattedEmittedAt));
+  }
+
   @Override
   public void close(boolean hasFailed) {
+    LOGGER.info("Started closing all connections");
     try {
-      writeConfigs.values().parallelStream().forEach(writeConfig -> Exceptions.toRuntime(() -> writeConfig.getWriter().close()));
-      writeConfigs.values().forEach(writeConfig -> Exceptions.toRuntime(() -> {
-        if (writeConfig.getWriter().getJob() != null) {
-          writeConfig.getWriter().getJob().waitFor();
+      writeConfigs.values().parallelStream().forEach(bigQueryWriteConfig -> Exceptions.toRuntime(() -> {
+        TableDataWriteChannel writer = bigQueryWriteConfig.getWriter();
+        try {
+          writer.close();
+        } catch (IOException | RuntimeException e) {
+          LOGGER.error(String.format("Failed to process a message for job: %s, \nStreams numbers: %s",
+              writer.getJob(), catalog.getStreams().size()));
+          printHeapMemoryConsumption();
+          throw new RuntimeException(e);
         }
       }));
+
+      LOGGER.info("Waiting for jobs to be finished/closed");
+      writeConfigs.values().forEach(bigQueryWriteConfig -> Exceptions.toRuntime(() -> {
+        if (bigQueryWriteConfig.getWriter().getJob() != null) {
+          try {
+            bigQueryWriteConfig.getWriter().getJob().waitFor();
+          } catch (RuntimeException e) {
+            LOGGER.error(
+                String.format("Failed to process a message for job: %s, \nStreams numbers: %s, \nSyncMode: %s, \nTableName: %s, \nTmpTableName: %s",
+                    bigQueryWriteConfig.getWriter().getJob(), catalog.getStreams().size(), bigQueryWriteConfig.getSyncMode(),
+                    bigQueryWriteConfig.getTable(), bigQueryWriteConfig.getTmpTable()));
+            printHeapMemoryConsumption();
+            throw new RuntimeException(e);
+          }
+        }
+      }));
+
       if (!hasFailed) {
-        LOGGER.info("executing on success close procedure.");
+        LOGGER.info("Migration finished with no explicit errors. Copying data from tmp tables to permanent");
         writeConfigs.values()
             .forEach(
-                writeConfig -> copyTable(bigquery, writeConfig.getTmpTable(), writeConfig.getTable(), writeConfig.getSyncMode()));
+                bigQueryWriteConfig -> copyTable(bigquery, bigQueryWriteConfig.getTmpTable(), bigQueryWriteConfig.getTable(),
+                    bigQueryWriteConfig.getSyncMode()));
         // BQ is still all or nothing if a failure happens in the destination.
         outputRecordCollector.accept(lastStateMessage);
+      } else {
+        LOGGER.warn("Had errors while migrations");
       }
     } finally {
       // clean up tmp tables;
-      writeConfigs.values().forEach(writeConfig -> bigquery.delete(writeConfig.getTmpTable()));
+      LOGGER.info("Removing tmp tables...");
+      writeConfigs.values().forEach(bigQueryWriteConfig -> bigquery.delete(bigQueryWriteConfig.getTmpTable()));
+      LOGGER.info("Finishing destination process...completed");
     }
   }
 
@@ -154,9 +194,19 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     final Job job = bigquery.create(JobInfo.of(configuration));
     final ImmutablePair<Job, String> jobStringImmutablePair = BigQueryUtils.executeQuery(job);
     if (jobStringImmutablePair.getRight() != null) {
+      LOGGER.error("Failed on copy tables with error:" + job.getStatus());
       throw new RuntimeException("BigQuery was unable to copy table due to an error: \n" + job.getStatus().getError());
     }
     LOGGER.info("successfully copied tmp table: {} to final table: {}", sourceTableId, destinationTableId);
+  }
+
+  private void printHeapMemoryConsumption() {
+    int mb = 1024 * 1024;
+    MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+    long xmx = memoryBean.getHeapMemoryUsage().getMax() / mb;
+    long xms = memoryBean.getHeapMemoryUsage().getInit() / mb;
+    LOGGER.info("Initial Memory (xms) mb = " + xms);
+    LOGGER.info("Max Memory (xmx) : mb + " + xmx);
   }
 
 }

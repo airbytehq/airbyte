@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from "react";
+import React, { Suspense, useMemo } from "react";
 import {
   BrowserRouter as Router,
   Redirect,
@@ -14,18 +14,16 @@ import DestinationPage from "./DestinationPage";
 import PreferencesPage from "./PreferencesPage";
 import OnboardingPage from "./OnboardingPage";
 import ConnectionPage from "./ConnectionPage";
-import AdminPage from "./AdminPage";
 import SettingsPage from "./SettingsPage";
 import LoadingPage from "components/LoadingPage";
 import MainView from "components/MainView";
 import SupportChat from "components/SupportChat";
 
-import useSegment from "components/hooks/useSegment";
-import useRouter from "components/hooks/useRouterHook";
-import useWorkspace from "components/hooks/services/useWorkspaceHook";
-import { AnalyticsService } from "core/analytics/AnalyticsService";
+import { useWorkspace } from "components/hooks/services/useWorkspace";
 import { useNotificationService } from "components/hooks/services/Notification/NotificationService";
-import { useApiHealthPoll } from "../components/hooks/services/Health";
+import { useApiHealthPoll } from "components/hooks/services/Health";
+import { WithPageAnalytics } from "./withPageAnalytics";
+import { HealthService } from "core/health/HealthService";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -38,141 +36,80 @@ export enum Routes {
   ConnectionNew = "/new-connection",
   SourceNew = "/new-source",
   DestinationNew = "/new-destination",
-  Admin = "/admin",
   Settings = "/settings",
+  Configuration = "/configuration",
+  Notifications = "/notifications",
+  Metrics = "/metrics",
+  Account = "/account",
   Root = "/",
 }
 
-const getPageName = (pathname: string) => {
-  const itemSourcePageRegex = new RegExp(`${Routes.Source}/.*`);
-  const itemDestinationPageRegex = new RegExp(`${Routes.Destination}/.*`);
-  const itemSourceToDestinationPageRegex = new RegExp(
-    `(${Routes.Source}|${Routes.Destination})${Routes.Connection}/.*`
+const MainViewRoutes = () => (
+  <MainView>
+    <Suspense fallback={<LoadingPage />}>
+      <Switch>
+        <Route path={Routes.Destination}>
+          <DestinationPage />
+        </Route>
+        <Route path={Routes.Source}>
+          <SourcesPage />
+        </Route>
+        <Route path={Routes.Connections}>
+          <ConnectionPage />
+        </Route>
+        <Route path={Routes.Settings}>
+          <SettingsPage />
+        </Route>
+        <Route exact path={Routes.Root}>
+          <SourcesPage />
+        </Route>
+        <Redirect to={Routes.Root} />
+      </Switch>
+    </Suspense>
+  </MainView>
+);
+
+const PreferencesRoutes = () => (
+  <Switch>
+    <Route path={Routes.Preferences}>
+      <PreferencesPage />
+    </Route>
+    <Redirect to={Routes.Preferences} />
+  </Switch>
+);
+
+const OnboardingsRoutes = () => (
+  <Switch>
+    <Route path={Routes.Onboarding}>
+      <OnboardingPage />
+    </Route>
+    <Redirect to={Routes.Onboarding} />
+  </Switch>
+);
+
+function useDemo() {
+  const { formatMessage } = useIntl();
+
+  const demoNotification = useMemo(
+    () => ({
+      id: "demo.message",
+      title: formatMessage({ id: "demo.message.title" }),
+      text: formatMessage({ id: "demo.message.body" }),
+      nonClosable: true,
+    }),
+    [formatMessage]
   );
 
-  if (pathname === Routes.Destination) {
-    return "Destinations Page";
-  }
-  if (pathname === Routes.Root) {
-    return "Sources Page";
-  }
-  if (pathname === `${Routes.Source}${Routes.SourceNew}`) {
-    return "Create Source Page";
-  }
-  if (pathname === `${Routes.Destination}${Routes.DestinationNew}`) {
-    return "Create Destination Page";
-  }
-  if (
-    pathname === `${Routes.Source}${Routes.ConnectionNew}` ||
-    pathname === `${Routes.Destination}${Routes.ConnectionNew}`
-  ) {
-    return "Create Connection Page";
-  }
-  if (pathname.match(itemSourceToDestinationPageRegex)) {
-    return "Source to Destination Page";
-  }
-  if (pathname.match(itemDestinationPageRegex)) {
-    return "Destination Item Page";
-  }
-  if (pathname.match(itemSourcePageRegex)) {
-    return "Source Item Page";
-  }
-  if (pathname === Routes.Admin) {
-    return "Admin Page";
-  }
-  if (pathname === Routes.Settings) {
-    return "Settings Page";
-  }
-  if (pathname === Routes.Connections) {
-    return "Connections Page";
-  }
+  useNotificationService(config.isDemo ? demoNotification : undefined);
+}
 
-  return "";
-};
-
-const MainViewRoutes = () => {
-  const { pathname } = useRouter();
-  useEffect(() => {
-    const pageName = getPageName(pathname);
-    if (pageName) {
-      AnalyticsService.page(pageName);
-    }
-  }, [pathname]);
-
-  return (
-    <MainView>
-      <Suspense fallback={<LoadingPage />}>
-        <Switch>
-          <Route path={Routes.Destination}>
-            <DestinationPage />
-          </Route>
-          <Route path={Routes.Source}>
-            <SourcesPage />
-          </Route>
-          <Route path={Routes.Admin}>
-            <AdminPage />
-          </Route>
-          <Route path={Routes.Connections}>
-            <ConnectionPage />
-          </Route>
-          <Route path={Routes.Settings}>
-            <SettingsPage />
-          </Route>
-          <Route exact path={Routes.Root}>
-            <SourcesPage />
-          </Route>
-          <Redirect to={Routes.Root} />
-        </Switch>
-      </Suspense>
-    </MainView>
-  );
-};
-
-const PreferencesRoutes = () => {
-  return (
-    <Switch>
-      <Route path={Routes.Preferences}>
-        <PreferencesPage />
-      </Route>
-      <Redirect to={Routes.Preferences} />
-    </Switch>
-  );
-};
-
-const OnboardingsRoutes = () => {
-  return (
-    <Switch>
-      <Route path={Routes.Onboarding}>
-        <OnboardingPage />
-      </Route>
-      <Redirect to={Routes.Onboarding} />
-    </Switch>
-  );
-};
+const healthService = new HealthService();
 
 export const Routing: React.FC = () => {
-  useSegment(config.segment.token);
-  useApiHealthPoll(config.healthCheckInterval);
+  useApiHealthPoll(config.healthCheckInterval, healthService);
+  useDemo();
 
   const { workspace } = useWorkspace();
-
-  useEffect(() => {
-    if (workspace) {
-      AnalyticsService.identify(workspace.customerId);
-    }
-  }, [workspace]);
-
-  const { formatMessage } = useIntl();
-  useNotificationService(
-    config.isDemo
-      ? {
-          id: "demo.message",
-          title: formatMessage({ id: "demo.message.title" }),
-          text: formatMessage({ id: "demo.message.body" }),
-          nonClosable: true,
-        }
-      : undefined
-  );
 
   return (
     <Router>
@@ -182,7 +119,10 @@ export const Routing: React.FC = () => {
         ) : workspace.displaySetupWizard ? (
           <OnboardingsRoutes />
         ) : (
-          <MainViewRoutes />
+          <>
+            <WithPageAnalytics />
+            <MainViewRoutes />
+          </>
         )}
         <SupportChat
           papercupsConfig={config.papercups}

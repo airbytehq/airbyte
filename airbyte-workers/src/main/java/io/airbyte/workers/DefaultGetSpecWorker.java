@@ -91,7 +91,7 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
         throw new WorkerException(String.format("Spec job subprocess finished with exit code %s", exitCode));
       }
     } catch (Exception e) {
-      throw new WorkerException(String.format("Error while getting spec from image %s: %s", config.getDockerImage(), e));
+      throw new WorkerException(String.format("Error while getting spec from image %s", config.getDockerImage()), e);
     }
 
   }

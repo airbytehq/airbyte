@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: airbyte-db-svc
 spec:
-  type: NodePort
+  type: ClusterIP
   ports:
     - port: 5432
       protocol: TCP
@@ -34,11 +34,13 @@ spec:
               value: docker
             - name: POSTGRES_USER
               value: docker
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
           ports:
             - containerPort: 5432
           volumeMounts:
             - name: airbyte-volume-db
-              mountPath: /var/lib/postgresql
+              mountPath: /var/lib/postgresql/data
       volumes:
         - name: airbyte-volume-db
           persistentVolumeClaim:

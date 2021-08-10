@@ -26,8 +26,6 @@ package io.airbyte.workers.protocols.airbyte;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -37,7 +35,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.StandardTargetConfig;
+import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.TestConfigHelpers;
 import io.airbyte.workers.WorkerConstants;
@@ -64,7 +62,8 @@ class DefaultAirbyteDestinationTest {
   private static final String STREAM_NAME = "user_preferences";
   private static final String FIELD_NAME = "favorite_color";
 
-  private static final StandardTargetConfig DESTINATION_CONFIG = WorkerUtils.syncToTargetConfig(TestConfigHelpers.createSyncConfig().getValue());
+  private static final WorkerDestinationConfig DESTINATION_CONFIG =
+      WorkerUtils.syncToWorkerDestinationConfig(TestConfigHelpers.createSyncConfig().getValue());
 
   private static final List<AirbyteMessage> MESSAGES = Lists.newArrayList(
       AirbyteMessageUtils.createStateMessage("checkpoint", "1"),
@@ -138,7 +137,7 @@ class DefaultAirbyteDestinationTest {
       }
     });
 
-    verify(process).waitFor(anyLong(), any());
+    verify(process).exitValue();
   }
 
   @Test
@@ -151,6 +150,16 @@ class DefaultAirbyteDestinationTest {
     when(process.isAlive()).thenReturn(false);
     destination.close();
     verify(outputStream).close();
+  }
+
+  @Test
+  public void testNonzeroExitCodeThrowsException() throws Exception {
+    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher);
+    destination.start(DESTINATION_CONFIG, jobRoot);
+
+    when(process.isAlive()).thenReturn(false);
+    when(process.exitValue()).thenReturn(1);
+    Assertions.assertThrows(WorkerException.class, destination::close);
   }
 
 }

@@ -24,3 +24,30 @@ jsonSchema2Pojo {
     includeSetters = true
     serializable = true
 }
+
+test {
+    useJUnitPlatform {
+        excludeTags 'log4j2-config', 'logger-client'
+    }
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+task log4j2IntegrationTest(type: Test) {
+    useJUnitPlatform {
+        includeTags 'log4j2-config'
+    }
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+task logClientsIntegrationTest(type: Test) {
+    useJUnitPlatform {
+        includeTags 'logger-client'
+    }
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}

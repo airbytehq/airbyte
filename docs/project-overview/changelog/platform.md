@@ -6,6 +6,57 @@ description: Be sure to not miss out on new features and improvements!
 
 This is the changelog for Airbyte Platform. For our connector changelog, please visit our [Connector Changelog](connectors.md) page.
 
+## [07-29-2021 - 0.29.1](https://github.com/airbytehq/airbyte/releases/tag/v0.29.1-alpha)
+* When migrating, types represented in the config archive need to be a subset of the types declared in the schema.
+
+## [07-28-2021 - 0.29.0](https://github.com/airbytehq/airbyte/releases/tag/v0.29.0-alpha)
+* Deprecated `DEFAULT_WORKSPACE_ID`; default workspace no longer exists by default.
+
+## [07-28-2021 - 0.28.2](https://github.com/airbytehq/airbyte/releases/tag/v0.28.2-alpha)
+* Backend now handles workspaceId for WebBackend operations.
+
+## [07-26-2021 - 0.28.1](https://github.com/airbytehq/airbyte/releases/tag/v0.28.1-alpha)
+* K8s: Overly-sensitive logs are now silenced.
+
+## [07-22-2021 - 0.28.0](https://github.com/airbytehq/airbyte/releases/tag/v0.28.0-alpha)
+* Acceptance test dependencies fixed.
+
+## [07-22-2021 - 0.27.5](https://github.com/airbytehq/airbyte/releases/tag/v0.27.5-alpha)
+* Fixed unreliable logging on Kubernetes deployments.
+* Introduced pre-commit to auto-format files on commits.
+
+## [07-21-2021 - 0.27.4](https://github.com/airbytehq/airbyte/releases/tag/v0.27.4-alpha)
+* Config persistence is now migrated to the internal Airbyte database.
+* Source connector ports now properly close when deployed on Kubernetes.
+* Missing dependencies added that allow acceptance tests to run.
+
+## [07-15-2021 - 0.27.3](https://github.com/airbytehq/airbyte/releases/tag/v0.27.3-alpha)
+* Fixed some minor API spec errors.
+
+## [07-12-2021 - 0.27.2](https://github.com/airbytehq/airbyte/releases/tag/v0.27.2-alpha)
+* GCP environment variable is now stubbed out to prevent noisy and harmless errors.
+
+## [07-8-2021 - 0.27.1](https://github.com/airbytehq/airbyte/releases/tag/v0.27.1-alpha)
+* New API endpoint: List workspaces
+* K8s: Server doesn't start up before Temporal is ready to operate now.
+* Silent source failures caused by last patch fixed to throw exceptions.
+
+## [07-1-2021 - 0.27.0](https://github.com/airbytehq/airbyte/releases/tag/v0.27.0-alpha)
+* Airbyte now automatically upgrades on server startup!
+  * Airbyte will check whether your `.env` Airbyte version is compatible with the Airbyte version in the database and upgrade accordingly.
+* When running Airbyte on K8s logs will automatically be stored in a Minio bucket unless configured otherwise.
+* CDC for MySQL now handles decimal types correctly.
+
+## [06-21-2021 - 0.26.2](https://github.com/airbytehq/airbyte/releases/tag/v0.26.2-alpha)
+
+* First-Class Kubernetes support!
+
+## [06-16-2021 - 0.26.0](https://github.com/airbytehq/airbyte/releases/tag/v0.26.0-alpha)
+
+* Custom dbt transformations! 
+* You can now configure your destination namespace at the table level when setting up a connection!  
+* Migrate basic normalization settings to the sync operations.
+
 ## [06-09-2021 - 0.24.8 / 0.25.0](https://github.com/airbytehq/airbyte/releases/tag/v0.24.8-alpha)
 
 * Bugfix: Handle TINYINT(1) and BOOLEAN correctly and fix target file comparison for MySQL CDC.
@@ -158,7 +209,7 @@ This is the changelog for Airbyte Platform. For our connector changelog, please 
 * Support Import / Export of Airbyte Data in the Admin section of the UI
 * Bug fixes:
   * If Airbyte is closed during a sync the running job is not marked as failed
-  * Airbyte should fail when instance version doesn't match data version
+  * Airbyte should fail when deployment version doesn't match data version
   * Upgrade Airbyte Version without losing existing configuration / data
 
 ## [0.12-alpha](https://github.com/airbytehq/airbyte/milestone/14?closed=1) - Released 01/20/2021

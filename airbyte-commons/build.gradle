@@ -3,6 +3,5 @@ plugins {
 }
 
 dependencies {
-    implementation 'org.apache.commons:commons-compress:1.20'
-    implementation 'org.apache.commons:commons-lang3:3.11'
+    // Dependencies for this module should be specified in the top-level build.gradle.
 }

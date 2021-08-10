@@ -29,7 +29,7 @@ from typing import Dict, List, Optional, Tuple
 from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMode
 from jinja2 import Template
 from normalization.destination_type import DestinationType
-from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer
+from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer, transform_json_naming
 from normalization.transform_catalog.table_name_registry import TableNameRegistry
 from normalization.transform_catalog.utils import (
     is_airbyte_column,
@@ -346,14 +346,17 @@ from {{ from_table }}
     @staticmethod
     def extract_json_column(property_name: str, json_column_name: str, definition: Dict, column_name: str) -> str:
         json_path = [property_name]
-        json_extract = jinja_call(f"json_extract({json_column_name}, {json_path})")
+        # In some cases, some destination aren't able to parse the JSON blob using the original property name
+        # we make their life easier by using a pre-populated and sanitized column name instead...
+        normalized_json_path = [transform_json_naming(property_name)]
+        json_extract = jinja_call(f"json_extract({json_column_name}, {json_path}, {normalized_json_path})")
         if "type" in definition:
             if is_array(definition["type"]):
-                json_extract = jinja_call(f"json_extract_array({json_column_name}, {json_path})")
+                json_extract = jinja_call(f"json_extract_array({json_column_name}, {json_path}, {normalized_json_path})")
             elif is_object(definition["type"]):
-                json_extract = jinja_call(f"json_extract({json_column_name}, {json_path})")
+                json_extract = jinja_call(f"json_extract({json_column_name}, {json_path}, {normalized_json_path})")
             elif is_simple_property(definition["type"]):
-                json_extract = jinja_call(f"json_extract_scalar({json_column_name}, {json_path})")
+                json_extract = jinja_call(f"json_extract_scalar({json_column_name}, {json_path}, {normalized_json_path})")
         return f"{json_extract} as {column_name}"
 
     def generate_column_typing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
@@ -389,9 +392,9 @@ from {{ from_table }}
             print(f"WARN: Unknown type for column {property_name} at {self.current_json_path()}")
             return column_name
         elif is_array(definition["type"]):
-            return self.cast_property_type_as_array(property_name, column_name)
+            return column_name
         elif is_object(definition["type"]):
-            sql_type = self.cast_property_type_as_object(property_name, column_name)
+            sql_type = jinja_call("type_json()")
         # Treat simple types from narrower to wider scope type: boolean < integer < number < string
         elif is_boolean(definition["type"]):
             cast_operation = jinja_call(f"cast_to_boolean({jinja_column})")
@@ -406,18 +409,6 @@ from {{ from_table }}
             print(f"WARN: Unknown type {definition['type']} for column {property_name} at {self.current_json_path()}")
             return column_name
         return f"cast({column_name} as {sql_type}) as {column_name}"
-
-    def cast_property_type_as_array(self, property_name: str, column_name: str) -> str:
-        if self.destination_type.value == DestinationType.BIGQUERY.value:
-            # TODO build a struct/record type from properties JSON schema
-            pass
-        return column_name
-
-    def cast_property_type_as_object(self, property_name: str, column_name: str) -> str:
-        if self.destination_type.value == DestinationType.BIGQUERY.value:
-            # TODO build a struct/record type from properties JSON schema
-            pass
-        return jinja_call("type_json()")
 
     def generate_id_hashing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
         template = Template(
@@ -498,18 +489,25 @@ select
     {{ cursor_field }} as _airbyte_start_at,
     lag({{ cursor_field }}) over (
         partition by {{ primary_key }}
-        order by {{ cursor_field }} desc, _airbyte_emitted_at desc
+        order by {{ cursor_field }} is null asc, {{ cursor_field }} desc, _airbyte_emitted_at desc
     ) as _airbyte_end_at,
     lag({{ cursor_field }}) over (
         partition by {{ primary_key }}
-        order by {{ cursor_field }} desc, _airbyte_emitted_at desc
-    ) is null as _airbyte_active_row,
+        order by {{ cursor_field }} is null asc, {{ cursor_field }} desc, _airbyte_emitted_at desc{{ cdc_updated_at_order }}
+    ) is null {{ cdc_active_row }}as _airbyte_active_row,
     _airbyte_emitted_at,
     {{ hash_id }}
 from {{ from_table }}
 {{ sql_table_comment }}
         """
         )
+
+        cdc_active_row_pattern = ""
+        cdc_updated_order_pattern = ""
+        if "_ab_cdc_deleted_at" in column_names.keys():
+            cdc_active_row_pattern = "and _ab_cdc_deleted_at is null "
+            cdc_updated_order_pattern = ", _ab_cdc_updated_at desc"
+
         sql = template.render(
             parent_hash_id=self.parent_hash_id(),
             fields=self.list_fields(column_names),
@@ -518,6 +516,8 @@ from {{ from_table }}
             hash_id=self.hash_id(),
             from_table=jinja_call(from_table),
             sql_table_comment=self.sql_table_comment(include_from_table=True),
+            cdc_active_row=cdc_active_row_pattern,
+            cdc_updated_at_order=cdc_updated_order_pattern,
         )
         return sql
 
@@ -593,8 +593,10 @@ from {{ from_table }}
 
     def add_to_outputs(self, sql: str, is_intermediate: bool, column_count: int = 0, suffix: str = "") -> str:
         schema = self.get_schema(is_intermediate)
-        table_name = self.tables_registry.get_table_name(schema, self.json_path, self.stream_name, suffix)
-        file_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, suffix)
+        # MySQL table names need to be manually truncated, because it does not do it automatically
+        truncate_name = self.destination_type == DestinationType.MYSQL
+        table_name = self.tables_registry.get_table_name(schema, self.json_path, self.stream_name, suffix, truncate_name)
+        file_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, suffix, truncate_name)
         file = f"{file_name}.sql"
         if is_intermediate:
             if column_count <= MAXIMUM_COLUMNS_TO_USE_EPHEMERAL:

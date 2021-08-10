@@ -5,6 +5,23 @@
     "id": {
       "type": ["null", "string"]
     },
+    "dealstage": {
+      "type": ["null", "object"],
+      "properties": {
+        "value": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "integer"
+        },
+        "versions": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"]
+          }
+        }
+      }
+    },
     "properties": {
       "type": ["null", "object"],
       "properties": {

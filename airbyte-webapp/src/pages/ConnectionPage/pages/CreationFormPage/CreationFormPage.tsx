@@ -6,7 +6,7 @@ import useRouter from "components/hooks/useRouterHook";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import PageTitle from "components/PageTitle";
 import StepsMenu from "components/StepsMenu";
-import { FormPageContent } from "components/SourceAndDestinationsBlocks";
+import { FormPageContent } from "components/ConnectorBlocks";
 import CreateEntityView from "./components/CreateEntityView";
 import SourceForm from "./components/SourceForm";
 import DestinationForm from "./components/DestinationForm";

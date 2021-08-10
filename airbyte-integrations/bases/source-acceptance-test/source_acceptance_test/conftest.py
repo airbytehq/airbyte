@@ -29,7 +29,8 @@ from pathlib import Path
 from typing import Any, List, MutableMapping, Optional
 
 import pytest
-from airbyte_cdk.models import AirbyteCatalog, AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConnectorSpecification
+from airbyte_cdk.models import AirbyteCatalog, AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
+from docker import errors
 from source_acceptance_test.config import Config
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, load_config
 
@@ -75,9 +76,12 @@ def configured_catalog_path_fixture(inputs, base_path) -> Optional[str]:
 
 
 @pytest.fixture(name="configured_catalog")
-def configured_catalog_fixture(configured_catalog_path) -> Optional[ConfiguredAirbyteCatalog]:
+def configured_catalog_fixture(configured_catalog_path, catalog_schemas) -> Optional[ConfiguredAirbyteCatalog]:
     if configured_catalog_path:
-        return ConfiguredAirbyteCatalog.parse_file(configured_catalog_path)
+        catalog = ConfiguredAirbyteCatalog.parse_file(configured_catalog_path)
+        for configured_stream in catalog.streams:
+            configured_stream.stream.json_schema = catalog_schemas.get(configured_stream.stream.name, {})
+        return catalog
     return None
 
 
@@ -128,9 +132,12 @@ def docker_runner_fixture(image_tag, tmp_path) -> ConnectorRunner:
 @pytest.fixture(scope="session", autouse=True)
 def pull_docker_image(acceptance_test_config) -> None:
     """Startup fixture to pull docker image"""
-    print("Pulling docker image", acceptance_test_config.connector_image)
-    ConnectorRunner(image_name=acceptance_test_config.connector_image, volume=Path("."))
-    print("Pulling completed")
+    image_name = acceptance_test_config.connector_image
+    config_filename = "acceptance-test-config.yml"
+    try:
+        ConnectorRunner(image_name=image_name, volume=Path("."))
+    except errors.ImageNotFound:
+        pytest.exit(f"Docker image `{image_name}` not found, please check your {config_filename} file", returncode=1)
 
 
 @pytest.fixture(name="expected_records")
@@ -141,3 +148,21 @@ def expected_records_fixture(inputs, base_path) -> List[AirbyteRecordMessage]:
 
     with open(str(base_path / getattr(expect_records, "path"))) as f:
         return [AirbyteRecordMessage.parse_raw(line) for line in f]
+
+
+@pytest.fixture(name="cached_schemas", scope="session")
+def cached_schemas_fixture() -> MutableMapping[str, Any]:
+    """Simple cache for discovered catalog: stream_name -> json_schema"""
+    return {}
+
+
+@pytest.fixture(name="catalog_schemas")
+def catalog_schemas_fixture(connector_config, docker_runner: ConnectorRunner, cached_schemas) -> MutableMapping[str, Any]:
+    """JSON schemas for each stream"""
+    if not cached_schemas:
+        output = docker_runner.call_discover(config=connector_config)
+        catalogs = [message.catalog for message in output if message.type == Type.CATALOG]
+        for stream in catalogs[-1].streams:
+            cached_schemas[stream.name] = stream.json_schema
+
+    return cached_schemas

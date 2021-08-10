@@ -22,22 +22,23 @@
 # SOFTWARE.
 #
 
-
-import json
+import logging
 from collections import Counter, defaultdict
+from functools import reduce
 from typing import Any, List, Mapping, MutableMapping
 
 import pytest
 from airbyte_cdk.models import AirbyteMessage, ConnectorSpecification, Status, Type
 from docker.errors import ContainerError
+from jsonschema import validate
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
-from source_acceptance_test.utils import ConnectorRunner
+from source_acceptance_test.utils import ConnectorRunner, SecretDict, serialize, verify_records_schema
 
 
-@pytest.mark.timeout(10)
+@pytest.mark.default_timeout(10)
 class TestSpec(BaseTest):
-    def test_spec(self, connector_spec: ConnectorSpecification, docker_runner: ConnectorRunner):
+    def test_match_expected(self, connector_spec: ConnectorSpecification, connector_config: SecretDict, docker_runner: ConnectorRunner):
         output = docker_runner.call_spec()
         spec_messages = [message for message in output if message.type == Type.SPEC]
 
@@ -45,8 +46,30 @@ class TestSpec(BaseTest):
         if connector_spec:
             assert spec_messages[0].spec == connector_spec, "Spec should be equal to the one in spec.json file"
 
+        assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT"), "AIRBYTE_ENTRYPOINT must be set in dockerfile"
+        assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT") == " ".join(
+            docker_runner.entry_point
+        ), "env should be equal to space-joined entrypoint"
 
-@pytest.mark.timeout(30)
+        # Getting rid of technical variables that start with an underscore
+        config = {key: value for key, value in connector_config.data.items() if not key.startswith("_")}
+
+        validate(instance=config, schema=spec_messages[0].spec.connectionSpecification)
+
+    def test_required(self):
+        """Check that connector will fail if any required field is missing"""
+
+    def test_optional(self):
+        """Check that connector can work without any optional field"""
+
+    def test_has_secret(self):
+        """Check that spec has a secret. Not sure if this should be always the case"""
+
+    def test_secret_never_in_the_output(self):
+        """This test should be injected into any docker command it needs to know current config and spec"""
+
+
+@pytest.mark.default_timeout(30)
 class TestConnection(BaseTest):
     def test_check(self, connector_config, inputs: ConnectionTestConfig, docker_runner: ConnectorRunner):
         if inputs.status == ConnectionTestConfig.Status.Succeed:
@@ -69,7 +92,7 @@ class TestConnection(BaseTest):
             assert "Traceback" in err.value.stderr.decode("utf-8"), "Connector should print exception"
 
 
-@pytest.mark.timeout(30)
+@pytest.mark.default_timeout(30)
 class TestDiscovery(BaseTest):
     def test_discover(self, connector_config, docker_runner: ConnectorRunner):
         output = docker_runner.call_discover(config=connector_config)
@@ -85,8 +108,67 @@ class TestDiscovery(BaseTest):
         #         assert stream1.dict() == stream2.dict(), f"Streams {stream1.name} and {stream2.name}, stream configs should match"
 
 
-@pytest.mark.timeout(300)
+def primary_keys_for_records(streams, records):
+    streams_with_primary_key = [stream for stream in streams if stream.stream.source_defined_primary_key]
+    for stream in streams_with_primary_key:
+        stream_records = [r for r in records if r.stream == stream.stream.name]
+        for stream_record in stream_records:
+            pk_values = {}
+            for pk_path in stream.stream.source_defined_primary_key:
+                pk_value = reduce(lambda data, key: data.get(key) if isinstance(data, dict) else None, pk_path, stream_record.data)
+                pk_values[tuple(pk_path)] = pk_value
+
+            yield pk_values, stream_record
+
+
+@pytest.mark.default_timeout(5 * 60)
 class TestBasicRead(BaseTest):
+    @staticmethod
+    def _validate_schema(records, configured_catalog):
+        """
+        Check if data type and structure in records matches the one in json_schema of the stream in catalog
+        """
+        bar = "-" * 80
+        streams_errors = verify_records_schema(records, configured_catalog)
+        for stream_name, errors in streams_errors.items():
+            errors = map(str, errors.values())
+            str_errors = f"\n{bar}\n".join(errors)
+            logging.error(f"The {stream_name} stream has the following schema errors:\n{str_errors}")
+
+        if streams_errors:
+            pytest.fail(f"Please check your json_schema in selected streams {tuple(streams_errors.keys())}.")
+
+    def _validate_empty_streams(self, records, configured_catalog, allowed_empty_streams):
+        """
+        Only certain streams allowed to be empty
+        """
+        counter = Counter(record.stream for record in records)
+
+        all_streams = set(stream.stream.name for stream in configured_catalog.streams)
+        streams_with_records = set(counter.keys())
+        streams_without_records = all_streams - streams_with_records
+
+        streams_without_records = streams_without_records - allowed_empty_streams
+        assert not streams_without_records, f"All streams should return some records, streams without records: {streams_without_records}"
+
+    def _validate_expected_records(self, records, expected_records, flags):
+        """
+        We expect some records from stream to match expected_records, partially or fully, in exact or any order.
+        """
+        actual_by_stream = self.group_by_stream(records)
+        expected_by_stream = self.group_by_stream(expected_records)
+        for stream_name, expected in expected_by_stream.items():
+            actual = actual_by_stream.get(stream_name, [])
+
+            self.compare_records(
+                stream_name=stream_name,
+                actual=actual,
+                expected=expected,
+                extra_fields=flags.extra_fields,
+                exact_order=flags.exact_order,
+                extra_records=flags.extra_records,
+            )
+
     def test_read(
         self,
         connector_config,
@@ -97,33 +179,22 @@ class TestBasicRead(BaseTest):
     ):
         output = docker_runner.call_read(connector_config, configured_catalog)
         records = [message.record for message in output if message.type == Type.RECORD]
-        counter = Counter(record.stream for record in records)
-
-        all_streams = set(stream.stream.name for stream in configured_catalog.streams)
-        streams_with_records = set(counter.keys())
-        streams_without_records = all_streams - streams_with_records
 
         assert records, "At least one record should be read using provided catalog"
 
-        if inputs.validate_output_from_all_streams:
-            assert (
-                not streams_without_records
-            ), f"All streams should return some records, streams without records: {streams_without_records}"
+        if inputs.validate_schema:
+            self._validate_schema(records=records, configured_catalog=configured_catalog)
+
+        self._validate_empty_streams(records=records, configured_catalog=configured_catalog, allowed_empty_streams=inputs.empty_streams)
+
+        for pks, record in primary_keys_for_records(streams=configured_catalog.streams, records=records):
+            for pk_path, pk_value in pks.items():
+                assert pk_value is not None, (
+                    f"Primary key subkeys {repr(pk_path)} " f"have null values or not present in {record.stream} stream records."
+                )
 
         if expected_records:
-            actual_by_stream = self.group_by_stream(records)
-            expected_by_stream = self.group_by_stream(expected_records)
-            for stream_name, expected in expected_by_stream.items():
-                actual = actual_by_stream.get(stream_name, [])
-
-                self.compare_records(
-                    stream_name=stream_name,
-                    actual=actual,
-                    expected=expected,
-                    extra_fields=inputs.expect_records.extra_fields,
-                    exact_order=inputs.expect_records.exact_order,
-                    extra_records=inputs.expect_records.extra_records,
-                )
+            self._validate_expected_records(records=records, expected_records=expected_records, flags=inputs.expect_records)
 
     @staticmethod
     def remove_extra_fields(record: Any, spec: Any) -> Any:
@@ -152,8 +223,8 @@ class TestBasicRead(BaseTest):
                     r2 = TestBasicRead.remove_extra_fields(r2, r1)
                 assert r1 == r2, f"Stream {stream_name}: Mismatch of record order or values"
         else:
-            expected = set(map(TestBasicRead.serialize_record_for_comparison, expected))
-            actual = set(map(TestBasicRead.serialize_record_for_comparison, actual))
+            expected = set(map(serialize, expected))
+            actual = set(map(serialize, actual))
             missing_expected = set(expected) - set(actual)
 
             assert not missing_expected, f"Stream {stream_name}: All expected records must be produced"
@@ -170,7 +241,3 @@ class TestBasicRead(BaseTest):
             result[record.stream].append(record.data)
 
         return result
-
-    @staticmethod
-    def serialize_record_for_comparison(record: Mapping) -> str:
-        return json.dumps(record, sort_keys=True)

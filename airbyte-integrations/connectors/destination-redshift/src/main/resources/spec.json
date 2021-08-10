@@ -9,7 +9,7 @@
     "title": "Redshift Destination Spec",
     "type": "object",
     "required": ["host", "port", "database", "username", "password", "schema"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "host": {
         "description": "Host Endpoint of the Redshift Cluster (must include the cluster-id, region and end with .redshift.amazonaws.com)",
@@ -47,13 +47,6 @@
         "examples": ["public"],
         "default": "public",
         "title": "Default Schema"
-      },
-      "basic_normalization": {
-        "type": "boolean",
-        "default": true,
-        "description": "Whether or not to normalize the data in the destination. See <a href=\"https://docs.airbyte.io/architecture/basic-normalization\">basic normalization</a> for more details.",
-        "title": "Basic Normalization",
-        "examples": [true, false]
       },
       "s3_bucket_name": {
         "title": "S3 Bucket Name",
