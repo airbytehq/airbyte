@@ -23,27 +23,11 @@
 #
 
 
-from setuptools import find_packages, setup
+import sys
 
-MAIN_REQUIREMENTS = [
-    "tap-quickbooks @ https://github.com/airbytehq//tap-quickbooks/tarball/v1.0.5-airbyte",
-    "airbyte-cdk",
-]
+from airbyte_cdk.entrypoint import launch
+from source_quickbooks_singer import SourceQuickbooksSinger
 
-TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-    "source-acceptance-test",
-]
-
-setup(
-    name="source_quickbooks_singer",
-    description="Source implementation for Quickbooks, built on the Singer tap implementation.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json"]},
-    extras_require={
-        "tests": TEST_REQUIREMENTS,
-    },
-)
+if __name__ == "__main__":
+    source = SourceQuickbooksSinger()
+    launch(source, sys.argv[1:])
