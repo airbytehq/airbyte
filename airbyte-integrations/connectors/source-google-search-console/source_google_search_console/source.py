@@ -26,46 +26,42 @@
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-
-from source_google_search_console.streams import (SearchAnalytics, Sitemaps,
-                                                  Sites)
+from source_google_search_console.streams import SearchAnalytics, Sitemaps, Sites
 
 
 class SourceGoogleSearchConsole(AbstractSource):
-
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
-            stream_kwargs = {
-                'client_id': config.get('client_id'),
-                'client_secret': config.get('client_secret'),
-                'refresh_token': config.get('refresh_token'),
-                'site_urls': config.get('site_urls'),
-                'user_agent': config.get('user_agent'),
-            }
+            stream_kwargs = self.get_stream_kwargs(config)
             sites = Sites(**stream_kwargs)
-            next(sites)
+            sites_gen = sites.read_records(sync_mode=SyncMode.full_refresh)
+            next(sites_gen)
             return True, None
+
         except Exception as error:
-            return False, f"Unable to connect to Pipedrive API with the provided credentials - {repr(error)}"
+            return False, f"Unable to connect to Google Search Console API with the provided credentials - {repr(error)}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        stream_kwargs = {
-            'client_id': config.get('client_id'),
-            'client_secret': config.get('client_secret'),
-            'refresh_token': config.get('refresh_token'),
-            'site_urls': config.get('site_urls'),
-            'user_agent': config.get('user_agent'),
-            }
-            
-        streams = [
-            Sites(**stream_kwargs),
-            Sitemaps(**stream_kwargs),
-            SearchAnalytics(**stream_kwargs)
-        ]
+        stream_kwargs = self.get_stream_kwargs(config)
+        streams = [Sites(**stream_kwargs), Sitemaps(**stream_kwargs), SearchAnalytics(**stream_kwargs)]
 
         return streams
+
+    @staticmethod
+    def get_stream_kwargs(config: Mapping[str, Any]):
+        stream_kwargs = {
+            "client_id": config.get("client_id"),
+            "client_secret": config.get("client_secret"),
+            "refresh_token": config.get("refresh_token"),
+            "site_urls": config.get("site_urls"),
+            "start_date": config.get("start_date"),
+            "user_agent": config.get("user_agent"),
+        }
+
+        return stream_kwargs

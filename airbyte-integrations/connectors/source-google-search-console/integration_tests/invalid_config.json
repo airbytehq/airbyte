@@ -1,3 +1,8 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "start_date": "2020-08-08",
+  "client_id": "test_id",
+  "client_secret": "test_secret",
+  "refresh_token": "test_refresh",
+  "site_urls": "test_urls",
+  "user_agent": "test <test@example.com>"
 }

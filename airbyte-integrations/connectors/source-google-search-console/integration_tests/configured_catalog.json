@@ -2,22 +2,57 @@
   "streams": [
     {
       "stream": {
-        "name": "table_name",
-        "json_schema": {
-          "properties": {
-            "column_name": {
-              "type": "string"
-            }
-          },
-          "type": "object",
-          "additionalProperties": false
-        },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "default_cursor_field": ["column_name"]
+        "name": "sites",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "update_time"
+        ]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "cursor_field": [
+        "update_time"
+      ],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "sitemaps",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "update_time"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [
+        "update_time"
+      ],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "search_analytics",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "update_time"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [
+        "update_time"
+      ],
+      "destination_sync_mode": "append"
     }
   ]
 }

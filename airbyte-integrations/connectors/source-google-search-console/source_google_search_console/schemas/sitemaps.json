@@ -14,20 +14,20 @@
         "string"
       ]
     },
-    "last_submitted": {
+    "lastSubmitted": {
       "type": [
         "null",
         "string"
       ],
       "format": "date-time"
     },
-    "is_pending": {
+    "isPending": {
       "type": [
         "null",
         "boolean"
       ]
     },
-    "is_sitemaps_index": {
+    "isSitemapsIndex": {
       "type": [
         "null",
         "boolean"
@@ -39,7 +39,7 @@
         "string"
       ]
     },
-    "last_downloaded": {
+    "lastDownloaded": {
       "type": [
         "null",
         "string"
@@ -49,13 +49,13 @@
     "warnings": {
       "type": [
         "null",
-        "integer"
+        "string"
       ]
     },
     "errors": {
       "type": [
         "null",
-        "integer"
+        "string"
       ]
     },
     "contents": {
@@ -74,13 +74,13 @@
               "submitted": {
                 "type": [
                   "null",
-                  "integer"
+                  "string"
                 ]
               },
               "indexed": {
                 "type": [
                   "null",
-                  "integer"
+                  "string"
                 ]
               }
             }

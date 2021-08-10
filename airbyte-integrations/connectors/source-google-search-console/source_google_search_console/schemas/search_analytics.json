@@ -2,19 +2,19 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "site_url": {
+    "siteUrl": {
       "type": [
         "null",
         "string"
       ]
     },
-    "search_type": {
+    "searchType": {
       "type": [
         "null",
         "string"
       ]
     },
-    "dimensions_hash_key": {
+    "dimensionsHashKey": {
       "type": [
         "null",
         "string"
