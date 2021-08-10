@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.Date;
@@ -132,7 +132,7 @@ public class JdbcUtils {
     switch (columnType) {
       case BIT, BOOLEAN -> o.put(columnName, r.getBoolean(i));
       case TINYINT, SMALLINT -> o.put(columnName, r.getShort(i));
-      case INTEGER -> o.put(columnName, r.getInt(i));
+      case INTEGER -> putInteger(o, columnName, r, i);
       case BIGINT -> o.put(columnName, nullIfInvalid(() -> r.getLong(i)));
       case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i), Double::isFinite));
       case REAL -> o.put(columnName, nullIfInvalid(() -> r.getFloat(i), Float::isFinite));
@@ -148,6 +148,19 @@ public class JdbcUtils {
       }
       case BLOB, BINARY, VARBINARY, LONGVARBINARY -> o.put(columnName, r.getBytes(i));
       default -> o.put(columnName, r.getString(i));
+    }
+  }
+
+  /**
+   * In some sources Integer might have value larger than {@link Integer#MAX_VALUE}. E.q. MySQL has
+   * unsigned Integer type, which can contain value 3428724653. If we fail to cast Integer value, we
+   * will try to cast Long.
+   */
+  private static void putInteger(ObjectNode node, String columnName, ResultSet resultSet, int index) {
+    try {
+      node.put(columnName, resultSet.getInt(index));
+    } catch (SQLException e) {
+      node.put(columnName, nullIfInvalid(() -> resultSet.getLong(index)));
     }
   }
 
@@ -167,11 +180,22 @@ public class JdbcUtils {
                                        String value)
       throws SQLException {
     switch (cursorFieldType) {
-      // parse date, time, and timestamp the same way. this seems to not cause an problems and allows us
+      // parse time, and timestamp the same way. this seems to not cause an problems and allows us
       // to treat them all as ISO8601. if this causes any problems down the line, we can adjust.
-      case DATE, TIME, TIMESTAMP -> {
+      // Parsing TIME as a TIMESTAMP might potentially break for ClickHouse cause it doesn't expect TIME
+      // value in the following format
+      case TIME, TIMESTAMP -> {
         try {
           preparedStatement.setTimestamp(parameterIndex, Timestamp.from(DATE_FORMAT.parse(value).toInstant()));
+        } catch (ParseException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
+      case DATE -> {
+        try {
+          Timestamp from = Timestamp.from(DATE_FORMAT.parse(value).toInstant());
+          preparedStatement.setDate(parameterIndex, new Date(from.getTime()));
         } catch (ParseException e) {
           throw new RuntimeException(e);
         }

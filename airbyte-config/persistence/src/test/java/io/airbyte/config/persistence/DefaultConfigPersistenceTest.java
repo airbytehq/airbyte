@@ -31,6 +31,7 @@ import static org.mockito.Mockito.*;
 
 import com.google.common.collect.Sets;
 import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -38,6 +39,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -100,11 +102,13 @@ class DefaultConfigPersistenceTest {
   void writeConfigWithJsonSchemaRef() throws JsonValidationException, IOException, ConfigNotFoundException {
     final StandardSync standardSync = new StandardSync()
         .withName("sync")
+        .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
+        .withNamespaceFormat(null)
         .withPrefix("sync")
         .withConnectionId(UUID_1)
         .withSourceId(UUID.randomUUID())
         .withDestinationId(UUID.randomUUID())
-        .withStatus(StandardSync.Status.ACTIVE);
+        .withOperationIds(List.of(UUID.randomUUID()));
 
     configPersistence.writeConfig(ConfigSchema.STANDARD_SYNC, UUID_1.toString(), standardSync);
 

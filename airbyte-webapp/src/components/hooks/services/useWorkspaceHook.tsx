@@ -3,6 +3,7 @@ import { useFetcher, useResource } from "rest-hooks";
 import config from "config";
 import WorkspaceResource, { Workspace } from "core/resources/Workspace";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
+import NotificationsResource from "core/resources/Notifications";
 
 const useWorkspace = (): {
   workspace: Workspace;
@@ -18,9 +19,12 @@ const useWorkspace = (): {
     news: boolean;
     securityUpdates: boolean;
   }) => Promise<void>;
+  updateWebhook: (data: { webhook: string }) => Promise<void>;
   finishOnboarding: (skipStep?: string) => Promise<void>;
+  testWebhook: (webhook: string) => Promise<void>;
 } => {
   const updateWorkspace = useFetcher(WorkspaceResource.updateShape());
+  const tryWebhookUrl = useFetcher(NotificationsResource.tryShape());
   const workspace = useResource(WorkspaceResource.detailShape(), {
     workspaceId: config.ui.workspaceId,
   });
@@ -79,11 +83,47 @@ const useWorkspace = (): {
     );
   };
 
+  const testWebhook = async (webhook: string) => {
+    await tryWebhookUrl(
+      {
+        notificationType: "slack",
+        slackConfiguration: {
+          webhook: webhook,
+        },
+      },
+      {}
+    );
+  };
+
+  const updateWebhook = async (data: { webhook: string }) => {
+    await updateWorkspace(
+      {},
+      {
+        workspaceId: config.ui.workspaceId,
+        initialSetupComplete: workspace.initialSetupComplete,
+        displaySetupWizard: workspace.displaySetupWizard,
+        anonymousDataCollection: workspace.anonymousDataCollection,
+        news: workspace.news,
+        securityUpdates: workspace.securityUpdates,
+        notifications: [
+          {
+            notificationType: "slack",
+            slackConfiguration: {
+              webhook: data.webhook,
+            },
+          },
+        ],
+      }
+    );
+  };
+
   return {
     workspace,
     finishOnboarding,
     setInitialSetupConfig,
     updatePreferences,
+    updateWebhook,
+    testWebhook,
   };
 };
 

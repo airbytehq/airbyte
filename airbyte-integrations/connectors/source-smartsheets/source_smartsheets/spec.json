@@ -1,0 +1,23 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/smartsheets",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Smartsheets Source Spec",
+    "type": "object",
+    "required": ["access_token", "spreadsheet_id"],
+    "additionalProperties": false,
+    "properties": {
+      "access_token": {
+        "title": "API Access token",
+        "description": "Found in Profile > Apps & Integrations > API Access within Smartsheet app",
+        "type": "string",
+        "airbyte_secret": true
+      },
+      "spreadsheet_id": {
+        "title": "Smartsheet ID",
+        "description": "Found in File > Properties",
+        "type": "string"
+      }
+    }
+  }
+}

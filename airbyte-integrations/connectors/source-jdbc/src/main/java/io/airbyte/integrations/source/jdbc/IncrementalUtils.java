@@ -25,7 +25,7 @@
 package io.airbyte.integrations.source.jdbc;
 
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 
 public class IncrementalUtils {
 

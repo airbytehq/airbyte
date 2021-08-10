@@ -1,6 +1,13 @@
 import { MutateShape, ReadShape, Resource, SchemaDetail } from "rest-hooks";
 import BaseResource from "./BaseResource";
 
+export interface Notification {
+  notificationType: string;
+  slackConfiguration: {
+    webhook: string;
+  };
+}
+
 export interface Workspace {
   workspaceId: string;
   customerId: string;
@@ -12,6 +19,7 @@ export interface Workspace {
   news: boolean;
   securityUpdates: boolean;
   displaySetupWizard: boolean;
+  notifications: Notification[];
 }
 
 export default class WorkspaceResource
@@ -27,6 +35,7 @@ export default class WorkspaceResource
   readonly news: boolean = false;
   readonly securityUpdates: boolean = false;
   readonly displaySetupWizard: boolean = true;
+  readonly notifications: Notification[] = [];
 
   pk(): string {
     return this.workspaceId?.toString();

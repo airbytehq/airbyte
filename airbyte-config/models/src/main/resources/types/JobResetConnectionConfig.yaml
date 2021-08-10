@@ -10,6 +10,12 @@ required:
   - configuredAirbyteCatalog
   - destinationDockerImage
 properties:
+  namespaceDefinition:
+    "$ref": NamespaceDefinitionType.yaml
+  namespaceFormat:
+    type: string
+    default: null
+    example: "${SOURCE_NAMESPACE}"
   prefix:
     description: Prefix that will be prepended to the name of each stream when it is written to the destination.
     type: string
@@ -24,3 +30,8 @@ properties:
   destinationDockerImage:
     description: Image name of the destination with tag.
     type: string
+  operationSequence:
+    description: Sequence of configurations of operations to apply as part of the sync
+    type: array
+    items:
+      "$ref": StandardSyncOperation.yaml

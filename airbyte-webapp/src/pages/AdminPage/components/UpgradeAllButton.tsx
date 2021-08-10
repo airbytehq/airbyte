@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import LoadingButton from "components/Button/LoadingButton";
+import { LoadingButton } from "components";
 
 const UpdateButton = styled(LoadingButton)`
   margin: -6px 0;

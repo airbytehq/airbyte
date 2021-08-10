@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
@@ -12,6 +12,7 @@ import useSource from "components/hooks/services/useSourceHook";
 import { FormPageContent } from "components/SourceAndDestinationsBlocks";
 import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
+import HeadTitle from "components/HeadTitle";
 
 const CreateSourcePage: React.FC = () => {
   const { push } = useRouter();
@@ -28,16 +29,6 @@ const CreateSourcePage: React.FC = () => {
     }
   );
   const { createSource } = useSource();
-
-  const sourcesDropDownData = useMemo(
-    () =>
-      sourceDefinitions.map((item) => ({
-        text: item.name,
-        value: item.sourceDefinitionId,
-        img: "/default-logo-catalog.svg",
-      })),
-    [sourceDefinitions]
-  );
 
   const onSubmitSourceStep = async (values: {
     name: string;
@@ -62,6 +53,7 @@ const CreateSourcePage: React.FC = () => {
 
   return (
     <>
+      <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />
       <PageTitle
         withLine
         title={<FormattedMessage id="sources.newSourceTitle" />}
@@ -70,7 +62,7 @@ const CreateSourcePage: React.FC = () => {
         <SourceForm
           afterSelectConnector={() => setErrorStatusRequest(null)}
           onSubmit={onSubmitSourceStep}
-          dropDownData={sourcesDropDownData}
+          sourceDefinitions={sourceDefinitions}
           hasSuccess={successRequest}
           error={errorStatusRequest}
           jobInfo={errorStatusRequest?.response}

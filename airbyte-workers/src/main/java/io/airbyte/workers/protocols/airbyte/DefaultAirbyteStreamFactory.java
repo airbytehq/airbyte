@@ -68,7 +68,7 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
           Optional<JsonNode> j = Jsons.tryDeserialize(s);
           if (j.isEmpty()) {
             // we log as info all the lines that are not valid json
-            // some taps actually logs their process on stdout, we
+            // some sources actually log their process on stdout, we
             // want to make sure this info is available in the logs.
             logger.info(s);
           }

@@ -16,6 +16,7 @@ import ConnectionsTable from "./components/ConnectionsTable";
 import { Routes } from "pages/routes";
 import useRouter from "components/hooks/useRouterHook";
 import EmptyResource from "components/EmptyResourceBlock";
+import HeadTitle from "components/HeadTitle";
 
 const Content = styled(ContentCard)`
   margin: 0 32px 0 27px;
@@ -32,7 +33,8 @@ const AllConnectionsPage: React.FC = () => {
 
   return (
     <MainPageWithScroll
-      title={
+      headTitle={<HeadTitle titles={[{ id: "sidebar.connections" }]} />}
+      pageTitle={
         <PageTitle
           title={<FormattedMessage id="sidebar.connections" />}
           endComponent={

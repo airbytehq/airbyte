@@ -24,6 +24,7 @@
 
 package io.airbyte.workers;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.StandardTargetConfig;
@@ -31,9 +32,13 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
-import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.process.ProcessFactory;
+import io.airbyte.workers.protocols.airbyte.HeartbeatMonitor;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -52,17 +57,83 @@ public class WorkerUtils {
     } catch (InterruptedException e) {
       LOGGER.error("Exception while while waiting for process to finish", e);
     }
+
     if (process.isAlive()) {
-      LOGGER.warn("Process is taking too long to finish. Killing it");
-      process.destroy();
+      forceShutdown(process, Duration.of(1, ChronoUnit.MINUTES));
+    }
+  }
+
+  /**
+   * As long as the the heartbeatMonitor detects a heartbeat, the process will be allowed to continue.
+   * This method checks the heartbeat once every minute. Once there is no heartbeat detected, if the
+   * process has ended, then the method returns. If the process is still running it is given a grace
+   * period of the timeout arguments passed into the method. Once those expire the process is killed
+   * forcibly. If the process cannot be killed, this method will log that this is the case, but then
+   * returns.
+   *
+   * @param process - process to monitor.
+   * @param heartbeatMonitor - tracks if the heart is still beating for the given process.
+   * @param checkHeartbeatDuration - grace period to give the process to die after its heart stops
+   *        beating.
+   * @param checkHeartbeatDuration - frequency with which the heartbeat of the process is checked.
+   * @param forcedShutdownDuration - amount of time to wait if a process needs to be destroyed
+   *        forcibly.
+   */
+  public static void gentleCloseWithHeartbeat(final Process process,
+                                              final HeartbeatMonitor heartbeatMonitor,
+                                              Duration gracefulShutdownDuration,
+                                              Duration checkHeartbeatDuration,
+                                              Duration forcedShutdownDuration) {
+    gentleCloseWithHeartbeat(
+        process,
+        heartbeatMonitor,
+        gracefulShutdownDuration,
+        checkHeartbeatDuration,
+        forcedShutdownDuration,
+        WorkerUtils::forceShutdown);
+  }
+
+  @VisibleForTesting
+  static void gentleCloseWithHeartbeat(final Process process,
+                                       final HeartbeatMonitor heartbeatMonitor,
+                                       final Duration gracefulShutdownDuration,
+                                       final Duration checkHeartbeatDuration,
+                                       final Duration forcedShutdownDuration,
+                                       final BiConsumer<Process, Duration> forceShutdown) {
+
+    while (process.isAlive() && heartbeatMonitor.isBeating()) {
       try {
-        process.waitFor(1, TimeUnit.MINUTES);
+        process.waitFor(checkHeartbeatDuration.toMillis(), TimeUnit.MILLISECONDS);
       } catch (InterruptedException e) {
-        LOGGER.error("Exception while while killing the process", e);
+        LOGGER.error("Exception while waiting for process to finish", e);
       }
-      if (process.isAlive()) {
-        LOGGER.warn("Couldn't kill the process. You might have a zombie ({})", process.info().commandLine());
+    }
+
+    if (process.isAlive()) {
+      try {
+        process.waitFor(gracefulShutdownDuration.toMillis(), TimeUnit.MILLISECONDS);
+      } catch (InterruptedException e) {
+        LOGGER.error("Exception during grace period for process to finish. This can happen when cancelling jobs.");
       }
+    }
+
+    // if we were unable to exist gracefully, force shutdown...
+    if (process.isAlive()) {
+      forceShutdown.accept(process, forcedShutdownDuration);
+    }
+  }
+
+  @VisibleForTesting
+  static void forceShutdown(Process process, Duration lastChanceDuration) {
+    LOGGER.warn("Process is taking too long to finish. Killing it");
+    process.destroy();
+    try {
+      process.waitFor(lastChanceDuration.toMillis(), TimeUnit.MILLISECONDS);
+    } catch (InterruptedException e) {
+      LOGGER.error("Exception while while killing the process", e);
+    }
+    if (process.isAlive()) {
+      LOGGER.error("Couldn't kill the process. You might have a zombie ({})", process.info().commandLine());
     }
   }
 
@@ -149,10 +220,10 @@ public class WorkerUtils {
     MDC.put("job_log_filename", WorkerConstants.LOG_FILENAME);
   }
 
-  // todo (cgardens) can we get this down to just passing pbf and docker image and not job id and
-  // attempt
-  public static IntegrationLauncher getIntegrationLauncher(IntegrationLauncherConfig config, ProcessBuilderFactory pbf) {
-    return new AirbyteIntegrationLauncher(config.getJobId(), Math.toIntExact(config.getAttemptId()), config.getDockerImage(), pbf);
+  // todo (cgardens) can we get this down to just passing the process factory and image and not job id
+  // and attempt
+  public static IntegrationLauncher getIntegrationLauncher(IntegrationLauncherConfig config, ProcessFactory processFactory) {
+    return new AirbyteIntegrationLauncher(config.getJobId(), Math.toIntExact(config.getAttemptId()), config.getDockerImage(), processFactory);
   }
 
 }

@@ -2,10 +2,10 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useFetcher } from "rest-hooks";
+import { useAsyncFn } from "react-use";
 
 import LogsResource from "core/resources/Logs";
-import { useAsyncFn } from "react-use";
-import LoadingButton from "components/Button/LoadingButton";
+import { LoadingButton } from "components";
 
 const Content = styled.div`
   padding: 29px 0 27px;

@@ -18,6 +18,7 @@ Several output streams are available from this source. A list of these streams c
 | Incremental Sync | Yes |
 | Replicate Incremental Deletes | Coming soon |
 | SSL connection | Yes |
+| Namespaces | No |
 
 ### Performance considerations
 

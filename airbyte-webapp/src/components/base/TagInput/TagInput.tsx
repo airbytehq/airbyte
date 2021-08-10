@@ -59,6 +59,7 @@ type TagInputProps = {
   error?: boolean;
   addOnBlur?: boolean;
   disabled?: boolean;
+  name?: string;
 
   onEnter: (value?: string | number | readonly string[]) => void;
   onDelete: (value: string) => void;
@@ -76,6 +77,7 @@ const TagInput: React.FC<TagInputProps> = ({
   disabled,
   onError,
   addOnBlur,
+  name,
 }) => {
   const inputElement = useRef<HTMLInputElement | null>(null);
   const [selectedElementId, setSelectedElementId] = useState("");
@@ -153,6 +155,7 @@ const TagInput: React.FC<TagInputProps> = ({
       ))}
       <InputElement
         {...inputProps}
+        name={name}
         disabled={disabled}
         autoComplete={"off"}
         placeholder={inputPlaceholder}

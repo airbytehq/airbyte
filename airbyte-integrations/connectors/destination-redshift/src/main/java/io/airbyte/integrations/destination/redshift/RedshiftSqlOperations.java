@@ -32,14 +32,13 @@ import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RedshiftSqlOperations extends DefaultSqlOperations implements SqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSqlOperations.class);
+  protected static final int REDSHIFT_VARCHAR_MAX_BYTE_SIZE = 65535;
 
   @Override
   public String createTableQuery(String schemaName, String tableName) {
@@ -53,9 +52,7 @@ public class RedshiftSqlOperations extends DefaultSqlOperations implements SqlOp
   }
 
   @Override
-  public void insertRecords(JdbcDatabase database, Stream<AirbyteRecordMessage> recordsStream, String schemaName, String tmpTableName)
-      throws SQLException {
-    final List<AirbyteRecordMessage> records = recordsStream.collect(Collectors.toList());
+  public void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tmpTableName) throws SQLException {
     LOGGER.info("actual size of batch: {}", records.size());
 
     // query syntax:
@@ -73,24 +70,10 @@ public class RedshiftSqlOperations extends DefaultSqlOperations implements SqlOp
     SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, database, records);
   }
 
-  public void copyS3CsvFileIntoTable(JdbcDatabase database,
-                                     String s3FileLocation,
-                                     String schema,
-                                     String tableName,
-                                     String s3KeyId,
-                                     String s3Key,
-                                     String s3Region)
-      throws SQLException {
-    final var copyQuery = String.format(
-        "COPY %s.%s FROM '%s'\n"
-            + "CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s'\n"
-            + "CSV REGION '%s' TIMEFORMAT 'auto';\n",
-        schema, tableName,
-        s3FileLocation,
-        s3KeyId, s3Key,
-        s3Region);
-
-    database.execute(copyQuery);
+  @Override
+  public boolean isValidData(final String data) {
+    final int dataSize = data.getBytes().length;
+    return dataSize <= REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
   }
 
 }

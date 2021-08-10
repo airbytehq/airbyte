@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useResource } from "rest-hooks";
 
-import Button from "components/Button";
+import { Button } from "components";
 import { Routes } from "../../../routes";
 import PageTitle from "components/PageTitle";
 import useRouter from "components/hooks/useRouterHook";
@@ -12,6 +12,7 @@ import config from "config";
 import ContentCard from "components/ContentCard";
 import EmptyResource from "components/EmptyResourceBlock";
 import SourceResource from "core/resources/Source";
+import HeadTitle from "components/HeadTitle";
 
 const Content = styled(ContentCard)`
   margin: 0 32px 0 27px;
@@ -27,6 +28,7 @@ const AllSourcesPage: React.FC = () => {
   const onCreateSource = () => push(`${Routes.Source}${Routes.SourceNew}`);
   return (
     <>
+      <HeadTitle titles={[{ id: "admin.sources" }]} />
       <PageTitle
         title={<FormattedMessage id="sidebar.sources" />}
         endComponent={

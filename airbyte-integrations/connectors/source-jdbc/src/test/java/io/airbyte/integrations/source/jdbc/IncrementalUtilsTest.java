@@ -34,7 +34,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
@@ -44,6 +44,7 @@ class IncrementalUtilsTest {
   private static final String UUID_FIELD_NAME = "ascending_inventory_uuid";
   private static final ConfiguredAirbyteStream STREAM = CatalogHelpers.createConfiguredAirbyteStream(
       STREAM_NAME,
+      null,
       Field.of("ascending_inventory_uuid", JsonSchemaPrimitive.STRING));
 
   @Test

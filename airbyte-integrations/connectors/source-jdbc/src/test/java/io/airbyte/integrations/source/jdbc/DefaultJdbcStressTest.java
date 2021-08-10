@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
@@ -35,7 +36,6 @@ import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.util.Optional;
 import java.util.Set;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,7 +65,7 @@ class DefaultJdbcStressTest extends JdbcStressTest {
 
   @BeforeEach
   public void setup() throws Exception {
-    final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
+    final String dbName = Strings.addRandomSuffix("db", "_", 10);
 
     config = Jsons.jsonNode(ImmutableMap.of("host", "localhost", "port", 5432, "database", "charles", "username", "postgres", "password", ""));
 

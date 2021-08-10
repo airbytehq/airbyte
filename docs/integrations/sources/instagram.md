@@ -25,6 +25,7 @@ For more information, see the [Instagram API](https://developers.facebook.com/do
 | `number` | `number` |  |
 | `array` | `array` |  |
 | `object` | `object` |  |
+| Namespaces | No |  |
 
 ### Features
 

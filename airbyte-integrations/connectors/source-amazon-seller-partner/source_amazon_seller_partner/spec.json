@@ -1,0 +1,75 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Amazon Seller Partner Spec",
+    "type": "object",
+    "required": [
+      "start_date",
+      "refresh_token",
+      "lwa_app_id",
+      "lwa_client_secret",
+      "aws_access_key",
+      "aws_secret_key",
+      "role_arn"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "start_date": {
+        "type": "string",
+        "description": "UTC date in the format 2017-01-25. Any data before this date will not be replicated.",
+        "examples": ["2017-01-25T00:00:00Z"]
+      },
+      "refresh_token": {
+        "type": "string",
+        "description": "The refresh token used obtained via authorization (can be passed to the client instead)"
+      },
+      "lwa_app_id": {
+        "type": "string",
+        "description": "Your login with amazon app id"
+      },
+      "lwa_client_secret": {
+        "type": "string",
+        "description": "Your login with amazon client secret"
+      },
+      "aws_access_key": {
+        "type": "string",
+        "description": "AWS USER ACCESS KEY"
+      },
+      "aws_secret_key": {
+        "type": "string",
+        "description": "AWS USER SECRET KEY"
+      },
+      "role_arn": {
+        "type": "string",
+        "description": "The role’s arn (needs permission to “Assume Role” STS)"
+      },
+      "marketplace": {
+        "type": "string",
+        "description": "The marketplace from which you'd like to pull data.",
+        "enum": [
+          "Australia",
+          "Brazil",
+          "Canada",
+          "Egypt",
+          "France",
+          "Germany",
+          "India",
+          "Italy",
+          "Japan",
+          "Mexico",
+          "Netherlands",
+          "Poland",
+          "Singapore",
+          "Spain",
+          "Sweden",
+          "Turkey",
+          "UAE",
+          "UK",
+          "USA"
+        ],
+        "$comment": "https://github.com/amzn/selling-partner-api-docs/blob/main/guides/en-US/developer-guide/SellingPartnerApiDeveloperGuide.md#marketplaceid-values"
+      }
+    }
+  }
+}

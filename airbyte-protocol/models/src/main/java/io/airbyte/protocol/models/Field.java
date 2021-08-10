@@ -28,15 +28,6 @@ import java.util.Objects;
 
 public class Field {
 
-  public enum JsonSchemaPrimitive {
-    STRING,
-    NUMBER,
-    OBJECT,
-    ARRAY,
-    BOOLEAN,
-    NULL;
-  }
-
   private final String name;
   private final JsonSchemaPrimitive type;
 

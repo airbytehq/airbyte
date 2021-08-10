@@ -7,20 +7,15 @@ description:
   of state.json)
 type: object
 required:
-  - jobId
+  - status
   - recordsSynced
   - bytesSynced
-  - status
   - startTime
   - endTime
 additionalProperties: false
 properties:
   status:
-    type: string
-    enum:
-      - completed
-      - failed
-      - cancelled
+    "$ref": ReplicationStatus.yaml
   recordsSynced:
     type: integer
     minValue: 0

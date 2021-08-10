@@ -1,49 +1,40 @@
 import { JSONSchema7, JSONSchema7Type, JSONSchema7TypeName } from "json-schema";
 
+type FormItem = {
+  fieldKey: string;
+  path: string;
+  isRequired: boolean;
+  order?: number;
+  title?: string;
+  description?: string;
+};
+
 export type FormBaseItem = {
   _type: "formItem";
   type: JSONSchema7TypeName;
-  fieldKey: string;
-  path: string;
-  isRequired: boolean;
   isSecret?: boolean;
-  title?: string;
   multiline?: boolean;
-} & Partial<JSONSchema7>;
+} & FormItem &
+  Partial<JSONSchema7>;
 
 type FormGroupItem = {
   _type: "formGroup";
-  path: string;
-  fieldKey: string;
-  isRequired: boolean;
-  title?: string;
   jsonSchema: JSONSchema7;
   properties: FormBlock[];
   isLoading?: boolean;
-  description?: string;
   default?: JSONSchema7Type;
   examples?: JSONSchema7Type;
-};
+} & FormItem;
 
 type FormConditionItem = {
   _type: "formCondition";
-  path: string;
-  fieldKey: string;
-  isRequired: boolean;
-  title?: string;
-  description?: string;
   conditions: { [key: string]: FormGroupItem | FormBaseItem };
-};
+} & FormItem;
 
 type FormObjectArrayItem = {
   _type: "objectArray";
-  path: string;
-  fieldKey: string;
-  isRequired: boolean;
-  title?: string;
-  description?: string;
   properties: FormBlock;
-};
+} & FormItem;
 
 type FormBlock =
   | FormGroupItem

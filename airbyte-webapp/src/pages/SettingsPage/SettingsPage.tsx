@@ -6,6 +6,7 @@ import MainPageWithScroll from "components/MainPageWithScroll";
 import PageTitle from "components/PageTitle";
 import LoadingPage from "components/LoadingPage";
 import AccountSettings from "./components/AccountSettings";
+import HeadTitle from "components/HeadTitle";
 
 const Content = styled.div`
   margin: 0 33px 0 27px;
@@ -15,7 +16,8 @@ const Content = styled.div`
 const SettingsPage: React.FC = () => {
   return (
     <MainPageWithScroll
-      title={
+      headTitle={<HeadTitle titles={[{ id: "sidebar.settings" }]} />}
+      pageTitle={
         <PageTitle
           withLine
           title={<FormattedMessage id="sidebar.settings" />}

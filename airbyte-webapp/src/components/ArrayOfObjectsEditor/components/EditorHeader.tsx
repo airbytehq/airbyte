@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import { Button } from "components/Button";
+import { Button } from "components";
 
 const Content = styled.div`
   display: flex;
@@ -28,7 +28,12 @@ const EditorHeader: React.FC<EditorHeaderProps> = ({
   return (
     <Content>
       <FormattedMessage id="form.items" values={{ count: itemsCount }} />
-      <Button secondary type="button" onClick={onAddItem}>
+      <Button
+        secondary
+        type="button"
+        onClick={onAddItem}
+        data-test-id="addItemButton"
+      >
         <FormattedMessage id="form.addItems" />
       </Button>
     </Content>

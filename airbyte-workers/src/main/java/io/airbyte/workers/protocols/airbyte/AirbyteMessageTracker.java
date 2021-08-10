@@ -24,9 +24,9 @@
 
 package io.airbyte.workers.protocols.airbyte;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.protocols.MessageTracker;
 import java.util.Optional;
@@ -37,7 +37,7 @@ public class AirbyteMessageTracker implements MessageTracker<AirbyteMessage> {
 
   private final AtomicLong recordCount;
   private final AtomicLong numBytes;
-  private final AtomicReference<JsonNode> outputState;
+  private final AtomicReference<State> outputState;
 
   public AirbyteMessageTracker() {
     this.recordCount = new AtomicLong();
@@ -53,19 +53,22 @@ public class AirbyteMessageTracker implements MessageTracker<AirbyteMessage> {
       numBytes.addAndGet(Jsons.serialize(message.getRecord().getData()).getBytes(Charsets.UTF_8).length);
     }
     if (message.getType() == AirbyteMessage.Type.STATE) {
-      outputState.set(message.getState().getData());
+      outputState.set(new State().withState(message.getState().getData()));
     }
   }
 
+  @Override
   public long getRecordCount() {
     return recordCount.get();
   }
 
+  @Override
   public long getBytesCount() {
     return numBytes.get();
   }
 
-  public Optional<JsonNode> getOutputState() {
+  @Override
+  public Optional<State> getOutputState() {
     return Optional.ofNullable(outputState.get());
   }
 

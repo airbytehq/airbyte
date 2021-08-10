@@ -83,12 +83,24 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
   @Override
   public JsonNode toJdbcConfig(JsonNode config) {
+
+    List<String> additionalParameters = new ArrayList<>();
+
+    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
+        config.get("host").asText(),
+        config.get("port").asText(),
+        config.get("database").asText()));
+
+    if (config.has("ssl") && config.get("ssl").asBoolean()) {
+      additionalParameters.add("ssl=true");
+      additionalParameters.add("sslmode=require");
+    }
+
+    additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
+
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
-        .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()));
+        .put("jdbc_url", jdbcUrl.toString());
 
     if (config.has("password")) {
       configBuilder.put("password", config.get("password").asText());
@@ -109,6 +121,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     if (isCdc(config)) {
       final List<AirbyteStream> streams = catalog.getStreams().stream()
           .map(PostgresSource::removeIncrementalWithoutPk)
+          .map(PostgresSource::setIncrementalToSourceDefined)
           .map(PostgresSource::addCdcMetadataColumns)
           .collect(toList());
 
@@ -206,6 +219,14 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
                                                                              Map<String, TableInfoInternal> tableNameToTable,
                                                                              JdbcStateManager stateManager,
                                                                              Instant emittedAt) {
+    /**
+     * If a customer sets up a postgres source with cdc parameters (replication_slot and publication)
+     * but selects all the tables in FULL_REFRESH mode then we would still end up going through this
+     * path. We do have a check in place for debezium to make sure only tales in INCREMENTAL mode are
+     * synced {@link DebeziumRecordPublisher#getTableWhitelist(ConfiguredAirbyteCatalog)} but we should
+     * have a check here as well to make sure that if no table is in INCREMENTAL mode then skip this
+     * part
+     */
     if (isCdc(config)) {
       // State works differently in CDC than it does in convention incremental. The state is written to an
       // offset file that debezium reads from. Then once all records are replicated, we read back that
@@ -258,7 +279,6 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
   @VisibleForTesting
   static boolean isCdc(JsonNode config) {
-    LOGGER.info("isCdc config: " + config);
     final boolean isCdc = config.hasNonNull("replication_method")
         && config.get("replication_method").hasNonNull("replication_slot")
         && config.get("replication_method").hasNonNull("publication");
@@ -271,6 +291,8 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
    * information (like an oid) when using logical replication. By limiting to Full Refresh when we
    * don't have a primary key we dodge the problem for now. As a work around a CDC and non-CDC source
    * could be configured if there's a need to replicate a large non-PK table.
+   *
+   * Note: in place mutation.
    */
   private static AirbyteStream removeIncrementalWithoutPk(AirbyteStream stream) {
     if (stream.getSourceDefinedPrimaryKey().isEmpty()) {
@@ -280,6 +302,21 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     return stream;
   }
 
+  /*
+   * Set all streams that do have incremental to sourceDefined, so that the user cannot set or
+   * override a cursor field.
+   *
+   * Note: in place mutation.
+   */
+  private static AirbyteStream setIncrementalToSourceDefined(AirbyteStream stream) {
+    if (stream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL)) {
+      stream.setSourceDefinedCursor(true);
+    }
+
+    return stream;
+  }
+
+  // Note: in place mutation.
   private static AirbyteStream addCdcMetadataColumns(AirbyteStream stream) {
     ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
     ObjectNode properties = (ObjectNode) jsonSchema.get("properties");

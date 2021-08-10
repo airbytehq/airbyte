@@ -1,0 +1,26 @@
+{
+  "bigquery": [
+    { "HKD_special___characters": "HKD_special___characters_1" },
+    { "'\"HKD@spéçiäl & characters\"'": "HKD_special___characters" }
+  ],
+  "postgres": [
+    {
+      "nested_stream_with_complex_columns_resulting_into_long_names_partition_double_array_data": "nested_stream_with_c__ion_double_array_data"
+    },
+    {
+      "nested_stream_with_complex_columns_resulting_into_long_names_partition_data": "nested_stream_with_c___names_partition_data"
+    },
+    {
+      "nested_stream_with_complex_columns_resulting_into_long_names_partition": "nested_stream_with_c___long_names_partition"
+    },
+    {
+      "'nested_stream_with_complex_columns_resulting_into_long_names'": "'nested_stream_with_c__lting_into_long_names'"
+    },
+    {
+      "'non_nested_stream_without_namespace_resulting_into_long_names'": "'non_nested_stream_wi__lting_into_long_names'"
+    },
+    { "#quote: true in postgres": "quote: true" }
+  ],
+  "snowflake": [{ "HKD@SPÉÇIÄL & CHARACTERS": "HKD@spéçiäl & characters" }],
+  "redshift": []
+}

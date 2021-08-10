@@ -1,0 +1,442 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "campaigns",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            },
+            "is_abtest": {
+              "type": "boolean"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "lists",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "contact_count": {
+              "type": "integer"
+            },
+            "_metadata": {
+              "type": "object",
+              "properties": {
+                "self": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "contacts",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "address_line_1": {
+              "type": "string"
+            },
+            "address_line_2": {
+              "type": "string"
+            },
+            "alternate_emails": {
+              "type": "array"
+            },
+            "city": {
+              "type": "string"
+            },
+            "country": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            },
+            "first_name": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "last_name": {
+              "type": "string"
+            },
+            "postal_code": {
+              "type": "string"
+            },
+            "state_province_region": {
+              "type": "string"
+            },
+            "list_ids": {
+              "type": "array"
+            },
+            "created_at": {
+              "type": "array"
+            },
+            "updated_at": {
+              "type": "array"
+            },
+            "_metadata": {
+              "type": "object",
+              "properties": {
+                "self": {
+                  "type": "string"
+                }
+              }
+            },
+            "custom_fields": {
+              "type": "object"
+            },
+            "phone_number": {
+              "type": "string"
+            },
+            "whatsapp": {
+              "type": "string"
+            },
+            "line": {
+              "type": "string"
+            },
+            "facebook": {
+              "type": "string"
+            },
+            "unique_name": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "stats_automations",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "stats": {
+              "type": "object",
+              "properties": {
+                "bounce_drops": {
+                  "type": "integer"
+                },
+                "bounces": {
+                  "type": "integer"
+                },
+                "clicks": {
+                  "type": "integer"
+                },
+                "delivered": {
+                  "type": "integer"
+                },
+                "invalid_emails": {
+                  "type": "integer"
+                },
+                "opens": {
+                  "type": "integer"
+                },
+                "requests": {
+                  "type": "integer"
+                },
+                "spam_report_drops": {
+                  "type": "integer"
+                },
+                "spam_reports": {
+                  "type": "integer"
+                },
+                "unique_clicks": {
+                  "type": "integer"
+                },
+                "unique_opens": {
+                  "type": "integer"
+                },
+                "unsubscribes": {
+                  "type": "integer"
+                }
+              }
+            },
+            "aggregation": {
+              "type": "string"
+            },
+            "step_id": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "segments",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "contact_count": {
+              "type": "integer"
+            },
+            "sample_updated_at": {
+              "type": "string"
+            },
+            "next_sample_update": {
+              "type": "string"
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            },
+            "parent_list_id": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "templates",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "generation": {
+              "type": ["null", "string"]
+            },
+            "updated_at": {
+              "type": ["null", "string"]
+            },
+            "versions": {
+              "type": ["array"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "global_suppressions",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "created": {
+              "type": "integer"
+            },
+            "email": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["created"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "suppression_groups",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "is_default": {
+              "type": "boolean"
+            },
+            "unsubscribes": {
+              "type": "integer"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "suppression_group_members",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string"
+            },
+            "group_id": {
+              "type": "integer"
+            },
+            "group_name": {
+              "type": "string"
+            },
+            "created_at": {
+              "type": "integer"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "blocks",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "created": {
+              "type": "integer"
+            },
+            "email": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["created"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "bounces",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "created": {
+              "type": "integer"
+            },
+            "email": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["created"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "invalid_emails",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "created": {
+              "type": "integer"
+            },
+            "email": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["created"],
+      "destination_sync_mode": "append"
+    }
+  ]
+}

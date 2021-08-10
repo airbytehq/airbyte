@@ -31,7 +31,7 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSyncSchedule;
+import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -191,12 +191,16 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class);
   }
 
-  public StandardSyncSchedule getStandardSyncSchedule(final UUID connectionId) throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(ConfigSchema.STANDARD_SYNC_SCHEDULE, connectionId.toString(), StandardSyncSchedule.class);
+  public StandardSyncOperation getStandardSyncOperation(final UUID operationId) throws JsonValidationException, IOException, ConfigNotFoundException {
+    return persistence.getConfig(ConfigSchema.STANDARD_SYNC_OPERATION, operationId.toString(), StandardSyncOperation.class);
   }
 
-  public void writeStandardSchedule(final StandardSyncSchedule schedule) throws JsonValidationException, IOException {
-    persistence.writeConfig(ConfigSchema.STANDARD_SYNC_SCHEDULE, schedule.getConnectionId().toString(), schedule);
+  public void writeStandardSyncOperation(final StandardSyncOperation standardSyncOperation) throws JsonValidationException, IOException {
+    persistence.writeConfig(ConfigSchema.STANDARD_SYNC_OPERATION, standardSyncOperation.getOperationId().toString(), standardSyncOperation);
+  }
+
+  public List<StandardSyncOperation> listStandardSyncOperations() throws IOException, JsonValidationException {
+    return persistence.listConfigs(ConfigSchema.STANDARD_SYNC_OPERATION, StandardSyncOperation.class);
   }
 
 }

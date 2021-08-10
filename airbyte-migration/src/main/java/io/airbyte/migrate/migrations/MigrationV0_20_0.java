@@ -25,18 +25,15 @@
 package io.airbyte.migrate.migrations;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.migrate.Migration;
+import io.airbyte.migrate.MigrationUtils;
 import io.airbyte.migrate.ResourceId;
 import io.airbyte.migrate.ResourceType;
-import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This migration is currently empty and is a placeholder for migrations for the next 0.19.0 release
@@ -46,9 +43,12 @@ import org.slf4j.LoggerFactory;
  */
 public class MigrationV0_20_0 extends BaseMigration implements Migration {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MigrationV0_20_0.class);
-
   private static final ResourceId STANDARD_WORKSPACE_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_WORKSPACE");
+  private static final ResourceId STANDARD_SOURCE_DEFINITION_RESOURCE_ID =
+      ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SOURCE_DEFINITION");
+  private static final ResourceId STANDARD_DESTINATION_DEFINITION_RESOURCE_ID =
+      ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_DESTINATION_DEFINITION");
+  private static final ResourceId STANDARD_SYNC_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
 
   private static final String MIGRATION_VERSION = "0.20.0-alpha";
 
@@ -67,12 +67,18 @@ public class MigrationV0_20_0 extends BaseMigration implements Migration {
   @Override
   public Map<ResourceId, JsonNode> getInputSchema() {
     final Map<ResourceId, JsonNode> outputSchema = new HashMap<>(previousMigration.getOutputSchema());
-    try {
-      outputSchema.put(STANDARD_WORKSPACE_RESOURCE_ID,
-          Jsons.jsonNode(MoreResources.readResource("migrations/migrationV0_20_0/StandardWorkspace.yaml")));
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    outputSchema.put(
+        STANDARD_WORKSPACE_RESOURCE_ID,
+        MigrationUtils.getSchemaFromResourcePath(Path.of("migrations/migrationV0_20_0"), STANDARD_WORKSPACE_RESOURCE_ID));
+    outputSchema.put(
+        STANDARD_SOURCE_DEFINITION_RESOURCE_ID,
+        MigrationUtils.getSchemaFromResourcePath(Path.of("migrations/migrationV0_20_0"), STANDARD_SOURCE_DEFINITION_RESOURCE_ID));
+    outputSchema.put(
+        STANDARD_DESTINATION_DEFINITION_RESOURCE_ID,
+        MigrationUtils.getSchemaFromResourcePath(Path.of("migrations/migrationV0_20_0"), STANDARD_DESTINATION_DEFINITION_RESOURCE_ID));
+    outputSchema.put(
+        STANDARD_SYNC_RESOURCE_ID,
+        MigrationUtils.getSchemaFromResourcePath(Path.of("migrations/migrationV0_20_0"), STANDARD_SYNC_RESOURCE_ID));
     return outputSchema;
   }
 

@@ -3,14 +3,14 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useAsyncFn } from "react-use";
 
-import Button from "components/Button";
+import { Button, LoadingButton } from "components";
 import ContentCard from "components/ContentCard";
 import config from "config";
 import Link from "components/Link";
-import ImportConfigurationModal from "./ImportConfigurationModal";
 import DeploymentService from "core/resources/DeploymentService";
+import ImportConfigurationModal from "./ImportConfigurationModal";
 import LogsContent from "./LogsContent";
-import LoadingButton from "components/Button/LoadingButton";
+import HeadTitle from "components/HeadTitle";
 
 const Content = styled.div`
   max-width: 813px;
@@ -84,6 +84,9 @@ const ConfigurationView: React.FC = () => {
 
   return (
     <Content>
+      <HeadTitle
+        titles={[{ id: "sidebar.admin" }, { id: "admin.configuration" }]}
+      />
       <ControlContent title={<FormattedMessage id="admin.export" />}>
         <ButtonContent>
           <LoadingButton onClick={onExport} isLoading={loadingExport}>

@@ -17,7 +17,6 @@ import { WidgetConfigMap } from "core/form/types";
  * @param propertyKey used in recursive schema building for building path for uiConfig
  * @param propertyPath constructs path of property
  */
-
 export const buildYupFormForJsonSchema = (
   jsonSchema: JSONSchema7,
   uiConfig?: WidgetConfigMap,

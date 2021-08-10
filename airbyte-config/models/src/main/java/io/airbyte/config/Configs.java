@@ -25,6 +25,7 @@
 package io.airbyte.config;
 
 import java.nio.file.Path;
+import java.util.Set;
 
 public interface Configs {
 
@@ -61,6 +62,8 @@ public interface Configs {
   WorkspaceRetentionConfig getWorkspaceRetentionConfig();
 
   String getTemporalHost();
+
+  Set<Integer> getTemporalWorkerPorts();
 
   enum TrackingStrategy {
     SEGMENT,

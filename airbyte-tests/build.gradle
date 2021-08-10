@@ -48,5 +48,8 @@ task acceptanceTests(type: Test) {
     mustRunAfter test
 
     dependsOn ':airbyte-integrations:connectors:source-postgres:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-csv:airbyteDocker'
+    dependsOn ':airbyte-integrations:connectors:destination-postgres:airbyteDocker'
+    // for checkpointing tests
+    dependsOn ':airbyte-integrations:connectors:source-e2e-test:airbyteDocker'
+    dependsOn ':airbyte-integrations:connectors:destination-e2e-test:airbyteDocker'
 }

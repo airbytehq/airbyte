@@ -24,6 +24,8 @@
 
 package io.airbyte.scheduler.persistence.job_tracker;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -32,21 +34,27 @@ import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.StandardSyncSchedule;
+import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -62,6 +70,9 @@ public class JobTracker {
   }
 
   public static final String MESSAGE_NAME = "Connector Jobs";
+  public static final String CONFIG = "config";
+  public static final String CATALOG = "catalog";
+  public static final String SET = "set";
 
   private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
@@ -127,21 +138,81 @@ public class JobTracker {
       final ImmutableMap<String, Object> destinationDefMetadata = generateDestinationDefinitionMetadata(destinationDefinitionId);
       final ImmutableMap<String, Object> syncMetadata = generateSyncMetadata(connectionId);
       final ImmutableMap<String, Object> stateMetadata = generateStateMetadata(jobState);
+      final Map<String, Object> syncConfigMetadata = generateSyncConfigMetadata(job.getConfig());
 
-      track(MoreMaps.merge(jobMetadata, jobAttemptMetadata, sourceDefMetadata, destinationDefMetadata, syncMetadata, stateMetadata));
+      track(MoreMaps.merge(
+          jobMetadata,
+          jobAttemptMetadata,
+          sourceDefMetadata,
+          destinationDefMetadata,
+          syncMetadata,
+          stateMetadata,
+          syncConfigMetadata));
     });
+  }
+
+  private Map<String, Object> generateSyncConfigMetadata(JobConfig config) {
+    if (config.getConfigType() == ConfigType.SYNC) {
+      JsonNode sourceConfiguration = config.getSync().getSourceConfiguration();
+      JsonNode destinationConfiguration = config.getSync().getDestinationConfiguration();
+
+      Map<String, Object> sourceMetadata = configToMetadata(CONFIG + ".source", sourceConfiguration);
+      Map<String, Object> destinationMetadata = configToMetadata(CONFIG + ".destination", destinationConfiguration);
+      Map<String, Object> catalogMetadata = getCatalogMetadata(config.getSync().getConfiguredAirbyteCatalog());
+
+      return MoreMaps.merge(sourceMetadata, destinationMetadata, catalogMetadata);
+    } else {
+      return Collections.emptyMap();
+    }
+  }
+
+  private Map<String, Object> getCatalogMetadata(ConfiguredAirbyteCatalog catalog) {
+    final Map<String, Object> output = new HashMap<>();
+
+    for (ConfiguredAirbyteStream stream : catalog.getStreams()) {
+      output.put(CATALOG + ".sync_mode." + stream.getSyncMode().name().toLowerCase(), SET);
+      output.put(CATALOG + ".destination_sync_mode." + stream.getDestinationSyncMode().name().toLowerCase(), SET);
+    }
+
+    return output;
+  }
+
+  protected static Map<String, Object> configToMetadata(String jsonPath, JsonNode config) {
+    final Map<String, Object> output = new HashMap<>();
+
+    if (config.isObject()) {
+      final ObjectNode node = (ObjectNode) config;
+      for (Iterator<Map.Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
+        var entry = it.next();
+        var field = entry.getKey();
+        var fieldJsonPath = jsonPath + "." + field;
+        var child = entry.getValue();
+
+        if (child.isBoolean()) {
+          output.put(fieldJsonPath, child.asBoolean());
+        } else if (!child.isNull()) {
+          if (child.isObject()) {
+            output.putAll(configToMetadata(fieldJsonPath, child));
+          } else if (!child.isTextual() || (child.isTextual() && !child.asText().isEmpty())) {
+            output.put(fieldJsonPath, SET);
+          }
+        }
+      }
+    }
+
+    return output;
   }
 
   private ImmutableMap<String, Object> generateSyncMetadata(UUID connectionId) throws ConfigNotFoundException, IOException, JsonValidationException {
     final Builder<String, Object> metadata = ImmutableMap.builder();
     metadata.put("connection_id", connectionId);
 
-    final StandardSyncSchedule schedule = configRepository.getStandardSyncSchedule(connectionId);
+    final StandardSync standardSync = configRepository.getStandardSync(connectionId);
     String frequencyString;
-    if (schedule.getManual()) {
+    if (standardSync.getManual()) {
       frequencyString = "manual";
     } else {
-      final long intervalInMinutes = TimeUnit.SECONDS.toMinutes(ScheduleHelpers.getIntervalInSecond(schedule.getSchedule()));
+      final long intervalInMinutes = TimeUnit.SECONDS.toMinutes(ScheduleHelpers.getIntervalInSecond(standardSync.getSchedule()));
       frequencyString = intervalInMinutes + " min";
     }
     metadata.put("frequency", frequencyString);

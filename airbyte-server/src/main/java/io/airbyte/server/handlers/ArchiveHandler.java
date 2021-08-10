@@ -145,7 +145,7 @@ public class ArchiveHandler {
     final Path versionFile = tempFolder.resolve(VERSION_FILE_NAME);
     final String importVersion = Files.readString(versionFile, Charset.defaultCharset()).replace("\n", "").strip();
     LOGGER.info(String.format("Checking Airbyte Version to import %s", importVersion));
-    if (AirbyteVersion.isCompatible(version, importVersion)) {
+    if (!AirbyteVersion.isCompatible(version, importVersion)) {
       throw new IOException(String.format("Imported VERSION (%s) is incompatible with current Airbyte version (%s).\n" +
           "Please upgrade your Airbyte Archive, see more at https://docs.airbyte.io/tutorials/upgrading-airbyte\n",
           importVersion, version));

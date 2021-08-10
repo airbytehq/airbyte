@@ -6,6 +6,9 @@ out
 .DS_Store
 data
 .dockerversions
+.classpath
+.project
+.settings
 
 # Secrets
 secrets

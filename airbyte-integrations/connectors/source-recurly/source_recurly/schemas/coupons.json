@@ -18,13 +18,13 @@
       "type": "string"
     },
     "max_redemptions": {
-      "type": "integer"
+      "type": "number"
     },
     "max_redemptions_per_account": {
-      "type": "integer"
+      "type": "number"
     },
     "unique_coupon_codes_count": {
-      "type": "integer"
+      "type": "number"
     },
     "unique_code_template": {
       "type": "string"
@@ -33,7 +33,7 @@
       "type": "string"
     },
     "temporal_amount": {
-      "type": "integer"
+      "type": "number"
     },
     "temporal_unit": {
       "type": "string"
@@ -42,7 +42,7 @@
       "type": "string"
     },
     "free_trial_amount": {
-      "type": "integer"
+      "type": "number"
     },
     "applies_to_all_plans": {
       "type": "boolean"
@@ -72,7 +72,7 @@
           "type": "string"
         },
         "percent": {
-          "type": "integer"
+          "type": "number"
         },
         "currencies": {
           "type": "array"
@@ -84,7 +84,7 @@
               "type": "string"
             },
             "length": {
-              "type": "integer"
+              "type": "number"
             }
           }
         }

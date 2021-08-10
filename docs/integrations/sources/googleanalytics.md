@@ -30,6 +30,7 @@ Please reach out to us on Slack or [create an issue](https://github.com/airbyteh
 | Incremental Sync | Coming soon |
 | Replicate Incremental Deletes | Coming soon |
 | SSL connection | Yes |
+| Namespaces | No |
 
 ### Performance considerations
 
@@ -68,7 +69,7 @@ You can replicate Google Analytics [Custom Reports](https://support.google.com/a
 Here is an example input "Custom Reports" field:
 
 ```text
-[{"Name": "new_users_per_day"}, {"dimensions": ["ga:date"], "metrics": ["ga:newUsers"]}, {"Name": "users_per_city"}, {"dimensions": ["ga:city"], "metrics": ["ga:users"]}]
+[{"name": "new_users_per_day", "dimensions": ["ga:date","ga:country","ga:region"], "metrics": ["ga:newUsers"]}, {"name": "users_per_city", "dimensions": ["ga:city"], "metrics": ["ga:users"]}]
 ```
 
 To create a list of dimensions, you can use default GA dimensions \(listed below\) or custom dimensions if you have some defined. Each report can contain no more than 7 dimensions, and they must all be unique. The default GA dimensions are:

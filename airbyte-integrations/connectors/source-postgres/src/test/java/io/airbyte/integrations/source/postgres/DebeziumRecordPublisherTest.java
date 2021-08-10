@@ -37,9 +37,9 @@ class DebeziumRecordPublisherTest {
   @Test
   public void testWhitelistCreation() {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(ImmutableList.of(
-        CatalogHelpers.createConfiguredAirbyteStream("public.id_and_name").withSyncMode(SyncMode.INCREMENTAL),
-        CatalogHelpers.createConfiguredAirbyteStream("public.id_,something").withSyncMode(SyncMode.INCREMENTAL),
-        CatalogHelpers.createConfiguredAirbyteStream("public.n\"aMéS").withSyncMode(SyncMode.INCREMENTAL)));
+        CatalogHelpers.createConfiguredAirbyteStream("id_and_name", "public").withSyncMode(SyncMode.INCREMENTAL),
+        CatalogHelpers.createConfiguredAirbyteStream("id_,something", "public").withSyncMode(SyncMode.INCREMENTAL),
+        CatalogHelpers.createConfiguredAirbyteStream("n\"aMéS", "public").withSyncMode(SyncMode.INCREMENTAL)));
 
     final String expectedWhitelist = "public.id_and_name,public.id_\\,something,public.n\"aMéS";
     final String actualWhitelist = DebeziumRecordPublisher.getTableWhitelist(catalog);
@@ -50,8 +50,8 @@ class DebeziumRecordPublisherTest {
   @Test
   public void testWhitelistFiltersFullRefresh() {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(ImmutableList.of(
-        CatalogHelpers.createConfiguredAirbyteStream("public.id_and_name").withSyncMode(SyncMode.INCREMENTAL),
-        CatalogHelpers.createConfiguredAirbyteStream("public.id_and_name2").withSyncMode(SyncMode.FULL_REFRESH)));
+        CatalogHelpers.createConfiguredAirbyteStream("id_and_name", "public").withSyncMode(SyncMode.INCREMENTAL),
+        CatalogHelpers.createConfiguredAirbyteStream("id_and_name2", "public").withSyncMode(SyncMode.FULL_REFRESH)));
 
     final String expectedWhitelist = "public.id_and_name";
     final String actualWhitelist = DebeziumRecordPublisher.getTableWhitelist(catalog);

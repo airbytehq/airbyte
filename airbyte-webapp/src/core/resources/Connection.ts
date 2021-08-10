@@ -8,7 +8,7 @@ import {
 } from "rest-hooks";
 
 import { SyncSchema } from "core/domain/catalog";
-import { NetworkError } from "core/request/NetworkError";
+import { CommonRequestError } from "core/request/CommonRequestError";
 import { Source } from "./Source";
 import { Destination } from "./Destination";
 
@@ -28,8 +28,8 @@ export interface Connection {
   status: string;
   schedule: ScheduleProperties | null;
   syncCatalog: SyncSchema;
-  source?: Source;
-  destination?: Destination;
+  source: Source;
+  destination: Destination;
   latestSyncJobCreatedAt?: number | null;
   isSyncing?: boolean;
   latestSyncJobStatus: string | null;
@@ -46,8 +46,8 @@ export default class ConnectionResource
   readonly status: string = "";
   readonly message: string = "";
   readonly schedule: ScheduleProperties | null = null;
-  readonly source: Source | undefined = undefined;
-  readonly destination: Destination | undefined = undefined;
+  readonly source: Source = {} as Source;
+  readonly destination: Destination = {} as Destination;
   readonly latestSyncJobCreatedAt: number | undefined | null = null;
   readonly latestSyncJobStatus: string | null = null;
   readonly syncCatalog: SyncSchema = { streams: [] };
@@ -102,10 +102,7 @@ export default class ConnectionResource
         );
 
         if (result.status === "failure") {
-          const e = new NetworkError(result);
-          e.status = result.status;
-          e.message = result.message;
-          throw e;
+          throw new CommonRequestError(result, result.message);
         }
 
         return result;

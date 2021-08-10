@@ -26,7 +26,6 @@ package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
@@ -173,7 +172,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     return catalog.getStreams().stream()
         .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)
         .map(ConfiguredAirbyteStream::getStream)
-        .map(AirbyteStream::getName)
+        .map(stream -> stream.getNamespace() + "." + stream.getName())
         // debezium needs commas escaped to split properly
         .map(x -> StringUtils.escape(x, new char[] {','}, "\\,"))
         .collect(Collectors.joining(","));

@@ -6,19 +6,6 @@ Cypress.Commands.add("fillEmail", (email) => {
   cy.get("input[name=email]").type(email);
 })
 
-Cypress.Commands.add("fillTestExchangeForm", (name) => {
-  cy.intercept("/source_definition_specifications/get").as("getSourceSpecifications");
-
-  cy.get("input[name=name]").type(name);
-  cy.get("div[role=combobox]").click();
-  cy.get("div").contains("Exchange Rates Api").click();
-
-  cy.wait("@getSourceSpecifications");
-
-  cy.get("input[name='connectionConfiguration.base']").type("USD");
-  cy.get("input[name='connectionConfiguration.start_date']").type("2020-12-12");
-})
-
 Cypress.Commands.add("fillTestLocalJsonForm", (name) => {
   cy.intercept("/destination_definition_specifications/get").as("getDestinationSpecifications");
 

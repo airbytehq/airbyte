@@ -8,8 +8,8 @@ import { ConnectionBlockItem } from "./components/ConnectionBlockItem";
 
 type IProps = {
   className?: string;
-  itemFrom?: { name: string; img?: string };
-  itemTo?: { name: string; img?: string };
+  itemFrom?: { name: string; icon?: string };
+  itemTo?: { name: string; icon?: string };
 };
 
 const LightContentCard = styled(ContentCard)`

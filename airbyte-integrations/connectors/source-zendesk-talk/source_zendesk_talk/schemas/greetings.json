@@ -24,7 +24,7 @@
       "type": ["null", "boolean"]
     },
     "id": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "ivr_ids": {
       "type": ["null", "array"],

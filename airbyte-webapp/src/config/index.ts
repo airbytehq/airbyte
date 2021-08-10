@@ -11,7 +11,7 @@ declare global {
   }
 }
 
-const config: {
+type Config = {
   ui: {
     helpLink: string;
     slackLink: string;
@@ -28,9 +28,12 @@ const config: {
     enableStorytime: boolean;
   };
   apiUrl: string;
+  healthCheckInterval: number;
   isDemo: boolean;
   version?: string;
-} = {
+};
+
+const config: Config = {
   ui: {
     technicalSupport: "https://docs.airbyte.io/faq/technical-support",
     helpLink: "https://airbyte.io/community",
@@ -59,6 +62,7 @@ const config: {
     window.API_URL ||
     process.env.REACT_APP_API_URL ||
     `${window.location.protocol}//${window.location.hostname}:8001/api/v1/`,
+  healthCheckInterval: 10000,
   isDemo: window.IS_DEMO === "true",
 };
 

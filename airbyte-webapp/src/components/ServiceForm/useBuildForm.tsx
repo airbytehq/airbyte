@@ -5,18 +5,11 @@ import { JSONSchema7 } from "json-schema";
 import flatten from "flat";
 import merge from "lodash.merge";
 
-import {
-  FormBaseItem,
-  FormBlock,
-  WidgetConfig,
-  WidgetConfigMap,
-} from "core/form/types";
+import { FormBlock, WidgetConfig, WidgetConfigMap } from "core/form/types";
 import { jsonSchemaToUiWidget } from "core/jsonSchema/schemaToUiWidget";
 import { buildYupFormForJsonSchema } from "core/jsonSchema/schemaToYup";
 import { buildPathInitialState } from "core/form/uiWidget";
 import { ServiceFormValues } from "./types";
-import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
-import { ConnectorServiceTypeControl } from "./components/Controls/ConnectorServiceTypeControl";
 
 function useBuildForm(
   jsonSchema: JSONSchema7,
@@ -48,26 +41,14 @@ function useBuildForm(
 
 const useBuildUiWidgets = (
   formFields: FormBlock[] | FormBlock,
-  formValues: ServiceFormValues
+  formValues: ServiceFormValues,
+  uiOverrides?: WidgetConfigMap
 ): {
   uiWidgetsInfo: WidgetConfigMap;
   setUiWidgetsInfo: (widgetId: string, updatedValues: WidgetConfig) => void;
 } => {
-  const uiOverrides = {
-    name: {
-      component: (property: FormBaseItem) => (
-        <ConnectorNameControl property={property} />
-      ),
-    },
-    serviceType: {
-      component: (property: FormBaseItem) => (
-        <ConnectorServiceTypeControl property={property} />
-      ),
-    },
-  };
-
   const [overriddenWidgetState, setUiWidgetsInfo] = useState<WidgetConfigMap>(
-    uiOverrides
+    uiOverrides ?? {}
   );
 
   // As schema is dynamic, it is possible, that new updated values, will differ from one stored.
@@ -78,9 +59,9 @@ const useBuildUiWidgets = (
           Array.isArray(formFields) ? formFields : [formFields],
           formValues
         ),
-        overriddenWidgetState
+        merge(overriddenWidgetState, uiOverrides)
       ),
-    [formFields, formValues, overriddenWidgetState]
+    [formFields, formValues, overriddenWidgetState, uiOverrides]
   );
 
   const setUiWidgetsInfoSubState = useCallback(

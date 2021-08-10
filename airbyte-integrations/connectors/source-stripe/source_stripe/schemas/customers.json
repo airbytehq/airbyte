@@ -240,8 +240,7 @@
       "type": ["null", "string"]
     },
     "created": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "tax_info": {
       "type": ["null", "string"]
