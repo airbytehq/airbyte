@@ -41,6 +41,8 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.sshd.client.SshClient;
+import org.apache.sshd.client.session.ClientSession;
 
 public abstract class AbstractJdbcDestination extends BaseConnector implements Destination {
 
@@ -72,9 +74,17 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
-
+    SSHTunnel tunnelConfig = null;
+    SshClient sshclient = null;
+    ClientSession tunnelSession = null;
     try (final JdbcDatabase database = getDatabase(config)) {
-      SSHTunnel tunnelConfig = getSSHTunnelConfig(config);
+      tunnelConfig = getSSHTunnelConfig(config);
+      if (tunnelConfig.shouldTunnel()) {
+        sshclient = tunnelConfig.createClient();
+        LOGGER.error("JENNY TESTING - Client created.");
+        tunnelSession = tunnelConfig.openTunnel(sshclient);
+        LOGGER.error("JENNY TESTING - Tunnel opened.");
+      }
       String outputSchema = namingResolver.getIdentifier(config.get("schema").asText());
       attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations);
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
@@ -83,6 +93,16 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
           .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
+    } finally {
+      if (tunnelConfig.shouldTunnel()) {
+        try {
+          if (sshclient != null) {
+            tunnelConfig.closeTunnel(sshclient, tunnelSession);
+          }
+        } catch (Throwable t) {
+          t.printStackTrace();
+        }
+      }
     }
   }
 
@@ -112,21 +132,29 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
         driverClass);
   }
 
+
+
   protected SSHTunnel getSSHTunnelConfig(JsonNode config) {
-    LOGGER.error("Getting SSH Tunnel config");
+    JsonNode ourConfig = config.get("tunnel_method");
     SSHTunnel sshconfig = new SSHTunnel(
-        config.get("tunnel_method").asText(),
-        config.get("tunnel_host").asText(),
-        config.get("tunnel_ssh_port").asText(),
-        config.get("tunnel_user").asText(),
-        config.has("tunnel_usersshkey") ? config.get("tunnel_usersshkey").asText() : null,
-        config.has("tunnel_userpass") ? config.get("tunnel_userpass").asText() : null,
-        config.get("tunnel_db_remote_host").asText(),
-        config.get("tunnel_db_remote_port").asText(),
-        config.get("tunnel_localport").asText()
+        getConfigValueOrNull(ourConfig, "tunnel_method"),
+        getConfigValueOrNull(ourConfig, "tunnel_host"),
+        getConfigValueOrNull(ourConfig, "tunnel_ssh_port"),
+        getConfigValueOrNull(ourConfig, "tunnel_username"),
+        getConfigValueOrNull(ourConfig, "tunnel_usersshkey"),
+        getConfigValueOrNull(ourConfig, "tunnel_userpass"),
+        getConfigValueOrNull(ourConfig, "tunnel_db_remote_host"),
+        getConfigValueOrNull(ourConfig, "tunnel_db_remote_port"),
+        getConfigValueOrNull(ourConfig, "tunnel_localport")
     );
-    LOGGER.error("Got SSH Tunnel config " + sshconfig); // TODO
+    java.security.Security.addProvider(
+        new org.bouncycastle.jce.provider.BouncyCastleProvider()
+    );
     return sshconfig;
+  }
+
+  private String getConfigValueOrNull(JsonNode config, String key) {
+    return config != null && config.has(key) ? config.get(key).asText() : null;
   }
 
   public abstract JsonNode toJdbcConfig(JsonNode config);

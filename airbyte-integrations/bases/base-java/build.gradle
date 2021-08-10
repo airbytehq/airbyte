@@ -6,6 +6,8 @@ plugins {
 dependencies {
     implementation 'commons-cli:commons-cli:1.4'
     implementation group: 'org.apache.sshd', name: 'sshd-mina', version: '2.7.0'
+    implementation group: 'org.bouncycastle', name: 'bcprov-jdk14', version: '1.69'
+    implementation group: 'org.bouncycastle', name: 'bcpkix-jdk14', version: '1.69'
 
     implementation project(':airbyte-protocol:models')
     implementation project(":airbyte-json-validation")
