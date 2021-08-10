@@ -23,16 +23,13 @@
 #
 
 
-from typing import Any, List, Mapping, Tuple, MutableMapping
+from typing import Any, List, Mapping, MutableMapping, Tuple
 
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import SyncMode, AirbyteStream, AirbyteCatalog
+from airbyte_cdk.models import AirbyteCatalog, AirbyteStream, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.errors import GoogleAdsException
-import os
-import subprocess
-import sys
 
 from .google_ads import GoogleAds
 from .streams import (
@@ -42,27 +39,22 @@ from .streams import (
     AdGroupAds,
     AdGroups,
     Campaigns,
+    CustomQuery,
+    CustomQueryFullRefresh,
+    CustomQueryIncremental,
     DisplayKeywordPerformanceReport,
     DisplayTopicsPerformanceReport,
     ShoppingPerformanceReport,
-    CustomQuery,
-    CustomQueryFullRefresh,
-    CustomQueryIncremental
 )
 
 
 class SourceGoogleAds(AbstractSource):
-
     def get_local_json_schema(self, config) -> MutableMapping[str, Any]:
         """
         As agreed, now it returns the default schema (since read -> schema_generator.py may take hours for the end user).
         If we want to redesign json schema from raw query, this method need to be modified.
         """
-        local_json_schema = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "additionalProperties": True
-        }
+        local_json_schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True}
         return local_json_schema
 
     def discover(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteCatalog:
@@ -73,18 +65,20 @@ class SourceGoogleAds(AbstractSource):
                 streams.append(stream.as_airbyte_stream())
         # TODO: extend with custom defined streams
         for usr_query in config.get("custom_query", []):
-            local_cursor_field = [usr_query.get("cursor_field")] if isinstance(usr_query.get("cursor_field"), str) else usr_query.get("cursor_field")
+            local_cursor_field = (
+                [usr_query.get("cursor_field")] if isinstance(usr_query.get("cursor_field"), str) else usr_query.get("cursor_field")
+            )
             stream = AirbyteStream(
                 name=usr_query["table_name"],
                 json_schema=self.get_local_json_schema(config=config),
-                supported_sync_modes=[SyncMode.full_refresh]
+                supported_sync_modes=[SyncMode.full_refresh],
             )
             if usr_query.get("cursor_field"):
-                stream.source_defined_cursor = True # ???
+                stream.source_defined_cursor = True  # ???
                 stream.supported_sync_modes.append(SyncMode.incremental)  # type: ignore
                 stream.default_cursor_field = local_cursor_field
 
-            keys = Stream._wrapped_primary_key(usr_query.get("primary_key") or None) # (!!! read empty strings as null aswell)
+            keys = Stream._wrapped_primary_key(usr_query.get("primary_key") or None)  # (!!! read empty strings as null aswell)
             if keys and len(keys) > 0:
                 stream.source_defined_primary_key = keys
             streams.append(stream)
@@ -128,6 +122,5 @@ class SourceGoogleAds(AbstractSource):
             AdGroupAds(api=google_api),
             AdGroups(api=google_api),
             Accounts(api=google_api),
-            Campaigns(api=google_api)
-            ] + custom_query_streams
-
+            Campaigns(api=google_api),
+        ] + custom_query_streams

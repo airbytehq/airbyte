@@ -22,8 +22,7 @@
 # SOFTWARE.
 #
 
-import os
-import json
+
 from enum import Enum
 from typing import Any, List, Mapping
 
@@ -64,7 +63,7 @@ class GoogleAds:
     @staticmethod
     def get_fields_from_schema(schema: Mapping[str, Any]) -> List[str]:
         properties = schema.get("properties")
-        #return list(properties.keys()) will be more clear ?
+        # return list(properties.keys()) will be more clear ?
         return [*properties]
 
     @staticmethod
@@ -152,7 +151,7 @@ class GoogleAds:
 
     @staticmethod
     def process_query(query) -> List:
-        query = query.lower().split('select')[1].split('from')[0].strip()
+        query = query.lower().split("select")[1].split("from")[0].strip()
         fields = query.split(",")
         fields = [i.strip() for i in fields]
         return fields
