@@ -115,6 +115,10 @@ class SourceGoogleAds(AbstractSource):
             api=google_api, conversion_window_days=config["conversion_window_days"], start_date=config["start_date"]
         )
 
+        custom_query_streams = [
+            CustomQuery(custom_query_config=config["custom_query"][i], **incremental_stream_config)
+            for i in range(len(config.get("custom_query", [])))
+        ]
         return [
             AccountPerformanceReport(**incremental_stream_config),
             DisplayTopicsPerformanceReport(**incremental_stream_config),
@@ -125,8 +129,5 @@ class SourceGoogleAds(AbstractSource):
             AdGroups(api=google_api),
             Accounts(api=google_api),
             Campaigns(api=google_api)
-            ] + [
-            CustomQuery(custom_query_config=config["custom_query"][i]
-                         for i in range(len(config.get("custom_query"), []))
-            )]
+            ] + custom_query_streams
 

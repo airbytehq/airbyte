@@ -64,8 +64,8 @@ class GoogleAds:
     @staticmethod
     def get_fields_from_schema(schema: Mapping[str, Any]) -> List[str]:
         properties = schema.get("properties")
-        return list(properties) # more clear form to return list of dict keys
-        # return [*properties]
+        #return list(properties.keys) will be more clear ?
+        return [*properties]
 
     @staticmethod
     def convert_schema_into_query(
