@@ -76,6 +76,7 @@
     timestamp
 {% endmacro %}
 
+{# MySQL doesnt allow cast operation to work with TIMESTAMP so we have to use char #}
 {%- macro mysql__type_timestamp_with_timezone() -%}
     char
 {%- endmacro -%}
