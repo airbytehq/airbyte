@@ -1,0 +1,667 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "activities",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {}
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date_created"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["date_created"]
+    },
+    {
+      "stream": {
+        "name": "leads",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "status_id": {
+              "type": ["null", "string"]
+            },
+            "opportunities": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "contact_name": {
+                    "type": ["null", "string"]
+                  },
+                  "status_id": {
+                    "type": ["null", "string"]
+                  },
+                  "lead_id": {
+                    "type": ["null", "string"]
+                  },
+                  "user_id": {
+                    "type": ["null", "string"]
+                  },
+                  "annualized_expected_value": {
+                    "type": ["null", "integer"]
+                  },
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "updated_by_name": {
+                    "type": ["null", "string"]
+                  },
+                  "value": {
+                    "type": ["null", "integer"]
+                  },
+                  "date_created": {
+                    "type": ["null", "string"]
+                  },
+                  "integration_links": {
+                    "type": ["null", "array"]
+                  },
+                  "created_by": {
+                    "type": ["null", "string"]
+                  },
+                  "status_display_name": {
+                    "type": ["null", "string"]
+                  },
+                  "value_currency": {
+                    "type": ["null", "string"]
+                  },
+                  "created_by_name": {
+                    "type": ["null", "string"]
+                  },
+                  "status_type": {
+                    "type": ["null", "string"]
+                  },
+                  "date_lost": {
+                    "type": ["null", "string"]
+                  },
+                  "value_period": {
+                    "type": ["null", "string"]
+                  },
+                  "note": {
+                    "type": ["null", "string"]
+                  },
+                  "confidence": {
+                    "type": ["null", "integer"]
+                  },
+                  "status_label": {
+                    "type": ["null", "string"]
+                  },
+                  "user_name": {
+                    "type": ["null", "string"]
+                  },
+                  "value_formatted": {
+                    "type": ["null", "string"]
+                  },
+                  "updated_by": {
+                    "type": ["null", "string"]
+                  },
+                  "organization_id": {
+                    "type": ["null", "string"]
+                  },
+                  "contact_id": {
+                    "type": ["null", "string"]
+                  },
+                  "lead_name": {
+                    "type": ["null", "string"]
+                  },
+                  "date_won": {
+                    "type": ["null", "string"]
+                  },
+                  "expected_value": {
+                    "type": ["null", "integer"]
+                  },
+                  "annualized_value": {
+                    "type": ["null", "integer"]
+                  },
+                  "date_updated": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            },
+            "id": {
+              "type": ["null", "string"]
+            },
+            "updated_by_name": {
+              "type": ["null", "string"]
+            },
+            "status_label": {
+              "type": ["null", "string"]
+            },
+            "date_created": {
+              "type": ["null", "string"]
+            },
+            "integration_links": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "name": {
+                    "type": ["null", "string"]
+                  },
+                  "url": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            },
+            "html_url": {
+              "type": ["null", "string"]
+            },
+            "created_by": {
+              "type": ["null", "string"]
+            },
+            "custom": {
+              "type": ["null", "object"],
+              "properties": {
+                "Current Vendor/Software": {
+                  "type": ["null", "string"]
+                },
+                "Industry": {
+                  "type": ["null", "string"]
+                },
+                "Lead Owner": {
+                  "type": ["null", "string"]
+                },
+                "Referral Source": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "addresses": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "country": {
+                    "type": ["null", "string"]
+                  },
+                  "city": {
+                    "type": ["null", "string"]
+                  },
+                  "label": {
+                    "type": ["null", "string"]
+                  },
+                  "address_2": {
+                    "type": ["null", "string"]
+                  },
+                  "address_1": {
+                    "type": ["null", "string"]
+                  },
+                  "zipcode": {
+                    "type": ["null", "string"]
+                  },
+                  "state": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            },
+            "display_name": {
+              "type": ["null", "string"]
+            },
+            "tasks": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {}
+              }
+            },
+            "description": {
+              "type": ["null", "string"]
+            },
+            "contacts": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "display_name": {
+                    "type": ["null", "string"]
+                  },
+                  "lead_id": {
+                    "type": ["null", "string"]
+                  },
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "urls": {
+                    "type": ["null", "array"]
+                  },
+                  "date_created": {
+                    "type": ["null", "string"]
+                  },
+                  "integration_links": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "name": {
+                          "type": ["null", "string"]
+                        },
+                        "url": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  },
+                  "updated_by": {
+                    "type": ["null", "string"]
+                  },
+                  "name": {
+                    "type": ["null", "string"]
+                  },
+                  "organization_id": {
+                    "type": ["null", "string"]
+                  },
+                  "created_by": {
+                    "type": ["null", "string"]
+                  },
+                  "phones": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "country": {
+                          "type": ["null", "string"]
+                        },
+                        "phone": {
+                          "type": ["null", "string"]
+                        },
+                        "phone_formatted": {
+                          "type": ["null", "string"]
+                        },
+                        "type": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  },
+                  "title": {
+                    "type": ["null", "string"]
+                  },
+                  "emails": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "email": {
+                          "type": ["null", "string"]
+                        },
+                        "type": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  },
+                  "date_updated": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            },
+            "updated_by": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "organization_id": {
+              "type": ["null", "string"]
+            },
+            "created_by_name": {
+              "type": ["null", "string"]
+            },
+            "url": {
+              "type": ["null", "string"]
+            },
+            "date_updated": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date_updated"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["date_updated"]
+    },
+    {
+      "stream": {
+        "name": "tasks",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {}
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date_created"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["date_created"]
+    },
+    {
+      "stream": {
+        "name": "events",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "action": {
+              "type": ["null", "string"]
+            },
+            "api_key_id": {
+              "type": ["null", "string"]
+            },
+            "changed_fields": {
+              "type": ["null", "array"]
+            },
+            "data": {
+              "type": ["null", "object"]
+            },
+            "date_created": {
+              "type": ["null", "string"]
+            },
+            "date_updated": {
+              "type": ["null", "string"]
+            },
+            "id": {
+              "type": ["null", "string"]
+            },
+            "lead_id": {
+              "type": ["null", "string"]
+            },
+            "meta": {
+              "type": ["null", "object"]
+            },
+            "object_id": {
+              "type": ["null", "string"]
+            },
+            "object_type": {
+              "type": ["null", "string"]
+            },
+            "organization_id": {
+              "type": ["null", "string"]
+            },
+            "previous_data": {
+              "type": ["null", "object"]
+            },
+            "request_id": {
+              "type": ["null", "string"]
+            },
+            "user_id": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date_updated"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["date_updated"]
+    },
+    {
+      "stream": {
+        "name": "lead_custom_fields",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "status_id": {
+              "date_updated": ["null", "string"]
+            },
+            "description": {
+              "date_updated": ["null", "string"]
+            },
+            "name": {
+              "date_updated": ["null", "string"]
+            },
+            "accepts_multiple_values": {
+              "date_updated": ["null", "boolean"]
+            },
+            "choices": {
+              "date_updated": ["null", "array"]
+            },
+            "editable_with_roles": {
+              "date_updated": ["null", "array"]
+            },
+            "created_by": {
+              "date_updated": ["null", "string"]
+            },
+            "updated_by": {
+              "date_updated": ["null", "string"]
+            },
+            "type": {
+              "date_updated": ["null", "string"]
+            },
+            "organization_id": {
+              "date_updated": ["null", "string"]
+            },
+            "is_shared": {
+              "date_updated": ["null", "boolean"]
+            },
+            "id": {
+              "date_updated": ["null", "string"]
+            },
+            "date_created": {
+              "date_updated": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "contact_custom_fields",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "description": {
+              "date_updated": ["null", "string"]
+            },
+            "name": {
+              "date_updated": ["null", "string"]
+            },
+            "choices": {
+              "date_updated": ["null", "array"]
+            },
+            "editable_with_roles": {
+              "date_updated": ["null", "array"]
+            },
+            "created_by": {
+              "date_updated": ["null", "string"]
+            },
+            "updated_by": {
+              "date_updated": ["null", "string"]
+            },
+            "type": {
+              "date_updated": ["null", "string"]
+            },
+            "organization_id": {
+              "date_updated": ["null", "string"]
+            },
+            "accepts_multiple_values": {
+              "date_updated": ["null", "boolean"]
+            },
+            "id": {
+              "date_updated": ["null", "string"]
+            },
+            "date_created": {
+              "date_updated": ["null", "string"]
+            },
+            "date_updated": {
+              "date_updated": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "opportunity_custom_fields",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "description": {
+              "date_updated": ["null", "string"]
+            },
+            "name": {
+              "date_updated": ["null", "string"]
+            },
+            "choices": {
+              "date_updated": ["null", "array"]
+            },
+            "editable_with_roles": {
+              "date_updated": ["null", "array"]
+            },
+            "created_by": {
+              "date_updated": ["null", "string"]
+            },
+            "updated_by": {
+              "date_updated": ["null", "string"]
+            },
+            "type": {
+              "date_updated": ["null", "string"]
+            },
+            "organization_id": {
+              "date_updated": ["null", "string"]
+            },
+            "accepts_multiple_values": {
+              "date_updated": ["null", "boolean"]
+            },
+            "id": {
+              "date_updated": ["null", "string"]
+            },
+            "date_created": {
+              "date_updated": ["null", "string"]
+            },
+            "date_updated": {
+              "date_updated": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "activity_custom_fields",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "description": {
+              "date_updated": ["null", "string"]
+            },
+            "name": {
+              "date_updated": ["null", "string"]
+            },
+            "custom_activity_type_id": {
+              "date_updated": ["null", "string"]
+            },
+            "required": {
+              "date_updated": ["null", "boolean"]
+            },
+            "editable_with_roles": {
+              "date_updated": ["null", "array"]
+            },
+            "created_by": {
+              "date_updated": ["null", "string"]
+            },
+            "updated_by": {
+              "date_updated": ["null", "string"]
+            },
+            "type": {
+              "date_updated": ["null", "string"]
+            },
+            "organization_id": {
+              "date_updated": ["null", "string"]
+            },
+            "accepts_multiple_values": {
+              "date_updated": ["null", "boolean"]
+            },
+            "id": {
+              "date_updated": ["null", "string"]
+            },
+            "date_created": {
+              "date_updated": ["null", "string"]
+            },
+            "date_updated": {
+              "date_updated": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "users",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "email": {
+              "type": ["null", "string"]
+            },
+            "organizations": {
+              "type": ["null", "array"]
+            },
+            "id": {
+              "type": ["null", "string"]
+            },
+            "date_updated": {
+              "type": ["null", "string"]
+            },
+            "image": {
+              "type": ["null", "string"]
+            },
+            "date_created": {
+              "type": ["null", "string"]
+            },
+            "first_name": {
+              "type": ["null", "string"]
+            },
+            "email_verification_token_generated_at": {
+              "type": ["null", "string"]
+            },
+            "email_verified_at": {
+              "type": ["null", "string"]
+            },
+            "last_name": {
+              "type": ["null", "string"]
+            },
+            "last_used_timezone": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

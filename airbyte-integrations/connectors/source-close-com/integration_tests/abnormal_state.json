@@ -1,0 +1,12 @@
+{
+  "activities": {
+    "date_created__gt": "20000-01-01"
+  },
+  "leads": {},
+  "tasks": {
+    "date_created__gt": "20000-01-01"
+  },
+  "events": {
+    "date_updated__gt": "20000-01-01"
+  }
+}

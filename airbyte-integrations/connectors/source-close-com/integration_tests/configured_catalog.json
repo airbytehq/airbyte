@@ -1,0 +1,33 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "activities",
+        "json_schema": {
+          "properties": {},
+          "type": "object",
+          "additionalProperties": false
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date_created"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["date_created"]
+    },
+    {
+      "stream": {
+        "name": "users",
+        "json_schema": {
+          "properties": {},
+          "type": "object",
+          "additionalProperties": false
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
