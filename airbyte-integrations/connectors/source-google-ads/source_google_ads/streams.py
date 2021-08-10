@@ -226,8 +226,6 @@ class CustomQueryIncremental(IncrementalGoogleAdsStream):
     Class that should sync by custom user query to Google Ads API
     """
 
-    name = "custom_query"
-
     def __init__(self, custom_query_config, **kwargs):
         self.custom_query_config = custom_query_config
         self.user_defined_query = custom_query_config["query"]
