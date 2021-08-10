@@ -10,6 +10,8 @@ select
     json_value(_airbyte_data, 
     '$."date"') as `date`,
     json_value(_airbyte_data, 
+    '$."timestamp_col"') as timestamp_col,
+    json_value(_airbyte_data, 
     '$."HKD@spéçiäl & characters"') as `HKD@spéçiäl & characters`,
     json_value(_airbyte_data, 
     '$."HKD_special___characters"') as hkd_special___characters,
