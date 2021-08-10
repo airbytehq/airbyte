@@ -30,6 +30,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -59,7 +60,6 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -248,20 +248,19 @@ public class JobSubmitterTest {
 
       // Simulate the same job being submitted over and over again.
       var simulatedJobSubmitterPool = Executors.newFixedThreadPool(10);
-      var submitCounter = new AtomicInteger(0);
       while (!jobDone.get()) {
         // This sleep mimics our SchedulerApp loop.
         Thread.sleep(1000);
         simulatedJobSubmitterPool.submit(() -> {
           if (!jobDone.get()) {
             jobSubmitter.run();
-            submitCounter.incrementAndGet();
           }
         });
       }
 
       simulatedJobSubmitterPool.shutdownNow();
-      verify(persistence, Mockito.times(submitCounter.get())).getNextJob();
+      // This is expected to be called at least once due to the various threads.
+      verify(persistence, atLeast(2)).getNextJob();
       // Assert that the job is actually only submitted once.
       verify(jobSubmitter, Mockito.times(1)).submitJob(Mockito.any());
     }

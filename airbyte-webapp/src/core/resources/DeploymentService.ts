@@ -3,11 +3,11 @@ import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 export default class DeploymentService extends AirbyteRequestService {
   static path = "deployment";
 
-  static getPath(subpath: string): string {
-    return `${this.path}/${subpath}`;
+  getPath(subpath: string): string {
+    return `${DeploymentService.path}/${subpath}`;
   }
 
-  static async exportDeployment(): Promise<string> {
+  public async exportDeployment(): Promise<string> {
     const res = await this.fetch(this.getPath("export"), {});
     const blob = await res.blob();
     const objUrl = window.URL.createObjectURL(blob);
@@ -15,7 +15,7 @@ export default class DeploymentService extends AirbyteRequestService {
     return objUrl;
   }
 
-  static async importDeployment(file: string | ArrayBuffer): Promise<void> {
+  public async importDeployment(file: string | ArrayBuffer): Promise<void> {
     const options: RequestInit = {
       headers: {
         "Content-Type": "application/x-gzip",
@@ -28,3 +28,5 @@ export default class DeploymentService extends AirbyteRequestService {
     return;
   }
 }
+
+export const deploymentService = new DeploymentService();

@@ -6,7 +6,7 @@ The Shopify source supports both Full Refresh and Incremental syncs. You can cho
 
 This source can sync data for the [Shopify API](https://help.shopify.com/en/api/reference).
 
-This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/contributing-to-airbyte/python).
+This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
 
 ### Output schema
 
@@ -61,6 +61,7 @@ Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-ap
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.12  | 2021-08-09 | [5276](https://github.com/airbytehq/airbyte/pull/5276) | Add status property to product schema |
 | 0.1.11  | 2021-07-23 | [4943](https://github.com/airbytehq/airbyte/pull/4943) | Fix products schema up to API 2021-07 |
 | 0.1.10  | 2021-07-19 | [4830](https://github.com/airbytehq/airbyte/pull/4830) | Fix for streams json schemas, upgrade to API version 2021-07 |
 | 0.1.9   | 2021-07-04 | [4472](https://github.com/airbytehq/airbyte/pull/4472) | Incremental sync is now using updated_at instead of since_id by default |
