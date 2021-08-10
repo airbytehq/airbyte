@@ -116,15 +116,9 @@ public class SSHTunnel {
    * discover the public key, and return the pair for auth use.
    *
    * @return
-   * @throws NoSuchAlgorithmException
-   * @throws URISyntaxException
+   * @throws IOException
   */
-  protected KeyPair getPrivateKeyPair() throws NoSuchAlgorithmException, IOException {
-    KeyFactory kf = KeyFactory.getInstance("RSA");
-    String privateKeyContent = getSSHKey()
-        .replaceAll("\\n", "")
-        .replace("-----BEGIN RSA PRIVATE KEY-----", "")
-        .replace("-----END RSA PRIVATE KEY-----", "");
+  protected KeyPair getPrivateKeyPair() throws IOException {
     PEMParser pemParser = new PEMParser(new StringReader(getSSHKey()));
     JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
     PEMKeyPair keypair = (PEMKeyPair) pemParser.readObject();
