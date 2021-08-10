@@ -36,11 +36,13 @@ from normalization.transform_catalog.utils import (
     is_array,
     is_boolean,
     is_combining_node,
+    is_date,
     is_integer,
     is_number,
     is_object,
     is_simple_property,
     is_string,
+    is_timestamp_with_time_zone,
     jinja_call,
 )
 
@@ -403,6 +405,10 @@ from {{ from_table }}
             sql_type = jinja_call("dbt_utils.type_bigint()")
         elif is_number(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_float()")
+        elif is_timestamp_with_time_zone(definition):
+            sql_type = jinja_call("type_timestamp_with_timezone()")
+        elif is_date(definition):
+            sql_type = jinja_call("type_date()")
         elif is_string(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_string()")
         else:

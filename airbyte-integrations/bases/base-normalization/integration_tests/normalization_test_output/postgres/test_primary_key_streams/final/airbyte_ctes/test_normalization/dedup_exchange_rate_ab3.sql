@@ -12,6 +12,8 @@ select
     varchar
 ), '') || '-' || coalesce(cast("date" as 
     varchar
+), '') || '-' || coalesce(cast(timestamp_col as 
+    varchar
 ), '') || '-' || coalesce(cast("HKD@spéçiäl & characters" as 
     varchar
 ), '') || '-' || coalesce(cast(hkd_special___characters as 

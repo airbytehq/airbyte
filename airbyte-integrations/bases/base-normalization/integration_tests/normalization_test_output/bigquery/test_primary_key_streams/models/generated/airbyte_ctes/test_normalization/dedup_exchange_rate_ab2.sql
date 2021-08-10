@@ -3,7 +3,8 @@
 select
     cast(id as {{ dbt_utils.type_bigint() }}) as id,
     cast(currency as {{ dbt_utils.type_string() }}) as currency,
-    cast(date as {{ dbt_utils.type_string() }}) as date,
+    cast(date as {{ type_date() }}) as date,
+    cast(timestamp_col as {{ type_timestamp_with_timezone() }}) as timestamp_col,
     cast(HKD_special___characters as {{ dbt_utils.type_float() }}) as HKD_special___characters,
     cast(HKD_special___characters_1 as {{ dbt_utils.type_string() }}) as HKD_special___characters_1,
     cast(NZD as {{ dbt_utils.type_float() }}) as NZD,
