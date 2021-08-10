@@ -388,7 +388,6 @@ public abstract class DestinationAcceptanceTest {
     final JsonNode config = getConfig();
     final String defaultSchema = getDefaultSchema(config);
     runSyncAndVerifyStateOutput(config, largeNumberRecords, configuredCatalog, false);
-    retrieveRawRecordsAndAssertSameMessages(catalog, largeNumberRecords, defaultSchema);
   }
 
   /**
