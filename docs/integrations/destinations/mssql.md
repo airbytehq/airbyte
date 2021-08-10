@@ -79,6 +79,7 @@ You should now have all the requirements needed to configure SQL Server as a des
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.8   | 2021-08-07 | [#5272](https://github.com/airbytehq/airbyte/pull/5272) | Add batch method to insert records  |
 | 0.1.7   | 2021-07-30 | [#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
 | 0.1.6   | 2021-06-21 | [#3555](https://github.com/airbytehq/airbyte/pull/3555) | Partial Success in BufferedStreamConsumer |
 | 0.1.5   | 2021-07-20 | [#4874](https://github.com/airbytehq/airbyte/pull/4874) | declare object types correctly in spec |
