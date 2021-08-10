@@ -30,7 +30,6 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-
 import java.sql.SQLException;
 import java.util.List;
 
@@ -79,10 +78,11 @@ public class SqlServerOperations implements SqlOperations {
   }
 
   @Override
-  public void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tempTableName) {
+  public void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tempTableName) throws SQLException {
     // MSSQL has a limitation of 2100 parameters used in a query
     // Airbyte inserts data with 3 columns (raw table) this limits to 700 records.
-    final int MAX_BATCH_SIZE = 700;
+    // Limited the variable to 500 records to
+    final int MAX_BATCH_SIZE = 500;
     final String insertQueryComponent = String.format(
         "INSERT INTO %s.%s (%s, %s, %s) VALUES\n",
         schemaName,
