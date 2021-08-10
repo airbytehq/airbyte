@@ -120,13 +120,12 @@ public class SSHTunnel {
   */
   protected KeyPair getPrivateKeyPair() throws IOException {
     PEMParser pemParser = new PEMParser(new StringReader(getSSHKey()));
-    JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
     PEMKeyPair keypair = (PEMKeyPair) pemParser.readObject();
-    PrivateKeyInfo privKeyInfo = keypair.getPrivateKeyInfo();
-    SubjectPublicKeyInfo pubKeyInfo = keypair.getPublicKeyInfo();
-    RSAPrivateKey privKey = (RSAPrivateKey) converter.getPrivateKey(privKeyInfo);
-    RSAPublicKey pubKey = (RSAPublicKey) converter.getPublicKey(SubjectPublicKeyInfo.getInstance(pubKeyInfo));
-    return new KeyPair(pubKey, privKey);
+    JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
+    return new KeyPair(
+        (RSAPublicKey) converter.getPublicKey(SubjectPublicKeyInfo.getInstance(keypair.getPublicKeyInfo())),
+        (RSAPrivateKey) converter.getPrivateKey(keypair.getPrivateKeyInfo())
+    );
   }
 
   /**
