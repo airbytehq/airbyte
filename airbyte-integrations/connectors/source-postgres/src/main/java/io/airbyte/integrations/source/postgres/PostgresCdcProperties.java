@@ -38,7 +38,6 @@ public class PostgresCdcProperties {
     props.setProperty("slot.name", config.get("replication_method").get("replication_slot").asText());
     props.setProperty("publication.name", config.get("replication_method").get("publication").asText());
 
-    // recommended when using pgoutput todo
     props.setProperty("publication.autocreate.mode", "disabled");
 
     return props;
