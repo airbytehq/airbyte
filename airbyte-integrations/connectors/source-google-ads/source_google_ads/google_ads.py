@@ -155,14 +155,6 @@ class GoogleAds:
         query = query.lower().split('select')[1].split('from')[0].strip()
         fields = query.split(",")
         fields = [i.strip() for i in fields]
-        schema_file = os.sep.join([os.getcwd(), 'source_google_ads', 'schemas', table_name + ".json"])
-        schema = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "additionalProperties": True
-        }
-        with open(schema_file, 'w') as schema_flying:
-            json.dump(schema, schema_flying, indent=2)
         return fields
 
     @staticmethod

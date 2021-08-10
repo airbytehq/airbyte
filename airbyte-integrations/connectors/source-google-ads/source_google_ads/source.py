@@ -114,32 +114,7 @@ class SourceGoogleAds(AbstractSource):
         incremental_stream_config = dict(
             api=google_api, conversion_window_days=config["conversion_window_days"], start_date=config["start_date"]
         )
-        print('before open: create dummy')
 
-        # dummy_file_name = 'read_tmp_syka.txt'
-        """if not os.path.exists(dummy_file_name):
-            open(dummy_file_name, 'w').close()
-            args = [
-                f"{sys.executable}", "main.py", "read",
-                "--config secrets/config.json",
-                "--catalog integration_tests/custom_only_catalog.json" #, "| python schema_generator.py"
-            ]
-
-            process = subprocess.Popen(args , stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-            print('opened')
-
-            output = subprocess.check_output(
-                [f"{sys.executable}", 'schema_generator.py'],
-                stdin=process.stdout, stderr=subprocess.PIPE, shell=True
-            )
-            print('hope for waiting')
-            process.wait()
-            print('the end')
-        """
-
-        #os.system(f"{sys.executable} main.py read --config secrets/config.json --catalog integration_tests/custom_only_catalog.json | {sys.executable} schema_generator.py")
-
-        #sys.exit()
         return [
             AccountPerformanceReport(**incremental_stream_config),
             DisplayTopicsPerformanceReport(**incremental_stream_config),
@@ -149,7 +124,9 @@ class SourceGoogleAds(AbstractSource):
             AdGroupAds(api=google_api),
             AdGroups(api=google_api),
             Accounts(api=google_api),
-            Campaigns(api=google_api),
-            CustomQuery(custom_query_config=config["custom_query"][0], **incremental_stream_config),
-            CustomQuery(custom_query_config=config["custom_query"][1], **incremental_stream_config)
-        ]
+            Campaigns(api=google_api)
+            ] + [
+            CustomQuery(custom_query_config=config["custom_query"][i]
+                         for i in range(len(config.get("custom_query"), []))
+            )]
+

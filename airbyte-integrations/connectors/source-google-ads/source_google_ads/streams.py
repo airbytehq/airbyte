@@ -196,6 +196,7 @@ class ShoppingPerformanceReport(IncrementalGoogleAdsStream):
 class CustomQueryFullRefresh(GoogleAdsStream):
     """
     Class that should sync by custom user query to Google Ads API
+    Fixme: check if WHERE>start_date was applied in standard fullrefresh stream. If yes, reapply here.
     """
     def __init__(self, custom_query_config, **kwargs):
         self.custom_query_config = custom_query_config
@@ -211,7 +212,6 @@ class CustomQueryFullRefresh(GoogleAdsStream):
         return self.custom_query_config["table_name"]
 
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
-        print('final query:', self.user_defined_query)
         return self.user_defined_query
 
     def parse_response(self, response: SearchPager) -> Iterable[Mapping]:
@@ -248,7 +248,6 @@ class CustomQueryIncremental(IncrementalGoogleAdsStream):
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
         start_date, end_date = self.get_date_params(stream_slice, self.cursor_field)
         final_query = self.user_defined_query + f"\nWHERE {self.cursor_field} > '{start_date}' AND {self.cursor_field} < '{end_date}' ORDER BY {self.cursor_field} ASC"
-        #print('final query:', final_query)
         return final_query
 
     def parse_response(self, response: SearchPager) -> Iterable[Mapping]:
