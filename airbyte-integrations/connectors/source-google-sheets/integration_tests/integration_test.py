@@ -107,3 +107,7 @@ class GoogleSheetsSourceStandardTest(DefaultStandardSourceTest):
         )
 
         return spreadsheet_id
+
+
+def test_me():
+    assert True
