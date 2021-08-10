@@ -169,21 +169,6 @@ const SideBar: React.FC = () => {
               </Text>
             </MenuItem>
           </li>
-          <li>
-            <MenuItem
-              to={`${Routes.Settings}${Routes.Account}`}
-              activeClassName="active"
-              isActive={(_, location) =>
-                location.pathname.startsWith(Routes.Settings)
-              }
-            >
-              {hasNewVersions ? <Notification /> : null}
-              <SettingsIcon icon={faCog} />
-              <Text>
-                <FormattedMessage id="sidebar.settings" />
-              </Text>
-            </MenuItem>
-          </li>
         </Menu>
       </div>
       <Menu>
@@ -203,6 +188,21 @@ const SideBar: React.FC = () => {
               <FormattedMessage id="sidebar.docs" />
             </Text>
           </MenuLinkItem>
+        </li>
+        <li>
+          <MenuItem
+            to={`${Routes.Settings}${Routes.Account}`}
+            activeClassName="active"
+            isActive={(_, location) =>
+              location.pathname.startsWith(Routes.Settings)
+            }
+          >
+            {hasNewVersions ? <Notification /> : null}
+            <SettingsIcon icon={faCog} />
+            <Text>
+              <FormattedMessage id="sidebar.settings" />
+            </Text>
+          </MenuItem>
         </li>
       </Menu>
     </Bar>

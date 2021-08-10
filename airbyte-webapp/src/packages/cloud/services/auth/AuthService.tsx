@@ -124,7 +124,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       },
       user: state.currentUser,
     }),
-    [state]
+    [state, queryClient]
   );
 
   return <AuthContext.Provider value={ctx}>{children}</AuthContext.Provider>;
