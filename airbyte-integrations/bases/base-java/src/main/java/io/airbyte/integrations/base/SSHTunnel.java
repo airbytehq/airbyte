@@ -112,8 +112,8 @@ public class SSHTunnel {
   }
 
   /**
-   * From the RSA format private key string, parse the private key,
-   * discover the public key, and return the pair for auth use.
+   * From the RSA format private key string, use bouncycastle to deserialize the key pair,
+   * reconstruct the keys from the key info, and return the key pair for use in authentication.
    *
    * @return
    * @throws IOException
