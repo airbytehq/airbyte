@@ -1,162 +1,46 @@
 {
-  "name": "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL",
-  "supported_sync_modes": ["full_refresh", "incremental"],
-  "source_defined_cursor": true,
-  "default_cursor_field": ["purchase-date"],
-  "json_schema": {
-    "type": "object",
-    "title": "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL",
-    "description": "All orders that were placed in the specified period.",
-    "properties": {
-      "seller_id": {
-        "type": "string",
-        "title": "seller_id"
-      },
-      "amazon-order-id": {
-        "type": "string",
-        "title": "amazon-order-id",
-        "description": ""
-      },
-      "merchant-order-id": {
-        "type": "string",
-        "title": "merchant-order-id",
-        "description": ""
-      },
-      "purchase-date": {
-        "type": "string",
-        "title": "purchase-date",
-        "description": ""
-      },
-      "purchase-date": {
-        "type": "string",
-        "title": "purchase-date",
-        "description": ""
-      },
-      "order-status": {
-        "type": "string",
-        "title": "order-status",
-        "description": ""
-      },
-      "fulfillment-channel": {
-        "type": "string",
-        "title": "fulfillment-channel",
-        "description": ""
-      },
-      "sales-channel": {
-        "type": "string",
-        "title": "sales-channel",
-        "description": ""
-      },
-      "order-channel": {
-        "type": "string",
-        "title": "order-channel",
-        "description": ""
-      },
-      "ship-service-level": {
-        "type": "string",
-        "title": "ship-service-level",
-        "description": ""
-      },
-      "product-name": {
-        "type": "string",
-        "title": "product-name",
-        "description": ""
-      },
-      "sku": { "type": "string", "title": "sku", "description": "" },
-      "asin": { "type": "string", "title": "asin", "description": "" },
-      "item-status": {
-        "type": "string",
-        "title": "item-status",
-        "description": ""
-      },
-      "quantity": { "type": "string", "title": "quantity", "description": "" },
-      "currency": { "type": "string", "title": "currency", "description": "" },
-      "item-price": {
-        "type": "string",
-        "title": "item-price",
-        "description": ""
-      },
-      "item-tax": { "type": "string", "title": "item-tax", "description": "" },
-      "shipping-price": {
-        "type": "string",
-        "title": "shipping-price",
-        "description": ""
-      },
-      "shipping-tax": {
-        "type": "string",
-        "title": "shipping-tax",
-        "description": ""
-      },
-      "gift-wrap-price": {
-        "type": "string",
-        "title": "gift-wrap-price",
-        "description": ""
-      },
-      "gift-wrap-tax": {
-        "type": "string",
-        "title": "gift-wrap-tax",
-        "description": ""
-      },
-      "item-promotion-discount": {
-        "type": "string",
-        "title": "item-promotion-discount",
-        "description": ""
-      },
-      "ship-promotion-discount": {
-        "type": "string",
-        "title": "ship-promotion-discount",
-        "description": ""
-      },
-      "ship-city": {
-        "type": "string",
-        "title": "ship-city",
-        "description": ""
-      },
-      "ship-state": {
-        "type": "string",
-        "title": "ship-state",
-        "description": ""
-      },
-      "ship-postal-code": {
-        "type": "string",
-        "title": "ship-postal-code",
-        "description": ""
-      },
-      "ship-country": {
-        "type": "string",
-        "title": "ship-country",
-        "description": ""
-      },
-      "promotion-ids": {
-        "type": "string",
-        "title": "promotion-ids",
-        "description": ""
-      },
-      "is-business-order": {
-        "type": "string",
-        "title": "is-business-order",
-        "description": ""
-      },
-      "purchase-order-number": {
-        "type": "string",
-        "title": "purchase-order-number",
-        "description": ""
-      },
-      "price-designation": {
-        "type": "string",
-        "title": "price-designation",
-        "description": ""
-      },
-      "fulfilled-by": {
-        "type": "string",
-        "title": "fulfilled-by",
-        "description": ""
-      },
-      "is-sold-by-ab": {
-        "type": "string",
-        "title": "is-sold-by-ab",
-        "description": ""
+  "title": "Flat File All Orders Data Reports",
+  "description": "Flat File All Orders Data by Order Date General Reports",
+  "type": ["null", "object"],
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "reportType": {
+      "type": ["null", "string"]
+    },
+    "processingEndTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "processingStatus": {
+      "type": ["null", "string"]
+    },
+    "marketplaceIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
       }
+    },
+    "reportDocumentId": {
+      "type": ["null", "string"]
+    },
+    "reportId": {
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "createdTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "processingStartTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "dataStartTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
     }
   }
 }

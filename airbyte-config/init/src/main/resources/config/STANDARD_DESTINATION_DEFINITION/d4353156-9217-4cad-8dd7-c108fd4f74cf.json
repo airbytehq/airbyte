@@ -2,6 +2,6 @@
   "destinationDefinitionId": "d4353156-9217-4cad-8dd7-c108fd4f74cf",
   "name": "MS SQL Server",
   "dockerRepository": "airbyte/destination-mssql",
-  "dockerImageTag": "0.1.7",
+  "dockerImageTag": "0.1.8",
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mssql"
 }
