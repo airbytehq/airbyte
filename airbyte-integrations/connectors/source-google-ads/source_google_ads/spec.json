@@ -67,7 +67,49 @@
         "maximum": 1095,
         "default": 14,
         "examples": [14]
+      },
+      "custom_query": {
+        "type": "array",
+        "items": {
+          "type": ["object", "null"],
+          "properties": {
+            "query": {
+              "type": "string",
+              "title": "User defined query to build a report by wish",
+              "examples": ["SELECT segments.ad_destination_type FROM campaign"]
+            },
+            "primary_key": {
+              "type": ["string", "null"],
+              "title": "The unique field to be used as primary key in destination database (if provided)"
+            },
+            "cursor_field": {
+              "type": ["string", "null"],
+              "title": "If not provided, the FULL-REFRESH model will be used. If provided, this will be an incremental stream with this cursor field. Please use datetime fields (start_date, end_date) for proper work."
+            },
+            "table_name": {
+              "type": "string",
+              "title": "The table name in your destination database for choosen query."
+            }
+          }
+        }
       }
     }
   }
+}
+
+
+  "custom_query": [
+    {
+      "query": "SELECT campaign.accessible_bidding_strategy, segments.ad_destination_type, campaign.start_date, campaign.end_date FROM campaign",
+      "primary_key": null,
+      "cursor_field": "campaign.start_date",
+      "table_name": "happytable"
+    },
+    {
+      "query": "SELECT segments.ad_destination_type, segments.ad_network_type, segments.day_of_week, customer.auto_tagging_enabled, customer.id, metrics.conversions, campaign.start_date FROM campaign",
+      "primary_key": "customer.id",
+      "cursor_field": null,
+      "table_name": "unhappytable"
+    }
+  ]
 }
