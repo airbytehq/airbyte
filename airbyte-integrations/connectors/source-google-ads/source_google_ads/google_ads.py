@@ -151,17 +151,17 @@ class GoogleAds:
         return field_value
 
     @staticmethod
-    def process_query(query, table_name) -> List:
+    def process_query(query) -> List:
         query = query.lower().split('select')[1].split('from')[0].strip()
         fields = query.split(",")
         fields = [i.strip() for i in fields]
         return fields
 
     @staticmethod
-    def parse_single_result(schema: Mapping[str, Any], result: GoogleAdsRow, query: str = None, table_name: str = None):
+    def parse_single_result(schema: Mapping[str, Any], result: GoogleAdsRow, query: str = None):
         if not query:
             fields = GoogleAds.get_fields_from_schema(schema)
         else:
-            fields = GoogleAds.process_query(query, table_name)
+            fields = GoogleAds.process_query(query)
         single_record = {field: GoogleAds.get_field_value(result, field) for field in fields}
         return single_record

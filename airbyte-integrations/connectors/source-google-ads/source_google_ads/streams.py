@@ -219,8 +219,7 @@ class CustomQueryFullRefresh(GoogleAdsStream):
             yield self.google_ads_client.parse_single_result(
                 schema=None,
                 result=result,
-                query=self.user_defined_query,
-                table_name=self.name
+                query=self.user_defined_query
             )
 
 class CustomQueryIncremental(IncrementalGoogleAdsStream):
@@ -255,8 +254,7 @@ class CustomQueryIncremental(IncrementalGoogleAdsStream):
             yield self.google_ads_client.parse_single_result(
                 schema=None,
                 result=result,
-                query=self.user_defined_query,
-                table_name=self.name
+                query=self.user_defined_query
             )
 
 class CustomQuery:
