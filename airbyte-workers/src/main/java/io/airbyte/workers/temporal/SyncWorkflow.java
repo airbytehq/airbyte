@@ -89,8 +89,10 @@ public interface SyncWorkflow {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowImpl.class);
 
+    private static final int MAX_SYNC_TIMEOUT = new EnvConfigs().getMaxSyncTimeout();
+
     private static final ActivityOptions options = ActivityOptions.newBuilder()
-        .setScheduleToCloseTimeout(Duration.ofDays(3))
+        .setScheduleToCloseTimeout(Duration.ofDays(MAX_SYNC_TIMEOUT))
         .setCancellationType(ActivityCancellationType.WAIT_CANCELLATION_COMPLETED)
         .setRetryOptions(TemporalUtils.NO_RETRY)
         .build();
