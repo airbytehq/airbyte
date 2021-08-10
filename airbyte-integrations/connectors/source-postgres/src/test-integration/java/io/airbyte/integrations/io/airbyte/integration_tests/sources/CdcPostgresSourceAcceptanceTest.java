@@ -72,7 +72,7 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
     container.start();
 
     /**
-     * The publication is not being set as part of the config and because of it
+     * The replication method is not being set to CDC and because of it
      * {@link io.airbyte.integrations.source.postgres.PostgresSource#isCdc(JsonNode)} returns false, as
      * a result no test in this class runs through the cdc path.
      */
@@ -82,7 +82,7 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("database", container.getDatabaseName())
         .put("username", container.getUsername())
         .put("password", container.getPassword())
-        .put("replication_method", ImmutableMap.of("replication_slot", SLOT_NAME_BASE))
+        .put("replication_method", ImmutableMap.of("method", "Standard"))
         .build());
 
     final Database database = Databases.createDatabase(
