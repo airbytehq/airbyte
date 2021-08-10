@@ -102,7 +102,7 @@ class JobNotifierTest {
     when(configRepository.getStandardSourceDefinition(any())).thenReturn(sourceDefinition);
     when(configRepository.getStandardDestinationDefinition(any())).thenReturn(destinationDefinition);
     when(configRepository.getStandardWorkspace(WORKSPACE_ID, true)).thenReturn(getWorkspace());
-    when(workspaceHelper.getWorkspaceForJobId(job.getId())).thenReturn(WORKSPACE_ID);
+    when(workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(job.getId())).thenReturn(WORKSPACE_ID);
     when(notificationClient.notifyJobFailure(anyString(), anyString(), anyString(), anyString())).thenReturn(true);
 
     jobNotifier.failJob("JobNotifierTest was running", job);

@@ -72,7 +72,7 @@ public class WebBackendSourceHandlerTest {
     SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
     sourceRead = SourceHelpers.getSourceRead(source, standardSourceDefinition);
 
-    when(workspaceHelper.getWorkspaceForSourceId(sourceRead.getSourceId())).thenReturn(sourceRead.getWorkspaceId());
+    when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceRead.getSourceId())).thenReturn(sourceRead.getWorkspaceId());
   }
 
   @Test
@@ -148,7 +148,7 @@ public class WebBackendSourceHandlerTest {
 
   @Test
   public void testUnmatchedWorkspaces() throws IOException, JsonValidationException, ConfigNotFoundException {
-    when(workspaceHelper.getWorkspaceForSourceId(sourceRead.getSourceId())).thenReturn(UUID.randomUUID());
+    when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceRead.getSourceId())).thenReturn(UUID.randomUUID());
 
     SourceCreate sourceCreate = new SourceCreate();
     sourceCreate.setName(sourceRead.getName());

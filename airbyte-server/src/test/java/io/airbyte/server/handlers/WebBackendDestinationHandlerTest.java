@@ -73,7 +73,8 @@ public class WebBackendDestinationHandlerTest {
         DestinationHelpers.generateDestination(UUID.randomUUID());
     destinationRead = DestinationHelpers.getDestinationRead(destination, standardDestinationDefinition);
 
-    when(workspaceHelper.getWorkspaceForDestinationId(destinationRead.getDestinationId())).thenReturn(destinationRead.getWorkspaceId());
+    when(workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(destinationRead.getDestinationId()))
+        .thenReturn(destinationRead.getWorkspaceId());
   }
 
   @Test
@@ -150,7 +151,7 @@ public class WebBackendDestinationHandlerTest {
 
   @Test
   public void testUnmatchedWorkspaces() throws IOException, JsonValidationException, ConfigNotFoundException {
-    when(workspaceHelper.getWorkspaceForDestinationId(destinationRead.getDestinationId())).thenReturn(UUID.randomUUID());
+    when(workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(destinationRead.getDestinationId())).thenReturn(UUID.randomUUID());
 
     DestinationCreate destinationCreate = new DestinationCreate();
     destinationCreate.setName(destinationRead.getName());

@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -297,7 +298,7 @@ public class AcceptanceTests {
   }
 
   @Test
-  @Order(-1)
+  @Order(-2)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
   public void testGetDestinationSpec() throws ApiException {
@@ -306,6 +307,16 @@ public class AcceptanceTests {
         .getDestinationDefinitionSpecification(new DestinationDefinitionIdRequestBody().destinationDefinitionId(destinationDefinitionId));
     assertEquals(destinationDefinitionId, spec.getDestinationDefinitionId());
     assertNotNull(spec.getConnectionSpecification());
+  }
+
+  @Test
+  @Order(-1)
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "true")
+  public void testFailedGet404() {
+    var e = assertThrows(ApiException.class, () -> apiClient.getDestinationDefinitionSpecificationApi()
+        .getDestinationDefinitionSpecification(new DestinationDefinitionIdRequestBody().destinationDefinitionId(UUID.randomUUID())));
+    assertEquals(404, e.getCode());
   }
 
   @Test

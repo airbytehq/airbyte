@@ -225,7 +225,7 @@ class JobTrackerTest {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // for sync the job id is a long not a uuid.
     final long jobId = 10L;
-    when(workspaceHelper.getWorkspaceForJobId(jobId)).thenReturn(WORKSPACE_ID);
+    when(workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(jobId)).thenReturn(WORKSPACE_ID);
 
     final ImmutableMap<String, Object> metadata = getJobMetadata(configType, jobId);
     final Job job = getJobMock(configType, jobId);
@@ -287,7 +287,7 @@ class JobTrackerTest {
     final Job job = getJobWithAttemptsMock(configType, jobId);
     // test when frequency is manual.
     when(configRepository.getStandardSync(CONNECTION_ID)).thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(true));
-    when(workspaceHelper.getWorkspaceForJobId(jobId)).thenReturn(WORKSPACE_ID);
+    when(workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(jobId)).thenReturn(WORKSPACE_ID);
     final Map<String, Object> manualMetadata = MoreMaps.merge(
         ATTEMPT_METADATA,
         metadata,

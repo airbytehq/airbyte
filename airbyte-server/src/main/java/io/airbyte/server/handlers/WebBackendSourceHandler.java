@@ -57,7 +57,8 @@ public class WebBackendSourceHandler {
 
   public SourceRead webBackendRecreateSourceAndCheck(SourceRecreate sourceRecreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    Preconditions.checkArgument(workspaceHelper.getWorkspaceForSourceId(sourceRecreate.getSourceId()).equals(sourceRecreate.getWorkspaceId()));
+    Preconditions
+        .checkArgument(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceRecreate.getSourceId()).equals(sourceRecreate.getWorkspaceId()));
 
     final SourceCreate sourceCreate = new SourceCreate();
     sourceCreate.setConnectionConfiguration(sourceRecreate.getConnectionConfiguration());

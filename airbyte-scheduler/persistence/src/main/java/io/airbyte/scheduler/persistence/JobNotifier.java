@@ -98,7 +98,7 @@ public class JobNotifier {
       final String jobDescription =
           String.format("sync started on %s, running for%s, as the %s.", formatter.format(jobStartedDate), durationString, reason);
       final String logUrl = connectionPageUrl + connectionId;
-      final UUID workspaceId = workspaceHelper.getWorkspaceForJobId(job.getId());
+      final UUID workspaceId = workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(job.getId());
       final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
       final ImmutableMap<String, Object> jobMetadata = TrackingMetadata.generateJobAttemptMetadata(job);
       final ImmutableMap<String, Object> sourceMetadata = TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);

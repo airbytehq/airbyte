@@ -146,7 +146,7 @@ public class JobTracker {
       final Map<String, Object> stateMetadata = generateStateMetadata(jobState);
       final Map<String, Object> syncConfigMetadata = generateSyncConfigMetadata(job.getConfig());
 
-      final UUID workspaceId = workspaceHelper.getWorkspaceForJobId(jobId);
+      final UUID workspaceId = workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(jobId);
       track(workspaceId,
           MoreMaps.merge(
               jobMetadata,
