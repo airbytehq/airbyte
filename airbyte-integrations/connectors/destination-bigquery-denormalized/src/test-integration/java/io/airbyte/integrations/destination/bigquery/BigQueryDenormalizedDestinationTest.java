@@ -26,9 +26,7 @@ package io.airbyte.integrations.destination.bigquery;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
@@ -213,75 +211,69 @@ class BigQueryDenormalizedDestinationTest {
   }
 
   private JsonNode getSchema() {
-    try {
-      return new ObjectMapper().readTree(
-          "{\n"
-              + "  \"type\": [\n"
-              + "    \"object\"\n"
-              + "  ],\n"
-              + "  \"properties\": {\n"
-              + "    \"name\": {\n"
-              + "      \"type\": [\n"
-              + "        \"string\"\n"
-              + "      ]\n"
-              + "    },\n"
-              + "    \"permissions\": {\n"
-              + "      \"type\": [\n"
-              + "        \"array\"\n"
-              + "      ],\n"
-              + "      \"items\": {\n"
-              + "        \"type\": [\n"
-              + "          \"object\"\n"
-              + "        ],\n"
-              + "        \"properties\": {\n"
-              + "          \"domain\": {\n"
-              + "            \"type\": [\n"
-              + "              \"string\"\n"
-              + "            ]\n"
-              + "          },\n"
-              + "          \"grants\": {\n"
-              + "            \"type\": [\n"
-              + "              \"array\"\n"
-              + "            ],\n"
-              + "            \"items\": {\n"
-              + "              \"type\": [\n"
-              + "                \"string\"\n"
-              + "              ]\n"
-              + "            }\n"
-              + "          }\n"
-              + "        }\n"
-              + "      }\n"
-              + "    }\n"
-              + "  }\n"
-              + "}");
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
+    return Jsons.deserialize(
+        "{\n"
+            + "  \"type\": [\n"
+            + "    \"object\"\n"
+            + "  ],\n"
+            + "  \"properties\": {\n"
+            + "    \"name\": {\n"
+            + "      \"type\": [\n"
+            + "        \"string\"\n"
+            + "      ]\n"
+            + "    },\n"
+            + "    \"permissions\": {\n"
+            + "      \"type\": [\n"
+            + "        \"array\"\n"
+            + "      ],\n"
+            + "      \"items\": {\n"
+            + "        \"type\": [\n"
+            + "          \"object\"\n"
+            + "        ],\n"
+            + "        \"properties\": {\n"
+            + "          \"domain\": {\n"
+            + "            \"type\": [\n"
+            + "              \"string\"\n"
+            + "            ]\n"
+            + "          },\n"
+            + "          \"grants\": {\n"
+            + "            \"type\": [\n"
+            + "              \"array\"\n"
+            + "            ],\n"
+            + "            \"items\": {\n"
+            + "              \"type\": [\n"
+            + "                \"string\"\n"
+            + "              ]\n"
+            + "            }\n"
+            + "          }\n"
+            + "        }\n"
+            + "      }\n"
+            + "    }\n"
+            + "  }\n"
+            + "}");
+
   }
 
   private static JsonNode getData() {
-    try {
-      return new ObjectMapper().readTree(
-          "{\n"
-              + "  \"name\": \"Andrii\",\n"
-              + "  \"permissions\": [\n"
-              + "    {\n"
-              + "      \"domain\": \"abs\",\n"
-              + "      \"grants\": [\n"
-              + "        \"admin\"\n"
-              + "      ]\n"
-              + "    },\n"
-              + "    {\n"
-              + "      \"domain\": \"tools\",\n"
-              + "      \"grants\": [\n"
-              + "        \"read\", \"write\"\n"
-              + "      ]\n"
-              + "    }\n"
-              + "  ]\n"
-              + "}");
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
+    return Jsons.deserialize(
+        "{\n"
+            + "  \"name\": \"Andrii\",\n"
+            + "  \"permissions\": [\n"
+            + "    {\n"
+            + "      \"domain\": \"abs\",\n"
+            + "      \"grants\": [\n"
+            + "        \"admin\"\n"
+            + "      ]\n"
+            + "    },\n"
+            + "    {\n"
+            + "      \"domain\": \"tools\",\n"
+            + "      \"grants\": [\n"
+            + "        \"read\", \"write\"\n"
+            + "      ]\n"
+            + "    }\n"
+            + "  ]\n"
+            + "}");
+
   }
 
 }
