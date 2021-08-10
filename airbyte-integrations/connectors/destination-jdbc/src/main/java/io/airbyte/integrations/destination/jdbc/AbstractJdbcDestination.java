@@ -81,9 +81,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
       tunnelConfig = getSSHTunnelConfig(config);
       if (tunnelConfig.shouldTunnel()) {
         sshclient = tunnelConfig.createClient();
-        LOGGER.error("JENNY TESTING - Client created.");
         tunnelSession = tunnelConfig.openTunnel(sshclient);
-        LOGGER.error("JENNY TESTING - Tunnel opened.");
       }
       String outputSchema = namingResolver.getIdentifier(config.get("schema").asText());
       attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations);
