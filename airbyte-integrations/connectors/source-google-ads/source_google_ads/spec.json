@@ -96,20 +96,3 @@
     }
   }
 }
-
-
-  "custom_query": [
-    {
-      "query": "SELECT campaign.accessible_bidding_strategy, segments.ad_destination_type, campaign.start_date, campaign.end_date FROM campaign",
-      "primary_key": null,
-      "cursor_field": "campaign.start_date",
-      "table_name": "happytable"
-    },
-    {
-      "query": "SELECT segments.ad_destination_type, segments.ad_network_type, segments.day_of_week, customer.auto_tagging_enabled, customer.id, metrics.conversions, campaign.start_date FROM campaign",
-      "primary_key": "customer.id",
-      "cursor_field": null,
-      "table_name": "unhappytable"
-    }
-  ]
-}
