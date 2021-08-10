@@ -147,9 +147,6 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
         getConfigValueOrNull(ourConfig, "tunnel_db_remote_port"),
         getConfigValueOrNull(ourConfig, "tunnel_localport")
     );
-    java.security.Security.addProvider(
-        new org.bouncycastle.jce.provider.BouncyCastleProvider()
-    );
     return sshconfig;
   }
 

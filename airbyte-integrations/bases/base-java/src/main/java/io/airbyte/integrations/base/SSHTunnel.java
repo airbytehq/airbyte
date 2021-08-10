@@ -119,41 +119,17 @@ public class SSHTunnel {
    * @throws NoSuchAlgorithmException
    * @throws URISyntaxException
    */
-  protected KeyPair xgetPrivateKeyPair() throws InvalidKeySpecException, NoSuchAlgorithmException {
+  protected KeyPair getPrivateKeyPair() throws InvalidKeySpecException, NoSuchAlgorithmException {
     KeyFactory kf = KeyFactory.getInstance("RSA");
-    // TODO: bouncycastle has a pem reader that can do this step for us.
     String privateKeyContent = getSSHKey()
         .replaceAll("\\n", "")
         .replace("-----BEGIN PRIVATE KEY-----", "")
         .replace("-----END PRIVATE KEY-----", "");
-    PrivateKey privKey = kf.generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(privateKeyContent)));
+    RSAPrivateKey privKey = (RSAPrivateKey) kf.generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(privateKeyContent)));
     RSAPublicKey pubKey = (RSAPublicKey) kf.generatePublic(kf.getKeySpec(privKey, X509EncodedKeySpec.class));
     return new KeyPair(pubKey, privKey);
   }
 
-  public RSAPublicKey readX509PublicKey() throws InvalidKeySpecException, IOException, NoSuchAlgorithmException {
-    File file = new File("/Users/jennybrown/dev/airbyte/airbyte-integrations/bases/base-java/src/main/java/io/airbyte/integrations/base/secrets/dbtunnel-bastion-airbyte_rsa.pub.pem");
-    if (! file.canRead()) {
-      throw new RuntimeException("Cannot read file!");
-    };
-      try (FileReader keyReader = new FileReader(file)) {
-        PEMParser pemParser = new PEMParser(keyReader);
-        JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
-        SubjectPublicKeyInfo publicKeyInfo = SubjectPublicKeyInfo.getInstance(pemParser.readObject());
-        return (RSAPublicKey) converter.getPublicKey(publicKeyInfo);
-      }
-  }
-
-  public KeyPair getPrivateKeyPair() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-    FileReader fr = new FileReader(new File(
-        "/Users/jennybrown/dev/airbyte/airbyte-integrations/bases/base-java/src/main/java/io/airbyte/integrations/base/secrets/dbtunnel-bastion-airbyte_pkcs8.pem"));
-    PEMParser pemParser = new PEMParser(fr);
-    JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
-    PrivateKeyInfo privateKeyInfo = PrivateKeyInfo.getInstance(pemParser.readObject());
-    RSAPrivateKey privKey = (RSAPrivateKey) converter.getPrivateKey(privateKeyInfo);
-    RSAPublicKey pubKey = readX509PublicKey();
-    return new KeyPair(pubKey, privKey);
-  }
 
   /**
    * Generates a new ssh client and returns it, with forwarding set to accept all types; use this before opening a tunnel.
@@ -161,6 +137,9 @@ public class SSHTunnel {
    * @return
    */
   public SshClient createClient() {
+    java.security.Security.addProvider(
+        new org.bouncycastle.jce.provider.BouncyCastleProvider()
+    );
     SshClient client = SshClient.setUpDefaultClient();
     client.setForwardingFilter(AcceptAllForwardingFilter.INSTANCE);
     return client;
@@ -227,17 +206,6 @@ public class SSHTunnel {
         ", remoteDatabasePort='" + remoteDatabasePort + '\'' +
         ", tunnelDatabasePort='" + tunnelDatabasePort + '\'' +
         '}';
-  }
-
-  public static void main(String[] args) throws Throwable {
-    SSHTunnel tunnel = new SSHTunnel(
-        "SSH_KEY_AUTH", "3.18.93.32", "22", "airbyte", "", "",
-        "tunnel-dev.cevykyaz98rn.us-east-2.rds.amazonaws.com", "5432",
-        "5000");
-    SshClient client;
-    client = tunnel.createClient();
-    ClientSession session = tunnel.openTunnel(client);
-    tunnel.closeTunnel(client, session);
   }
 
 }
