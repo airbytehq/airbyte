@@ -22,6 +22,8 @@
 # SOFTWARE.
 #
 
+import os
+import json
 from enum import Enum
 from typing import Any, List, Mapping
 
@@ -62,7 +64,8 @@ class GoogleAds:
     @staticmethod
     def get_fields_from_schema(schema: Mapping[str, Any]) -> List[str]:
         properties = schema.get("properties")
-        return [*properties]
+        return list(properties) # more clear form to return list of dict keys
+        # return [*properties]
 
     @staticmethod
     def convert_schema_into_query(
@@ -148,7 +151,25 @@ class GoogleAds:
         return field_value
 
     @staticmethod
-    def parse_single_result(schema: Mapping[str, Any], result: GoogleAdsRow):
-        fields = GoogleAds.get_fields_from_schema(schema)
+    def process_query(query, table_name) -> List:
+        query = query.lower().split('select')[1].split('from')[0].strip()
+        fields = query.split(",")
+        fields = [i.strip() for i in fields]
+        schema_file = os.sep.join([os.getcwd(), 'source_google_ads', 'schemas', table_name + ".json"])
+        schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": True
+        }
+        with open(schema_file, 'w') as schema_flying:
+            json.dump(schema, schema_flying, indent=2)
+        return fields
+
+    @staticmethod
+    def parse_single_result(schema: Mapping[str, Any], result: GoogleAdsRow, query: str = None, table_name: str = None):
+        if not query:
+            fields = GoogleAds.get_fields_from_schema(schema)
+        else:
+            fields = GoogleAds.process_query(query, table_name)
         single_record = {field: GoogleAds.get_field_value(result, field) for field in fields}
         return single_record

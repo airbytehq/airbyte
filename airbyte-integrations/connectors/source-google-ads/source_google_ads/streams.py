@@ -197,7 +197,6 @@ class CustomQueryFullRefresh(GoogleAdsStream):
     """
     Class that should sync by custom user query to Google Ads API
     """
-    name = "custom_query"
     def __init__(self, custom_query_config, **kwargs):
         self.custom_query_config = custom_query_config
         self.user_defined_query = custom_query_config["query"]
@@ -205,10 +204,24 @@ class CustomQueryFullRefresh(GoogleAdsStream):
 
     @property
     def primary_key(self) -> str:
-        return self.custom_query_config["query"] or None
+        return self.custom_query_config.get("primary_key") or None # not empty stings
+
+    @property
+    def name(self):
+        return self.custom_query_config["table_name"]
 
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
+        print('final query:', self.user_defined_query)
         return self.user_defined_query
+
+    def parse_response(self, response: SearchPager) -> Iterable[Mapping]:
+        for result in response:
+            yield self.google_ads_client.parse_single_result(
+                schema=None,
+                result=result,
+                query=self.user_defined_query,
+                table_name=self.name
+            )
 
 class CustomQueryIncremental(IncrementalGoogleAdsStream):
     """
@@ -222,25 +235,34 @@ class CustomQueryIncremental(IncrementalGoogleAdsStream):
 
     @property
     def primary_key(self) -> str:
-        return self.custom_query_config["query"] or None
+        return self.custom_query_config.get("primary_key") or None
 
     @property
     def cursor_field(self) -> str:
         return self.custom_query_config["cursor_field"]
 
+    @property
+    def name(self):
+        return self.custom_query_config["table_name"]
+
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
         start_date, end_date = self.get_date_params(stream_slice, self.cursor_field)
-
         final_query = self.user_defined_query + f"\nWHERE {self.cursor_field} > '{start_date}' AND {self.cursor_field} < '{end_date}' ORDER BY {self.cursor_field} ASC"
-
-        print('DEBUG: gotta query:', final_query)
+        #print('final query:', final_query)
         return final_query
+
+    def parse_response(self, response: SearchPager) -> Iterable[Mapping]:
+        for result in response:
+            yield self.google_ads_client.parse_single_result(
+                schema=None,
+                result=result,
+                query=self.user_defined_query,
+                table_name=self.name
+            )
 
 class CustomQuery:
     def __new__(cls, *args, **kwargs):
         if kwargs.get("custom_query_config", {}).get("cursor_field"):
-            print('instance of incremental')
             return CustomQueryIncremental(*args, **kwargs)
         else:
-            print('instance of full_refresh')
             return CustomQueryFullRefresh(*args, **kwargs)
