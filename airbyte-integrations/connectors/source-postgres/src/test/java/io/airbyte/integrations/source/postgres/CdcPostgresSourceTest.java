@@ -61,7 +61,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-class CdcPostgresSourceTest extends CdcSourceTest {
+abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   private static final String SLOT_NAME_BASE = "debezium_slot";
   private static final String PUBLICATION = "publication";
@@ -71,6 +71,8 @@ class CdcPostgresSourceTest extends CdcSourceTest {
   private Database database;
   private PostgresSource source;
   private JsonNode config;
+
+  protected abstract String getPluginName();
 
   @AfterEach
   void tearDown() throws Exception {
@@ -96,7 +98,7 @@ class CdcPostgresSourceTest extends CdcSourceTest {
     final String fullReplicationSlot = SLOT_NAME_BASE + "_" + dbName;
     database = getDatabaseFromConfig(config);
     database.query(ctx -> {
-      ctx.execute("SELECT pg_create_logical_replication_slot('" + fullReplicationSlot + "', 'wal2json');");
+      ctx.execute("SELECT pg_create_logical_replication_slot('" + fullReplicationSlot + "', '" + getPluginName() + "');");
       ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
 
       return null;
@@ -109,6 +111,7 @@ class CdcPostgresSourceTest extends CdcSourceTest {
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("replication_slot", SLOT_NAME_BASE + "_" + dbName)
         .put("publication", PUBLICATION)
+        .put("plugin", getPluginName())
         .build());
 
     return Jsons.jsonNode(ImmutableMap.builder()

@@ -66,7 +66,7 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
-    container = new PostgreSQLContainer<>("debezium/postgres:13-alpine")
+    container = new PostgreSQLContainer<>("postgres:13-alpine")
         .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"), "/etc/postgresql/postgresql.conf")
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
     container.start();
@@ -99,7 +99,7 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
      * {@link io.airbyte.integrations.source.postgres.PostgresSource#removeIncrementalWithoutPk(AirbyteStream)}
      */
     database.query(ctx -> {
-      ctx.execute("SELECT pg_create_logical_replication_slot('" + SLOT_NAME_BASE + "', 'wal2json');");
+      ctx.execute("SELECT pg_create_logical_replication_slot('" + SLOT_NAME_BASE + "', 'pgoutput');");
       ctx.execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
       ctx.execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
       ctx.execute("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
