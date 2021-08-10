@@ -22,11 +22,15 @@
 # SOFTWARE.
 #
 
+import json
+import time
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.exceptions import RequestBodyException
+from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
 from source_amazon_seller_partner.auth import AWSSignature
 
 REPORTS_API_VERSION = "2020-09-04"
@@ -34,19 +38,54 @@ ORDERS_API_VERSION = "v0"
 
 
 class AmazonSPStream(HttpStream, ABC):
-    page_size = 100
     data_field = "payload"
 
-    def __init__(self, url_base: str, aws_signature: AWSSignature, replication_start_date: str, *args, **kwargs):
+    def __init__(
+        self, url_base: str, aws_signature: AWSSignature, replication_start_date: str, marketplace_ids: List[str], *args, **kwargs
+    ):
         super().__init__(*args, **kwargs)
 
         self._url_base = url_base
         self._aws_signature = aws_signature
         self._replication_start_date = replication_start_date
+        self.marketplace_ids = marketplace_ids
 
     @property
     def url_base(self) -> str:
         return self._url_base
+
+    def _create_prepared_request(
+        self, path: str, method: str = None, headers: Mapping = None, params: Mapping = None, json: Any = None, data: Any = None
+    ) -> requests.PreparedRequest:
+        """
+        Override to prepare request for AWS API.
+        AWS signature flow require prepared request to correctly generate `authorization` header.
+        Add `auth` arg to sign all the requests with AWS signature.
+        """
+
+        http_method = method or self.http_method
+        args = {"method": http_method, "url": self.url_base + path, "headers": headers, "params": params, "auth": self._aws_signature}
+        if http_method.upper() in BODY_REQUEST_METHODS:
+            if json and data:
+                raise RequestBodyException(
+                    "At the same time only one of the 'request_body_data' and 'request_body_json' functions can return data"
+                )
+            elif json:
+                args["json"] = json
+            elif data:
+                args["data"] = data
+
+        return self._session.prepare_request(requests.Request(**args))
+
+    def request_headers(self, *args, **kwargs) -> Mapping[str, Any]:
+        return {"content-type": "application/json"}
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+
+
+class IncrementalAmazonSPStream(AmazonSPStream, ABC):
+    page_size = 100
 
     @property
     @abstractmethod
@@ -102,65 +141,66 @@ class AmazonSPStream(HttpStream, ABC):
             return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
         return {self.cursor_field: latest_benchmark}
 
-    def _create_prepared_request(
-        self, path: str, headers: Mapping = None, params: Mapping = None, json: Any = None, data: Any = None
-    ) -> requests.PreparedRequest:
-        """
-        Override to prepare request for AWS API.
-        AWS signature flow require prepared request to correctly generate `authorization` header.
-        Add `auth` arg to sign all the requests with AWS signature.
-        """
 
-        return self._session.prepare_request(
-            requests.Request(method=self.http_method, url=self.url_base + path, headers=headers, params=params, auth=self._aws_signature)
-        )
-
-    def request_headers(self, *args, **kwargs) -> Mapping[str, Any]:
-        return {"content-type": "application/json"}
-
-
-class ReportsBase(AmazonSPStream, ABC):
+class ReportsAmazonSPStream(AmazonSPStream, ABC):
     primary_key = "reportId"
-    cursor_field = "createdTime"
-    replication_start_date_field = "createdSince"
-    next_page_token_field = "nextToken"
-    page_size_field = "pageSize"
+    path_prefix = f"/reports/{REPORTS_API_VERSION}/reports"
+    wait_seconds = 30
 
-    def path(self, **kwargs):
-        return f"/reports/{REPORTS_API_VERSION}/reports"
+    def should_retry(self, response: requests.Response) -> bool:
+        should_retry = super().should_retry(response)
+        if not should_retry:
+            should_retry = response.json().get(self.data_field, {}).get("processingStatus") in ["IN_QUEUE", "IN_PROGRESS"]
+        return should_retry
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, next_page_token, **kwargs)
-        if not next_page_token:
-            params.update({"reportTypes": self.name})
-        return params
+    def backoff_time(self, response: requests.Response):
+        return self.wait_seconds
+
+    def _create_report(self, stream_state: Mapping[str, Any] = None) -> Mapping[str, Any]:
+        request_headers = self.request_headers(stream_state=stream_state)
+        report_data = {"reportType": self.name, "marketplaceIds": self.marketplace_ids}
+        create_report_request = self._create_prepared_request(
+            method="POST",
+            path=self.path_prefix,
+            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            params={},
+            data=json.dumps(report_data),
+        )
+        report_response = self._send_request(create_report_request, {})
+
+        time.sleep(self.wait_seconds)
+
+        return report_response.json()[self.data_field]
+
+    def path(self, stream_state: Mapping[str, Any] = None, **kwargs):
+        return f"{self.path_prefix}/{self._create_report(stream_state)[self.primary_key]}"
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        """
+        :return an iterable containing each record in the response
+        """
+        yield response.json().get(self.data_field, {})
 
 
-class MerchantListingsReports(ReportsBase):
+class MerchantListingsReports(ReportsAmazonSPStream):
     name = "GET_MERCHANT_LISTINGS_ALL_DATA"
 
 
-class FlatFileOrdersReports(ReportsBase):
+class FlatFileOrdersReports(ReportsAmazonSPStream):
     name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
 
 
-class FbaInventoryReports(ReportsBase):
+class FbaInventoryReports(ReportsAmazonSPStream):
     name = "GET_FBA_INVENTORY_AGED_DATA"
 
 
-class Orders(AmazonSPStream):
+class Orders(IncrementalAmazonSPStream):
     name = "Orders"
     primary_key = "AmazonOrderId"
     cursor_field = "LastUpdateDate"
     replication_start_date_field = "LastUpdatedAfter"
     next_page_token_field = "NextToken"
     page_size_field = "MaxResultsPerPage"
-
-    def __init__(self, marketplace_ids: List[str], **kwargs):
-        super().__init__(**kwargs)
-        self.marketplace_ids = marketplace_ids
 
     def path(self, **kwargs):
         return f"/orders/{ORDERS_API_VERSION}/orders"

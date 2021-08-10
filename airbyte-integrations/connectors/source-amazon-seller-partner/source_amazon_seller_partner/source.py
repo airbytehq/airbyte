@@ -85,6 +85,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             "authenticator": auth,
             "aws_signature": aws_signature,
             "replication_start_date": config.replication_start_date,
+            "marketplace_ids": [self.marketplace_id],
         }
         return stream_kwargs
 
@@ -109,7 +110,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             MerchantListingsReports(**stream_kwargs),
             FlatFileOrdersReports(**stream_kwargs),
             FbaInventoryReports(**stream_kwargs),
-            Orders(marketplace_ids=[self.marketplace_id], **stream_kwargs),
+            Orders(**stream_kwargs),
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
