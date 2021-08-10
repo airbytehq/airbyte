@@ -24,11 +24,13 @@
 
 package io.airbyte.integrations.destination.mssql;
 
+import com.google.common.collect.Lists;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import java.sql.SQLException;
 import java.util.List;
 
 public class SqlServerOperations implements SqlOperations {
@@ -76,9 +78,11 @@ public class SqlServerOperations implements SqlOperations {
   }
 
   @Override
-  public void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tempTableName)
-      throws Exception {
-
+  public void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tempTableName) throws SQLException {
+    // MSSQL has a limitation of 2100 parameters used in a query
+    // Airbyte inserts data with 3 columns (raw table) this limits to 700 records.
+    // Limited the variable to 500 records to
+    final int MAX_BATCH_SIZE = 500;
     final String insertQueryComponent = String.format(
         "INSERT INTO %s.%s (%s, %s, %s) VALUES\n",
         schemaName,
@@ -87,7 +91,14 @@ public class SqlServerOperations implements SqlOperations {
         JavaBaseConstants.COLUMN_NAME_DATA,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     final String recordQueryComponent = "(?, ?, ?),\n";
-    SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, database, records);
+    final List<List<AirbyteRecordMessage>> batches = Lists.partition(records, MAX_BATCH_SIZE);
+    batches.forEach(record -> {
+      try {
+        SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, database, record);
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
+    });
   }
 
   @Override
