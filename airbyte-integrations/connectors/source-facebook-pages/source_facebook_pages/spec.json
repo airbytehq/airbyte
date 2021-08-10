@@ -20,7 +20,7 @@
       },
       "page_id": {
         "type": "string",
-        "description": "Page id"
+        "description": "Page ID"
       }
     }
   }
