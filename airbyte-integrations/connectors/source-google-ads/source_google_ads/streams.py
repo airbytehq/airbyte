@@ -200,6 +200,7 @@ class CustomQuery:
         class_dict["name"] = cls.name
         class_dict["primary_key"] = cls.primary_key
         class_dict["parse_response"] = cls.parse_response
+        class_dict["get_json_schema"] = cls.get_json_schema
 
         if kwargs.get("custom_query_config", {}).get("cursor_field"):
             class_dict["cursor_field"] = property(cls.cursor_field)
@@ -248,3 +249,11 @@ class CustomQuery:
             + f"\nWHERE {self.cursor_field} > '{start_date}' AND {self.cursor_field} < '{end_date}' ORDER BY {self.cursor_field} ASC"
         )
         return final_query
+
+    def get_json_schema(self):
+        """
+        As agreed, now it returns the default schema (since read -> schema_generator.py may take hours for the end user).
+        If we want to redesign json schema from raw query, this method need to be modified.
+        """
+        local_json_schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True}
+        return local_json_schema

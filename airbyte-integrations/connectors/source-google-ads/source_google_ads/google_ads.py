@@ -149,7 +149,7 @@ class GoogleAds:
         return field_value
 
     @staticmethod
-    def process_query(query) -> List:
+    def process_query(query: str) -> List:
         query = query.lower().split("select")[1].split("from")[0].strip()
         fields = query.split(",")
         fields = [i.strip() for i in fields]

@@ -23,16 +23,16 @@
 #
 
 
-from typing import Any, List, Mapping, MutableMapping, Tuple
+from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import AirbyteCatalog, AirbyteStream, SyncMode
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.errors import GoogleAdsException
 
 from .google_ads import GoogleAds
-from .streams import (  # CustomQueryFullRefresh,; CustomQueryIncremental,
+from .streams import (
     AccountPerformanceReport,
     Accounts,
     AdGroupAdReport,
@@ -47,43 +47,6 @@ from .streams import (  # CustomQueryFullRefresh,; CustomQueryIncremental,
 
 
 class SourceGoogleAds(AbstractSource):
-    def get_local_json_schema(self, config) -> MutableMapping[str, Any]:
-        """
-        As agreed, now it returns the default schema (since read -> schema_generator.py may take hours for the end user).
-        If we want to redesign json schema from raw query, this method need to be modified.
-        """
-        local_json_schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True}
-        return local_json_schema
-
-    def discover(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteCatalog:
-        # streams = [stream.as_airbyte_stream() for stream in self.streams(config=config)]
-        streams = []
-        for stream in self.streams(config=config):
-            if stream.__class__.__name__ not in ("CustomQueryGenericFullRefresh", "CustomQueryGenericIncremental"):
-                # todo rename to CustomQueryGenericFullRefresh and CustomQueryGenericIncremental both here and in class
-                streams.append(stream.as_airbyte_stream())
-        # TODO: extend with custom defined streams
-        for usr_query in config.get("custom_query", []):
-            local_cursor_field = (
-                [usr_query.get("cursor_field")] if isinstance(usr_query.get("cursor_field"), str) else usr_query.get("cursor_field")
-            )
-            stream = AirbyteStream(
-                name=usr_query["table_name"],
-                json_schema=self.get_local_json_schema(config=config),
-                supported_sync_modes=[SyncMode.full_refresh],
-            )
-            if usr_query.get("cursor_field"):
-                stream.source_defined_cursor = True  # ???
-                stream.supported_sync_modes.append(SyncMode.incremental)  # type: ignore
-                stream.default_cursor_field = local_cursor_field
-
-            keys = Stream._wrapped_primary_key(usr_query.get("primary_key") or None)  # (!!! read empty strings as null aswell)
-            if keys and len(keys) > 0:
-                stream.source_defined_primary_key = keys
-            streams.append(stream)
-        # end of TODO
-        return AirbyteCatalog(streams=streams)
-
     def get_credentials(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
         credentials = config["credentials"]
 
