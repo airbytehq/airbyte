@@ -65,7 +65,7 @@ public class DebeziumEventUtils {
     final ObjectNode base = (ObjectNode) (after.isNull() ? before : after);
 
     long transactionMillis = source.get("ts_ms").asLong();
-    Timestamp transactionTimestamp = new Timestamp(transactionMillis);
+    String transactionTimestamp = new Timestamp(transactionMillis).toInstant().toString();
 
     base.put(CDC_UPDATED_AT, transactionTimestamp);
     cdcMetadataInjector.addMetaData(base, source);
@@ -73,7 +73,7 @@ public class DebeziumEventUtils {
     if (after.isNull()) {
       base.put(CDC_DELETED_AT, transactionTimestamp);
     } else {
-      base.put(CDC_DELETED_AT, (Timestamp) null);
+      base.put(CDC_DELETED_AT, (String) null);
     }
 
     return base;
