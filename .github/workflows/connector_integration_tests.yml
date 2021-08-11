@@ -8,6 +8,7 @@ on:
 
 jobs:
   launch_integration_tests:
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
     steps:
