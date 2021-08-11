@@ -170,7 +170,29 @@ class Helpers(object):
     @staticmethod
     def get_sheet_row_count(client, spreadsheet_id: str) -> Dict[str, int]:
         spreadsheet_metadata = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=False))
-        return {sheet.properties.title: sheet.properties.gridProperties["rowCount"] for sheet in spreadsheet_metadata.sheets}
+        # filter out sheets without gridProperties (like in diagram sheets)
+        data_sheets = [sheet for sheet in spreadsheet_metadata.sheets if hasattr(sheet.properties, "gridProperties")]
+        return {sheet.properties.title: sheet.properties.gridProperties["rowCount"] for sheet in data_sheets}
+
+    @staticmethod
+    def get_grid_sheets(spreadsheet_metadata) -> List[str]:
+        """Return grid only diagram, filter out sheets with image/diagram only
+
+        https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#sheetproperties
+        """
+        grid_sheets = []
+        non_grid_sheets = []
+        for sheet in spreadsheet_metadata.sheets:
+            sheet_title = sheet.properties.title
+            if hasattr(sheet.properties, "gridProperties"):
+                grid_sheets.append(sheet_title)
+            else:
+                non_grid_sheets.append(sheet_title)
+
+        if non_grid_sheets:
+            AirbyteLogger().log("WARN", "Skip non-grid sheets: " + "".join(non_grid_sheets))
+
+        return grid_sheets
 
     @staticmethod
     def is_row_empty(cell_values: List[str]) -> bool:
