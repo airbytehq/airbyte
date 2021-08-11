@@ -26,13 +26,13 @@
 import json
 import re
 from copy import deepcopy
-from typing import Optional, Union
+from typing import Union
 
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
 
-from .formats.abstract_spec import AbstractFormat
 from .formats.csv_spec import CsvFormat
+from .formats.parquet_spec import ParquetFormat
 
 # To implement your provider specific spec, inherit from SourceFilesAbstractSpec and add provider-specific settings e.g.:
 
@@ -71,21 +71,25 @@ class SourceFilesAbstractSpec(BaseModel):
 
     path_pattern: str = Field(
         description='Add at least 1 pattern here to match filepaths against. Use | to separate multiple patterns. Airbyte uses these patterns to determine which files to pick up from the provider storage. See <a href="https://facelessuser.github.io/wcmatch/glob/" target="_blank">wcmatch.glob</a> to understand pattern syntax (GLOBSTAR and SPLIT flags are enabled). Use pattern <strong>**</strong> to pick up all files.',
-        examples=["**", "myFolder/myTableFiles/*.csv|myFolder/myOtherTableFiles/*.csv"],
+        examples=[
+            "**", "myFolder/myTableFiles/*.csv|myFolder/myOtherTableFiles/*.csv"],
     )
 
     user_schema: str = Field(
         alias="schema",
         default="{}",
         description='Optionally provide a schema to enforce, as a valid JSON string. Ensure this is a mapping of <strong>{ "column" : "type" }</strong>, where types are valid <a href="https://json-schema.org/understanding-json-schema/reference/type.html" target="_blank">JSON Schema datatypes</a>. Leave as {} to auto-infer the schema.',
-        examples=['{"column_1": "number", "column_2": "string", "column_3": "array", "column_4": "object", "column_5": "boolean"}'],
+        examples=[
+            '{"column_1": "number", "column_2": "string", "column_3": "array", "column_4": "object", "column_5": "boolean"}'],
     )
 
-    format: AbstractFormat = Field(default=CsvFormat)
+    format: Union[CsvFormat, ParquetFormat] = Field(
+        default=CsvFormat.Config.title)
 
     @staticmethod
     def change_format_to_oneOf(schema: dict) -> dict:
-        schema["properties"]["format"]["oneOf"] = deepcopy(schema["properties"]["format"]["anyOf"])
+        schema["properties"]["format"]["oneOf"] = deepcopy(
+            schema["properties"]["format"]["anyOf"])
         schema["properties"]["format"]["type"] = "object"
         del schema["properties"]["format"]["anyOf"]
         return schema
@@ -93,7 +97,8 @@ class SourceFilesAbstractSpec(BaseModel):
     @staticmethod
     def check_provider_added(schema: dict) -> dict:
         if "provider" not in schema["properties"]:
-            raise RuntimeError("You must add the 'provider' property in your child spec class")
+            raise RuntimeError(
+                "You must add the 'provider' property in your child spec class")
 
     @staticmethod
     def resolve_refs(schema: dict) -> dict:
@@ -101,7 +106,8 @@ class SourceFilesAbstractSpec(BaseModel):
         str_schema = json.dumps(schema)
         for ref_block in re.findall(r'{"\$ref": "#\/definitions\/.+?(?="})"}', str_schema):
             ref = json.loads(ref_block)["$ref"]
-            str_schema = str_schema.replace(ref_block, json.dumps(json_schema_ref_resolver.resolve(ref)[1]))
+            str_schema = str_schema.replace(ref_block, json.dumps(
+                json_schema_ref_resolver.resolve(ref)[1]))
         pyschema = json.loads(str_schema)
         del pyschema["definitions"]
         return pyschema

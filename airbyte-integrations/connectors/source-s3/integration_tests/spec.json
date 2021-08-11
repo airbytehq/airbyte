@@ -97,7 +97,7 @@
             "required": ["filetype"]
           },
           {
-            "title": "Coming Soon...",
+            "title": "parquet",
             "type": "object",
             "properties": {
               "filetype": {
@@ -105,6 +105,46 @@
                 "description": "An enumeration.",
                 "enum": ["parquet"],
                 "type": "string"
+              },
+              "buffer_size": {
+                "title": "Buffer Size",
+                "description": "perform read buffering when deserializing individual  column chunks. Otherwise IO calls are unbuffered.",
+                "default": 0,
+                "type": "integer"
+              },
+              "memory_map": {
+                "title": "Memory Map",
+                "description": "If the source is a file path, use a memory map to read file, which can improve performance in some environments.",
+                "default": false,
+                "type": "boolean"
+              },
+              "columns": {
+                "title": "Columns",
+                "description": "If not None, only these columns will be read from the file.",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "batch_size": {
+                "title": "Batch Size",
+                "description": "Maximum number of records per batch. Batches may be smaller if there aren’t enough rows in the file.",
+                "default": 65536,
+                "type": "integer"
+              },
+              "row_groups": {
+                "title": "Row Groups",
+                "description": "Only these row groups will be read from the file.",
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "use_threads": {
+                "title": "Use Threads",
+                "description": "Perform multi-threaded column reads.",
+                "default": true,
+                "type": "boolean"
               }
             },
             "required": ["filetype"]
