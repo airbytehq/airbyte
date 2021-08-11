@@ -20,6 +20,6 @@ select
     json_value(_airbyte_data, 
     '$."USD"') as usd,
     _airbyte_emitted_at
-from test_normalization._airbyte_raw_dedup_exchange_rate
+from test_normalization._airbyte_raw_dedup_exchange_rate as table_alias
 -- dedup_exchange_rate
   );

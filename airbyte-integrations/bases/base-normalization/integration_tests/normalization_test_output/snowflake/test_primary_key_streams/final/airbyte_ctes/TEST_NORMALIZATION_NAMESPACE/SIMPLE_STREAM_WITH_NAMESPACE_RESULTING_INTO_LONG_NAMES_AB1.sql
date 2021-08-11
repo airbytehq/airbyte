@@ -6,6 +6,6 @@ select
     to_varchar(get_path(parse_json(_airbyte_data), '"id"')) as ID,
     to_varchar(get_path(parse_json(_airbyte_data), '"date"')) as DATE,
     _airbyte_emitted_at
-from "AIRBYTE_DATABASE".TEST_NORMALIZATION_NAMESPACE._AIRBYTE_RAW_SIMPLE_STREAM_WITH_NAMESPACE_RESULTING_INTO_LONG_NAMES
+from "AIRBYTE_DATABASE".TEST_NORMALIZATION_NAMESPACE._AIRBYTE_RAW_SIMPLE_STREAM_WITH_NAMESPACE_RESULTING_INTO_LONG_NAMES as table_alias
 -- SIMPLE_STREAM_WITH_NAMESPACE_RESULTING_INTO_LONG_NAMES
   );

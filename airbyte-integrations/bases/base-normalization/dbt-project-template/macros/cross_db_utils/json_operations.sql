@@ -55,32 +55,32 @@
 
 {# json_extract -------------------------------------------------     #}
 
-{% macro json_extract(json_column, json_path_list, normalized_json_path) -%}
-    {{ adapter.dispatch('json_extract')(json_column, json_path_list, normalized_json_path) }}
+{% macro json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
+    {{ adapter.dispatch('json_extract')(from_table, json_column, json_path_list, normalized_json_path) }}
 {%- endmacro %}
 
-{% macro default__json_extract(json_column, json_path_list, normalized_json_path) -%}
-    json_extract({{ json_column }}, {{ format_json_path(json_path_list) }})
+{% macro default__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
+    json_extract({{ from_table}}.{{ json_column }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
-{% macro bigquery__json_extract(json_column, json_path_list, normalized_json_path) -%}
-    json_extract({{ json_column }}, {{ format_json_path(normalized_json_path) }})
+{% macro bigquery__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
+    json_extract({{ from_table}}.{{ json_column }}, {{ format_json_path(normalized_json_path) }})
 {%- endmacro %}
 
-{% macro postgres__json_extract(json_column, json_path_list, normalized_json_path) -%}
-    jsonb_extract_path({{ json_column }}, {{ format_json_path(json_path_list) }})
+{% macro postgres__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
+    jsonb_extract_path({{ from_table }}.{{ json_column }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
-{% macro mysql__json_extract(json_column, json_path_list, normalized_json_path) -%}
-    json_extract({{ json_column }}, {{ format_json_path(normalized_json_path) }})
+{% macro mysql__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
+    json_extract({{ from_table }}.{{ json_column }}, {{ format_json_path(normalized_json_path) }})
 {%- endmacro %}
 
-{% macro redshift__json_extract(json_column, json_path_list, normalized_json_path) -%}
-    case when json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) != '' then json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) end
+{% macro redshift__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
+    case when json_extract_path_text({{ from_table }}.{{ json_column }}, {{ format_json_path(json_path_list) }}, true) != '' then json_extract_path_text({{ from_table }}.{{ json_column }}, {{ format_json_path(json_path_list) }}, true) end
 {%- endmacro %}
 
-{% macro snowflake__json_extract(json_column, json_path_list, normalized_json_path) -%}
-    get_path(parse_json({{ json_column }}), {{ format_json_path(json_path_list) }})
+{% macro snowflake__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
+    get_path(parse_json({{ from_table }}.{{ json_column }}), {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {# json_extract_scalar -------------------------------------------------     #}

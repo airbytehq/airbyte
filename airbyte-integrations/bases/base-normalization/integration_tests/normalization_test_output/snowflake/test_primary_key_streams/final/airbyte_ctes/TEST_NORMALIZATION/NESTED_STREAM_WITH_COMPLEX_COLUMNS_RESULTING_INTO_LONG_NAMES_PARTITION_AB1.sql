@@ -8,7 +8,7 @@ select
     get_path(parse_json(PARTITION), '"DATA"') as DATA,
     get_path(parse_json(PARTITION), '"column`_''with""_quotes"') as "column`_'with""_quotes",
     _airbyte_emitted_at
-from "AIRBYTE_DATABASE".TEST_NORMALIZATION."NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES"
+from "AIRBYTE_DATABASE".TEST_NORMALIZATION."NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES" as table_alias
 where PARTITION is not null
 -- PARTITION at nested_stream_with_complex_columns_resulting_into_long_names/partition
   );

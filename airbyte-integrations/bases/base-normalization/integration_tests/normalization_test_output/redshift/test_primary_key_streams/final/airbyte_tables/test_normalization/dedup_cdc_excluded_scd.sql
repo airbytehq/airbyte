@@ -16,7 +16,7 @@ select
     case when json_extract_path_text(_airbyte_data, '_ab_cdc_updated_at', true) != '' then json_extract_path_text(_airbyte_data, '_ab_cdc_updated_at', true) end as _ab_cdc_updated_at,
     case when json_extract_path_text(_airbyte_data, '_ab_cdc_deleted_at', true) != '' then json_extract_path_text(_airbyte_data, '_ab_cdc_deleted_at', true) end as _ab_cdc_deleted_at,
     _airbyte_emitted_at
-from "integrationtests".test_normalization._airbyte_raw_dedup_cdc_excluded
+from "integrationtests".test_normalization._airbyte_raw_dedup_cdc_excluded as table_alias
 -- dedup_cdc_excluded
 ),  __dbt__CTE__dedup_cdc_excluded_ab2 as (
 

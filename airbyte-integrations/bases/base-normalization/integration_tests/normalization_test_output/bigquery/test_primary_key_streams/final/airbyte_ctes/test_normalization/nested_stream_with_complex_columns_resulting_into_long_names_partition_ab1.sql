@@ -10,7 +10,7 @@ select
     json_extract_array(`partition`, "$['DATA']") as DATA,
     json_extract_array(`partition`, "$['column___with__quotes']") as column___with__quotes,
     _airbyte_emitted_at
-from `dataline-integration-testing`.test_normalization.`nested_stream_with_complex_columns_resulting_into_long_names`
+from `dataline-integration-testing`.test_normalization.`nested_stream_with_complex_columns_resulting_into_long_names` as table_alias
 where `partition` is not null
 -- partition at nested_stream_with_complex_columns_resulting_into_long_names/partition;
 

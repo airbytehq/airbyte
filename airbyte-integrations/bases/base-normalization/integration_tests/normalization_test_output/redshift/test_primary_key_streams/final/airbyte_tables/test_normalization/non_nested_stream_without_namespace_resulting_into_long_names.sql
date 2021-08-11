@@ -13,7 +13,7 @@ select
     case when json_extract_path_text(_airbyte_data, 'id', true) != '' then json_extract_path_text(_airbyte_data, 'id', true) end as id,
     case when json_extract_path_text(_airbyte_data, 'date', true) != '' then json_extract_path_text(_airbyte_data, 'date', true) end as date,
     _airbyte_emitted_at
-from "integrationtests".test_normalization._airbyte_raw_non_nested_stream_without_namespace_resulting_into_long_names
+from "integrationtests".test_normalization._airbyte_raw_non_nested_stream_without_namespace_resulting_into_long_names as table_alias
 -- non_nested_stream_without_namespace_resulting_into_long_names
 ),  __dbt__CTE__non_nested_stream_without_namespace_resulting_into_long_names_ab2 as (
 

@@ -12,6 +12,6 @@ select
     jsonb_extract_path_text(_airbyte_data, 'NZD') as nzd,
     jsonb_extract_path_text(_airbyte_data, 'USD') as usd,
     _airbyte_emitted_at
-from "postgres".test_normalization._airbyte_raw_dedup_exchange_rate
+from "postgres".test_normalization._airbyte_raw_dedup_exchange_rate as table_alias
 -- dedup_exchange_rate
   );
