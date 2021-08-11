@@ -5,7 +5,7 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_facebook_pages_singer'
+    moduleDirectory 'source_facebook_pages'
 }
 
 dependencies {
