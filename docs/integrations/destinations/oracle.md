@@ -43,7 +43,7 @@ As Airbite namespaces allows us to store data into different schemas, we have di
 | Login user | Destination user | Required permissions | Comment |
 | :--- | :--- | :--- | :--- |
 | Dba user | Any user | - | |
-| Regular user | Same user as login | Create, drop, write table, create session | |
+| Regular user | Same user as login | Create, drop and write table, create session | |
 | Regular user | Any existing user | Create, drop and write ANY table, create session | Grants can be provided on a system level by DBA or by target user directly |
 | Regular user | Not existing user | Create, drop and write ANY table, create user, create session | Grants should be provided on a system level by DBA | 
 
