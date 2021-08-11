@@ -9,6 +9,7 @@ on:
 jobs:
   build-report:
     name: Build Report
+    timeout-minutes: 5
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
     environment: more-secrets
