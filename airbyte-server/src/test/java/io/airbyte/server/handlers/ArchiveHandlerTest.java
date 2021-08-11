@@ -74,12 +74,13 @@ public class ArchiveHandlerTest {
   private ArchiveHandler archiveHandler;
 
   private static class NoOpFileTtlManager extends FileTtlManager {
+
     public NoOpFileTtlManager() {
       super(1L, TimeUnit.MINUTES, 1L);
     }
 
-    public void register(Path path) {
-    }
+    public void register(Path path) {}
+
   }
 
   @BeforeAll

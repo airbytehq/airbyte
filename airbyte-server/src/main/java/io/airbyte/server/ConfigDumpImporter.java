@@ -248,8 +248,8 @@ public class ConfigDumpImporter {
   }
 
   /**
-   * This method combines the latest definitions with existing ones. If a connector is being used
-   * by user, it will continue to be at the same version, otherwise it will be migrated to the latest
+   * This method combines the latest definitions with existing ones. If a connector is being used by
+   * user, it will continue to be at the same version, otherwise it will be migrated to the latest
    * version
    */
   private <T> Stream<T> getDefinitionStream(Set<String> definitionsInUse,
