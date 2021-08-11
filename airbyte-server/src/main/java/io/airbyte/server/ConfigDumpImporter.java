@@ -26,7 +26,6 @@ package io.airbyte.server;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import io.airbyte.analytics.TrackingClientSingleton;
@@ -43,6 +42,7 @@ import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
+import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
@@ -94,9 +94,7 @@ public class ConfigDumpImporter {
     this.configRepository = configRepository;
   }
 
-  public ImportRead importDataWithSeed(String targetVersion, File archive, Path seedPath) {
-    Preconditions.checkNotNull(seedPath);
-
+  public ImportRead importDataWithSeed(String targetVersion, File archive, ConfigPersistence seedPersistence) {
     ImportRead result;
     try {
       final Path sourceRoot = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive");
@@ -106,7 +104,7 @@ public class ConfigDumpImporter {
 
         // 2. dry run
         try {
-          checkImport(targetVersion, sourceRoot, seedPath);
+          checkImport(targetVersion, sourceRoot, seedPersistence);
         } catch (Exception e) {
           LOGGER.error("Dry run failed.", e);
           throw e;
@@ -116,7 +114,7 @@ public class ConfigDumpImporter {
         importDatabaseFromArchive(sourceRoot, targetVersion);
 
         // 4. Import Configs
-        importConfigsFromArchive(sourceRoot, seedPath, false);
+        importConfigsFromArchive(sourceRoot, seedPersistence, false);
 
         // 5. Set DB version
         LOGGER.info("Setting the DB Airbyte version to : " + targetVersion);
@@ -140,7 +138,7 @@ public class ConfigDumpImporter {
     return result;
   }
 
-  private void checkImport(String targetVersion, Path tempFolder, Path seed) throws IOException, JsonValidationException {
+  private void checkImport(String targetVersion, Path tempFolder, ConfigPersistence seedPersistence) throws IOException, JsonValidationException {
     final Path versionFile = tempFolder.resolve(VERSION_FILE_NAME);
     final String importVersion = Files.readString(versionFile, Charset.defaultCharset())
         .replace("\n", "").strip();
@@ -151,7 +149,7 @@ public class ConfigDumpImporter {
               "Please upgrade your Airbyte Archive, see more at https://docs.airbyte.io/tutorials/upgrading-airbyte\n",
               importVersion, targetVersion));
     }
-    importConfigsFromArchive(tempFolder, seed, true);
+    importConfigsFromArchive(tempFolder, seedPersistence, true);
   }
 
   // Config
@@ -162,7 +160,7 @@ public class ConfigDumpImporter {
     }
   }
 
-  private <T> void importConfigsFromArchive(final Path sourceRoot, Path seedPath, final boolean dryRun)
+  private <T> void importConfigsFromArchive(final Path sourceRoot, ConfigPersistence seedPersistence, final boolean dryRun)
       throws IOException, JsonValidationException {
     final List<String> sourceDefinitionsToMigrate = new ArrayList<>();
     final List<String> destinationDefinitionsToMigrate = new ArrayList<>();
@@ -175,7 +173,7 @@ public class ConfigDumpImporter {
     Collections.sort(directories);
     final Map<AirbyteConfig, Stream<T>> data = new LinkedHashMap<>();
 
-    final Map<ConfigSchema, Map<String, T>> seed = getSeed(seedPath);
+    final Map<ConfigSchema, Map<String, T>> seeds = getSeeds(seedPersistence);
 
     for (final String directory : directories) {
       final Optional<ConfigSchema> configSchemaOptional = Enums.toEnum(directory.replace(".yaml", ""), ConfigSchema.class);
@@ -193,46 +191,28 @@ public class ConfigDumpImporter {
           destinationProcessed,
           configSchema,
           configs,
-          seed);
+          seeds);
       data.put(configSchema, configs);
     }
     configRepository.replaceAllConfigs(data, dryRun);
   }
 
-  private <T> Map<ConfigSchema, Map<String, T>> getSeed(Path seed) throws IOException {
-    final List<ConfigSchema> configSchemas = Files.list(seed).map(c -> ConfigSchema.valueOf(c.getFileName().toString())).collect(Collectors.toList());
-    final Map<ConfigSchema, Map<String, T>> allData = new HashMap<>();
-    for (ConfigSchema configSchema : configSchemas) {
-      final Map<String, T> data = readLatestSeed(seed, configSchema);
-      allData.put(configSchema, data);
+  /**
+   * Convert config dumps from {@link ConfigPersistence#dumpConfigs} to the desired format.
+   */
+  @SuppressWarnings("unchecked")
+  private static <T> Map<ConfigSchema, Map<String, T>> getSeeds(ConfigPersistence configSeedPersistence) throws IOException {
+    Map<ConfigSchema, Map<String, T>> allData = new HashMap<>(2);
+    for (Map.Entry<String, Stream<JsonNode>> configStream : configSeedPersistence.dumpConfigs().entrySet()) {
+      ConfigSchema configSchema = ConfigSchema.valueOf(configStream.getKey());
+      Map<String, T> configSeeds = configStream.getValue()
+          .map(node -> Jsons.object(node, configSchema.getClassName()))
+          .collect(Collectors.toMap(
+              configSchema::getId,
+              object -> (T) object));
+      allData.put(configSchema, configSeeds);
     }
     return allData;
-  }
-
-  private <T> Map<String, T> readLatestSeed(Path latestSeed, ConfigSchema configSchema) throws IOException {
-    try (Stream<Path> files = Files.list(latestSeed.resolve(configSchema.toString()))) {
-      final List<String> ids = files
-          .filter(p -> !p.endsWith(".json"))
-          .map(p -> p.getFileName().toString().replace(".json", ""))
-          .collect(Collectors.toList());
-
-      final Map<String, T> configData = new HashMap<>();
-      for (String id : ids) {
-        try {
-          final Path configPath = latestSeed.resolve(configSchema.toString()).resolve(String.format("%s.json", id));
-          if (!Files.exists(configPath)) {
-            throw new RuntimeException("Config NotFound");
-          }
-
-          T config = Jsons.deserialize(Files.readString(configPath), configSchema.getClassName());
-          configData.put(id, config);
-        } catch (RuntimeException e) {
-          throw new IOException(e);
-        }
-      }
-
-      return configData;
-    }
   }
 
   private <T> Stream<T> streamWithAdditionalOperation(List<String> sourceDefinitionsToMigrate,

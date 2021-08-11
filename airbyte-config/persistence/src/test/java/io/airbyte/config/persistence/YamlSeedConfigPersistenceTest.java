@@ -46,7 +46,7 @@ public class YamlSeedConfigPersistenceTest {
 
   static {
     try {
-      PERSISTENCE = new YamlSeedConfigPersistence();
+      PERSISTENCE = YamlSeedConfigPersistence.get();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

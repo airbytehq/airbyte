@@ -81,7 +81,7 @@ public class ConfigPersistenceBuilder {
    */
   ConfigPersistence getDbPersistenceWithYamlSeed() throws IOException {
     LOGGER.info("Creating db-based config persistence, and loading initial seed from YAML files");
-    ConfigPersistence seedConfigPersistence = new YamlSeedConfigPersistence();
+    ConfigPersistence seedConfigPersistence = YamlSeedConfigPersistence.get();
     return getDbPersistence(seedConfigPersistence);
   }
 

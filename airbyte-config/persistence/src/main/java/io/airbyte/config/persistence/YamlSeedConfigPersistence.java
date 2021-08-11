@@ -52,14 +52,27 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
       ConfigSchema.STANDARD_SOURCE_DEFINITION, SeedType.STANDARD_SOURCE_DEFINITION,
       ConfigSchema.STANDARD_DESTINATION_DEFINITION, SeedType.STANDARD_DESTINATION_DEFINITION);
 
+  private static final YamlSeedConfigPersistence INSTANCE;
+  static {
+    try {
+      INSTANCE = new YamlSeedConfigPersistence();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   // A mapping from seed config type to config UUID to config.
   private final ImmutableMap<SeedType, Map<String, JsonNode>> allSeedConfigs;
 
-  public YamlSeedConfigPersistence() throws IOException {
+  private YamlSeedConfigPersistence() throws IOException {
     this.allSeedConfigs = ImmutableMap.<SeedType, Map<String, JsonNode>>builder()
         .put(SeedType.STANDARD_SOURCE_DEFINITION, getConfigs(SeedType.STANDARD_SOURCE_DEFINITION))
         .put(SeedType.STANDARD_DESTINATION_DEFINITION, getConfigs(SeedType.STANDARD_DESTINATION_DEFINITION))
         .build();
+  }
+
+  public static YamlSeedConfigPersistence get() {
+    return INSTANCE;
   }
 
   @SuppressWarnings("UnstableApiUsage")

@@ -33,7 +33,7 @@ import static org.mockito.Mockito.when;
 import io.airbyte.api.model.ImportRead;
 import io.airbyte.api.model.ImportRead.StatusEnum;
 import io.airbyte.commons.io.FileTtlManager;
-import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.YamlSeedConfigPersistence;
 import io.airbyte.server.ConfigDumpExporter;
 import io.airbyte.server.ConfigDumpImporter;
 import java.io.File;
@@ -47,21 +47,20 @@ public class ArchiveHandlerTest {
 
   private static final String VERSION = "test-version";
 
-  private ConfigRepository configRepository;
   private ArchiveHandler archiveHandler;
   private FileTtlManager fileTtlManager;
   private ConfigDumpExporter configDumpExporter;
   private ConfigDumpImporter configDumpImporter;
+  private YamlSeedConfigPersistence seedPersistence;
 
   @BeforeEach
-  void setUp() {
-    configRepository = mock(ConfigRepository.class);
+  void setUp() throws IOException {
     fileTtlManager = mock(FileTtlManager.class);
     configDumpExporter = mock(ConfigDumpExporter.class);
     configDumpImporter = mock(ConfigDumpImporter.class);
+    seedPersistence = YamlSeedConfigPersistence.get();
     archiveHandler = new ArchiveHandler(
         VERSION,
-        configRepository,
         fileTtlManager,
         configDumpExporter,
         configDumpImporter);
@@ -87,7 +86,7 @@ public class ArchiveHandlerTest {
     // make sure it cleans up the file.
     assertFalse(Files.exists(file.toPath()));
 
-    verify(configDumpImporter).importDataWithSeed(VERSION, file, ArchiveHandler.SEEDS_PATH);
+    verify(configDumpImporter).importDataWithSeed(VERSION, file, seedPersistence);
   }
 
 }
