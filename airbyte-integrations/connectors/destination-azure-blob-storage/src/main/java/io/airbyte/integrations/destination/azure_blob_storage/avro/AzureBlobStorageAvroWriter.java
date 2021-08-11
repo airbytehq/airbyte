@@ -80,6 +80,7 @@ public class AzureBlobStorageAvroWriter extends BaseAzureBlobStorageWriter imple
 
   @Override
   public void write(UUID id, AirbyteRecordMessage recordMessage) throws IOException {
+    // TODO about append option https://stackoverflow.com/questions/51468694/schema-in-avro-message
     dataFileWriter.append(avroRecordFactory.getAvroRecord(id, recordMessage));
   }
 

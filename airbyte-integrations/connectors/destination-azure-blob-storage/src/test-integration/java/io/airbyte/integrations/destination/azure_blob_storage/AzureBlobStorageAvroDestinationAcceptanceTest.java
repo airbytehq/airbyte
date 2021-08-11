@@ -85,6 +85,7 @@ public class AzureBlobStorageAvroDestinationAcceptanceTest extends
   // TODO do something with it
   @Override
   public void testIncrementalSync() throws Exception {
+    // TODO about append option https://stackoverflow.com/questions/51468694/schema-in-avro-message
     // DO nothind as not suppoted
   }
 
