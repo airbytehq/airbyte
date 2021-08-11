@@ -10,13 +10,13 @@ import { Routes } from "pages/routes";
 import config from "config";
 
 import useConnector from "components/hooks/services/useConnector";
-import Link from "components/Link";
+import { Link } from "components";
 import Version from "components/Version";
 import Indicator from "components/Indicator";
 
-import Source from "./components/Source";
-import Connections from "./components/Connections";
-import Destination from "./components/Destination";
+import Source from "./components/SourceIcon";
+import Connections from "./components/ConnectionsIcon";
+import Destination from "./components/DestinationIcon";
 
 const Bar = styled.nav`
   width: 100px;
