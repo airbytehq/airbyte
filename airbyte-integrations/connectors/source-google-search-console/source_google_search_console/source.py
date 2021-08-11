@@ -61,7 +61,6 @@ class SourceGoogleSearchConsole(AbstractSource):
             "refresh_token": config.get("refresh_token"),
             "site_urls": config.get("site_urls"),
             "start_date": config.get("start_date"),
-            "user_agent": config.get("user_agent"),
         }
 
         return stream_kwargs

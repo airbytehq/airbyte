@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Search Console Spec",
     "type": "object",
-    "required": ["client_id", "client_secret", "refresh_token", "user_agent", "site_urls", "start_date"],
+    "required": ["client_id", "client_secret", "refresh_token", "site_urls", "start_date"],
     "additionalProperties": false,
     "properties": {
       "client_id": {
@@ -17,10 +17,6 @@
       },
       "refresh_token": {
         "type": "string"
-      },
-      "user_agent": {
-        "type": "string",
-        "description": "Tap name with the api user email address"
       },
       "site_urls": {
         "type": "string",
