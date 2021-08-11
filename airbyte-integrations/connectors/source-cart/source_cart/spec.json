@@ -21,7 +21,6 @@
       },
       "store_name": {
         "type": "string",
-        "airbyte_secret": true,
         "description": "Store name. All API URLs start with https://[mystorename.com]/api/v1/, where [mystorename.com] is the domain name of your store."
       }
     }
