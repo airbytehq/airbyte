@@ -38,7 +38,7 @@ Make sure your Oracle database can be accessed by Airbyte. If your database is w
 
 #### **Permissions**
 
-As Airbite namespaces allows us to store data into different schemas, we have different scenarios and list of required permissions:
+As Airbyte namespaces allows us to store data into different schemas, we have different scenarios and list of required permissions:
 
 | Login user | Destination user | Required permissions | Comment |
 | :--- | :--- | :--- | :--- |
