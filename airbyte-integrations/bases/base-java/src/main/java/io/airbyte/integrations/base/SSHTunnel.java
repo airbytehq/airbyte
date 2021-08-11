@@ -19,6 +19,7 @@ import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import org.apache.sshd.client.SshClient;
+import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.common.util.net.SshdSocketAddress;
 import org.apache.sshd.server.forward.AcceptAllForwardingFilter;
@@ -139,6 +140,7 @@ public class SSHTunnel {
     );
     SshClient client = SshClient.setUpDefaultClient();
     client.setForwardingFilter(AcceptAllForwardingFilter.INSTANCE);
+    client.setServerKeyVerifier(AcceptAllServerKeyVerifier.INSTANCE);
     return client;
   }
 
@@ -157,7 +159,7 @@ public class SSHTunnel {
    * @throws NoSuchAlgorithmException
    * @throws URISyntaxException
    */
-  public ClientSession openTunnel(SshClient client) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+  public ClientSession openTunnel(SshClient client) throws IOException {
     validate();
     client.start();
     ClientSession session = client.connect(
@@ -175,11 +177,11 @@ public class SSHTunnel {
       session.addPasswordIdentity(getPassword());
     }
     session.auth().verify(TIMEOUT_MILLIS);
-    session.startRemotePortForwarding(
-        new SshdSocketAddress(getRemoteDatabaseHost(), Integer.parseInt(getRemoteDatabasePort().trim())),
-        new SshdSocketAddress("localhost", Integer.parseInt(getTunnelDatabasePort().trim()))
+    SshdSocketAddress address = session.startLocalPortForwarding(
+        new SshdSocketAddress(SshdSocketAddress.LOCALHOST_ADDRESS.getHostName(), Integer.parseInt(getTunnelDatabasePort().trim())),
+        new SshdSocketAddress(getRemoteDatabaseHost().trim(), Integer.parseInt(getRemoteDatabasePort().trim()))
     );
-    LOGGER.info("Established tunnelling session.  Port forwarding started.");
+    LOGGER.info("Established tunneling session.  Port forwarding started on " + address.toInetSocketAddress());
     return session;
   }
 
@@ -204,5 +206,4 @@ public class SSHTunnel {
         ", tunnelDatabasePort='" + tunnelDatabasePort + '\'' +
         '}';
   }
-
 }
