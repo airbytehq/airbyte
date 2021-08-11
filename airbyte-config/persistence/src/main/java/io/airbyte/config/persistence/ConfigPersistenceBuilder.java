@@ -68,11 +68,10 @@ public class ConfigPersistenceBuilder {
    * Otherwise, seed the database from the yaml files.
    */
   ConfigPersistence create() throws IOException, InterruptedException {
-    // Uncomment this branch in a future version when config volume is removed.
-    // if (configs.getConfigRoot() == null) {
-    // return getDbPersistenceWithYamlSeed();
-    // }
-    return getDbPersistenceWithFileSeed();
+    if (FileSystemConfigPersistence.isConfigVolumeMounted(configs.getConfigRoot())) {
+      return getDbPersistenceWithFileSeed();
+    }
+    return getDbPersistenceWithYamlSeed();
   }
 
   /**
