@@ -12,8 +12,6 @@ dependencies {
     implementation 'com.google.cloud:google-cloud-storage:1.113.16'
     implementation 'com.google.auth:google-auth-library-oauth2-http:0.25.5'
     implementation group: 'org.apache.sshd', name: 'sshd-mina', version: '2.7.0'
-    implementation group: 'org.bouncycastle', name: 'bcprov-jdk14', version: '1.69'
-    implementation group: 'org.bouncycastle', name: 'bcpkix-jdk14', version: '1.69'
 
     implementation project(':airbyte-db')
     implementation project(':airbyte-integrations:bases:base-java')
