@@ -164,8 +164,6 @@ public class ConfigDumpImporter {
       throws IOException, JsonValidationException {
     final List<String> sourceDefinitionsToMigrate = new ArrayList<>();
     final List<String> destinationDefinitionsToMigrate = new ArrayList<>();
-    final boolean[] sourceProcessed = {false};
-    final boolean[] destinationProcessed = {false};
     final List<String> directories = listDirectories(sourceRoot);
     // We sort the directories cause we want to process SOURCE_CONNECTION before
     // STANDARD_SOURCE_DEFINITION and DESTINATION_CONNECTION before STANDARD_DESTINATION_DEFINITION
@@ -187,8 +185,6 @@ public class ConfigDumpImporter {
       configs = streamWithAdditionalOperation(
           sourceDefinitionsToMigrate,
           destinationDefinitionsToMigrate,
-          sourceProcessed,
-          destinationProcessed,
           configSchema,
           configs,
           seeds);
@@ -217,21 +213,17 @@ public class ConfigDumpImporter {
 
   private <T> Stream<T> streamWithAdditionalOperation(List<String> sourceDefinitionsToMigrate,
                                                       List<String> destinationDefinitionsToMigrate,
-                                                      boolean[] sourceProcessed,
-                                                      boolean[] destinationProcessed,
                                                       ConfigSchema configSchema,
                                                       Stream<T> configs,
                                                       Map<ConfigSchema, Map<String, T>> latestSeeds) {
     if (configSchema == ConfigSchema.SOURCE_CONNECTION) {
-      sourceProcessed[0] = true;
       configs = configs.peek(config -> sourceDefinitionsToMigrate.add(((SourceConnection) config).getSourceDefinitionId().toString()));
     } else if (configSchema == ConfigSchema.DESTINATION_CONNECTION) {
-      destinationProcessed[0] = true;
       configs = configs.peek(config -> destinationDefinitionsToMigrate.add(((DestinationConnection) config).getDestinationDefinitionId().toString()));
     } else if (configSchema == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
-      configs = getDefinitionStream(sourceDefinitionsToMigrate, sourceProcessed[0], configSchema, configs, latestSeeds);
+      configs = getDefinitionStream(sourceDefinitionsToMigrate, configSchema, configs, latestSeeds);
     } else if (configSchema == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
-      configs = getDefinitionStream(destinationDefinitionsToMigrate, destinationProcessed[0], configSchema, configs, latestSeeds);
+      configs = getDefinitionStream(destinationDefinitionsToMigrate, configSchema, configs, latestSeeds);
     }
     return configs;
   }
@@ -242,14 +234,9 @@ public class ConfigDumpImporter {
    * version
    */
   private <T> Stream<T> getDefinitionStream(List<String> definitionsToMigrate,
-                                            boolean definitionsPopulated,
                                             ConfigSchema configSchema,
                                             Stream<T> configs,
                                             Map<ConfigSchema, Map<String, T>> latestSeeds) {
-    if (!definitionsPopulated) {
-      throw new RuntimeException("Trying to process " + configSchema + " without populating the definitions to migrate");
-    }
-
     return Streams.concat(configs.filter(c -> definitionsToMigrate.contains(configSchema.getId(c))),
         latestSeeds.getOrDefault(configSchema, new HashMap<>()).entrySet().stream().filter(c -> !definitionsToMigrate.contains(c.getKey()))
             .map(Entry::getValue));
