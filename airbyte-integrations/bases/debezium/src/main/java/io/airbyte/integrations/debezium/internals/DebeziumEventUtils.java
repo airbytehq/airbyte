@@ -31,8 +31,8 @@ import io.airbyte.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.debezium.engine.ChangeEvent;
-import java.time.Instant;
 import java.sql.Timestamp;
+import java.time.Instant;
 
 public class DebeziumEventUtils {
 
