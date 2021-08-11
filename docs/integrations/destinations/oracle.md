@@ -38,7 +38,17 @@ Make sure your Oracle database can be accessed by Airbyte. If your database is w
 
 #### **Permissions**
 
-You need an Oracle user with permissions to create tables and write rows, and to create other users with the same permissions in order to support namespaces. We highly recommend creating an Airbyte-specific user for this purpose.
+As Airbite namespaces allows us to store data into different schemas, we have different scenarios and list of required permissions:
+
+| Login user | Destination user | Required permissions | Comment |
+| :--- | :--- | :--- | :--- |
+| Dba user | Any user | - | |
+| Regular user | Same user as login | Create, drop, write table, create session | |
+| Regular user | Any existing user | Create, drop and write ANY table, create session | Grants can be provided on a system level by DBA or by target user directly |
+| Regular user | Not existing user | Create, drop and write ANY table, create user, create session | Grants should be provided on a system level by DBA | 
+
+//You need an Oracle user with permissions to create tables and write rows, and to create other users with the same permissions in order to support namespaces.
+We highly recommend creating an Airbyte-specific user for this purpose.
 
 ### Setup the Oracle destination in Airbyte
 
