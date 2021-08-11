@@ -25,68 +25,115 @@
 package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.api.model.ImportRead;
 import io.airbyte.api.model.ImportRead.StatusEnum;
 import io.airbyte.commons.io.FileTtlManager;
+import io.airbyte.config.persistence.ConfigPersistence;
+import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.YamlSeedConfigPersistence;
-import io.airbyte.server.ConfigDumpExporter;
-import io.airbyte.server.ConfigDumpImporter;
+import io.airbyte.db.Database;
+import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
+import io.airbyte.scheduler.persistence.DefaultJobPersistence;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 public class ArchiveHandlerTest {
 
-  private static final String VERSION = "test-version";
+  private static final String VERSION = "0.6.8";
+  private static PostgreSQLContainer<?> container;
 
+  private Database database;
+  private JobPersistence jobPersistence;
+  private ConfigPersistence configPersistence;
+  private ConfigPersistence seedPersistence;
+
+  private ConfigRepository configRepository;
   private ArchiveHandler archiveHandler;
-  private FileTtlManager fileTtlManager;
-  private ConfigDumpExporter configDumpExporter;
-  private ConfigDumpImporter configDumpImporter;
-  private YamlSeedConfigPersistence seedPersistence;
+
+  @BeforeAll
+  public static void dbSetup() {
+    container = new PostgreSQLContainer<>("postgres:13-alpine")
+        .withDatabaseName("airbyte")
+        .withUsername("docker")
+        .withPassword("docker");
+    container.start();
+  }
+
+  @AfterAll
+  public static void dbDown() {
+    container.close();
+  }
 
   @BeforeEach
-  void setUp() throws IOException {
-    fileTtlManager = mock(FileTtlManager.class);
-    configDumpExporter = mock(ConfigDumpExporter.class);
-    configDumpImporter = mock(ConfigDumpImporter.class);
+  public void setup() throws Exception {
+    database = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    jobPersistence = new DefaultJobPersistence(database);
+    database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
     seedPersistence = YamlSeedConfigPersistence.get();
+    configPersistence = new DatabaseConfigPersistence(database).loadData(seedPersistence);
+    configRepository = new ConfigRepository(configPersistence);
+
+    jobPersistence.setVersion(VERSION);
+
     archiveHandler = new ArchiveHandler(
         VERSION,
-        fileTtlManager,
-        configDumpExporter,
-        configDumpImporter);
+        configRepository,
+        jobPersistence,
+        new FileTtlManager(10, TimeUnit.MINUTES, 10));
   }
 
-  @Test
-  void testExport() throws IOException {
-    final File file = Files.createTempFile(Path.of("/tmp"), "dump_file", "dump_file").toFile();
-    when(configDumpExporter.dump()).thenReturn(file);
-
-    assertEquals(file, archiveHandler.exportData());
-
-    verify(configDumpExporter).dump();
-    verify(fileTtlManager).register(file.toPath());
+  @AfterEach
+  void tearDown() throws Exception {
+    database.close();
   }
 
+  /**
+   * After exporting and importing, the configs should remain the same.
+   */
   @Test
-  void testImport() throws IOException {
-    final File file = Files.createTempFile(Path.of("/tmp"), "dump_file", "dump_file").toFile();
+  void testRoundTrip() throws Exception {
+    assertSameConfigDump(seedPersistence.dumpConfigs(), configRepository.dumpConfigs());
 
-    assertEquals(new ImportRead().status(StatusEnum.SUCCEEDED), archiveHandler.importData(file));
+    // Export the configs.
+    File archive = archiveHandler.exportData();
 
-    // make sure it cleans up the file.
-    assertFalse(Files.exists(file.toPath()));
+    // After deleting the configs, the dump becomes empty.
+    configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
+    assertSameConfigDump(Collections.emptyMap(), configRepository.dumpConfigs());
 
-    verify(configDumpImporter).importDataWithSeed(VERSION, file, seedPersistence);
+    // After importing the configs, the dump is restored.
+    ImportRead importResult = archiveHandler.importData(archive);
+    assertEquals(StatusEnum.SUCCEEDED, importResult.getStatus());
+    assertSameConfigDump(seedPersistence.dumpConfigs(), configRepository.dumpConfigs());
+  }
+
+  private Map<String, Set<JsonNode>> getSetFromStream(Map<String, Stream<JsonNode>> input) {
+    return input.entrySet().stream().collect(Collectors.toMap(
+        Entry::getKey,
+        e -> e.getValue().collect(Collectors.toSet())));
+  }
+
+  // assertEquals cannot correctly check the equality of two maps with stream values,
+  // so streams are converted to sets before being compared.
+  private void assertSameConfigDump(Map<String, Stream<JsonNode>> expected, Map<String, Stream<JsonNode>> actual) {
+    assertEquals(getSetFromStream(expected), getSetFromStream(actual));
   }
 
 }
