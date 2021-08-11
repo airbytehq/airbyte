@@ -51,13 +51,13 @@ public class KeenTimestampService {
   }
 
   /**
-   * Tries to inject keen.timestamp field to the given message data. If it's incremental sync stream,
-   * which cursor value is of type NUMBER, or STRING, this value is tried to be parsed to timestamp.
+   * Tries to inject keen.timestamp field to the given message data. If the stream contains
+   * cursor fields of types NUMBER or STRING, this value is tried to be parsed to a timestamp.
    * If this procedure fails, stream is removed from timestamp-parsable stream map, so parsing is not tried
    * for future messages in the same stream. If parsing succeeds, keen.timestamp field is put as a JSON node
-   * to the message data and whole data is returned.
+   * to the message data and whole data is returned. Otherwise, keen.timestamp is set to emittedAt value
    * @param message AirbyteMessage containing record data
-   * @return Record data together with keen.timestamp if parsing succeeds.
+   * @return Record data together with keen.timestamp field
    */
   public JsonNode injectTimestamp(AirbyteMessage message) {
     String streamName = message.getRecord().getStream();
