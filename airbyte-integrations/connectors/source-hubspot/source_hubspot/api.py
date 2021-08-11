@@ -273,9 +273,10 @@ class Stream(ABC):
         target_type = CUSTOM_FIELD_VALUE_TYPE_CAST_REVERSED.get(target_type_name)
 
         if target_type_name == "number":
-            if field_name.endswith("_id"):
-                # do not cast numeric IDs into float, use integer instead
-                target_type = int
+            # do not cast empty strings into float, use 0 instead.
+            field_value = 0 if len(field_value.strip()) == 0 else field_value
+            # do not cast numeric IDs into float, use integer instead
+            target_type = int if field_name.endswith("_id") else target_type
 
         try:
             casted_value = target_type(field_value)
@@ -451,7 +452,7 @@ class IncrementalStream(Stream, ABC):
                 self._start_date = self._state
 
     def read_chunked(
-        self, getter: Callable, params: Mapping[str, Any] = None, chunk_size: pendulum.Interval = pendulum.interval(days=1)
+        self, getter: Callable, params: Mapping[str, Any] = None, chunk_size: pendulum.duration = pendulum.duration(days=1)
     ) -> Iterator:
         params = {**params} if params else {}
         now_ts = int(pendulum.now().timestamp() * 1000)

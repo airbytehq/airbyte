@@ -75,6 +75,7 @@ def test_bad_field_type_converting(field_type, expected, capsys):
         (["null", "number"], "user_id", "123", 123),
         (["null", "string"], "some_field", "123", "123"),
         (["null", "string"], "some_field", "", ""),
+        (["null", "number"], "null_field", "", 0),  # 1
     ],
 )
 def test_cast_type_if_needed(declared_field_types, field_name, field_value, casted_value):
