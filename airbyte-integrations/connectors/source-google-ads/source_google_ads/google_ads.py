@@ -61,7 +61,12 @@ class GoogleAds:
         return self.ga_service.search(search_request)
 
     @staticmethod
-    def get_fields_from_schema(schema: Mapping[str, Any]) -> List[str]:
+    def get_fields_from_schema(schema: Mapping[str, Any], query: str = None) -> List[str]:
+        if query:
+            query = query.lower().split("select")[1].split("from")[0].strip()
+            fields = query.split(",")
+            fields = [i.strip() for i in fields]
+            return fields
         properties = schema.get("properties")
         return list(properties.keys())
 
@@ -149,17 +154,7 @@ class GoogleAds:
         return field_value
 
     @staticmethod
-    def process_query(query: str) -> List:
-        query = query.lower().split("select")[1].split("from")[0].strip()
-        fields = query.split(",")
-        fields = [i.strip() for i in fields]
-        return fields
-
-    @staticmethod
     def parse_single_result(schema: Mapping[str, Any], result: GoogleAdsRow, query: str = None):
-        if not query:
-            fields = GoogleAds.get_fields_from_schema(schema)
-        else:
-            fields = GoogleAds.process_query(query)
+        fields = GoogleAds.get_fields_from_schema(schema=schema, query=query)
         single_record = {field: GoogleAds.get_field_value(result, field) for field in fields}
         return single_record
