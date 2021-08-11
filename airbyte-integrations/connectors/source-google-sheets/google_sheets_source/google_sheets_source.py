@@ -83,7 +83,7 @@ class GoogleSheetsSource(Source):
                     duplicate_headers_in_sheet[sheet_name] = duplicate_headers
             except Exception as err:
                 if str(err).startswith("Expected data for exactly one row for sheet"):
-                    logger.warn(f"Skip empty sheet {sheet_name}")
+                    logger.warn(f"Skip empty sheet: {sheet_name}")
                 else:
                     logger.error(str(err))
                     return AirbyteConnectionStatus(
@@ -118,8 +118,10 @@ class GoogleSheetsSource(Source):
                     stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_row_data)
                     streams.append(stream)
                 except Exception as err:
-                    print(err)
-                    logger.error(str(err))
+                    if str(err).startswith("Expected data for exactly one row for sheet"):
+                        logger.warn(f"Skip empty sheet: {sheet_name}")
+                    else:
+                        logger.error(str(err))
             return AirbyteCatalog(streams=streams)
 
         except errors.HttpError as err:
