@@ -76,7 +76,7 @@
             "query": {
               "type": "string",
               "title": "User defined query to build a report by wish",
-              "examples": ["SELECT segments.ad_destination_type FROM campaign"]
+              "examples": ["SELECT segments.ad_destination_type, campaign.advertising_channel_sub_type FROM campaign"]
             },
             "primary_key": {
               "type": ["string", "null"],
