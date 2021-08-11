@@ -47,7 +47,6 @@ As Airbite namespaces allows us to store data into different schemas, we have di
 | Regular user | Any existing user | Create, drop and write ANY table, create session | Grants can be provided on a system level by DBA or by target user directly |
 | Regular user | Not existing user | Create, drop and write ANY table, create user, create session | Grants should be provided on a system level by DBA | 
 
-//You need an Oracle user with permissions to create tables and write rows, and to create other users with the same permissions in order to support namespaces.
 We highly recommend creating an Airbyte-specific user for this purpose.
 
 ### Setup the Oracle destination in Airbyte
