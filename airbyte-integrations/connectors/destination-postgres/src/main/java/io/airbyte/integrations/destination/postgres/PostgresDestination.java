@@ -30,7 +30,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
-import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
