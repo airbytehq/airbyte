@@ -102,9 +102,16 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
     http_method = "POST"
     page_size = 100000
     url_base = "https://analyticsreporting.googleapis.com/v4/"
+
+    # Link to query the metadata for available metrics and dimensions.
+    # Those are not provided in the Analytics Reporting API V4.
+    # Column id completely match for v3 and v4.
     url_type_list = "https://www.googleapis.com/analytics/v3/metadata/ga/columns"
+
     report_field = "reports"
     data_fields = ["data", "rows"]
+
+    map_type = dict(INTEGER="integer", FLOAT="number", PERCENT="number", TIME="number")
 
     def __init__(self, config: Dict):
         super().__init__(authenticator=config["authenticator"])
@@ -192,12 +199,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             attr_type = None
             self.logger.error(f"Unsuported GA {field_type}: {attribute}")
 
-        data_type = "string"
-
-        if attr_type == "INTEGER":
-            data_type = "integer"
-        elif attr_type == "FLOAT" or attr_type == "PERCENT" or attr_type == "TIME":
-            data_type = "number"
+        data_type = self.map_type.get(attr_type, "string")
 
         return data_type
 
@@ -389,14 +391,18 @@ class GoogleAnalyticsOauth2Authenticator(Oauth2Authenticator):
 class SourceGoogleAnalyticsV4(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            auth = GoogleAnalyticsOauth2Authenticator(config)
-            token = auth.get_access_token()
             url = f"{GoogleAnalyticsV4Stream.url_type_list}"
 
-            session = requests.get(url, headers={"Authorization": "Bearer {}".format(token)})
+            authenticator = GoogleAnalyticsOauth2Authenticator(config)
+
+            session = requests.get(url, headers=authenticator.get_auth_header())
             session.raise_for_status()
+
+            custom_reports = config.get("custom_reports")
+            if custom_reports:
+                json.loads(custom_reports)
             return True, None
-        except requests.exceptions.RequestException as e:
+        except (requests.exceptions.RequestException, ValueError) as e:
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

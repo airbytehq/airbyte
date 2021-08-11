@@ -132,7 +132,7 @@
   name: Google Analytics v4
   dockerRepository: airbyte/source-google-analytics-v4
   dockerImageTag: 0.1.0
-  documentationUrl: https://hub.docker.com/r/airbyte/source-google-analytics-v4
+  documentationUrl: https://docs.airbyte.io/integrations/sources/source-google-analytics-v4
   icon: google-analytics.svg
 - sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   name: Facebook Marketing
