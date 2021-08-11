@@ -30,6 +30,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.api.model.ImportRead;
 import io.airbyte.api.model.ImportRead.StatusEnum;
 import io.airbyte.commons.io.FileTtlManager;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
@@ -40,10 +44,12 @@ import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -66,6 +72,15 @@ public class ArchiveHandlerTest {
 
   private ConfigRepository configRepository;
   private ArchiveHandler archiveHandler;
+
+  private static class NoOpFileTtlManager extends FileTtlManager {
+    public NoOpFileTtlManager() {
+      super(1L, TimeUnit.MINUTES, 1L);
+    }
+
+    public void register(Path path) {
+    }
+  }
 
   @BeforeAll
   public static void dbSetup() {
@@ -96,7 +111,7 @@ public class ArchiveHandlerTest {
         VERSION,
         configRepository,
         jobPersistence,
-        new FileTtlManager(10, TimeUnit.MINUTES, 10));
+        new NoOpFileTtlManager());
   }
 
   @AfterEach
@@ -122,6 +137,39 @@ public class ArchiveHandlerTest {
     ImportRead importResult = archiveHandler.importData(archive);
     assertEquals(StatusEnum.SUCCEEDED, importResult.getStatus());
     assertSameConfigDump(seedPersistence.dumpConfigs(), configRepository.dumpConfigs());
+
+    // When a connector definition is in use, it will not be updated.
+    UUID sourceS3DefinitionId = UUID.fromString("69589781-7828-43c5-9f63-8925b1c1ccc2");
+    String sourceS3DefinitionVersion = "0.0.0";
+    StandardSourceDefinition sourceS3Definition = seedPersistence.getConfig(
+        ConfigSchema.STANDARD_SOURCE_DEFINITION,
+        sourceS3DefinitionId.toString(),
+        StandardSourceDefinition.class)
+        // This source definition is on an old version
+        .withDockerImageTag(sourceS3DefinitionVersion);
+    SourceConnection sourceConnection = new SourceConnection()
+        .withSourceDefinitionId(sourceS3DefinitionId)
+        .withSourceId(UUID.randomUUID())
+        .withWorkspaceId(UUID.randomUUID())
+        .withName("Test source")
+        .withConfiguration(Jsons.deserialize("{}"))
+        .withTombstone(false);
+
+    // Write source connection and an old source definition.
+    configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, sourceConnection.getSourceId().toString(), sourceConnection);
+    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceS3DefinitionId.toString(), sourceS3Definition);
+
+    // Export, wipe, and import the configs.
+    archive = archiveHandler.exportData();
+    configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
+    archiveHandler.importData(archive);
+
+    // The version has not changed.
+    StandardSourceDefinition actualS3Definition = configPersistence.getConfig(
+        ConfigSchema.STANDARD_SOURCE_DEFINITION,
+        sourceS3DefinitionId.toString(),
+        StandardSourceDefinition.class);
+    assertEquals(sourceS3DefinitionVersion, actualS3Definition.getDockerImageTag());
   }
 
   private Map<String, Set<JsonNode>> getSetFromStream(Map<String, Stream<JsonNode>> input) {
