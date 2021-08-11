@@ -40,8 +40,19 @@
   "settings.generalSettings.deleteLabel": "Delete your workspace",
   "settings.generalSettings.deleteText": "Delete",
   "settings.accessManagementSettings": "Access Management",
+  "userSettings.table.title": "Current users",
   "userSettings.table.column.fullname": "Full Name",
   "userSettings.table.column.email": "Email",
   "userSettings.table.column.role": "Role",
-  "userSettings.table.column.action": "Action"
+  "userSettings.table.column.action": "Action",
+  "userSettings.button.addNewUser": "New user",
+  "userSettings.user.remove": "Remove",
+  "modals.addUser.title": "Add new users",
+  "modals.addUser.email.label": "Email",
+  "modals.addUser.role.label": "Role",
+  "modals.addUser.role.placeholder": "Select role",
+  "modals.addUser.button.addUser": "Add another user",
+  "modals.addUser.button.cancel": "Cancel",
+  "modals.addUser.button.submit": "Send invitation",
+  "workspaces.viewAllWorkspaces": "View all workspaces"
 }

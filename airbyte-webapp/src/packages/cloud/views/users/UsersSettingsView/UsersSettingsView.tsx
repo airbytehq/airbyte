@@ -1,29 +1,21 @@
-import React, { useMemo } from "react";
+import React from "react";
 import styled from "styled-components";
 import { CellProps } from "react-table";
 import { FormattedMessage } from "react-intl";
 import { useQuery } from "react-query";
+import { useToggle } from "react-use";
 
 import { Button, H5 } from "components";
 import Table from "components/Table";
-import { UserService } from "packages/cloud/lib/domain/users";
-import { useDefaultRequestMiddlewares } from "packages/cloud/services/useDefaultRequestMiddlewares";
-import { api } from "packages/cloud/config/api";
 import { useCurrentWorkspace } from "components/hooks/services/useWorkspace";
+import { useGetUserService } from "packages/cloud/services/users/UserService";
+import { InviteUsersModal } from "packages/cloud/views/users/InviteUsersModal";
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
   margin-bottom: 10px;
 `;
-
-function useGetUserService() {
-  const requestAuthMiddleware = useDefaultRequestMiddlewares();
-
-  return useMemo(() => new UserService(requestAuthMiddleware, api.cloud), [
-    requestAuthMiddleware,
-  ]);
-}
 
 export const UsersSettingsView: React.FC = () => {
   const userService = useGetUserService();
@@ -33,6 +25,8 @@ export const UsersSettingsView: React.FC = () => {
     () => userService.listByWorkspaceId(workspaceId),
     { suspense: true }
   );
+
+  const [modalIsOpen, toggleModal] = useToggle(false);
 
   const columns = React.useMemo(
     () => [
@@ -58,10 +52,12 @@ export const UsersSettingsView: React.FC = () => {
         Header: <FormattedMessage id="userSettings.table.column.action" />,
         headerHighlighted: true,
         accessor: "status",
-        Cell: ({ cell }: CellProps<any>) =>
+        Cell: (_: CellProps<any>) =>
           [
-            <Button secondary>remove</Button>,
-            cell.value === "invited" && <Button secondary>send again</Button>,
+            <Button secondary>
+              <FormattedMessage id="userSettings.user.remove" />
+            </Button>,
+            // cell.value === "invited" && <Button secondary>send again</Button>,
           ].filter(Boolean),
       },
     ],
@@ -70,10 +66,15 @@ export const UsersSettingsView: React.FC = () => {
   return (
     <>
       <Header>
-        <H5>Current users</H5>
-        <Button>+ New user</Button>
+        <H5>
+          <FormattedMessage id="userSettings.table.title" />
+        </H5>
+        <Button onClick={toggleModal}>
+          + <FormattedMessage id="userSettings.button.addNewUser" />
+        </Button>
       </Header>
       <Table data={data ?? []} columns={columns} />
+      {modalIsOpen && <InviteUsersModal onClose={toggleModal} />}
     </>
   );
 };
