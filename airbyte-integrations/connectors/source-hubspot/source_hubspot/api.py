@@ -27,7 +27,7 @@ import sys
 import time
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
-from functools import partial, lru_cache
+from functools import lru_cache, partial
 from http import HTTPStatus
 from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
@@ -279,25 +279,15 @@ class Stream(ABC):
 
         try:
             casted_value = target_type(field_value)
-        except ValueError as e:
-            logger.warn(f"Could not cast {field_value} to {target_type}")
-            logger.warn(e)
+        except ValueError:
+            logger.exception(f"Could not cast `{field_value}` to `{target_type}`")
             return field_value
 
         return casted_value
 
     def _cast_record_fields_if_needed(self, record: Mapping, properties: Mapping[str, Any] = None) -> Mapping:
 
-        if self.entity not in {
-            "contact",
-            "engagement",
-            "product",
-            "quote",
-            "ticket",
-            "company",
-            "deal",
-            "line_item"
-        }:
+        if self.entity not in {"contact", "engagement", "product", "quote", "ticket", "company", "deal", "line_item"}:
             return record
 
         if not record.get("properties"):

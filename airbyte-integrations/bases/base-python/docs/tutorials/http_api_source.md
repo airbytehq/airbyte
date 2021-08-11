@@ -38,8 +38,7 @@ $ ./generate.sh
 
 Select the `Python HTTP CDK Source` template and then input the name of your connector. For this walk-through we will refer to our source as `python-http-example`. The finalized source code for this tutorial can be found [here](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-python-http-tutorial).
 
-The source we will build in this tutorial will pull data from the [Rates API](ratesapi.io), a free and open API which 
-documents historical exchange rates for fiat currencies.  
+The source we will build in this tutorial will pull data from the [Rates API](https://exchangeratesapi.io), a free and open API which documents historical exchange rates for fiat currencies.  
 
 ### Step 2: Install dependencies the newly generated source
 Now that you've generated the module, let's navigate to its directory and install dependencies:
@@ -120,7 +119,7 @@ Each connector declares the inputs it needs to read data from the underlying dat
 
 The simplest way to implement this is by creating a `.json` file in `source_<name>/spec.json` which describes your connector's inputs according to the [ConnectorSpecification](https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml#L211) schema. This is a good place to start when developing your source. Using JsonSchema, define what the inputs are \(e.g. username and password\). Here's [an example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-freshdesk/source_freshdesk/spec.json) of what the `spec.json` looks like for the Freshdesk API source.
 
-For more details on what the spec is, you can read about the Airbyte Protocol [here](../architecture/airbyte-specification.md).
+For more details on what the spec is, you can read about the Airbyte Protocol [here](https://docs.airbyte.io/understanding-airbyte/airbyte-specification#the-airbyte-protocol).
 
 The generated code that Airbyte provides, handles implementing the `spec` method for you. It assumes that there will be a file called `spec.json` in the same directory as `source.py`. If you have declared the necessary JsonSchema in `spec.json` you should be done with this step.
 
@@ -217,7 +216,7 @@ While developing, we recommend storing configs which contain secrets in `secrets
 
 ### Step 5: Declare the schema of your streams
 
-The `discover` method of the Airbyte Protocol returns an `AirbyteCatalog`: an object which declares all the streams output by a connector and their schemas. It also declares the sync modes supported by the stream (full refresh or incremental). See the [catalog tutorial](https://docs.airbyte.io/tutorials/beginners-guide-to-catalog) for more information.
+The `discover` method of the Airbyte Protocol returns an `AirbyteCatalog`: an object which declares all the streams output by a connector and their schemas. It also declares the sync modes supported by the stream (full refresh or incremental). See the [catalog tutorial](https://docs.airbyte.io/understanding-airbyte/beginners-guide-to-catalog) for more information.
 
 This is a simple task with the Airbyte CDK. For each stream in our connector we'll need to:
 1. Create a python `class` in `source.py` which extends `HttpStream`
@@ -290,7 +289,7 @@ You can also dynamically define schemas, but that's beyond the scope of this tut
 ### Step 6: Read data from the API
 Describing schemas is good and all, but at some point we have to start reading data! So let's get to work. But before, let's describe what we're about to do: 
 
-The `HttpStream` superclass, like described in the [concepts documentation](../../CDK-README.md), is facilitating reading data from HTTP endpoints. It contains built-in functions or helpers for: 
+The `HttpStream` superclass, like described in the [concepts documentation](../concepts/overview.md), is facilitating reading data from HTTP endpoints. It contains built-in functions or helpers for:
 * authentication
 * pagination
 * handling rate limiting or transient errors
@@ -373,7 +372,7 @@ def streams(self, config: Mapping[str, Any]) -> List[Stream]:
 
 We're now ready to query the API! 
 
-To do this, we'll need a [ConfiguredCatalog](https://docs.airbyte.io/tutorials/beginners-guide-to-catalog). We've prepared one [here](http_api_source_assets/configured_catalog.json) -- download this and place it in `sample_files/configured_catalog.json`. Then run: 
+To do this, we'll need a [ConfiguredCatalog](https://docs.airbyte.io/understanding-airbyte/beginners-guide-to-catalog). We've prepared one [here](http_api_source_assets/configured_catalog.json) -- download this and place it in `sample_files/configured_catalog.json`. Then run:
 
 ```
  python main_dev.py read --config sample_files/config.json --catalog sample_files/configured_catalog.json
@@ -505,7 +504,7 @@ You should see that only the record from the last date is being synced! This is 
 With that, we've implemented incremental sync for our connector! 
 
 ### Step 7: Use the connector in Airbyte
-To use your connector in your own installation of Airbyte, build the docker image for your container by running `docker build . -t airbyte/source-python-http-example:dev`. Then, follow the instructions from the [building a connector the hard way tutorial](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector/tutorials/build-a-connector-the-hard-way#use-the-connector-in-the-airbyte-ui) for using the connector in the Airbyte UI, replacing the name as appropriate. 
+To use your connector in your own installation of Airbyte, build the docker image for your container by running `docker build . -t airbyte/source-python-http-example:dev`. Then, follow the instructions from the [building a python source connector tutorial](https://docs.airbyte.io/connector-development/tutorials/building-a-python-source) for using the connector in the Airbyte UI, replacing the name as appropriate.
 
 Note: your built docker image must be accessible to the `docker` daemon running on the Airbyte node. If you're doing this tutorial locally, these instructions are sufficient. Otherwise you may need to push your Docker image to Dockerhub.
 
@@ -516,10 +515,10 @@ Add any relevant unit tests to the `unit_tests` directory. Unit tests should **n
 You can run the tests using `python -m pytest -s unit_tests`
 
 #### Integration Tests
-Place any integration tests in the `integration_tests` directory such that they can be [discovered by pytest](https://docs.pytest.org/en/reorganize-docs/new-docs/user/naming_conventions.html).
+Place any integration tests in the `integration_tests` directory such that they can be [discovered by pytest](https://docs.pytest.org/en/6.2.x/goodpractices.html#conventions-for-python-test-discovery).
 
 #### Standard Tests
-Standard tests are a fixed set of tests Airbyte provides that every Airbyte source connector must pass. While they're only required if you intend to submit your connector to Airbyte, you might find them helpful in any case. See [Testing your connectors](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector/testing-connectors)
+Standard tests are a fixed set of tests Airbyte provides that every Airbyte source connector must pass. While they're only required if you intend to submit your connector to Airbyte, you might find them helpful in any case. See [Testing your connectors](https://docs.airbyte.io/connector-development/testing-connectors)
 
 If you want to submit this connector to become a default connector within Airbyte, follow 
-steps 8 onwards from the [Python source checklist](https://docs.airbyte.io/tutorials/building-a-python-source#step-8-set-up-standard-tests)
+steps 8 onwards from the [Python source checklist](https://docs.airbyte.io/connector-development/tutorials/building-a-python-source#step-8-set-up-standard-tests)
