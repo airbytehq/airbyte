@@ -14,6 +14,6 @@ select
     json_extract_scalar(_airbyte_data, "$['NZD']") as NZD,
     json_extract_scalar(_airbyte_data, "$['USD']") as USD,
     _airbyte_emitted_at
-from `dataline-integration-testing`.test_normalization._airbyte_raw_dedup_exchange_rate
+from `dataline-integration-testing`.test_normalization._airbyte_raw_dedup_exchange_rate as table_alias
 -- dedup_exchange_rate;
 
