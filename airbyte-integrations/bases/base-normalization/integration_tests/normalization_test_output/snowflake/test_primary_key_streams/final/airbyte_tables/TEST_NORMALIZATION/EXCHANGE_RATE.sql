@@ -7,6 +7,7 @@ select
     ID,
     CURRENCY,
     DATE,
+    TIMESTAMP_COL,
     "HKD@spéçiäl & characters",
     HKD_SPECIAL___CHARACTERS,
     NZD,

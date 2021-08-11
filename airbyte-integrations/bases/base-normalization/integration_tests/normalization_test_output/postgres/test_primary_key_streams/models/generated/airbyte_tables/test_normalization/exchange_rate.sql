@@ -4,6 +4,7 @@ select
     {{ adapter.quote('id') }},
     currency,
     {{ adapter.quote('date') }},
+    timestamp_col,
     {{ adapter.quote('HKD@spéçiäl & characters') }},
     hkd_special___characters,
     nzd,

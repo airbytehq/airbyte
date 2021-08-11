@@ -43,6 +43,8 @@ public class ArchiveHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ArchiveHandler.class);
 
+  public static final Path SEEDS_PATH = Path.of(System.getProperty("user.dir")).resolve("latest_seeds");
+
   private final String version;
   private final ConfigRepository configRepository;
   private final ConfigDumpExporter configDumpExporter;
@@ -96,7 +98,7 @@ public class ArchiveHandler {
     try {
       final Path tempFolder = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive");
       try {
-        configDumpImporter.importData(version, archive);
+        configDumpImporter.importDataWithSeed(version, archive, SEEDS_PATH);
         result = new ImportRead().status(StatusEnum.SUCCEEDED);
       } finally {
         FileUtils.deleteDirectory(tempFolder.toFile());
