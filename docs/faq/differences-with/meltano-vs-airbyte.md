@@ -6,12 +6,8 @@ We wrote an article, “[The State of Open-Source Data Integration and ETL](http
 
 ## **Meltano:**
 
-Meltano is a Gitlab side project. Since 2019, they have been iterating on several approaches. The latest positioning is an orchestrator dedicated to data integration that was built by Gitlab on top of Singer’s taps and targets. They now have only three maintainers for this project.
-
-* **Only 34 connectors built on top of Singer, after 2 years**. This means that Meltano has the same limitations as Singer in regards to its data protocol, and quality of connectors. 
-* **CLI-first approach:** Meltano was primarily built with a command line interface in mind. In that sense, they seem to target engineers with a preference for that interface. Unfortunately, it’s not thought to be part of some workflows. 
-* **A new UI**: Meltano has recently built a new UI to try to appeal to a larger audience. 
-* **Integration with dbt for transformation:** Meltano offers some deep integration with [dbt](http://getdbt.com), and therefore lets data engineering teams handle transformation any way they want. 
+* **Meltano is built on top of the Singer protocol, whereas Airbyte is built on top of the Singer protocol**. Having initially created Airbyte on top of Singer, we wrote about why we didn't move forward with it [here](https://airbyte.io/blog/why-you-should-not-build-your-data-pipeline-on-top-of-singer) and [here](https://airbyte.io/blog/airbyte-vs-singer-why-airbyte-is-not-built-on-top-of-singer). Summarized, the reasons were: Singer connectors didn't always adhere to the Singer protocol, had poor standardization and visibility in terms of quality, and community governance and support was abandoned by Stitch. By contrast, we aim to make Airbyte a product that ["just works"](https://airbyte.io/blog/our-truth-for-2021-airbyte-just-works) and always plan to maximize engagement within the Airbyte community. 
+* **CLI-first approach:** Meltano was primarily built with a command line interface in mind. In that sense, they seem to target engineers with a preference for that interface.
 * **Integration with Airflow for orchestration:** You can either use Meltano alone for orchestration or with Airflow; Meltano works both ways.  
 
 ## **Airbyte:**
