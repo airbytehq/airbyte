@@ -6,7 +6,7 @@ The Zuora source supports both Full Refresh and Incremental syncs. You can choos
 
 Airbyte uses [REST API](https://www.zuora.com/developer/api-reference/#section/Introduction) to fetch data from Zuora. The REST API accepts [ZOQL (Zuora Object Query Language)](https://knowledgecenter.zuora.com/Central_Platform/Query/Export_ZOQL), a SQL-like language, to export the data.
 
-This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/contributing-to-airbyte/python).
+This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
 
 ### Output schema
 

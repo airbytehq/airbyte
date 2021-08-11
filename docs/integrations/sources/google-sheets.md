@@ -89,6 +89,7 @@ The Airbyte UI will ask for two things:
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.2.4   | 2021-08-05 | [5233](https://github.com/airbytehq/airbyte/pull/5233) | Fix error during listing sheets with diagram only |
 | 0.2.3   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE_ENTRYPOINT for Kubernetes support |
 | 0.2.2   | 2021-04-20 | [2994](https://github.com/airbytehq/airbyte/pull/2994) | Formatting spec |
 | 0.2.1   | 2021-04-03 | [2726](https://github.com/airbytehq/airbyte/pull/2726) | Fix base connector versioning |
