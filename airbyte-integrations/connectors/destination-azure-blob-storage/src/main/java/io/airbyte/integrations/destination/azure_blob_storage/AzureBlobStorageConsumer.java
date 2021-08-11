@@ -141,7 +141,6 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
 
   @Override
   protected void acceptTracked(AirbyteMessage airbyteMessage) throws Exception {
-    // TODO HERE we write received messages
     if (airbyteMessage.getType() == Type.STATE) {
       this.lastStateMessage = airbyteMessage;
       return;

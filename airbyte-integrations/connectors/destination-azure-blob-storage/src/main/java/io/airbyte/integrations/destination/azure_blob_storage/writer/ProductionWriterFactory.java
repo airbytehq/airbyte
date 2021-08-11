@@ -46,7 +46,7 @@ public class ProductionWriterFactory implements AzureBlobStorageWriterFactory {
     AzureBlobStorageFormat format = config.getFormatConfig().getFormat();
 
     if (format == AzureBlobStorageFormat.CSV) {
-      // TODO to implement
+      LOGGER.debug("Picked up CSV format writer");
       return new AzureBlobStorageCsvWriter(config, appendBlobClient, configuredStream,
           isNewlyCreatedBlob);
     }

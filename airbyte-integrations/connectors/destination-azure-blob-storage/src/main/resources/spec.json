@@ -25,7 +25,7 @@
       "azure_blob_storage_container_name": {
         "title": "Azure blob storage container (Bucket) Name",
         "type": "string",
-        "description": "The name of the Azure blob storage container. If not exists - will created automatically. May be empty, then will be created automatically airbytecontainer+timestamp",
+        "description": "The name of the Azure blob storage container. If not exists - will be created automatically. May be empty, then will be created automatically airbytecontainer+timestamp",
         "examples": ["airbytetescontainername"]
       },
       "azure_blob_storage_account_name": {

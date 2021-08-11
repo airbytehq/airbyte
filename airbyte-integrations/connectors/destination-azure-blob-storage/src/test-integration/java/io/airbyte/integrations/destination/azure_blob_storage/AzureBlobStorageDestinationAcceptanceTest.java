@@ -151,7 +151,6 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
     this.specializedBlobClientBuilder = new SpecializedBlobClientBuilder()
         .endpoint(azureBlobStorageDestinationConfig.getEndpointUrl())
         .credential(credential)
-        // TODO !!!!!!!!!!!!!!!!!!!!!! make container name unique fo testing
         .containerName(
             azureBlobStorageDestinationConfig.getContainerName());// Like user\schema in DB
 
@@ -162,11 +161,6 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
    */
   @Override
   protected void tearDown(TestDestinationEnv testEnv) {
-
-    // // TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // // TODO Add teardown logic
-    // // TODO make unique
-
     BlobServiceClient storageClient =
         new BlobServiceClientBuilder()
             .endpoint(azureBlobStorageDestinationConfig.getEndpointUrl())
