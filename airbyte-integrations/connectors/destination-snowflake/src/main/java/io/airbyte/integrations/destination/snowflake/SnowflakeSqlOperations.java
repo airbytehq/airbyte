@@ -26,7 +26,7 @@ package io.airbyte.integrations.destination.snowflake;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.jdbc.DefaultSqlOperations;
+import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -35,7 +35,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class SnowflakeSqlOperations extends DefaultSqlOperations implements SqlOperations {
+class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
 
