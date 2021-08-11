@@ -5,10 +5,9 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_google_search_console_singer'
+    moduleDirectory 'source_google_search_console'
 }
 
 dependencies {
     implementation files(project(':airbyte-integrations:bases:source-acceptance-test').airbyteDocker.outputs)
-    implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)
 }
