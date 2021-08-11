@@ -52,10 +52,12 @@ export const UsersSettingsView: React.FC = () => {
         Header: <FormattedMessage id="userSettings.table.column.action" />,
         headerHighlighted: true,
         accessor: "status",
-        Cell: ({ cell }: CellProps<any>) =>
+        Cell: (_: CellProps<any>) =>
           [
-            <Button secondary>remove</Button>,
-            cell.value === "invited" && <Button secondary>send again</Button>,
+            <Button secondary>
+              <FormattedMessage id="userSettings.user.remove" />
+            </Button>,
+            // cell.value === "invited" && <Button secondary>send again</Button>,
           ].filter(Boolean),
       },
     ],
@@ -64,8 +66,12 @@ export const UsersSettingsView: React.FC = () => {
   return (
     <>
       <Header>
-        <H5>Current users</H5>
-        <Button onClick={toggleModal}>+ New user</Button>
+        <H5>
+          <FormattedMessage id="userSettings.table.title" />
+        </H5>
+        <Button onClick={toggleModal}>
+          + <FormattedMessage id="userSettings.button.addNewUser" />
+        </Button>
       </Header>
       <Table data={data ?? []} columns={columns} />
       {modalIsOpen && <InviteUsersModal onClose={toggleModal} />}

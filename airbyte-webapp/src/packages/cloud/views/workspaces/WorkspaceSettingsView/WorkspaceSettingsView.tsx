@@ -49,6 +49,8 @@ export const WorkspaceSettingsView: React.FC = () => {
                       label={
                         <FormattedMessage id="settings.generalSettings.form.name.label" />
                       }
+                      // TODO: add edit
+                      disabled={true}
                       placeholder={formatMessage({
                         id: "settings.generalSettings.form.name.placeholder",
                       })}

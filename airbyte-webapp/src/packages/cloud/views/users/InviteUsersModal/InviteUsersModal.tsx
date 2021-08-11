@@ -1,13 +1,11 @@
 import React from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
-import { Field, FieldArray, Form, Formik, FieldProps } from "formik";
+import { Field, FieldArray, FieldProps, Form, Formik } from "formik";
 
-import { Button, LoadingButton, DropDown, H5, Input, Modal } from "components";
+import { Button, DropDown, H5, Input, LoadingButton, Modal } from "components";
 import { Cell, Header, Row } from "components/SimpleTableComponents";
 import { useGetUserService } from "packages/cloud/services/users/UserService";
-import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
-import { AuthProviders } from "packages/cloud/lib/auth/AuthProviders";
 import { useCurrentWorkspace } from "components/hooks/services/useWorkspace";
 
 const Content = styled.div`
@@ -25,8 +23,8 @@ const SendInvitationButton = styled(LoadingButton)`
 `;
 
 export const InviteUsersModal: React.FC<{ onClose: () => void }> = (props) => {
+  const formatMessage = useIntl().formatMessage;
   const userService = useGetUserService();
-  const currentUser = useCurrentUser();
   const { workspaceId } = useCurrentWorkspace();
   const roleOptions = [
     {
@@ -49,19 +47,11 @@ export const InviteUsersModal: React.FC<{ onClose: () => void }> = (props) => {
           ],
         }}
         onSubmit={async (values) => {
-          await userService.invite(
-            values.users.map((user) => ({
-              ...user,
-              name: user.email,
-              authUserId: currentUser?.userId,
-              authProvider: AuthProviders.GoogleIdentityPlatform,
-            })),
-            workspaceId
-          );
+          await userService.invite(values.users, workspaceId);
           props.onClose();
         }}
       >
-        {({ values, isValid, isSubmitting }) => (
+        {({ values, isValid, isSubmitting, dirty }) => (
           <Form>
             <Content>
               <Header>
@@ -95,7 +85,9 @@ export const InviteUsersModal: React.FC<{ onClose: () => void }> = (props) => {
                         <Cell>
                           <Field
                             name={`users.${index}.role`}
-                            placeholder="Select role"
+                            placeholder={formatMessage({
+                              id: "modals.addUser.role.placeholder",
+                            })}
                             options={roleOptions}
                             component={DropDown}
                           />
@@ -115,7 +107,7 @@ export const InviteUsersModal: React.FC<{ onClose: () => void }> = (props) => {
                 </Button>
                 <SendInvitationButton
                   type="submit"
-                  disabled={!(isValid || isSubmitting)}
+                  disabled={!isValid || !dirty}
                   isLoading={isSubmitting}
                 >
                   <FormattedMessage id="modals.addUser.button.submit" />

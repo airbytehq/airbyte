@@ -10,14 +10,13 @@ import { Routes } from "pages/routes";
 import config from "config";
 
 import useConnector from "components/hooks/services/useConnector";
-import { Link, Popout } from "components";
+import { Link } from "components";
 import Indicator from "components/Indicator";
 
 import Source from "./components/SourceIcon";
 import Connections from "./components/ConnectionsIcon";
 import Destination from "./components/DestinationIcon";
-import { useCurrentWorkspace } from "../../../../../components/hooks/services/useWorkspace";
-import { useListWorkspaces } from "../../../services/workspaces/WorkspacesService";
+import { WorkspacePopout } from "packages/cloud/views/workspaces/WorkspacePopout";
 
 const Bar = styled.nav`
   width: 100px;
@@ -117,8 +116,6 @@ const WorkspaceButton = styled.div`
 
 const SideBar: React.FC = () => {
   const { hasNewVersions } = useConnector();
-  const { name } = useCurrentWorkspace();
-  const { data: workspaces } = useListWorkspaces();
 
   return (
     <Bar>
@@ -126,16 +123,11 @@ const SideBar: React.FC = () => {
         <Link to={Routes.Root}>
           <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
         </Link>
-        <Popout
-          targetComponent={({ onOpen }) => (
-            <WorkspaceButton onClick={onOpen}>{name}</WorkspaceButton>
+        <WorkspacePopout>
+          {({ onOpen, value }) => (
+            <WorkspaceButton onClick={onOpen}>{value}</WorkspaceButton>
           )}
-          isSearchable={false}
-          options={workspaces?.map((workspace) => ({
-            value: workspace.workspaceId,
-            label: workspace.name,
-          }))}
-        />
+        </WorkspacePopout>
         <Menu>
           <li>
             <MenuItem to={Routes.Connections} activeClassName="active">
