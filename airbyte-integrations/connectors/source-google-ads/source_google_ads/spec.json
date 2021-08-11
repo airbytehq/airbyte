@@ -84,7 +84,7 @@
             },
             "cursor_field": {
               "type": ["string", "null"],
-              "title": "If not provided, the FULL-REFRESH model will be used. If provided, this will be an incremental stream with this cursor field. Please use datetime fields (start_date, end_date) for proper work."
+              "title": "Field that will be used to track changes during Incremental sync (if provided). Otherwise only Full Refresh sync will be available."
             },
             "table_name": {
               "type": "string",
