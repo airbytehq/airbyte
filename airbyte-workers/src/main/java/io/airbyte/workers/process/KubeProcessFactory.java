@@ -31,6 +31,8 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +40,8 @@ import org.slf4j.LoggerFactory;
 public class KubeProcessFactory implements ProcessFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessFactory.class);
+
+  private static final Pattern ALPHABETIC = Pattern.compile("[a-zA-Z]+");;
 
   private final String namespace;
   private final ApiClient officialClient;
@@ -134,7 +138,12 @@ public class KubeProcessFactory implements ProcessFactory {
       podName = imageName + "-" + suffix;
     }
 
-    return podName;
+    final Matcher m = ALPHABETIC.matcher(podName);
+    if (m.find()) {
+      return podName.substring(m.start());
+    } else {
+      return podName;
+    }
   }
 
 }
