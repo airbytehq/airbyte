@@ -205,12 +205,11 @@ class CustomQuery:
             class_dict["cursor_field"] = property(cls.cursor_field)
             class_dict["__init__"] = cls.init_incremental
             class_dict["get_query"] = cls.get_query_incremental
-            ret = type("CustomQueryGenericIncremental", (IncrementalGoogleAdsStream,), {**class_dict})
-
+            ret = type("CustomQueryGenericIncremental", (IncrementalGoogleAdsStream,), class_dict)
         else:
             class_dict["__init__"] = cls.init_full_refresh
             class_dict["get_query"] = cls.get_query_full_refresh
-            ret = type("CustomQueryGenericFullRefresh", (GoogleAdsStream,), {**class_dict})
+            ret = type("CustomQueryGenericFullRefresh", (GoogleAdsStream,), class_dict)
         instance = ret(*args, **kwargs)
         return instance
 
