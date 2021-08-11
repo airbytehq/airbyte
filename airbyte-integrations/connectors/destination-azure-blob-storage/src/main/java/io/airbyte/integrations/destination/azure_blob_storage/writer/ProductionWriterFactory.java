@@ -27,14 +27,9 @@ package io.airbyte.integrations.destination.azure_blob_storage.writer;
 import com.azure.storage.blob.specialized.AppendBlobClient;
 import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDestinationConfig;
 import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageFormat;
-import io.airbyte.integrations.destination.azure_blob_storage.avro.AzureBlobStorageAvroWriter;
-import io.airbyte.integrations.destination.azure_blob_storage.avro.JsonFieldNameUpdater;
-import io.airbyte.integrations.destination.azure_blob_storage.avro.JsonToAvroSchemaConverter;
 import io.airbyte.integrations.destination.azure_blob_storage.csv.AzureBlobStorageCsvWriter;
 import io.airbyte.integrations.destination.azure_blob_storage.jsonl.AzureBlobStorageJsonlWriter;
-import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import org.apache.avro.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,32 +44,6 @@ public class ProductionWriterFactory implements AzureBlobStorageWriterFactory {
                                        boolean isNewlyCreatedBlob)
       throws Exception {
     AzureBlobStorageFormat format = config.getFormatConfig().getFormat();
-
-    if (format == AzureBlobStorageFormat.AVRO || format == AzureBlobStorageFormat.PARQUET) {
-      AirbyteStream stream = configuredStream.getStream();
-      JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
-      Schema avroSchema = schemaConverter.getAvroSchema(stream.getJsonSchema(), stream.getName(),
-          stream.getNamespace(), true);
-      JsonFieldNameUpdater nameUpdater = new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
-
-      LOGGER.info("Avro schema for stream {}: {}", stream.getName(), avroSchema.toString(false));
-      if (nameUpdater.hasNameUpdate()) {
-        LOGGER.info("The following field names will be standardized: {}", nameUpdater);
-      }
-
-      if (format == AzureBlobStorageFormat.AVRO) {
-        return new AzureBlobStorageAvroWriter(config, appendBlobClient, configuredStream,
-            isNewlyCreatedBlob,
-            avroSchema, nameUpdater);
-      } else {
-        // TODO to implement !!!!!!!!
-        // return new AzureBlobStorageParquetWriter(config, appendBlobClient, configuredStream,
-        // isNewlyCreatedBlob,
-        // avroSchema, nameUpdater);
-
-        throw new Exception("Parquet Not implemented");
-      }
-    }
 
     if (format == AzureBlobStorageFormat.CSV) {
       // TODO to implement

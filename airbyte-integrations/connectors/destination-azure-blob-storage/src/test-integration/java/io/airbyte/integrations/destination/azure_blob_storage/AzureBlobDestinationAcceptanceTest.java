@@ -52,8 +52,6 @@ public class AzureBlobDestinationAcceptanceTest {
         .build());
   }
 
-  // // TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // refactor test and remove hardcoded creds from secrets file
   @Test
   public void testCheck() {
     final AzureBlobStorageDestination azureBlobStorageDestination = new AzureBlobStorageDestination();
