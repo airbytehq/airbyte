@@ -33,7 +33,7 @@ import com.google.common.collect.ImmutableMap;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.messages.IdentifyMessage;
 import com.segment.analytics.messages.TrackMessage;
-import io.airbyte.analytics.Deployment.DeploymentMode;
+import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import java.util.Map;
 import java.util.UUID;
@@ -46,7 +46,7 @@ import org.mockito.ArgumentCaptor;
 class SegmentTrackingClientTest {
 
   private static final String AIRBYTE_VERSION = "dev";
-  private static final Deployment DEPLOYMENT = new Deployment(DeploymentMode.OSS, UUID.randomUUID(), WorkerEnvironment.DOCKER);
+  private static final Deployment DEPLOYMENT = new Deployment(Configs.DeploymentMode.OSS, UUID.randomUUID(), WorkerEnvironment.DOCKER);
   private static final String EMAIL = "a@airbyte.io";
   private static final TrackingIdentity IDENTITY = new TrackingIdentity(AIRBYTE_VERSION, UUID.randomUUID(), EMAIL, false, false, true);
   private static final UUID WORKSPACE_ID = UUID.randomUUID();

@@ -2,63 +2,51 @@
   "streams": [
     {
       "stream": {
-        "name": "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL",
-        "json_schema": {
-          "type": "object",
-          "title": "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL",
-          "description": "All orders that were placed in the specified period.",
-          "properties": {
-            "amazon-order-id": {
-              "type": "string",
-              "title": "amazon-order-id",
-              "description": ""
-            },
-            "merchant-order-id": {
-              "type": "string",
-              "title": "merchant-order-id",
-              "description": ""
-            },
-            "purchase-date": {
-              "type": "string",
-              "title": "purchase-date",
-              "description": ""
-            }
-          }
-        },
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["purchase-date"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["purchase-date"]
-    },
-    {
-      "stream": {
         "name": "Orders",
-        "json_schema": {
-          "type": "object",
-          "title": "Orders",
-          "description": "All orders that were updated after a specified date",
-          "properties": {
-            "AmazonOrderId": {
-              "type": ["null", "string"]
-            },
-            "PurchaseDate": {
-              "type": ["null", "string"]
-            },
-            "LastUpdateDate": {
-              "type": ["null", "string"]
-            }
-          }
-        },
+        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["LastUpdateDate"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite",
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
       "cursor_field": ["LastUpdateDate"]
+    },
+    {
+      "stream": {
+        "name": "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["createdTime"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["createdTime"]
+    },
+    {
+      "stream": {
+        "name": "GET_MERCHANT_LISTINGS_ALL_DATA",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["createdTime"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["createdTime"]
+    },
+    {
+      "stream": {
+        "name": "GET_FBA_INVENTORY_AGED_DATA",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["createdTime"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["createdTime"]
     }
   ]
 }

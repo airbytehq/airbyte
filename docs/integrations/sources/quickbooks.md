@@ -78,4 +78,5 @@ The easiest way to get these credentials is by using Quickbook's [OAuth 2.0 play
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| `0.1.3` | 2021-08-10 | [4986](https://github.com/airbytehq/airbyte/pull/4986) | Using number data type for decimal fields instead string |
 | `0.1.2` | 2021-07-06 | [4539](https://github.com/airbytehq/airbyte/pull/4539) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |

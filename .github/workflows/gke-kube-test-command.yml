@@ -10,6 +10,7 @@ on:
 
 jobs:
   start-gke-kube-acceptance-test-runner:
+    timeout-minutes: 10
     name: Start GKE Kube Acceptance Test EC2 Runner
     runs-on: ubuntu-latest
     outputs:
@@ -37,6 +38,7 @@ jobs:
     needs: start-gke-kube-acceptance-test-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-gke-kube-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
     name: GKE Acceptance Tests (Kube)
+    timeout-minutes: 90
     steps:
       - name: Link comment to workflow run
         if: github.event.inputs.comment-id
@@ -119,6 +121,7 @@ jobs:
   # In case of self-hosted EC2 errors, remove this block.
   stop-gke-kube-acceptance-test-runner:
     name: Stop GKE Kube Acceptance Test EC2 Runner
+    timeout-minutes: 10
     needs:
       - start-gke-kube-acceptance-test-runner # required to get output from the start-runner job
       - gke-kube-acceptance-test # required to wait when the main job is done
