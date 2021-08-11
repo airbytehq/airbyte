@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/kvdb",
+  "documentationUrl": "https://kvdb.io/docs/api/",
   "supported_destination_sync_modes": ["overwrite", "append"],
   "supportsIncremental": true,
   "supportsDBT": false,

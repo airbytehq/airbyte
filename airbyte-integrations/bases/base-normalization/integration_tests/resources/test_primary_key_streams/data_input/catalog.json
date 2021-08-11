@@ -13,7 +13,12 @@
               "type": "string"
             },
             "date": {
-              "type": "string"
+              "type": "string",
+              "format": "date"
+            },
+            "timestamp_col": {
+              "type": "string",
+              "format": "date-time"
             },
             "HKD@spéçiäl & characters": {
               "type": "number"
@@ -50,7 +55,12 @@
               "type": "string"
             },
             "date": {
-              "type": "string"
+              "type": "string",
+              "format": "date"
+            },
+            "timestamp_col": {
+              "type": "string",
+              "format": "date-time"
             },
             "HKD@spéçiäl & characters": {
               "type": "number"
