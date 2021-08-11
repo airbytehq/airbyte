@@ -10,6 +10,7 @@ jobs:
   # In case of self-hosted EC2 errors, remove this block.
   start-connectors-base-build-runner:
     name: "Connectors Base: Start Build EC2 Runner"
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
@@ -34,6 +35,7 @@ jobs:
 
   ensure-images-exist:
     name: "Ensure all required Docker images exist on Dockerhub"
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte
@@ -47,6 +49,7 @@ jobs:
     needs: start-connectors-base-build-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-connectors-base-build-runner.outputs.label }} # run the job on the newly created runner
     name: "Connectors Base: Build"
+    timeout-minutes: 90
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
@@ -104,7 +107,7 @@ jobs:
         run: SUB_BUILD=CONNECTORS_BASE ./gradlew build --scan
 
       - name: Ensure no file change
-        run: git status --porcelain && test -z "$(git status --porcelain)"
+        run: git --no-pager diff && test -z "$(git --no-pager diff)"
 
       - name: Slack Notification - Failure
         if: failure() && github.ref == 'refs/heads/master'
@@ -128,6 +131,7 @@ jobs:
   # In case of self-hosted EC2 errors, remove this block.
   stop-connectors-base-build-runner:
     name: "Connectors Base: Stop Build EC2 Runner"
+    timeout-minutes: 10
     needs:
       - start-connectors-base-build-runner # required to get output from the start-runner job
       - build-connectors-base # required to wait when the main job is done
@@ -152,6 +156,7 @@ jobs:
   # In case of self-hosted EC2 errors, remove this block.
   start-platform-build-runner:
     name: "Platform: Start Build EC2 Runner"
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
@@ -178,6 +183,7 @@ jobs:
     needs: start-platform-build-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-platform-build-runner.outputs.label }} # run the job on the newly created runner
     name: "Platform: Build"
+    timeout-minutes: 90
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
@@ -229,13 +235,13 @@ jobs:
         run: SUB_BUILD=PLATFORM ./gradlew format --scan --info --stacktrace
 
       - name: Ensure no file change
-        run: git status --porcelain && test -z "$(git status --porcelain)"
+        run: git --no-pager diff && test -z "$(git --no-pager diff)"
 
       - name: Build
         run: SUB_BUILD=PLATFORM ./gradlew build --scan
 
       - name: Ensure no file change
-        run: git status --porcelain && test -z "$(git status --porcelain)"
+        run: git --no-pager diff && test -z "$(git --no-pager diff)"
 
       # todo (cgardens) - scope by platform.
       - name: Check documentation
@@ -275,6 +281,7 @@ jobs:
   # In case of self-hosted EC2 errors, remove this block.
   stop-platform-build-runner:
     name: "Platform: Stop Build EC2 Runner"
+    timeout-minutes: 10
     needs:
       - start-platform-build-runner # required to get output from the start-runner job
       - platform-build # required to wait when the main job is done
@@ -300,6 +307,7 @@ jobs:
   # In case of self-hosted EC2 errors, remove this block.
   start-frontend-test-runner:
     name: Start Frontend Test EC2 Runner
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
@@ -325,6 +333,7 @@ jobs:
     needs: start-frontend-test-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-frontend-test-runner.outputs.label }} # run the job on the newly created runner
     name: Run Frontend Test
+    timeout-minutes: 120
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
@@ -355,6 +364,7 @@ jobs:
   # In case of self-hosted EC2 errors, remove this block.
   stop-frontend-test-runner:
     name: Stop Frontend Test EC2 Runner
+    timeout-minutes: 10
     needs:
       - start-frontend-test-runner # required to get output from the start-runner job
       - frontend-test # required to wait when the main job is done
@@ -380,6 +390,7 @@ jobs:
   # Docker acceptance tests run as part of the build job.
   start-kube-acceptance-test-runner:
     name: Start Kube Acceptance Test EC2 Runner
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
@@ -406,6 +417,7 @@ jobs:
     needs: start-kube-acceptance-test-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-kube-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
     name: Acceptance Tests (Kube)
+    timeout-minutes: 90
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
@@ -435,7 +447,7 @@ jobs:
           sudo apt-get install socat
 
       - name: KIND Kubernetes Cluster Setup
-        uses: helm/kind-action@v1.1.0
+        uses: helm/kind-action@v1.2.0
         # In case of self-hosted EC2 errors, remove this env block.
         env:
           USER: root
@@ -461,6 +473,7 @@ jobs:
   # In case of self-hosted EC2 errors, remove this block.
   stop-kube-acceptance-test-runner:
     name: Stop Kube Acceptance Test EC2 Runner
+    timeout-minutes: 10
     needs:
       - start-kube-acceptance-test-runner # required to get output from the start-runner job
       - kube-acceptance-test # required to wait when the main job is done

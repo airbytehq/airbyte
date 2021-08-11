@@ -9,6 +9,7 @@ select
     id,
     currency,
     `date`,
+    timestamp_col,
     `HKD@spéçiäl & characters`,
     hkd_special___characters,
     nzd,

@@ -132,9 +132,9 @@ class ConnectionsHandlerTest {
     workspaceHelper = mock(WorkspaceHelper.class);
     connectionsHandler = new ConnectionsHandler(configRepository, uuidGenerator, workspaceHelper);
 
-    when(workspaceHelper.getWorkspaceForSourceId(sourceId)).thenReturn(workspaceId);
-    when(workspaceHelper.getWorkspaceForDestinationId(destinationId)).thenReturn(workspaceId);
-    when(workspaceHelper.getWorkspaceForOperationId(operationId)).thenReturn(workspaceId);
+    when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceId)).thenReturn(workspaceId);
+    when(workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(destinationId)).thenReturn(workspaceId);
+    when(workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(operationId)).thenReturn(workspaceId);
   }
 
   @Test
@@ -180,7 +180,7 @@ class ConnectionsHandlerTest {
 
   @Test
   void testValidateConnectionCreateSourceAndDestinationInDifferenceWorkspace() {
-    when(workspaceHelper.getWorkspaceForDestinationId(destinationId)).thenReturn(UUID.randomUUID());
+    when(workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(destinationId)).thenReturn(UUID.randomUUID());
 
     final ConnectionCreate connectionCreate = new ConnectionCreate()
         .sourceId(standardSync.getSourceId())
@@ -191,7 +191,7 @@ class ConnectionsHandlerTest {
 
   @Test
   void testValidateConnectionCreateOperationInDifferentWorkspace() {
-    when(workspaceHelper.getWorkspaceForOperationId(operationId)).thenReturn(UUID.randomUUID());
+    when(workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(operationId)).thenReturn(UUID.randomUUID());
 
     final ConnectionCreate connectionCreate = new ConnectionCreate()
         .sourceId(standardSync.getSourceId())
@@ -309,7 +309,7 @@ class ConnectionsHandlerTest {
 
   @Test
   void testValidateConnectionUpdateOperationInDifferentWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(workspaceHelper.getWorkspaceForOperationId(operationId)).thenReturn(UUID.randomUUID());
+    when(workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(operationId)).thenReturn(UUID.randomUUID());
     when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
 
     final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
@@ -380,8 +380,8 @@ class ConnectionsHandlerTest {
 
   @Test
   void failOnUnmatchedWorkspacesInCreate() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(workspaceHelper.getWorkspaceForSourceId(standardSync.getSourceId())).thenReturn(UUID.randomUUID());
-    when(workspaceHelper.getWorkspaceForDestinationId(standardSync.getDestinationId())).thenReturn(UUID.randomUUID());
+    when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(standardSync.getSourceId())).thenReturn(UUID.randomUUID());
+    when(workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(standardSync.getDestinationId())).thenReturn(UUID.randomUUID());
 
     when(uuidGenerator.get()).thenReturn(standardSync.getConnectionId());
     final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()

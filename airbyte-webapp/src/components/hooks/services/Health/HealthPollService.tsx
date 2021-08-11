@@ -4,12 +4,13 @@ import { useIntl } from "react-intl";
 import { useNotificationService } from "components/hooks/services/Notification/NotificationService";
 import { HealthService } from "core/health/HealthService";
 
-const healthService = new HealthService();
-
 const HEALTH_NOTIFICATION_ID = "health.error";
 const HEALTHCHECK_MAX_COUNT = 3;
 
-function useApiHealthPoll(pollPeriod: number): void {
+function useApiHealthPoll(
+  pollPeriod: number,
+  healthService: HealthService
+): void {
   const [count, setCount] = useState(0);
   const { formatMessage } = useIntl();
   const {

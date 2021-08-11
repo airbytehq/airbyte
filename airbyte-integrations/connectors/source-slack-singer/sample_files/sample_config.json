@@ -1,7 +1,0 @@
-{
-  "token": "<your_token>",
-  "start_date": "2020-11-27T00:00:00",
-  "private_channels": true,
-  "join_public_channels": true,
-  "exclude_archived": false
-}

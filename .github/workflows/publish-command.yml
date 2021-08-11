@@ -71,6 +71,7 @@ jobs:
       - name: Write Integration Test Credentials # TODO DRY this with test-command.yml
         run: ./tools/bin/ci_credentials.sh
         env:
+          AMAZON_SELLER_PARTNER_TEST_CREDS: ${{ secrets.AMAZON_SELLER_PARTNER_TEST_CREDS }}
           AMPLITUDE_INTEGRATION_TEST_CREDS: ${{ secrets.AMPLITUDE_INTEGRATION_TEST_CREDS }}
           ADWORDS_INTEGRATION_TEST_CREDS: ${{ secrets.ADWORDS_INTEGRATION_TEST_CREDS }}
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
@@ -90,7 +91,6 @@ jobs:
           FACEBOOK_MARKETING_API_TEST_INTEGRATION_CREDS: ${{ secrets.FACEBOOK_MARKETING_API_TEST_INTEGRATION_CREDS }}
           FRESHDESK_TEST_CREDS: ${{ secrets.FRESHDESK_TEST_CREDS }}
           GITLAB_INTEGRATION_TEST_CREDS: ${{ secrets.GITLAB_INTEGRATION_TEST_CREDS }}
-          GH_INTEGRATION_TEST_CREDS: ${{ secrets.GH_INTEGRATION_TEST_CREDS }}
           GH_NATIVE_INTEGRATION_TEST_CREDS: ${{ secrets.GH_NATIVE_INTEGRATION_TEST_CREDS }}
           GOOGLE_ADS_TEST_CREDS: ${{ secrets.GOOGLE_ADS_TEST_CREDS }}
           GOOGLE_ANALYTICS_V4_TEST_CREDS: ${{ secrets.GOOGLE_ANALYTICS_V4_TEST_CREDS }}
@@ -143,13 +143,15 @@ jobs:
           TWILIO_TEST_CREDS: ${{ secrets.TWILIO_TEST_CREDS }}
           SOURCE_TYPEFORM_CREDS: ${{ secrets.SOURCE_TYPEFORM_CREDS }}
           ZENDESK_CHAT_INTEGRATION_TEST_CREDS: ${{ secrets.ZENDESK_CHAT_INTEGRATION_TEST_CREDS }}
-          ZENDESK_SECRETS_CREDS: ${{ secrets.ZENDESK_SECRETS_CREDS }}
           ZENDESK_SUNSHINE_TEST_CREDS: ${{ secrets.ZENDESK_SUNSHINE_TEST_CREDS }}
           ZENDESK_TALK_TEST_CREDS: ${{ secrets.ZENDESK_TALK_TEST_CREDS }}
+          ZENDESK_SUPPORT_TEST_CREDS: ${{ secrets.ZENDESK_SUPPORT_TEST_CREDS }}
           ZOOM_INTEGRATION_TEST_CREDS: ${{ secrets.ZOOM_INTEGRATION_TEST_CREDS }}
           PLAID_INTEGRATION_TEST_CREDS: ${{ secrets.PLAID_INTEGRATION_TEST_CREDS }}
           DESTINATION_S3_INTEGRATION_TEST_CREDS: ${{ secrets.DESTINATION_S3_INTEGRATION_TEST_CREDS }}
           DESTINATION_GCS_CREDS: ${{ secrets.DESTINATION_GCS_CREDS }}
+          APIFY_INTEGRATION_TEST_CREDS: ${{ secrets.APIFY_INTEGRATION_TEST_CREDS }}
+          SOURCE_ZUORA_TEST_CREDS: ${{ secrets.SOURCE_ZUORA_TEST_CREDS }}
       - run: |
           docker login -u airbytebot -p ${DOCKER_PASSWORD}
           ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.run-tests }}

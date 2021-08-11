@@ -1,0 +1,21 @@
+# Perform link check on all markdown files
+name: Doc Link Checker (Full)
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  markdown-link-check:
+    timeout-minutes: 50
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: 'no'
+          use-verbose-mode: 'yes'
+          check-modified-files-only: 'no'
+          config-file: .github/workflows/doc-link-check.json
+          base-branch: ${{ github.base_ref }}
