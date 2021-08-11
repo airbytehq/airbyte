@@ -22,7 +22,7 @@
 # SOFTWARE.
 #
 
-import json
+import json as json_lib
 import time
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
@@ -62,7 +62,6 @@ class AmazonSPStream(HttpStream, ABC):
         AWS signature flow require prepared request to correctly generate `authorization` header.
         Add `auth` arg to sign all the requests with AWS signature.
         """
-
         http_method = method or self.http_method
         args = {"method": http_method, "url": self.url_base + path, "headers": headers, "params": params, "auth": self._aws_signature}
         if http_method.upper() in BODY_REQUEST_METHODS:
@@ -163,8 +162,7 @@ class ReportsAmazonSPStream(AmazonSPStream, ABC):
             method="POST",
             path=self.path_prefix,
             headers=dict(request_headers, **self.authenticator.get_auth_header()),
-            params={},
-            data=json.dumps(report_data),
+            data=json_lib.dumps(report_data),
         )
         report_response = self._send_request(create_report_request, {})
 
