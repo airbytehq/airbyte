@@ -13,6 +13,7 @@ let middlewares: {
 } = {};
 
 export function getMiddlewares() {
+  console.log(middlewares);
   return Object.values(middlewares);
 }
 
@@ -25,7 +26,7 @@ export const useRequestMiddlewareProvider = (): RequestMiddlewareProvider => {
   }>();
 
   useEffect(() => {
-    middlewares = requestMiddlewares;
+    middlewares = { ...middlewares, ...requestMiddlewares };
   }, [requestMiddlewares]);
 
   return useMemo<RequestMiddlewareProvider>(
