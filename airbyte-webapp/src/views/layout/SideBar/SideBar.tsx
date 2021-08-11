@@ -107,7 +107,12 @@ const SideBar: React.FC = () => {
     <Bar>
       <div>
         <Link to={Routes.Root}>
-          <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
+          <img
+            src="/airbyte/simpleLogo.svg"
+            alt="logo"
+            height={33}
+            width={33}
+          />
         </Link>
         <Menu>
           <li>

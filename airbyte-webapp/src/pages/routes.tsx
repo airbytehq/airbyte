@@ -36,15 +36,15 @@ export enum Routes {
   Destination = "/airbyte/destination",
   Source = "/airbyte/source",
   Connection = "/airbyte/connection",
-  ConnectionNew = "/airbyte/new-connection",
-  SourceNew = "/airbyte/new-source",
-  DestinationNew = "/airbyte/new-destination",
-  Settings = "/airbyte/settings",
-  Configuration = "/airbyte/configuration",
-  Notifications = "/airbyte/notifications",
-  Metrics = "/airbyte/metrics",
-  Account = "/airbyte/account",
-  Root = "airbyte",
+  ConnectionNew = "/new-connection",
+  SourceNew = "/new-source",
+  DestinationNew = "/new-destination",
+  Settings = "/settings",
+  Configuration = "/configuration",
+  Notifications = "/notifications",
+  Metrics = "/metrics",
+  Account = "/account",
+  Root = "/airbyte/",
 }
 
 const getPageName = (pathname: string) => {
@@ -57,6 +57,7 @@ const getPageName = (pathname: string) => {
   if (pathname === Routes.Destination) {
     return "Destinations Page";
   }
+
   if (pathname === Routes.Root) {
     return "Sources Page";
   }

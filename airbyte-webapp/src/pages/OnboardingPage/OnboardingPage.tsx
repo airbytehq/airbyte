@@ -232,7 +232,7 @@ const OnboardingPage: React.FC = () => {
     <Content big={currentStep === StepType.SET_UP_CONNECTION}>
       <HeadTitle titles={[{ id: "onboarding.headTitle" }]} />
       <Main>
-        <Img src="/welcome.svg" height={132} />
+        <Img src="/airbyte/welcome.svg" height={132} />
         <MainTitle center>
           <FormattedMessage id="onboarding.title" />
         </MainTitle>
