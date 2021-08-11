@@ -32,7 +32,7 @@ from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.errors import GoogleAdsException
 
 from .google_ads import GoogleAds
-from .streams import (
+from .streams import (  # CustomQueryFullRefresh,; CustomQueryIncremental,
     AccountPerformanceReport,
     Accounts,
     AdGroupAdReport,
@@ -40,8 +40,6 @@ from .streams import (
     AdGroups,
     Campaigns,
     CustomQuery,
-    CustomQueryFullRefresh,
-    CustomQueryIncremental,
     DisplayKeywordPerformanceReport,
     DisplayTopicsPerformanceReport,
     ShoppingPerformanceReport,
@@ -61,7 +59,8 @@ class SourceGoogleAds(AbstractSource):
         # streams = [stream.as_airbyte_stream() for stream in self.streams(config=config)]
         streams = []
         for stream in self.streams(config=config):
-            if not isinstance(stream, (CustomQueryFullRefresh, CustomQueryIncremental)):
+            if stream.__class__.__name__ not in ("CustomQueryGenericFullRefresh", "CustomQueryGenericIncremental"):
+                # todo rename to CustomQueryGenericFullRefresh and CustomQueryGenericIncremental both here and in class
                 streams.append(stream.as_airbyte_stream())
         # TODO: extend with custom defined streams
         for usr_query in config.get("custom_query", []):
@@ -110,8 +109,8 @@ class SourceGoogleAds(AbstractSource):
         )
 
         custom_query_streams = [
-            CustomQuery(custom_query_config=config["custom_query"][i], **incremental_stream_config)
-            for i in range(len(config.get("custom_query", [])))
+            CustomQuery(custom_query_config=single_query_config, **incremental_stream_config)
+            for single_query_config in config.get("custom_query", [])
         ]
         return [
             AccountPerformanceReport(**incremental_stream_config),
