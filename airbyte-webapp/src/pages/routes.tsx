@@ -16,7 +16,7 @@ import OnboardingPage from "./OnboardingPage";
 import ConnectionPage from "./ConnectionPage";
 import SettingsPage from "./SettingsPage";
 import LoadingPage from "components/LoadingPage";
-import MainView from "components/MainView";
+import MainView from "views/layout/MainView";
 import SupportChat from "components/SupportChat";
 
 import { useWorkspace } from "components/hooks/services/useWorkspace";

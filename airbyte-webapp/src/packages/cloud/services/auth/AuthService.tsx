@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useMemo } from "react";
+import { useQueryClient } from "react-query";
 
 import { GoogleAuthService } from "packages/cloud/lib/auth/GoogleAuthService";
 import useTypesafeReducer from "components/hooks/useTypesafeReducer";
@@ -13,27 +14,18 @@ import { User, UserService } from "packages/cloud/lib/domain/users";
 import { RequestAuthMiddleware } from "packages/cloud/lib/auth/RequestAuthMiddleware";
 import { AuthProviders } from "packages/cloud/lib/auth/AuthProviders";
 import { api } from "packages/cloud/config/api";
-import { useQueryClient } from "react-query";
 
-type Context = {
+type AuthContextApi = {
   user: User | null;
   inited: boolean;
   isLoading: boolean;
   login: (values: { email: string; password: string }) => Promise<User | null>;
   signUp: (form: { email: string; password: string }) => Promise<User | null>;
+  resetPassword: (email: string) => Promise<void>;
   logout: () => void;
 };
 
-const defaultState: Context = {
-  user: null,
-  inited: false,
-  isLoading: false,
-  login: async () => null,
-  signUp: async () => null,
-  logout: async () => ({}),
-};
-
-export const AuthContext = React.createContext<Context>(defaultState);
+export const AuthContext = React.createContext<AuthContextApi | null>(null);
 
 // TODO: place token into right place
 export let token = "";
@@ -91,7 +83,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
 
   const queryClient = useQueryClient();
 
-  const ctx: Context = useMemo(
+  const ctx: AuthContextApi = useMemo(
     () => ({
       inited: state.inited,
       isLoading: state.loading,
@@ -107,6 +99,12 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         await authService.signOut();
         loggedOut();
         await queryClient.invalidateQueries();
+      },
+      async resetPassword(email: string): Promise<void> {
+        await authService.resetPassword(email);
+      },
+      async confirmPasswordReset(_email: string, _code: string): Promise<void> {
+        throw new Error("not yet implemented");
       },
       async signUp(form: {
         email: string;
@@ -124,13 +122,13 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       },
       user: state.currentUser,
     }),
-    [state]
+    [state, queryClient]
   );
 
   return <AuthContext.Provider value={ctx}>{children}</AuthContext.Provider>;
 };
 
-export const useAuthService = (): Context => {
+export const useAuthService = (): AuthContextApi => {
   const authService = useContext(AuthContext);
   if (!authService) {
     throw new Error(

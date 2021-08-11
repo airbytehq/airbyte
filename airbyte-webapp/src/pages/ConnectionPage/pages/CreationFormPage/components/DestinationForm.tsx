@@ -33,10 +33,11 @@ const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
     serviceType: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => {
+    setErrorStatusRequest(null);
+
     const connector = destinationDefinitions.find(
       (item) => item.destinationDefinitionId === values.serviceType
     );
-    setErrorStatusRequest(null);
     try {
       const result = await createDestination({
         values,
@@ -45,13 +46,13 @@ const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
       setSuccessRequest(true);
       setTimeout(() => {
         setSuccessRequest(false);
-        afterSubmit();
         push({
           state: {
             ...(location.state as Record<string, unknown>),
             destinationId: result.destinationId,
           },
         });
+        afterSubmit();
       }, 2000);
     } catch (e) {
       setErrorStatusRequest(e);

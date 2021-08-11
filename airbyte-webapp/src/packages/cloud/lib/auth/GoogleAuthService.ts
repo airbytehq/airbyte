@@ -56,6 +56,24 @@ export class GoogleAuthService implements AuthService {
       });
   }
 
+  async resetPassword(email: string): Promise<UserCredential> {
+    return firebaseApp
+      .auth()
+      .sendPasswordResetEmail(email)
+      .catch((err) => {
+        // switch (err.code) {
+        //   case "auth/email-already-in-use":
+        //     throw new FieldError("email", ErrorCodes.Duplicate);
+        //   case "auth/invalid-email":
+        //     throw new FieldError("email", ErrorCodes.Invalid);
+        //   case "auth/weak-password":
+        //     throw new FieldError("password", ErrorCodes.Invalid);
+        // }
+
+        throw err;
+      });
+  }
+
   signOut(): Promise<void> {
     return firebaseApp.auth().signOut();
   }

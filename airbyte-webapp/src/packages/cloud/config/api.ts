@@ -1,3 +1,3 @@
 export const api = {
-  cloud: "https://dev-cloud.airbyte.io/cloud/v1/",
+  cloud: process.env.REACT_APP_CLOUD_API_URL ?? "/",
 };

@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRocket, faBook, faCog } from "@fortawesome/free-solid-svg-icons";
+import { faBook, faCog } from "@fortawesome/free-solid-svg-icons";
 import { faSlack } from "@fortawesome/free-brands-svg-icons";
 import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
@@ -11,12 +11,12 @@ import config from "config";
 
 import useConnector from "components/hooks/services/useConnector";
 import { Link } from "components";
-import Version from "components/Version";
 import Indicator from "components/Indicator";
 
 import Source from "./components/SourceIcon";
 import Connections from "./components/ConnectionsIcon";
 import Destination from "./components/DestinationIcon";
+import { WorkspacePopout } from "packages/cloud/views/workspaces/WorkspacePopout";
 
 const Bar = styled.nav`
   width: 100px;
@@ -100,6 +100,20 @@ const Notification = styled(Indicator)`
   right: 23px;
 `;
 
+const WorkspaceButton = styled.div`
+  font-size: 9px;
+  line-height: 11px;
+  height: 21px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: ${({ theme }) => theme.whiteColor};
+  border-radius: 10px;
+  margin-top: 13px;
+  background: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+`;
+
 const SideBar: React.FC = () => {
   const { hasNewVersions } = useConnector();
 
@@ -109,6 +123,11 @@ const SideBar: React.FC = () => {
         <Link to={Routes.Root}>
           <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
         </Link>
+        <WorkspacePopout>
+          {({ onOpen, value }) => (
+            <WorkspaceButton onClick={onOpen}>{value}</WorkspaceButton>
+          )}
+        </WorkspacePopout>
         <Menu>
           <li>
             <MenuItem to={Routes.Connections} activeClassName="active">
@@ -142,32 +161,9 @@ const SideBar: React.FC = () => {
               </Text>
             </MenuItem>
           </li>
-          <li>
-            <MenuItem
-              to={`${Routes.Settings}${Routes.Account}`}
-              activeClassName="active"
-              isActive={(_, location) =>
-                location.pathname.startsWith(Routes.Settings)
-              }
-            >
-              {hasNewVersions ? <Notification /> : null}
-              <SettingsIcon icon={faCog} />
-              <Text>
-                <FormattedMessage id="sidebar.settings" />
-              </Text>
-            </MenuItem>
-          </li>
         </Menu>
       </div>
       <Menu>
-        <li>
-          <MenuLinkItem href={config.ui.updateLink} target="_blank">
-            <HelpIcon icon={faRocket} />
-            <Text>
-              <FormattedMessage id="sidebar.update" />
-            </Text>
-          </MenuLinkItem>
-        </li>
         <li>
           <MenuLinkItem href={config.ui.slackLink} target="_blank">
             {/*@ts-ignore slack icon fails here*/}
@@ -185,11 +181,21 @@ const SideBar: React.FC = () => {
             </Text>
           </MenuLinkItem>
         </li>
-        {config.version ? (
-          <li>
-            <Version primary />
-          </li>
-        ) : null}
+        <li>
+          <MenuItem
+            to={`${Routes.Settings}${Routes.Account}`}
+            activeClassName="active"
+            isActive={(_, location) =>
+              location.pathname.startsWith(Routes.Settings)
+            }
+          >
+            {hasNewVersions ? <Notification /> : null}
+            <SettingsIcon icon={faCog} />
+            <Text>
+              <FormattedMessage id="sidebar.settings" />
+            </Text>
+          </MenuItem>
+        </li>
       </Menu>
     </Bar>
   );

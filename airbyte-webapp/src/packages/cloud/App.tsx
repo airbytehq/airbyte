@@ -20,6 +20,12 @@ import {
   AuthenticationProvider,
   useAuthService,
 } from "./services/auth/AuthService";
+import { FeatureService } from "components/hooks/services/Feature";
+import { registerService } from "core/servicesProvider";
+import {
+  useGetWorkspace,
+  useWorkspaceService,
+} from "./services/workspaces/WorkspacesService";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +37,13 @@ const useCustomerIdProvider = () => {
   return user?.userId ?? "";
 };
 
+registerService("currentWorkspaceProvider", () => {
+  const { currentWorkspaceId } = useWorkspaceService();
+  const { data: workspace } = useGetWorkspace(currentWorkspaceId ?? "");
+
+  return workspace;
+});
+
 const App: React.FC = () => {
   return (
     <React.StrictMode>
@@ -40,17 +53,19 @@ const App: React.FC = () => {
           <QueryClientProvider client={queryClient}>
             <CacheProvider>
               <Suspense fallback={<LoadingPage />}>
-                <ApiErrorBoundary>
-                  <NotificationServiceProvider>
-                    <AuthenticationProvider>
-                      <AnalyticsInitializer
-                        customerIdProvider={useCustomerIdProvider}
-                      >
-                        <Routing />
-                      </AnalyticsInitializer>
-                    </AuthenticationProvider>
-                  </NotificationServiceProvider>
-                </ApiErrorBoundary>
+                <FeatureService>
+                  <ApiErrorBoundary>
+                    <NotificationServiceProvider>
+                      <AuthenticationProvider>
+                        <AnalyticsInitializer
+                          customerIdProvider={useCustomerIdProvider}
+                        >
+                          <Routing />
+                        </AnalyticsInitializer>
+                      </AuthenticationProvider>
+                    </NotificationServiceProvider>
+                  </ApiErrorBoundary>
+                </FeatureService>
               </Suspense>
             </CacheProvider>
           </QueryClientProvider>

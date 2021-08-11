@@ -4,12 +4,19 @@ import WorkspaceResource, { Workspace } from "core/resources/Workspace";
 import NotificationsResource, {
   Notifications,
 } from "core/resources/Notifications";
+import { getService } from "core/servicesProvider";
 import { useAnalytics } from "../useAnalytics";
 
-const useCurrentWorkspace = (): Workspace => {
+export const usePickFirstWorkspace = (): Workspace => {
   const { workspaces } = useResource(WorkspaceResource.listShape(), {});
 
   return workspaces[0];
+};
+
+const useCurrentWorkspace = (): Workspace => {
+  const workspaceProviderService = getService("currentWorkspaceProvider");
+
+  return workspaceProviderService();
 };
 
 const useWorkspace = (): {

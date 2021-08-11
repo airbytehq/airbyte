@@ -21,24 +21,24 @@ import ConfigurationsPage from "pages/SettingsPage/pages/ConfigurationsPage";
 import NotificationPage from "pages/SettingsPage/pages/NotificationPage";
 
 import LoadingPage from "components/LoadingPage";
-import MainView from "components/MainView";
-import { WorkspacesPage } from "./views/workspaces";
+import MainView from "packages/cloud/views/layout/MainView";
+import { WorkspacesPage } from "packages/cloud/views/workspaces";
 import { useApiHealthPoll } from "components/hooks/services/Health";
-import { Auth } from "./views/auth";
-import { useAuthService } from "./services/auth/AuthService";
+import { Auth } from "packages/cloud/views/auth";
+import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import useConnector from "components/hooks/services/useConnector";
 
 import {
   useGetWorkspace,
   useWorkspaceService,
   WorkspaceServiceProvider,
-} from "./services/workspaces/WorkspacesService";
+} from "packages/cloud/services/workspaces/WorkspacesService";
 import { HealthService } from "core/health/HealthService";
 import { useDefaultRequestMiddlewares } from "./services/useDefaultRequestMiddlewares";
 import { PageConfig } from "pages/SettingsPage/SettingsPage";
 import { WorkspaceSettingsView } from "./views/workspaces/WorkspaceSettingsView";
-import { UsersSettingsView } from "./views/users/UsersSettingsView/UsersSettingsView";
-import { AccountSettingsView } from "./views/users/AccountSettingsView/AccountSettingsView";
+import { UsersSettingsView } from "packages/cloud/views/users/UsersSettingsView/UsersSettingsView";
+import { AccountSettingsView } from "packages/cloud/views/users/AccountSettingsView/AccountSettingsView";
 
 export enum Routes {
   Preferences = "/preferences",
