@@ -29,6 +29,7 @@ MAIN_REQUIREMENTS = ["airbyte-cdk", "PyJWT", "cryptography"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
+    "requests-mock",
     "source-acceptance-test",
 ]
 
