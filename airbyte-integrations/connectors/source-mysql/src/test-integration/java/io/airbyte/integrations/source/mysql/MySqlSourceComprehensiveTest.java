@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
 import io.airbyte.integrations.standardtest.source.SourceComprehensiveTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
@@ -67,6 +68,7 @@ public class MySqlSourceComprehensiveTest extends SourceComprehensiveTest {
         .put("database", container.getDatabaseName())
         .put("username", container.getUsername())
         .put("password", container.getPassword())
+        .put("replication_method", ReplicationMethod.STANDARD)
         .build());
 
     final Database database = Databases.createDatabase(
