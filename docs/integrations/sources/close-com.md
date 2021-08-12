@@ -9,8 +9,24 @@ The Close Com source supports both Full Refresh and Incremental syncs. You can c
 This Source is capable of syncing the following core Streams:
 
 * [Leads](https://developer.close.com/#leads) \(Incremental\)
-* [Activities](https://developer.close.com/#activities) \(Incremental\)
-* [Tasks](https://developer.close.com/#tasks) \(Incremental\)
+* [Created Activities](https://developer.close.com/#activities-list-or-filter-all-created-activities) \(Incremental\)
+* [Opportunity Status Change Activities](https://developer.close.com/#activities-list-or-filter-all-opportunitystatuschange-activities) \(Incremental\)
+* [Note Activities](https://developer.close.com/#activities-list-or-filter-all-note-activities) \(Incremental\)
+* [Meeting Activities](https://developer.close.com/#activities-list-or-filter-all-meeting-activities) \(Incremental\)
+* [Call Activities](https://developer.close.com/#activities-list-or-filter-all-call-activities) \(Incremental\)
+* [Email Activities](https://developer.close.com/#activities-list-or-filter-all-email-activities) \(Incremental\)
+* [Email Thread Activities](https://developer.close.com/#activities-list-or-filter-all-emailthread-activities) \(Incremental\)
+* [Lead Status Change Activities](https://developer.close.com/#activities-list-or-filter-all-leadstatuschange-activities) \(Incremental\)
+* [SMS Activities](https://developer.close.com/#activities-list-or-filter-all-sms-activities) \(Incremental\)
+* [Task Completed Activities](https://developer.close.com/#activities-list-or-filter-all-taskcompleted-activities) \(Incremental\)
+* [Lead Tasks](https://developer.close.com/#tasks) \(Incremental\)
+* [Incoming Email Tasks](https://developer.close.com/#tasks) \(Incremental\)
+* [Email Followup Tasks](https://developer.close.com/#tasks) \(Incremental\)
+* [Missed Call Tasks](https://developer.close.com/#tasks) \(Incremental\)
+* [Answered Detached Call Tasks](https://developer.close.com/#tasks) \(Incremental\)
+* [Voicemail Tasks](https://developer.close.com/#tasks) \(Incremental\)
+* [Opportunity Due Tasks](https://developer.close.com/#tasks) \(Incremental\)
+* [Incoming SMS Tasks](https://developer.close.com/#tasks) \(Incremental\)
 * [Events](https://developer.close.com/#event-log) \(Incremental\)
 * [Lead Custom Fields](https://developer.close.com/#custom-fields-list-all-the-lead-custom-fields-for-your-organization)
 * [Contact Custom Fields](https://developer.close.com/#custom-fields-list-all-the-contact-custom-fields-for-your-organization)
@@ -20,7 +36,7 @@ This Source is capable of syncing the following core Streams:
 
 ### Notes
 
-Leads, Events Incremental streams use `date_updated` field. Activities, Tasks Incremental streams use `date_created` field.
+Leads, Events Incremental streams use `date_updated` field. All other Incremental streams use `date_created` field.
 
 ### Data type mapping
 
