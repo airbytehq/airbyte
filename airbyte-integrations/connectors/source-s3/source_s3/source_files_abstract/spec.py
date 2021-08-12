@@ -94,6 +94,10 @@ class CsvFormat(BaseModel):
         default=False,
         description="Whether newline characters are allowed in CSV values. Turning this on may affect performance. Leave blank to default to False.",
     )
+    block_size: int = Field(
+        default=10000,
+        description="The chunk size in bytes to process at a time in memory from each file. If your data is particularly wide and failing during schema detection, increasing this should solve it. Beware of raising this too high as you could hit OOM errors.",
+    )
     additional_reader_options: str = Field(
         default="{}",
         description='Optionally add a valid JSON string here to provide additional options to the csv reader. Mappings must correspond to options <a href="https://arrow.apache.org/docs/python/generated/pyarrow.csv.ConvertOptions.html#pyarrow.csv.ConvertOptions" target="_blank">detailed here</a>. \'column_types\' is used internally to handle schema so overriding that would likely cause problems.',
