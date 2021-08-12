@@ -156,6 +156,48 @@ def test_stub_custom_backoff_http_stream(mocker):
     # TODO(davin): Figure out how to assert calls.
 
 
+class AutoFailFalseHttpStream(StubBasicReadHttpStream):
+    auto_fail_on_errors = False
+    max_retries = 3
+    retry_factor = 1
+
+
+def test_auto_fail_on_errors_off_429(mocker):
+    stream = AutoFailFalseHttpStream()
+    req = requests.Response()
+    req.status_code = 429
+
+    mocker.patch.object(requests.Session, "send", return_value=req)
+    response = stream._send_request(req, {})
+    assert response.status_code == 429
+
+
+def test_auto_fail_on_errors_off_501(mocker):
+    stream = AutoFailFalseHttpStream()
+    req = requests.Response()
+    req.status_code = 501
+
+    mocker.patch.object(requests.Session, "send", return_value=req)
+    response = stream._send_request(req, {})
+    assert response.status_code == 501
+
+
+def test_auto_fail_on_errors_off_timeout(requests_mock):
+    stream = AutoFailFalseHttpStream()
+    requests_mock.register_uri("GET", stream.url_base, exc=requests.exceptions.ConnectTimeout)
+
+    with pytest.raises(requests.exceptions.ConnectTimeout):
+        list(stream.read_records(SyncMode.full_refresh))
+
+
+def test_auto_fail_on_errors_off_connection_error(requests_mock):
+    stream = AutoFailFalseHttpStream()
+    requests_mock.register_uri("GET", stream.url_base, exc=requests.exceptions.ConnectionError)
+
+    with pytest.raises(requests.exceptions.ConnectionError):
+        list(stream.read_records(SyncMode.full_refresh))
+
+
 class PostHttpStream(StubBasicReadHttpStream):
     http_method = "POST"
 

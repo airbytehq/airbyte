@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.9
+Add auto_fail_on_errors, max_retries, retry_factor properties to be able to ignore http status errors and modify retry time in HTTP stream
+
 ## 0.1.8
 Allow to fetch primary key info from singer catalog
 
