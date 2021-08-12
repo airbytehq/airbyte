@@ -12,13 +12,16 @@ export class AnalyticsService {
 
   reset = (): void => this.getSegmentAnalytics()?.reset?.();
 
-  track = (name: string, properties: Record<string, unknown>): void =>
+  track = (name: string, properties: Record<string, unknown>): void => {
+    console.log("track", properties);
+    console.log(this.getSegmentAnalytics());
     this.getSegmentAnalytics()?.track?.(name, {
       user_id: this.userId,
       ...properties,
       airbyte_version: this.version,
       environment: this.version === "dev" ? "dev" : "prod",
     });
+  };
 
   identify = (userId: string, traits: Record<string, unknown> = {}): void => {
     this.getSegmentAnalytics()?.identify?.(userId, traits);
