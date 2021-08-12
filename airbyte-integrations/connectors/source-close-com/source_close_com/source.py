@@ -273,8 +273,9 @@ class Leads(IncrementalCloseComStream):
         return params
 
 
-class Tasks(IncrementalCloseComStream):
+class LeadTasks(IncrementalCloseComStream):
     cursor_field = "date_created"
+    _type = "lead"
 
     def path(self, **kwargs) -> str:
         return "task"
@@ -282,6 +283,119 @@ class Tasks(IncrementalCloseComStream):
     def request_params(self, stream_state=None, **kwargs):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
+        params["_type"] = self._type
+        if stream_state.get(self.cursor_field):
+            params["date_created__gt"] = stream_state.get(self.cursor_field)
+        return params
+
+
+class IncomingEmailTasks(IncrementalCloseComStream):
+    cursor_field = "date_created"
+    _type = "incoming_email"
+
+    def path(self, **kwargs) -> str:
+        return "task"
+
+    def request_params(self, stream_state=None, **kwargs):
+        stream_state = stream_state or {}
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        params["_type"] = self._type
+        if stream_state.get(self.cursor_field):
+            params["date_created__gt"] = stream_state.get(self.cursor_field)
+        return params
+
+
+class EmailFollowupTasks(IncrementalCloseComStream):
+    cursor_field = "date_created"
+    _type = "email_followup"
+
+    def path(self, **kwargs) -> str:
+        return "task"
+
+    def request_params(self, stream_state=None, **kwargs):
+        stream_state = stream_state or {}
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        params["_type"] = self._type
+        if stream_state.get(self.cursor_field):
+            params["date_created__gt"] = stream_state.get(self.cursor_field)
+        return params
+
+
+class MissedCallTasks(IncrementalCloseComStream):
+    cursor_field = "date_created"
+    _type = "missed_call"
+
+    def path(self, **kwargs) -> str:
+        return "task"
+
+    def request_params(self, stream_state=None, **kwargs):
+        stream_state = stream_state or {}
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        params["_type"] = self._type
+        if stream_state.get(self.cursor_field):
+            params["date_created__gt"] = stream_state.get(self.cursor_field)
+        return params
+
+
+class AnsweredDetachedCallTasks(IncrementalCloseComStream):
+    cursor_field = "date_created"
+    _type = "answered_detached_call"
+
+    def path(self, **kwargs) -> str:
+        return "task"
+
+    def request_params(self, stream_state=None, **kwargs):
+        stream_state = stream_state or {}
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        params["_type"] = self._type
+        if stream_state.get(self.cursor_field):
+            params["date_created__gt"] = stream_state.get(self.cursor_field)
+        return params
+
+
+class VoicemailTasks(IncrementalCloseComStream):
+    cursor_field = "date_created"
+    _type = "voicemail"
+
+    def path(self, **kwargs) -> str:
+        return "task"
+
+    def request_params(self, stream_state=None, **kwargs):
+        stream_state = stream_state or {}
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        params["_type"] = self._type
+        if stream_state.get(self.cursor_field):
+            params["date_created__gt"] = stream_state.get(self.cursor_field)
+        return params
+
+
+class OpportunityDueTasks(IncrementalCloseComStream):
+    cursor_field = "date_created"
+    _type = "opportunity_due"
+
+    def path(self, **kwargs) -> str:
+        return "task"
+
+    def request_params(self, stream_state=None, **kwargs):
+        stream_state = stream_state or {}
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        params["_type"] = self._type
+        if stream_state.get(self.cursor_field):
+            params["date_created__gt"] = stream_state.get(self.cursor_field)
+        return params
+
+
+class IncomingSmsTasks(IncrementalCloseComStream):
+    cursor_field = "date_created"
+    _type = "incoming_sms"
+
+    def path(self, **kwargs) -> str:
+        return "task"
+
+    def request_params(self, stream_state=None, **kwargs):
+        stream_state = stream_state or {}
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        params["_type"] = self._type
         if stream_state.get(self.cursor_field):
             params["date_created__gt"] = stream_state.get(self.cursor_field)
         return params
@@ -348,7 +462,14 @@ class SourceCloseCom(AbstractSource):
             SmsActivities(**args),
             TaskCompletedActivities(**args),
             Leads(**args),
-            Tasks(**args),
+            LeadTasks(**args),
+            IncomingEmailTasks(**args),
+            EmailFollowupTasks(**args),
+            MissedCallTasks(**args),
+            AnsweredDetachedCallTasks(**args),
+            VoicemailTasks(**args),
+            OpportunityDueTasks(**args),
+            IncomingSmsTasks(**args),
             Events(**args),
             LeadCustomFields(**args),
             ContactCustomFields(**args),
