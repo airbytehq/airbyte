@@ -113,6 +113,8 @@ A custom report can contain no more than 10 unique metrics. The default availabl
 * `ga:uniquePageviews`
 * `ga:users`
 
+Incremental sync supports only if you add `ga:date` dimension to your custom report.
+
 ### Limits and Quotas on API Requests
 
 [Analytics Reporting API v4](https://developers.google.com/analytics/devguides/reporting/core/v4/limits-quotas)

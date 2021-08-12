@@ -244,7 +244,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
                 yield record
 
 
-class GoogleAnalyticsV4ObjectsBase(GoogleAnalyticsV4Stream):
+class GoogleAnalyticsV4FullRefreshObjectsBase(GoogleAnalyticsV4Stream):
     """
     Main class for all the GoogleAnalyticsV4 data streams (GoogleAnalyticsV4 Object names),
     provides functionality for dynamically created classes as streams of data.
@@ -296,12 +296,6 @@ class GoogleAnalyticsV4ObjectsBase(GoogleAnalyticsV4Stream):
 
         return schema
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Update the state value, default CDK method.
-        """
-        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
-
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Override default stream_slices CDK method to provide date_slices as page chunks for data fetch.
@@ -321,6 +315,14 @@ class GoogleAnalyticsV4ObjectsBase(GoogleAnalyticsV4Stream):
         end_date = start_date.add(days=self.window_in_days)
 
         return [{"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date)}]
+
+
+class GoogleAnalyticsV4IncrementalObjectsBase(GoogleAnalyticsV4FullRefreshObjectsBase):
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Update the state value, default CDK method.
+        """
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
 
 class GoogleAnalyticsOauth2Authenticator(Oauth2Authenticator):
@@ -417,7 +419,10 @@ class SourceGoogleAnalyticsV4(AbstractSource):
 
         for stream in config["ga_streams"]:
             # construct GAReadStreams sub-class for each stream
-            stream_class = type(stream["name"], (GoogleAnalyticsV4ObjectsBase,), {"cursor_field": "ga_date"})
+            stream_class = type(stream["name"], (GoogleAnalyticsV4FullRefreshObjectsBase,), {})
+
+            if "ga:date" in stream["dimensions"]:
+                stream_class = type(stream["name"], (GoogleAnalyticsV4IncrementalObjectsBase,), {"cursor_field": "ga_date"})
 
             config["metrics"] = stream["metrics"]
             config["dimensions"] = stream["dimensions"]
