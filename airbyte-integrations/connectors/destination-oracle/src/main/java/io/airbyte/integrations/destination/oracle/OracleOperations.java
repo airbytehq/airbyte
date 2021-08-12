@@ -50,7 +50,8 @@ public class OracleOperations implements SqlOperations {
 
   @Override
   public void createSchemaIfNotExists(JdbcDatabase database, String schemaName) throws Exception {
-    if (database.queryInt("select count(*) from dba_users where upper(username) = upper(?)", schemaName) == 0) {
+    if (database.queryInt("select count(*) from all_users where upper(username) = upper(?)", schemaName) == 0) {
+      LOGGER.warn("Schema " + schemaName + " is not found! Trying to create a new one.");
       final String query = String.format("create user %s identified by %s quota unlimited on %s",
           schemaName, schemaName, tablespace);
       database.execute(query);
