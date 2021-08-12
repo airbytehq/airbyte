@@ -22,28 +22,19 @@
 # SOFTWARE.
 #
 
+from source_{{snakeCase name}}.source import Source{{properCase name}}
+from unittest.mock import MagicMock
 
-from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
-]
+def test_check_connection(mocker):
+    source = Source{{properCase name}}()
+    logger_mock, config_mock = MagicMock(), MagicMock()
+    assert source.check_connection(logger_mock, config_mock) == (True, None)
 
-TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-    "pytest-mock~=3.6.1",
-    "source-acceptance-test",
-]
-
-setup(
-    name="source_{{snakeCase name}}",
-    description="Source implementation for {{titleCase name}}.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
-    extras_require={
-        "tests": TEST_REQUIREMENTS,
-    },
-)
+def test_streams(mocker):
+    source = Source{{properCase name}}()
+    config_mock = MagicMock()
+    streams = source.streams(config_mock)
+    # TODO: replace this with your streams number
+    expected_streams_number = 2
+    assert len(streams) == expected_streams_number
