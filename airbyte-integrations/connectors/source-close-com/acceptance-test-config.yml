@@ -14,11 +14,25 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams: []
+      empty_streams: ["leads", "meeting_activities", "opportunity_status_change_activities", "task_completed_activities"]
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       future_state_path: "integration_tests/abnormal_state.json"
+      cursor_paths:
+        created_activities: ["date_created"]
+        opportunity_status_change_activities: ["date_created"]
+        note_activities: ["date_created"]
+        meeting_activities: ["date_created"]
+        call_activities: ["date_created"]
+        email_activities: ["date_created"]
+        email_thread_activities: ["date_created"]
+        lead_status_change_activities: ["date_created"]
+        sms_activities: ["date_created"]
+        task_completed_activities: ["date_created"]
+        leads: ["date_updated"]
+        tasks: ["date_created"]
+        events: ["date_updated"]
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

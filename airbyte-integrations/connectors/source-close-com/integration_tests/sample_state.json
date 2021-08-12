@@ -1,5 +1,33 @@
 {
-  "activities": {
-    "date_created__gt": "2020-01-01"
+  "created_activities": {
+    "date_created": "2021-01-01"
+  },
+  "opportunity_status_change_activities": {},
+  "note_activities": {
+    "date_created": "2021-01-01"
+  },
+  "meeting_activities": {},
+  "call_activities": {
+    "date_created": "2021-01-01"
+  },
+  "email_activities": {
+    "date_created": "2021-01-01"
+  },
+  "email_thread_activities": {
+    "date_created": "2021-01-01"
+  },
+  "lead_status_change_activities": {
+    "date_created": "2021-01-01"
+  },
+  "sms_activities": {
+        "date_created": "2021-01-01"
+  },
+  "task_completed_activities": {},
+  "leads": {},
+  "tasks": {
+    "date_created": "2021-01-01"
+  },
+  "events": {
+    "date_updated": "2021-01-01"
   }
 }

@@ -1,12 +1,33 @@
 {
-  "activities": {
-    "date_created": "2021-07-16T00:00:12.646000+00:00"
+  "created_activities": {
+    "date_created": "2021-07-13T11:39:03.413000+00:00"
   },
+  "opportunity_status_change_activities": {},
+  "note_activities": {
+    "date_created": "2021-01-01"
+  },
+  "meeting_activities": {},
+  "call_activities": {
+    "date_created": "2021-01-01"
+  },
+  "email_activities": {
+    "date_created": "2021-01-01"
+  },
+  "email_thread_activities": {
+    "date_created": "2021-01-01"
+  },
+  "lead_status_change_activities": {
+    "date_created": "2021-01-01"
+  },
+  "sms_activities": {
+        "date_created": "2021-01-01"
+  },
+  "task_completed_activities": {},
   "leads": {},
   "tasks": {
-    "date_created": "2021-07-13T11:39:03.520000+00:00"
+    "date_created": "2021-01-01"
   },
   "events": {
-    "date_updated": "2021-07-16T00:00:12.701000"
+    "date_updated": "2021-01-01"
   }
 }
