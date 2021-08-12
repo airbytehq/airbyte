@@ -36,6 +36,7 @@
       },
       "azure_blob_storage_account_key": {
         "description": "The Azure blob storage account key.",
+        "airbyte_secret": true,
         "type": "string",
         "examples": [
           "Z8ZkZpteggFx394vm+PJHnGTvdRncaYS+JhLKdj789YNmD+iyGTnG+PV+POiuYNhBg/ACS+LKjd%4FG3FHGN12Nd=="
