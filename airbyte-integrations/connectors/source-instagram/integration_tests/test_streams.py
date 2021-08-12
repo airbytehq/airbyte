@@ -51,7 +51,7 @@ class TestInstagramSource:
         assert len(records) == 60, "UserInsights for two accounts over last 30 day should return 60 records when empty STATE provided"
 
         records, states = self._read_records(config, catalog, state)
-        assert len(records) == 60 - 10 - 5, "UserInsights should have less records returned when non empty STATE provided"
+        assert len(records) <= 60 - 10 - 5, "UserInsights should have less records returned when non empty STATE provided"
 
         assert states, "insights should produce states"
         for state in states:

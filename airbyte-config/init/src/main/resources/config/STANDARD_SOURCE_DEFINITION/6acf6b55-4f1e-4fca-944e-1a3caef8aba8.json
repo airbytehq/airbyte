@@ -2,6 +2,6 @@
   "sourceDefinitionId": "6acf6b55-4f1e-4fca-944e-1a3caef8aba8",
   "name": "Instagram",
   "dockerRepository": "airbyte/source-instagram",
-  "dockerImageTag": "0.1.7",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/instagram"
+  "dockerImageTag": "0.1.8",
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-instagram"
 }

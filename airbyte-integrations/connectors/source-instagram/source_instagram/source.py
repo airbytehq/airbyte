@@ -76,7 +76,7 @@ class SourceInstagram(AbstractSource):
     ) -> Iterator[AirbyteMessage]:
         for stream in self.streams(config):
             state_key = str(stream.name)
-            if state_key in state and hasattr(stream, "upgrade_state_to_latest_format"):
+            if state and state_key in state and hasattr(stream, "upgrade_state_to_latest_format"):
                 state[state_key] = stream.upgrade_state_to_latest_format(state[state_key])
         return super().read(logger, config, catalog, state)
 
