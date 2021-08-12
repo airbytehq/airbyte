@@ -48,16 +48,12 @@ class GoogleAnalyticsV4TypesList(HttpStream):
 
     primary_key = None
 
-    def __init__(self, url: str):
-        super().__init__()  # initiate authenticator = NoAuth(), _session
-        self.url = url  # accept URL to dynamically fetch the metadata for available metrics and dimensions
-
-    @property
-    def url_base(self):
-        return self.url
+    # Link to query the metadata for available metrics and dimensions.
+    # Those are not provided in the Analytics Reporting API V4.
+    # Column id completely match for v3 and v4.
+    url_base = "https://www.googleapis.com/analytics/v3/metadata/ga/columns"
 
     def path(self, **kwargs) -> str:
-        """Abstractmethod HTTPStream CDK dependency"""
         return ""
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -66,8 +62,8 @@ class GoogleAnalyticsV4TypesList(HttpStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Tuple[dict, dict]:
         """
-        Returns:
-          A map of (dimensions, metrics) hashes
+        Returns a map of (dimensions, metrics) hashes, example:
+          ({"ga:userType": "STRING", "ga:sessionCount": "STRING"}, {"ga:pageviewsPerSession": "FLOAT", "ga:sessions": "INTEGER"})
 
           Each available dimension can be found in dimensions with its data type
             as the value. e.g. dimensions['ga:userType'] == STRING
@@ -102,12 +98,6 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
     http_method = "POST"
     page_size = 100000
     url_base = "https://analyticsreporting.googleapis.com/v4/"
-
-    # Link to query the metadata for available metrics and dimensions.
-    # Those are not provided in the Analytics Reporting API V4.
-    # Column id completely match for v3 and v4.
-    url_type_list = "https://www.googleapis.com/analytics/v3/metadata/ga/columns"
-
     report_field = "reports"
     data_fields = ["data", "rows"]
 
@@ -121,11 +111,8 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         self.view_id = config["view_id"]
         self.metrics = config["metrics"]
         self.dimensions = config["dimensions"]
-        self.ga_streams = config["ga_streams"]
         self._config = config
-        (self.dimensions_ref, self.metrics_ref) = GoogleAnalyticsV4TypesList(
-            self.url_type_list,
-        ).read_records(sync_mode=None)
+        self.dimensions_ref, self.metrics_ref = GoogleAnalyticsV4TypesList().read_records(sync_mode=None)
 
     def path(self, **kwargs) -> str:
         return "reports:batchGet"
@@ -204,6 +191,24 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         return data_type
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        Return record which is a map of metric and dimension names and values, like:
+
+        record = {
+                    "view_id":"1111111"
+                    "ga_date":"20210212",
+                    "ga_users":3,
+                    "ga_newUsers":2,
+                    "ga_sessions":7,
+                    "ga_sessionsPerUser":8.0,
+                    "ga_avgSessionDuration":201.0,
+                    "ga_pageviews":43,
+                    "ga_pageviewsPerSession":12.5,
+                    "ga_avgTimeOnPage":83.14035087719298,
+                    "ga_bounceRate":0.0,
+                    "ga_exitRate":6.523809523809524
+        }
+        """
         json_response = response.json()
         reports = json_response.get(self.report_field, [])
 
@@ -241,6 +246,8 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
 
                         record[metric_name.replace("ga:", "ga_")] = value
 
+                record["view_id"] = self.view_id
+
                 yield record
 
 
@@ -268,15 +275,10 @@ class GoogleAnalyticsV4FullRefreshObjectsBase(GoogleAnalyticsV4Stream):
         Override get_json_schema CDK method to retrieve the schema information for GoogleAnalyticsV4 Object dynamically.
         """
 
-        report = next((ga_stream for ga_stream in self.ga_streams if ga_stream["name"] == self.name), None)
-
-        if not report:
-            self.logger.error(f"Stream {self.name} not in default_reports or custom_reports")
-
-        schema = {"type": ["null", "object"], "additionalProperties": False, "properties": {}}
+        schema = {"type": ["null", "object"], "additionalProperties": False, "properties": {"view_id": {"type": ["string"]}}}
 
         # Add the dimensions to the schema
-        for dimension in report["dimensions"]:
+        for dimension in self.report["dimensions"]:
             data_type = self.lookup_data_type("dimension", dimension)
             dimension = dimension.replace("ga:", "ga_")
 
@@ -285,7 +287,7 @@ class GoogleAnalyticsV4FullRefreshObjectsBase(GoogleAnalyticsV4Stream):
             }
 
         # Add the metrics to the schema
-        for metric in report["metrics"]:
+        for metric in self.report["metrics"]:
             data_type = self.lookup_data_type("metric", metric)
             metric = metric.replace("ga:", "ga_")
 
@@ -371,16 +373,16 @@ class GoogleAnalyticsOauth2Authenticator(Oauth2Authenticator):
         """
         token_lifetime = 3600  # token lifetime is 1 hour
 
-        iat = time.time()
-        exp = iat + token_lifetime
+        issued_at = time.time()
+        expiration_time = issued_at + token_lifetime
 
         payload = {
             "iss": self.client_email,
             "sub": self.client_email,
             "scope": self.scope,
             "aud": self.token_refresh_endpoint,
-            "iat": iat,
-            "exp": exp,
+            "iat": issued_at,
+            "exp": expiration_time,
         }
 
         headers = {"kid": self.client_id}
@@ -391,9 +393,11 @@ class GoogleAnalyticsOauth2Authenticator(Oauth2Authenticator):
 
 
 class SourceGoogleAnalyticsV4(AbstractSource):
+    """Google Analytics lets you analyze data about customer engagement with your website or application."""
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            url = f"{GoogleAnalyticsV4Stream.url_type_list}"
+            url = f"{GoogleAnalyticsV4TypesList.url_base}"
 
             authenticator = GoogleAnalyticsOauth2Authenticator(config)
 
@@ -418,14 +422,19 @@ class SourceGoogleAnalyticsV4(AbstractSource):
         )
 
         for stream in config["ga_streams"]:
-            # construct GAReadStreams sub-class for each stream
-            stream_class = type(stream["name"], (GoogleAnalyticsV4FullRefreshObjectsBase,), {})
-
-            if "ga:date" in stream["dimensions"]:
-                stream_class = type(stream["name"], (GoogleAnalyticsV4IncrementalObjectsBase,), {"cursor_field": "ga_date"})
-
             config["metrics"] = stream["metrics"]
             config["dimensions"] = stream["dimensions"]
+
+            # construct GAReadStreams sub-class for each stream
+            stream_name = stream["name"]
+            stream_bases = (GoogleAnalyticsV4FullRefreshObjectsBase,)
+            stream_attributes = {"report": stream}
+
+            if "ga:date" in stream["dimensions"]:
+                stream_bases = (GoogleAnalyticsV4IncrementalObjectsBase,)
+                stream_attributes["cursor_field"] = "ga_date"
+
+            stream_class = type(stream_name, stream_bases, stream_attributes)
 
             # instantiate a stream with config
             stream_instance = stream_class(config)
