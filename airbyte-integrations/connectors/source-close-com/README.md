@@ -1,6 +1,6 @@
-# Close Com Source
+# Close.com Source
 
-This is the repository for the Close Com source connector, written in Python.
+This is the repository for the Close.com source connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/close-com).
 
 ## Local development
@@ -107,11 +107,11 @@ To run your integration tests with docker
 All commands should be run from airbyte project root.
 To run unit tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-close-com:unitTest
+./gradlew clean :airbyte-integrations:connectors:source-close-com:unitTest
 ```
 To run acceptance and custom integration tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-close-com:integrationTest
+./gradlew clean :airbyte-integrations:connectors:source-close-com:integrationTest
 ```
 
 ## Dependency Management
