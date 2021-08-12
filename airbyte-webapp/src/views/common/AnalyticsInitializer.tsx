@@ -7,6 +7,7 @@ import AnalyticsServiceProvider, {
   useAnalytics,
 } from "components/hooks/useAnalytics";
 import useTracker from "components/hooks/useOpenReplay";
+import useSegment from "components/hooks/useSegment";
 
 function WithAnalytics({
   customerId,
@@ -14,6 +15,7 @@ function WithAnalytics({
   customerId: string;
   workspaceId?: string;
 }) {
+  useSegment(config.segment.token);
   const analyticsService = useAnalytics();
 
   useEffect(() => {
