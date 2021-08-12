@@ -71,4 +71,4 @@ We recommend creating a restricted key specifically for Airbyte access. This wil
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.0   | 2021-08-10 | []() | Initial release of Close Com connector for Airbyte |
+| 0.1.0   | 2021-08-10 | [5366](https://github.com/airbytehq/airbyte/pull/5366) | Initial release of Close Com connector for Airbyte |
