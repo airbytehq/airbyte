@@ -69,12 +69,25 @@ def test_bad_field_type_converting(field_type, expected, capsys):
 @pytest.mark.parametrize(
     "declared_field_types,field_name,field_value,casted_value",
     [
+        # test for None in field_values
         (["null", "string"], "some_field", None, None),
+        (["null", "number"], "some_field", None, None),
+        (["null", "integer"], "some_field", None, None),
+        (["null", "object"], "some_field", None, None),
+        (["null", "boolean"], "some_field", None, None),
+        # specific cases
         ("string", "some_field", "test", "test"),
         (["null", "number"], "some_field", "123.456", 123.456),
         (["null", "number"], "user_id", "123", 123),
         (["null", "string"], "some_field", "123", "123"),
+        # when string has empty field_value (empty string)
         (["null", "string"], "some_field", "", ""),
+        # when NOT string type but has empty sting in field_value, instead of double or null,
+        # we should use None instead, to have it properly casted to the correct type
+        (["null", "number"], "some_field", "", None),
+        (["null", "integer"], "some_field", "", None),
+        (["null", "object"], "some_field", "", None),
+        (["null", "boolean"], "some_field", "", None),
     ],
 )
 def test_cast_type_if_needed(declared_field_types, field_name, field_value, casted_value):

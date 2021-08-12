@@ -28,9 +28,9 @@ from setuptools import find_packages, setup
 MAIN_REQUIREMENTS = [
     "airbyte-protocol",
     "base-python",
-    "backoff==1.10.0",
-    "pendulum==1.2.0",
-    "requests==2.25.1",
+    "backoff==1.11.1",
+    "pendulum==2.1.2",
+    "requests==2.26.0",
 ]
 
 TEST_REQUIREMENTS = [

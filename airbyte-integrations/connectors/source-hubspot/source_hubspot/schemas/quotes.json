@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
     "id": {
       "type": ["null", "string"]
@@ -18,7 +18,7 @@
       "type": ["null", "string"]
     },
     "associations": {
-      "type": "object"
+      "type": ["null", "object"]
     }
   }
 }

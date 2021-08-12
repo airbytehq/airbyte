@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
     "name": {
       "type": ["null", "string"]
@@ -15,19 +15,19 @@
       "type": ["null", "boolean"]
     },
     "insertedAt": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "updatedAt": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "personaTagIds": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "integer"
+        "type": ["null", "integer"]
       }
     },
     "contactListIds": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "enrolled": {
           "type": ["null", "integer"]

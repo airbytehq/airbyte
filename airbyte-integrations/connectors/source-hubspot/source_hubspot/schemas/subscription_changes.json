@@ -1,9 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
     "timestamp": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "portalId": {
       "type": ["null", "integer"]
@@ -20,7 +20,7 @@
             "type": ["null", "string"]
           },
           "timestamp": {
-            "type": "integer"
+            "type": ["null", "integer"]
           },
           "source": {
             "type": ["null", "string"]
@@ -41,7 +41,7 @@
                 "type": ["null", "string"]
               },
               "created": {
-                "type": "integer"
+                "type": ["null", "integer"]
               }
             }
           }

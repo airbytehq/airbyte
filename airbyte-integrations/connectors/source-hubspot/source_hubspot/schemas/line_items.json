@@ -15,10 +15,12 @@
       "type": ["null", "boolean"]
     },
     "createdAt": {
-      "type": "string"
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "updatedAt": {
-      "type": "string"
+      "type": ["null", "string"],
+      "format": "date-time"
     }
   }
 }
