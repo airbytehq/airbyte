@@ -12,6 +12,6 @@ select
     to_varchar(get_path(parse_json(_airbyte_data), '"NZD"')) as NZD,
     to_varchar(get_path(parse_json(_airbyte_data), '"USD"')) as USD,
     _airbyte_emitted_at
-from "AIRBYTE_DATABASE".TEST_NORMALIZATION._AIRBYTE_RAW_DEDUP_EXCHANGE_RATE
+from "AIRBYTE_DATABASE".TEST_NORMALIZATION._AIRBYTE_RAW_DEDUP_EXCHANGE_RATE as table_alias
 -- DEDUP_EXCHANGE_RATE
   );
