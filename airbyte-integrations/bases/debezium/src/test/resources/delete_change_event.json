@@ -9,7 +9,7 @@
     "version": "1.4.2.Final",
     "connector": "postgresql",
     "name": "orders",
-    "ts_ms": 1616775646886,
+    "ts_ms": "2021-03-26T16:20:46.886Z",
     "snapshot": false,
     "db": "db_lwfoyffqvx",
     "schema": "public",
