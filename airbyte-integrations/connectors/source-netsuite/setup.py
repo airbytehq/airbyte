@@ -27,7 +27,7 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk",
-    "netsuite[soap_api]"
+    "netsuite"
 ]
 
 TEST_REQUIREMENTS = [

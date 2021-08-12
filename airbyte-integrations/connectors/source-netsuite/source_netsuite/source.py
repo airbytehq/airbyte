@@ -53,8 +53,7 @@ def credentials(config: json) -> TokenAuth:
     return creds
 
 async def async_main(ns: NetSuite):
-    headers = {'timestamp': str(int(time.time()) - 3600)}
-    return await ns.rest_api.get("/record/v1/account", headers=headers)
+    return await ns.rest_api.get("/record/v1/account")
 
 class SourceNetsuite(Source):
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
