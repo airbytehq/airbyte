@@ -273,13 +273,17 @@ class Stream(ABC):
         target_type = CUSTOM_FIELD_VALUE_TYPE_CAST_REVERSED.get(target_type_name)
 
         if target_type_name == "number":
-            # do not cast empty strings into float, use 0 instead.
-            field_value = 0 if len(field_value.strip()) == 0 else field_value
             # do not cast numeric IDs into float, use integer instead
             target_type = int if field_name.endswith("_id") else target_type
 
+        if target_type_name != "string" and field_value is '':
+            # do not cast empty strings, return None instead to be properly casted.
+            field_value = None
+            return field_value
+
         try:
             casted_value = target_type(field_value)
+            print(casted_value)
         except ValueError:
             logger.exception(f"Could not cast `{field_value}` to `{target_type}`")
             return field_value
