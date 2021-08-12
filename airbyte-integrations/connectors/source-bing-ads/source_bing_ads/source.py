@@ -144,9 +144,9 @@ class Accounts(BingAdsStream):
     Searches for accounts that the current authenticated user can access.
     API doc: https://docs.microsoft.com/en-us/advertising/customer-management-service/searchaccounts?view=bingads-13
     Account schema: https://docs.microsoft.com/en-us/advertising/customer-management-service/advertiseraccount?view=bingads-13
+    Stream caches incoming responses to be able to reuse this data in Campaigns stream
     """
 
-    # Stream caches incoming responses to avoid duplicated http requests
     use_cache: bool = True
     data_field: str = "AdvertiserAccount"
     service_name: str = "CustomerManagementService"
@@ -177,7 +177,7 @@ class Accounts(BingAdsStream):
             ]
         }
 
-        if self.config["accounts"]["type"] == "subset":
+        if self.config["accounts"]["selection_strategy"] == "subset":
             predicates["Predicate"].append(
                 {
                     "Field": "AccountId",
@@ -201,6 +201,7 @@ class Campaigns(BingAdsStream):
     Gets the campaigns for all provided accounts.
     API doc: https://docs.microsoft.com/en-us/advertising/campaign-management-service/getcampaignsbyaccountid?view=bingads-13
     Campaign schema: https://docs.microsoft.com/en-us/advertising/campaign-management-service/campaign?view=bingads-13
+    Stream caches incoming responses to be able to reuse this data in AdGroups stream
     """
 
     # Stream caches incoming responses to avoid duplicated http requests
@@ -239,6 +240,7 @@ class AdGroups(BingAdsStream):
     Gets the ad groups for all provided accounts.
     API doc: https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadgroupsbycampaignid?view=bingads-13
     AdGroup schema: https://docs.microsoft.com/en-us/advertising/campaign-management-service/adgroup?view=bingads-13
+    Stream caches incoming responses to be able to reuse this data in Ads stream
     """
 
     # Stream caches incoming responses to avoid duplicated http requests
@@ -321,15 +323,15 @@ class SourceBingAds(AbstractSource):
             client = Client(**config)
             account_ids = {str(account["Id"]) for account in Accounts(client, config).read_records(SyncMode.full_refresh)}
 
-            if config["accounts"]["type"] == "subset":
+            if config["accounts"]["selection_strategy"] == "subset":
                 config_account_ids = set(config["accounts"]["ids"])
                 if not config_account_ids.issubset(account_ids):
                     raise Exception(f"Accounts with ids: {config_account_ids.difference(account_ids)} not found on this user.")
-            elif config["accounts"]["type"] == "all":
+            elif config["accounts"]["selection_strategy"] == "all":
                 if not account_ids:
                     raise Exception("You don't have accounts assigned to this user.")
             else:
-                raise Exception("Incorrect account selection type.")
+                raise Exception("Incorrect account selection strategy.")
         except Exception as error:
             return False, error
 

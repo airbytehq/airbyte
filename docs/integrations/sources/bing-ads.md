@@ -29,7 +29,7 @@ This Source is capable of syncing the following core Streams:
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
-| Incremental Sync | Yes |  |
+| Incremental Sync | No |  |
 | Namespaces | No |  |
 
 ### Performance considerations
@@ -53,7 +53,7 @@ API limits number of requests for all Microsoft Advertising clients. You can fin
 ### Setup guide
 
 * [Register Application](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-register?view=bingads-13) in Azure portal
-* Perform this [steps](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-consent?view=bingads-13l) to get auth code.
+* Perform these [steps](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-consent?view=bingads-13l) to get auth code.
 * [Get refresh token](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-get-tokens?view=bingads-13) using auth code from previous step
 
 Full authentication process described [here](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#access-token)

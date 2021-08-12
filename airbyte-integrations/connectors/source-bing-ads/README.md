@@ -12,7 +12,7 @@ For information about how to use this connector within Airbyte, see [the documen
 
 #### Debugging tips
 
-Put this code to the top of `setup.py` file to be able to debug API requests/responses
+Put this code to the top of `source.py` file to be able to debug API requests/responses
 
 ```python
 import logging
@@ -20,6 +20,10 @@ logging.basicConfig(level=logging.INFO)
 logging.getLogger("suds.client").setLevel(logging.DEBUG)
 logging.getLogger("suds.transport.http").setLevel(logging.DEBUG)
 ```
+
+#### Caching responses
+We need to cache `Accounts` to reuse in `Campaigns`, cache `Campaigns` to reuse in `AdGroups` and cache `AdGroups` to reuse in `Ads`
+
 
 #### Build & Activate Virtual Environment and install dependencies
 From this connector directory, create a virtual environment:

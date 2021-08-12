@@ -24,9 +24,9 @@
             "title": "All accounts assigned to your user",
             "additionalProperties": false,
             "description": "Fetch data for all available accounts.",
-            "required": ["type"],
+            "required": ["selection_strategy"],
             "properties": {
-              "type": {
+              "selection_strategy": {
                 "type": "string",
                 "enum": ["all"],
                 "default": "all"
@@ -37,9 +37,9 @@
             "title": "Subset of your accounts",
             "additionalProperties": false,
             "description": "Fetch data for subset of account ids.",
-            "required": ["ids", "type"],
+            "required": ["ids", "selection_strategy"],
             "properties": {
-              "type": {
+              "selection_strategy": {
                 "type": "string",
                 "enum": ["subset"],
                 "default": "subset"
