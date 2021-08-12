@@ -77,6 +77,9 @@ class ParquetParser(AbstractFileParser):
         """
         reader = self._init_reader(file)
         schema_dict = {field.name: PARQUET_TYPES[field.physical_type] for field in reader.schema}
+        if not schema_dict:
+            # pyarrow can parse empty parquet files but a connector can't generate dinamic schema
+            raise OSError("empty Parquet file")
         return schema_dict
 
     def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
@@ -87,6 +90,10 @@ class ParquetParser(AbstractFileParser):
 
         reader = self._init_reader(file)
         self.logger.info(f"found {reader.num_row_groups} row groups")
+
+        if not reader.schema:
+            # pyarrow can parse empty parquet files but a connector can't generate dinamic schema
+            raise OSError("empty Parquet file")
 
         args = self._select_options("columns", "batch_size", "row_groups", "use_threads")
         num_row_groups = args.pop("row_groups", None)
@@ -99,7 +106,7 @@ class ParquetParser(AbstractFileParser):
             for batch in reader.iter_batches(**args):
                 # this gives us a dist of lists where each nested list holds ordered values for a single column
                 # {'number': [1.0, 2.0, 3.0], 'name': ['foo', None, 'bar'], 'flag': [True, False, True], 'delta': [-1.0, 2.5, 0.1]}
-                batch_columns = [col.name for col in reader.schema]
+                batch_columns = [col.name for col in batch.schema]
                 batch_dict = batch.to_pydict()
                 columnwise_record_values = [batch_dict[column] for column in batch_columns]
 

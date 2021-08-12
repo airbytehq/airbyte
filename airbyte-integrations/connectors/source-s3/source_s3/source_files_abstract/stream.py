@@ -39,8 +39,6 @@ from wcmatch.glob import GLOBSTAR, SPLIT, globmatch
 
 from .formats.csv_parser import CsvParser
 from .formats.parquet_parser import ParquetParser
-
-# from .fileformatparser import CsvParser
 from .storagefile import StorageFile
 
 JSON_TYPES = ["string", "number", "integer", "object", "array", "boolean", "null"]
