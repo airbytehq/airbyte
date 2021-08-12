@@ -129,15 +129,17 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
         "The streamer " + streamName + " should return all expected values. Missing values: " + values));
   }
 
-  private String getValueFromJsonNode(JsonNode jsonNode) {
+  protected String getValueFromJsonNode(JsonNode jsonNode) {
     if (jsonNode != null) {
-      String nodeText = jsonNode.asText();
-      String nodeString = jsonNode.toString();
-      String value = (nodeText != null && !nodeText.equals("") ? nodeText : nodeString);
+      if (jsonNode.isArray()) {
+        return jsonNode.toString();
+      }
+
+      String value = jsonNode.asText();
       value = (value != null && value.equals("null") ? null : value);
       return value;
-    } else
-      return null;
+    }
+    return null;
   }
 
   /**
