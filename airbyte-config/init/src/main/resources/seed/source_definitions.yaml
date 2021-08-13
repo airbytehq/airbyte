@@ -137,7 +137,7 @@
 - sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   name: Hubspot
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
 - sourceDefinitionId: 95e8cffd-b8c4-4039-968e-d32fb4a69bde
@@ -148,7 +148,7 @@
 - sourceDefinitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
   name: Shopify
   dockerRepository: airbyte/source-shopify
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.12
   documentationUrl: https://docs.airbyte.io/integrations/sources/shopify
 - sourceDefinitionId: e87ffa8e-a3b5-f69c-9076-6011339de1f6
   name: Redshift
@@ -207,12 +207,6 @@
   name: Mixpanel
   dockerRepository: airbyte/source-mixpanel
   dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.io/integrations/sources/mixpanel
-  icon: mixpanel.svg
-- sourceDefinitionId: 859e501d-2b67-471f-91bb-1c801414d28f
-  name: Mixpanel Singer
-  dockerRepository: airbyte/source-mixpanel-singer
-  dockerImageTag: 0.2.4
   documentationUrl: https://docs.airbyte.io/integrations/sources/mixpanel
   icon: mixpanel.svg
 - sourceDefinitionId: aea2fd0d-377d-465e-86c0-4fdc4f688e51
@@ -407,7 +401,7 @@
   name: Prestashop
   dockerRepository: airbyte/source-prestashop
   dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.io/integrations/sources/prestashop
+  documentationUrl: https://docs.airbyte.io/integrations/sources/presta-shop
 - sourceDefinitionId: bfd1ddf8-ae8a-4620-b1d7-55597d2ba08c
   name: BigQuery
   dockerRepository: airbyte/source-bigquery
