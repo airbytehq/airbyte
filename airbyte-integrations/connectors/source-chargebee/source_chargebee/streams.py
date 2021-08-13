@@ -31,8 +31,11 @@ from chargebee import APIError
 from chargebee.list_result import ListResult
 from chargebee.model import Model
 from chargebee.models import Addon as AddonModel
+from chargebee.models import AttachedItem as AttachedItemModel
 from chargebee.models import Customer as CustomerModel
 from chargebee.models import Invoice as InvoiceModel
+from chargebee.models import Item as ItemModel
+from chargebee.models import ItemPrice as ItemPriceModel
 from chargebee.models import Order as OrderModel
 from chargebee.models import Plan as PlanModel
 from chargebee.models import Subscription as SubscriptionModel
@@ -192,3 +195,28 @@ class Addon(ChargebeeStream):
     """
 
     api = AddonModel
+
+
+class Item(ChargebeeStream):
+    """
+    API docs: https://apidocs.chargebee.com/docs/api/items?prod_cat_ver=2#list_items
+    """
+
+    api = ItemModel
+
+
+class ItemPrice(ChargebeeStream):
+    """
+    API docs: https://apidocs.chargebee.com/docs/api/item_prices?prod_cat_ver=2#list_item_prices
+    """
+
+    api = ItemPriceModel
+
+
+class AttachedItem(ChargebeeStream):
+    """
+    API docs: https://apidocs.chargebee.com/docs/api/attached_items?prod_cat_ver=2#list_attached_items
+    """
+
+    # TODO Make `full_refresh`
+    api = AttachedItemModel

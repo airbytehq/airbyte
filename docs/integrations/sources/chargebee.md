@@ -16,6 +16,9 @@ This connector outputs the following streams:
 * [Orders](https://apidocs.chargebee.com/docs/api/orders?prod_cat_ver=2#list_orders)
 * [Plans](https://apidocs.chargebee.com/docs/api/plans?prod_cat_ver=1&lang=curl#list_plans)
 * [Addons](https://apidocs.chargebee.com/docs/api/addons?prod_cat_ver=1&lang=curl#list_addons)
+* [Items](https://apidocs.chargebee.com/docs/api/items?prod_cat_ver=2#list_items)
+* [Item Prices](https://apidocs.chargebee.com/docs/api/item_prices?prod_cat_ver=2#list_item_prices)
+* [Attached Items](https://apidocs.chargebee.com/docs/api/attached_items?prod_cat_ver=2#list_attached_items)
 
 ### Notes
 
@@ -31,7 +34,20 @@ Some streams may depend on Product Catalog version and be accessible only on sit
     - Plans
     - Addons
     
-3. presented only in `Product Catalog 2.0` will be added soon.
+3. presented only in `Product Catalog 2.0`:
+    - Items
+    - Item Prices
+    - Attached Items
+
+Also, 8 streams from the above 9 incremental streams are pure incremental meaning that they:
+- read only new records;
+- output only new records.
+
+`Attached Items` incremental stream is also incremental but with one difference, it:
+- read all records;
+- output only new records.
+
+Please, consider this behaviour when using `Attached Items` incremental stream because it may affect you API call limits.
 
 ### Features
 
