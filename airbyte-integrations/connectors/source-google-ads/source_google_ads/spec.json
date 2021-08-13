@@ -77,7 +77,7 @@
               "type": "string",
               "title": "User defined query to build a report by wish",
               "examples": ["SELECT segments.ad_destination_type, campaign.advertising_channel_sub_type FROM campaign"],
-              "pattern": "(?i)^select(\\s)+[a-zA-Z0-9._, -]*(\\s+)from(\\s+)campaign$"
+              "pattern": "(?i)^select(\\s)+[a-zA-Z0-9._,(\\s)-]*(\\s+)from(\\s+)(campaign|customer|ad_group|ad_group_ad)$"
             },
             "primary_key": {
               "type": ["string", "null"],
