@@ -54,15 +54,23 @@ from .streams import (
 
 class SourceGithub(AbstractSource):
     def _generate_repositories(self, config: Mapping[str, Any], authenticator: TokenAuthenticator) -> List[str]:
-        if config["syncing_object"]["entity_type"] == "organizations":
-            org_repositories = []
-            repos = Repositories(authenticator=authenticator, organizations=config["syncing_object"]["organization_list"])
+        organizations = list(filter(None, config["organization"].split(" ")))
+        repositories = list(filter(None, config["repository"].split(" ")))
+
+        if not (organizations or repositories):
+            raise Exception("Either `organisation` or `repository` need to be provided for connect to Github API")
+
+        repositories_list = []
+        if organizations:
+            repos = Repositories(authenticator=authenticator, organizations=organizations)
             for stream in repos.stream_slices(sync_mode=SyncMode.full_refresh):
-                org_repositories += [
+                repositories_list += [
                     repository["full_name"] for repository in repos.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream)
                 ]
-            return org_repositories
-        return config["syncing_object"]["repository_list"]
+        if repositories:
+            repositories_list += repositories
+
+        return list(set(repositories_list))
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
