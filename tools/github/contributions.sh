@@ -28,12 +28,15 @@ prsetup() {
     git fetch origin master &&
     git checkout master &&
     git pull &&
-    git branch -d $newbranch &&
+    git branch -D $newbranch || echo "branch '$newbranch' doesn't exist yet" &&
     git checkout -b $newbranch &&
+    git remote remove temp-contributor-remote || echo "remote 'temp-contributor-remote' doesn't exist yet" &&
     git remote add temp-contributor-remote $remote &&
-    git pull temp-contributor-remote $contributorbranch --no-edit
+    git pull temp-contributor-remote $contributorbranch --no-edit &&
+    prsetupsuccess="true"
 
     git remote remove temp-contributor-remote
+    
 }
 
 if [[ "$#" -le 7 ]]; then
@@ -48,10 +51,18 @@ done
 
 # stash any changes in current branch
 currentbranch=$(git branch --show-current)
-git stash --include-untracked
+git stash --include-untracked &&
 
+prsetupsuccess="false"
 prsetup
 
 # go back to original branch and apply stash
 git checkout $currentbranch
 git stash apply
+
+echo ""
+if [ $prsetupsuccess = "false" ]; then
+    echo "ERROR: Something failed, please check output above."
+else
+    echo "PR successfully created! <link>"
+fi
