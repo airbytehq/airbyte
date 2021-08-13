@@ -64,21 +64,21 @@ class HttpStream(Stream, ABC):
         return "GET"
 
     @property
-    def auto_fail_on_errors(self) -> bool:
+    def raise_on_http_errors(self) -> bool:
         """
         Override if needed. If set to False, allows opting-out of raising HTTP code exception .
         """
         return True
 
     @property
-    def max_retries(self) -> bool:
+    def max_retries(self) -> int:
         """
         Override if needed. Specifies maximum amount of retries for backoff policy
         """
         return 5
 
     @property
-    def retry_factor(self) -> bool:
+    def retry_factor(self) -> int:
         """
         Override if needed. Specifies factor for backoff policy
         """
@@ -231,7 +231,7 @@ class HttpStream(Stream, ABC):
     def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
         """
         Wraps sending the request in rate limit and error handlers.
-        Please note that error handling for HTTP status codes will be ignored if auto_fail_on_errors is set to False
+        Please note that error handling for HTTP status codes will be ignored if raise_on_http_errors is set to False
 
         This method handles two types of exceptions:
             1. Expected transient exceptions e.g: 429 status code.
@@ -248,7 +248,7 @@ class HttpStream(Stream, ABC):
         Unexpected persistent exceptions are not handled and will cause the sync to fail.
         """
         response: requests.Response = self._session.send(request, **request_kwargs)
-        if not self.auto_fail_on_errors:
+        if not self.raise_on_http_errors:
             # ignore HTTP status code errors and retry logic
             return response
 
