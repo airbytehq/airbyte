@@ -471,12 +471,12 @@ class Stargazers(SemiIncrementalGithubStream):
 
         return {**base_headers, **headers}
 
-    def transform(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def transform(self, record: MutableMapping[str, Any], repository: str) -> MutableMapping[str, Any]:
         """
         We need to provide the "user_id" for the primary_key attribute
         and don't remove the whole "user" block from the record.
         """
-        record = super().transform(record=record)
+        record = super().transform(record=record, repository=repository)
         record["user_id"] = record.get("user").get("id")
         return record
 
