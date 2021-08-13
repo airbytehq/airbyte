@@ -12,6 +12,7 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -30,14 +31,15 @@ public class KeenTimestampServiceTest {
     ConfiguredAirbyteCatalog configuredCatalog = readConfiguredCatalogFromFile("cursors_catalog.json");
 
     Map<String, KeenTimestampService.CursorField> expectedCursorFieldsMap = Map.ofEntries(
-        entry("StringTypeStream1", new KeenTimestampService.CursorField("property1", KeenTimestampService.CursorType.STRING)),
-        entry("StringTypeStream2", new KeenTimestampService.CursorField("property1", KeenTimestampService.CursorType.STRING)),
-        entry("StringTypeStream3", new KeenTimestampService.CursorField("property1", KeenTimestampService.CursorType.STRING)),
-        entry("NumberTypeStream1", new KeenTimestampService.CursorField("property1", KeenTimestampService.CursorType.NUMBER)),
-        entry("NumberTypeStream2", new KeenTimestampService.CursorField("property1", KeenTimestampService.CursorType.NUMBER)),
-        entry("ArrayTypeStream1", new KeenTimestampService.CursorField("property1", KeenTimestampService.CursorType.NUMBER)),
-        entry("ArrayTypeStream2", new KeenTimestampService.CursorField("property1", KeenTimestampService.CursorType.NUMBER)),
-        entry("ArrayTypeStream3", new KeenTimestampService.CursorField("property1", KeenTimestampService.CursorType.NUMBER))
+        entry("StringTypeStream1", new KeenTimestampService.CursorField(List.of("property1"), KeenTimestampService.CursorType.STRING)),
+        entry("StringTypeStream2", new KeenTimestampService.CursorField(List.of("property1"), KeenTimestampService.CursorType.STRING)),
+        entry("StringTypeStream3", new KeenTimestampService.CursorField(List.of("property1"), KeenTimestampService.CursorType.STRING)),
+        entry("NumberTypeStream1", new KeenTimestampService.CursorField(List.of("property1"), KeenTimestampService.CursorType.NUMBER)),
+        entry("NumberTypeStream2", new KeenTimestampService.CursorField(List.of("property1"), KeenTimestampService.CursorType.NUMBER)),
+        entry("ArrayTypeStream1", new KeenTimestampService.CursorField(List.of("property1"), KeenTimestampService.CursorType.NUMBER)),
+        entry("ArrayTypeStream2", new KeenTimestampService.CursorField(List.of("property1"), KeenTimestampService.CursorType.NUMBER)),
+        entry("ArrayTypeStream3", new KeenTimestampService.CursorField(List.of("property1"), KeenTimestampService.CursorType.NUMBER)),
+        entry("NestedCursorStream", new KeenTimestampService.CursorField(List.of("property1", "inside"), KeenTimestampService.CursorType.NUMBER))
 
     );
 
@@ -55,7 +57,7 @@ public class KeenTimestampServiceTest {
 
     AirbyteMessage message = buildMessageWithCursorValue(configuredCatalog, "1999/12/15 14:44 utc");
     JsonNode expectedJson = buildExpectedJsonWithTimestamp("\"1999/12/15 14:44 utc\"", "1999-12-15T14:44:00Z");
-    JsonNode jsonNode = keenTimestampService.injectTimestamp(message);
+    JsonNode jsonNode = keenTimestampService.injectTimestamp(message.getRecord());
 
     Assertions.assertEquals(jsonNode, expectedJson);
   }
@@ -68,7 +70,7 @@ public class KeenTimestampServiceTest {
     int secondsCursor = 1628080068;
     AirbyteMessage message = buildMessageWithCursorValue(configuredCatalog, secondsCursor);
     JsonNode expectedJson = buildExpectedJsonWithTimestamp(secondsCursor, "2021-08-04T12:27:48Z");
-    JsonNode jsonNode = keenTimestampService.injectTimestamp(message);
+    JsonNode jsonNode = keenTimestampService.injectTimestamp(message.getRecord());
 
     Assertions.assertEquals(jsonNode, expectedJson);
   }
@@ -81,7 +83,7 @@ public class KeenTimestampServiceTest {
     long millisCursor = 1628081113151L;
     AirbyteMessage message = buildMessageWithCursorValue(configuredCatalog, millisCursor);
     JsonNode expectedJson = buildExpectedJsonWithTimestamp(millisCursor, "2021-08-04T12:45:13.151Z");
-    JsonNode jsonNode = keenTimestampService.injectTimestamp(message);
+    JsonNode jsonNode = keenTimestampService.injectTimestamp(message.getRecord());
 
     Assertions.assertEquals(jsonNode, expectedJson);
   }
@@ -97,7 +99,7 @@ public class KeenTimestampServiceTest {
     // 2020-10-14T01:09:49.200Z is hardcoded emitted at
     JsonNode expectedJson = buildExpectedJsonWithTimestamp(notUnixTimestampCursor, "2020-10-14T01:09:49.200Z");
 
-    JsonNode jsonNode = keenTimestampService.injectTimestamp(message);
+    JsonNode jsonNode = keenTimestampService.injectTimestamp(message.getRecord());
 
     Assertions.assertEquals(jsonNode, expectedJson);
   }
@@ -116,7 +118,7 @@ public class KeenTimestampServiceTest {
     // 2020-10-14T01:09:49.200Z is hardcoded emitted at
     JsonNode expectedJson = buildExpectedJsonWithTimestamp("\"some_text\"", "2020-10-14T01:09:49.200Z");
 
-    JsonNode jsonNode = keenTimestampService.injectTimestamp(message);
+    JsonNode jsonNode = keenTimestampService.injectTimestamp(message.getRecord());
 
     Assertions.assertEquals(jsonNode, expectedJson);
     Assertions.assertEquals(cursorFieldMap.size(), 0);
@@ -132,7 +134,24 @@ public class KeenTimestampServiceTest {
 
     // 2020-10-14T01:09:49.200Z is hardcoded emitted at
     JsonNode expectedJson = buildExpectedJsonWithTimestamp(secondsCursor, "2020-10-14T01:09:49.200Z");
-    JsonNode jsonNode = keenTimestampService.injectTimestamp(message);
+    JsonNode jsonNode = keenTimestampService.injectTimestamp(message.getRecord());
+
+    Assertions.assertEquals(jsonNode, expectedJson);
+  }
+
+  @Test
+  void shouldInjectTimestampWhenCursorIsNestedField() throws IOException {
+    ConfiguredAirbyteCatalog configuredCatalog = readConfiguredCatalogFromFile("nested_cursor_catalog.json");
+    KeenTimestampService keenTimestampService = new KeenTimestampService(configuredCatalog, true);
+
+    int secondsCursor = 1628080068;
+    AirbyteMessage message = buildMessageWithCursorValue(configuredCatalog,
+        ImmutableMap.builder().put("nestedProperty", secondsCursor).build());
+
+    String nestedJson = String.format("{\"nestedProperty\": %s}", secondsCursor);
+
+    JsonNode expectedJson = buildExpectedJsonWithTimestamp(nestedJson, "2021-08-04T12:27:48Z");
+    JsonNode jsonNode = keenTimestampService.injectTimestamp(message.getRecord());
 
     Assertions.assertEquals(jsonNode, expectedJson);
   }

@@ -36,7 +36,6 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
   private KeenTimestampService timestampService;
   private String projectId;
   private String apiKey;
-  private boolean timestampInferenceEnabled;
   private KafkaProducer<String, String> kafkaProducer;
   private AirbyteMessage lastStateMessage;
   private Set<String> streamNames;
@@ -57,13 +56,13 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
   protected void startTracked() throws IOException, InterruptedException {
     projectId = config.get(CONFIG_PROJECT_ID).textValue();
     apiKey = config.get(CONFIG_API_KEY).textValue();
-    timestampInferenceEnabled = Optional.ofNullable(config.get(INFER_TIMESTAMP))
+    boolean timestampInferenceEnabled = Optional.ofNullable(config.get(INFER_TIMESTAMP))
         .map(JsonNode::booleanValue)
         .orElse(true);
     this.kafkaProducer = KeenDestination.KafkaProducerFactory.create(projectId, apiKey);
     this.streamNames = getStrippedStreamNames();
     this.timestampService = new KeenTimestampService(this.catalog, timestampInferenceEnabled);
-    eraseStreams();
+    eraseOverwriteStreams();
   }
 
   @Override
@@ -77,7 +76,7 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
     }
 
     final String streamName = getStreamName(msg.getRecord());
-    JsonNode data = this.timestampService.injectTimestamp(msg);
+    JsonNode data = this.timestampService.injectTimestamp(msg.getRecord());
 
     kafkaProducer.send(new ProducerRecord<>(streamName, data.toString()));
   }
@@ -91,7 +90,7 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
         .collect(Collectors.toSet());
   }
 
-  private void eraseStreams() throws IOException, InterruptedException {
+  private void eraseOverwriteStreams() throws IOException, InterruptedException {
     KeenHttpClient keenHttpClient = new KeenHttpClient();
     LOGGER.info("erasing streams with override options selected.");
 
@@ -124,11 +123,11 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   @Override
   protected void close(boolean hasFailed) {
+    kafkaProducer.flush();
+    kafkaProducer.close();
     if (!hasFailed) {
-      LOGGER.info("shutting down consumer.");
       outputRecordCollector.accept(lastStateMessage);
     }
-    kafkaProducer.close();
   }
 
 }

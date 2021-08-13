@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.joestelmach.natty.Parser;
-import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.time.Instant;
@@ -18,6 +18,11 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class is used for timestamp inference. Keen leverages use of time-related data for it's analytics, so it's
+ * important to have timestamp values for historical data if possible. If stream contains cursor field, then its value is
+ * used as a timestamp, if parsing it is possible.
+ */
 public class KeenTimestampService {
 
   public enum CursorType {STRING, NUMBER, UNRECOGNIZED}
@@ -42,7 +47,7 @@ public class KeenTimestampService {
       LOGGER.info("Initializing KeenTimestampService, finding cursor fields.");
       streamCursorFields = catalog.getStreams()
           .stream()
-          .filter(stream -> stream.getCursorField().size() == 1)
+          .filter(stream -> stream.getCursorField().size() > 0)
           .map(s -> Pair.of(s.getStream().getName(), CursorField.fromStream(s)))
           .filter(
               pair -> pair.getRight() != null && pair.getRight().type != CursorType.UNRECOGNIZED)
@@ -56,13 +61,13 @@ public class KeenTimestampService {
    * If this procedure fails, stream is removed from timestamp-parsable stream map, so parsing is not tried
    * for future messages in the same stream. If parsing succeeds, keen.timestamp field is put as a JSON node
    * to the message data and whole data is returned. Otherwise, keen.timestamp is set to emittedAt value
-   * @param message AirbyteMessage containing record data
+   * @param message AirbyteRecordMessage containing record data
    * @return Record data together with keen.timestamp field
    */
-  public JsonNode injectTimestamp(AirbyteMessage message) {
-    String streamName = message.getRecord().getStream();
+  public JsonNode injectTimestamp(AirbyteRecordMessage message) {
+    String streamName = message.getStream();
     CursorField cursorField = streamCursorFields.get(streamName);
-    JsonNode data = message.getRecord().getData();
+    JsonNode data = message.getData();
     if (timestampInferenceEnabled && cursorField != null) {
       try {
         String timestamp = parseTimestamp(cursorField, data);
@@ -70,13 +75,13 @@ public class KeenTimestampService {
       } catch (Exception e) {
         // If parsing of timestamp has failed, remove stream from timestamp-parsable stream map,
         // so it won't be parsed for future messages.
-        LOGGER.info("Unable to parse timestamp field: " + cursorField.name);
+        LOGGER.info("Unable to parse timestamp field: {}", cursorField.path);
         streamCursorFields.remove(streamName);
-        injectTimestamp(data, Instant.ofEpochMilli(message.getRecord().getEmittedAt()).toString());
+        injectTimestamp(data, Instant.ofEpochMilli(message.getEmittedAt()).toString());
       }
     }
     else {
-      injectTimestamp(data, Instant.ofEpochMilli(message.getRecord().getEmittedAt()).toString());
+      injectTimestamp(data, Instant.ofEpochMilli(message.getEmittedAt()).toString());
     }
     return data;
   }
@@ -88,9 +93,12 @@ public class KeenTimestampService {
 
   private String parseTimestamp(CursorField cursorField, JsonNode data) {
     return switch (cursorField.type) {
-      case NUMBER -> dateFromNumber(data.get(cursorField.name).asLong());
+      case NUMBER -> dateFromNumber(
+          getNestedNode(data, cursorField.path)
+          .asLong());
       case STRING -> parser
-          .parse(data.get(cursorField.name).asText())
+          .parse(getNestedNode(data, cursorField.path)
+              .asText())
           .get(0).getDates()
           .get(0)
           .toInstant()
@@ -122,23 +130,19 @@ public class KeenTimestampService {
         "REAL", "NUMERIC", "DECIMAL"
     );
 
-    private final String name;
+    private final List<String> path;
     private final CursorType type;
 
-    public CursorField(String name, CursorType type) {
-      this.name = name;
+    public CursorField(List<String> path, CursorType type) {
+      this.path = path;
       this.type = type;
     }
 
     protected static CursorField fromStream(ConfiguredAirbyteStream stream) {
-      List<String> defaultCursorField = stream.getStream().getDefaultCursorField();
-      if (defaultCursorField == null || defaultCursorField.size() < 1){
-        return null;
-      }
-      String cursorField = defaultCursorField.get(0);
-      JsonNode typeNode = stream.getStream().getJsonSchema()
-          .get("properties").get(cursorField).get("type");
-      return new CursorField(cursorField, getType(typeNode));
+      List<String> cursorFieldList = stream.getCursorField();
+      JsonNode typeNode = getNestedNode(stream.getStream().getJsonSchema()
+          .get("properties"), cursorFieldList).get("type");
+      return new CursorField(cursorFieldList, getType(typeNode));
     }
 
     private static CursorType getType(JsonNode typeNode) {
@@ -170,14 +174,18 @@ public class KeenTimestampService {
       if (this == o) return true;
       if (o == null || getClass() != o.getClass()) return false;
       CursorField that = (CursorField) o;
-      return Objects.equals(name, that.name) && type == that.type;
+      return Objects.equals(path, that.path) && type == that.type;
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(name, type);
+      return Objects.hash(path, type);
     }
 
+  }
+
+  private static JsonNode getNestedNode(JsonNode data, List<String> fieldNames) {
+    return fieldNames.stream().reduce(data, JsonNode::get, (first, second) -> second);
   }
 
   public Map<String, CursorField> getStreamCursorFields() {

@@ -129,6 +129,20 @@
           }
         }
       }
+    },
+    {
+      "name": "NestedCursorStream",
+      "source_defined_cursor": true,
+      "default_cursor_field": ["property1", "inside"],
+      "json_schema": {
+        "properties": {
+          "property1": {
+            "inside": {
+            "type": "number"
+          }
+         }
+        }
+      }
     }
   ]
 }

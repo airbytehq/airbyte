@@ -42,18 +42,15 @@ public class KeenDestination extends BaseConnector implements Destination {
   static final String INFER_TIMESTAMP = "Infer Timestamp";
 
   @Override
-  public ConnectorSpecification spec() throws Exception {
-    final String resourceString = MoreResources.readResource("spec.json");
-    return Jsons.deserialize(resourceString, ConnectorSpecification.class);
-  }
-
-  @Override
   public AirbyteConnectionStatus check(JsonNode config) {
     try {
       final String projectId = config.get(CONFIG_PROJECT_ID).textValue();
       final String apiKey = config.get(CONFIG_API_KEY).textValue();
       KafkaProducer<String, String> producer = KafkaProducerFactory.create(projectId, apiKey);
+
+      // throws an AuthenticationException if authentication fails
       producer.partitionsFor("ANYTHING");
+
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
       return new AirbyteConnectionStatus().withStatus(Status.FAILED);
