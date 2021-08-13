@@ -276,7 +276,7 @@ class Stream(ABC):
             # do not cast numeric IDs into float, use integer instead
             target_type = int if field_name.endswith("_id") else target_type
 
-        if target_type_name != "string" and field_value == '':
+        if target_type_name != "string" and field_value == "":
             # do not cast empty strings, return None instead to be properly casted.
             field_value = None
             return field_value

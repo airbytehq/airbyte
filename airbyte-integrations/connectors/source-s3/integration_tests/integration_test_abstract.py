@@ -32,7 +32,7 @@ from uuid import uuid4
 import pytest
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
-from source_s3.source_files_abstract.formats.abstract_file_parser import CsvParser
+from source_s3.source_files_abstract.formats.csv_parser import CsvParser
 from source_s3.source_files_abstract.stream import FileStream
 
 HERE = Path(__file__).resolve().parent
