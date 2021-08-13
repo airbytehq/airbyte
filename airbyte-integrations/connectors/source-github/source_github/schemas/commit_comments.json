@@ -32,8 +32,8 @@
     "commit_id": {
       "type": ["null", "string"]
     },
-    "user_id": {
-      "type": ["null", "integer"]
+    "user": {
+      "$ref": "user.json"
     },
     "created_at": {
       "type": ["null", "string"],

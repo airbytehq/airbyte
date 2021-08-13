@@ -302,8 +302,6 @@ class Reviews(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request
     """
 
-    fields_to_minimize = ("user",)
-
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
@@ -383,7 +381,6 @@ class PullRequests(SemiIncrementalGithubStream):
 
     page_size = 50
     fields_to_minimize = (
-        "user",
         "milestone",
         "assignee",
         "labels",
@@ -412,7 +409,6 @@ class PullRequests(SemiIncrementalGithubStream):
 
         for nested in ("head", "base"):
             entry = record.get(nested, {})
-            entry["user_id"] = (record.get("head", {}).pop("user", {}) or {}).get("id")
             entry["repo_id"] = (record.get("head", {}).pop("repo", {}) or {}).get("id")
 
         return record
@@ -437,8 +433,6 @@ class CommitComments(SemiIncrementalGithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/repos#list-commit-comments-for-a-repository
     """
-
-    fields_to_minimize = ("user",)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/comments"
@@ -468,7 +462,6 @@ class Stargazers(SemiIncrementalGithubStream):
 
     primary_key = "user_id"
     cursor_field = "starred_at"
-    fields_to_minimize = ("user",)
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         base_headers = super().request_headers(**kwargs)
@@ -477,6 +470,15 @@ class Stargazers(SemiIncrementalGithubStream):
         headers = {"Accept": "application/vnd.github.v3.star+json"}
 
         return {**base_headers, **headers}
+
+    def transform(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        """
+        We need to provide the "user_id" for the primary_key attribute
+        and don't remove the whole "user" block from the record.
+        """
+        record = super().transform(record=record)
+        record["user_id"] = record.get("user").get("id")
+        return record
 
 
 class Projects(SemiIncrementalGithubStream):
@@ -521,7 +523,6 @@ class Comments(IncrementalGithubStream):
     API docs: https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository
     """
 
-    fields_to_minimize = ("user",)
     page_size = 30  # `comments` is a large stream so it's better to set smaller page size.
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -560,7 +561,6 @@ class Issues(IncrementalGithubStream):
     page_size = 50  # `issues` is a large stream so it's better to set smaller page size.
 
     fields_to_minimize = (
-        "user",
         "assignee",
         "milestone",
         "labels",

@@ -10,38 +10,69 @@
 2. `y.python`
 
 ## Pre-merge Checklist
-Expand the checklist which is relevant for this PR. 
+Expand the relevant checklist and delete the others. 
 
-<details><summary> <strong> Connector checklist </strong> </summary>
+<details><summary> <strong> New Connector </strong></summary>
 <p>
-
-- [ ] Issue acceptance criteria met
-- [ ] PR name follows [PR naming conventions](https://docs.airbyte.io/contributing-to-airbyte/updating-documentation#issues-and-pull-requests)
-- [ ] Secrets are annotated with `airbyte_secret` in the connector's spec
-- [ ] Credentials added to Github CI if needed and not already present. [instructions for injecting secrets into CI](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector#using-credentials-in-ci). 
-- [ ] Unit & integration tests added as appropriate (and are passing)
-    * Community members: please provide proof of this succeeding locally e.g: screenshot or copy-paste acceptance test output. To run acceptance tests for a Python connector, follow instructions in the README. For java connectors run `./gradlew :airbyte-integrations:connectors:<name>:integrationTest`.
-- [ ] `/test connector=connectors/<name>` command as documented [here](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector#updating-an-existing-connector) is passing. 
-    * Community members can skip this, Airbyters will run this for you. 
+   
+#### Community member or Airbyter
+   
+- [ ] **Community member?** Grant edit access to maintainers ([instructions](https://docs.github.com/en/github/collaborating-with-pull-requests/working-with-forks/allowing-changes-to-a-pull-request-branch-created-from-a-fork#enabling-repository-maintainer-permissions-on-existing-pull-requests))
+- [ ] Secrets in the connector's spec are annotated with `airbyte_secret` 
+- [ ] Unit & integration tests added and passing. Community members, please provide proof of success locally e.g: screenshot or copy-paste unit, integration, and acceptance test output. To run acceptance tests for a Python connector, follow instructions in the README. For java connectors run `./gradlew :airbyte-integrations:connectors:<name>:integrationTest`.
 - [ ] Code reviews completed
 - [ ] Documentation updated 
-    - [ ] `README.md`
-    - [ ] `docs/SUMMARY.md` if it's a new connector
-    - [ ] Created or updated reference docs in `docs/integrations/<source or destination>/<name>`.
-    - [ ] Changelog in the appropriate page in `docs/integrations/...`. See changelog [example](https://docs.airbyte.io/integrations/sources/stripe#changelog)
-    - [ ] `docs/integrations/README.md` contains a reference to the new connector
-    - [ ] Build status added to [build page](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/builds.md)
+    - [ ] Connector's `README.md`
+    - [ ] `docs/SUMMARY.md`
+    - [ ] `docs/integrations/<source or destination>/<name>.md` including changelog. See changelog [example](https://docs.airbyte.io/integrations/sources/stripe#changelog)
+    - [ ] `docs/integrations/README.md`
+    - [ ] `airbyte-integrations/builds.md`
+- [ ] PR name follows [PR naming conventions](https://docs.airbyte.io/contributing-to-airbyte/updating-documentation#issues-and-pull-requests)
+- [ ] Connector added to connector index like described [here](https://docs.airbyte.io/connector-development#publishing-a-connector)
+   
+#### Airbyter
+
+If this is a community PR, the Airbyte engineer reviewing this PR is responsible for the below items. 
+   
+- [ ] Create a non-forked branch based on this PR and test the below items on it
 - [ ] Build is successful
-- [ ] Connector version bumped like described [here](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector#updating-a-connector)
-- [ ] New Connector version released on Dockerhub by running the `/publish` command described [here](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector#updating-a-connector)
-- [ ] No major blockers
-- [ ] PR merged into master branch
-- [ ] Follow up tickets have been created
-- [ ] Associated tickets have been closed & stakeholders notified
+- [ ] Credentials added to Github CI. [Instructions](https://docs.airbyte.io/connector-development#using-credentials-in-ci). 
+- [ ] [`/test connector=connectors/<name>` command](https://docs.airbyte.io/connector-development#updating-an-existing-connector) is passing. 
+- [ ] New Connector version released on Dockerhub by running the `/publish` command described [here](https://docs.airbyte.io/connector-development#updating-an-existing-connector)
+   
 </p>
 </details>
 
-<details><summary> <strong> Connector Generator checklist </strong> </summary>
+
+<details><summary> <strong> Updating a connector </strong></summary>
+<p>
+   
+#### Community member or Airbyter
+   
+- [ ] Grant edit access to maintainers ([instructions](https://docs.github.com/en/github/collaborating-with-pull-requests/working-with-forks/allowing-changes-to-a-pull-request-branch-created-from-a-fork#enabling-repository-maintainer-permissions-on-existing-pull-requests))
+- [ ] Secrets in the connector's spec are annotated with `airbyte_secret` 
+- [ ] Unit & integration tests added and passing. Community members, please provide proof of success locally e.g: screenshot or copy-paste unit, integration, and acceptance test output. To run acceptance tests for a Python connector, follow instructions in the README. For java connectors run `./gradlew :airbyte-integrations:connectors:<name>:integrationTest`.
+- [ ] Code reviews completed
+- [ ] Documentation updated 
+    - [ ] Connector's `README.md`
+    - [ ] Changelog updated in `docs/integrations/<source or destination>/<name>.md` including changelog. See changelog [example](https://docs.airbyte.io/integrations/sources/stripe#changelog)
+- [ ] PR name follows [PR naming conventions](https://docs.airbyte.io/contributing-to-airbyte/updating-documentation#issues-and-pull-requests)
+- [ ] Connector version bumped like described [here](https://docs.airbyte.io/connector-development#publishing-a-connector)
+   
+#### Airbyter
+
+If this is a community PR, the Airbyte engineer reviewing this PR is responsible for the below items. 
+   
+- [ ] Create a non-forked branch based on this PR and test the below items on it
+- [ ] Build is successful
+- [ ] Credentials added to Github CI. [Instructions](https://docs.airbyte.io/connector-development#using-credentials-in-ci). 
+- [ ] [`/test connector=connectors/<name>` command](https://docs.airbyte.io/connector-development#updating-an-existing-connector) is passing. 
+- [ ] New Connector version released on Dockerhub by running the `/publish` command described [here](https://docs.airbyte.io/connector-development#updating-an-existing-connector)
+
+</p>
+</details>
+
+<details><summary> <strong> Connector Generator </strong> </summary>
 <p>
    
 - [ ] Issue acceptance criteria met

@@ -36,11 +36,13 @@ from normalization.transform_catalog.utils import (
     is_array,
     is_boolean,
     is_combining_node,
+    is_date,
     is_integer,
     is_number,
     is_object,
     is_simple_property,
     is_string,
+    is_timestamp_with_time_zone,
     jinja_call,
 )
 
@@ -107,6 +109,7 @@ class StreamProcessor(object):
         self.sql_outputs: Dict[str, str] = {}
         self.parent: Optional["StreamProcessor"] = None
         self.is_nested_array: bool = False
+        self.table_alias: str = "table_alias"
 
     @staticmethod
     def create_from_parent(
@@ -322,7 +325,7 @@ select
     {{ field }},
   {%- endfor %}
     _airbyte_emitted_at
-from {{ from_table }}
+from {{ from_table }} as table_alias
 {{ unnesting_after_query }}
 {{ sql_table_comment }}
 """
@@ -339,22 +342,25 @@ from {{ from_table }}
 
     def extract_json_columns(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
         return [
-            StreamProcessor.extract_json_column(field, self.json_column_name, self.properties[field], column_names[field][0])
+            StreamProcessor.extract_json_column(
+                field, self.json_column_name, self.properties[field], column_names[field][0], self.table_alias
+            )
             for field in column_names
         ]
 
     @staticmethod
-    def extract_json_column(property_name: str, json_column_name: str, definition: Dict, column_name: str) -> str:
+    def extract_json_column(property_name: str, json_column_name: str, definition: Dict, column_name: str, table_alias: str) -> str:
         json_path = [property_name]
         # In some cases, some destination aren't able to parse the JSON blob using the original property name
         # we make their life easier by using a pre-populated and sanitized column name instead...
         normalized_json_path = [transform_json_naming(property_name)]
-        json_extract = jinja_call(f"json_extract({json_column_name}, {json_path}, {normalized_json_path})")
+        table_alias = f"{table_alias}"
+        json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path})")
         if "type" in definition:
             if is_array(definition["type"]):
                 json_extract = jinja_call(f"json_extract_array({json_column_name}, {json_path}, {normalized_json_path})")
             elif is_object(definition["type"]):
-                json_extract = jinja_call(f"json_extract({json_column_name}, {json_path}, {normalized_json_path})")
+                json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path}, {normalized_json_path})")
             elif is_simple_property(definition["type"]):
                 json_extract = jinja_call(f"json_extract_scalar({json_column_name}, {json_path}, {normalized_json_path})")
         return f"{json_extract} as {column_name}"
@@ -403,6 +409,10 @@ from {{ from_table }}
             sql_type = jinja_call("dbt_utils.type_bigint()")
         elif is_number(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_float()")
+        elif is_timestamp_with_time_zone(definition):
+            sql_type = jinja_call("type_timestamp_with_timezone()")
+        elif is_date(definition):
+            sql_type = jinja_call("type_date()")
         elif is_string(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_string()")
         else:
@@ -469,9 +479,7 @@ from {{ from_table }}
         """
         )
         sql = template.render(
-            hash_id=self.hash_id(),
-            from_table=jinja_call(from_table),
-            sql_table_comment=self.sql_table_comment(include_from_table=True),
+            hash_id=self.hash_id(), from_table=jinja_call(from_table), sql_table_comment=self.sql_table_comment(include_from_table=True)
         )
         return sql
 
@@ -584,6 +592,7 @@ from {{ from_table }}
             hash_id=self.hash_id(),
             from_table=jinja_call(from_table),
             sql_table_comment=self.sql_table_comment(include_from_table=True),
+            table_alias=self.table_alias,
         )
         return sql
 
@@ -659,6 +668,10 @@ from {{ from_table }}
         return result
 
     def hash_id(self) -> str:
+        if self.parent:
+            if self.normalized_stream_name().lower() == self.parent.stream_name.lower():
+                level = len(self.json_path)
+                return self.name_transformer.normalize_column_name(f"_airbyte_{self.normalized_stream_name()}_{level}_hashid")
         return self.name_transformer.normalize_column_name(f"_airbyte_{self.normalized_stream_name()}_hashid")
 
     # Nested Streams

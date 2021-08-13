@@ -1,87 +1,133 @@
 {
-  "documentationUrl": "https://docsurl.com",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/amazon-seller-partner",
+  "changelogUrl": "https://docs.airbyte.io/integrations/sources/amazon-seller-partner",
   "connectionSpecification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Amazon Seller Partner Spec",
     "type": "object",
+    "properties": {
+      "replication_start_date": {
+        "title": "Replication Start Date",
+        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "examples": ["2017-01-25T00:00:00Z"],
+        "type": "string"
+      },
+      "refresh_token": {
+        "title": "Refresh Token",
+        "description": "The refresh token used obtained via authorization (can be passed to the client instead)",
+        "airbyte_secret": true,
+        "type": "string"
+      },
+      "lwa_app_id": {
+        "title": "Lwa App Id",
+        "description": "Your login with amazon app id",
+        "airbyte_secret": true,
+        "type": "string"
+      },
+      "lwa_client_secret": {
+        "title": "Lwa Client Secret",
+        "description": "Your login with amazon client secret",
+        "airbyte_secret": true,
+        "type": "string"
+      },
+      "aws_access_key": {
+        "title": "Aws Access Key",
+        "description": "AWS user access key",
+        "airbyte_secret": true,
+        "type": "string"
+      },
+      "aws_secret_key": {
+        "title": "Aws Secret Key",
+        "description": "AWS user secret key",
+        "airbyte_secret": true,
+        "type": "string"
+      },
+      "role_arn": {
+        "title": "Role Arn",
+        "description": "The role's arn (needs permission to 'Assume Role' STS)",
+        "airbyte_secret": true,
+        "type": "string"
+      },
+      "aws_environment": {
+        "title": "AWSEnvironment",
+        "description": "An enumeration.",
+        "enum": ["PRODUCTION", "SANDBOX"],
+        "type": "string"
+      },
+      "region": {
+        "title": "AWSRegion",
+        "description": "An enumeration.",
+        "enum": [
+          "AE",
+          "DE",
+          "PL",
+          "EG",
+          "ES",
+          "FR",
+          "IN",
+          "IT",
+          "NL",
+          "SA",
+          "SE",
+          "TR",
+          "UK",
+          "AU",
+          "JP",
+          "SG",
+          "US",
+          "BR",
+          "CA",
+          "MX",
+          "GB"
+        ],
+        "type": "string"
+      }
+    },
     "required": [
-      "start_date",
+      "replication_start_date",
       "refresh_token",
       "lwa_app_id",
       "lwa_client_secret",
       "aws_access_key",
       "aws_secret_key",
-      "role_arn"
+      "role_arn",
+      "aws_environment",
+      "region"
     ],
-    "additionalProperties": false,
-    "properties": {
-      "start_date": {
-        "title": "Start Date",
-        "type": "string",
-        "description": "UTC date in the format 2017-01-25. Any data before this date will not be replicated.",
-        "examples": ["2017-01-25"]
+    "definitions": {
+      "AWSEnvironment": {
+        "title": "AWSEnvironment",
+        "description": "An enumeration.",
+        "enum": ["PRODUCTION", "SANDBOX"],
+        "type": "string"
       },
-      "refresh_token": {
-        "title": "Refresh Token",
-        "type": "string",
-        "description": "The refresh token used obtained via authorization (can be passed to the client instead)"
-      },
-      "lwa_app_id": {
-        "title": "LWA APP ID",
-        "type": "string",
-        "description": "Your login with amazon app id"
-      },
-      "lwa_client_secret": {
-        "title": "LWA Client Secret",
-        "type": "string",
-        "description": "Your login with amazon client secret"
-      },
-      "aws_access_key": {
-        "title": "AWS Access Key",
-        "type": "string",
-        "description": "AWS USER ACCESS KEY"
-      },
-      "aws_secret_key": {
-        "title": "AWS Secret Key",
-        "type": "string",
-        "description": "AWS USER SECRET KEY"
-      },
-      "role_arn": {
-        "title": "Role ARN",
-        "type": "string",
-        "description": "The role’s arn (needs permission to “Assume Role” STS)"
-      },
-      "seller_id": {
-        "title": "Seller ID",
-        "type": "string",
-        "description": "Amazon doesn't return seller_id in the response thus seller_id is added to each row as an identifier. Note: It is not used in querying the data."
-      },
-      "marketplace": {
-        "title": "Marketplace",
-        "type": "string",
-        "description": "The marketplace from which you'd like to pull data.",
+      "AWSRegion": {
+        "title": "AWSRegion",
+        "description": "An enumeration.",
         "enum": [
-          "Australia",
-          "Brazil",
-          "Canada",
-          "Egypt",
-          "France",
-          "Germany",
-          "India",
-          "Italy",
-          "Japan",
-          "Mexico",
-          "Netherlands",
-          "Poland",
-          "Singapore",
-          "Spain",
-          "Sweden",
-          "Turkey",
-          "UAE",
+          "AE",
+          "DE",
+          "PL",
+          "EG",
+          "ES",
+          "FR",
+          "IN",
+          "IT",
+          "NL",
+          "SA",
+          "SE",
+          "TR",
           "UK",
-          "USA"
+          "AU",
+          "JP",
+          "SG",
+          "US",
+          "BR",
+          "CA",
+          "MX",
+          "GB"
         ],
-        "$comment": "https://github.com/amzn/selling-partner-api-docs/blob/main/guides/en-US/developer-guide/SellingPartnerApiDeveloperGuide.md#marketplaceid-values"
+        "type": "string"
       }
     }
   }

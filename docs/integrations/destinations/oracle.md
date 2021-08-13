@@ -38,7 +38,16 @@ Make sure your Oracle database can be accessed by Airbyte. If your database is w
 
 #### **Permissions**
 
-You need an Oracle user with permissions to create tables and write rows, and to create other users with the same permissions in order to support namespaces. We highly recommend creating an Airbyte-specific user for this purpose.
+As Airbyte namespaces allows us to store data into different schemas, we have different scenarios and list of required permissions:
+
+| Login user | Destination user | Required permissions | Comment |
+| :--- | :--- | :--- | :--- |
+| DBA User | Any user | - | |
+| Regular user | Same user as login | Create, drop and write table, create session | |
+| Regular user | Any existing user | Create, drop and write ANY table, create session | Grants can be provided on a system level by DBA or by target user directly |
+| Regular user | Not existing user | Create, drop and write ANY table, create user, create session | Grants should be provided on a system level by DBA | 
+
+We highly recommend creating an Airbyte-specific user for this purpose.
 
 ### Setup the Oracle destination in Airbyte
 
@@ -53,4 +62,7 @@ You should now have all the requirements needed to configure Oracle as a destina
 ## Changelog
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
+| 0.1.5 | 2021-08-10 | [#5307](https://github.com/airbytehq/airbyte/pull/5307) | 🐛 Destination Oracle: Fix destination check for users without dba role |
+| 0.1.4 | 2021-07-30 | [#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
+| 0.1.3 | 2021-07-21 | [#3555](https://github.com/airbytehq/airbyte/pull/3555) | Partial Success in BufferedStreamConsumer |
 | 0.1.2 | 2021-07-20 | [4874](https://github.com/airbytehq/airbyte/pull/4874) | Require `sid` instead of `database` in connector specification |

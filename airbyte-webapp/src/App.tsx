@@ -12,6 +12,26 @@ import LoadingPage from "./components/LoadingPage";
 import ApiErrorBoundary from "./components/ApiErrorBoundary";
 import NotificationService from "components/hooks/services/Notification";
 import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
+import {
+  useCurrentWorkspace,
+  usePickFirstWorkspace,
+} from "components/hooks/services/useWorkspace";
+import { Feature, FeatureService } from "components/hooks/services/Feature";
+import { registerService } from "./core/servicesProvider";
+
+registerService("currentWorkspaceProvider", usePickFirstWorkspace);
+
+function useCustomerIdProvider() {
+  const workspace = useCurrentWorkspace();
+
+  return workspace.customerId;
+}
+
+const Features: Feature[] = [
+  {
+    id: "ALLOW_UPLOAD_CUSTOM_IMAGE",
+  },
+];
 
 const App: React.FC = () => {
   return (
@@ -21,13 +41,17 @@ const App: React.FC = () => {
         <IntlProvider locale="en" messages={en}>
           <CacheProvider>
             <Suspense fallback={<LoadingPage />}>
-              <ApiErrorBoundary>
-                <NotificationService>
-                  <AnalyticsInitializer>
-                    <Routing />
-                  </AnalyticsInitializer>
-                </NotificationService>
-              </ApiErrorBoundary>
+              <FeatureService features={Features}>
+                <ApiErrorBoundary>
+                  <NotificationService>
+                    <AnalyticsInitializer
+                      customerIdProvider={useCustomerIdProvider}
+                    >
+                      <Routing />
+                    </AnalyticsInitializer>
+                  </NotificationService>
+                </ApiErrorBoundary>
+              </FeatureService>
             </Suspense>
           </CacheProvider>
         </IntlProvider>

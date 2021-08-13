@@ -109,6 +109,7 @@ For `STANDARD` replication method this is not applicable. If you select the `CDC
 
 Your database user should now be ready for use with Airbyte.
 
+
 ## Change Data Capture \(CDC\)
 
 * If you need a record of deletions and can accept the limitations posted below, you should be able to use CDC for MySQL.
@@ -155,6 +156,9 @@ When a sync runs for the first time using CDC, Airbyte performs an initial consi
 Airbyte doesn't acquire any table locks (for tables defined with MyISAM engine, the tables would still be locked) while creating the snapshot to allow writes by other database clients. 
 But in order for the sync to work without any error/unexpected behaviour, it is assumed that no schema changes are happening while the snapshot is running.
 
+## Troubleshooting
+
+There may be problems with mapping values in MySQL's datetime field to other relational data stores. MySQL permits zero values for date/time instead of NULL which may not be accepted by other data stores. To work around this problem, you can pass the following key value pair in the JDBC connector of the source setting `zerodatetimebehavior=Converttonull`.
 
 ## Changelog
 
