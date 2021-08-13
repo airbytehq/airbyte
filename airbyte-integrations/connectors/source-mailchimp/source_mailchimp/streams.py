@@ -33,13 +33,17 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class MailChimpStream(HttpStream, ABC):
-    url_base = "https://us2.api.mailchimp.com/3.0/"
     primary_key = "id"
     page_size = 100
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.current_offset = 0
+        self.data_center = kwargs["authenticator"].data_center
+
+    @property
+    def url_base(self) -> str:
+        return f"https://{self.data_center}.api.mailchimp.com/3.0/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
@@ -72,7 +76,7 @@ class MailChimpStream(HttpStream, ABC):
     @property
     @abstractmethod
     def data_field(self) -> str:
-        """the responce entry that contains useful data"""
+        """The responce entry that contains useful data"""
         pass
 
 
@@ -127,6 +131,7 @@ class Campaigns(IncrementalMailChimpStream):
 class EmailActivity(IncrementalMailChimpStream):
     cursor_field = "timestamp"
     data_field = "emails"
+    primary_key = None
 
     def stream_slices(self, **kwargs):
         campaign_stream = Campaigns(authenticator=self.authenticator)
@@ -173,8 +178,5 @@ class EmailActivity(IncrementalMailChimpStream):
         # -> [[{'campaign_id', 'list_id', 'list_is_active', 'email_id', 'email_address', '**activity[i]', '_links'}, ...]]
         data = response_json[self.data_field]
         for item in data:
-            for activity_record in item["activity"]:
-                new_record = {k: v for k, v in item.items() if k != "activity"}
-                for k, v in activity_record.items():
-                    new_record[k] = v
-                yield new_record
+            for activity_item in item.pop("activity", []):
+                yield {**item, **activity_item}

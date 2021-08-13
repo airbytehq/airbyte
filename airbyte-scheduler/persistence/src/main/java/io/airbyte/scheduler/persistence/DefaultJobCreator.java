@@ -111,6 +111,8 @@ public class DefaultJobCreator implements JobCreator {
       throws IOException {
     // reusing this isn't going to quite work.
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
+        .withNamespaceDefinition(standardSync.getNamespaceDefinition())
+        .withNamespaceFormat(standardSync.getNamespaceFormat())
         .withPrefix(standardSync.getPrefix())
         .withSourceDockerImage(sourceDockerImageName)
         .withSourceConfiguration(source.getConfiguration())
@@ -118,7 +120,8 @@ public class DefaultJobCreator implements JobCreator {
         .withDestinationConfiguration(destination.getConfiguration())
         .withOperationSequence(standardSyncOperations)
         .withConfiguredAirbyteCatalog(standardSync.getCatalog())
-        .withState(null);
+        .withState(null)
+        .withResourceRequirements(standardSync.getResourceRequirements());
 
     jobPersistence.getCurrentState(standardSync.getConnectionId()).ifPresent(jobSyncConfig::withState);
 
@@ -148,11 +151,14 @@ public class DefaultJobCreator implements JobCreator {
     });
 
     final JobResetConnectionConfig resetConnectionConfig = new JobResetConnectionConfig()
+        .withNamespaceDefinition(standardSync.getNamespaceDefinition())
+        .withNamespaceFormat(standardSync.getNamespaceFormat())
         .withPrefix(standardSync.getPrefix())
         .withDestinationDockerImage(destinationDockerImage)
         .withDestinationConfiguration(destination.getConfiguration())
         .withOperationSequence(standardSyncOperations)
-        .withConfiguredAirbyteCatalog(configuredAirbyteCatalog);
+        .withConfiguredAirbyteCatalog(configuredAirbyteCatalog)
+        .withResourceRequirements(standardSync.getResourceRequirements());
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)

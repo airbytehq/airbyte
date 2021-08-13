@@ -8,6 +8,8 @@ For information about how to use this connector within Airbyte, see [the documen
 ### Prerequisites
 **To iterate on this connector, make sure to complete this prerequisites section.**
 
+#### Minimum Python version required `= 3.7.0`
+
 #### Build & Activate Virtual Environment and install dependencies
 From this connector directory, create a virtual environment:
 ```
@@ -96,3 +98,6 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 1. Create a Pull Request
 1. Pat yourself on the back for being an awesome contributor
 1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master
+
+### Changelog
+See the [docs](https://docs.airbyte.io/integrations/sources/sendgrid#changelog) for the changelog.

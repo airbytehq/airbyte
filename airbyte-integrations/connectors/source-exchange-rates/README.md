@@ -1,12 +1,14 @@
 # Exchange Rates Source
 
 This is the repository for the Exchange Rates source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/exchange-rates).
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/exchangeratesapi).
 
 ## Local development
 
 ### Prerequisites
 **To iterate on this connector, make sure to complete this prerequisites section.**
+
+#### Minimum Python version required `= 3.7.0`
 
 #### Build & Activate Virtual Environment and install dependencies
 From this connector directory, create a virtual environment:

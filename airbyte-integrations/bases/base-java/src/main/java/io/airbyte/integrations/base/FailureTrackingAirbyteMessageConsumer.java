@@ -74,7 +74,11 @@ public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMe
 
   @Override
   public void close() throws Exception {
-    LOGGER.info("hasFailed: {}.", hasFailed);
+    if (hasFailed) {
+      LOGGER.warn("Airbyte message consumer: failed.");
+    } else {
+      LOGGER.info("Airbyte message consumer: succeeded.");
+    }
     close(hasFailed);
   }
 

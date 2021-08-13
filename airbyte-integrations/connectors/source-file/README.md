@@ -12,6 +12,8 @@ For information about how to use this connector within Airbyte, see [the documen
 
 For this connector, you will need Rust, as it is a prerequisite for running `pip install cryptography`. You can do this with the recommended installation pattern noted [here](https://www.rust-lang.org/tools/install) on the Rust website.
 
+#### Minimum Python version required `= 3.7.0`
+
 #### Build & Activate Virtual Environment and install dependencies
 From this connector directory, create a virtual environment:
 ```

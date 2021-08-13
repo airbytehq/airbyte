@@ -24,6 +24,8 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static java.util.Objects.isNull;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
@@ -37,26 +39,25 @@ import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo.CreateDisposition;
 import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.WriteChannelConfiguration;
 import com.google.common.base.Charsets;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -64,43 +65,39 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQueryDestination implements Destination {
+public class BigQueryDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestination.class);
+  private static final int MiB = 1024 * 1024;
   static final String CONFIG_DATASET_ID = "dataset_id";
   static final String CONFIG_PROJECT_ID = "project_id";
+  static final String CONFIG_DATASET_LOCATION = "dataset_location";
   static final String CONFIG_CREDS = "credentials_json";
+  static final String BIG_QUERY_CLIENT_CHUNK_SIZE = "big_query_client_buffer_size_mb";
 
-  static final com.google.cloud.bigquery.Schema SCHEMA = com.google.cloud.bigquery.Schema.of(
+  private static final com.google.cloud.bigquery.Schema SCHEMA = com.google.cloud.bigquery.Schema.of(
       Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
       Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING),
       Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
 
-  private final StandardNameTransformer namingResolver;
+  private final BigQuerySQLNameTransformer namingResolver;
 
   public BigQueryDestination() {
-    namingResolver = new StandardNameTransformer();
-  }
-
-  @Override
-  public ConnectorSpecification spec() throws IOException {
-    // return a jsonschema representation of the spec for the integration.
-    final String resourceString = MoreResources.readResource("spec.json");
-    return Jsons.deserialize(resourceString, ConnectorSpecification.class);
+    namingResolver = new BigQuerySQLNameTransformer();
   }
 
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
     try {
       final String datasetId = config.get(CONFIG_DATASET_ID).asText();
+      final String datasetLocation = getDatasetLocation(config);
       final BigQuery bigquery = getBigQuery(config);
-      createSchemaTable(bigquery, datasetId);
+      createSchemaTable(bigquery, datasetId, datasetLocation);
       QueryJobConfiguration queryConfig = QueryJobConfiguration
           .newBuilder(String.format("SELECT * FROM %s.INFORMATION_SCHEMA.TABLES LIMIT 1;", datasetId))
           .setUseLegacySql(false)
@@ -118,32 +115,66 @@ public class BigQueryDestination implements Destination {
     }
   }
 
-  private void createSchemaTable(BigQuery bigquery, String datasetId) {
+  protected BigQuerySQLNameTransformer getNamingResolver() {
+    return namingResolver;
+  }
+
+  private static String getDatasetLocation(JsonNode config) {
+    if (config.has(CONFIG_DATASET_LOCATION)) {
+      return config.get(CONFIG_DATASET_LOCATION).asText();
+    } else {
+      return "US";
+    }
+  }
+
+  // https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html
+  private Integer getBigQueryClientChunkSize(JsonNode config) {
+    Integer chunkSizeFromConfig = null;
+    if (config.has(BIG_QUERY_CLIENT_CHUNK_SIZE)) {
+      chunkSizeFromConfig = config.get(BIG_QUERY_CLIENT_CHUNK_SIZE).asInt();
+      if (chunkSizeFromConfig <= 0) {
+        LOGGER.error("BigQuery client Chunk (buffer) size must be a positive number (MB), but was:" + chunkSizeFromConfig);
+        throw new IllegalArgumentException("BigQuery client Chunk (buffer) size must be a positive number (MB)");
+      }
+      chunkSizeFromConfig = chunkSizeFromConfig * MiB;
+    }
+    return chunkSizeFromConfig;
+  }
+
+  private void createSchemaTable(BigQuery bigquery, String datasetId, String datasetLocation) {
     final Dataset dataset = bigquery.getDataset(datasetId);
     if (dataset == null || !dataset.exists()) {
-      final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).build();
+      final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
       bigquery.create(datasetInfo);
     }
   }
 
   private BigQuery getBigQuery(JsonNode config) {
     final String projectId = config.get(CONFIG_PROJECT_ID).asText();
-    // handle the credentials json being passed as a json object or a json object already serialized as
-    // a string.
-    final String credentialsString =
-        config.get(CONFIG_CREDS).isObject() ? Jsons.serialize(config.get(CONFIG_CREDS)) : config.get(CONFIG_CREDS).asText();
-    try {
-      final ServiceAccountCredentials credentials = ServiceAccountCredentials
-          .fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
 
-      return BigQueryOptions.newBuilder()
+    try {
+      BigQueryOptions.Builder bigQueryBuilder = BigQueryOptions.newBuilder();
+      ServiceAccountCredentials credentials = null;
+      if (isUsingJsonCredentials(config)) {
+        // handle the credentials json being passed as a json object or a json object already serialized as
+        // a string.
+        final String credentialsString =
+            config.get(CONFIG_CREDS).isObject() ? Jsons.serialize(config.get(CONFIG_CREDS)) : config.get(CONFIG_CREDS).asText();
+        credentials = ServiceAccountCredentials
+            .fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
+      }
+      return bigQueryBuilder
           .setProjectId(projectId)
-          .setCredentials(credentials)
+          .setCredentials(!isNull(credentials) ? credentials : ServiceAccountCredentials.getApplicationDefault())
           .build()
           .getService();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public static boolean isUsingJsonCredentials(JsonNode config) {
+    return config.has(CONFIG_CREDS) && !config.get(CONFIG_CREDS).asText().isEmpty();
   }
 
   /**
@@ -173,7 +204,7 @@ public class BigQueryDestination implements Destination {
                                             ConfiguredAirbyteCatalog catalog,
                                             Consumer<AirbyteMessage> outputRecordCollector) {
     final BigQuery bigquery = getBigQuery(config);
-    Map<AirbyteStreamNameNamespacePair, WriteConfig> writeConfigs = new HashMap<>();
+    Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs = new HashMap<>();
     Set<String> existingSchemas = new HashSet<>();
 
     // create tmp tables if not exist
@@ -181,26 +212,54 @@ public class BigQueryDestination implements Destination {
       final AirbyteStream stream = configStream.getStream();
       final String streamName = stream.getName();
       final String schemaName = getSchema(config, configStream);
-      final String tableName = namingResolver.getRawTableName(streamName);
+      final String tableName = getTargetTableName(streamName);
       final String tmpTableName = namingResolver.getTmpTableName(streamName);
-      createSchemaAndTableIfNeeded(bigquery, existingSchemas, schemaName, tmpTableName);
-
+      final String datasetLocation = getDatasetLocation(config);
+      createSchemaAndTableIfNeeded(bigquery, existingSchemas, schemaName, tmpTableName, datasetLocation, stream.getJsonSchema());
+      final Schema schema = getBigQuerySchema(stream.getJsonSchema());
       // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
       final WriteChannelConfiguration writeChannelConfiguration = WriteChannelConfiguration
           .newBuilder(TableId.of(schemaName, tmpTableName))
           .setCreateDisposition(CreateDisposition.CREATE_IF_NEEDED)
-          .setSchema(SCHEMA)
+          .setSchema(schema)
           .setFormatOptions(FormatOptions.json()).build(); // new-line delimited json.
 
-      final TableDataWriteChannel writer = bigquery.writer(JobId.of(UUID.randomUUID().toString()), writeChannelConfiguration);
+      final JobId job = JobId.newBuilder()
+          .setRandomJob()
+          .setLocation(datasetLocation)
+          .setProject(bigquery.getOptions().getProjectId())
+          .build();
+
+      final TableDataWriteChannel writer = bigquery.writer(job, writeChannelConfiguration);
+
+      // this this optional value. If not set - use default client's value (15MiG)
+      final Integer bigQueryClientChunkSizeFomConfig = getBigQueryClientChunkSize(config);
+      if (bigQueryClientChunkSizeFomConfig != null) {
+        writer.setChunkSize(bigQueryClientChunkSizeFomConfig);
+      }
       final WriteDisposition syncMode = getWriteDisposition(configStream.getDestinationSyncMode());
 
       writeConfigs.put(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
-          new WriteConfig(TableId.of(schemaName, tableName), TableId.of(schemaName, tmpTableName), writer, syncMode));
+          new BigQueryWriteConfig(TableId.of(schemaName, tableName), TableId.of(schemaName, tmpTableName), writer, syncMode, schema));
     }
     // write to tmp tables
     // if success copy delete main table if exists. rename tmp tables to real tables.
+    return getRecordConsumer(bigquery, writeConfigs, catalog, outputRecordCollector);
+  }
+
+  protected String getTargetTableName(String streamName) {
+    return namingResolver.getRawTableName(streamName);
+  }
+
+  protected AirbyteMessageConsumer getRecordConsumer(BigQuery bigquery,
+                                                     Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
+                                                     ConfiguredAirbyteCatalog catalog,
+                                                     Consumer<AirbyteMessage> outputRecordCollector) {
     return new BigQueryRecordConsumer(bigquery, writeConfigs, catalog, outputRecordCollector);
+  }
+
+  protected Schema getBigQuerySchema(JsonNode jsonSchema) {
+    return SCHEMA;
   }
 
   private static String getSchema(JsonNode config, ConfiguredAirbyteStream stream) {
@@ -209,16 +268,21 @@ public class BigQueryDestination implements Destination {
     if (srcNamespace == null) {
       return defaultSchema;
     }
-
     return srcNamespace;
   }
 
-  private void createSchemaAndTableIfNeeded(BigQuery bigquery, Set<String> existingSchemas, String schemaName, String tmpTableName) {
+  private void createSchemaAndTableIfNeeded(BigQuery bigquery,
+                                            Set<String> existingSchemas,
+                                            String schemaName,
+                                            String tmpTableName,
+                                            String datasetLocation,
+                                            JsonNode jsonSchema) {
     if (!existingSchemas.contains(schemaName)) {
-      createSchemaTable(bigquery, schemaName);
+      createSchemaTable(bigquery, schemaName, datasetLocation);
       existingSchemas.add(schemaName);
     }
-    BigQueryUtils.createTable(bigquery, schemaName, tmpTableName, SCHEMA);
+    final Schema schema = getBigQuerySchema(jsonSchema);
+    BigQueryUtils.createTable(bigquery, schemaName, tmpTableName, schema);
   }
 
   private static WriteDisposition getWriteDisposition(DestinationSyncMode syncMode) {

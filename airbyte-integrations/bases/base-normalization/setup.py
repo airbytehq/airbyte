@@ -32,7 +32,11 @@ setuptools.setup(
     author_email="contact@airbyte.io",
     url="https://github.com/airbytehq/airbyte",
     packages=setuptools.find_packages(),
-    install_requires=["airbyte-protocol", "pyyaml", "jinja2"],
+    install_requires=[
+        "airbyte-protocol",
+        "pyyaml",
+        "jinja2",
+    ],
     package_data={"": ["*.yml"]},
     setup_requires=["pytest-runner"],
     entry_points={
@@ -42,6 +46,6 @@ setuptools.setup(
         ],
     },
     extras_require={
-        "tests": ["airbyte-protocol", "pytest"],
+        "tests": ["airbyte-protocol", "pytest", "mypy", "types-PyYAML"],
     },
 )

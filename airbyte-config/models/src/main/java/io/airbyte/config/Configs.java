@@ -25,12 +25,17 @@
 package io.airbyte.config;
 
 import java.nio.file.Path;
+import java.util.Set;
 
 public interface Configs {
 
   String getAirbyteRole();
 
   String getAirbyteVersion();
+
+  String getAirbyteApiUrl();
+
+  int getAirbyteApiPort();
 
   String getAirbyteVersionOrWarning();
 
@@ -46,6 +51,16 @@ public interface Configs {
 
   String getDatabaseUrl();
 
+  String getConfigDatabaseUser();
+
+  String getConfigDatabasePassword();
+
+  String getConfigDatabaseUrl();
+
+  int getMaxRetriesPerAttempt();
+
+  int getMaxSyncJobAttempts();
+
   String getWebappUrl();
 
   String getWorkspaceDockerMount();
@@ -56,11 +71,43 @@ public interface Configs {
 
   TrackingStrategy getTrackingStrategy();
 
+  DeploymentMode getDeploymentMode();
+
   WorkerEnvironment getWorkerEnvironment();
 
   WorkspaceRetentionConfig getWorkspaceRetentionConfig();
 
   String getTemporalHost();
+
+  Set<Integer> getTemporalWorkerPorts();
+
+  String getKubeNamespace();
+
+  String getSubmitterNumThreads();
+
+  // Resources
+  String getCpuRequest();
+
+  String getCpuLimit();
+
+  String getMemoryRequest();
+
+  String getMemoryLimit();
+
+  // Logging
+  String getS3LogBucket();
+
+  String getS3LogBucketRegion();
+
+  String getAwsAccessKey();
+
+  String getAwsSecretAccessKey();
+
+  String getS3MinioEndpoint();
+
+  String getGcpStorageBucket();
+
+  String getGoogleApplicationCredentials();
 
   enum TrackingStrategy {
     SEGMENT,
@@ -70,6 +117,11 @@ public interface Configs {
   enum WorkerEnvironment {
     DOCKER,
     KUBERNETES
+  }
+
+  enum DeploymentMode {
+    OSS,
+    CLOUD
   }
 
 }

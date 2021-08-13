@@ -27,6 +27,7 @@ package io.airbyte.workers;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.OperatorNormalization;
 import io.airbyte.config.OperatorNormalization.Option;
@@ -41,7 +42,7 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -119,6 +120,7 @@ public class TestConfigHelpers {
         .withSourceId(sourceId)
         .withStatus(Status.ACTIVE)
         .withName(CONNECTION_NAME)
+        .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
         .withPrefix(CONNECTION_NAME)
         .withCatalog(catalog)
         .withOperationIds(List.of(normalizationOperationId, dbtOperationId));
@@ -128,6 +130,7 @@ public class TestConfigHelpers {
     final State state = new State().withState(Jsons.jsonNode(stateValue));
 
     final StandardSyncInput syncInput = new StandardSyncInput()
+        .withNamespaceDefinition(standardSync.getNamespaceDefinition())
         .withPrefix(standardSync.getPrefix())
         .withDestinationConfiguration(destinationConnectionConfig.getConfiguration())
         .withCatalog(standardSync.getCatalog())

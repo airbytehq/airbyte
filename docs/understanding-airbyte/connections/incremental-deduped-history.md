@@ -4,7 +4,7 @@
 
 Airbyte supports syncing data in **Incremental Deduped History** mode i.e:
 
-1. **Incremental** means syncing only replicate _new_ or _modified_ data. This prevents re-fetching data that you have already replicated from a source.
+1. **Incremental** means syncing only replicate _new_ or _modified_ data. This prevents re-fetching data that you have already replicated from a source. If the sync is running for the first time, it is equivalent to a [Full Refresh](full-refresh-append.md) since all data will be considered as _new_.
 2. **Deduped** means that data in the final table will be unique per primary key \(unlike [Append modes](incremental-append.md)\). This is determined by sorting the data using the cursor field and keeping only the latest de-duplicated data row. In dimensional data warehouse jargon defined by Ralph Kimball, this is referred as a Slowly Changing Dimension \(SCD\) table of type 1.
 3. **History** means that an additional intermediate table is created in which data is being continuously appended to \(with duplicates exactly like [Append modes](incremental-append.md)\). With the use of primary key fields, it is identifying effective `start` and `end` dates of each row of a record. In dimensional data warehouse jargon, this is referred as a Slowly Changing Dimension \(SCD\) table of type 2.
 
@@ -30,65 +30,53 @@ As mentioned above, the delta from a sync will be _appended_ to the existing his
 
 Assume that `updated_at` is our `cursor_field` and `name` is the `primary_key`. Let's say the following data already exists into our data warehouse.
 
-```javascript
-[
-    { "name": "Louis XVI", "deceased": false, "updated_at":  1754 },
-    { "name": "Marie Antoinette", "deceased": false, "updated_at":  1755 }
-]
-```
+| name | deceased | updated_at |
+| :--- | :--- | :--- |
+| Louis XVI | false | 1754 |
+| Marie Antoinette | false | 1755 |
 
 In the next sync, the delta contains the following record:
 
-```javascript
-    { "name": "Louis XVII", "deceased": false, "updated_at": 1785 }
-```
+| name | deceased | updated_at |
+| :--- | :--- | :--- |
+| Louis XVII | false | 1785 |
 
 At the end of this incremental sync, the data warehouse would now contain:
 
-```javascript
-[
-    { "name": "Louis XVI", "deceased": false, "updated_at":  1754 },
-    { "name": "Marie Antoinette", "deceased": false, "updated_at":  1755 },
-    { "name": "Louis XVII", "deceased": false, "updated_at": 1785 }
-]
-```
+| name | deceased | updated_at |
+| :--- | :--- | :--- |
+| Louis XVI | false | 1754 |
+| Marie Antoinette | false | 1755 |
+| Louis XVII | false | 1785 |
 
 ### Updating a Record
 
-Let's assume that our warehouse contains all the data that it did at the end of the previous section. Now unfortunately the king and queen lose their heads. Let's see that delta:
+Let's assume that our warehouse contains all the data that it did at the end of the previous section. Now, unfortunately the king and queen lose their heads. Let's see that delta:
 
-```javascript
-[
-    { "name": "Louis XVI", "deceased": true, "updated_at": 1793 },
-    { "name": "Marie Antoinette", "deceased": true, "updated_at": 1793 }
-]
-```
+| name | deceased | updated_at |
+| :--- | :--- | :--- |
+| Louis XVI | true | 1793 |
+| Marie Antoinette | true | 1793 |
 
 The output we expect to see in the warehouse is as follows:
 
 In the history table:
 
-```javascript
-[
-    { "name": "Louis XVI", "deceased": false, "updated_at":  1754, "start_at": 1754, "end_at": 1793 },
-    { "name": "Louis XVI", "deceased": true, "updated_at": 1793, "start_at": 1793, "end_at": NULL },
-
-    { "name": "Louis XVII", "deceased": false, "updated_at": 1785, "start_at": 1785, "end_at": NULL }
-
-    { "name": "Marie Antoinette", "deceased": false, "updated_at":  1755, "start_at": 1755, "end_at": 1793 },
-    { "name": "Marie Antoinette", "deceased": true, "updated_at": 1793, "start_at: 1793, "end_at": NULL }
-]
-```
+| name | deceased | updated_at | start_at | end_at |
+| :--- | :--- | :--- | :--- | :--- |
+| Louis XVI | false | 1754 | 1754 | 1793 |
+| Louis XVI | true | 1793 | 1793 | NULL |
+| Louis XVII | false | 1785 | 1785 | NULL |
+| Marie Antoinette | false | 1755 | 1755 | 1793 |
+| Marie Antoinette | true | 1793 | 1793 | NULL |
 
 In the final de-duplicated table:
 
-```javascript
-[
-    { "name": "Louis XVI", "deceased": true, "updated_at": 1793 },
-    { "name": "Louis XVII", "deceased": false, "updated_at": 1785 },
-    { "name": "Marie Antoinette", "deceased": true, "updated_at": 1793 }
-]
-```
+| name | deceased | updated_at |
+| :--- | :--- | :--- |
+| Louis XVI | true | 1793 |
+| Louis XVII | false | 1785 |
+| Marie Antoinette | true | 1793 |
 
 ## Source-Defined Cursor
 
@@ -134,39 +122,33 @@ select * from table where cursor_field > 'last_sync_max_cursor_field_value'
 
 Let's say the following data already exists into our data warehouse.
 
-```javascript
-[
-    { "name": "Louis XVI", "deceased": false, "updated_at":  1754 },
-    { "name": "Marie Antoinette", "deceased": false, "updated_at":  1755 }
-]
-```
+| name | deceased | updated_at |
+| :--- | :--- | :--- |
+| Louis XVI | false | 1754 |
+| Marie Antoinette | false | 1755 |
 
 At the start of the next sync, the source data contains the following new record:
 
-```javascript
-[
-    { "name": "Louis XVI", "deceased": true, "updated_at":  1754 },
-]
-```
+| name | deceased | updated_at |
+| :--- | :--- | :--- |
+| Louis XVI | true | 1754 |
 
 At the end of the second incremental sync, the data warehouse would still contain data from the first sync because the delta record did not provide a valid value for the cursor field \(the cursor field is not greater than last sync's max value, `1754 < 1755`\), so it is not emitted by the source as a new or modified record.
 
-```javascript
-[
-    { "name": "Louis XVI", "deceased": false, "updated_at":  1754 },
-    { "name": "Marie Antoinette", "deceased": false, "updated_at":  1755 }
-]
-```
+| name | deceased | updated_at |
+| :--- | :--- | :--- |
+| Louis XVI | false | 1754 |
+| Marie Antoinette | false | 1755 |
 
 Similarly, if multiple modifications are made during the same day to the same records. If the frequency of the sync is not granular enough \(for example, set for every 24h\), then intermediate modifications to the data are not going to be detected and emitted. Only the state of data at the time the sync runs will be reflected in the destination.
 
-Those concerns could be solved by using a different sync mode based on binary logs, Write-Ahead-Logs \(WAL\), or also called **Incremental - Change Data Capture**. \(coming to Airbyte in the near future\).
+Those concerns could be solved by using a different incremental approach based on binary logs, Write-Ahead-Logs \(WAL\), or also called [Change Data Capture (CDC)](../cdc.md).
 
 The current behavior of **Incremental** is not able to handle source schema changes yet, for example, when a column is added, renamed or deleted from an existing table etc. It is recommended to trigger a [Full refresh - Overwrite](full-refresh-overwrite.md) to correctly replicate the data to the destination with the new schema changes.
 
-Additionally, this sync mode is only supported for destinations where DBT/normalization is possible for the moment.
-The de-duplicating logic is indeed implemented as DBT models as part of a sequence of transformations applied after the Extract and Load activities (thus, an ELT approach).
+Additionally, this sync mode is only supported for destinations where dbt/normalization is possible for the moment.
+The de-duplicating logic is indeed implemented as dbt models as part of a sequence of transformations applied after the Extract and Load activities (thus, an ELT approach).
 Nevertheless, it is theoretically possible that destinations can handle directly this logic (maybe in the future) before actually writing records to the destination (as in traditional ETL manner), but that's not the way it is implemented at this time.
 
-If you are not satisfied with how transformations are applied on top of the appended data, you can find more relevant SQL transformations you might need to do on your data in the [Connecting EL with T using SQL \(part 1/2\)](../../tutorials/transformation-and-normalization/transformations-with-sql.md)
+If you are not satisfied with how transformations are applied on top of the appended data, you can find more relevant SQL transformations you might need to do on your data in the [Connecting EL with T using SQL \(part 1/2\)](../../operator-guides/transformation-and-normalization/transformations-with-sql.md)
 

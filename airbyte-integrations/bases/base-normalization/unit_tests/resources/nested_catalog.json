@@ -411,15 +411,15 @@
                 }
               }
             }
-          },
-          "supported_sync_modes": ["full_refresh"],
-          "source_defined_cursor": false,
-          "default_cursor_field": []
+          }
         },
-        "sync_mode": "full_refresh",
-        "cursor_field": [],
-        "destination_sync_mode": "overwrite"
-      }
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "default_cursor_field": []
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

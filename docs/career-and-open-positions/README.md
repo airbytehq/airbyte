@@ -33,9 +33,9 @@ Here are the values we deeply believe in:
 
 ## **Our Investors**
 
-We are raised $31M seed and Series-A round with Benchmark, Accel, YCombinator, 8VC, and a few leaders in the data industry \(including the co-founder of Elastic, MongoDB, Segment, Liveramp, the former GM of Cloudera\).
+We have raised $31M seed and Series-A round with Benchmark, Accel, YCombinator, 8VC, and a few leaders in the data industry \(including the co-founder of Elastic, MongoDB, Segment, Liveramp, the former GM of Cloudera\).
 
-We have a lot of capital, but [we're a lean, strong team](https://handbook.airbyte.io/company/team) - so you've got the opportunity to have a huge impact.
+We have a lot of capital, but [we're a lean, strong team](https://airbyte.io/about-us) - so you've got the opportunity to have a huge impact.
 
 ## **Our Recruiting Process**
 
@@ -62,4 +62,6 @@ Once all of this done, we will discuss the process internally and get back to yo
 * **401k** for the US employees. 
 * **Sponsored visas** for those who need them
 * We'll give you a corporate card for expenses. Our philosophy is Freedom & Responsibiility. We trust you, just do what's best for the company.
+
+An important note: At Airbyte, we don’t just accept difference — we celebrate it, we support it, and we thrive on it for the benefit of our employees, our product, and our community. Airbyte is proud to be an **Equal Opportunity Workplace** and is an **Affirmative Action employer**.
 

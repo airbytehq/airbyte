@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "color": {
+      "type": "string"
+    },
+    "descriptionI18nKey": {
+      "type": "string"
+    },
+    "formattedKey": {
+      "type": "string"
+    },
+    "icon": {
+      "type": "string"
+    },
+    "key": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

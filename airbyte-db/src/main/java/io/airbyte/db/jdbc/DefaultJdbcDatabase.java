@@ -28,6 +28,7 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import java.io.Closeable;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -41,7 +42,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Database object for interacting with a JDBC connection. Can be used for any JDBC compliant db.
  */
-public class DefaultJdbcDatabase implements JdbcDatabase {
+public class DefaultJdbcDatabase extends JdbcDatabase {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJdbcDatabase.class);
 
@@ -84,6 +85,14 @@ public class DefaultJdbcDatabase implements JdbcDatabase {
             throw new RuntimeException(e);
           }
         });
+  }
+
+  @Override
+  public DatabaseMetaData getMetaData() throws SQLException {
+    Connection conn = connectionSupplier.getConnection();
+    DatabaseMetaData metaData = conn.getMetaData();
+    conn.close();
+    return metaData;
   }
 
   /**

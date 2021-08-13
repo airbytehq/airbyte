@@ -90,9 +90,11 @@ public class SourceHandler {
         new ConfigurationUpdate(configRepository, specFetcher));
   }
 
-  public SourceRead createSource(SourceCreate sourceCreate) throws ConfigNotFoundException, IOException, JsonValidationException {
+  public SourceRead createSource(SourceCreate sourceCreate)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     // validate configuration
-    ConnectorSpecification spec = getSpecFromSourceDefinitionId(sourceCreate.getSourceDefinitionId());
+    ConnectorSpecification spec = getSpecFromSourceDefinitionId(
+        sourceCreate.getSourceDefinitionId());
     validateSource(spec, sourceCreate.getConnectionConfiguration());
 
     // persist
@@ -109,8 +111,12 @@ public class SourceHandler {
     return buildSourceRead(sourceId, spec);
   }
 
-  public SourceRead updateSource(SourceUpdate sourceUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
-    final SourceConnection updatedSource = configurationUpdate.source(sourceUpdate.getSourceId(), sourceUpdate.getConnectionConfiguration());
+  public SourceRead updateSource(SourceUpdate sourceUpdate)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+
+    final SourceConnection updatedSource = configurationUpdate
+        .source(sourceUpdate.getSourceId(), sourceUpdate.getName(),
+            sourceUpdate.getConnectionConfiguration());
     ConnectorSpecification spec = getSpecFromSourceId(updatedSource.getSourceId());
     validateSource(spec, sourceUpdate.getConnectionConfiguration());
 
@@ -127,7 +133,8 @@ public class SourceHandler {
     return buildSourceRead(sourceUpdate.getSourceId(), spec);
   }
 
-  public SourceRead getSource(SourceIdRequestBody sourceIdRequestBody) throws JsonValidationException, IOException, ConfigNotFoundException {
+  public SourceRead getSource(SourceIdRequestBody sourceIdRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     final UUID sourceId = sourceIdRequestBody.getSourceId();
     final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
 
@@ -156,7 +163,8 @@ public class SourceHandler {
     return new SourceReadList().sources(reads);
   }
 
-  public void deleteSource(SourceIdRequestBody sourceIdRequestBody) throws JsonValidationException, IOException, ConfigNotFoundException {
+  public void deleteSource(SourceIdRequestBody sourceIdRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     // get existing source
     final SourceRead source = buildSourceRead(sourceIdRequestBody.getSourceId());
     deleteSource(source);
@@ -166,8 +174,10 @@ public class SourceHandler {
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // "delete" all connections associated with source as well.
     // Delete connections first in case it it fails in the middle, source will still be visible
-    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(source.getWorkspaceId());
-    for (ConnectionRead connectionRead : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
+    final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody()
+        .workspaceId(source.getWorkspaceId());
+    for (ConnectionRead connectionRead : connectionsHandler
+        .listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
       if (!connectionRead.getSourceId().equals(source.getSourceId())) {
         continue;
       }
@@ -185,10 +195,13 @@ public class SourceHandler {
         source.getConnectionConfiguration());
   }
 
-  private SourceRead buildSourceRead(UUID sourceId) throws ConfigNotFoundException, IOException, JsonValidationException {
+  private SourceRead buildSourceRead(UUID sourceId)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     // read configuration from db
-    final StandardSourceDefinition sourceDef = configRepository.getSourceDefinitionFromSource(sourceId);
-    final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
+    final StandardSourceDefinition sourceDef = configRepository
+        .getSourceDefinitionFromSource(sourceId);
+    final String imageName = DockerUtils
+        .getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
     final ConnectorSpecification spec = specFetcher.execute(imageName);
     return buildSourceRead(sourceId, spec);
   }
@@ -197,25 +210,31 @@ public class SourceHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // read configuration from db
     final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
-    final StandardSourceDefinition standardSourceDefinition = configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
-    final JsonNode sanitizedConfig = secretsProcessor.maskSecrets(sourceConnection.getConfiguration(), spec.getConnectionSpecification());
+    final StandardSourceDefinition standardSourceDefinition = configRepository
+        .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
+    final JsonNode sanitizedConfig = secretsProcessor
+        .maskSecrets(sourceConnection.getConfiguration(), spec.getConnectionSpecification());
     sourceConnection.setConfiguration(sanitizedConfig);
     return toSourceRead(sourceConnection, standardSourceDefinition);
   }
 
-  private void validateSource(ConnectorSpecification spec, JsonNode implementationJson) throws JsonValidationException {
+  private void validateSource(ConnectorSpecification spec, JsonNode implementationJson)
+      throws JsonValidationException {
     validator.ensure(spec.getConnectionSpecification(), implementationJson);
   }
 
-  private ConnectorSpecification getSpecFromSourceId(UUID sourceId) throws IOException, JsonValidationException, ConfigNotFoundException {
+  private ConnectorSpecification getSpecFromSourceId(UUID sourceId)
+      throws IOException, JsonValidationException, ConfigNotFoundException {
     final SourceConnection source = configRepository.getSourceConnection(sourceId);
     return getSpecFromSourceDefinitionId(source.getSourceDefinitionId());
   }
 
   private ConnectorSpecification getSpecFromSourceDefinitionId(UUID sourceDefId)
       throws IOException, JsonValidationException, ConfigNotFoundException {
-    final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceDefId);
-    final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
+    final StandardSourceDefinition sourceDef = configRepository
+        .getStandardSourceDefinition(sourceDefId);
+    final String imageName = DockerUtils
+        .getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
     return specFetcher.execute(imageName);
   }
 

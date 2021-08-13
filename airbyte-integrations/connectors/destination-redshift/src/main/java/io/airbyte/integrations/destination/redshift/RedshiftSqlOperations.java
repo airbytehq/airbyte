@@ -41,7 +41,7 @@ public class RedshiftSqlOperations extends DefaultSqlOperations implements SqlOp
   protected static final int REDSHIFT_VARCHAR_MAX_BYTE_SIZE = 65535;
 
   @Override
-  public String createTableQuery(String schemaName, String tableName) {
+  public String createTableQuery(JdbcDatabase database, String schemaName, String tableName) {
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s VARCHAR PRIMARY KEY,\n"

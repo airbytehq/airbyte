@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FormattedMessage } from "react-intl";
 
-import { Button } from "components/Button";
+import { Button } from "components";
 
 const Content = styled.div`
   display: flex;
@@ -49,7 +49,7 @@ const EditorRow: React.FC<EditorRowProps> = ({
     <Content>
       <div>{name || id}</div>
       <div>
-        <Button secondary onClick={() => onEdit(id)}>
+        <Button secondary onClick={() => onEdit(id)} type="button">
           <FormattedMessage id="form.edit" />
         </Button>
         <Delete icon={faTimes} onClick={() => onRemove(id)} />

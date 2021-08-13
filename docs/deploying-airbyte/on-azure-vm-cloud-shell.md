@@ -121,18 +121,18 @@ For security reasons, we strongly recommend to not expose Airbyte on Internet av
 This part assumes that you have access to a terminal on your workstation
 {% endhint %}
 
-* Create ssh tunnels for port 8000 \(the static web server\) and port 8001 \(the api server\)
+* Create ssh tunnel for port 8000
 
   ```bash
   # Inside your workstation terminal
   # 1. Replace $SSH_KEY with private key path downloaded from earlier steps
   # 2. Replace $INSTANCE_IP with publicIpAddress noted from earlier steps
-  ssh -i $SSH_KEY -L 8000:localhost:8000 -L 8001:localhost:8001 -N -f byteuser@$INSTANCE_IP
+  ssh -i $SSH_KEY -L 8000:localhost:8000 -N -f byteuser@$INSTANCE_IP
   ```
 
 * Just visit [http://localhost:8000](http://localhost:8000) in your browser and start moving some data!
 
 ## Troubleshooting
 
-If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [FAQ](../faq/technical-support.md) section in our docs for common problems.
+If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [FAQ](../troubleshooting/on-deploying.md) section in our docs for common problems.
 

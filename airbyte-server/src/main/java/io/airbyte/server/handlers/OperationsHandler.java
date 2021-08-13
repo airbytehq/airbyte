@@ -31,7 +31,6 @@ import io.airbyte.api.model.CheckOperationRead;
 import io.airbyte.api.model.CheckOperationRead.StatusEnum;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.OperationCreate;
-import io.airbyte.api.model.OperationCreateOrUpdate;
 import io.airbyte.api.model.OperationIdRequestBody;
 import io.airbyte.api.model.OperationRead;
 import io.airbyte.api.model.OperationReadList;
@@ -50,6 +49,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -69,9 +69,9 @@ public class OperationsHandler {
     this(configRepository, UUID::randomUUID);
   }
 
-  public CheckOperationRead checkOperation(OperationCreateOrUpdate operationCreateOrUpdate) {
+  public CheckOperationRead checkOperation(OperatorConfiguration operationCheck) {
     try {
-      toStandardSyncOperation(operationCreateOrUpdate);
+      validateOperation(operationCheck);
     } catch (IllegalArgumentException e) {
       return new CheckOperationRead().status(StatusEnum.FAILED)
           .message(e.getMessage());
@@ -89,6 +89,7 @@ public class OperationsHandler {
 
   private static StandardSyncOperation toStandardSyncOperation(OperationCreate operationCreate) {
     final StandardSyncOperation standardSyncOperation = new StandardSyncOperation()
+        .withWorkspaceId(operationCreate.getWorkspaceId())
         .withName(operationCreate.getName())
         .withOperatorType(Enums.convertTo(operationCreate.getOperatorConfiguration().getOperatorType(), OperatorType.class))
         .withTombstone(false);
@@ -108,25 +109,13 @@ public class OperationsHandler {
     return standardSyncOperation;
   }
 
-  private static StandardSyncOperation toStandardSyncOperation(OperationCreateOrUpdate operationCreate) {
-    final StandardSyncOperation standardSyncOperation = new StandardSyncOperation()
-        .withName(operationCreate.getName())
-        .withOperatorType(Enums.convertTo(operationCreate.getOperatorConfiguration().getOperatorType(), OperatorType.class))
-        .withTombstone(false);
-    if (operationCreate.getOperatorConfiguration().getOperatorType() == io.airbyte.api.model.OperatorType.NORMALIZATION) {
-      Preconditions.checkArgument(operationCreate.getOperatorConfiguration().getNormalization() != null);
-      standardSyncOperation.withOperatorNormalization(new OperatorNormalization()
-          .withOption(Enums.convertTo(operationCreate.getOperatorConfiguration().getNormalization().getOption(), Option.class)));
+  private void validateOperation(OperatorConfiguration operatorConfiguration) {
+    if (operatorConfiguration.getOperatorType() == io.airbyte.api.model.OperatorType.NORMALIZATION) {
+      Preconditions.checkArgument(operatorConfiguration.getNormalization() != null);
     }
-    if (operationCreate.getOperatorConfiguration().getOperatorType() == io.airbyte.api.model.OperatorType.DBT) {
-      Preconditions.checkArgument(operationCreate.getOperatorConfiguration().getDbt() != null);
-      standardSyncOperation.withOperatorDbt(new OperatorDbt()
-          .withGitRepoUrl(operationCreate.getOperatorConfiguration().getDbt().getGitRepoUrl())
-          .withGitRepoBranch(operationCreate.getOperatorConfiguration().getDbt().getGitRepoBranch())
-          .withDockerImage(operationCreate.getOperatorConfiguration().getDbt().getDockerImage())
-          .withDbtArguments(operationCreate.getOperatorConfiguration().getDbt().getDbtArguments()));
+    if (operatorConfiguration.getOperatorType() == io.airbyte.api.model.OperatorType.DBT) {
+      Preconditions.checkArgument(operatorConfiguration.getDbt() != null);
     }
-    return standardSyncOperation;
   }
 
   public OperationRead updateOperation(OperationUpdate operationUpdate)
@@ -169,14 +158,12 @@ public class OperationsHandler {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final List<OperationRead> operationReads = Lists.newArrayList();
     final StandardSync standardSync = configRepository.getStandardSync(connectionIdRequestBody.getConnectionId());
-    for (StandardSyncOperation standardSyncOperation : configRepository.listStandardSyncOperations()) {
+    for (UUID operationId : standardSync.getOperationIds()) {
+      final StandardSyncOperation standardSyncOperation = configRepository.getStandardSyncOperation(operationId);
       if (standardSyncOperation.getTombstone() != null && standardSyncOperation.getTombstone()) {
         continue;
       }
-      if (!standardSync.getOperationIds().contains(standardSyncOperation.getOperationId())) {
-        continue;
-      }
-      operationReads.add(buildOperationRead(standardSyncOperation.getOperationId()));
+      operationReads.add(buildOperationRead(standardSyncOperation));
     }
     return new OperationReadList().operations(operationReads);
   }
@@ -198,10 +185,10 @@ public class OperationsHandler {
     deleteOperationsForConnection(standardSync, deleteOperationIds);
   }
 
-  public void deleteOperationsForConnection(StandardSync standardSync, List<UUID> deleteOperationIds)
+  public void deleteOperationsForConnection(final StandardSync standardSync, final List<UUID> deleteOperationIds)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final List<StandardSync> allStandardSyncs = configRepository.listStandardSyncs();
-    final List<UUID> operationIds = standardSync.getOperationIds();
+    final List<UUID> operationIds = new ArrayList<>(standardSync.getOperationIds());
     for (UUID operationId : deleteOperationIds) {
       operationIds.remove(operationId);
       boolean sharedOperation = false;
@@ -269,6 +256,7 @@ public class OperationsHandler {
           .dbtArguments(standardSyncOperation.getOperatorDbt().getDbtArguments()));
     }
     return new OperationRead()
+        .workspaceId(standardSyncOperation.getWorkspaceId())
         .operationId(standardSyncOperation.getOperationId())
         .name(standardSyncOperation.getName())
         .operatorConfiguration(operatorConfiguration);

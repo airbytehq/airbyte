@@ -74,7 +74,11 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
   public void testCheckConnectionInvalidCredentials() {}
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception {
+  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
+                                           String streamName,
+                                           String namespace,
+                                           JsonNode streamSchema)
+      throws Exception {
     final List<Path> allOutputs = Files.list(testEnv.getLocalRoot().resolve(RELATIVE_PATH)).collect(Collectors.toList());
     final Optional<Path> streamOutput =
         allOutputs.stream().filter(path -> path.getFileName().toString().contains(new StandardNameTransformer().getRawTableName(streamName)))

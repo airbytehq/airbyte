@@ -24,7 +24,6 @@
 
 package io.airbyte.workers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
@@ -62,12 +61,11 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
   @Override
   public AirbyteCatalog run(final StandardDiscoverCatalogInput discoverSchemaInput, final Path jobRoot) throws WorkerException {
-
-    final JsonNode configDotJson = discoverSchemaInput.getConnectionConfiguration();
-    IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
-
     try {
-      process = integrationLauncher.discover(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME);
+      process = integrationLauncher.discover(
+          jobRoot,
+          WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
+          Jsons.serialize(discoverSchemaInput.getConnectionConfiguration()));
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 

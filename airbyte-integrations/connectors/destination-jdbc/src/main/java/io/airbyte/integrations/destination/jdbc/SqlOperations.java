@@ -35,7 +35,8 @@ public interface SqlOperations {
   /**
    * Create a schema with provided name if it does not already exist.
    *
-   * @param schemaName name of schema.
+   * @param database Database that the connector is syncing
+   * @param schemaName Name of schema.
    * @throws Exception exception
    */
   void createSchemaIfNotExists(JdbcDatabase database, String schemaName) throws Exception;
@@ -43,8 +44,9 @@ public interface SqlOperations {
   /**
    * Create a table with provided name in provided schema if it does not already exist.
    *
-   * @param schemaName name of schema
-   * @param tableName name of table
+   * @param database Database that the connector is syncing
+   * @param schemaName Name of schema
+   * @param tableName Name of table
    * @throws Exception exception
    */
   void createTableIfNotExists(JdbcDatabase database, String schemaName, String tableName) throws Exception;
@@ -52,17 +54,18 @@ public interface SqlOperations {
   /**
    * Query to create a table with provided name in provided schema if it does not already exist.
    *
-   * @param schemaName name of schema
-   * @param tableName name of table
+   * @param database Database that the connector is syncing
+   * @param schemaName Name of schema
+   * @param tableName Name of table
    * @return query
    */
-  String createTableQuery(String schemaName, String tableName);
+  String createTableQuery(JdbcDatabase database, String schemaName, String tableName);
 
   /**
    * Drop the table if it exists.
    *
-   * @param schemaName name of schema
-   * @param tableName name of table
+   * @param schemaName Name of schema
+   * @param tableName Name of table
    * @throws Exception exception
    */
   void dropTableIfExists(JdbcDatabase database, String schemaName, String tableName) throws Exception;
@@ -70,18 +73,20 @@ public interface SqlOperations {
   /**
    * Query to remove all records from a table. Assumes the table exists.
    *
-   * @param schemaName name of schema
-   * @param tableName name of table
-   * @return query
+   * @param database Database that the connector is syncing
+   * @param schemaName Name of schema
+   * @param tableName Name of table
+   * @return Query
    */
-  String truncateTableQuery(String schemaName, String tableName);
+  String truncateTableQuery(JdbcDatabase database, String schemaName, String tableName);
 
   /**
    * Insert records into table. Assumes the table exists.
    *
-   * @param records records to insert.
-   * @param schemaName name of schema
-   * @param tableName name of table
+   * @param database Database that the connector is syncing
+   * @param records Records to insert.
+   * @param schemaName Name of schema
+   * @param tableName Name of table
    * @throws Exception exception
    */
   void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tableName) throws Exception;
@@ -90,17 +95,19 @@ public interface SqlOperations {
    * Query to copy all records from source table to destination table. Both tables must be in the
    * specified schema. Assumes both table exist.
    *
-   * @param schemaName name of schema
-   * @param sourceTableName name of source table
-   * @param destinationTableName name of destination table
-   * @return query
+   * @param database Database that the connector is syncing
+   * @param schemaName Name of schema
+   * @param sourceTableName Name of source table
+   * @param destinationTableName Name of destination table
+   * @return Query
    */
-  String copyTableQuery(String schemaName, String sourceTableName, String destinationTableName);
+  String copyTableQuery(JdbcDatabase database, String schemaName, String sourceTableName, String destinationTableName);
 
   /**
    * Given an arbitrary number of queries, execute a transaction.
    *
-   * @param queries queries to execute
+   * @param database Database that the connector is syncing
+   * @param queries Queries to execute
    * @throws Exception exception
    */
   void executeTransaction(JdbcDatabase database, List<String> queries) throws Exception;

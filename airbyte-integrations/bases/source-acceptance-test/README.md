@@ -21,11 +21,11 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "sample_files/configured_catalog.json"
-      validate_output_from_all_streams: true
+      empty_streams: []
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "sample_files/configured_catalog.json"
-      state_path: "sample_files/abnormal_state.json"
+      future_state_path: "sample_files/abnormal_state.json"
       cursor_paths:
         subscription_changes: ["timestamp"]
         email_events: ["timestamp"]

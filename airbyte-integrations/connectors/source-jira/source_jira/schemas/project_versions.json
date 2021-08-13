@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "archived": {
+      "type": "boolean"
+    },
+    "description": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "overdue": {
+      "type": "boolean"
+    },
+    "projectId": {
+      "type": "integer"
+    },
+    "releaseDate": {
+      "type": "string"
+    },
+    "released": {
+      "type": "boolean"
+    },
+    "self": {
+      "type": "string"
+    },
+    "startDate": {
+      "type": "string"
+    },
+    "userReleaseDate": {
+      "type": "string"
+    },
+    "userStartDate": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

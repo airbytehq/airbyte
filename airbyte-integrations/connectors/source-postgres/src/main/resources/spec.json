@@ -59,22 +59,37 @@
             "title": "Standard",
             "additionalProperties": false,
             "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
-            "required": [],
-            "properties": {}
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": ["Standard"],
+                "default": "Standard",
+                "order": 0
+              }
+            }
           },
           {
             "title": "Logical Replication (CDC)",
             "additionalProperties": false,
             "description": "Logical replication uses the Postgres write-ahead log (WAL) to detect inserts, updates, and deletes. This needs to be configured on the source database itself. Only available on Postgres 10 and above. Read the <a href=\"https://docs.airbyte.io/integrations/sources/postgres\">Postgres Source</a> docs for more information.",
-            "required": ["replication_slot", "publication"],
+            "required": ["method", "replication_slot", "publication"],
             "properties": {
+              "method": {
+                "type": "string",
+                "enum": ["CDC"],
+                "default": "CDC",
+                "order": 0
+              },
               "replication_slot": {
                 "type": "string",
-                "description": "A pgoutput logical replication slot."
+                "description": "A pgoutput logical replication slot.",
+                "order": 1
               },
               "publication": {
                 "type": "string",
-                "description": "A Postgres publication used for consuming changes."
+                "description": "A Postgres publication used for consuming changes.",
+                "order": 2
               }
             }
           }

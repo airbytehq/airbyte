@@ -24,45 +24,46 @@
 
 package io.airbyte.server.errors;
 
-import com.google.common.collect.ImmutableMap;
+import io.airbyte.api.model.InvalidInputExceptionInfo;
+import io.airbyte.api.model.InvalidInputProperty;
 import io.airbyte.commons.json.Jsons;
+import java.util.ArrayList;
+import java.util.List;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
+import org.apache.logging.log4j.core.util.Throwables;
 
 // https://www.baeldung.com/jersey-bean-validation#custom-exception-handler
 // handles exceptions related to the request body not matching the openapi config.
 @Provider
 public class InvalidInputExceptionMapper implements ExceptionMapper<ConstraintViolationException> {
 
-  @Override
-  public Response toResponse(ConstraintViolationException exception) {
-    return Response.status(Response.Status.BAD_REQUEST)
-        .entity(
-            Jsons.serialize(
-                ImmutableMap.of(
-                    "message",
-                    "The received object did not pass validation",
-                    "details",
-                    prepareMessage(exception))))
-        .type("application/json")
-        .build();
+  public static InvalidInputExceptionInfo infoFromConstraints(ConstraintViolationException cve) {
+    InvalidInputExceptionInfo exceptionInfo = new InvalidInputExceptionInfo()
+        .exceptionClassName(cve.getClass().getName())
+        .message("Some properties contained invalid input.")
+        .exceptionStack(Throwables.toStringList(cve));
+
+    List<InvalidInputProperty> props = new ArrayList<InvalidInputProperty>();
+    for (ConstraintViolation<?> cv : cve.getConstraintViolations()) {
+      props.add(new InvalidInputProperty()
+          .propertyPath(cv.getPropertyPath().toString())
+          .message(cv.getMessage())
+          .invalidValue(cv.getInvalidValue() != null ? cv.getInvalidValue().toString() : "null"));
+    }
+    exceptionInfo.validationErrors(props);
+    return exceptionInfo;
   }
 
-  private String prepareMessage(ConstraintViolationException exception) {
-    final StringBuilder message = new StringBuilder();
-    for (ConstraintViolation<?> cv : exception.getConstraintViolations()) {
-      message.append(
-          "property: "
-              + cv.getPropertyPath()
-              + " message: "
-              + cv.getMessage()
-              + " invalid value: "
-              + cv.getInvalidValue());
-    }
-    return message.toString();
+  @Override
+  public Response toResponse(ConstraintViolationException e) {
+    return Response.status(Response.Status.BAD_REQUEST)
+        .entity(Jsons.serialize(InvalidInputExceptionMapper.infoFromConstraints(e)))
+        .type("application/json")
+        .build();
   }
 
 }

@@ -44,7 +44,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
@@ -128,7 +128,7 @@ public abstract class JdbcStressTest {
     streamName = getDefaultSchemaName().map(val -> val + "." + TABLE_NAME).orElse(TABLE_NAME);
     config = getConfig();
 
-    final JsonNode jdbcConfig = source.toJdbcConfig(config);
+    final JsonNode jdbcConfig = source.toDatabaseConfig(config);
     JdbcDatabase database = Databases.createJdbcDatabase(
         jdbcConfig.get("username").asText(),
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,

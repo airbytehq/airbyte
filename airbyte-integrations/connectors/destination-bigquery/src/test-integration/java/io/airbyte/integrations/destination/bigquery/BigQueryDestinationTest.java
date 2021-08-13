@@ -43,6 +43,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.JavaBaseConstants;
@@ -59,7 +60,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -69,7 +70,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -83,6 +83,7 @@ class BigQueryDestinationTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationTest.class);
 
+  private static final String BIG_QUERY_CLIENT_CHUNK_SIZE = "big_query_client_buffer_size_mb";
   private static final Instant NOW = Instant.now();
   private static final String USERS_STREAM_NAME = "users";
   private static final String TASKS_STREAM_NAME = "tasks";
@@ -136,7 +137,8 @@ class BigQueryDestinationTest {
         .build()
         .getService();
 
-    final String datasetId = "airbyte_tests_" + RandomStringUtils.randomAlphanumeric(8);
+    final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
+    final String datasetLocation = "EU";
     MESSAGE_USERS1.getRecord().setNamespace(datasetId);
     MESSAGE_USERS2.getRecord().setNamespace(datasetId);
     MESSAGE_TASKS1.getRecord().setNamespace(datasetId);
@@ -149,13 +151,15 @@ class BigQueryDestinationTest {
                 .of("id", JsonSchemaPrimitive.STRING)),
         CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, datasetId, Field.of("goal", JsonSchemaPrimitive.STRING))));
 
-    final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).build();
+    final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
     dataset = bigquery.create(datasetInfo);
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(BigQueryDestination.CONFIG_PROJECT_ID, projectId)
         .put(BigQueryDestination.CONFIG_CREDS, credentialsJsonString)
         .put(BigQueryDestination.CONFIG_DATASET_ID, datasetId)
+        .put(BigQueryDestination.CONFIG_DATASET_LOCATION, datasetLocation)
+        .put(BIG_QUERY_CLIENT_CHUNK_SIZE, 10)
         .build());
 
     tornDown = false;
@@ -194,7 +198,7 @@ class BigQueryDestinationTest {
   }
 
   @Test
-  void testSpec() throws IOException {
+  void testSpec() throws Exception {
     final ConnectorSpecification actual = new BigQueryDestination().spec();
     final String resourceString = MoreResources.readResource("spec.json");
     final ConnectorSpecification expected = Jsons.deserialize(resourceString, ConnectorSpecification.class);

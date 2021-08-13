@@ -10,23 +10,74 @@ An example of a namespace is the RDMS's `schema` concept. Some common use cases 
 
 The Airbyte Protocol supports namespaces and allows Sources to define namespaces, and Destinations to write to various namespaces.
 
-The most common use of namespaces is in the context of database sources and destinations. For databases, generally, a namespace is synonymous with a schema. In the Postgres source, for example, the table `public.users` would be represented in Airbyte as `{ "namespace": "public", "name" "users" }`. If replicating this into a destination that supports namespacing, by default, records from this table would be replicated into `public.users` in the destination.
-
-If a sync is conducted with a Source and Destination that both support namespaces, the source-defined namespace will be the schema in the Destination into which the data is replicated. For such syncs, data is replicated into the Destination in a layout matching the Source.
-
-All of this is automatic, and requires no additional user configuration.
-
 If the Source does not support namespaces, the data will be replicated into the Destination's default namespace. For databases, the default namespace is the schema provided in the destination configuration.
 
 If the Destination does not support namespaces, the [namespace field](https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml#L64) is ignored.
 
-The following table summarises how this works. We assume the Source contains a data source named `cake`.
+## Destination namespace configuration
 
-| Source supports Namespaces | Destination supports Namespaces | Source-defined Namespace | Default Destination Namespace | Final Destination Namespace | Airbyte Stream Name | Example \(fully-qualified Source path -&gt; fully-qualified Destination path\) |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| Yes | Yes | `lava` | `chocolate` | `lava` | `cake` | `lava.cake` -&gt; `lava.cake` |
-| Yes | No | `lava` | `chocolate` | `chocolate` | `cake` | `lava.cake` -&gt; `chocolate.cake` |
-| No | Yes | `None` | `chocolate` | `chocolate` | `cake` | `lava.cake` -&gt; `chocolate.cake` |
+As part of the [connections sync settings](connections/README.md), it is possible to configure the namespace used by:
+1. destination connectors: to store the `_airbyte_raw_*` tables.
+2. basic normalization: to store the final normalized tables.
+
+Note that custom transformation outputs are not affected by the namespace settings from Airbyte: It is up to the configuration of the custom dbt project, and how it is written to handle its [custom schemas](https://docs.getdbt.com/docs/building-a-dbt-project/building-models/using-custom-schemas). The default target schema for dbt in this case, will always be the destination namespace.
+
+Available options for namespace configurations are:
+
+### - Mirror source structure
+
+Some sources (such as databases based on JDBC for example) are providing namespace informations from which a stream has been extracted from. Whenever a source is able to fill this field in the catalog.json file, the destination will try to reproduce exactly the same namespace when this configuraton is set.
+For sources or streams where the source namespace is not known, the behavior will fall back to the "Destination Connector settings".
+
+### - Destination connector settings
+
+All stream will be replicated and store in the default namespace defined on the destination settings page.
+In the destinations, namespace refers to:
+
+| Destination Connector | Namespace setting |
+| :--- | :--- |
+| BigQuery | dataset |
+| MSSQL | schema |
+| MySql | database |
+| Oracle DB | schema |
+| Postgres | schema |
+| Redshift | schema |
+| Snowflake | schema |
+| S3 | path prefix |
+
+### - Custom format
+
+When replicating multiple sources into the same destination, conflicts on tables being overwritten by syncs can occur.
+
+For example, a Github source can be replicated into a "github" schema.
+But if we have multiple connections to different GitHub repositories (similar in multi-tenant scenarios):
+
+- we'd probably wish to keep the same table names (to keep consistent queries downstream)
+- but store them in different namespaces (to avoid mixing data from different "tenants")
+
+To solve this, we can either:
+
+- use a specific namespace for each connection, thus this option of custom format.
+- or, use prefix to stream names as described below.
+
+Note that we can use a template format string using variables that will be resolved during replication as follow:
+
+- `${SOURCE_NAMESPACE}`: will be replaced by the namespace provided by the source if available
+
+### Examples
+
+The following table summarises how this works. We assume an example of replication configurations between a Postgres Source and Snowflake Destination (with settings of schema = "my_schema"):
+
+| Namespace Configuration | Source Namespace | Source Table Name | Destination Namespace | Destination Table Name |
+| :--- | :--- | :--- | :--- | :--- |
+| Mirror source structure | public | my_table | public | my_table |
+| Mirror source structure | | my_table | my_schema | my_table |
+| Destination connector settings | public | my_table | my_schema | my_table |
+| Destination connector settings | | my_table | my_schema | my_table |
+| Custom format = "custom" | public | my_table | custom | my_table |
+| Custom format = "${SOURCE_NAMESPACE}" | public | my_table | public | my_table |
+| Custom format = "my_${SOURCE_NAMESPACE}_schema" | public | my_table | my_public_schema | my_table |
+| Custom format = "   " | public | my_table | my_schema | my_table |
 
 ## Requirements
 
@@ -47,16 +98,10 @@ The following table summarises how this works. We assume the Source contains a d
 ### Destination
 
 * BigQuery
+* MSSQL
+* MySql
+* Oracle DB
 * Postgres
-* Snowflake
 * Redshift
-
-## Coming Soon
-
-* Ability to prefix namespaces.
-* Ability to configure custom namespaces.
-* Ability to toggle the namespaces functionality.
-* Please [create a ticket](https://github.com/airbytehq/airbyte/issues/new/choose) if other namespace features come to mind!
-
-We welcome you to join our [Slack](https://airbyte.io/community/) if you have any other questions!
-
+* Snowflake
+* S3

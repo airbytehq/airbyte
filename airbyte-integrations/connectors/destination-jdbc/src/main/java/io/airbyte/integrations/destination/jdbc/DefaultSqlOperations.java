@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.destination.jdbc;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
@@ -62,11 +63,11 @@ public class DefaultSqlOperations implements SqlOperations {
 
   @Override
   public void createTableIfNotExists(JdbcDatabase database, String schemaName, String tableName) throws SQLException {
-    database.execute(createTableQuery(schemaName, tableName));
+    database.execute(createTableQuery(database, schemaName, tableName));
   }
 
   @Override
-  public String createTableQuery(String schemaName, String tableName) {
+  public String createTableQuery(JdbcDatabase database, String schemaName, String tableName) {
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s VARCHAR PRIMARY KEY,\n"
@@ -115,7 +116,7 @@ public class DefaultSqlOperations implements SqlOperations {
 
       for (AirbyteRecordMessage record : records) {
         var uuid = UUID.randomUUID().toString();
-        var jsonData = Jsons.serialize(record.getData());
+        var jsonData = Jsons.serialize(formatData(record.getData()));
         var emittedAt = Timestamp.from(Instant.ofEpochMilli(record.getEmittedAt()));
         csvPrinter.printRecord(uuid, jsonData, emittedAt);
       }
@@ -126,13 +127,17 @@ public class DefaultSqlOperations implements SqlOperations {
     }
   }
 
+  protected JsonNode formatData(JsonNode data) {
+    return data;
+  }
+
   @Override
-  public String truncateTableQuery(String schemaName, String tableName) {
+  public String truncateTableQuery(JdbcDatabase database, String schemaName, String tableName) {
     return String.format("TRUNCATE TABLE %s.%s;\n", schemaName, tableName);
   }
 
   @Override
-  public String copyTableQuery(String schemaName, String srcTableName, String dstTableName) {
+  public String copyTableQuery(JdbcDatabase database, String schemaName, String srcTableName, String dstTableName) {
     return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", schemaName, dstTableName, schemaName, srcTableName);
   }
 

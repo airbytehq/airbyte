@@ -38,6 +38,6 @@ setup(
         "base-singer",
         "pytest==6.1.2",
         "requests",
-        "tap-salesforce==1.4.34",
+        "tap-salesforce @ https://github.com/airbytehq/tap-salesforce/tarball/v1.4.38-airbyte",
     ],
 )

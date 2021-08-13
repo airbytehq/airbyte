@@ -70,13 +70,16 @@ public class TemporalWorkerRunFactory {
       case RESET_CONNECTION -> () -> {
         final JobResetConnectionConfig resetConnection = job.getConfig().getResetConnection();
         final JobSyncConfig config = new JobSyncConfig()
+            .withNamespaceDefinition(resetConnection.getNamespaceDefinition())
+            .withNamespaceFormat(resetConnection.getNamespaceFormat())
             .withPrefix(resetConnection.getPrefix())
             .withSourceDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
             .withDestinationDockerImage(resetConnection.getDestinationDockerImage())
             .withSourceConfiguration(Jsons.emptyObject())
             .withDestinationConfiguration(resetConnection.getDestinationConfiguration())
             .withConfiguredAirbyteCatalog(resetConnection.getConfiguredAirbyteCatalog())
-            .withOperationSequence(resetConnection.getOperationSequence());
+            .withOperationSequence(resetConnection.getOperationSequence())
+            .withResourceRequirements(resetConnection.getResourceRequirements());
 
         final TemporalResponse<StandardSyncOutput> output = temporalClient.submitSync(job.getId(), attemptId, config);
         return toOutputAndStatus(output);

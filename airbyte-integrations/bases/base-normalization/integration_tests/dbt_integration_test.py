@@ -33,6 +33,7 @@ import string
 import subprocess
 import sys
 import threading
+import time
 from typing import Any, Dict, List
 
 from normalization.destination_type import DestinationType
@@ -42,11 +43,16 @@ from normalization.transform_config.transform import TransformConfig
 class DbtIntegrationTest(object):
     def __init__(self):
         self.target_schema = "test_normalization"
-        self.container_name = "test_normalization_db_" + self.random_string(3)
+        self.container_prefix = f"test_normalization_db_{self.random_string(3)}"
+        self.db_names = ["postgres", "mysql"]
 
     @staticmethod
     def random_string(length: int) -> str:
         return "".join(random.choice(string.ascii_lowercase) for i in range(length))
+
+    def setup_db(self):
+        self.setup_postgres_db()
+        self.setup_mysql_db()
 
     def setup_postgres_db(self):
         print("Starting localhost postgres container for tests")
@@ -64,7 +70,7 @@ class DbtIntegrationTest(object):
             "run",
             "--rm",
             "--name",
-            f"{self.container_name}",
+            f"{self.container_prefix}_postgres",
             "-e",
             f"POSTGRES_USER={config['username']}",
             "-e",
@@ -76,9 +82,47 @@ class DbtIntegrationTest(object):
         ]
         print("Executing: ", " ".join(commands))
         subprocess.call(commands)
+        time.sleep(120)
+
         if not os.path.exists("../secrets"):
             os.makedirs("../secrets")
         with open("../secrets/postgres.json", "w") as fh:
+            fh.write(json.dumps(config))
+
+    def setup_mysql_db(self):
+        print("Starting localhost mysql container for tests")
+        port = self.find_free_port()
+        config = {
+            "host": "localhost",
+            "port": port,
+            "database": self.target_schema,
+            "username": "root",
+            "password": "",
+        }
+        commands = [
+            "docker",
+            "run",
+            "--rm",
+            "--name",
+            f"{self.container_prefix}_mysql",
+            "-e",
+            "MYSQL_ALLOW_EMPTY_PASSWORD=yes",
+            "-e",
+            "MYSQL_INITDB_SKIP_TZINFO=yes",
+            "-e",
+            f"MYSQL_DATABASE={config['database']}",
+            "-p",
+            f"{config['port']}:3306",
+            "-d",
+            "mysql",
+        ]
+        print("Executing: ", " ".join(commands))
+        subprocess.call(commands)
+        time.sleep(120)
+
+        if not os.path.exists("../secrets"):
+            os.makedirs("../secrets")
+        with open("../secrets/mysql.json", "w") as fh:
             fh.write(json.dumps(config))
 
     @staticmethod
@@ -92,17 +136,18 @@ class DbtIntegrationTest(object):
         s.close()
         return addr[1]
 
-    def tear_down_postgres_db(self):
-        print("Stopping localhost postgres container for tests")
-        try:
-            subprocess.call(["docker", "kill", f"{self.container_name}"])
-        except Exception as e:
-            print(f"WARN: Exception while shutting down postgres db: {e}")
+    def tear_down_db(self):
+        for db_name in self.db_names:
+            print(f"Stopping localhost {db_name} container for tests")
+            try:
+                subprocess.call(["docker", "kill", f"{self.container_prefix}_{db_name}"])
+            except Exception as e:
+                print(f"WARN: Exception while shutting down {db_name}: {e}")
 
     @staticmethod
     def change_current_test_dir(request):
-        # This makes the test run whether it is executed from the tests folder
-        # (with pytest/gradle) or from the base-normalization folder (through pycharm)
+        # This makes the test run whether it is executed from the tests folder (with pytest/gradle)
+        # or from the base-normalization folder (through pycharm)
         integration_tests_dir = os.path.join(request.fspath.dirname, "integration_tests")
         if os.path.exists(integration_tests_dir):
             os.chdir(integration_tests_dir)
@@ -118,8 +163,14 @@ class DbtIntegrationTest(object):
         profiles_config = config_generator.read_json_config(f"../secrets/{destination_type.value.lower()}.json")
         # Adapt credential file to look like destination config.json
         if destination_type.value == DestinationType.BIGQUERY.value:
-            profiles_config["credentials_json"] = json.dumps(profiles_config)
-            profiles_config["dataset_id"] = self.target_schema
+            credentials = profiles_config
+            profiles_config = {
+                "credentials_json": json.dumps(credentials),
+                "dataset_id": self.target_schema,
+                "project_id": credentials["project_id"],
+            }
+        elif destination_type.value == DestinationType.MYSQL.value:
+            profiles_config["database"] = self.target_schema
         else:
             profiles_config["schema"] = self.target_schema
         profiles_yaml = config_generator.transform(destination_type, profiles_config)
@@ -196,25 +247,35 @@ class DbtIntegrationTest(object):
         print(f"Equivalent to: dbt {command} --profiles-dir={cwd} --project-dir={cwd}")
         with open(os.path.join(cwd, "dbt_output.log"), "ab") as f:
             process = subprocess.Popen(commands, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=os.environ)
-            for line in iter(process.stdout.readline, b""):
+            for line in iter(lambda: process.stdout.readline(), b""):
                 f.write(line)
                 str_line = line.decode("utf-8")
                 sys.stdout.write(str_line)
                 # keywords to match lines as signaling errors
                 if "ERROR" in str_line or "FAIL" in str_line or "WARNING" in str_line:
                     # exception keywords in lines to ignore as errors (such as summary or expected warnings)
-                    if not (
-                        "Done." in str_line  # DBT Summary
-                        or "PASS=" in str_line  # DBT Summary
-                        or "Nothing to do." in str_line  # When no schema/data tests are setup
-                        or "Configuration paths exist in your dbt_project.yml"  # When catalog does not generate a view or cte
-                    ):
+                    is_exception = False
+                    for except_clause in [
+                        "Done.",  # DBT Summary
+                        "PASS=",  # DBT Summary
+                        "Nothing to do.",  # When no schema/data tests are setup
+                        "Configuration paths exist in your dbt_project.yml",  # When no cte / view are generated
+                        "Error loading config file: .dockercfg: $HOME is not defined",  # ignore warning
+                    ]:
+                        if except_clause in str_line:
+                            is_exception = True
+                            break
+                    if not is_exception:
                         # count lines signaling an error/failure/warning
                         error_count += 1
         process.wait()
-        print(
-            f"{' '.join(commands)}\n\tterminated with return code {process.returncode} with {error_count} 'Error/Warning/Fail' mention(s)."
+        message = (
+            f"{' '.join(commands)}\n\tterminated with return code {process.returncode} "
+            f"with {error_count} 'Error/Warning/Fail' mention(s)."
         )
+        print(message)
+        assert error_count == 0, message
+        assert process.returncode == 0, message
         if error_count > 0:
             return False
         return process.returncode == 0

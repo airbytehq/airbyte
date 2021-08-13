@@ -56,7 +56,7 @@ public class SnowflakeCopyS3Destination extends CopyDestination {
 
   @Override
   public void checkPersistence(JsonNode config) {
-    S3StreamCopier.attemptWriteToPersistence(getS3Config(config));
+    S3StreamCopier.attemptS3WriteAndDelete(getS3Config(config));
   }
 
   @Override

@@ -24,22 +24,39 @@
 
 package io.airbyte.server.errors;
 
-public class KnownException extends RuntimeException {
+import io.airbyte.api.model.KnownExceptionInfo;
+import org.apache.logging.log4j.core.util.Throwables;
 
-  private final int httpCode;
+public abstract class KnownException extends RuntimeException {
 
-  public KnownException(int httpCode, String message) {
+  public KnownException(String message) {
     super(message);
-    this.httpCode = httpCode;
   }
 
-  public KnownException(int httpCode, String message, Throwable cause) {
+  public KnownException(String message, Throwable cause) {
     super(message, cause);
-    this.httpCode = httpCode;
   }
 
-  public int getHttpCode() {
-    return httpCode;
+  abstract public int getHttpCode();
+
+  public KnownExceptionInfo getKnownExceptionInfo() {
+    return KnownException.infoFromThrowable(this);
+  }
+
+  public static KnownExceptionInfo infoFromThrowableWithMessage(Throwable t, String message) {
+    KnownExceptionInfo exceptionInfo = new KnownExceptionInfo()
+        .exceptionClassName(t.getClass().getName())
+        .message(message)
+        .exceptionStack(Throwables.toStringList(t));
+    if (t.getCause() != null) {
+      exceptionInfo.rootCauseExceptionClassName(t.getClass().getClass().getName());
+      exceptionInfo.rootCauseExceptionStack(Throwables.toStringList(t.getCause()));
+    }
+    return exceptionInfo;
+  }
+
+  public static KnownExceptionInfo infoFromThrowable(Throwable t) {
+    return infoFromThrowableWithMessage(t, t.getMessage());
   }
 
 }

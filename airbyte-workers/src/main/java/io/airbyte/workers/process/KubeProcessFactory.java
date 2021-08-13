@@ -24,17 +24,15 @@
 
 package io.airbyte.workers.process;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
+import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerException;
+import io.fabric8.kubernetes.client.KubernetesClient;
+import io.kubernetes.client.openapi.ApiClient;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,57 +41,110 @@ public class KubeProcessFactory implements ProcessFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessFactory.class);
 
-  private static final Path WORKSPACE_MOUNT_DESTINATION = Path.of("/workspace");
+  private static final Pattern ALPHABETIC = Pattern.compile("[a-zA-Z]+");;
 
-  private final Path workspaceRoot;
+  private final String namespace;
+  private final ApiClient officialClient;
+  private final KubernetesClient fabricClient;
+  private final String kubeHeartbeatUrl;
 
-  public KubeProcessFactory(Path workspaceRoot) {
-    this.workspaceRoot = workspaceRoot;
+  /**
+   * @param namespace kubernetes namespace where spawned pods will live
+   * @param officialClient official kubernetes client
+   * @param fabricClient fabric8 kubernetes client
+   * @param kubeHeartbeatUrl a url where if the response is not 200 the spawned process will fail
+   *        itself
+   * @param workerPorts a set of ports that can be used for IO socket servers
+   */
+  public KubeProcessFactory(String namespace,
+                            ApiClient officialClient,
+                            KubernetesClient fabricClient,
+                            String kubeHeartbeatUrl) {
+    this.namespace = namespace;
+    this.officialClient = officialClient;
+    this.fabricClient = fabricClient;
+    this.kubeHeartbeatUrl = kubeHeartbeatUrl;
   }
 
   @Override
-  public Process create(String jobId, int attempt, final Path jobRoot, final String imageName, final String entrypoint, final String... args)
+  public Process create(String jobId,
+                        int attempt,
+                        final Path jobRoot,
+                        final String imageName,
+                        final boolean usesStdin,
+                        final Map<String, String> files,
+                        final String entrypoint,
+                        final ResourceRequirements resourceRequirements,
+                        final String... args)
       throws WorkerException {
-
     try {
-      final String template = MoreResources.readResource("kube_runner_template.yaml");
-
       // used to differentiate source and destination processes with the same id and attempt
-      final String suffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
 
-      ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
+      final String podName = createPodName(imageName, jobId, attempt);
 
-      final String rendered = template.replaceAll("JOBID", jobId)
-          .replaceAll("ATTEMPTID", String.valueOf(attempt))
-          .replaceAll("IMAGE", imageName)
-          .replaceAll("SUFFIX", suffix)
-          .replaceAll("ARGS", Jsons.serialize(Arrays.asList(args)))
-          .replaceAll("WORKDIR", jobRoot.toString());
+      final int stdoutLocalPort = KubePortManagerSingleton.take();
+      LOGGER.info("{} stdoutLocalPort = {}", podName, stdoutLocalPort);
 
-      final JsonNode node = yamlMapper.readTree(rendered);
-      final String overrides = Jsons.serialize(node);
+      final int stderrLocalPort = KubePortManagerSingleton.take();
+      LOGGER.info("{} stderrLocalPort = {}", podName, stderrLocalPort);
 
-      final String podName = "airbyte-worker-" + jobId + "-" + attempt + "-" + suffix;
-
-      final List<String> cmd =
-          Lists.newArrayList(
-              "kubectl",
-              "run",
-              "--generator=run-pod/v1",
-              "--rm",
-              "-i",
-              "--pod-running-timeout=24h",
-              "--image=" + imageName,
-              "--restart=Never",
-              "--overrides=" + overrides, // fails if you add quotes around the overrides string
-              podName);
-      // TODO handle entrypoint override (to run DbtTransformationRunner for example)
-      LOGGER.debug("Preparing command: {}", Joiner.on(" ").join(cmd));
-
-      return new ProcessBuilder(cmd).start();
+      return new KubePodProcess(
+          officialClient,
+          fabricClient,
+          podName,
+          namespace,
+          imageName,
+          stdoutLocalPort,
+          stderrLocalPort,
+          kubeHeartbeatUrl,
+          usesStdin,
+          files,
+          entrypoint,
+          resourceRequirements,
+          args);
     } catch (Exception e) {
-      throw new WorkerException(e.getMessage());
+      throw new WorkerException(e.getMessage(), e);
     }
+  }
+
+  /**
+   * Docker image names are by convention separated by slashes. The last portion is the image's name.
+   * This is followed by a colon and a version number. e.g. airbyte/scheduler:v1 or
+   * gcr.io/my-project/image-name:v2.
+   *
+   * Kubernetes has a maximum pod name length of 63 characters, and names must start with an
+   * alphabetic character.
+   *
+   * With these two facts, attempt to construct a unique Pod name with the image name present for
+   * easier operations.
+   */
+  @VisibleForTesting
+  protected static String createPodName(String fullImagePath, String jobId, int attempt) {
+    var versionDelimiter = ":";
+    var noVersion = fullImagePath.split(versionDelimiter)[0];
+
+    var dockerDelimiter = "/";
+    var nameParts = noVersion.split(dockerDelimiter);
+    var imageName = nameParts[nameParts.length - 1];
+
+    var randSuffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
+    final String suffix = "worker-" + jobId + "-" + attempt + "-" + randSuffix;
+
+    var podName = imageName + "-" + suffix;
+
+    var podNameLenLimit = 63;
+    if (podName.length() > podNameLenLimit) {
+      var extra = podName.length() - podNameLenLimit;
+      imageName = imageName.substring(extra);
+      podName = imageName + "-" + suffix;
+    }
+
+    final Matcher m = ALPHABETIC.matcher(podName);
+    // Since we add worker-UUID as a suffix a couple of lines up, there will always be a substring
+    // starting with an alphabetic character.
+    // If the image name is a no-op, this function should always return `worker-UUID` at the minimum.
+    m.find();
+    return podName.substring(m.start());
   }
 
 }

@@ -33,13 +33,13 @@ import numpy as np
 import pandas as pd
 import smart_open
 from airbyte_protocol import AirbyteStream
+from azure.storage.blob import BlobServiceClient
 from base_python.entrypoint import logger
 from botocore import UNSIGNED
 from botocore.config import Config
 from genson import SchemaBuilder
 from google.cloud.storage import Client as GCSClient
 from google.oauth2 import service_account
-from azure.storage.blob import BlobServiceClient
 
 
 class ConfigurationError(Exception):
@@ -119,7 +119,13 @@ class URLFile:
         elif storage in ("ssh://", "scp://", "sftp://"):
             user = self._provider["user"]
             host = self._provider["host"]
-            port = self._provider.get("port", 22)
+            # TODO: Remove int casting when https://github.com/airbytehq/airbyte/issues/4952 is addressed
+            # TODO: The "port" field in spec.json must also be changed
+            _port_value = self._provider.get("port", 22)
+            try:
+                port = int(_port_value)
+            except ValueError as err:
+                raise ValueError(f"{_port_value} is not a valid integer for the port") from err
             # Explicitly turn off ssh keys stored in ~/.ssh
             transport_params = {"connect_kwargs": {"look_for_keys": False}}
             if "password" in self._provider:
@@ -223,7 +229,7 @@ class URLFile:
         else:
             # assuming anonymous public read access given no credential
             client = BlobServiceClient(account_url=storage_acc_url)
-        
+
         result = smart_open.open(f"{self.storage_scheme}{self.url}", transport_params=dict(client=client), mode=mode)
         return result
 
