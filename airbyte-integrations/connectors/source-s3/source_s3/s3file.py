@@ -69,8 +69,6 @@ class S3File(StorageFile):
 
         :return: last_modified property of the blob/file
         """
-
-        raise RuntimeError()
         
         bucket = self._provider.get("bucket")
         try:
