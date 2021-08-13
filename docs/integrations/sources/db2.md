@@ -54,6 +54,7 @@ GRANT ROLE 'AIRBYTE_ROLE' TO USER 'AIRBYTE_USER'
 
 Your database user should now be ready for use with Airbyte.
 
+
 ## Changelog
 
 | Version | Date       | Pull Request | Subject |
