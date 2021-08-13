@@ -24,6 +24,17 @@ parse_args() {
     esac
 }
 
+prsetup() {
+    git fetch origin master &&
+    git checkout master &&
+    git pull &&
+    git branch -d $newbranch &&
+    git checkout -b $newbranch &&
+    git remote add temp-contributor-remote $remote
+    # the remote add can fail, as it may already be added
+    git pull temp-contributor-remote temp-contributor-remote/$contributorbranch
+}
+
 if [[ "$#" -le 7 ]]; then
     echo "you must provide arguments:\n    -n (new branch name)\n    -r (remote url of contributor fork)\n    -b (contributor branch)\n    -c (connector name, e.g. source-postgres)"
     return
@@ -38,11 +49,7 @@ done
 currentbranch=$(git branch --show-current)
 git stash --include-untracked
 
-git fetch origin master
-git checkout master
-git branch -D $newbranch
-git checkout -b $newbranch
-git pull $remote $remote/$contributorbranch
+prsetup
 
 # go back to original branch and apply stash
 git checkout $currentbranch
