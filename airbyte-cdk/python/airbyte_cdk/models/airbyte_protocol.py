@@ -117,7 +117,7 @@ class ConnectorSpecification(BaseModel):
     supportsNormalization: Optional[bool] = Field(False, description="If the connector supports normalization or not.")
     supportsDBT: Optional[bool] = Field(False, description="If the connector supports DBT or not.")
     supported_destination_sync_modes: Optional[List[DestinationSyncMode]] = Field(
-        [], description="List of destination sync modes supported by the connector"
+        None, description="List of destination sync modes supported by the connector"
     )
 
 

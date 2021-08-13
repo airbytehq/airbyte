@@ -59,8 +59,8 @@ class TestSpec(BaseTest):
         validate(instance=config, schema=spec_message_schema)
 
         js_helper = JsonSchemaHelper(spec_message_schema)
-        variants = js_helper.find_variant_pathes()
-        js_helper.validate_variant_pathes(variants)
+        variants = js_helper.find_variant_paths()
+        js_helper.validate_variant_paths(variants)
 
     def test_required(self):
         """Check that connector will fail if any required field is missing"""

@@ -144,16 +144,16 @@ def test_absolute_path(records, stream_mapping, singer_state):
 
 def test_json_schema_helper_mssql(mssql_spec_schema):
     js_helper = JsonSchemaHelper(mssql_spec_schema)
-    variant_pathes = js_helper.find_variant_pathes()
-    assert variant_pathes == [["properties", "ssl_method", "oneOf"]]
-    js_helper.validate_variant_pathes(variant_pathes)
+    variant_paths = js_helper.find_variant_paths()
+    assert variant_paths == [["properties", "ssl_method", "oneOf"]]
+    js_helper.validate_variant_paths(variant_paths)
 
 
 def test_json_schema_helper_postgres(postgres_source_spec_schema):
     js_helper = JsonSchemaHelper(postgres_source_spec_schema)
-    variant_pathes = js_helper.find_variant_pathes()
-    assert variant_pathes == [["properties", "replication_method", "oneOf"]]
-    js_helper.validate_variant_pathes(variant_pathes)
+    variant_paths = js_helper.find_variant_paths()
+    assert variant_paths == [["properties", "replication_method", "oneOf"]]
+    js_helper.validate_variant_paths(variant_paths)
 
 
 def test_json_schema_helper_pydantic_generated():
@@ -182,8 +182,8 @@ def test_json_schema_helper_pydantic_generated():
         f: Union[A, B]
 
     js_helper = JsonSchemaHelper(Root.schema())
-    variant_pathes = js_helper.find_variant_pathes()
-    assert len(variant_pathes) == 2
-    assert variant_pathes == [["properties", "f", "anyOf"], ["definitions", "C", "properties", "e", "anyOf"]]
+    variant_paths = js_helper.find_variant_paths()
+    assert len(variant_paths) == 2
+    assert variant_paths == [["properties", "f", "anyOf"], ["definitions", "C", "properties", "e", "anyOf"]]
     # TODO: implement validation for pydantic generated objects as well
-    # js_helper.validate_variant_pathes(variant_pathes)
+    # js_helper.validate_variant_paths(variant_paths)
