@@ -5,6 +5,9 @@ parse_args() {
         exit 1
     fi
     case "$1" in
+        -t)
+            prtype="$2"
+            ;;
         -n)
             newbranch="$2"
             ;;
@@ -24,24 +27,48 @@ parse_args() {
     esac
 }
 
+check_args() {
+    if [ -z $newbranch ] || [ -z $remote ] || [ -z $contributorbranch ]; then
+        echo "you must provide arguments:\n    -n (new branch name)\n    -r (remote url of contributor fork)\n    -b (contributor branch)"   
+        exit 1
+    fi
+
+    case $prtype in
+        connector)
+            if [[ -z $connector ]]; then
+                echo "   -c (connector name, e.g. source-postgres)"
+                exit 1
+            fi
+            ;;
+        *)
+            echo "Not implemented script for PR type '$prtype'."
+            exit 1
+            ;;
+    esac
+}
+
 prsetup() {
     git fetch origin master &&
     git checkout master &&
     git pull &&
-    git branch -D $newbranch || echo "branch '$newbranch' doesn't exist yet" &&
-    git checkout -b $newbranch &&
+    git branch -d $newbranch || git checkout -b $newbranch &&
+    git checkout -b $newbranch || echo "already checked out $newbranch" &&
     git remote remove temp-contributor-remote || echo "remote 'temp-contributor-remote' doesn't exist yet" &&
     git remote add temp-contributor-remote $remote &&
     git pull temp-contributor-remote $contributorbranch --no-edit &&
-    git push -u origin $newbranch &&
+    git branch --set-upstream-to=origin/$newbranch $newbranch || echo "upstream branch '$newbranch' doesn't exist yet" &&
+    git push -u origin $newbranch || git pull -X ours && git push -u origin $newbranch &&
+    branchsetupsuccess="true" &&
+    prtitle="$" &&
+    gh pr create --title "IGNORE ME :D" --body "testing" &&
     prsetupsuccess="true"
 
     git remote remove temp-contributor-remote
     
 }
 
-if [[ "$#" -le 7 ]]; then
-    echo "you must provide arguments:\n    -n (new branch name)\n    -r (remote url of contributor fork)\n    -b (contributor branch)\n    -c (connector name, e.g. source-postgres)"
+if [[ "$@" != *"-t"* ]]; then
+    echo "must provide -t argument for PR type (e.g. -t connector)"
     return
 fi
 
@@ -50,21 +77,28 @@ while [[ "$#" -ge 1 ]]; do
     shift; shift
 done
 
+check_args
+
 # stash any changes in current branch
 currentbranch=$(git branch --show-current)
 git_stash_msg="${RANDOM}"
 git stash --include-untracked -m $git_stash_msg
 
-prsetupsuccess="false" &&
+branchsetupsuccess="false"
+prsetupsuccess="false"
 prsetup
 
 # go back to original branch and apply stash
 git checkout $currentbranch &&
-git stash list | grep $git_stash_msg | git stash pop && echo "applied stash!"
+git stash list | grep $git_stash_msg | git stash pop && echo "reapplied stash!"
 
 echo ""
 if [ $prsetupsuccess = "false" ]; then
-    echo "ERROR: Something failed, please check output above."
+    if [ $branchsetupsuccess = "true" ]; then
+        echo "FAILED: on PR creation, ignore if it already exists, otherwise maybe you don't have the GitHub CLI (gh) installed/setup?"
+    else
+        echo "ERROR: Something failed, please check output above."
+    fi
 else
-    echo "PR successfully created! <link>"
+    echo "PR successfully created / updated + test comment made! <link>"
 fi
