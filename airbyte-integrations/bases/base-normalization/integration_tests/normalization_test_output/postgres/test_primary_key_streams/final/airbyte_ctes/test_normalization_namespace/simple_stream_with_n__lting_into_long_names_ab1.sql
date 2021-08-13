@@ -6,6 +6,6 @@ select
     jsonb_extract_path_text(_airbyte_data, 'id') as "id",
     jsonb_extract_path_text(_airbyte_data, 'date') as "date",
     _airbyte_emitted_at
-from "postgres".test_normalization_namespace._airbyte_raw_simple_stream_with_namespace_resulting_into_long_names
+from "postgres".test_normalization_namespace._airbyte_raw_simple_stream_with_namespace_resulting_into_long_names as table_alias
 -- simple_stream_with_n__lting_into_long_names
   );

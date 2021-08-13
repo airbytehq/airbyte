@@ -37,6 +37,7 @@ write_standard_creds base-normalization "$BIGQUERY_INTEGRATION_TEST_CREDS" "bigq
 write_standard_creds base-normalization "$SNOWFLAKE_INTEGRATION_TEST_CREDS" "snowflake.json"
 write_standard_creds base-normalization "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS" "redshift.json"
 
+write_standard_creds source-amazon-seller-partner "$AMAZON_SELLER_PARTNER_TEST_CREDS"
 write_standard_creds source-amplitude "$AMPLITUDE_INTEGRATION_TEST_CREDS"
 write_standard_creds source-apify-dataset "$APIFY_INTEGRATION_TEST_CREDS"
 write_standard_creds source-asana "$SOURCE_ASANA_TEST_CREDS"
@@ -61,7 +62,7 @@ write_standard_creds source-googleanalytics-singer "$GOOGLE_ANALYTICS_TEST_CREDS
 write_standard_creds source-googleanalytics-singer "$GOOGLE_ANALYTICS_TEST_TRACKING_ID" "tracker.txt"
 write_standard_creds source-google-directory "$GOOGLE_DIRECTORY_TEST_CREDS"
 write_standard_creds source-google-search-console-singer "$GOOGLE_SEARCH_CONSOLE_TEST_CREDS"
-write_standard_creds source-google-sheets "$GSHEETS_INTEGRATION_TESTS_CREDS" "creds.json"
+write_standard_creds source-google-sheets "$GOOGLE_SHEETS_TESTS_CREDS"
 write_standard_creds source-google-workspace-admin-reports "$GOOGLE_WORKSPACE_ADMIN_REPORTS_TEST_CREDS"
 write_standard_creds source-greenhouse "$GREENHOUSE_TEST_CREDS"
 write_standard_creds source-harvest "$HARVEST_INTEGRATION_TESTS_CREDS"
@@ -107,4 +108,5 @@ write_standard_creds source-zendesk-sunshine "$ZENDESK_SUNSHINE_TEST_CREDS"
 write_standard_creds source-zendesk-support "$ZENDESK_SUPPORT_TEST_CREDS"
 write_standard_creds source-zendesk-talk "$ZENDESK_TALK_TEST_CREDS"
 write_standard_creds source-zoom-singer "$ZOOM_INTEGRATION_TEST_CREDS"
+write_standard_creds source-zuora "$SOURCE_ZUORA_TEST_CREDS"
 

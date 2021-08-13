@@ -8,7 +8,7 @@ select
     jsonb_extract_path("partition", 'DATA') as "DATA",
     jsonb_extract_path("partition", 'column`_''with"_quotes') as "column`_'with""_quotes",
     _airbyte_emitted_at
-from "postgres".test_normalization."nested_stream_with_c__lting_into_long_names"
+from "postgres".test_normalization."nested_stream_with_c__lting_into_long_names" as table_alias
 where "partition" is not null
 -- partition at nested_stream_with_complex_columns_resulting_into_long_names/partition
   );

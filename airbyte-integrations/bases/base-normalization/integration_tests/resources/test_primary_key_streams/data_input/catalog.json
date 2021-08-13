@@ -13,7 +13,12 @@
               "type": "string"
             },
             "date": {
-              "type": "string"
+              "type": "string",
+              "format": "date"
+            },
+            "timestamp_col": {
+              "type": "string",
+              "format": "date-time"
             },
             "HKD@spéçiäl & characters": {
               "type": "number"
@@ -50,7 +55,12 @@
               "type": "string"
             },
             "date": {
-              "type": "string"
+              "type": "string",
+              "format": "date"
+            },
+            "timestamp_col": {
+              "type": "string",
+              "format": "date-time"
             },
             "HKD@spéçiäl & characters": {
               "type": "number"
@@ -179,6 +189,103 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "append",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "conflict_stream_name",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "type": ["null", "number", "string"]
+            },
+            "conflict_stream_name": {
+              "type": ["null", "object"],
+              "properties": {
+                "conflict_stream_name": {
+                  "type": "object",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "groups": {
+                        "type": "string"
+                      }
+                    },
+                    "other_info": {
+                      "type": "string"
+                    },
+                    "conflict_stream_name": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "conflict_stream_scalar",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "type": ["null", "number", "string"]
+            },
+            "conflict_stream_scalar": {
+              "type": "integer"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "conflict_stream_array",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "type": ["null", "number", "string"]
+            },
+            "conflict_stream_array": {
+              "type": ["null", "object"],
+              "properties": {
+                "conflict_stream_name": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "properties": {
+                      "id": {
+                        "type": ["null", "integer"]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
       "primary_key": []
     },
     {

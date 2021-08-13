@@ -7,7 +7,10 @@ select
     signed
 ) as id,
     cast(currency as char) as currency,
-    cast(`date` as char) as `date`,
+    cast(`date` as 
+    date
+) as `date`,
+    cast(timestamp_col as char) as timestamp_col,
     cast(`HKD@spéçiäl & characters` as 
     float
 ) as `HKD@spéçiäl & characters`,
