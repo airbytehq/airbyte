@@ -66,8 +66,14 @@ The Github connector should not run into Github API limitations under normal usa
 
 * Github Account;
 * `access_token` - Github Personal Access Token wih the necessary permissions \(described below\);
-* `repository` - GitHub repository which looks like `<owner>/<repo>`;
 * `start_date` - start date for 3 incremental streams: `comments`, `commits` and `issues`.
+* `repository` - Space-delimited list of GitHub repositories which looks like `<owner>/<repo> <owner_new>/<repo_new>`;
+* `organization` - Space-delimited list of GitHub organizations which looks like `<organization_1> <organization_2>`;
+
+**Note**: For the connector to work, it is necessary to fill in one of the fields: `repository` or `organization`:
+  - if you fill in the `organization` field, then you will receive information on all repositories that are in this(these) organization(s), 
+  - if you fill in the `repository` field, you will receive data according to the specified repository(es)
+
 
 ### Setup guide
 
@@ -83,6 +89,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.4   | 2021-08-13 | [5136](https://github.com/airbytehq/airbyte/pull/5136) | Support syncing multiple repositories/organizations |
 | 0.1.3   | 2021-08-03 | [5156](https://github.com/airbytehq/airbyte/pull/5156) | Extended existing schemas with `users` property for certain streams |
 | 0.1.2   | 2021-07-13 | [4708](https://github.com/airbytehq/airbyte/pull/4708) | Fix bug with IssueEvents stream and add handling for rate limiting |
 | 0.1.1   | 2021-07-07 | [4590](https://github.com/airbytehq/airbyte/pull/4590) | Fix schema in the `pull_request` stream |
