@@ -83,7 +83,7 @@
               },
               "plugin": {
                 "type": "string",
-                "description": "A logical decoding plug-in installed on the PostgreSQL server. Please use `pgoutput` plug-in by default.\nFor more information when to use `wal2json` plug-in read <a href=\"https://docs.airbyte.io/integrations/sources/postgres\">Postgres Source</a> docs.",
+                "description": "A logical decoding plug-in installed on the PostgreSQL server. `pgoutput` plug-in is used by default.\nIf replication table contains a lot of big jsonb values it is recommended to use `wal2json` plug-in. For more information about `wal2json` plug-in read <a href=\"https://docs.airbyte.io/integrations/sources/postgres\">Postgres Source</a> docs.",
                 "enum": ["pgoutput", "wal2json"],
                 "default": "pgoutput",
                 "order": 1
