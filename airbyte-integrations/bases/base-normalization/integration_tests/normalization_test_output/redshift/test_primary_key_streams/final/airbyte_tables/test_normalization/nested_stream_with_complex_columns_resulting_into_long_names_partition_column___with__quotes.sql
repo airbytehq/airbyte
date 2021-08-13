@@ -57,7 +57,7 @@ select
     _airbyte_partition_hashid,
     case when json_extract_path_text(_airbyte_nested_data, 'currency', true) != '' then json_extract_path_text(_airbyte_nested_data, 'currency', true) end as currency,
     _airbyte_emitted_at
-from "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_partition"
+from "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_partition" as table_alias
 left join joined on _airbyte_partition_hashid = joined._airbyte_hashid
 where "column`_'with""_quotes" is not null
 -- column___with__quotes at nested_stream_with_complex_columns_resulting_into_long_names/partition/column`_'with"_quotes
