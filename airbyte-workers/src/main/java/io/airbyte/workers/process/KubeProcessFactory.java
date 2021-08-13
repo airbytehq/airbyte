@@ -31,6 +31,8 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +40,8 @@ import org.slf4j.LoggerFactory;
 public class KubeProcessFactory implements ProcessFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessFactory.class);
+
+  private static final Pattern ALPHABETIC = Pattern.compile("[a-zA-Z]+");;
 
   private final String namespace;
   private final ApiClient officialClient;
@@ -108,7 +112,8 @@ public class KubeProcessFactory implements ProcessFactory {
    * This is followed by a colon and a version number. e.g. airbyte/scheduler:v1 or
    * gcr.io/my-project/image-name:v2.
    *
-   * Kubernetes has a maximum pod name length of 63 characters.
+   * Kubernetes has a maximum pod name length of 63 characters, and names must start with an
+   * alphabetic character.
    *
    * With these two facts, attempt to construct a unique Pod name with the image name present for
    * easier operations.
@@ -134,7 +139,12 @@ public class KubeProcessFactory implements ProcessFactory {
       podName = imageName + "-" + suffix;
     }
 
-    return podName;
+    final Matcher m = ALPHABETIC.matcher(podName);
+    // Since we add worker-UUID as a suffix a couple of lines up, there will always be a substring
+    // starting with an alphabetic character.
+    // If the image name is a no-op, this function should always return `worker-UUID` at the minimum.
+    m.find();
+    return podName.substring(m.start());
   }
 
 }
