@@ -242,21 +242,20 @@ class CustomQuery(IncrementalGoogleAdsStream):
         fields = self.user_defined_query.lower().split("select")[1].split("from")[0].strip()
         google_resource_name = self.user_defined_query.lower().split("from", 1)[1].strip()
         google_resource_name = re.split("\\s+", google_resource_name)[0]
-        # google_resource_name = self.user_defined_query.lower().split("from", 1)[1].strip().split(" ")[0]
+
         fields = fields.split(",")
         fields = [i.strip() for i in fields]
         fields = list(dict.fromkeys(fields))
 
         google_schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(f"v8_{google_resource_name}")
         for field in fields:
-            root, value = field.split(".", 1)
             node = google_schema.get("fields").get(field).get("field_details")
-            google_data_type = node.get("data_type", "string")
+            google_data_type = node.get("data_type")
             if google_data_type == "ENUM":
                 field_value = {"type": "string", "enum": node.get("enum_values")}
             elif google_data_type == "MESSAGE":  # this can be anything (or skip as additionalproperties) ?
                 output_type = ["string", "number", "array", "object", "boolean", "null"]
-                fueld_value = {"type": output_type}
+                field_value = {"type": output_type}
             else:
                 output_type = [google_datatype_mapping.get(google_data_type, "string"), "null"]
                 field_value  = {"type": output_type}
