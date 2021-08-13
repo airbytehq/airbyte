@@ -253,12 +253,13 @@ class CustomQuery(IncrementalGoogleAdsStream):
             node = google_schema.get("fields").get(field).get("field_details")
             google_data_type = node.get("data_type", "string")
             if google_data_type == "ENUM":
-                local_json_schema["properties"][field] = {"type": "string", "enum": node.get("enum_values")}
+                field_value = {"type": "string", "enum": node.get("enum_values")}
             elif google_data_type == "MESSAGE":  # this can be anything (or skip as additionalproperties) ?
                 output_type = ["string", "number", "array", "object", "boolean", "null"]
-                local_json_schema["properties"][field] = {"type": output_type}
+                fueld_value = {"type": output_type}
             else:
                 output_type = [google_datatype_mapping.get(google_data_type, "string"), "null"]
-                local_json_schema["properties"][field] = {"type": output_type}
+                field_value  = {"type": output_type}
+            local_json_schema["properties"][field] = field_value
 
         return local_json_schema
