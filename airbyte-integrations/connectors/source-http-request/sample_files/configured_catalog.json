@@ -1,0 +1,36 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "http_request",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string"
+            },
+            "http_method": {
+              "type": "string"
+            },
+            "headers": {
+              "type": "string"
+            },
+            "body": {
+              "type": "string"
+            },
+            "params": {
+              "type": "string"
+            },
+            "response_format": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

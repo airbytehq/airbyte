@@ -26,6 +26,8 @@ services:
     environment:
       - POSTGRES_USER=${DATABASE_USER}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+    ports:
+      - 5434:5432
     volumes:
       - db:/var/lib/postgresql/data
   seed:
