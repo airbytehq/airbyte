@@ -50,15 +50,19 @@ while [[ "$#" -ge 1 ]]; do
 done
 
 # stash any changes in current branch
+stashed="false"
 currentbranch=$(git branch --show-current)
-git stash --include-untracked &&
+git stash --include-untracked && stashed="true"
 
-prsetupsuccess="false"
+prsetupsuccess="false" &&
 prsetup
 
 # go back to original branch and apply stash
-git checkout $currentbranch
-git stash apply
+git checkout $currentbranch 
+if [ $stashed = "true" ]; then
+    git stash apply
+    echo "applied stash"
+fi
 
 echo ""
 if [ $prsetupsuccess = "false" ]; then
