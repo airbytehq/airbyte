@@ -33,7 +33,6 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 import jwt
 import pendulum
 import requests
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream

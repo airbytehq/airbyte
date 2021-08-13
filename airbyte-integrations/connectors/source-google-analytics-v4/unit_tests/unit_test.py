@@ -22,11 +22,12 @@
 # SOFTWARE.
 #
 
-import pytest
 import json
 from pathlib import Path
+
+import pytest
 from airbyte_cdk.sources.streams.http.auth import NoAuth
-from source_google_analytics_v4.source import GoogleAnalyticsV4TypesList, GoogleAnalyticsV4Stream
+from source_google_analytics_v4.source import GoogleAnalyticsV4Stream, GoogleAnalyticsV4TypesList
 
 
 def read_file(file_name):
@@ -35,14 +36,14 @@ def read_file(file_name):
     return file
 
 
-expected_metrics_dimensions_type_map = (
-    {"ga:users": "INTEGER", "ga:newUsers": "INTEGER"}, {"ga:date": "STRING", "ga:country": "STRING"})
+expected_metrics_dimensions_type_map = ({"ga:users": "INTEGER", "ga:newUsers": "INTEGER"}, {"ga:date": "STRING", "ga:country": "STRING"})
 
 
 @pytest.fixture
 def mock_metrics_dimensions_type_list_link(requests_mock):
-    requests_mock.get('https://www.googleapis.com/analytics/v3/metadata/ga/columns',
-                      json=json.loads(read_file('metrics_dimensions_type_list.json')))
+    requests_mock.get(
+        "https://www.googleapis.com/analytics/v3/metadata/ga/columns", json=json.loads(read_file("metrics_dimensions_type_list.json"))
+    )
 
 
 def test_metrics_dimensions_type_list(mock_metrics_dimensions_type_list_link):
@@ -52,16 +53,19 @@ def test_metrics_dimensions_type_list(mock_metrics_dimensions_type_list_link):
 
 
 def get_metrics_dimensions_mapping():
-    test_metrics_dimensions_map = {'metric': [("ga:users", "integer"), ("ga:newUsers", "integer")], 'dimension': [("ga:dimension", "string")]}
+    test_metrics_dimensions_map = {
+        "metric": [("ga:users", "integer"), ("ga:newUsers", "integer")],
+        "dimension": [("ga:dimension", "string")],
+    }
     for field_type, attribute_expected_pairs in test_metrics_dimensions_map.items():
         for attribute_expected_pair in attribute_expected_pairs:
             attribute, expected = attribute_expected_pair
             yield field_type, attribute, expected
 
 
-@pytest.mark.parametrize('metrics_dimensions_mapping', get_metrics_dimensions_mapping())
+@pytest.mark.parametrize("metrics_dimensions_mapping", get_metrics_dimensions_mapping())
 def test_lookup_metrics_dimensions_data_type(metrics_dimensions_mapping, mock_metrics_dimensions_type_list_link):
-    test_config = json.loads(read_file('../integration_tests/sample_config.json'))
+    test_config = json.loads(read_file("../integration_tests/sample_config.json"))
     test_config["authenticator"] = NoAuth()
     test_config["metrics"] = []
     test_config["dimensions"] = []
