@@ -50,7 +50,6 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   public static final String CONFIG_DIR = "config";
   private static final String TMP_DIR = "tmp_storage";
   private static final int INTERVAL_WAITING_SECONDS = 3;
-  private static final int MAX_WAITING_SECONDS = 15;
 
   private static final Object lock = new Object();
 
@@ -59,30 +58,18 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   // root for where configs are stored
   private final Path configRoot;
 
-  /**
-   * @return true if the config volume can be found after waiting for {@code MAX_WAITING_SECONDS}.
-   */
-  public static boolean isConfigVolumeMounted(final Path storageRoot) throws InterruptedException {
+  public static ConfigPersistence createWithValidation(final Path storageRoot) throws InterruptedException {
+    LOGGER.info("Constructing file system config persistence (root: {})", storageRoot);
+
     Path configRoot = storageRoot.resolve(CONFIG_DIR);
     int totalWaitingSeconds = 0;
     while (!Files.exists(configRoot)) {
-      if (totalWaitingSeconds > MAX_WAITING_SECONDS) {
-        LOGGER.warn("Config volume is not ready after {} s; assuming that it does not exist", MAX_WAITING_SECONDS);
-        return false;
-      }
       LOGGER.warn("Config volume is not ready yet (waiting time: {} s)", totalWaitingSeconds);
       Thread.sleep(INTERVAL_WAITING_SECONDS * 1000);
       totalWaitingSeconds += INTERVAL_WAITING_SECONDS;
     }
-    return true;
-  }
+    LOGGER.info("Config volume is ready (waiting time: {} s)", totalWaitingSeconds);
 
-  public static ConfigPersistence createWithValidation(final Path storageRoot) throws InterruptedException {
-    LOGGER.info("Constructing file system config persistence (root: {})", storageRoot);
-    boolean isConfigVolumeMounted = isConfigVolumeMounted(storageRoot);
-    if (!isConfigVolumeMounted) {
-      throw new RuntimeException("Config volume is not mounted");
-    }
     return new ValidatingConfigPersistence(new FileSystemConfigPersistence(storageRoot));
   }
 
@@ -173,7 +160,7 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public void deleteConfig(AirbyteConfig configType, String configId) throws ConfigNotFoundException, IOException {
+  public void deleteConfig(AirbyteConfig configType, String configId) throws IOException {
     synchronized (lock) {
       deleteConfigInternal(configType, configId);
     }
@@ -255,11 +242,11 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
     Files.writeString(configPath, Jsons.serialize(config));
   }
 
-  private <T> void deleteConfigInternal(AirbyteConfig configType, String configId) throws IOException {
+  private void deleteConfigInternal(AirbyteConfig configType, String configId) throws IOException {
     deleteConfigInternal(configType, configId, configRoot);
   }
 
-  private <T> void deleteConfigInternal(AirbyteConfig configType, String configId, Path storageRoot) throws IOException {
+  private void deleteConfigInternal(AirbyteConfig configType, String configId, Path storageRoot) throws IOException {
     final Path configPath = buildConfigPath(configType, configId, storageRoot);
     Files.delete(configPath);
   }
