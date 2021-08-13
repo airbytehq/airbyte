@@ -30,9 +30,10 @@ prsetup() {
     git pull &&
     git branch -d $newbranch &&
     git checkout -b $newbranch &&
-    git remote add temp-contributor-remote $remote
-    # the remote add can fail, as it may already be added
-    git pull temp-contributor-remote temp-contributor-remote/$contributorbranch
+    git remote add temp-contributor-remote $remote &&
+    git pull temp-contributor-remote $contributorbranch --no-edit
+
+    git remote remove temp-contributor-remote
 }
 
 if [[ "$#" -le 7 ]]; then
