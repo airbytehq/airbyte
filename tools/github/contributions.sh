@@ -82,39 +82,43 @@ prsetup() {
     
 }
 
-# ensure -t argument is passed in, this determines type of PR (e.g. connector)
-if [[ "$@" != *"-t"* ]]; then
-    echo "must provide -t argument for PR type (e.g. -t connector)"
-    return
-fi
-
-# parse all the arguments and then check them (see functions above)
-while [[ "$#" -ge 1 ]]; do
-    parse_args "$1" "$2"
-    shift; shift
-done
-check_args
-
-# stash any changes from current branch before we run prsetup
-currentbranch=$(git branch --show-current)
-git_stash_msg="${RANDOM}"
-git stash --include-untracked -m $git_stash_msg
-
-branchsetupsuccess="false"
-prsetupsuccess="false"
-prsetup
-
-# go back to original branch and apply stash if there was one
-git checkout $currentbranch &&
-git stash list | grep $git_stash_msg | git stash pop && echo "reapplied stash!"
-
-echo ""
-if [ $prsetupsuccess = "false" ]; then
-    if [ $branchsetupsuccess = "true" ]; then
-        echo "FAILED: on PR creation, maybe you don't have the GitHub CLI (gh) installed/setup? Check output above."
-    else
-        echo "ERROR: Something failed, please check output above."
+main() {
+    # ensure -t argument is passed in, this determines type of PR (e.g. connector)
+    if [[ "$@" != *"-t"* ]]; then
+        echo "must provide -t argument for PR type (e.g. -t connector)"
+        exit 1
     fi
-else
-    echo "PR successfully created / updated + test comment made! $prlink"
-fi
+
+    # parse all the arguments and then check them (see functions above)
+    while [[ "$#" -ge 1 ]]; do
+        parse_args "$1" "$2"
+        shift; shift
+    done
+    check_args
+
+    # stash any changes from current branch before we run prsetup
+    currentbranch=$(git branch --show-current)
+    git_stash_msg="${RANDOM}"
+    git stash --include-untracked -m $git_stash_msg
+
+    branchsetupsuccess="false"
+    prsetupsuccess="false"
+    prsetup
+
+    # go back to original branch and apply stash if there was one
+    git checkout $currentbranch &&
+    git stash list | grep $git_stash_msg | git stash pop && echo "reapplied stash!"
+
+    echo ""
+    if [ $prsetupsuccess = "false" ]; then
+        if [ $branchsetupsuccess = "true" ]; then
+            echo "FAILED: on PR creation, maybe you don't have the GitHub CLI (gh) installed/setup? Check output above."
+        else
+            echo "ERROR: Something failed, please check output above."
+        fi
+    else
+        echo "PR successfully created / updated + test comment made! $prlink"
+    fi
+}
+
+main "$@"
