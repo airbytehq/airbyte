@@ -180,6 +180,8 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     props.setProperty("database.port", config.get("port").asText());
     props.setProperty("database.user", config.get("username").asText());
     props.setProperty("database.dbname", config.get("database").asText());
+//    props.setProperty("converters", "datetime");
+    props.setProperty("datetime.type", "io.airbyte.integrations.debezium.internals.DateTimeConverter");
 
     if (config.has("password")) {
       props.setProperty("database.password", config.get("password").asText());
