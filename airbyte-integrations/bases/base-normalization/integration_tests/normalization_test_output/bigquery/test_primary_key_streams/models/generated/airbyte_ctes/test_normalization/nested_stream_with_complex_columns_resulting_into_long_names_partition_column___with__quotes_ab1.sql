@@ -5,7 +5,7 @@ select
     _airbyte_partition_hashid,
     {{ json_extract_scalar(unnested_column_value('column___with__quotes'), ['currency'], ['currency']) }} as currency,
     _airbyte_emitted_at
-from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_partition') }}
+from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_partition') }} as table_alias
 {{ cross_join_unnest('partition', 'column___with__quotes') }}
 where column___with__quotes is not null
 -- column___with__quotes at nested_stream_with_complex_columns_resulting_into_long_names/partition/column`_'with"_quotes

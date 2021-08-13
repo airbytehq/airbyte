@@ -292,11 +292,19 @@ class TableNameRegistry:
             table_name = self.registry[key].table_name
         else:
             raise KeyError(f"Registry does not contain an entry for {schema} {json_path} {stream_name}")
+
         if suffix:
             norm_suffix = suffix if not suffix or suffix.startswith("_") else f"_{suffix}"
         else:
             norm_suffix = ""
-        return self.name_transformer.normalize_table_name(f"{table_name}{norm_suffix}", False, truncate)
+
+        conflict = False
+        conflict_solver = 0
+        if stream_name in json_path:
+            conflict = True
+            conflict_solver = len(json_path)
+
+        return self.name_transformer.normalize_table_name(f"{table_name}{norm_suffix}", False, truncate, conflict, conflict_solver)
 
     def get_file_name(self, schema: str, json_path: List[str], stream_name: str, suffix: str, truncate: bool = False):
         """
@@ -311,7 +319,14 @@ class TableNameRegistry:
             norm_suffix = suffix if not suffix or suffix.startswith("_") else f"_{suffix}"
         else:
             norm_suffix = ""
-        return self.name_transformer.normalize_table_name(f"{file_name}{norm_suffix}", False, truncate)
+
+        conflict = False
+        conflict_solver = 0
+        if stream_name in json_path:
+            conflict = True
+            conflict_solver = len(json_path)
+
+        return self.name_transformer.normalize_table_name(f"{file_name}{norm_suffix}", False, truncate, conflict, conflict_solver)
 
     def to_dict(self, apply_function=(lambda x: x)) -> Dict:
         """

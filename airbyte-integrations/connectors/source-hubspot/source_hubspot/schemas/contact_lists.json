@@ -6,7 +6,7 @@
       "type": ["null", "integer"]
     },
     "metaData": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "processing": {
           "type": ["null", "string"]
@@ -21,7 +21,7 @@
           "type": ["null", "integer"]
         },
         "lastSizeChangeAt": {
-          "type": "integer"
+          "type": ["null", "integer"]
         }
       }
     },
@@ -32,11 +32,11 @@
       "type": ["null", "string"]
     },
     "filters": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "array",
+        "type": ["null", "array"],
         "items": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "filterFamily": {
               "type": ["null", "string"]
@@ -67,13 +67,13 @@
       "type": ["null", "integer"]
     },
     "createdAt": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "listId": {
       "type": ["null", "integer"]
     },
     "updatedAt": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "internalListId": {
       "type": ["null", "integer"]
