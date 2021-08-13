@@ -248,8 +248,9 @@ public class CdcMySqlSourceTest extends CdcSourceTest {
 
     assertEquals(originalData, dataFromDebeziumSnapshot);
 
-    // TODO: Fix full refresh (non-cdc) mode. The value of the datetime_col comes as
-    // "2013-09-05T15:40:02Z" and "2013-09-06T15:40:02Z" which is wrong.
+    // TODO: Fix full refresh (non-cdc) mode. The value of the datetime_col is adjusted by the TIMEZONE
+    // the code is running in,
+    // in my case it got adjusted to IST i.e. "2013-09-05T15:40:02Z" and "2013-09-06T15:40:02Z".
     // configuredCatalog.getStreams().forEach(c -> c.setSyncMode(SyncMode.FULL_REFRESH));
     // Set<JsonNode> dataFromFullRefresh = extractRecordMessages(
     // AutoCloseableIterators.toListAndClose(source.read(config, configuredCatalog, null)))
