@@ -27,7 +27,7 @@ from decimal import Decimal
 from typing import List
 
 from .common import AddOn, AllOptional
-from .common import JSModel as BaseModel
+from .common import CatalogModel as BaseModel
 from .discount import Discount
 from .transaction import Transaction
 

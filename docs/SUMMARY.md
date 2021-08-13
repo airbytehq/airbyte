@@ -36,6 +36,7 @@
     * [Braintree](integrations/sources/braintree.md)
     * [Bing Ads](integrations/sources/bing-ads.md)
     * [BigQuery](integrations/sources/bigquery.md)
+    * [Braintree (standalone)](integrations/sources/braintree-standalone.md)
     * [Cart](integrations/sources/cart.md)
     * [Chargebee](integrations/sources/chargebee.md)
     * [ClickHouse](integrations/sources/clickhouse.md)

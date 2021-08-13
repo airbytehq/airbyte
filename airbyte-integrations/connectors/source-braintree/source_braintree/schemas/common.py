@@ -42,7 +42,7 @@ class AllOptional(pydantic.main.ModelMetaclass):
         return super().__new__(self, name, bases, namespaces, **kwargs)
 
 
-class JSModel(BaseModel, metaclass=AllOptional):
+class CatalogModel(BaseModel, metaclass=AllOptional):
     class Config:
         arbitrary_types_allowed = True
 
@@ -62,7 +62,7 @@ class JSModel(BaseModel, metaclass=AllOptional):
                         prop["oneOf"] = [{"type": "null"}, {"$ref": ref}]
 
 
-class AddOn(JSModel):
+class AddOn(CatalogModel):
     amount: Decimal
     current_billing_cycle: Optional[Decimal]
     description: str

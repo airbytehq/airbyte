@@ -38,7 +38,7 @@ from .cards import (
     VenmoAccount,
     VisaCheckoutCard,
 )
-from .common import JSModel as BaseModel
+from .common import CatalogModel as BaseModel
 
 
 class Customer(BaseModel):

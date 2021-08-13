@@ -39,7 +39,6 @@ class Environment(str, Enum):
 class BraintreeConfig(BaseModel):
     class Config:
         title = "Braintree Spec"
-        doc_url = "https://docs.airbyte.io/integrations/sources/braintree"
 
     merchant_id: str = Field(
         name="Merchant ID",
@@ -66,12 +65,3 @@ class BraintreeConfig(BaseModel):
     @validator("environment", pre=True)
     def to_camel_case(cls, v):
         return camelize(v)
-
-    @classmethod
-    def schema(cls, **kvargs):
-        schema = super().schema(**kvargs)
-        schema["properties"] = {name: desc for name, desc in schema["properties"].items() if not name.startswith("_")}
-        return {
-            "documentationUrl": cls.Config.doc_url,
-            "connectionSpecification": schema,
-        }

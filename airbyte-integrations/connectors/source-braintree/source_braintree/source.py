@@ -65,4 +65,6 @@ class SourceBraintree(AbstractSource):
         ]
 
     def spec(self, logger: AirbyteLogger) -> ConnectorSpecification:
-        return ConnectorSpecification.parse_obj(BraintreeConfig.schema())
+        return ConnectorSpecification(
+            connectionSpecification=BraintreeConfig.schema(), documentationUrl="https://docs.airbyte.io/integrations/sources/braintree"
+        )

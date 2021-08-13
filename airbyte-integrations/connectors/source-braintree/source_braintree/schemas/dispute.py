@@ -27,7 +27,7 @@ from decimal import Decimal
 from typing import List, Optional
 
 from .common import AllOptional
-from .common import JSModel as BaseModel
+from .common import CatalogModel as BaseModel
 
 
 class Evidence(BaseModel, metaclass=AllOptional):

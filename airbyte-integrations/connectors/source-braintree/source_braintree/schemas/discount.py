@@ -25,7 +25,7 @@
 from decimal import Decimal
 from typing import Optional
 
-from .common import JSModel as BaseModel
+from .common import CatalogModel as BaseModel
 
 
 class Discount(BaseModel):

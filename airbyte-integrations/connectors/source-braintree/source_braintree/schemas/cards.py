@@ -25,7 +25,7 @@
 from datetime import datetime
 from typing import Union
 
-from .common import JSModel as BaseModel
+from .common import CatalogModel as BaseModel
 
 
 class Address(BaseModel):

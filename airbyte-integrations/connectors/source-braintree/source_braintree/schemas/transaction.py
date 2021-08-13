@@ -37,7 +37,7 @@ from .cards import (
     VenmoAccount,
     VisaCheckoutCard,
 )
-from .common import JSModel as BaseModel
+from .common import CatalogModel as BaseModel
 from .customer import Customer
 from .discount import Discount
 from .dispute import Dispute
