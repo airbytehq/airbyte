@@ -27,6 +27,8 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import pendulum
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from google.ads.googleads.v8.services.services.google_ads_service.pagers import SearchPager
 
 from .google_ads import GoogleAds
@@ -194,25 +196,11 @@ class ShoppingPerformanceReport(IncrementalGoogleAdsStream):
     """
 
 
-class CustomQuery:
-    def __new__(cls, *args, **kwargs):
-        class_dict = {}
-        class_dict["name"] = cls.name
-        class_dict["primary_key"] = cls.primary_key
-        class_dict["parse_response"] = cls.parse_response
-        class_dict["get_json_schema"] = cls.get_json_schema
-
-        if kwargs.get("custom_query_config", {}).get("cursor_field"):
-            class_dict["cursor_field"] = property(cls.cursor_field)
-            class_dict["__init__"] = cls.init_incremental
-            class_dict["get_query"] = cls.get_query_incremental
-            ret = type("CustomQueryGenericIncremental", (IncrementalGoogleAdsStream,), class_dict)
-        else:
-            class_dict["__init__"] = cls.init_full_refresh
-            class_dict["get_query"] = cls.get_query_full_refresh
-            ret = type("CustomQueryGenericFullRefresh", (GoogleAdsStream,), class_dict)
-        instance = ret(*args, **kwargs)
-        return instance
+class CustomQuery(IncrementalGoogleAdsStream):
+    def __init__(self, custom_query_config, **kwargs):
+        self.custom_query_config = custom_query_config
+        self.user_defined_query = custom_query_config["query"]
+        super().__init__(**kwargs)
 
     @property
     def primary_key(self) -> str:
@@ -222,27 +210,18 @@ class CustomQuery:
     def name(self):
         return self.custom_query_config["table_name"]
 
+    @property
     def cursor_field(self) -> str:
-        return self.custom_query_config["cursor_field"]
+        return self.custom_query_config.get("cursor_field") or []
 
-    def parse_response(self, response: SearchPager) -> Iterable[Mapping]:
-        for result in response:
-            yield self.google_ads_client.parse_single_result(schema=None, result=result, query=self.user_defined_query)
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        if not self.cursor_field:
+            return [None]
+        return super().stream_slices(stream_state=stream_state, **kwargs)
 
-    def init_full_refresh(self, custom_query_config, **kwargs):
-        self.custom_query_config = custom_query_config
-        self.user_defined_query = custom_query_config["query"]
-        GoogleAdsStream.__init__(self=self, api=kwargs["api"])
-
-    def init_incremental(self, custom_query_config, **kwargs):
-        self.custom_query_config = custom_query_config
-        self.user_defined_query = custom_query_config["query"]
-        IncrementalGoogleAdsStream.__init__(self=self, **kwargs)
-
-    def get_query_full_refresh(self, stream_slice: Mapping[str, Any] = None) -> str:
-        return self.user_defined_query
-
-    def get_query_incremental(self, stream_slice: Mapping[str, Any] = None) -> str:
+    def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
+        if not self.cursor_field:
+            return self.user_defined_query
         start_date, end_date = self.get_date_params(stream_slice, self.cursor_field)
         final_query = (
             self.user_defined_query
@@ -251,9 +230,28 @@ class CustomQuery:
         return final_query
 
     def get_json_schema(self):
-        """
-        As agreed, now it returns the default schema (since read -> schema_generator.py may take hours for the end user).
-        If we want to redesign json schema from raw query, this method need to be modified.
-        """
-        local_json_schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True}
+        local_json_schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {},
+            "additionalProperties": True,
+        }
+        # full list {'ENUM', 'STRING', 'DATE', 'DOUBLE', 'RESOURCE_NAME', 'INT32', 'INT64', 'BOOLEAN', 'MESSAGE'}
+        google_datatype_mapping = {"INT64": "integer", "DOUBLE": "number", "STRING": "string", "BOOLEAN": "boolean", "DATE": "string"}
+        fields = self.user_defined_query.lower().split("select")[1].split("from")[0].strip()
+        fields = fields.split(",")
+        fields = [i.strip() for i in fields]
+        fields = list(dict.fromkeys(fields))
+
+        google_schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("v8_campaign")
+        for field in fields:
+            root, value = field.split(".", 1)
+            node = google_schema.get("fields").get(field).get("field_details")
+            google_data_type = node.get("data_type", "string")
+            if google_data_type == "ENUM":
+                local_json_schema["properties"][field] = {"type": "string", "enum": node.get("enum_values")}
+            else:
+                output_type = [google_datatype_mapping.get(google_data_type, "string"), "null"]
+                local_json_schema["properties"][field] = {"type": output_type}
+
         return local_json_schema

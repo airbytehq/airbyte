@@ -73,7 +73,7 @@ class SourceGoogleAds(AbstractSource):
 
         custom_query_streams = [
             CustomQuery(custom_query_config=single_query_config, **incremental_stream_config)
-            for single_query_config in config.get("custom_query", [])
+            for single_query_config in config.get("custom_queries", [])
         ]
         return [
             AccountPerformanceReport(**incremental_stream_config),

@@ -68,7 +68,7 @@
         "default": 14,
         "examples": [14]
       },
-      "custom_query": {
+      "custom_queries": {
         "type": "array",
         "items": {
           "type": ["object", "null"],
