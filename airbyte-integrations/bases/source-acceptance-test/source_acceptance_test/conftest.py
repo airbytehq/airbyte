@@ -29,7 +29,7 @@ from pathlib import Path
 from typing import Any, List, MutableMapping, Optional
 
 import pytest
-from airbyte_cdk.models import AirbyteCatalog, AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
+from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
 from docker import errors
 from source_acceptance_test.config import Config
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, load_config
@@ -76,28 +76,12 @@ def configured_catalog_path_fixture(inputs, base_path) -> Optional[str]:
 
 
 @pytest.fixture(name="configured_catalog")
-def configured_catalog_fixture(configured_catalog_path, catalog_schemas) -> Optional[ConfiguredAirbyteCatalog]:
+def configured_catalog_fixture(configured_catalog_path, discovered_catalog) -> Optional[ConfiguredAirbyteCatalog]:
     if configured_catalog_path:
         catalog = ConfiguredAirbyteCatalog.parse_file(configured_catalog_path)
         for configured_stream in catalog.streams:
-            configured_stream.stream.json_schema = catalog_schemas.get(configured_stream.stream.name, {})
+            configured_stream.stream = discovered_catalog.get(configured_stream.stream.name, configured_stream.stream)
         return catalog
-    return None
-
-
-@pytest.fixture(name="catalog")
-def catalog_fixture(
-    configured_catalog: ConfiguredAirbyteCatalog, docker_runner: ConnectorRunner, connector_config: SecretDict
-) -> Optional[AirbyteCatalog]:
-    """Generates `AirbyteCatalog`, based on `discover` output"""
-
-    if configured_catalog:
-        output = docker_runner.call_discover(config=connector_config)
-        catalog_messages = [message for message in output if message.type == Type.CATALOG]
-        if catalog_messages:
-            catalog = catalog_messages[0].catalog
-            configured_stream_names = [stream.stream.name for stream in configured_catalog.streams]
-            return AirbyteCatalog(streams=[stream for stream in catalog.streams if stream.name in configured_stream_names])
     return None
 
 
@@ -165,13 +149,13 @@ def cached_schemas_fixture() -> MutableMapping[str, Any]:
     return {}
 
 
-@pytest.fixture(name="catalog_schemas")
-def catalog_schemas_fixture(connector_config, docker_runner: ConnectorRunner, cached_schemas) -> MutableMapping[str, Any]:
+@pytest.fixture(name="discovered_catalog")
+def discovered_catalog_fixture(connector_config, docker_runner: ConnectorRunner, cached_schemas) -> MutableMapping[str, Any]:
     """JSON schemas for each stream"""
     if not cached_schemas:
         output = docker_runner.call_discover(config=connector_config)
         catalogs = [message.catalog for message in output if message.type == Type.CATALOG]
         for stream in catalogs[-1].streams:
-            cached_schemas[stream.name] = stream.json_schema
+            cached_schemas[stream.name] = stream
 
     return cached_schemas

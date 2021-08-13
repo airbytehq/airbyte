@@ -109,12 +109,12 @@ class TestDiscovery(BaseTest):
 
 
 def primary_keys_for_records(streams, records):
-    streams_with_primary_key = [stream for stream in streams if stream.source_defined_primary_key]
+    streams_with_primary_key = [stream for stream in streams if stream.stream.source_defined_primary_key]
     for stream in streams_with_primary_key:
-        stream_records = [r for r in records if r.stream == stream.name]
+        stream_records = [r for r in records if r.stream == stream.stream.name]
         for stream_record in stream_records:
             pk_values = {}
-            for pk_path in stream.source_defined_primary_key:
+            for pk_path in stream.stream.source_defined_primary_key:
                 pk_value = reduce(lambda data, key: data.get(key) if isinstance(data, dict) else None, pk_path, stream_record.data)
                 pk_values[tuple(pk_path)] = pk_value
 
@@ -173,7 +173,6 @@ class TestBasicRead(BaseTest):
         self,
         connector_config,
         configured_catalog,
-        catalog,
         inputs: BasicReadTestConfig,
         expected_records: List[AirbyteMessage],
         docker_runner: ConnectorRunner,
@@ -186,7 +185,7 @@ class TestBasicRead(BaseTest):
         if inputs.validate_schema:
             self._validate_schema(records=records, configured_catalog=configured_catalog)
 
-        for pks, record in primary_keys_for_records(streams=catalog.streams, records=records):
+        for pks, record in primary_keys_for_records(streams=configured_catalog.streams, records=records):
             for pk_path, pk_value in pks.items():
                 assert pk_value is not None, (
                     f"Primary key subkeys {repr(pk_path)} " f"have null values or not present in {record.stream} stream records."
