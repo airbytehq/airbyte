@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 
 parse_args() {
     if [ -z "$2" ]; then
@@ -29,14 +30,14 @@ parse_args() {
 
 check_args() {
     if [ -z $newbranch ] || [ -z $remote ] || [ -z $contributorbranch ]; then
-        echo "you must provide arguments:\n    -n (new branch name)\n    -r (remote url of contributor fork)\n    -b (contributor branch)"   
+        echo "you must provide arguments:     -n (new branch name)     -r (remote url of contributor fork)     -b (contributor branch)"   
         exit 1
     fi
 
     case $prtype in
         connector)
-            if [[ -z $connector ]]; then
-                echo "   -c (connector name, e.g. source-postgres)"
+            if [ -z $connector ]; then
+                echo "you must provide arguments:     -c (connector name, e.g. source-postgres)"
                 exit 1
             fi
             ;;
@@ -51,8 +52,7 @@ prsetup() {
     git fetch origin master &&
     git checkout master &&
     git pull &&
-    git branch -d $newbranch || git checkout -b $newbranch &&
-    git checkout -b $newbranch || echo "already checked out $newbranch" &&
+    git branch -d $newbranch || git checkout -b $newbranch || git checkout $newbranch &&
     git remote remove temp-contributor-remote || echo "remote 'temp-contributor-remote' doesn't exist yet" &&
     git remote add temp-contributor-remote $remote &&
     git pull temp-contributor-remote $contributorbranch --no-edit &&
@@ -76,7 +76,6 @@ while [[ "$#" -ge 1 ]]; do
     parse_args "$1" "$2"
     shift; shift
 done
-
 check_args
 
 # stash any changes in current branch
