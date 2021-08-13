@@ -209,38 +209,31 @@ public class CdcMySqlSourceTest extends CdcSourceTest {
     ((ObjectNode) config).put("database", "test_schema");
   }
 
-
   @Test
-  public void fullRefreshAndCDCShouldReturnSameRecords2() throws Exception {
+  public void dateTimeDataTypeTest() throws Exception {
     JsonNode record1 = Jsons.jsonNode(ImmutableMap.of(
         "id", 1,
-        "datetime_col", "'2013-09-05 10:10:02'"));
+        "datetime_col", "\'2013-09-05T10:10:02\'"));
     JsonNode record2 = Jsons.jsonNode(ImmutableMap.of(
         "id", 2,
-        "datetime_col", "'2013-09-06 10:10:02'"));
+        "datetime_col", "\'2013-09-06T10:10:02\'"));
     ImmutableList<JsonNode> records = ImmutableList.of(record1, record2);
-    Set<JsonNode> originalData = new HashSet<>(records);
-    setupForComparisonBetweenFullRefreshAndCDCSnapshot2(records);
+    setupForDateTimeDataTypeTest(records);
+    Set<JsonNode> originalData = records.stream().peek(c -> {
+      String dateTimeValue = c.get("datetime_col").asText();
+      ((ObjectNode) c).put("datetime_col", dateTimeValue.substring(1, dateTimeValue.length() - 1));
+    }).collect(Collectors.toSet());
 
     AirbyteCatalog discover = source.discover(config);
     List<AirbyteStream> streams = discover.getStreams();
 
-//    assertEquals(streams.size(), 1);
-//    JsonNode jsonSchema = streams.get(0).getJsonSchema().get("properties");
-//    assertEquals(jsonSchema.get("id").get("type").asText(), "number");
-//    assertEquals(jsonSchema.get("bool_col").get("type").asText(), "boolean");
-//    assertEquals(jsonSchema.get("tiny_int_one_col").get("type").asText(), "boolean");
-//    assertEquals(jsonSchema.get("tiny_int_two_col").get("type").asText(), "number");
+    assertEquals(streams.size(), 1);
+    JsonNode jsonSchema = streams.get(0).getJsonSchema().get("properties");
+    assertEquals(jsonSchema.get("id").get("type").asText(), "number");
+    assertEquals(jsonSchema.get("datetime_col").get("type").asText(), "string");
 
     AirbyteCatalog catalog = new AirbyteCatalog().withStreams(streams);
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers
-        .toDefaultConfiguredCatalog(catalog);
-    configuredCatalog.getStreams().forEach(c -> c.setSyncMode(SyncMode.FULL_REFRESH));
-
-//    Set<JsonNode> dataFromFullRefresh = extractRecordMessages(
-//        AutoCloseableIterators.toListAndClose(source.read(config, configuredCatalog, null)))
-//            .stream()
-//            .map(AirbyteRecordMessage::getData).collect(Collectors.toSet());
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
 
     configuredCatalog.getStreams().forEach(c -> c.setSyncMode(SyncMode.INCREMENTAL));
     Set<JsonNode> dataFromDebeziumSnapshot =
@@ -249,23 +242,23 @@ public class CdcMySqlSourceTest extends CdcSourceTest {
             .map(airbyteRecordMessage -> {
               JsonNode data = airbyteRecordMessage.getData();
               removeCDCColumns((ObjectNode) data);
-              /**
-               * Debezium reads TINYINT (expect for TINYINT(1)) as IntNode while FullRefresh reads it as Short Ref
-               * : {@link io.airbyte.db.jdbc.JdbcUtils#setJsonField(java.sql.ResultSet, int, ObjectNode)} -> case
-               * TINYINT, SMALLINT -> o.put(columnName, r.getShort(i));
-               */
-//              ((ObjectNode) data)
-//                  .put("tiny_int_two_col", (short) data.get("tiny_int_two_col").asInt());
               return data;
             })
             .collect(Collectors.toSet());
-    System.out.println();
 
-//    assertEquals(dataFromFullRefresh, originalData);
-//    assertEquals(dataFromFullRefresh, dataFromDebeziumSnapshot);
+    assertEquals(originalData, dataFromDebeziumSnapshot);
+
+    // TODO: Fix full refresh (non-cdc) mode. The value of the datetime_col comes as
+    // "2013-09-05T15:40:02Z" and "2013-09-06T15:40:02Z" which is wrong.
+    // configuredCatalog.getStreams().forEach(c -> c.setSyncMode(SyncMode.FULL_REFRESH));
+    // Set<JsonNode> dataFromFullRefresh = extractRecordMessages(
+    // AutoCloseableIterators.toListAndClose(source.read(config, configuredCatalog, null)))
+    // .stream()
+    // .map(AirbyteRecordMessage::getData).collect(Collectors.toSet());
+    // assertEquals(dataFromFullRefresh, originalData);
   }
 
-  private void setupForComparisonBetweenFullRefreshAndCDCSnapshot2(ImmutableList<JsonNode> data) {
+  private void setupForDateTimeDataTypeTest(ImmutableList<JsonNode> data) {
     executeQuery("CREATE DATABASE " + "test_schema" + ";");
     executeQuery(String.format(
         "CREATE TABLE %s.%s(%s INTEGER, %s DATETIME, PRIMARY KEY (%s));",
@@ -281,10 +274,10 @@ public class CdcMySqlSourceTest extends CdcSourceTest {
         .format("INSERT INTO %s.%s (%s, %s) VALUES (%s, %s);", "test_schema",
             "table_with_date_time",
             "id", "datetime_col",
-            data.get(1).get("id").asInt(), data.get(1).get("datetime_col").asText()
-        ));
+            data.get(1).get("id").asInt(), data.get(1).get("datetime_col").asText()));
     ((ObjectNode) config).put("database", "test_schema");
   }
+
   @Override
   protected CdcTargetPosition cdcLatestTargetPosition() {
     JdbcDatabase jdbcDatabase = Databases.createJdbcDatabase(
