@@ -261,11 +261,12 @@ public class CdcMySqlSourceTest extends CdcSourceTest {
     ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
 
     final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
+
     final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
     properties.set(CDC_LOG_FILE, stringType);
     properties.set(CDC_LOG_POS, numberType);
-    properties.set(CDC_UPDATED_AT, numberType);
-    properties.set(CDC_DELETED_AT, numberType);
+    properties.set(CDC_UPDATED_AT, stringType);
+    properties.set(CDC_DELETED_AT, stringType);
   }
 
   @Override

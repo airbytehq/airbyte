@@ -221,10 +221,11 @@ class CdcPostgresSourceTest extends CdcSourceTest {
     ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
     ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
 
+    final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
     final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
     properties.set(CDC_LSN, numberType);
-    properties.set(CDC_UPDATED_AT, numberType);
-    properties.set(CDC_DELETED_AT, numberType);
+    properties.set(CDC_UPDATED_AT, stringType);
+    properties.set(CDC_DELETED_AT, stringType);
 
   }
 
