@@ -6,10 +6,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["created"]
+        "default_cursor_field": ["fields","updated"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["created"],
+      "cursor_field": ["fields", "updated"],
       "destination_sync_mode": "append"
     },
     {
@@ -18,10 +18,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["startedAfter"]
+        "default_cursor_field": ["started"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["startedAfter"],
+      "cursor_field": ["started"],
       "destination_sync_mode": "append"
     }
   ]
