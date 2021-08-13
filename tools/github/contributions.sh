@@ -33,6 +33,7 @@ prsetup() {
     git remote remove temp-contributor-remote || echo "remote 'temp-contributor-remote' doesn't exist yet" &&
     git remote add temp-contributor-remote $remote &&
     git pull temp-contributor-remote $contributorbranch --no-edit &&
+    git push -u origin $newbranch &&
     prsetupsuccess="true"
 
     git remote remove temp-contributor-remote
@@ -58,7 +59,7 @@ prsetupsuccess="false" &&
 prsetup
 
 # go back to original branch and apply stash
-git checkout $currentbranch 
+git checkout $currentbranch &&
 git stash list | grep $git_stash_msg | git stash pop && echo "applied stash!"
 
 echo ""
