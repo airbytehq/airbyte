@@ -22,6 +22,10 @@ Airbyte is on a mission to make data integration pipelines a commodity.
 
 Here's a list of our [connectors with their health status](docs/integrations).
 
+## Abalustre connectors
+
+Here's a list of [Abalustre's connectors](ABALUSTRE_CONNECTORS.md).
+
 ## Quick start
 
 ```bash
