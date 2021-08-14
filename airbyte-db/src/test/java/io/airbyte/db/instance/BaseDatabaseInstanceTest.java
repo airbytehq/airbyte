@@ -71,6 +71,7 @@ class BaseDatabaseInstanceTest {
 
   @AfterEach
   void tearDown() throws Exception {
+    database.transaction(ctx -> ctx.execute(String.format("DROP TABLE IF EXISTS %s;", TABLE_NAME)));
     database.close();
   }
 
