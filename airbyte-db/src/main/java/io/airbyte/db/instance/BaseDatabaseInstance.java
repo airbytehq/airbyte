@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.function.Function;
 import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,7 +113,8 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
   protected static boolean hasTable(DSLContext ctx, String tableName) {
     return ctx.fetchExists(select()
         .from("information_schema.tables")
-        .where(String.format("table_name = '%s'", tableName)));
+        .where(DSL.field("table_name").eq(tableName)
+            .and(DSL.field("table_schema").eq("public"))));
   }
 
   /**
