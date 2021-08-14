@@ -68,11 +68,13 @@ public class ConfigPersistenceBuilder {
    * Otherwise, seed the database from the yaml files.
    */
   ConfigPersistence create() throws IOException, InterruptedException {
-    // Uncomment this branch in a future version when config volume is removed.
-    // if (configs.getConfigRoot() == null) {
-    // return getDbPersistenceWithYamlSeed();
-    // }
-    return getDbPersistenceWithFileSeed();
+    if (FileSystemConfigPersistence.hasExistingConfigs(configs.getConfigRoot())) {
+      LOGGER.info("There is existing local config directory");
+      return getDbPersistenceWithFileSeed();
+    } else {
+      LOGGER.info("There is no existing local config directory");
+      return getDbPersistenceWithYamlSeed();
+    }
   }
 
   /**
