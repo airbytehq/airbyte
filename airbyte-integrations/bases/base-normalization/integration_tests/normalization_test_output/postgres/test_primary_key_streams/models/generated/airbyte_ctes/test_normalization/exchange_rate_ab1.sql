@@ -4,11 +4,12 @@ select
     {{ json_extract_scalar('_airbyte_data', ['id'], ['id']) }} as {{ adapter.quote('id') }},
     {{ json_extract_scalar('_airbyte_data', ['currency'], ['currency']) }} as currency,
     {{ json_extract_scalar('_airbyte_data', ['date'], ['date']) }} as {{ adapter.quote('date') }},
+    {{ json_extract_scalar('_airbyte_data', ['timestamp_col'], ['timestamp_col']) }} as timestamp_col,
     {{ json_extract_scalar('_airbyte_data', ['HKD@spéçiäl & characters'], ['HKD@spéçiäl & characters']) }} as {{ adapter.quote('HKD@spéçiäl & characters') }},
     {{ json_extract_scalar('_airbyte_data', ['HKD_special___characters'], ['HKD_special___characters']) }} as hkd_special___characters,
     {{ json_extract_scalar('_airbyte_data', ['NZD'], ['NZD']) }} as nzd,
     {{ json_extract_scalar('_airbyte_data', ['USD'], ['USD']) }} as usd,
     _airbyte_emitted_at
-from {{ source('test_normalization', '_airbyte_raw_exchange_rate') }}
+from {{ source('test_normalization', '_airbyte_raw_exchange_rate') }} as table_alias
 -- exchange_rate
 

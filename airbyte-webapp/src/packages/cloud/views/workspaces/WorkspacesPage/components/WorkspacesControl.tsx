@@ -14,7 +14,7 @@ const FormContent = styled(ContentCard)`
 `;
 
 const WorkspacesControl: React.FC<{
-  onSubmit: (name: string) => Promise<void>;
+  onSubmit: (name: string) => Promise<unknown>;
 }> = (props) => {
   const [isEditMode, toggleMode] = useToggle(false);
 
