@@ -34,6 +34,7 @@ from jsonschema import validate
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, serialize, verify_records_schema
+from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper
 
 
 @pytest.mark.default_timeout(10)
@@ -54,7 +55,12 @@ class TestSpec(BaseTest):
         # Getting rid of technical variables that start with an underscore
         config = {key: value for key, value in connector_config.data.items() if not key.startswith("_")}
 
-        validate(instance=config, schema=spec_messages[0].spec.connectionSpecification)
+        spec_message_schema = spec_messages[0].spec.connectionSpecification
+        validate(instance=config, schema=spec_message_schema)
+
+        js_helper = JsonSchemaHelper(spec_message_schema)
+        variants = js_helper.find_variant_paths()
+        js_helper.validate_variant_paths(variants)
 
     def test_required(self):
         """Check that connector will fail if any required field is missing"""
