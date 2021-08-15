@@ -37,10 +37,7 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 class BasicAuthenticator(TokenAuthenticator):
 
     def get_auth_header(self) -> Mapping[str, Any]:
-        if self.auth_method is None:
-            return {self.auth_header: f"{self._token}"}
-        else:
-            return {self.auth_header: f"{self.auth_method} {self._token}"}
+        return {self.auth_header: f"{self._token}"}
 
 
 class Links(HttpStream, ABC):
