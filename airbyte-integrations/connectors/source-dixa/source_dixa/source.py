@@ -29,6 +29,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -54,10 +55,16 @@ class DixaStream(HttpStream, ABC):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
+    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        self.logger.info(
+            f"Sending request with updated_after={stream_slice['updated_after']} and updated_before={stream_slice['updated_before']}"
+        )
+        return stream_slice
+
     def backoff_time(self, response: requests.Response):
         """
-        The rate limit is 10 requests per minute, so we sleep for one minute
-        once we have reached 10 requests.
+        The rate limit is 10 requests per minute, so we sleep
+        for defined backoff_sleep time (default is 60 sec) before we continue.
 
         See https://support.dixa.help/en/articles/174-export-conversations-via-api
         """
@@ -67,12 +74,6 @@ class DixaStream(HttpStream, ABC):
 class IncrementalDixaStream(DixaStream):
 
     cursor_field = "updated_at"
-
-    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        self.logger.info(
-            f"Sending request with updated_after={stream_slice['updated_after']} and " f"updated_before={stream_slice['updated_before']}"
-        )
-        return stream_slice
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield from response.json()
@@ -86,7 +87,7 @@ class IncrementalDixaStream(DixaStream):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs):
         """
-        Returns slices of size self.batch_size
+        Returns slices of size self.batch_size.
         """
         slices = []
 
@@ -103,6 +104,10 @@ class IncrementalDixaStream(DixaStream):
 
 
 class ConversationExport(IncrementalDixaStream):
+    """
+    https://support.dixa.help/en/articles/174-export-conversations-via-api
+    """
+
     def path(self, **kwargs) -> str:
         return "conversation_export"
 
@@ -112,18 +117,14 @@ class SourceDixa(AbstractSource):
         """
         Check connectivity using one day's worth of data.
         """
-        auth = TokenAuthenticator(token=config["api_token"]).get_auth_header()
-        url = "https://exports.dixa.io/v1/conversation_export"
-        start_date = datetime.strptime(config["start_date"], "%Y-%m-%d")
-        start_timestamp = utils.datetime_to_ms_timestamp(start_date)
-        params = {
-            "updated_after": start_timestamp,
-            "updated_before": utils.add_days_to_ms_timestamp(days=1, milliseconds=start_timestamp),
-        }
-
+        config["authenticator"] = TokenAuthenticator(token=config["api_token"])
+        stream = ConversationExport(config)
+        # using 1 day batch size for slices.
+        stream.batch_size = 1
+        # use the first slice from stream_slices list
+        stream_slice = stream.stream_slices()[0]
         try:
-            response = requests.get(url=url, headers=auth, params=params)
-            response.raise_for_status()
+            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
             return True, None
         except Exception as e:
             return False, e
