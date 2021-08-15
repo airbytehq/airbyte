@@ -6,7 +6,7 @@ select
     {{ json_extract_array(adapter.quote('partition'), ['DATA'], ['DATA']) }} as DATA,
     {{ json_extract_array(adapter.quote('partition'), ['column`_\'with"_quotes'], ['column___with__quotes']) }} as column___with__quotes,
     _airbyte_emitted_at
-from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names') }}
+from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names') }} as table_alias
 where {{ adapter.quote('partition') }} is not null
 -- partition at nested_stream_with_complex_columns_resulting_into_long_names/partition
 
