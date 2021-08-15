@@ -198,7 +198,9 @@ class Clicks(HttpStream, ABC):
         """
         This method passes the arguments necessary to get the clicks from the shortio API. 
         No parameters have been implemented here at all with the exception of hardcoding human clicks only to come through.
-        Human clicks are hardcoded to reduce unnecessary clicks from coming through.
+        Human clicks are hardcoded to reduce unnecessary clicks from coming through. Some resources from short.io:
+        https://help.short.io/en/articles/4065954-how-short-io-tracks-clicks
+        https://help.short.io/en/articles/4890644-what-are-the-redirects
 
         :return dict: json body for the request
         """
