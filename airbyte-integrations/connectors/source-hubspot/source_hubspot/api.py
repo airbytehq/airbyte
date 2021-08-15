@@ -205,8 +205,13 @@ class API:
     @retry_connection_handler(max_tries=5, factor=5)
     @retry_after_handler(max_tries=3)
     def get(self, url: str, params=None) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
-        response = self._session.get(self.BASE_URL + url, params=self._add_auth(params))
-        return self._parse_and_handle_errors(response)
+        
+        try:
+            response = self._session.get(self.BASE_URL + url, params=self._add_auth(params))
+            return self._parse_and_handle_errors(response)
+        except HubspotAccessDenied:
+            # once we access the forbidden endpoint, we return the error message.
+            return response.json()
 
     def post(self, url: str, data: Mapping[str, Any], params=None) -> Union[Mapping[str, Any], List[Mapping[str, Any]]]:
         response = self._session.post(self.BASE_URL + url, params=self._add_auth(params), json=data)
@@ -283,7 +288,6 @@ class Stream(ABC):
 
         try:
             casted_value = target_type(field_value)
-            print(casted_value)
         except ValueError:
             logger.exception(f"Could not cast `{field_value}` to `{target_type}`")
             return field_value
@@ -340,6 +344,12 @@ class Stream(ABC):
         while True:
             response = getter(params=params)
             if isinstance(response, Mapping):
+                # When the API Key doen't has the permissions to access the endpoint
+                # we skip this stream and log warning with message.
+                if response.get("status") == "error":
+                    logger.warn(f"Stream: {self.data_field}, {response.get('message')}")
+                    return []
+
                 if response.get(self.data_field) is None:
                     raise RuntimeError("Unexpected API response: {} not in {}".format(self.data_field, response.keys()))
 
