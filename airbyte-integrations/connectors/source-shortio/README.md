@@ -129,3 +129,7 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 1. Create a Pull Request.
 1. Pat yourself on the back for being an awesome contributor.
 1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+
+## Notes specific to the connector
+
+1. The links stream output doesn't match exactly what the documentation in the official website say (e.g. an owner object is returned as part of the response but that isn't listed there.)
