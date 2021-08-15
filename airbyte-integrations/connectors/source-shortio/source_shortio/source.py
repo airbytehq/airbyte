@@ -49,6 +49,7 @@ class Links(HttpStream, ABC):
     limit = 150
     primary_key = "id"
     before_id = None
+    domain_id = None
     def next_page_token(
         self, 
         response: requests.Response
@@ -72,7 +73,7 @@ class Links(HttpStream, ABC):
     ) -> MutableMapping[str, Any]:
         return {
             "limit" : self.limit,
-            "domain_id" : self._config['domain_id'],
+            "domain_id" : self.domain_id,
             "before": next_page_token or None
         }
 
@@ -123,8 +124,9 @@ class Clicks(HttpStream, ABC):
     """
 
     url_base = "https://api-v2.short.cm/statistics/domain/"
-    config = {}
     before_dt = datetime.datetime.now().__str__()
+    domain_id = None
+    start_date = None
     @property
     def http_method(self) -> str:
         return "POST"
@@ -153,7 +155,7 @@ class Clicks(HttpStream, ABC):
         next_page_token: Mapping[str, Any] = None
     ) -> str:
         # Get all the links 
-        return f"{self.config['domain_id']}/last_clicks"
+        return f"{self.domain_id}/last_clicks"
 
     def next_page_token(
         self, 
@@ -188,7 +190,7 @@ class Clicks(HttpStream, ABC):
         if current_stream_state is not None and 'dt' in current_stream_state:
             return {'dt' : self.before_dt}
         else:
-            return {'dt' : self.config['start_date']}
+            return {'dt' : self.start_date}
         
     def request_body_json(
         self, 
@@ -212,7 +214,7 @@ class Clicks(HttpStream, ABC):
         if stream_state and 'dt' in stream_state.keys():
             payload['afterDate'] = stream_state['dt']
         else:
-            payload['afterDate'] = self.config['start_date']
+            payload['afterDate'] = self.start_date
 
         return payload
 
@@ -257,7 +259,8 @@ class SourceShortio(AbstractSource):
         key = config['secret_key']
         auth = BasicAuthenticator(token=key, auth_method=None)
         links = Links(authenticator=auth)
-        links._config = config
+        links.domain_id = config['domain_id']
         clicks = Clicks(authenticator=auth)
-        clicks.config = config
+        clicks.domain_id = config['domain_id']
+        clicks.start_date = config['start_date']
         return [clicks, links]
