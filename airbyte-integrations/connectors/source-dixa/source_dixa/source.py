@@ -80,7 +80,12 @@ class IncrementalDixaStream(DixaStream):
         Uses the `updated_at` field, which is a Unix timestamp with millisecond precision.
         """
         current_stream_state = current_stream_state or {}
-        return {self.cursor_field: max(current_stream_state.get(self.cursor_field, 0), latest_record.get(self.cursor_field, 0))}
+        return {
+            self.cursor_field: max(
+                current_stream_state.get(self.cursor_field, self.start_timestamp), 
+                latest_record.get(self.cursor_field, self.start_timestamp)
+                )
+            }
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs):
         """
