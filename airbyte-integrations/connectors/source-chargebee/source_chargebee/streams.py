@@ -120,7 +120,6 @@ class ChargebeeStream(Stream):
 
 class SemiIncrementalChargebeeStream(ChargebeeStream):
     cursor_field = "updated_at"
-    # page_size = 1  # TODO Remove this field
 
     def __init__(self, start_date: str):
         # Convert `start_date` to timestamp(UTC).
