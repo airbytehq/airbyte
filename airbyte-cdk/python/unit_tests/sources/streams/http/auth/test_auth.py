@@ -26,7 +26,7 @@
 import logging
 
 import requests
-from airbyte_cdk.sources.streams.http.auth import NoAuth, Oauth2Authenticator, TokenAuthenticator, MultipleTokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import MultipleTokenAuthenticator, NoAuth, Oauth2Authenticator, TokenAuthenticator
 from requests import Response
 
 LOGGER = logging.getLogger(__name__)
