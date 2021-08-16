@@ -56,9 +56,6 @@ class DixaStream(HttpStream, ABC):
         return None
 
     def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        self.logger.info(
-            f"Sending request with updated_after={stream_slice['updated_after']} and updated_before={stream_slice['updated_before']}"
-        )
         return stream_slice
 
     def backoff_time(self, response: requests.Response):
@@ -97,7 +94,7 @@ class IncrementalDixaStream(DixaStream):
         # value. Otherwise, start at start_timestamp.
         updated_after = max(stream_state.get(self.cursor_field, 0), self.start_timestamp)
         while updated_after < self.end_timestamp:
-            updated_before = min(utils.add_days_to_ms_timestamp(days=self.batch_size, milliseconds=updated_after), self.end_timestamp)
+            updated_before = min(utils.add_days_to_ms_timestamp(days=self.batch_size, ms_timestamp=updated_after), self.end_timestamp)
             slices.append({"updated_after": updated_after, "updated_before": updated_before})
             updated_after = updated_before
         return slices

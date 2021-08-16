@@ -66,7 +66,7 @@ def test_datetime_to_ms_timestamp():
 
 
 def test_add_days_to_ms_timestamp():
-    assert utils.add_days_to_ms_timestamp(days=1, milliseconds=1625312980123) == 1625399380123
+    assert utils.add_days_to_ms_timestamp(days=1, ms_timestamp=1625312980123) == 1625399380123
 
 
 def test_stream_slices_without_state(conversation_export):
