@@ -22,5 +22,10 @@
   },
   "item_price": {
     "updated_at": 2147483647
+  },
+  "attached_item": {
+    "cbdemo_standard": {
+      "updated_at": 2147483647
+    }
   }
 }

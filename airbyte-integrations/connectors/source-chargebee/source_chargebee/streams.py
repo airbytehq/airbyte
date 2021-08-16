@@ -50,18 +50,8 @@ MAX_TIME = 90  # because Chargebee API enforce a per-minute limit
 
 class ChargebeeStream(Stream):
     primary_key = "id"
-    cursor_field = "updated_at"
     page_size = 100
-    include_deleted = "true"
     api: Model = None
-
-    def __init__(self, start_date: str):
-        # Convert `start_date` to timestamp(UTC).
-        self._start_date = pendulum.parse(start_date).int_timestamp
-
-    @property
-    def state_checkpoint_interval(self) -> int:
-        return self.page_size
 
     def next_page_token(self, list_result: ListResult) -> Optional[Mapping[str, Any]]:
         # Reference for Chargebee's pagination strategy below:
@@ -76,18 +66,10 @@ class ChargebeeStream(Stream):
     ) -> MutableMapping[str, Any]:
         params = {
             "limit": self.page_size,
-            "include_deleted": self.include_deleted,
-            "sort_by[asc]": self.cursor_field,
         }
 
         if next_page_token:
             params.update(next_page_token)
-
-        start_point = self._start_date
-        if stream_state:
-            start_point = max(start_point, stream_state[self.cursor_field])
-
-        params[f"{self.cursor_field}[after]"] = start_point
 
         return params
 
@@ -102,7 +84,7 @@ class ChargebeeStream(Stream):
         Reference: https://apidocs.chargebee.com/docs/api/#error_codes_list
         """
         params = self.request_params(**kwargs)
-        return self.api.list(params)
+        return self.api.list(params=params)
 
     def read_records(
         self,
@@ -126,7 +108,7 @@ class ChargebeeStream(Stream):
                 self.logger.warn(str(e))
                 break
 
-            yield from self.parse_response(list_result, stream_state=stream_state, stream_slice=stream_slice)
+            yield from self.parse_response(list_result=list_result, stream_state=stream_state, stream_slice=stream_slice)
 
             next_page_token = self.next_page_token(list_result)
             if not next_page_token:
@@ -134,6 +116,78 @@ class ChargebeeStream(Stream):
 
         # Always return an empty generator just in case no records were ever yielded
         yield from []
+
+
+class SemiIncrementalChargebeeStream(ChargebeeStream):
+    cursor_field = "updated_at"
+    # page_size = 1  # TODO Remove this field
+
+    def __init__(self, start_date: str):
+        # Convert `start_date` to timestamp(UTC).
+        self._start_date = pendulum.parse(start_date).int_timestamp if start_date else None
+
+    def get_starting_point(self, stream_state: Mapping[str, Any], item_id: str) -> str:
+        start_point = self._start_date
+
+        if stream_state and stream_state.get(item_id, {}).get(self.cursor_field):
+            start_point = max(start_point, stream_state[item_id][self.cursor_field])
+
+        return start_point
+
+    def parse_response(
+        self, list_result: ListResult, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Mapping]:
+        starting_point = self.get_starting_point(stream_state=stream_state, item_id=stream_slice["item_id"])
+
+        for message in list_result:
+            record = message._response[self.name]
+            if record[self.cursor_field] > starting_point:
+                yield record
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        """
+        Override airbyte_cdk Stream's `get_updated_state` method to get the latest Chargebee stream state.
+        """
+        item_id = latest_record["parent_item_id"]
+        latest_cursor_value = latest_record.get(self.cursor_field)
+        current_stream_state = current_stream_state.copy()
+        current_state = current_stream_state.get(item_id)
+        if current_state:
+            current_state = current_state.get(self.cursor_field)
+
+        current_state_value = current_state or latest_cursor_value
+        max_value = max(current_state_value, latest_cursor_value)
+        current_stream_state[item_id] = {self.cursor_field: max_value}
+        return current_stream_state
+
+
+class IncrementalChargebeeStream(SemiIncrementalChargebeeStream):
+    include_deleted = "true"
+
+    @property
+    def state_checkpoint_interval(self) -> int:
+        return self.page_size
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+
+        params["include_deleted"] = self.include_deleted
+        params["sort_by[asc]"] = self.cursor_field
+
+        start_point = self._start_date
+        if stream_state:
+            start_point = max(start_point, stream_state[self.cursor_field])
+
+        if start_point:
+            params[f"{self.cursor_field}[after]"] = start_point
+
+        return params
+
+    def parse_response(self, list_result: ListResult, **kwargs) -> Iterable[Mapping]:
+        for message in list_result:
+            yield message._response[self.name]
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """
@@ -144,12 +198,12 @@ class ChargebeeStream(Stream):
         latest_cursor_value = latest_record.get(self.cursor_field)
 
         if latest_cursor_value:
-            state_value = {"updated_at": latest_cursor_value}
+            state_value = {self.cursor_field: latest_cursor_value}
 
         return state_value
 
 
-class Subscription(ChargebeeStream):
+class Subscription(IncrementalChargebeeStream):
     """
     API docs: https://apidocs.chargebee.com/docs/api/subscriptions?prod_cat_ver=2#list_subscriptions
     """
@@ -157,7 +211,7 @@ class Subscription(ChargebeeStream):
     api = SubscriptionModel
 
 
-class Customer(ChargebeeStream):
+class Customer(IncrementalChargebeeStream):
     """
     API docs: https://apidocs.chargebee.com/docs/api/customers?prod_cat_ver=2#list_customers
     """
@@ -165,7 +219,7 @@ class Customer(ChargebeeStream):
     api = CustomerModel
 
 
-class Invoice(ChargebeeStream):
+class Invoice(IncrementalChargebeeStream):
     """
     API docs: https://apidocs.chargebee.com/docs/api/invoices?prod_cat_ver=2#list_invoices
     """
@@ -173,7 +227,7 @@ class Invoice(ChargebeeStream):
     api = InvoiceModel
 
 
-class Order(ChargebeeStream):
+class Order(IncrementalChargebeeStream):
     """
     API docs: https://apidocs.chargebee.com/docs/api/orders?prod_cat_ver=2#list_orders
     """
@@ -181,7 +235,7 @@ class Order(ChargebeeStream):
     api = OrderModel
 
 
-class Plan(ChargebeeStream):
+class Plan(IncrementalChargebeeStream):
     """
     API docs: https://apidocs.chargebee.com/docs/api/plans?prod_cat_ver=1&lang=curl#list_plans
     """
@@ -189,7 +243,7 @@ class Plan(ChargebeeStream):
     api = PlanModel
 
 
-class Addon(ChargebeeStream):
+class Addon(IncrementalChargebeeStream):
     """
     API docs: https://apidocs.chargebee.com/docs/api/addons?prod_cat_ver=1&lang=curl#list_addons
     """
@@ -197,7 +251,7 @@ class Addon(ChargebeeStream):
     api = AddonModel
 
 
-class Item(ChargebeeStream):
+class Item(IncrementalChargebeeStream):
     """
     API docs: https://apidocs.chargebee.com/docs/api/items?prod_cat_ver=2#list_items
     """
@@ -205,7 +259,7 @@ class Item(ChargebeeStream):
     api = ItemModel
 
 
-class ItemPrice(ChargebeeStream):
+class ItemPrice(IncrementalChargebeeStream):
     """
     API docs: https://apidocs.chargebee.com/docs/api/item_prices?prod_cat_ver=2#list_item_prices
     """
@@ -213,10 +267,25 @@ class ItemPrice(ChargebeeStream):
     api = ItemPriceModel
 
 
-class AttachedItem(ChargebeeStream):
+class AttachedItem(SemiIncrementalChargebeeStream):
     """
     API docs: https://apidocs.chargebee.com/docs/api/attached_items?prod_cat_ver=2#list_attached_items
     """
 
-    # TODO Make `full_refresh`
     api = AttachedItemModel
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        items_stream = Item(start_date="")
+        for item in items_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"item_id": item["id"]}
+
+    @default_backoff_handler(max_tries=MAX_TRIES, factor=MAX_TIME)
+    def _send_request(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> ListResult:
+        """
+        Just a wrapper to allow @backoff decorator
+        Reference: https://apidocs.chargebee.com/docs/api/#error_codes_list
+        """
+        params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        return self.api.list(id=stream_slice["item_id"], params=params)

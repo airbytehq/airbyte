@@ -72,6 +72,6 @@ class SourceChargebee(AbstractSource):
         product_catalog_v2_streams = [
             Item(**kwargs),
             ItemPrice(**kwargs),
-            # AttachedItem(**kwargs),
+            AttachedItem(**kwargs),
         ]
         return common_streams + product_catalog_v2_streams
