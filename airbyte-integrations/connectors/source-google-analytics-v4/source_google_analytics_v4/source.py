@@ -112,6 +112,19 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         self._config = config
         self.dimensions_ref, self.metrics_ref = GoogleAnalyticsV4TypesList().read_records(sync_mode=None)
 
+    @property
+    def state_checkpoint_interval(self) -> int:
+        return self.window_in_days
+
+    @staticmethod
+    def to_datetime_str(date: datetime) -> str:
+        """
+        Custom method.
+        Returns the formated datetime string.
+        :: Output example: '2021-07-15 07' FORMAT : "%Y-%m-%d"
+        """
+        return date.strftime("%Y-%m-%d")
+
     def path(self, **kwargs) -> str:
         return "reports:batchGet"
 
@@ -144,10 +157,60 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
 
         return request_body
 
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """
+        Override get_json_schema CDK method to retrieve the schema information for GoogleAnalyticsV4 Object dynamically.
+        """
+
+        schema = {"type": ["null", "object"], "additionalProperties": False, "properties": {"view_id": {"type": ["string"]}}}
+
+        # Add the dimensions to the schema
+        for dimension in self.report["dimensions"]:
+            data_type = self.lookup_data_type("dimension", dimension)
+            dimension = dimension.replace("ga:", "ga_")
+
+            schema["properties"][dimension] = {
+                "type": [data_type],
+            }
+
+        # Add the metrics to the schema
+        for metric in self.report["metrics"]:
+            data_type = self.lookup_data_type("metric", metric)
+            metric = metric.replace("ga:", "ga_")
+
+            schema["properties"][metric] = {
+                # metrics are allowed to also have null values
+                "type": ["null", data_type],
+            }
+
+        return schema
+
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        Override default stream_slices CDK method to provide date_slices as page chunks for data fetch.
+        Returns list of dict, example: {
+            "startDate": "2020-01-01",
+            "endDate": "2021-12-31"
+            },
+            ...
+        """
+
+        start_date = pendulum.parse(self.start_date)
+
+        # Determine stream_state, if no stream_state we use start_date
+        if stream_state:
+            start_date = pendulum.parse(stream_state.get(self.cursor_field))
+
+        end_date = start_date.add(days=self.window_in_days)
+
+        return [{"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date)}]
+
     def get_data(self, data):
         for data_field in self.data_fields:
             if data and isinstance(data, dict):
                 data = data.get(data_field, [])
+            else:
+                return []
 
         return data
 
@@ -190,6 +253,61 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
+        Default response:
+
+        {
+            "reports": [
+                {
+                    "columnHeader": {
+                        "metricHeader": {
+                            "metricHeaderEntries": [
+                                {
+                                    "name": "ga:users",
+                                    "type": "INTEGER"
+                                }
+                            ]
+                        }
+                    },
+                    "data": {
+                        "isDataGolden": true,
+                        "maximums": [
+                            {
+                                "values": [
+                                    "98"
+                                ]
+                            }
+                        ],
+                        "minimums": [
+                            {
+                                "values": [
+                                    "98"
+                                ]
+                            }
+                        ],
+                        "rowCount": 1,
+                        "rows": [
+                            {
+                                "metrics": [
+                                    {
+                                        "values": [
+                                            "98"
+                                        ]
+                                    }
+                                ]
+                            }
+                        ],
+                        "totals": [
+                            {
+                                "values": [
+                                    "98"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+
         Return record which is a map of metric and dimension names and values, like:
 
         record = {
@@ -249,75 +367,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
                 yield record
 
 
-class GoogleAnalyticsV4FullRefreshObjectsBase(GoogleAnalyticsV4Stream):
-    """
-    Main class for all the GoogleAnalyticsV4 data streams (GoogleAnalyticsV4 Object names),
-    provides functionality for dynamically created classes as streams of data.
-    """
-
-    @property
-    def state_checkpoint_interval(self) -> int:
-        return self.window_in_days
-
-    @staticmethod
-    def to_datetime_str(date: datetime) -> str:
-        """
-        Custom method.
-        Returns the formated datetime string.
-        :: Output example: '2021-07-15 07' FORMAT : "%Y-%m-%d"
-        """
-        return date.strftime("%Y-%m-%d")
-
-    def get_json_schema(self) -> Mapping[str, Any]:
-        """
-        Override get_json_schema CDK method to retrieve the schema information for GoogleAnalyticsV4 Object dynamically.
-        """
-
-        schema = {"type": ["null", "object"], "additionalProperties": False, "properties": {"view_id": {"type": ["string"]}}}
-
-        # Add the dimensions to the schema
-        for dimension in self.report["dimensions"]:
-            data_type = self.lookup_data_type("dimension", dimension)
-            dimension = dimension.replace("ga:", "ga_")
-
-            schema["properties"][dimension] = {
-                "type": [data_type],
-            }
-
-        # Add the metrics to the schema
-        for metric in self.report["metrics"]:
-            data_type = self.lookup_data_type("metric", metric)
-            metric = metric.replace("ga:", "ga_")
-
-            schema["properties"][metric] = {
-                # metrics are allowed to also have null values
-                "type": ["null", data_type],
-            }
-
-        return schema
-
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        Override default stream_slices CDK method to provide date_slices as page chunks for data fetch.
-        Returns list of dict, example: {
-            "startDate": "2020-01-01",
-            "endDate": "2021-12-31"
-            },
-            ...
-        """
-
-        start_date = pendulum.parse(self.start_date)
-
-        # Determine stream_state, if no stream_state we use start_date
-        if stream_state:
-            start_date = pendulum.parse(stream_state.get(self.cursor_field))
-
-        end_date = start_date.add(days=self.window_in_days)
-
-        return [{"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date)}]
-
-
-class GoogleAnalyticsV4IncrementalObjectsBase(GoogleAnalyticsV4FullRefreshObjectsBase):
+class GoogleAnalyticsV4IncrementalObjectsBase(GoogleAnalyticsV4Stream):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Update the state value, default CDK method.
@@ -425,7 +475,7 @@ class SourceGoogleAnalyticsV4(AbstractSource):
 
             # construct GAReadStreams sub-class for each stream
             stream_name = stream["name"]
-            stream_bases = (GoogleAnalyticsV4FullRefreshObjectsBase,)
+            stream_bases = (GoogleAnalyticsV4Stream,)
             stream_attributes = {"report": stream}
 
             if "ga:date" in stream["dimensions"]:
