@@ -70,36 +70,32 @@ def test_add_days_to_ms_timestamp():
 
 
 def test_stream_slices_without_state(conversation_export):
-    conversation_export.end_timestamp = 1625270400000  # 2021-07-03 00:00:00 + 1 ms
+    conversation_export.end_timestamp = 1625259600000  # 2021-07-03 00:00:00 + 1 ms
 
-    """ expected_slices = [
+    expected_slices = [
         {"updated_after": 1625086800000, "updated_before": 1625173200000},
-        {"updated_after": 1625173200000, "updated_before": 1625259600000},
-        {"updated_after": 1625259600000, "updated_before": 1625270400000},
-    ] """
+        {"updated_after": 1625173200000, "updated_before": 1625259600000}
+    ]
 
     actual_slices = conversation_export.stream_slices()
-    print(actual_slices)
-    # assert actual_slices == expected_slices
+    assert actual_slices == expected_slices
 
 
 def test_stream_slices_without_state_large_batch():
 
     updated_config = config
-    updated_config["start_date"] = "2021-07-01"
     updated_config["batch_size"] = 31
 
     conversation_export = ConversationExport(updated_config)
-    conversation_export.end_timestamp = 1625270400001  # 2021-07-03 00:00:00 + 1 ms
-    """ expected_slices = [{"updated_after": 1625086800000, "updated_before": 1625270400001}]  # 2021-07-01 12:00:00 """
+    conversation_export.end_timestamp = 1625259600000  # 2021-07-03 00:00:00 + 1 ms
+    expected_slices = [{'updated_after': 1625086800000, 'updated_before': 1625259600000}]  # 2021-07-01 12:00:00 """
     actual_slices = conversation_export.stream_slices()
-    print(actual_slices)
-    # assert actual_slices == expected_slices
+    assert actual_slices == expected_slices
 
 
 def test_stream_slices_with_state(conversation_export):
-    conversation_export.end_timestamp = 1625263200001  # 2021-07-03 00:00:00 + 1 ms
-    expected_slices = [{"updated_after": 1625220000000, "updated_before": 1625263200001}]  # 2021-07-01 12:00:00
+    conversation_export.end_timestamp = 1625259600001  # 2021-07-03 00:00:00 + 1 ms
+    expected_slices = [{"updated_after": 1625220000000, "updated_before": 1625259600001}]  # 2021-07-01 12:00:00
     actual_slices = conversation_export.stream_slices(stream_state={"updated_at": 1625220000000})  # # 2021-07-02 12:00:00
     assert actual_slices == expected_slices
 
@@ -113,18 +109,17 @@ def test_stream_slices_with_start_timestamp_larger_than_state():
     updated_config["batch_size"] = 31
 
     conversation_export = ConversationExport(updated_config)
-    conversation_export.end_timestamp = 1638360000001  # 2021-12-01 12:00:00 + 1 ms
-    """  expected_slices = [{"updated_after": 1638309600000, "updated_before": 1638360000001}]  # 2021-07-01 12:00:00 """
-    actual_slices = conversation_export.stream_slices(stream_state={"updated_at": 1625220000000})  # # 2021-07-02 12:00:00
-    print(actual_slices)
-    # assert actual_slices == expected_slices
+    conversation_export.end_timestamp = 1638352800001  # 2021-12-01 12:00:00 + 1 ms
+    expected_slices = [{"updated_after": 1638309600000, "updated_before": 1638352800001}]  # 2021-07-01 12:00:00 """
+    actual_slices = conversation_export.stream_slices(stream_state={"updated_at": 1625216400000})  # # 2021-07-02 12:00:00
+    assert actual_slices == expected_slices
 
 
 def test_get_updated_state_without_state(conversation_export):
-    """ expected = {"updated_at": 1638309600000} """
-    actual = conversation_export.get_updated_state(current_stream_state=None, latest_record={"updated_at": 1625263200000})
-    print(actual)
-    # assert actual == expected
+    expected = {"updated_at": 1638309600000}
+    actual = conversation_export.get_updated_state(current_stream_state=None, latest_record={"updated_at": 1625259600001})
+    print(f'Actual: {actual}')
+    assert actual == expected
 
 
 def test_get_updated_state_with_bigger_state(conversation_export):
