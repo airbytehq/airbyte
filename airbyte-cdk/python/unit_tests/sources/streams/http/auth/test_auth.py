@@ -44,7 +44,7 @@ def test_token_authenticator():
 
 
 def test_multiple_token_authenticator():
-    token = MultipleTokenAuthenticator("token1, token2")
+    token = MultipleTokenAuthenticator(["token1", "token2"])
     header1 = token.get_auth_header()
     assert {"Authorization": "Bearer token1"} == header1
     header2 = token.get_auth_header()
