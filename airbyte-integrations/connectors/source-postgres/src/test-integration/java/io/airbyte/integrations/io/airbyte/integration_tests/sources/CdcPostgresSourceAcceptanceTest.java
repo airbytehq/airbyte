@@ -58,8 +58,10 @@ import org.testcontainers.utility.MountableFile;
 public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String SLOT_NAME_BASE = "debezium_slot";
-  private static final String STREAM_NAME = "public.id_and_name";
-  private static final String STREAM_NAME2 = "public.starships";
+  private static final String NAMESPACE = "public";
+  private static final String STREAM_NAME = "id_and_name";
+  private static final String STREAM_NAME2 = "starships";
+  private static final String PUBLICATION = "publication";
 
   private PostgreSQLContainer<?> container;
   private JsonNode config;
@@ -72,17 +74,22 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
     container.start();
 
     /**
-     * The replication method is not being set to CDC and because of it
+     * The publication is not being set as part of the config and because of it
      * {@link io.airbyte.integrations.source.postgres.PostgresSource#isCdc(JsonNode)} returns false, as
      * a result no test in this class runs through the cdc path.
      */
+    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
+        .put("method", "CDC")
+        .put("replication_slot", SLOT_NAME_BASE)
+        .put("publication", PUBLICATION)
+        .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
         .put("database", container.getDatabaseName())
         .put("username", container.getUsername())
         .put("password", container.getPassword())
-        .put("replication_method", ImmutableMap.of("method", "Standard"))
+        .put("replication_method", replicationMethod)
         .build());
 
     final Database database = Databases.createDatabase(
@@ -100,6 +107,7 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
      */
     database.query(ctx -> {
       ctx.execute("SELECT pg_create_logical_replication_slot('" + SLOT_NAME_BASE + "', 'pgoutput');");
+      ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
       ctx.execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
       ctx.execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
       ctx.execute("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
@@ -147,6 +155,7 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME,
+                NAMESPACE,
                 Field.of("id", JsonSchemaPrimitive.NUMBER),
                 Field.of("name", JsonSchemaPrimitive.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
@@ -156,6 +165,7 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME2,
+                NAMESPACE,
                 Field.of("id", JsonSchemaPrimitive.NUMBER),
                 Field.of("name", JsonSchemaPrimitive.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));

@@ -1,0 +1,90 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/bing-ads",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Bing Ads Spec",
+    "type": "object",
+    "required": [
+      "accounts",
+      "client_id",
+      "client_secret",
+      "customer_id",
+      "developer_token",
+      "refresh_token",
+      "user_id"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "accounts": {
+        "title": "Accounts",
+        "type": "object",
+        "description": "Account selection strategy.",
+        "oneOf": [
+          {
+            "title": "All accounts assigned to your user",
+            "additionalProperties": false,
+            "description": "Fetch data for all available accounts.",
+            "required": ["selection_strategy"],
+            "properties": {
+              "selection_strategy": {
+                "type": "string",
+                "enum": ["all"],
+                "default": "all"
+              }
+            }
+          },
+          {
+            "title": "Subset of your accounts",
+            "additionalProperties": false,
+            "description": "Fetch data for subset of account ids.",
+            "required": ["ids", "selection_strategy"],
+            "properties": {
+              "selection_strategy": {
+                "type": "string",
+                "enum": ["subset"],
+                "default": "subset"
+              },
+              "ids": {
+                "type": "array",
+                "description": "List of accounts from which data will be fetched.",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1,
+                "uniqueItems": true
+              }
+            }
+          }
+        ]
+      },
+      "client_id": {
+        "type": "string",
+        "description": "ID of your Microsoft Advertising client application.",
+        "airbyte_secret": true
+      },
+      "client_secret": {
+        "type": "string",
+        "description": "Secret of your Microsoft Advertising client application.",
+        "airbyte_secret": true
+      },
+      "customer_id": {
+        "type": "string",
+        "description": "User's customer ID."
+      },
+      "developer_token": {
+        "type": "string",
+        "description": "Developer token associated with user.",
+        "airbyte_secret": true
+      },
+      "refresh_token": {
+        "type": "string",
+        "description": "The long-lived Refresh token received via grant_type=refresh_token request.",
+        "airbyte_secret": true
+      },
+      "user_id": {
+        "type": "string",
+        "description": "Unique user identifier."
+      }
+    }
+  }
+}
