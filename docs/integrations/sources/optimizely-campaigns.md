@@ -52,4 +52,4 @@ Visit the [Optimizely Campaigns Dashboard](https://www.campaign.episerver.net/ac
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.0.2   | 2021-08-16 | [3566](https://github.com/airbytehq/airbyte/pull/3368) | Create Connector |
+| 0.0.1   | 2021-08-16 | [5430](https://github.com/airbytehq/airbyte/pull/5430) | New Source: Optimizely Campaigns |
