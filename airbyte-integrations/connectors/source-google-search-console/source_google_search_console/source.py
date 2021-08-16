@@ -24,6 +24,7 @@
 
 
 from typing import Any, List, Mapping, Tuple
+from urllib.parse import quote_plus
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
@@ -59,7 +60,7 @@ class SourceGoogleSearchConsole(AbstractSource):
             "client_id": config.get("client_id"),
             "client_secret": config.get("client_secret"),
             "refresh_token": config.get("refresh_token"),
-            "site_urls": config.get("site_urls"),
+            "site_url": quote_plus(config.get("site_url")),
             "start_date": config.get("start_date"),
         }
 

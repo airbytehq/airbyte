@@ -23,7 +23,7 @@
 #
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, Mapping, Optional, Union
 
 import pendulum
 import requests
@@ -33,6 +33,7 @@ from airbyte_cdk.sources.streams.http.auth.oauth import Oauth2Authenticator
 
 BASE_URL = "https://www.googleapis.com/webmasters/v3"
 GOOGLE_TOKEN_URI = "https://oauth2.googleapis.com/token"
+ROW_LIMIT = 25000
 
 
 class GoogleSearchConsole(HttpStream, ABC):
@@ -41,13 +42,13 @@ class GoogleSearchConsole(HttpStream, ABC):
     data_field = None
 
     def __init__(
-        self, client_id: str, client_secret: str, refresh_token: str, site_urls: str, start_date: pendulum.datetime, user_agent=None
+        self, client_id: str, client_secret: str, refresh_token: str, site_url: str, start_date: pendulum.datetime, user_agent=None
     ):
         super().__init__()
         self._client_id = client_id
         self._client_secret = client_secret
         self._refresh_token = refresh_token
-        self._site_url = site_urls
+        self._site_url = site_url
         self._start_date = start_date
 
     @property
@@ -100,7 +101,8 @@ class SearchAnalytics(GoogleSearchConsole):
     API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics
     """
 
-    data_field = "row"
+    data_field = "rows"
+    start_row = 0
 
     def path(self, **kwargs) -> str:
         return f"/sites/{self._site_url}/searchAnalytics/query"
@@ -109,10 +111,16 @@ class SearchAnalytics(GoogleSearchConsole):
     def http_method(self) -> str:
         return "POST"
 
+    def next_page_token(self, response: requests.Response) -> Optional[int]:
+        if len(response.json().get(self.data_field)) == ROW_LIMIT:
+            self.start_row += ROW_LIMIT
+            return self.start_row
+
+        return None
+
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
-
         headers = {"Content-Type": "application/json"}
         return headers
 
@@ -125,7 +133,8 @@ class SearchAnalytics(GoogleSearchConsole):
             "dimensions": ["country", "device", "page", "query"],
             "searchType": "web",
             "aggregationType": "auto",
-            "rowLimit": 25000,
+            "startRow": 0 or next_page_token,
+            "rowLimit": ROW_LIMIT,
         }
 
         return data

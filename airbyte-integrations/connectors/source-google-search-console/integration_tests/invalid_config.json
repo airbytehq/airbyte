@@ -3,6 +3,6 @@
   "client_id": "test_id",
   "client_secret": "test_secret",
   "refresh_token": "test_refresh",
-  "site_urls": "test_urls",
+  "site_url": "test_url",
   "user_agent": "test <test@example.com>"
 }
