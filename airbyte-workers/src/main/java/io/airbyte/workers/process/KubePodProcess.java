@@ -119,6 +119,7 @@ public class KubePodProcess extends Process {
   private static final int STDIN_REMOTE_PORT = 9001;
   private static final Map<String, String> AIRBYTE_POD_LABELS = Map.of("airbyte", "worker-pod");
 
+  private final String processRunnerHost;
   private final KubernetesClient fabricClient;
   private final Pod podDefinition;
   // Necessary since it is not possible to retrieve the pod's actual exit code upon termination. This
@@ -239,7 +240,8 @@ public class KubePodProcess extends Process {
     LOGGER.info("Init container ready..");
   }
 
-  public KubePodProcess(ApiClient officialClient,
+  public KubePodProcess(String processRunnerHost,
+                        ApiClient officialClient,
                         KubernetesClient fabricClient,
                         String podName,
                         String namespace,
@@ -253,6 +255,7 @@ public class KubePodProcess extends Process {
                         ResourceRequirements resourceRequirements,
                         final String... args)
       throws IOException, InterruptedException {
+    this.processRunnerHost = processRunnerHost;
     this.fabricClient = fabricClient;
     this.stdoutLocalPort = stdoutLocalPort;
     this.stderrLocalPort = stderrLocalPort;
@@ -315,18 +318,17 @@ public class KubePodProcess extends Process {
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .build();
 
-    var localIp = InetAddress.getLocalHost().getHostAddress();
     Container relayStdout = new ContainerBuilder()
         .withName("relay-stdout")
         .withImage("alpine/socat:1.7.4.1-r1")
-        .withCommand("sh", "-c", String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDOUT_PIPE_FILE, localIp, stdoutLocalPort))
+        .withCommand("sh", "-c", String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDOUT_PIPE_FILE, processRunnerHost, stdoutLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .build();
 
     Container relayStderr = new ContainerBuilder()
         .withName("relay-stderr")
         .withImage("alpine/socat:1.7.4.1-r1")
-        .withCommand("sh", "-c", String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDERR_PIPE_FILE, localIp, stderrLocalPort))
+        .withCommand("sh", "-c", String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDERR_PIPE_FILE, processRunnerHost, stderrLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .build();
 

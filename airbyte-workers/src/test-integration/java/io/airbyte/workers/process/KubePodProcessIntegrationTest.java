@@ -71,10 +71,11 @@ public class KubePodProcessIntegrationTest {
 
     heartbeatPort = openPorts.get(0);
     heartbeatUrl = getHost() + ":" + heartbeatPort;
+    System.out.println("heartbeatUrl = " + heartbeatUrl);
 
     officialClient = Config.defaultClient();
     fabricClient = new DefaultKubernetesClient();
-    processFactory = new KubeProcessFactory("default", officialClient, fabricClient, heartbeatUrl);
+    processFactory = new KubeProcessFactory("default", officialClient, fabricClient, heartbeatUrl, getHost());
 
     server = new WorkerHeartbeatServer(heartbeatPort);
     server.startBackground();
