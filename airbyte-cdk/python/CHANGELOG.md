@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.10
+Upd multiple token support: switch to list of tokens
+
 ## 0.1.9
 Add multiple token support
 
