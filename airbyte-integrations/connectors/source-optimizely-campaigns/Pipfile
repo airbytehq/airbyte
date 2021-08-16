@@ -1,0 +1,13 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+source-acceptance-test = {editable = true, file = "file:///Users/d.hinnenkamp/Desktop/airbyte/airbyte_sandbox/airbyte-integrations/bases/source-acceptance-test"}
+source-optimizely-campaigns = {editable = true, file = "file:///Users/d.hinnenkamp/Desktop/airbyte/airbyte_sandbox/airbyte-integrations/connectors/source-optimizely-campaigns"}
+
+[dev-packages]
+
+[requires]
+python_version = "3.8"

@@ -1,0 +1,62 @@
+{
+    "type":"object",
+    "required": [
+        "recipientListId",
+        "recipientId",
+        "mailingId"
+    ],
+    "properties": {
+        "recipientListId": {
+            "type":"number"
+        },
+        "recipientId": {
+            "type":"string"
+        },
+        "mailingId": {
+            "type":"number"
+        },
+        "reason": {
+            "type":"string"
+        },
+        "created": {
+            "type":"string"
+        },
+        "links": {
+            "type":"object",
+            "properties": {
+                "params": {
+                    "type": "object",
+                    "properties": {
+                        "additionalProp1" :  {
+                            "type": "string"
+                        },
+                        "additionalProp2" :  {
+                            "type": "string"
+                        },
+                        "additionalProp3" :  {
+                            "type": "string"
+                        }
+                    }
+                },
+                "type": {
+                    "type": "string"
+                }  ,
+                "uri": {
+                    "type": "string"
+                }  ,
+                "title": {
+                    "type": "string"
+                }  ,
+                "rel": {
+                    "type": "string"
+                }  ,
+                "uriBuilder": {
+                    "type": "array"
+                }  ,
+                "rels": {
+                    "type": "array"
+                }  
+            }
+        }
+    }
+ }

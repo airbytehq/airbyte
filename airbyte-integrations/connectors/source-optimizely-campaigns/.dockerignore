@@ -1,0 +1,7 @@
+*
+!Dockerfile
+!Dockerfile.test
+!main.py
+!source_optimizely_campaigns
+!setup.py
+!secrets
