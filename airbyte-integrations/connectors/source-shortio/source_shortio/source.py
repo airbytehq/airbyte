@@ -48,15 +48,11 @@ class Links(HttpStream, ABC):
     before_id = None
     domain_id = None
 
-    def next_page_token(
-        self, response: requests.Response
-    ) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
 
         links = json.loads(response.text)["links"]
         try:
-            earliest_id_string = sorted(
-                links, key=lambda k: k["createdAt"], reverse=False
-            )[0]["idString"]
+            earliest_id_string = sorted(links, key=lambda k: k["createdAt"], reverse=False)[0]["idString"]
             if self.before_id != earliest_id_string:
                 self.before_id = earliest_id_string
                 return earliest_id_string
@@ -86,9 +82,7 @@ class Links(HttpStream, ABC):
         # Get all the links
         return "/links"
 
-    def parse_response(
-        self, response: requests.Response, **kwargs
-    ) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         The short.io API can be inconsistent in its inclusion of UTM parameters.
         Here, we check if they've been provided and if they haven't, attempt to extract it from the original url.
@@ -160,9 +154,7 @@ class Clicks(HttpStream, ABC):
         # Get all the links
         return f"{self.domain_id}/last_clicks"
 
-    def next_page_token(
-        self, response: requests.Response
-    ) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
         This function goes through the API responses and ensures that no more requests are left to take place
         :return str: min(dt) object from the previous API response.
@@ -222,9 +214,7 @@ class Clicks(HttpStream, ABC):
 
         return payload
 
-    def parse_response(
-        self, response: requests.Response, **kwargs
-    ) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield from json.loads(response.text)
 
 
