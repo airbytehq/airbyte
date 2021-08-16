@@ -343,6 +343,18 @@ public class BigQuerySourceComprehensiveTest extends SourceComprehensiveTest {
     return dataset.getDatasetId().getDataset();
   }
 
+  @Override
+  protected String getValueFromJsonNode(JsonNode jsonNode) {
+    if (jsonNode != null) {
+      String nodeText = jsonNode.asText();
+      String nodeString = jsonNode.toString();
+      String value = (nodeText != null && !nodeText.equals("") ? nodeText : nodeString);
+      value = (value != null && value.equals("null") ? null : value);
+      return value;
+    }
+    return null;
+  }
+
   @AfterAll
   public void cleanTestInstance() {
     database.getRealDatabase().cleanDataSet(getNameSpace());
