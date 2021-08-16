@@ -1,43 +1,52 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.airbyte.integrations.base;
 
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URISyntaxException;
-import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.RSAPrivateKeySpec;
-import java.security.spec.RSAPublicKeySpec;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.common.util.net.SshdSocketAddress;
 import org.apache.sshd.server.forward.AcceptAllForwardingFilter;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.openssl.PEMKeyPair;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.openssl.PEMParser;
-import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemReader;
-
-
 /**
- * Encapsulates the connection configuration for an ssh tunnel port forward through a proxy/bastion host plus the remote host and remote port to
- * forward to a specified local port.
+ * Encapsulates the connection configuration for an ssh tunnel port forward through a proxy/bastion
+ * host plus the remote host and remote port to forward to a specified local port.
  */
 public class SSHTunnel {
 
@@ -54,8 +63,15 @@ public class SSHTunnel {
   private final String remoteDatabasePort;
   private final String tunnelDatabasePort;
 
-  public SSHTunnel(String method, String host, String tunnelSshPort,
-      String user, String sshkey, String password, String remoteDatabaseHost, String remoteDatabasePort, String tunnelDatabasePort) {
+  public SSHTunnel(String method,
+                   String host,
+                   String tunnelSshPort,
+                   String user,
+                   String sshkey,
+                   String password,
+                   String remoteDatabaseHost,
+                   String remoteDatabasePort,
+                   String tunnelDatabasePort) {
     if (method == null) {
       this.method = "NO_TUNNEL";
     } else {
@@ -74,7 +90,6 @@ public class SSHTunnel {
   public boolean shouldTunnel() {
     return method != null && !"NO_TUNNEL".equals(method);
   }
-
 
   public String getMethod() {
     return method;
@@ -113,31 +128,30 @@ public class SSHTunnel {
   }
 
   /**
-   * From the RSA format private key string, use bouncycastle to deserialize the key pair,
-   * reconstruct the keys from the key info, and return the key pair for use in authentication.
+   * From the RSA format private key string, use bouncycastle to deserialize the key pair, reconstruct
+   * the keys from the key info, and return the key pair for use in authentication.
    *
    * @return
    * @throws IOException
-  */
+   */
   protected KeyPair getPrivateKeyPair() throws IOException {
     PEMParser pemParser = new PEMParser(new StringReader(getSSHKey()));
     PEMKeyPair keypair = (PEMKeyPair) pemParser.readObject();
     JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
     return new KeyPair(
         (RSAPublicKey) converter.getPublicKey(SubjectPublicKeyInfo.getInstance(keypair.getPublicKeyInfo())),
-        (RSAPrivateKey) converter.getPrivateKey(keypair.getPrivateKeyInfo())
-    );
+        (RSAPrivateKey) converter.getPrivateKey(keypair.getPrivateKeyInfo()));
   }
 
   /**
-   * Generates a new ssh client and returns it, with forwarding set to accept all types; use this before opening a tunnel.
+   * Generates a new ssh client and returns it, with forwarding set to accept all types; use this
+   * before opening a tunnel.
    *
    * @return
    */
   public SshClient createClient() {
     java.security.Security.addProvider(
-        new org.bouncycastle.jce.provider.BouncyCastleProvider()
-    );
+        new org.bouncycastle.jce.provider.BouncyCastleProvider());
     SshClient client = SshClient.setUpDefaultClient();
     client.setForwardingFilter(AcceptAllForwardingFilter.INSTANCE);
     client.setServerKeyVerifier(AcceptAllServerKeyVerifier.INSTANCE);
@@ -166,8 +180,7 @@ public class SSHTunnel {
         getUser().trim(),
         getHost().trim(),
         Integer.parseInt(
-            getTunnelSshPort().trim()
-        ))
+            getTunnelSshPort().trim()))
         .verify(TIMEOUT_MILLIS)
         .getSession();
     if (getMethod().equals("SSH_KEY_AUTH")) {
@@ -179,8 +192,7 @@ public class SSHTunnel {
     session.auth().verify(TIMEOUT_MILLIS);
     SshdSocketAddress address = session.startLocalPortForwarding(
         new SshdSocketAddress(SshdSocketAddress.LOCALHOST_ADDRESS.getHostName(), Integer.parseInt(getTunnelDatabasePort().trim())),
-        new SshdSocketAddress(getRemoteDatabaseHost().trim(), Integer.parseInt(getRemoteDatabasePort().trim()))
-    );
+        new SshdSocketAddress(getRemoteDatabaseHost().trim(), Integer.parseInt(getRemoteDatabasePort().trim())));
     LOGGER.info("Established tunneling session.  Port forwarding started on " + address.toInetSocketAddress());
     return session;
   }
@@ -206,4 +218,5 @@ public class SSHTunnel {
         ", tunnelDatabasePort='" + tunnelDatabasePort + '\'' +
         '}';
   }
+
 }
