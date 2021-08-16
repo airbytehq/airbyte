@@ -24,7 +24,7 @@
 
 import urllib.parse as urlparse
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, List
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qs
 
 import pendulum
@@ -452,7 +452,7 @@ class IssueWorklogs(IncrementalJiraStream):
         return f"issue/{key}/worklog"
 
     def stream_slices(
-            self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         issues_stream = Issues(authenticator=self.authenticator, domain=self._domain)
         for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh):
@@ -474,8 +474,7 @@ class IssueWorklogs(IncrementalJiraStream):
         if current_state:
             current_state_date = current_state.get(self.cursor_field)
             if current_state_date:
-                current_stream_state[issue_id] = {self.cursor_field: str(max(latest_record_date,
-                                                                             pendulum.parse(current_state_date)))}
+                current_stream_state[issue_id] = {self.cursor_field: str(max(latest_record_date, pendulum.parse(current_state_date)))}
         else:
             current_stream_state[issue_id] = {self.cursor_field: str(latest_record_date)}
         return current_stream_state
