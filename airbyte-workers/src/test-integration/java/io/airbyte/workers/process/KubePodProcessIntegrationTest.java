@@ -71,7 +71,6 @@ public class KubePodProcessIntegrationTest {
 
     heartbeatPort = openPorts.get(0);
     heartbeatUrl = getHost() + ":" + heartbeatPort;
-    System.out.println("heartbeatUrl = " + heartbeatUrl);
 
     officialClient = Config.defaultClient();
     fabricClient = new DefaultKubernetesClient();
@@ -206,7 +205,6 @@ public class KubePodProcessIntegrationTest {
 
   private static String getHost() {
     try {
-      System.out.println("IS_MINIKUBE = " + IS_MINIKUBE);
       return (IS_MINIKUBE ? Inet4Address.getLocalHost().getHostAddress() : "host.docker.internal");
     } catch (UnknownHostException e) {
       throw new RuntimeException(e);
