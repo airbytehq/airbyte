@@ -3,14 +3,14 @@ on:
   workflow_dispatch:
     inputs:
       connector:
-        description: 'Airbyte Connector'
+        description: "Airbyte Connector"
         required: true
       repo:
-        description: 'Repo to check out code from. Defaults to the main airbyte repo. Set this when building connectors from forked repos.'
+        description: "Repo to check out code from. Defaults to the main airbyte repo. Set this when building connectors from forked repos."
         required: false
-        default: 'airbytehq/airbyte'
+        default: "airbytehq/airbyte"
       comment-id:
-        description: 'The comment-id of the slash command. Used to update the comment with the status.'
+        description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
 
 jobs:
@@ -48,8 +48,8 @@ jobs:
         id: regex
         uses: AsasInnab/regex-action@v1
         with:
-          regex_pattern: '^((connectors|bases)/)?[a-zA-Z0-9-_]+$'
-          regex_flags: 'i' # required to be set for this plugin
+          regex_pattern: "^((connectors|bases)/)?[a-zA-Z0-9-_]+$"
+          regex_flags: "i" # required to be set for this plugin
           search_string: ${{ github.event.inputs.connector }}
       - name: Validate input workflow format
         if: steps.regex.outputs.first_match != github.event.inputs.connector
@@ -79,6 +79,7 @@ jobs:
           AWS_REDSHIFT_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_REDSHIFT_INTEGRATION_TEST_CREDS }}
           AZURE_STORAGE_INTEGRATION_TEST_CREDS: ${{ secrets.AZURE_STORAGE_INTEGRATION_TEST_CREDS }}
           BIGQUERY_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_INTEGRATION_TEST_CREDS }}
+          SOURCE_BING_ADS_CREDS: ${{ secrets.SOURCE_BING_ADS_CREDS }}
           BIGQUERY_TEST_CREDS: ${{ secrets.BIGQUERY_TEST_CREDS }}
           BRAINTREE_TEST_CREDS: ${{ secrets.BRAINTREE_TEST_CREDS }}
           CART_TEST_CREDS: ${{ secrets.CART_TEST_CREDS }}
@@ -135,6 +136,7 @@ jobs:
           SOURCE_MARKETO_SINGER_INTEGRATION_TEST_CONFIG: ${{ secrets.SOURCE_MARKETO_SINGER_INTEGRATION_TEST_CONFIG }}
           SOURCE_RECURLY_INTEGRATION_TEST_CREDS: ${{ secrets.SOURCE_RECURLY_INTEGRATION_TEST_CREDS }}
           SOURCE_S3_TEST_CREDS: ${{ secrets.SOURCE_S3_TEST_CREDS }}
+          SOURCE_SHORTIO_TEST_CREDS: ${{ secrets.SOURCE_SHORTIO_TEST_CREDS }}
           SOURCE_STRIPE_CREDS: ${{ secrets.SOURCE_STRIPE_CREDS }}
           STRIPE_INTEGRATION_CONNECTED_ACCOUNT_TEST_CREDS: ${{ secrets.STRIPE_INTEGRATION_CONNECTED_ACCOUNT_TEST_CREDS }}
           SURVEYMONKEY_TEST_CREDS: ${{ secrets.SURVEYMONKEY_TEST_CREDS }}
@@ -177,7 +179,7 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.STATUS_API_AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: 'us-east-2'
+          AWS_DEFAULT_REGION: "us-east-2"
       - name: Add Success Comment
         if: github.event.inputs.comment-id && success()
         uses: peter-evans/create-or-update-comment@v1
