@@ -53,8 +53,7 @@
             "properties": {
               "format_type": {
                 "type": "string",
-                "enum": ["CSV"],
-                "default": "CSV"
+                "const": "CSV"
               },
               "flattening": {
                 "type": "string",
@@ -71,8 +70,7 @@
             "properties": {
               "format_type": {
                 "type": "string",
-                "enum": ["JSONL"],
-                "default": "JSONL"
+                "const": "JSONL"
               }
             }
           }
