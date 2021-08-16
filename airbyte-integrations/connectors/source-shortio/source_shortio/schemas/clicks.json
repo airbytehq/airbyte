@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "default_cursor_field": ["dt"],
+  "properties": {
+    "host": {
+      "type": ["null", "string"]
+    },
+    "path": {
+      "type": ["null", "string"]
+    },
+    "method": {
+      "type": ["null", "string"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "dt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "st": {
+      "type": ["null", "integer"]
+    },
+    "ip": {
+      "type": ["null", "string"]
+    },
+    "proto": {
+      "type": ["null", "string"]
+    },
+    "ref": {
+      "type": ["null", "string"]
+    },
+    "ua": {
+      "type": ["null", "string"]
+    },
+    "human": {
+      "type": ["null", "boolean"]
+    },
+    "browser": {
+      "type": ["null", "string"]
+    },
+    "browser_version": {
+      "type": ["null", "string"]
+    },
+    "country": {
+      "type": ["null", "string"]
+    },
+    "city": {
+      "type": ["null", "string"]
+    },
+    "social": {
+      "type": ["null", "string"]
+    },
+    "refhost": {
+      "type": ["null", "string"]
+    },
+    "os": {
+      "type": ["null", "string"]
+    },
+    "utm_source": {
+      "type": ["null", "string"]
+    },
+    "utm_medium": {
+      "type": ["null", "string"]
+    },
+    "utm_campaign": {
+      "type": ["null", "string"]
+    },
+    "goal_completed": {
+      "type": ["null", "string"]
+    },
+    "ab_path": {
+      "type": ["null", "string"]
+    },
+    "lcpath": {
+      "type": ["null", "string"]
+    }
+  }
+}

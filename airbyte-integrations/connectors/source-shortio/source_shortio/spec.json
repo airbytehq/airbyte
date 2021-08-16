@@ -1,0 +1,27 @@
+{
+  "documentationUrl": "https://developers.short.io/reference",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Shortio Spec",
+    "type": "object",
+    "required": ["domain_id", "secret_key", "start_date"],
+    "additionalProperties": false,
+    "properties": {
+      "domain_id": {
+        "type": "string",
+        "description": "Domain ID",
+        "airbyte_secret": false
+      },
+      "secret_key": {
+        "type": "string",
+        "description": "Short.io Secret key",
+        "airbyte_secret": true
+      },
+      "start_date": {
+        "type": "string",
+        "description": "Start Date, YYYY-MM-DD",
+        "airbyte_secret": false
+      }
+    }
+  }
+}
