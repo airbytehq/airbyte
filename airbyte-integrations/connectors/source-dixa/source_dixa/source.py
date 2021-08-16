@@ -22,9 +22,6 @@
 # SOFTWARE.
 #
 
-import logging
-logging.basicConfig(level=logging.DEBUG)
-
 
 from abc import ABC
 from datetime import datetime
@@ -114,7 +111,7 @@ class IncrementalDixaStream(DixaStream):
                 updated_before = min(utils.add_days_to_ms_timestamp(days=self.batch_size, ms_timestamp=updated_after), self.end_timestamp)
                 slices.append({"updated_after": updated_after, "updated_before": updated_before})
                 updated_after = updated_before
-        
+
         return slices
 
 
