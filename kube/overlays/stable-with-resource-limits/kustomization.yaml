@@ -8,15 +8,15 @@ bases:
 
 images:
   - name: airbyte/seed
-    newTag: 0.29.4-alpha
+    newTag: 0.29.7-alpha
   - name: airbyte/db
-    newTag: 0.29.4-alpha
+    newTag: 0.29.7-alpha
   - name: airbyte/scheduler
-    newTag: 0.29.4-alpha
+    newTag: 0.29.7-alpha
   - name: airbyte/server
-    newTag: 0.29.4-alpha
+    newTag: 0.29.7-alpha
   - name: airbyte/webapp
-    newTag: 0.29.4-alpha
+    newTag: 0.29.7-alpha
   - name: temporalio/auto-setup
     newTag: 1.7.0
 
