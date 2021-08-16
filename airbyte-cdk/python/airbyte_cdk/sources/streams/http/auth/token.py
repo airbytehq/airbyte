@@ -29,9 +29,6 @@ from typing import Any, List, Mapping
 from .core import HttpAuthenticator
 
 
-TOKEN_SEPARATOR = ","
-
-
 class TokenAuthenticator(HttpAuthenticator):
     def __init__(self, token: str, auth_method: str = "Bearer", auth_header: str = "Authorization"):
         self.auth_method = auth_method
