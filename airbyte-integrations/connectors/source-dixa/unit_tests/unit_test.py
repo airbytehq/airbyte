@@ -116,7 +116,7 @@ def test_stream_slices_with_start_timestamp_larger_than_state():
 
 
 def test_get_updated_state_without_state(conversation_export):
-    expected = {'updated_at': 1638309600000}
+    expected = {"updated_at": 1638309600000}
     actual = conversation_export.get_updated_state(current_stream_state=None, latest_record={"updated_at": 1625263200000})
     assert actual == expected
 

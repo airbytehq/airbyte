@@ -82,10 +82,10 @@ class IncrementalDixaStream(DixaStream):
         current_stream_state = current_stream_state or {}
         return {
             self.cursor_field: max(
-                current_stream_state.get(self.cursor_field, self.start_timestamp), 
-                latest_record.get(self.cursor_field, self.start_timestamp)
-                )
-            }
+                current_stream_state.get(self.cursor_field, self.start_timestamp),
+                latest_record.get(self.cursor_field, self.start_timestamp),
+            )
+        }
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs):
         """
