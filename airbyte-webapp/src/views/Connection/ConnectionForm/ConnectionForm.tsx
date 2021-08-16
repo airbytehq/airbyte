@@ -29,6 +29,7 @@ import Connector from "./components/Connector";
 import SchemaField from "./components/SyncCatalogField";
 import EditControls from "./components/EditControls";
 import { Connection, ScheduleProperties } from "core/resources/Connection";
+import { useFeatureService } from "components/hooks/services/Feature";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -93,10 +94,12 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   const [submitError, setSubmitError] = useState<Error | null>(null);
 
   const formatMessage = useIntl().formatMessage;
+  const { hasFeature } = useFeatureService();
 
   const { source, destination, operations } = connection;
   const supportsNormalization = destDefinition.supportsNormalization;
-  const supportsTransformations = destDefinition.supportsDbt;
+  const supportsTransformations =
+    destDefinition.supportsDbt && hasFeature("ALLOW_CUSTOM_DBT");
 
   const initialValues = useInitialValues(
     connection,

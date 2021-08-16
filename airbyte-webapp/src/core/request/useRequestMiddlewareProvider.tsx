@@ -13,7 +13,6 @@ let middlewares: {
 } = {};
 
 export function getMiddlewares() {
-  console.log(middlewares);
   return Object.values(middlewares);
 }
 
