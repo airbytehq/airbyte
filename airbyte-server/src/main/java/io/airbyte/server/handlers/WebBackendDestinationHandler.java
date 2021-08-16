@@ -60,7 +60,8 @@ public class WebBackendDestinationHandler {
   public DestinationRead webBackendRecreateDestinationAndCheck(DestinationRecreate destinationRecreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     Preconditions.checkArgument(
-        workspaceHelper.getWorkspaceForDestinationId(destinationRecreate.getDestinationId()).equals(destinationRecreate.getWorkspaceId()));
+        workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(destinationRecreate.getDestinationId())
+            .equals(destinationRecreate.getWorkspaceId()));
 
     final DestinationCreate destinationCreate = new DestinationCreate();
     destinationCreate.setConnectionConfiguration(destinationRecreate.getConnectionConfiguration());

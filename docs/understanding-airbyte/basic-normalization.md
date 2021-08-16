@@ -294,6 +294,7 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- | :--- |
+| 0.29.5-alpha | 0.1.39 | 2021-08-11 | [#4557](https://github.com/airbytehq/airbyte/pull/4557) | Handle date times and solve conflict name btw stream/field |
 | 0.28.2-alpha | 0.1.38 | 2021-07-28 | [#5027](https://github.com/airbytehq/airbyte/pull/5027) | Handle quotes in column names when parsing JSON blob |
 | 0.27.5-alpha | 0.1.37 | 2021-07-22 | [#3947](https://github.com/airbytehq/airbyte/pull/4881/) | Handle `NULL` cursor field values when deduping |
 | 0.27.2-alpha | 0.1.36 | 2021-07-09 | [#3947](https://github.com/airbytehq/airbyte/pull/4163/) | Enable normalization for MySQL destination |

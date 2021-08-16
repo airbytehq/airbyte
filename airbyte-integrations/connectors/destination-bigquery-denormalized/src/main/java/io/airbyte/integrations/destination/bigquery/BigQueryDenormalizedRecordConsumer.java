@@ -97,9 +97,14 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
           .collect(Collectors.toMap(namingResolver::getIdentifier,
               key -> formatData(fields.get(namingResolver.getIdentifier(key)).getSubFields(), root.get(key)))));
     } else if (root.isArray()) {
+      // Arrays can have only one field
+      Field arrayField = fields.get(0);
+      // If an array of records, we should use subfields
+      FieldList subFields = (arrayField.getSubFields() == null || arrayField.getSubFields().isEmpty() ? fields : arrayField.getSubFields());
       final JsonNode items = Jsons.jsonNode(MoreIterators.toList(root.elements()).stream()
-          .map(p -> formatData(fields, p))
+          .map(p -> formatData(subFields, p))
           .collect(Collectors.toList()));
+
       // "Array of Array of" (nested arrays) are not permitted by BigQuery ("Array of Record of Array of"
       // is)
       // Turn all "Array of" into "Array of Record of" instead

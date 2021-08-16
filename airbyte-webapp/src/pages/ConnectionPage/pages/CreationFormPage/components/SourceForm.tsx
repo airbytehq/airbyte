@@ -32,10 +32,11 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
     serviceType: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => {
+    setErrorStatusRequest(null);
+
     const connector = sourceDefinitions.find(
       (item) => item.sourceDefinitionId === values.serviceType
     );
-    setErrorStatusRequest(null);
     try {
       const result = await createSource({ values, sourceConnector: connector });
       setSuccessRequest(true);

@@ -1,23 +1,23 @@
 {
-  "adaccounts" : {
+  "adaccounts": {
     "updated_at": "2020-01-01T00:00:00Z"
   },
-  "creatives" : {
+  "creatives": {
     "updated_at": "2020-01-01T00:00:00Z"
   },
-  "media" : {
+  "media": {
     "updated_at": "2020-01-01T00:00:00Z"
   },
-  "campaigns" : {
+  "campaigns": {
     "updated_at": "2020-01-01T00:00:00Z"
   },
-  "ads" : {
+  "ads": {
     "updated_at": "2020-01-01T00:00:00Z"
   },
-  "adsquads" : {
+  "adsquads": {
     "updated_at": "2020-01-01T00:00:00Z"
   },
-  "segments" : {
+  "segments": {
     "updated_at": "2020-01-01T00:00:00Z"
   }
 }
