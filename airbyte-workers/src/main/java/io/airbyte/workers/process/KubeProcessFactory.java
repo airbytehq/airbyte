@@ -30,7 +30,6 @@ import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerException;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
-
 import java.net.InetAddress;
 import java.nio.file.Path;
 import java.util.Map;
@@ -52,7 +51,6 @@ public class KubeProcessFactory implements ProcessFactory {
   private final String kubeHeartbeatUrl;
   private final String processRunnerHost;
 
-
   /**
    * Sets up a process factory with the default processRunnerHost.
    */
@@ -69,7 +67,8 @@ public class KubeProcessFactory implements ProcessFactory {
    * @param fabricClient fabric8 kubernetes client
    * @param kubeHeartbeatUrl a url where if the response is not 200 the spawned process will fail
    *        itself
-   * @param processRunnerHost is the local host or ip of the machine running the process factory. injectable for testing.
+   * @param processRunnerHost is the local host or ip of the machine running the process factory.
+   *        injectable for testing.
    */
   public KubeProcessFactory(String namespace,
                             ApiClient officialClient,

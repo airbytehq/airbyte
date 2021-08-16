@@ -5,7 +5,7 @@ ENTRYPOINT_OVERRIDE="ENTRYPOINT_OVERRIDE_VALUE" # todo: need to escape the overr
 if [ ! -z "$ENTRYPOINT_OVERRIDE" ]; then
   echo "Overriding AIRBYTE_ENTRYPOINT to: $ENTRYPOINT_OVERRIDE"
   AIRBYTE_ENTRYPOINT=$ENTRYPOINT_OVERRIDE
-elif [ ! -z "$AIRBYTE_ENTRYPOINT" ]; then
+elif [ -z "$AIRBYTE_ENTRYPOINT" ]; then
   echo "Entrypoint was not set! AIRBYTE_ENTRYPOINT must be set in the container to run on Kubernetes."
   exit 127
 else
