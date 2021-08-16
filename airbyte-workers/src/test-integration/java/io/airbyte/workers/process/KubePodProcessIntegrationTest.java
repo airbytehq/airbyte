@@ -128,7 +128,7 @@ public class KubePodProcessIntegrationTest {
   public void testMissingEntrypoint() throws WorkerException, InterruptedException {
     // start a process with an entrypoint that doesn't exist
     var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
-    final Process process = getProcess("ksaiiiasdfjklaslkei");
+    final Process process = getProcess(null);
     process.waitFor();
 
     // the pod should be dead and in an error state
@@ -205,6 +205,7 @@ public class KubePodProcessIntegrationTest {
 
   private static String getHost() {
     try {
+      System.out.println("IS_MINIKUBE = " + IS_MINIKUBE);
       return (IS_MINIKUBE ? Inet4Address.getLocalHost().getHostAddress() : "host.docker.internal");
     } catch (UnknownHostException e) {
       throw new RuntimeException(e);
