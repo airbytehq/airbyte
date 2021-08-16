@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.base;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URISyntaxException;
@@ -63,6 +64,10 @@ public class SSHTunnel {
   private final String remoteDatabasePort;
   private final String tunnelDatabasePort;
 
+  private SSHTunnel tunnelConfig = null;
+  private SshClient sshclient = null;
+  private ClientSession tunnelSession = null;
+
   public SSHTunnel(String method,
                    String host,
                    String tunnelSshPort,
@@ -85,6 +90,60 @@ public class SSHTunnel {
     this.remoteDatabaseHost = remoteDatabaseHost;
     this.remoteDatabasePort = remoteDatabasePort;
     this.tunnelDatabasePort = tunnelDatabasePort;
+  }
+
+  public static SSHTunnel getInstance(JsonNode config) {
+    JsonNode ourConfig = config.get("tunnel_method");
+    SSHTunnel sshconfig = new SSHTunnel(
+        getConfigValueOrNull(ourConfig, "tunnel_method"),
+        getConfigValueOrNull(ourConfig, "tunnel_host"),
+        getConfigValueOrNull(ourConfig, "tunnel_ssh_port"),
+        getConfigValueOrNull(ourConfig, "tunnel_username"),
+        getConfigValueOrNull(ourConfig, "tunnel_usersshkey"),
+        getConfigValueOrNull(ourConfig, "tunnel_userpass"),
+        getConfigValueOrNull(ourConfig, "tunnel_db_remote_host"),
+        getConfigValueOrNull(ourConfig, "tunnel_db_remote_port"),
+        getConfigValueOrNull(ourConfig, "tunnel_localport"));
+    return sshconfig;
+  }
+
+  static String getConfigValueOrNull(JsonNode config, String key) {
+    return config != null && config.has(key) ? config.get(key).asText() : null;
+  }
+
+  /**
+   * Starts an ssh session; wrap this in a try-finally and use closeTunnel() to close it.
+   *
+   * @throws IOException
+   */
+  public void openTunnelIfRequested() throws IOException {
+    if (shouldTunnel()) {
+      if (tunnelSession != null || sshclient != null) {
+        throw new RuntimeException("SSH Tunnel was requested to be opened while it was already open.  This is a coding error.");
+      }
+      sshclient = createClient();
+      tunnelSession = openTunnel(sshclient);
+    }
+  }
+
+  /**
+   * Closes a tunnel if one was open, and otherwise doesn't do anything (safe to run).
+   */
+  public void closeTunnel() {
+    try {
+      if (shouldTunnel()) {
+        if (tunnelSession != null) {
+          tunnelSession.close();
+        }
+        if (sshclient != null) {
+          sshclient.stop();
+        }
+        tunnelSession = null;
+        sshclient = null;
+      }
+    } catch (Throwable t) {
+      throw new RuntimeException(t);
+    }
   }
 
   public boolean shouldTunnel() {
@@ -134,7 +193,7 @@ public class SSHTunnel {
    * @return
    * @throws IOException
    */
-  protected KeyPair getPrivateKeyPair() throws IOException {
+  private KeyPair getPrivateKeyPair() throws IOException {
     PEMParser pemParser = new PEMParser(new StringReader(getSSHKey()));
     PEMKeyPair keypair = (PEMKeyPair) pemParser.readObject();
     JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
@@ -149,7 +208,7 @@ public class SSHTunnel {
    *
    * @return
    */
-  public SshClient createClient() {
+  private SshClient createClient() {
     java.security.Security.addProvider(
         new org.bouncycastle.jce.provider.BouncyCastleProvider());
     SshClient client = SshClient.setUpDefaultClient();
@@ -173,7 +232,7 @@ public class SSHTunnel {
    * @throws NoSuchAlgorithmException
    * @throws URISyntaxException
    */
-  public ClientSession openTunnel(SshClient client) throws IOException {
+  private ClientSession openTunnel(SshClient client) throws IOException {
     validate();
     client.start();
     ClientSession session = client.connect(
@@ -195,15 +254,6 @@ public class SSHTunnel {
         new SshdSocketAddress(getRemoteDatabaseHost().trim(), Integer.parseInt(getRemoteDatabasePort().trim())));
     LOGGER.info("Established tunneling session.  Port forwarding started on " + address.toInetSocketAddress());
     return session;
-  }
-
-  public void closeTunnel(SshClient client, ClientSession session) throws IOException {
-    if (session != null) {
-      session.close();
-    }
-    if (client != null) {
-      client.stop();
-    }
   }
 
   @Override

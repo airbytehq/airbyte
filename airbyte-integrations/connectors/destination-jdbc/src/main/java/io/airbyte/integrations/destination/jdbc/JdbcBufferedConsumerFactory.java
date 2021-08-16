@@ -138,6 +138,7 @@ public class JdbcBufferedConsumerFactory {
 
   private static OnStartFunction onStartFunction(JdbcDatabase database, SSHTunnel sshTunnel, SqlOperations sqlOperations, List<WriteConfig> writeConfigs) {
     return () -> {
+      sshTunnel.openTunnelIfRequested();
       LOGGER.info("Preparing tmp tables in destination started for {} streams", writeConfigs.size());
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schemaName = writeConfig.getOutputSchemaName();
@@ -208,6 +209,7 @@ public class JdbcBufferedConsumerFactory {
         sqlOperations.dropTableIfExists(database, schemaName, tmpTableName);
       }
       LOGGER.info("Cleaning tmp tables in destination completed.");
+      sshTunnel.closeTunnel();
     };
   }
 

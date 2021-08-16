@@ -41,8 +41,6 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.sshd.client.SshClient;
-import org.apache.sshd.client.session.ClientSession;
 
 public abstract class AbstractJdbcDestination extends BaseConnector implements Destination {
 
@@ -74,15 +72,9 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
-    SSHTunnel tunnelConfig = null;
-    SshClient sshclient = null;
-    ClientSession tunnelSession = null;
+    SSHTunnel sshTunnel = SSHTunnel.getInstance(config);
     try (final JdbcDatabase database = getDatabase(config)) {
-      tunnelConfig = getSSHTunnelConfig(config);
-      if (tunnelConfig.shouldTunnel()) {
-        sshclient = tunnelConfig.createClient();
-        tunnelSession = tunnelConfig.openTunnel(sshclient);
-      }
+      sshTunnel.openTunnelIfRequested();
       String outputSchema = namingResolver.getIdentifier(config.get("schema").asText());
       attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations);
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
@@ -92,15 +84,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
           .withStatus(Status.FAILED)
           .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
     } finally {
-      if (tunnelConfig.shouldTunnel()) {
-        try {
-          if (sshclient != null) {
-            tunnelConfig.closeTunnel(sshclient, tunnelSession);
-          }
-        } catch (Throwable t) {
-          t.printStackTrace();
-        }
-      }
+      sshTunnel.closeTunnel();
     }
   }
 
@@ -131,32 +115,11 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   }
 
 
-
-  protected SSHTunnel getSSHTunnelConfig(JsonNode config) {
-    JsonNode ourConfig = config.get("tunnel_method");
-    SSHTunnel sshconfig = new SSHTunnel(
-        getConfigValueOrNull(ourConfig, "tunnel_method"),
-        getConfigValueOrNull(ourConfig, "tunnel_host"),
-        getConfigValueOrNull(ourConfig, "tunnel_ssh_port"),
-        getConfigValueOrNull(ourConfig, "tunnel_username"),
-        getConfigValueOrNull(ourConfig, "tunnel_usersshkey"),
-        getConfigValueOrNull(ourConfig, "tunnel_userpass"),
-        getConfigValueOrNull(ourConfig, "tunnel_db_remote_host"),
-        getConfigValueOrNull(ourConfig, "tunnel_db_remote_port"),
-        getConfigValueOrNull(ourConfig, "tunnel_localport")
-    );
-    return sshconfig;
-  }
-
-  private String getConfigValueOrNull(JsonNode config, String key) {
-    return config != null && config.has(key) ? config.get(key).asText() : null;
-  }
-
   public abstract JsonNode toJdbcConfig(JsonNode config);
 
   @Override
   public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> outputRecordCollector) {
-    return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(config), getSSHTunnelConfig(config), sqlOperations, namingResolver, config, catalog);
+    return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(config), SSHTunnel.getInstance(config), sqlOperations, namingResolver, config, catalog);
   }
 
 }
