@@ -21,6 +21,7 @@ When your Apify job (aka [actor run](https://docs.apify.com/actors/running)) fin
 connection trigger (`POST /v1/connections/sync`). The API can be called from Apify [webhook](https://docs.apify.com/webhooks) which is
 executed when your Apify run finishes.
 
+![](../../.gitbook/assets/apify_trigger_airbyte_connection.png)
 
 ### Output schema
 
