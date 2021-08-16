@@ -22,6 +22,9 @@
 # SOFTWARE.
 #
 
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
 
 from abc import ABC
 from datetime import datetime
@@ -98,10 +101,20 @@ class IncrementalDixaStream(DixaStream):
         # field is higher than start_timestamp, then start at the cursor field
         # value. Otherwise, start at start_timestamp.
         updated_after = max(stream_state.get(self.cursor_field, 0), self.start_timestamp)
-        while updated_after < self.end_timestamp:
-            updated_before = min(utils.add_days_to_ms_timestamp(days=self.batch_size, ms_timestamp=updated_after), self.end_timestamp)
-            slices.append({"updated_after": updated_after, "updated_before": updated_before})
-            updated_after = updated_before
+        updated_before = min(utils.add_days_to_ms_timestamp(days=self.batch_size, ms_timestamp=updated_after), self.end_timestamp)
+
+        # When we have abnormaly_large start_date, start_date > Now(),
+        # assign updated_before to the value of updated_after + batch_size,
+        # return single slice
+        if updated_after > updated_before:
+            updated_before = utils.add_days_to_ms_timestamp(days=self.batch_size, ms_timestamp=updated_after)
+            return [{"updated_after": updated_after, "updated_before": updated_before}]
+        else:
+            while updated_after < self.end_timestamp:
+                updated_before = min(utils.add_days_to_ms_timestamp(days=self.batch_size, ms_timestamp=updated_after), self.end_timestamp)
+                slices.append({"updated_after": updated_after, "updated_before": updated_before})
+                updated_after = updated_before
+        
         return slices
 
 
