@@ -14,6 +14,7 @@ models:
             - id
             - currency
             - date
+            - timestamp_col
             - '"HKD@spéçiäl & characters"'
             - HKD_special___characters
             - NZD
@@ -43,14 +44,14 @@ models:
             - currency
             - NZD
 
-  - name: nested_stream_with_complex_columns_resulting_into_long_names_partition
-    tests:
-      - dbt_utils.expression_is_true:
-          expression: "double_array_data is not null"
-      - dbt_utils.expression_is_true:
-          expression: "DATA is not null"
-      - dbt_utils.expression_is_true:
-          expression: "\"column`_'with\"\"_quotes\" is not null"
+#  - name: nested_stream_with_complex_columns_resulting_into_long_names_partition
+#    tests:
+#      - dbt_utils.expression_is_true:
+#          expression: "double_array_data is not null"
+#      - dbt_utils.expression_is_true:
+#          expression: "DATA is not null"
+#      - dbt_utils.expression_is_true:
+#          expression: "\"column`_'with\"\"_quotes\" is not null"
   - name: nested_stream_with_complex_columns_resulting_into_long_names_partition_DATA
     columns:
       - name: currency
