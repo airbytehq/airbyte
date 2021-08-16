@@ -83,6 +83,7 @@ Then follow [these](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2) instr
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.3   | 2021-08-16 | [5421](https://github.com/airbytehq/airbyte/pull/5421) | Add support for `Items`, `Item prices` and `Attached Items` streams |
 | 0.1.2   | 2021-07-30 | [5067](https://github.com/airbytehq/airbyte/pull/5067) | Prepare connector for publishing |
 | 0.1.1   | 2021-07-07 | [4539](https://github.com/airbytehq/airbyte/pull/4539) | Add entrypoint and bump version for connector |
 | 0.1.0   | 2021-06-30 | [3410](https://github.com/airbytehq/airbyte/pull/3410) | New Source: Chargebee |
