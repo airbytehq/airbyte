@@ -19,7 +19,7 @@ select
     case when json_extract_path_text(_airbyte_data, 'NZD', true) != '' then json_extract_path_text(_airbyte_data, 'NZD', true) end as nzd,
     case when json_extract_path_text(_airbyte_data, 'USD', true) != '' then json_extract_path_text(_airbyte_data, 'USD', true) end as usd,
     _airbyte_emitted_at
-from "integrationtests".test_normalization._airbyte_raw_exchange_rate
+from "integrationtests".test_normalization._airbyte_raw_exchange_rate as table_alias
 -- exchange_rate
 ),  __dbt__CTE__exchange_rate_ab2 as (
 
