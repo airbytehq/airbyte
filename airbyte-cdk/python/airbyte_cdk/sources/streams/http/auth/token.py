@@ -28,6 +28,8 @@ from typing import Any, Mapping
 
 from .core import HttpAuthenticator
 
+TOKEN_SEPARATOR = ","
+
 
 TOKEN_SEPARATOR = ","
 
