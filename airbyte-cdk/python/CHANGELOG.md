@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.9
+Add multiple token support
+
 ## 0.1.8
 Allow to fetch primary key info from singer catalog
 
