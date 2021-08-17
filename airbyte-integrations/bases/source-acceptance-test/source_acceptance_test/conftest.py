@@ -25,11 +25,15 @@
 
 import copy
 import json
+import logging
+import os
+from logging import Logger
 from pathlib import Path
+from subprocess import run
 from typing import Any, List, MutableMapping, Optional
 
 import pytest
-from airbyte_cdk.models import AirbyteCatalog, AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
+from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
 from docker import errors
 from source_acceptance_test.config import Config
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, load_config
@@ -76,19 +80,12 @@ def configured_catalog_path_fixture(inputs, base_path) -> Optional[str]:
 
 
 @pytest.fixture(name="configured_catalog")
-def configured_catalog_fixture(configured_catalog_path, catalog_schemas) -> Optional[ConfiguredAirbyteCatalog]:
+def configured_catalog_fixture(configured_catalog_path, discovered_catalog) -> Optional[ConfiguredAirbyteCatalog]:
     if configured_catalog_path:
         catalog = ConfiguredAirbyteCatalog.parse_file(configured_catalog_path)
         for configured_stream in catalog.streams:
-            configured_stream.stream.json_schema = catalog_schemas.get(configured_stream.stream.name, {})
+            configured_stream.stream = discovered_catalog.get(configured_stream.stream.name, configured_stream.stream)
         return catalog
-    return None
-
-
-@pytest.fixture(name="catalog")
-def catalog_fixture(configured_catalog: ConfiguredAirbyteCatalog) -> Optional[AirbyteCatalog]:
-    if configured_catalog:
-        return AirbyteCatalog(streams=[stream.stream for stream in configured_catalog.streams])
     return None
 
 
@@ -156,13 +153,34 @@ def cached_schemas_fixture() -> MutableMapping[str, Any]:
     return {}
 
 
-@pytest.fixture(name="catalog_schemas")
-def catalog_schemas_fixture(connector_config, docker_runner: ConnectorRunner, cached_schemas) -> MutableMapping[str, Any]:
+@pytest.fixture(name="discovered_catalog")
+def discovered_catalog_fixture(connector_config, docker_runner: ConnectorRunner, cached_schemas) -> MutableMapping[str, Any]:
     """JSON schemas for each stream"""
     if not cached_schemas:
         output = docker_runner.call_discover(config=connector_config)
         catalogs = [message.catalog for message in output if message.type == Type.CATALOG]
         for stream in catalogs[-1].streams:
-            cached_schemas[stream.name] = stream.json_schema
+            cached_schemas[stream.name] = stream
 
     return cached_schemas
+
+
+@pytest.fixture
+def detailed_logger() -> Logger:
+    """
+    Create logger object for recording detailed test information into a file
+    """
+    LOG_DIR = "acceptance_tests_logs"
+    if os.environ.get("ACCEPTANCE_TEST_DOCKER_CONTAINER"):
+        LOG_DIR = os.path.join("/test_input", LOG_DIR)
+    run(["mkdir", "-p", LOG_DIR])
+    filename = os.environ["PYTEST_CURRENT_TEST"].split("/")[-1].replace(" (setup)", "") + ".txt"
+    filename = os.path.join(LOG_DIR, filename)
+    formatter = logging.Formatter("%(message)s")
+    logger = logging.getLogger(f"detailed_logger {filename}")
+    logger.setLevel(logging.DEBUG)
+    fh = logging.FileHandler(filename, mode="w")
+    fh.setFormatter(formatter)
+    logger.log_json_list = lambda l: logger.info(json.dumps(list(l), indent=1))
+    logger.handlers = [fh]
+    return logger
