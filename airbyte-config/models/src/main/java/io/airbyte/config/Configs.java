@@ -61,7 +61,7 @@ public interface Configs {
 
   int getMaxSyncJobAttempts();
 
-  int getMaxSyncTimeout();
+  int getMaxSyncTimeoutDays();
 
   String getWebappUrl();
 
