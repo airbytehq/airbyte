@@ -25,7 +25,6 @@
     "segments.ad_network_type": {
         "type": ["null", "string"]
     },
-
     "customer.currency_code": {
         "type": ["null", "string"]
     },
@@ -38,16 +37,12 @@
     "customer.time_zone": {
         "type": ["null", "string"]
     },
-
-
-
     "user_location_view.country_criterion_id": {
         "type": ["null", "string"]
     },
     "user_location_view.resource_name": {
         "type": ["null", "string"]
     },
-
     "campaign.base_campaign": {
       "type": ["null", "string"]
     },
@@ -60,20 +55,15 @@
     "campaign.status": {
       "type": ["null", "string"]
     },
-
-
     "ad_group.name": {
       "type": ["null", "string"]
     },
     "ad_group.status": {
       "type": ["null", "string"]
     },
-
     "ad_group.base_ad_group": {
       "type": ["null", "string"]
     },
-
-
     "metrics.all_conversions" : {
         "type": ["null", "number"]
     },
