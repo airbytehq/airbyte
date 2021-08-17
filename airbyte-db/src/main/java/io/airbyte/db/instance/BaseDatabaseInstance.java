@@ -72,6 +72,16 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
   }
 
   @Override
+  public boolean isInitialized() throws IOException {
+    Database database = Databases.createPostgresDatabaseWithRetry(
+        username,
+        password,
+        connectionString,
+        isDatabaseConnected(databaseName));
+    return new ExceptionWrappingDatabase(database).transaction(ctx -> tableNames.stream().allMatch(tableName -> hasTable(ctx, tableName)));
+  }
+
+  @Override
   public Database getInitialized() {
     // When we don't need to setup the database, it means the database is initialized
     // somewhere else, and it is considered ready only when data has been loaded into it.

@@ -26,6 +26,7 @@ package io.airbyte.server;
 
 import io.airbyte.api.model.ImportRead;
 import io.airbyte.api.model.ImportRead.StatusEnum;
+import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.migrate.MigrateConfig;
 import io.airbyte.migrate.MigrationRunner;
@@ -44,7 +45,7 @@ public class RunMigration implements Runnable, AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RunMigration.class);
   private final String targetVersion;
-  private final Path seedPath;
+  private final ConfigPersistence seedPersistence;
   private final ConfigDumpExporter configDumpExporter;
   private final ConfigDumpImporter configDumpImporter;
   private final List<File> filesToBeCleanedUp = new ArrayList<>();
@@ -52,9 +53,9 @@ public class RunMigration implements Runnable, AutoCloseable {
   public RunMigration(JobPersistence jobPersistence,
                       ConfigRepository configRepository,
                       String targetVersion,
-                      Path seedPath) {
+                      ConfigPersistence seedPersistence) {
     this.targetVersion = targetVersion;
-    this.seedPath = seedPath;
+    this.seedPersistence = seedPersistence;
     this.configDumpExporter = new ConfigDumpExporter(configRepository, jobPersistence);
     this.configDumpImporter = new ConfigDumpImporter(configRepository, jobPersistence);
   }
@@ -77,7 +78,7 @@ public class RunMigration implements Runnable, AutoCloseable {
       MigrationRunner.run(migrateConfig);
 
       // Import data
-      ImportRead importRead = configDumpImporter.importDataWithSeed(targetVersion, output, seedPath);
+      ImportRead importRead = configDumpImporter.importDataWithSeed(targetVersion, output, seedPersistence);
       if (importRead.getStatus() == StatusEnum.FAILED) {
         throw new RuntimeException("Automatic migration failed : " + importRead.getReason());
       }

@@ -25,6 +25,7 @@
 package io.airbyte.config.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.api.client.util.Preconditions;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
@@ -58,18 +59,25 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   // root for where configs are stored
   private final Path configRoot;
 
-  public static ConfigPersistence createWithValidation(final Path storageRoot) throws InterruptedException {
-    LOGGER.info("Constructing file system config persistence (root: {})", storageRoot);
-
-    Path configRoot = storageRoot.resolve(CONFIG_DIR);
-    int totalWaitingSeconds = 0;
-    while (!Files.exists(configRoot)) {
-      LOGGER.warn("Config volume is not ready yet (waiting time: {} s)", totalWaitingSeconds);
-      Thread.sleep(INTERVAL_WAITING_SECONDS * 1000);
-      totalWaitingSeconds += INTERVAL_WAITING_SECONDS;
+  /**
+   * Check if there are existing configs under the storage root. Previously the seed container copies
+   * the configs to the storage root, it may take some time for the operation to complete and for the
+   * CONFIG_DIR to show up. So we cannot infer anything based on the existence of this directory. Now
+   * this seed generation step has been removed. So we can tell immediately whether CONFIG_DIR exists
+   * or not. If CONFIG_DIR exists, it means the user has just migrated Airbyte from an old version
+   * that uses this file system config persistence.
+   */
+  public static boolean hasExistingConfigs(final Path storageRoot) {
+    if (!Files.exists(storageRoot)) {
+      throw new RuntimeException("Storage root does not exist: " + storageRoot);
     }
-    LOGGER.info("Config volume is ready (waiting time: {} s)", totalWaitingSeconds);
+    return Files.exists(storageRoot.resolve(CONFIG_DIR));
+  }
 
+  public static ConfigPersistence createWithValidation(final Path storageRoot) {
+    LOGGER.info("Constructing file system config persistence (root: {})", storageRoot);
+    Path configRoot = storageRoot.resolve(CONFIG_DIR);
+    Preconditions.checkArgument(Files.exists(configRoot), "CONFIG_DIR does not exist under the storage root: %s", configRoot);
     return new ValidatingConfigPersistence(new FileSystemConfigPersistence(storageRoot));
   }
 
@@ -160,7 +168,7 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public void deleteConfig(AirbyteConfig configType, String configId) throws ConfigNotFoundException, IOException {
+  public void deleteConfig(AirbyteConfig configType, String configId) throws IOException {
     synchronized (lock) {
       deleteConfigInternal(configType, configId);
     }
@@ -242,11 +250,11 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
     Files.writeString(configPath, Jsons.serialize(config));
   }
 
-  private <T> void deleteConfigInternal(AirbyteConfig configType, String configId) throws IOException {
+  private void deleteConfigInternal(AirbyteConfig configType, String configId) throws IOException {
     deleteConfigInternal(configType, configId, configRoot);
   }
 
-  private <T> void deleteConfigInternal(AirbyteConfig configType, String configId, Path storageRoot) throws IOException {
+  private void deleteConfigInternal(AirbyteConfig configType, String configId, Path storageRoot) throws IOException {
     final Path configPath = buildConfigPath(configType, configId, storageRoot);
     Files.delete(configPath);
   }

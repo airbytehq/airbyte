@@ -45,6 +45,7 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.FileSystemConfigPersistence;
+import io.airbyte.config.persistence.YamlSeedConfigPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.migrate.Migrations;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
@@ -304,7 +305,7 @@ public class RunMigrationTest {
         jobPersistence,
         new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot)),
         TARGET_VERSION,
-        Path.of(System.getProperty("user.dir")).resolve("build/config_init/resources/main/config"))) {
+        YamlSeedConfigPersistence.get())) {
       runMigration.run();
     }
   }

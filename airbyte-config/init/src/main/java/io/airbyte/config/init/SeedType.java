@@ -22,26 +22,28 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db.instance;
+package io.airbyte.config.init;
 
-import io.airbyte.db.Database;
-import java.io.IOException;
+public enum SeedType {
 
-public interface DatabaseInstance {
+  STANDARD_SOURCE_DEFINITION("/seed/source_definitions.yaml", "sourceDefinitionId"),
+  STANDARD_DESTINATION_DEFINITION("/seed/destination_definitions.yaml", "destinationDefinitionId");
 
-  /**
-   * Check is a database has been initialized.
-   */
-  boolean isInitialized() throws IOException;
+  final String resourcePath;
+  // ID field name
+  final String idName;
 
-  /**
-   * Get a database that has been initialized and is ready to use.
-   */
-  Database getInitialized();
+  SeedType(String resourcePath, String idName) {
+    this.resourcePath = resourcePath;
+    this.idName = idName;
+  }
 
-  /**
-   * Get an empty database and initialize it.
-   */
-  Database getAndInitialize() throws IOException;
+  public String getResourcePath() {
+    return resourcePath;
+  }
+
+  public String getIdName() {
+    return idName;
+  }
 
 }

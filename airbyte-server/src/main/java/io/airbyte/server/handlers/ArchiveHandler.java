@@ -29,6 +29,7 @@ import io.airbyte.api.model.ImportRead;
 import io.airbyte.api.model.ImportRead.StatusEnum;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.YamlSeedConfigPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.ConfigDumpExporter;
 import io.airbyte.server.ConfigDumpImporter;
@@ -43,10 +44,7 @@ public class ArchiveHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ArchiveHandler.class);
 
-  public static final Path SEEDS_PATH = Path.of(System.getProperty("user.dir")).resolve("latest_seeds");
-
   private final String version;
-  private final ConfigRepository configRepository;
   private final ConfigDumpExporter configDumpExporter;
   private final ConfigDumpImporter configDumpImporter;
   private final FileTtlManager fileTtlManager;
@@ -57,7 +55,6 @@ public class ArchiveHandler {
                         final FileTtlManager fileTtlManager) {
     this(
         version,
-        configRepository,
         fileTtlManager,
         new ConfigDumpExporter(configRepository, jobPersistence),
         new ConfigDumpImporter(configRepository, jobPersistence));
@@ -65,12 +62,10 @@ public class ArchiveHandler {
 
   @VisibleForTesting
   ArchiveHandler(final String version,
-                 final ConfigRepository configRepository,
                  final FileTtlManager fileTtlManager,
                  final ConfigDumpExporter configDumpExporter,
                  final ConfigDumpImporter configDumpImporter) {
     this.version = version;
-    this.configRepository = configRepository;
     this.configDumpExporter = configDumpExporter;
     this.configDumpImporter = configDumpImporter;
     this.fileTtlManager = fileTtlManager;
@@ -98,7 +93,7 @@ public class ArchiveHandler {
     try {
       final Path tempFolder = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive");
       try {
-        configDumpImporter.importDataWithSeed(version, archive, SEEDS_PATH);
+        configDumpImporter.importDataWithSeed(version, archive, YamlSeedConfigPersistence.get());
         result = new ImportRead().status(StatusEnum.SUCCEEDED);
       } finally {
         FileUtils.deleteDirectory(tempFolder.toFile());

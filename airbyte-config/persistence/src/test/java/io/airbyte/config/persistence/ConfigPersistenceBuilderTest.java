@@ -103,7 +103,7 @@ class ConfigPersistenceBuilderTest extends BaseTest {
   @Test
   public void testCreateDbPersistenceWithYamlSeed() throws IOException {
     ConfigPersistence dbPersistence = new ConfigPersistenceBuilder(configs, true).getDbPersistenceWithYamlSeed();
-    ConfigPersistence seedPersistence = new YamlSeedConfigPersistence();
+    ConfigPersistence seedPersistence = YamlSeedConfigPersistence.get();
     assertSameConfigDump(seedPersistence.dumpConfigs(), dbPersistence.dumpConfigs());
   }
 
@@ -141,7 +141,7 @@ class ConfigPersistenceBuilderTest extends BaseTest {
       return null;
     });
 
-    ConfigPersistence seedPersistence = spy(new YamlSeedConfigPersistence());
+    ConfigPersistence seedPersistence = spy(YamlSeedConfigPersistence.get());
     // When setupDatabase is false, the createDbPersistence method does not initialize
     // the database itself, but it expects that the database has already been initialized.
     ConfigPersistence dbPersistence = new ConfigPersistenceBuilder(configs, false).getDbPersistence(seedPersistence);

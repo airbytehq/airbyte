@@ -32,7 +32,7 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
-import io.airbyte.config.init.SeedRepository;
+import io.airbyte.config.init.SeedType;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URL;
@@ -44,47 +44,44 @@ import java.util.stream.Stream;
 
 /**
  * This config persistence contains all seed definitions according to the yaml files. It is
- * read-only. This class can eventually replace the generateSeed task and the file system config
- * persistence.
+ * read-only.
  */
 public class YamlSeedConfigPersistence implements ConfigPersistence {
 
-  private enum SeedConfigType {
+  private static final Map<AirbyteConfig, SeedType> CONFIG_SCHEMA_MAP = Map.of(
+      ConfigSchema.STANDARD_SOURCE_DEFINITION, SeedType.STANDARD_SOURCE_DEFINITION,
+      ConfigSchema.STANDARD_DESTINATION_DEFINITION, SeedType.STANDARD_DESTINATION_DEFINITION);
 
-    STANDARD_SOURCE_DEFINITION("/seed/source_definitions.yaml", "sourceDefinitionId"),
-    STANDARD_DESTINATION_DEFINITION("/seed/destination_definitions.yaml", "destinationDefinitionId");
-
-    final String resourcePath;
-    final String idName;
-
-    SeedConfigType(String resourcePath, String idName) {
-      this.resourcePath = resourcePath;
-      this.idName = idName;
+  private static final YamlSeedConfigPersistence INSTANCE;
+  static {
+    try {
+      INSTANCE = new YamlSeedConfigPersistence();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
-
   }
 
-  private static final Map<AirbyteConfig, SeedConfigType> CONFIG_SCHEMA_MAP = Map.of(
-      ConfigSchema.STANDARD_SOURCE_DEFINITION, SeedConfigType.STANDARD_SOURCE_DEFINITION,
-      ConfigSchema.STANDARD_DESTINATION_DEFINITION, SeedConfigType.STANDARD_DESTINATION_DEFINITION);
-
   // A mapping from seed config type to config UUID to config.
-  private final ImmutableMap<SeedConfigType, Map<String, JsonNode>> allSeedConfigs;
+  private final ImmutableMap<SeedType, Map<String, JsonNode>> allSeedConfigs;
 
-  public YamlSeedConfigPersistence() throws IOException {
-    this.allSeedConfigs = ImmutableMap.<SeedConfigType, Map<String, JsonNode>>builder()
-        .put(SeedConfigType.STANDARD_SOURCE_DEFINITION, getConfigs(SeedConfigType.STANDARD_SOURCE_DEFINITION))
-        .put(SeedConfigType.STANDARD_DESTINATION_DEFINITION, getConfigs(SeedConfigType.STANDARD_DESTINATION_DEFINITION))
+  private YamlSeedConfigPersistence() throws IOException {
+    this.allSeedConfigs = ImmutableMap.<SeedType, Map<String, JsonNode>>builder()
+        .put(SeedType.STANDARD_SOURCE_DEFINITION, getConfigs(SeedType.STANDARD_SOURCE_DEFINITION))
+        .put(SeedType.STANDARD_DESTINATION_DEFINITION, getConfigs(SeedType.STANDARD_DESTINATION_DEFINITION))
         .build();
   }
 
+  public static YamlSeedConfigPersistence get() {
+    return INSTANCE;
+  }
+
   @SuppressWarnings("UnstableApiUsage")
-  private static Map<String, JsonNode> getConfigs(SeedConfigType seedConfigType) throws IOException {
-    final URL url = Resources.getResource(SeedRepository.class, seedConfigType.resourcePath);
+  private static Map<String, JsonNode> getConfigs(SeedType seedType) throws IOException {
+    final URL url = Resources.getResource(SeedType.class, seedType.getResourcePath());
     final String yamlString = Resources.toString(url, StandardCharsets.UTF_8);
     final JsonNode configList = Yamls.deserialize(yamlString);
     return MoreIterators.toList(configList.elements()).stream().collect(Collectors.toMap(
-        json -> json.get(seedConfigType.idName).asText(),
+        json -> json.get(seedType.getIdName()).asText(),
         json -> json));
   }
 

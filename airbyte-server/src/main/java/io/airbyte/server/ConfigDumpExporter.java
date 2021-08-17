@@ -76,8 +76,8 @@ public class ConfigDumpExporter {
       final Path tempFolder = Files.createTempDirectory(Path.of("/tmp"), ARCHIVE_FILE_NAME);
       final File dump = Files.createTempFile(ARCHIVE_FILE_NAME, ".tar.gz").toFile();
       exportVersionFile(tempFolder);
-      dumpConfigs(tempFolder);
-      dumpDatabase(tempFolder);
+      dumpConfigsDatabase(tempFolder);
+      dumpJobsDatabase(tempFolder);
 
       Archives.createArchive(tempFolder, dump.toPath());
       return dump;
@@ -92,7 +92,7 @@ public class ConfigDumpExporter {
     FileUtils.writeStringToFile(versionFile, version, Charset.defaultCharset());
   }
 
-  private void dumpDatabase(Path parentFolder) throws Exception {
+  private void dumpJobsDatabase(Path parentFolder) throws Exception {
     final Map<String, Stream<JsonNode>> tables = jobPersistence.exportDatabase().entrySet().stream()
         .collect(Collectors.toMap(e -> e.getKey().name(), Entry::getValue));
     Files.createDirectories(parentFolder.resolve(DB_FOLDER_NAME));
@@ -116,7 +116,7 @@ public class ConfigDumpExporter {
         .resolve(String.format("%s.yaml", tableName.toUpperCase()));
   }
 
-  private void dumpConfigs(Path parentFolder) throws IOException {
+  private void dumpConfigsDatabase(Path parentFolder) throws IOException {
     for (Map.Entry<String, Stream<JsonNode>> configEntry : configRepository.dumpConfigs().entrySet()) {
       writeConfigsToArchive(parentFolder, configEntry.getKey(), configEntry.getValue());
     }
