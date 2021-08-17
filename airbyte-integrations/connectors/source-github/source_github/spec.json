@@ -10,7 +10,7 @@
       "access_token": {
         "type": "string",
         "title": "Access Tokens",
-        "description": "Log into Github and then generate a <a href=\"https://github.com/settings/tokens\"> personal access token</a>. Separate multiple tokens with \",\"",
+        "description": "Log into Github and then generate a <a href=\"https://github.com/settings/tokens\"> personal access token</a>. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with \",\"",
         "airbyte_secret": true
       },
       "organization": {
