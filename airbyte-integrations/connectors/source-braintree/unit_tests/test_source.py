@@ -34,7 +34,7 @@ def get_stream_by_name(streams: list, stream_name: str):
             return stream
 
 
-def test_source(test_config):
+def test_source_streams(test_config):
     s = SourceBraintree()
     streams = s.streams(test_config)
     assert len(streams) == 7
