@@ -12,8 +12,6 @@ import static org.apache.kafka.common.security.auth.SecurityProtocol.SASL_SSL;
 import static org.apache.kafka.common.security.plain.internals.PlainSaslServer.PLAIN_MECHANISM;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
@@ -22,7 +20,6 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import java.util.Properties;
 import java.util.function.Consumer;
 
