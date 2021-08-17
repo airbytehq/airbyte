@@ -47,7 +47,7 @@ Also, 8 streams from the above 9 incremental streams are pure incremental meanin
 - read all records;
 - output only new records.
 
-Please, consider this behaviour when using `Attached Items` incremental stream because it may affect you API call limits.
+This means that syncing the `Attached Items` stream, even in incremental mode, is expensive in terms of your Chargebee API quota. Generally speaking, it incurs a number of API calls equal to the total number of attached items in your chargebee instance divided by 100, regardless of how many AttachedItems were actually changed or synced in a particular sync job. 
 
 ### Features
 
