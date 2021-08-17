@@ -22,6 +22,7 @@
 # SOFTWARE.
 #
 
+import time
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
@@ -41,6 +42,8 @@ class ShopifyStream(HttpStream, ABC):
     api_version = "2021-07"
     # Page size
     limit = 250
+    # API Request load treshold, default is 90%
+    rate_limit_treshold = 0.9
     # Define primary key as sort key for full_refresh, or very first sync for incremental_refresh
     primary_key = "id"
     order_field = "updated_at"
@@ -73,7 +76,41 @@ class ShopifyStream(HttpStream, ABC):
             params[self.filter_field] = self.start_date
         return params
 
+    @staticmethod
+    def control_request_rate_limit(response: requests.Response, treshold: float = rate_limit_treshold) -> float:
+        """
+        To avoid reaching Shopify API Rate Limits, use the "X-Shopify-Shop-Api-Call-Limit" header value,
+        to determine the current rate limits and load and handle sleep time based on load %.
+        Recomended sleep time between each request is 1 sec, we would handle this dynamicaly.
+        More information: https://shopify.dev/api/usage/rate-limits
+        """
+        # default sleep time between each request - 100 miliseconds
+        sleep_time = 0.1
+        # average load based on treshold
+        avg_load = treshold / 2
+        # Get the rate_limits from response
+        rate_limits = response.headers.get("X-Shopify-Shop-Api-Call-Limit", None)
+
+        # define current load
+        if rate_limits:
+            current_rate, max_rate_limit = rate_limits.split("/")
+            load = int(current_rate) / int(max_rate_limit)
+        else:
+            # if not `rate_limits` header present, set the load to avg_load to avoid throttling.
+            load = avg_load
+
+        # define sleep time based on load conditions
+        if load >= treshold:
+            sleep_time = 1
+        elif load >= avg_load < treshold:
+            sleep_time = 0.5
+
+        # sleep based on load conditions
+        time.sleep(sleep_time)
+        return sleep_time
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        self.control_request_rate_limit(response)
         json_response = response.json()
         records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
         yield from records
