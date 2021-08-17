@@ -94,21 +94,19 @@ class TransformConfig:
     @staticmethod
     def transform_bigquery(config: Dict[str, Any]):
         print("transform_bigquery")
-        credentials_json = config["credentials_json"]
-        keyfile_path = "/tmp/bq_keyfile.json"
-        with open(keyfile_path, "w") as fh:
-            fh.write(credentials_json)
-
         # https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile
         dbt_config = {
             "type": "bigquery",
-            "method": "service-account",
             "project": config["project_id"],
             "dataset": config["dataset_id"],
-            "keyfile": keyfile_path,
             "threads": 32,
             "retries": 1,
         }
+        if "credentials_json" in config:
+            dbt_config["method"] = "service-account-json"
+            dbt_config["keyfile_json"] = json.loads(config["credentials_json"])
+        else:
+            dbt_config["method"] = "oauth"
 
         return dbt_config
 

@@ -59,7 +59,9 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
   protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
     container = new PostgreSQLContainer<>("postgres:13-alpine");
     container.start();
-
+    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
+        .put("method", "Standard")
+        .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
@@ -67,6 +69,7 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("username", container.getUsername())
         .put("password", container.getPassword())
         .put("ssl", false)
+        .put("replication_method", replicationMethod)
         .build());
 
     final Database database = Databases.createDatabase(
