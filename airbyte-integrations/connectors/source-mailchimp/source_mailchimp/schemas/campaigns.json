@@ -53,7 +53,6 @@
     },
     "send_time": {
       "type": "string",
-
       "title": "Send Time",
       "description": "The date and time a campaign was sent.",
       "readOnly": true
