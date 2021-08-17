@@ -22,13 +22,12 @@
 # SOFTWARE.
 #
 
-import urllib.parse as urlparse
-from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-from urllib.parse import parse_qs
-
 import datetime
 import time
+import urllib.parse as urlparse
+from abc import ABC
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from urllib.parse import parse_qs
 
 import requests
 from airbyte_cdk.logger import AirbyteLogger
@@ -109,7 +108,7 @@ class IncrementalOptimizelyStream(OptimizelyStream, ABC):
         if isinstance(last_record_cursor_field, str):
             last_record_cursor_field = datetime.datetime.fromisoformat(last_record_cursor_field)
             last_record_cursor_field = int(time.mktime(last_record_cursor_field.timetuple()))
-        
+
         return {self.cursor_field: max(last_record_cursor_field, current_stream_state_cursor_field)}
 
     def request_params(self, stream_state=None, **kwargs):
@@ -351,10 +350,8 @@ class SourceOptimizelyCampaigns(AbstractSource):
             api_key = config["client_secret"]
             client_id = config["client_id"]
 
-            payload = {
-                'limit': 1
-            }
-            headers = {'Authorization': 'Basic ' + api_key}
+            payload = {"limit": 1}
+            headers = {"Authorization": "Basic " + api_key}
 
             r = requests.get(url + client_id + endpoint, params=payload, headers=headers)
 
