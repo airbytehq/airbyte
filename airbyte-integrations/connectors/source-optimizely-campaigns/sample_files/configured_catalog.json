@@ -4,7 +4,6 @@
       "stream": {
         "name": "attribute_names",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
           "properties": {
             "recipient_list": {
@@ -21,13 +20,14 @@
         "source_defined_primary_key": []
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "destination_sync_mode": "overwrite",
+      "cursor_field": null,
+      "primary_key": null
     },
     {
       "stream": {
         "name": "black_list_entries",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
           "properties": {
             "mailingGroupId": {
@@ -90,13 +90,14 @@
         "source_defined_primary_key": [["pattern"], ["mailingGroupId"]]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "destination_sync_mode": "overwrite",
+      "cursor_field": null,
+      "primary_key": null
     },
     {
       "stream": {
         "name": "recipient_lists",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
           "properties": {
             "id": {
@@ -176,13 +177,14 @@
         "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "destination_sync_mode": "overwrite",
+      "cursor_field": null,
+      "primary_key": null
     },
     {
       "stream": {
         "name": "recipients",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
           "properties": {
             "id": {
@@ -210,10 +212,12 @@
               "type": "boolean"
             },
             "created": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "modified": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "optInMailId": {
               "type": "string"
@@ -263,13 +267,14 @@
         "source_defined_primary_key": [["id"], ["recipient_list"]]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "destination_sync_mode": "overwrite",
+      "cursor_field": null,
+      "primary_key": null
     },
     {
       "stream": {
         "name": "smart_campaign_reports",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
           "properties": {
             "campaignId": {
@@ -376,13 +381,14 @@
         "source_defined_primary_key": [["campaignId"]]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "destination_sync_mode": "overwrite",
+      "cursor_field": null,
+      "primary_key": null
     },
     {
       "stream": {
         "name": "smart_campaigns",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
           "properties": {
             "id": {
@@ -401,16 +407,20 @@
               "type": "string"
             },
             "created": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "modified": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "started": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "finished": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "links": {
               "type": "object",
@@ -991,13 +1001,14 @@
         "source_defined_primary_key": [["id"], ["mailingGroupId"]]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "destination_sync_mode": "overwrite",
+      "cursor_field": null,
+      "primary_key": null
     },
     {
       "stream": {
         "name": "transactional_mail_reports",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
           "properties": {
             "campaignId": {
@@ -1104,13 +1115,14 @@
         "source_defined_primary_key": [["campaignId"]]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "destination_sync_mode": "overwrite",
+      "cursor_field": null,
+      "primary_key": null
     },
     {
       "stream": {
         "name": "transactional_mails",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
           "properties": {
             "id": {
@@ -1129,16 +1141,20 @@
               "type": "string"
             },
             "created": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "modified": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "started": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "finished": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "links": {
               "type": "object",
@@ -1719,13 +1735,14 @@
         "source_defined_primary_key": [["id"], ["mailingGroupId"]]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "destination_sync_mode": "overwrite",
+      "cursor_field": null,
+      "primary_key": null
     },
     {
       "stream": {
         "name": "unsubscribes",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
           "type": "object",
           "properties": {
             "recipientListId": {
@@ -1741,7 +1758,8 @@
               "type": "string"
             },
             "created": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "links": {
               "type": "object",
@@ -1788,7 +1806,9 @@
         "source_defined_primary_key": [["recipientListId"], ["recipientId"]]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "destination_sync_mode": "overwrite",
+      "cursor_field": null,
+      "primary_key": null
     }
   ]
 }
