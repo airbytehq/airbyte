@@ -50,7 +50,9 @@ public class PostresSourceComprehensiveTest extends SourceComprehensiveTest {
   protected Database setupDatabase() throws SQLException {
     container = new PostgreSQLContainer<>("postgres:13-alpine");
     container.start();
-
+    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
+        .put("method", "Standard")
+        .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
@@ -58,6 +60,7 @@ public class PostresSourceComprehensiveTest extends SourceComprehensiveTest {
         .put("username", container.getUsername())
         .put("password", container.getPassword())
         .put("ssl", false)
+        .put("replication_method", replicationMethod)
         .build());
     LOGGER.warn("PPP:config:" + config);
 

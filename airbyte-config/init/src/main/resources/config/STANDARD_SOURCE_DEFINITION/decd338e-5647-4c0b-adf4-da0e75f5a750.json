@@ -2,7 +2,7 @@
   "sourceDefinitionId": "decd338e-5647-4c0b-adf4-da0e75f5a750",
   "name": "Postgres",
   "dockerRepository": "airbyte/source-postgres",
-  "dockerImageTag": "0.3.7",
+  "dockerImageTag": "0.3.8",
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/postgres",
   "icon": "postgresql.svg"
 }
