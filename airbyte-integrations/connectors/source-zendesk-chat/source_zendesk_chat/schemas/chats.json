@@ -233,7 +233,7 @@
       "type": ["null", "string"]
     },
     "unread": {
-      "type": ["boolean"]
+      "type": ["null", "boolean"]
     },
     "visitor": {
       "properties": {
