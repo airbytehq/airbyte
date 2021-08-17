@@ -6,9 +6,7 @@ description: >-
 # Apify dataset
 
 ## Overview
-
-[Apify](https://www.apify.com) is a web scraping and web automation platform providing ready and custom made solutions, [SDK](https://sdk.apify.com/),
-and other tools, such as proxies, to build and run any job at scale. 
+[Apify](https://www.apify.com) is a web scraping and web automation platform providing both ready-made and custom solutions, an open-source [SDK](https://sdk.apify.com/) for web scraping, proxies, and many other tools to help you build and run web automation jobs at scale.
 
 The results of a scraping job are usually stored in [Apify Dataset](https://docs.apify.com/storage/dataset). This Airbyte connector allows you
 to automatically sync the contents of a dataset to your chosen destination using Airbyte.
