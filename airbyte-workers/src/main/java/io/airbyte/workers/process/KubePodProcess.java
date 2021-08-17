@@ -92,6 +92,9 @@ import org.slf4j.MDC;
  * <li>8) A heartbeat sidecar checks if the worker that launched the pod is still alive. If not, the
  * pod will fail.</li>
  *
+ * The docker image used for this pod process must expose a AIRBYTE_ENTRYPOINT which contains the
+ * entrypoint we will wrap when creating the main container in the pod.
+ *
  * See the constructor for more information.
  */
 
@@ -118,7 +121,6 @@ public class KubePodProcess extends Process {
   private static final int STDIN_REMOTE_PORT = 9001;
   private static final Map<String, String> AIRBYTE_POD_LABELS = Map.of("airbyte", "worker-pod");
 
-  private final String processRunnerHost;
   private final KubernetesClient fabricClient;
   private final Pod podDefinition;
   // Necessary since it is not possible to retrieve the pod's actual exit code upon termination. This
@@ -254,7 +256,6 @@ public class KubePodProcess extends Process {
                         ResourceRequirements resourceRequirements,
                         final String... args)
       throws IOException, InterruptedException {
-    this.processRunnerHost = processRunnerHost;
     this.fabricClient = fabricClient;
     this.stdoutLocalPort = stdoutLocalPort;
     this.stderrLocalPort = stderrLocalPort;

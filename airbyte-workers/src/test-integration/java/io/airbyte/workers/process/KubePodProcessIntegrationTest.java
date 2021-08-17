@@ -89,7 +89,7 @@ public class KubePodProcessIntegrationTest {
   public void testSuccessfulSpawning() throws Exception {
     // start a finite process
     var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
-    final Process process = getProcess("echo hi; sleep 1; echo hi2");
+    final Process process = getProcess("echo \"h\\\"i\"; sleep 1; echo hi2");
     process.waitFor();
 
     // the pod should be dead and in a good state

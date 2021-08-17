@@ -70,6 +70,7 @@ public class KubeProcessFactory implements ProcessFactory {
    * @param processRunnerHost is the local host or ip of the machine running the process factory.
    *        injectable for testing.
    */
+  @VisibleForTesting
   public KubeProcessFactory(String namespace,
                             ApiClient officialClient,
                             KubernetesClient fabricClient,
