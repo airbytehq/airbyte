@@ -38,12 +38,12 @@ const SettingsPage: React.FC = () => {
       name: <FormattedMessage id="settings.account" />,
     },
     {
-      id: `${Routes.Settings}${Routes.Source}`,
+      id: `${Routes.Settings}${Routes.SettingsSource}`,
       name: <FormattedMessage id="tables.sources" />,
       indicatorCount: countNewSourceVersion,
     },
     {
-      id: `${Routes.Settings}${Routes.Destination}`,
+      id: `${Routes.Settings}${Routes.SettingsDestination}`,
       name: <FormattedMessage id="tables.destinations" />,
       indicatorCount: countNewDestinationVersion,
     },
@@ -86,10 +86,10 @@ const SettingsPage: React.FC = () => {
               <Route path={`${Routes.Settings}${Routes.Account}`}>
                 <AccountPage />
               </Route>
-              <Route path={`${Routes.Settings}${Routes.Source}`}>
+              <Route path={`${Routes.Settings}${Routes.SettingsSource}`}>
                 <SourcesPage />
               </Route>
-              <Route path={`${Routes.Settings}${Routes.Destination}`}>
+              <Route path={`${Routes.Settings}${Routes.SettingsDestination}`}>
                 <DestinationsPage />
               </Route>
               <Route path={`${Routes.Settings}${Routes.Configuration}`}>
