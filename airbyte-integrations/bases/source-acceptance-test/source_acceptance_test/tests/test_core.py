@@ -25,7 +25,8 @@
 import logging
 from collections import Counter, defaultdict
 from functools import reduce
-from typing import Any, List, Mapping, MutableMapping
+from logging import Logger
+from typing import Any, Dict, List, Mapping, MutableMapping
 
 import pytest
 from airbyte_cdk.models import AirbyteMessage, ConnectorSpecification, Status, Type
@@ -34,6 +35,7 @@ from jsonschema import validate
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, serialize, verify_records_schema
+from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper
 
 
 @pytest.mark.default_timeout(10)
@@ -54,7 +56,12 @@ class TestSpec(BaseTest):
         # Getting rid of technical variables that start with an underscore
         config = {key: value for key, value in connector_config.data.items() if not key.startswith("_")}
 
-        validate(instance=config, schema=spec_messages[0].spec.connectionSpecification)
+        spec_message_schema = spec_messages[0].spec.connectionSpecification
+        validate(instance=config, schema=spec_message_schema)
+
+        js_helper = JsonSchemaHelper(spec_message_schema)
+        variants = js_helper.find_variant_paths()
+        js_helper.validate_variant_paths(variants)
 
     def test_required(self):
         """Check that connector will fail if any required field is missing"""
@@ -151,7 +158,9 @@ class TestBasicRead(BaseTest):
         streams_without_records = streams_without_records - allowed_empty_streams
         assert not streams_without_records, f"All streams should return some records, streams without records: {streams_without_records}"
 
-    def _validate_expected_records(self, records, expected_records, flags):
+    def _validate_expected_records(
+        self, records: List[AirbyteMessage], expected_records: List[AirbyteMessage], flags, detailed_logger: Logger
+    ):
         """
         We expect some records from stream to match expected_records, partially or fully, in exact or any order.
         """
@@ -159,6 +168,10 @@ class TestBasicRead(BaseTest):
         expected_by_stream = self.group_by_stream(expected_records)
         for stream_name, expected in expected_by_stream.items():
             actual = actual_by_stream.get(stream_name, [])
+            detailed_logger.info(f"Actual records for stream {stream_name}:")
+            detailed_logger.log_json_list(actual)
+            detailed_logger.info(f"Expected records for stream {stream_name}:")
+            detailed_logger.log_json_list(expected)
 
             self.compare_records(
                 stream_name=stream_name,
@@ -167,6 +180,7 @@ class TestBasicRead(BaseTest):
                 extra_fields=flags.extra_fields,
                 exact_order=flags.exact_order,
                 extra_records=flags.extra_records,
+                detailed_logger=detailed_logger,
             )
 
     def test_read(
@@ -176,6 +190,7 @@ class TestBasicRead(BaseTest):
         inputs: BasicReadTestConfig,
         expected_records: List[AirbyteMessage],
         docker_runner: ConnectorRunner,
+        detailed_logger,
     ):
         output = docker_runner.call_read(connector_config, configured_catalog)
         records = [message.record for message in output if message.type == Type.RECORD]
@@ -194,7 +209,9 @@ class TestBasicRead(BaseTest):
                 )
 
         if expected_records:
-            self._validate_expected_records(records=records, expected_records=expected_records, flags=inputs.expect_records)
+            self._validate_expected_records(
+                records=records, expected_records=expected_records, flags=inputs.expect_records, detailed_logger=detailed_logger
+            )
 
     @staticmethod
     def remove_extra_fields(record: Any, spec: Any) -> Any:
@@ -212,7 +229,15 @@ class TestBasicRead(BaseTest):
         return result
 
     @staticmethod
-    def compare_records(stream_name, actual, expected, extra_fields, exact_order, extra_records):
+    def compare_records(
+        stream_name: str,
+        actual: List[Dict[str, Any]],
+        expected: List[Dict[str, Any]],
+        extra_fields: bool,
+        exact_order: bool,
+        extra_records: bool,
+        detailed_logger: Logger,
+    ):
         """Compare records using combination of restrictions"""
         if exact_order:
             for r1, r2 in zip(expected, actual):
@@ -227,11 +252,19 @@ class TestBasicRead(BaseTest):
             actual = set(map(serialize, actual))
             missing_expected = set(expected) - set(actual)
 
-            assert not missing_expected, f"Stream {stream_name}: All expected records must be produced"
+            if missing_expected:
+                msg = f"Stream {stream_name}: All expected records must be produced"
+                detailed_logger.info(msg)
+                detailed_logger.log_json_list(missing_expected)
+                pytest.fail(msg)
 
             if not extra_records:
                 extra_actual = set(actual) - set(expected)
-                assert not extra_actual, f"Stream {stream_name}: There are more records than expected, but extra_records is off"
+                if extra_actual:
+                    msg = f"Stream {stream_name}: There are more records than expected, but extra_records is off"
+                    detailed_logger.info(msg)
+                    detailed_logger.log_json_list(extra_actual)
+                    pytest.fail(msg)
 
     @staticmethod
     def group_by_stream(records) -> MutableMapping[str, List[MutableMapping]]:

@@ -9,7 +9,7 @@ select
     _airbyte_partition_hashid,
     json_extract_scalar(column___with__quotes, "$['currency']") as currency,
     _airbyte_emitted_at
-from `dataline-integration-testing`.test_normalization.`nested_stream_with_complex_columns_resulting_into_long_names_partition`
+from `dataline-integration-testing`.test_normalization.`nested_stream_with_complex_columns_resulting_into_long_names_partition` as table_alias
 cross join unnest(column___with__quotes) as column___with__quotes
 where column___with__quotes is not null
 -- column___with__quotes at nested_stream_with_complex_columns_resulting_into_long_names/partition/column`_'with"_quotes;

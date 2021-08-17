@@ -10,6 +10,6 @@ select
     {{ json_extract_scalar('_airbyte_data', ['NZD'], ['NZD']) }} as NZD,
     {{ json_extract_scalar('_airbyte_data', ['USD'], ['USD']) }} as USD,
     _airbyte_emitted_at
-from {{ source('test_normalization', '_airbyte_raw_exchange_rate') }}
+from {{ source('test_normalization', '_airbyte_raw_exchange_rate') }} as table_alias
 -- exchange_rate
 
