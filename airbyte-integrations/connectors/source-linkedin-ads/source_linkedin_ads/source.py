@@ -24,7 +24,7 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Dict, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 from airbyte_cdk import AirbyteLogger
@@ -38,7 +38,7 @@ class LinkedinAdsStream(HttpStream, ABC):
 
     url_base = "https://api.linkedin.com/v2/"
 
-    def  __init__(self, config: Dict):
+    def __init__(self, config: Dict):
         super().__init__(authenticator=config["authenticator"])
         self.config = config
 
@@ -69,7 +69,7 @@ class Accounts(LinkedinAdsStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        
+
         return "/adAccountsV2/"
 
 
@@ -105,16 +105,15 @@ class Employees(IncrementalLinkedinAdsStream):
     primary_key = "employee_id"
 
     def path(self, **kwargs) -> str:
-        
+
         return "employees"
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        
+
         raise NotImplementedError("Implement stream slices or delete this method!")
 
 
 class SourceLinkedinAds(AbstractSource):
-
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         Testing connection availability for the connector.
@@ -141,5 +140,5 @@ class SourceLinkedinAds(AbstractSource):
         config["authenticator"] = TokenAuthenticator(token=config["access_token"])
 
         return [
-            Accounts(config), 
-            ]
+            Accounts(config),
+        ]
