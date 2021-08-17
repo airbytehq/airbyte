@@ -112,7 +112,7 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
       containerClient.create();
     }
     // create a storage container if absent (aka Table is SQL BD)
-    if (configuredStream.getSyncMode().equals(SyncMode.FULL_REFRESH)) {
+    if (SyncMode.FULL_REFRESH.equals(configuredStream.getSyncMode())) {
       // full refresh sync. Create blob and override if any
       LOGGER.info("Sync mode is selected to OVERRIDE mode. New container will be automatically"
           + " created or all data would be overridden (if any) for stream:" + configuredStream

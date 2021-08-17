@@ -24,7 +24,6 @@
 
 package io.airbyte.integrations.destination.azure_blob_storage;
 
-import com.azure.core.util.BinaryData;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
@@ -56,7 +55,6 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
   protected AzureBlobStorageDestinationConfig azureBlobStorageDestinationConfig;
   protected SpecializedBlobClientBuilder specializedBlobClientBuilder;
   protected StorageSharedKeyCredential credential;
-  // private AppendBlobClient appendBlobClient;
 
   protected AzureBlobStorageDestinationAcceptanceTest(AzureBlobStorageFormat outputFormat) {
     this.outputFormat = outputFormat;
@@ -91,7 +89,6 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
    */
   @Deprecated
   protected String getAllSyncedObjects(String streamName) {
-    // this.appendBlobClient = specializedBlobClientBuilder
     AppendBlobClient appendBlobClient = specializedBlobClientBuilder
         .blobName(streamName)
         .buildAppendBlobClient();
@@ -103,19 +100,6 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
     LOGGER.info("All objects: " + result);
     return result;
 
-  }
-
-  /**
-   * Helper method to retrieve all synced objects inside the configured bucket path.
-   *
-   * @return
-   */
-  protected BinaryData getAllSyncedObjects1(String streamName) {
-    AppendBlobClient appendBlobClient = specializedBlobClientBuilder
-        .blobName(streamName)
-        .buildAppendBlobClient();
-
-    return appendBlobClient.downloadContent();
   }
 
   protected abstract JsonNode getFormatConfig();
@@ -174,18 +158,6 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
       LOGGER.info("Deleting test env: " + azureBlobStorageDestinationConfig.getContainerName());
       blobContainerClient.delete();
     }
-
-    // dlete all containers
-    // storageClient
-    // .listBlobContainers()
-    // .forEach(
-    // c -> {
-    // BlobContainerClient blobContainerClient =
-    // storageClient.getBlobContainerClient(c.getName());
-    // System.out.println("Deleting: " + c.getName());
-    // blobContainerClient.delete();
-    // });
-
   }
 
 }

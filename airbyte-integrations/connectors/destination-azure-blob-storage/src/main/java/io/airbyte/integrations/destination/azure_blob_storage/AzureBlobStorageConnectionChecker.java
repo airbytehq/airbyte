@@ -73,7 +73,7 @@ public class AzureBlobStorageConnectionChecker {
     writeUsingAppendBlock("Some test data");
     listBlobsInContainer()
         .forEach(
-            blobItem -> LOGGER.debug(
+            blobItem -> LOGGER.info(
                 "Blob name: " + blobItem.getName() + "Snapshot: " + blobItem.getSnapshot()));
 
     deleteBlob();
@@ -89,9 +89,9 @@ public class AzureBlobStorageConnectionChecker {
     // create a storage container if absent (aka Table is SQL BD)
     if (!appendBlobClient.exists()) {
       appendBlobClient.create(overwriteDataInStream);
-      LOGGER.debug("blobContainerClient created");
+      LOGGER.info("blobContainerClient created");
     } else {
-      LOGGER.debug("blobContainerClient already exists");
+      LOGGER.info("blobContainerClient already exists");
     }
   }
 
@@ -100,7 +100,7 @@ public class AzureBlobStorageConnectionChecker {
   public void writeUsingAppendBlock(String data) {
     LOGGER.info("Writing test data to Azure Blob storage: " + data);
     if (overwriteDataInStream) {
-      LOGGER.debug("Override option is enabled. Old data is will be removed");
+      LOGGER.info("Override option is enabled. Old data is will be removed");
       appendBlobClient.delete();
       appendBlobClient.create();
     }
@@ -109,7 +109,7 @@ public class AzureBlobStorageConnectionChecker {
     Integer blobCommittedBlockCount = appendBlobClient.appendBlock(dataStream, data.length())
         .getBlobCommittedBlockCount();
 
-    LOGGER.debug("blobCommittedBlockCount: " + blobCommittedBlockCount);
+    LOGGER.info("blobCommittedBlockCount: " + blobCommittedBlockCount);
   }
 
   /*

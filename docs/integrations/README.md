@@ -105,6 +105,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 ### Destinations
 | Connector | Grade |
 |----|----|
+|[AzureBlobStorage](./destinations/azureblobstorage.md)| Alpha |
 |[BigQuery](./destinations/bigquery.md)| Certified |
 |[Google Cloud Storage (GCS)](./destinations/gcs.md)| Alpha |
 |[Google Pubsub](./destinations/pubsub.md)| Alpha |
@@ -116,7 +117,6 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Oracle](./destinations/oracle.md)| Alpha |
 |[Postgres](./destinations/postgres.md)| Certified |
 |[Redshift](./destinations/redshift.md)| Certified |
-|[S3](./destinations/s3.md)| Alpha |
-|[AzureBlobStorage](./destinations/azureblobstorage.md)| Certified |
+|[S3](./destinations/s3.md)| Certified |
 |[SQL Server (MSSQL)](./destinations/mssql.md)| Alpha |
 |[Snowflake](./destinations/snowflake.md)| Certified |
