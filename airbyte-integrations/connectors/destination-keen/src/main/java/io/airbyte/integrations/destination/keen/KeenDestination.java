@@ -39,7 +39,7 @@ public class KeenDestination extends BaseConnector implements Destination {
   static final String KEEN_BASE_API_PATH = "https://api.keen.io/3.0";
   static final String CONFIG_PROJECT_ID = "project_id";
   static final String CONFIG_API_KEY = "api_key";
-  static final String INFER_TIMESTAMP = "Infer Timestamp";
+  static final String INFER_TIMESTAMP = "infer_timestamp";
 
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
