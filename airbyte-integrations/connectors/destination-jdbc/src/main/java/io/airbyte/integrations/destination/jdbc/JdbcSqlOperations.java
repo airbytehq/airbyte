@@ -131,8 +131,21 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   }
 
   @Override
-  public boolean isValidData(String data) {
+  public boolean isValidData(JsonNode data) {
     return true;
   }
 
+  @Override
+  public final void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records,
+      String schemaName, String tableName) throws Exception {
+    records.forEach(airbyteRecordMessage -> getDataAdapter().adapt(airbyteRecordMessage.getData()));
+    insertRecordsInternal(database, records, schemaName, tableName);
+  }
+
+  protected abstract void insertRecordsInternal(JdbcDatabase database, List<AirbyteRecordMessage> records,
+      String schemaName, String tableName) throws Exception;
+
+  protected DataAdapter getDataAdapter() {
+    return new DataAdapter(j -> false, c -> null);
+  }
 }

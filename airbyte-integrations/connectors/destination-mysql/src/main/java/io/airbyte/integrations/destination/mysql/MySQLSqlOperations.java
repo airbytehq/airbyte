@@ -48,7 +48,7 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
   }
 
   @Override
-  public void insertRecords(JdbcDatabase database,
+  public void insertRecordsInternal(JdbcDatabase database,
                             List<AirbyteRecordMessage> records,
                             String schemaName,
                             String tmpTableName)

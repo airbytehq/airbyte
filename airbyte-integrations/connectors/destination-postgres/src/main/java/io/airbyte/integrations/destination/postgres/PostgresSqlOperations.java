@@ -24,8 +24,8 @@
 
 package io.airbyte.integrations.destination.postgres;
 
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.destination.jdbc.DataAdapter;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.BufferedReader;
@@ -45,7 +45,7 @@ public class PostgresSqlOperations extends JdbcSqlOperations {
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSqlOperations.class);
 
   @Override
-  public void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tmpTableName) throws SQLException {
+  public void insertRecordsInternal(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tmpTableName) throws SQLException {
     if (records.isEmpty()) {
       return;
     }
@@ -54,7 +54,7 @@ public class PostgresSqlOperations extends JdbcSqlOperations {
       File tmpFile = null;
       try {
         tmpFile = Files.createTempFile(tmpTableName + "-", ".tmp").toFile();
-        writeBatchToFile(tmpFile, formatRecords(records));
+        writeBatchToFile(tmpFile, records);
 
         var copyManager = new CopyManager(connection.unwrap(BaseConnection.class));
         var sql = String.format("COPY %s.%s FROM stdin DELIMITER ',' CSV", schemaName, tmpTableName);
@@ -74,11 +74,9 @@ public class PostgresSqlOperations extends JdbcSqlOperations {
     });
   }
 
-  private List<AirbyteRecordMessage> formatRecords(List<AirbyteRecordMessage> records) {
-    // Postgres fails if json contains \u0000 unicode (NULL) in a json.
-    records.forEach(airbyteRecordMessage -> airbyteRecordMessage
-        .setData(Jsons.deserialize(Jsons.serialize(airbyteRecordMessage.getData()).replaceAll("\\\\u0000", ""))));
-    return records;
+  @Override
+  protected DataAdapter getDataAdapter() {
+    return new PostgresDataAdapter();
   }
 
 }

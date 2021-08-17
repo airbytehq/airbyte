@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.destination.oracle;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
@@ -173,7 +174,7 @@ public class OracleOperations implements SqlOperations {
   }
 
   @Override
-  public boolean isValidData(String data) {
+  public boolean isValidData(JsonNode data) {
     return true;
   }
 

@@ -22,21 +22,15 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.jdbc;
+package io.airbyte.integrations.destination.buffered_stream_consumer;
 
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import java.util.List;
+import io.airbyte.protocol.models.AirbyteMessage;
 
-public class TestJdbcSqlOperations extends JdbcSqlOperations {
+/**
+ * Allows specifying transformation logic from Airbyte Json to String.
+ */
+public interface StreamDateFormatter {
 
-  @Override
-  public void insertRecordsInternal(JdbcDatabase database,
-                            List<AirbyteRecordMessage> records,
-                            String schemaName,
-                            String tableName)
-      throws Exception {
-    // Not required for the testing
-  }
+  String getFormattedDate(AirbyteMessage airbyteMessage);
 
 }
