@@ -62,6 +62,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -177,6 +178,7 @@ public class KubePodProcess extends Process {
       throws IOException {
     var argsStr = String.join(" ", args);
     var optionalStdin = usesStdin ? String.format("cat %s | ", STDIN_PIPE_FILE) : "";
+    var entrypointOverrideValue = entrypointOverride == null ? "" : StringEscapeUtils.escapeXSI(entrypointOverride);
 
     // communicates its completion to the heartbeat check via a file and closes itself if the heartbeat
     // fails
@@ -184,7 +186,7 @@ public class KubePodProcess extends Process {
         .replaceAll("TERMINATION_FILE_CHECK", TERMINATION_FILE_CHECK)
         .replaceAll("TERMINATION_FILE_MAIN", TERMINATION_FILE_MAIN)
         .replaceAll("OPTIONAL_STDIN", optionalStdin)
-        .replaceAll("ENTRYPOINT_OVERRIDE_VALUE", entrypointOverride == null ? "" : entrypointOverride)
+        .replace("ENTRYPOINT_OVERRIDE_VALUE", entrypointOverrideValue) // use replace and not replaceAll to preserve escaping and quoting
         .replaceAll("ARGS", argsStr)
         .replaceAll("STDERR_PIPE_FILE", STDERR_PIPE_FILE)
         .replaceAll("STDOUT_PIPE_FILE", STDOUT_PIPE_FILE);
