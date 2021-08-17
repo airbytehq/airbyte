@@ -72,3 +72,10 @@ COMMIT;
 You can limit this grant down to specific schemas instead of the whole database. Note that to replicate data from multiple Snowflake databases, you can re-run the command above to grant access to all the relevant schemas, but you'll need to set up multiple sources connecting to the same db on multiple schemas.
 
 Your database user should now be ready for use with Airbyte.
+
+
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.1.1   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |

@@ -62,7 +62,7 @@
 - sourceDefinitionId: 9fa5862c-da7c-11eb-8d19-0242ac130003
   name: Cockroachdb
   dockerRepository: airbyte/source-cockroachdb
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/cockroachdb
 - sourceDefinitionId: af6d50ee-dddf-4126-a8ee-7faee990774f
   name: PostHog
@@ -153,7 +153,7 @@
 - sourceDefinitionId: e87ffa8e-a3b5-f69c-9076-6011339de1f6
   name: Redshift
   dockerRepository: airbyte/source-redshift
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.3.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/redshift
   icon: redshift.svg
 - sourceDefinitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
@@ -284,7 +284,7 @@
 - sourceDefinitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
   name: Oracle DB
   dockerRepository: airbyte/source-oracle
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.3.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/oracle
 - sourceDefinitionId: c8630570-086d-4a40-99ae-ea5b18673071
   name: Zendesk Talk
@@ -314,7 +314,7 @@
 - sourceDefinitionId: bad83517-5e54-4a3d-9b53-63e85fbd4d7c
   name: ClickHouse
   dockerRepository: airbyte/source-clickhouse
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/clickhouse
 - sourceDefinitionId: 45d2e135-2ede-49e1-939f-3e3ec357a65e
   name: Recharge
@@ -334,12 +334,12 @@
 - sourceDefinitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
   name: Snowflake
   dockerRepository: airbyte/source-snowflake
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/snowflake
 - sourceDefinitionId: 447e0381-3780-4b46-bb62-00a4e3c8b8e2
   name: IBM Db2
   dockerRepository: airbyte/source-db2
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/db2
 - sourceDefinitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
   name: Slack
