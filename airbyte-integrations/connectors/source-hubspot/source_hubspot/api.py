@@ -185,7 +185,7 @@ class API:
 
         if response.status_code == HTTPStatus.FORBIDDEN:
             """ Once hit the forbidden endpoint, we return the error message from response. """
-            return response.json()
+            pass
         elif response.status_code in (HTTPStatus.UNAUTHORIZED, CLOUDFLARE_ORIGIN_DNS_ERROR):
             raise HubspotInvalidAuth(message, response=response)
         elif response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
