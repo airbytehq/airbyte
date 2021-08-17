@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.api.client.util.Lists;
-import com.google.common.collect.Sets;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
@@ -80,6 +79,9 @@ public class KeenDestinationTest extends DestinationAcceptanceTest {
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+    // Changes for this particular operation - get all collections - can take a couple more time to propagate
+    // than standard queries for the newly created collection
+    Thread.sleep(5000);
     List<String> keenCollections = keenHttpClient.getAllCollectionsForProject(projectId, apiKey);
 
     for (String keenCollection : keenCollections) {
