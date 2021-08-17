@@ -14,5 +14,5 @@ RUN pip install .
 
 ENV AIRBYTE_ENTRYPOINT "/airbyte/base.sh"
 
-LABEL io.airbyte.version=0.1.1
+LABEL io.airbyte.version=0.1.2
 LABEL io.airbyte.name=airbyte/source-zendesk-chat
