@@ -36,7 +36,7 @@ TEST_REQUIREMENTS = [
 
 setup(
     name="source_close_com",
-    description="Source implementation for Close Com.",
+    description="Source implementation for Close.com.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),

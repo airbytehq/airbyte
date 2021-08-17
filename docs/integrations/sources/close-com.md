@@ -1,8 +1,8 @@
-# Close Com
+# Close.com
 
 ## Overview
 
-The Close Com source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+The Close.com source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
 ### Output schema
 
@@ -40,7 +40,7 @@ Leads, Events Incremental streams use `date_updated` field. All other Incrementa
 
 ### Data type mapping
 
-The [Close Com API](https://developer.close.com/) uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
+The [Close.com API](https://developer.close.com/) uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
 
 ### Features
 
@@ -51,19 +51,19 @@ The [Close Com API](https://developer.close.com/) uses the same [JSONSchema](htt
 
 ### Performance considerations
 
-The Close Com Connector has rate limit. There are 60 RPS for Organizations.
+The Close.com Connector has rate limit. There are 60 RPS for Organizations.
 You can find detailed info [here](https://developer.close.com/#ratelimits).
 
 ## Getting started
 
 ### Requirements
 
-* Close Com Account
-* Close Com API Key
+* Close.com Account
+* Close.com API Key
 
 ### Setup guide
 
-Visit the [Close Com API Keys page](https://app.close.com/settings/api/) in the Close Com dashboard to access the secret key for your account. Secret key will be prefixed with `api_`.
+Visit the [Close.com API Keys page](https://app.close.com/settings/api/) in the Close.com dashboard to access the secret key for your account. Secret key will be prefixed with `api_`.
 
 We recommend creating a restricted key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access. For ease of use, we recommend using read permissions for all resources and configuring which resource to replicate in the Airbyte UI.
 
@@ -71,4 +71,4 @@ We recommend creating a restricted key specifically for Airbyte access. This wil
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.0   | 2021-08-10 | [5366](https://github.com/airbytehq/airbyte/pull/5366) | Initial release of Close Com connector for Airbyte |
+| 0.1.0   | 2021-08-10 | [5366](https://github.com/airbytehq/airbyte/pull/5366) | Initial release of Close.com connector for Airbyte |
