@@ -62,7 +62,7 @@ class SourceCart(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
 
-        # try to check end_date value. It can use for different CI tests
+        # try to check an end_date value. It can be used for different CI tests
         end_date = config.get("end_date")
         if end_date:
             # validate this value

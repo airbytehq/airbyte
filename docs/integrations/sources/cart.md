@@ -51,4 +51,6 @@ Please follow these [steps](https://developers.cart.com/docs/rest-api/docs/READM
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.2   | 2021-08-17 | [5465](https://github.com/airbytehq/airbyte/pull/5465) | Fixing of CI tests|
+| 0.1.1   | 2021-06-11 | [5287](https://github.com/airbytehq/airbyte/pull/5287) | Remove store_name as secret add icon|
 | 0.1.0   | 2021-06-08 | [4574](https://github.com/airbytehq/airbyte/pull/4574) | Initial Release |
