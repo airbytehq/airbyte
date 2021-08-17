@@ -40,12 +40,7 @@ class SourceFacebookPages(AbstractSource):
         error_msg = None
 
         try:
-            _ = list(Page(
-                access_token=config["access_token"],
-                page_id=config["page_id"]
-            ).read_records(
-                sync_mode=SyncMode.full_refresh
-            ))
+            _ = list(Page(access_token=config["access_token"], page_id=config["page_id"]).read_records(sync_mode=SyncMode.full_refresh))
             ok = True
         except Exception as e:
             error_msg = repr(e)
