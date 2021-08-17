@@ -54,8 +54,8 @@ from .streams import (
 
 class SourceGithub(AbstractSource):
     def _generate_repositories(self, config: Mapping[str, Any], authenticator: TokenAuthenticator) -> List[str]:
-        organizations = list(filter(None, config["organization"].split(" ")))
-        repositories = list(filter(None, config["repository"].split(" ")))
+        organizations = list(filter(None, config.get("organization", "").split(" ")))
+        repositories = list(filter(None, config.get("repository", "").split(" ")))
 
         if not (organizations or repositories):
             raise Exception("Either `organisation` or `repository` need to be provided for connect to Github API")
