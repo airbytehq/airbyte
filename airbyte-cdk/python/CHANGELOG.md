@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.10
+Add checking specified config againt spec for read, write, check and ddiscover commands
+
+##0.1.9
+remove this line after rebase
+
 ## 0.1.8
 Allow to fetch primary key info from singer catalog
 

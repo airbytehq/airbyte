@@ -180,6 +180,7 @@ class TestRun:
         parsed_args = argparse.Namespace(**args)
         destination.run_cmd(parsed_args)
 
+        mocker.patch.object(destination, "spec", return_value=ConnectorSpecification(connectionSpecification={}))
         expected_check_result = AirbyteConnectionStatus(status=Status.SUCCEEDED)
         mocker.patch.object(destination, "check", return_value=expected_check_result, autospec=True)
 
@@ -216,6 +217,7 @@ class TestRun:
         mocker.patch.object(
             destination, "write", return_value=iter(expected_write_result), autospec=True  # convert to iterator to mimic real usage
         )
+        mocker.patch.object(destination, "spec", return_value=ConnectorSpecification(connectionSpecification={}))
         # mock input is a record followed by some state messages
         mocked_input: List[AirbyteMessage] = [_wrapped(_record("s1", {"k1": "v1"})), *expected_write_result]
         mocked_stdin_string = "\n".join([record.json(exclude_unset=True) for record in mocked_input])
