@@ -247,7 +247,6 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
     replication_start_date_field = "createdAfter"
     next_page_token_field = "nextToken"
     page_size_field = "limit"
-    cursor_field = []
 
     def path(self, **kwargs) -> str:
         return f"/vendor/directFulfillment/shipping/{VENDOR_API_VERSIONS}/shippingLabels"

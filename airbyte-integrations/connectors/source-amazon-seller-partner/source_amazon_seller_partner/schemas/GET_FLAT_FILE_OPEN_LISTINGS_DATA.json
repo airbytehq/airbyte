@@ -1,7 +1,7 @@
 {
   "title": "Flat File Open Listings Data",
   "description": "Flat File Open Listings Data Reports",
-  "type": ["null", "object"],
+  "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "reportType": {
