@@ -50,7 +50,7 @@ public class MigrationV0_28_0 extends BaseMigration implements Migration {
 
   private final Migration previousMigration;
 
-  public MigrationV0_28_0(Migration previousMigration) {
+  public MigrationV0_28_0(final Migration previousMigration) {
     super(previousMigration);
     this.previousMigration = previousMigration;
   }
@@ -68,8 +68,8 @@ public class MigrationV0_28_0 extends BaseMigration implements Migration {
   }
 
   @Override
-  public void migrate(Map<ResourceId, Stream<JsonNode>> inputDataImmutable,
-                      Map<ResourceId, Consumer<JsonNode>> outputData) {
+  public void migrate(final Map<ResourceId, Stream<JsonNode>> inputDataImmutable,
+                      final Map<ResourceId, Consumer<JsonNode>> outputData) {
     // we need to figure out which workspace to associate an operation with. we use the following
     // strategy to avoid ever storing too much info in memory:
     // 1. iterate over connectors stream
@@ -122,7 +122,7 @@ public class MigrationV0_28_0 extends BaseMigration implements Migration {
         workspaceId = DEFAULT_WORKSPACE_ID;
       } else {
         final UUID sourceId = connectionIdToSourceId.get(connectionId);
-        workspaceId = sourceIdToWorkspaceId.get(sourceId);
+        workspaceId = sourceIdToWorkspaceId.getOrDefault(sourceId, DEFAULT_WORKSPACE_ID);
       }
       ((ObjectNode) r).put("workspaceId", workspaceId.toString());
 
