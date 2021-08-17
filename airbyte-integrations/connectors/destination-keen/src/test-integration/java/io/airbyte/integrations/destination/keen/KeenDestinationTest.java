@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.api.client.util.Lists;
-import com.google.common.collect.Sets;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
@@ -17,6 +16,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -56,24 +56,19 @@ public class KeenDestinationTest extends DestinationAcceptanceTest {
   protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName, String namespace, JsonNode streamSchema) throws Exception {
     String accentStrippedStreamName = KeenCharactersStripper.stripSpecialCharactersFromStreamName(streamName);
 
-    ArrayNode array = keenHttpClient.extract(accentStrippedStreamName, getPropertiesToExtractString(streamSchema), projectId, apiKey);
-    return Lists.newArrayList(array.elements());
+    ArrayNode array = keenHttpClient.extract(accentStrippedStreamName, projectId, apiKey);
+    return Lists.newArrayList(array.elements()).stream()
+        .sorted(Comparator.comparing(o -> o.get("keen").get("timestamp").textValue()))
+        .map(node -> (JsonNode)((ObjectNode)node).without("keen"))
+        .collect(Collectors.toList());
   }
 
-  // We don't want to extract 'keen' object, extract only properties included in streamSchema
-  private String getPropertiesToExtractString(
-      JsonNode streamSchema) {
-    return Sets.newHashSet(streamSchema.get("properties").fieldNames())
-        .stream()
-        .map(fieldName -> "\"" + fieldName + "\"")
-        .collect(Collectors.joining(",", "[", "]"));
-  }
 
   @Override
   protected void setup(TestDestinationEnv testEnv) throws Exception {
     if (!Files.exists(Path.of(SECRET_FILE_PATH))) {
       throw new IllegalStateException(
-          "Must provide path to a file containing Keen account credentials: project Id and Write Key. " +
+          "Must provide path to a file containing Keen account credentials: Project ID and Master API Key. " +
               "By default {module-root}/" + SECRET_FILE_PATH);
     }
     configJson = getBaseConfigJson();
@@ -84,6 +79,9 @@ public class KeenDestinationTest extends DestinationAcceptanceTest {
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+    // Changes for this particular operation - get all collections - can take a couple more time to propagate
+    // than standard queries for the newly created collection
+    Thread.sleep(5000);
     List<String> keenCollections = keenHttpClient.getAllCollectionsForProject(projectId, apiKey);
 
     for (String keenCollection : keenCollections) {

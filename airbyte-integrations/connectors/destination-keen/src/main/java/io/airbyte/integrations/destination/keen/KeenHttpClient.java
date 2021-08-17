@@ -8,12 +8,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,7 +22,6 @@ public class KeenHttpClient {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KeenHttpClient.class);
   private static final String keenBaseApiPath = "https://api.keen.io/3.0";
-  private static final String extractionOrderBy = URLEncoder.encode("\"keen.timestamp\"", StandardCharsets.UTF_8);
   private static final int MINUTE_MILLIS = 1000 * 60;
   final HttpClient httpClient = HttpClient.newHttpClient();
   final ObjectMapper objectMapper = new ObjectMapper();
@@ -66,14 +63,12 @@ public class KeenHttpClient {
     }
   }
 
-  public ArrayNode extract(String streamName, String propertiesToExtract, String projectId, String apiKey)
+  public ArrayNode extract(String streamName, String projectId, String apiKey)
       throws IOException, InterruptedException {
     URI extractionUri = URI.create(String.format(
         keenBaseApiPath + "/projects/%s/queries/extraction" +
-            "?api_key=%s&timeframe=this_7_years&event_collection=%s&property_names=%s&order_by=%s",
-        projectId, apiKey, streamName,
-        URLEncoder.encode(propertiesToExtract, StandardCharsets.UTF_8),
-        extractionOrderBy
+            "?api_key=%s&timeframe=this_7_years&event_collection=%s",
+        projectId, apiKey, streamName
     ));
 
     HttpRequest request = HttpRequest.newBuilder()
