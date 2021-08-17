@@ -97,19 +97,7 @@ class IncrementalOptimizelyStream(OptimizelyStream, ABC):
         and returning an updated state object.
         """
 
-        last_record_cursor_field = latest_record.get(self.cursor_field)
-        current_stream_state_cursor_field = current_stream_state.get(self.cursor_field, 0)
-
-        if isinstance(current_stream_state_cursor_field, str):
-            current_stream_state_cursor_field = datetime.datetime.fromisoformat(current_stream_state_cursor_field)
-            current_stream_state_cursor_field = int(time.mktime(current_stream_state_cursor_field.timetuple()))
-            pass
-
-        if isinstance(last_record_cursor_field, str):
-            last_record_cursor_field = datetime.datetime.fromisoformat(last_record_cursor_field)
-            last_record_cursor_field = int(time.mktime(last_record_cursor_field.timetuple()))
-
-        return {self.cursor_field: max(last_record_cursor_field, current_stream_state_cursor_field)}
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
     def request_params(self, stream_state=None, **kwargs):
         stream_state = stream_state or {}
