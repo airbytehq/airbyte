@@ -139,6 +139,6 @@ def check_config_against_spec(config: Mapping[str, Any], spec: ConnectorSpecific
     spec_schema = spec.connectionSpecification
     try:
         validate(instance=config, schema=spec_schema)
-        return None
+        return
     except ValidationError as validation_error:
         return "Config validation error: " + validation_error.message

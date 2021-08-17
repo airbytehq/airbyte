@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.1.10
-Add checking specified config againt spec for read, write, check and ddiscover commands
+Add checking specified config againt spec for read, write, check and discover commands
 
 ##0.1.9
 remove this line after rebase
