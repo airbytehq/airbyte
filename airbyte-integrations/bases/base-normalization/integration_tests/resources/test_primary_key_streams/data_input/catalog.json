@@ -210,20 +210,20 @@
                     "properties": {
                       "groups": {
                         "type": "string"
-                        }
+                      }
+                    },
+                    "custom_fields": {
+                      "items": {
+                        "properties": {
+                          "id": {
+                            "type": ["null", "integer"]
+                          },
+                          "value": {}
+                        },
+                        "type": ["null", "object"]
                       },
-                      "custom_fields": {
-                            "items": {
-                              "properties": {
-                                "id": {
-                                  "type": ["null", "integer"]
-                                },
-                                "value": {}
-                              },
-                              "type": ["null", "object"]
-                            },
-                            "type": ["null", "array"]
-                      },
+                      "type": ["null", "array"]
+                    },
                     "conflict_stream_name": {
                       "type": "integer"
                     }
