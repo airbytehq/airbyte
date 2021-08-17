@@ -96,3 +96,9 @@ GRANT SELECT ON "<schema_b>"."<table_2>" TO airbyte;
 
 Your database user should now be ready for use with Airbyte.
 
+
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.3.2   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |
