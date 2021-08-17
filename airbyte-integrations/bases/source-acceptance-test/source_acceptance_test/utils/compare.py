@@ -70,10 +70,23 @@ def diff_dicts(left, right, use_markup) -> Optional[List[str]]:
     return ["equals failed"] + [color_off + line for line in icdiff_lines]
 
 
+class DictWithHash(dict):
+
+    _hash: str = None
+
+    def __hash__(self):
+        if not self._hash:
+            self._hash = hash(json.dumps({k: serialize(v) for k, v in self.items()}, sort_keys=True))
+        return self._hash
+
+    def __lt__(self, other):
+        return hash(self) < hash(other)
+
+
 def serialize(value) -> str:
     """Simplify comparison of nested dicts/lists"""
     if isinstance(value, Mapping):
-        return json.dumps({k: serialize(v) for k, v in value.items()}, sort_keys=True)
+        return DictWithHash(value)
     if isinstance(value, List):
         return sorted([serialize(v) for v in value])
     return str(value)
