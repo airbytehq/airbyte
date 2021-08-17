@@ -128,6 +128,7 @@ class GithubStream(HttpStream, ABC):
                 # url: https://api.github.com/orgs/sherifnada/teams?per_page=100" error.
                 error_msg = f"Syncing `Team` stream isn't available for repository `{stream_slice['repository']}`."
             else:
+                self.logger.error(f"Undefined error while reading records: {error_msg}")
                 raise e
 
             self.logger.warn(error_msg)
