@@ -25,7 +25,11 @@
 
 import copy
 import json
+import logging
+import os
+from logging import Logger
 from pathlib import Path
+from subprocess import run
 from typing import Any, List, MutableMapping, Optional
 
 import pytest
@@ -166,3 +170,24 @@ def catalog_schemas_fixture(connector_config, docker_runner: ConnectorRunner, ca
             cached_schemas[stream.name] = stream.json_schema
 
     return cached_schemas
+
+
+@pytest.fixture
+def detailed_logger() -> Logger:
+    """
+    Create logger object for recording detailed test information into a file
+    """
+    LOG_DIR = "acceptance_tests_logs"
+    if os.environ.get("ACCEPTANCE_TEST_DOCKER_CONTAINER"):
+        LOG_DIR = os.path.join("/test_input", LOG_DIR)
+    run(["mkdir", "-p", LOG_DIR])
+    filename = os.environ["PYTEST_CURRENT_TEST"].split("/")[-1].replace(" (setup)", "") + ".txt"
+    filename = os.path.join(LOG_DIR, filename)
+    formatter = logging.Formatter("%(message)s")
+    logger = logging.getLogger(f"detailed_logger {filename}")
+    logger.setLevel(logging.DEBUG)
+    fh = logging.FileHandler(filename, mode="w")
+    fh.setFormatter(formatter)
+    logger.log_json_list = lambda l: logger.info(json.dumps(list(l), indent=1))
+    logger.handlers = [fh]
+    return logger

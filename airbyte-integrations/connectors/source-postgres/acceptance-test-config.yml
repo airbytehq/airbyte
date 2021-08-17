@@ -1,0 +1,6 @@
+# See [Source Acceptance Tests](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector/source-acceptance-tests.md)
+# for more information about how to configure these tests
+connector_image: airbyte/source-postgres:dev
+tests:
+  spec:
+    - spec_path: "src/main/resources/spec.json"

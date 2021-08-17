@@ -25,6 +25,8 @@
 package io.airbyte.test.automaticMigrationAcceptance;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -58,7 +60,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -180,13 +181,11 @@ public class MigrationAcceptanceTest {
     boolean foundMysqlSourceDefinition = false;
     boolean foundPostgresSourceDefinition = false;
     for (SourceDefinitionRead sourceDefinitionRead : sourceDefinitions) {
-      if (sourceDefinitionRead.getSourceDefinitionId().toString()
-          .equals("435bb9a5-7887-4809-aa58-28c27df0d7ad")) {
+      if (sourceDefinitionRead.getSourceDefinitionId().toString().equals("435bb9a5-7887-4809-aa58-28c27df0d7ad")) {
         assertEquals(sourceDefinitionRead.getName(), "MySQL");
         assertEquals(sourceDefinitionRead.getDockerImageTag(), "0.2.0");
         foundMysqlSourceDefinition = true;
-      } else if (sourceDefinitionRead.getSourceDefinitionId().toString()
-          .equals("decd338e-5647-4c0b-adf4-da0e75f5a750")) {
+      } else if (sourceDefinitionRead.getSourceDefinitionId().toString().equals("decd338e-5647-4c0b-adf4-da0e75f5a750")) {
         String[] tagBrokenAsArray = sourceDefinitionRead.getDockerImageTag().replace(".", ",").split(",");
         assertEquals(3, tagBrokenAsArray.length);
         assertTrue(Integer.parseInt(tagBrokenAsArray[0]) >= 0);
@@ -208,15 +207,15 @@ public class MigrationAcceptanceTest {
     boolean foundPostgresDestinationDefinition = false;
     boolean foundLocalCSVDestinationDefinition = false;
     boolean foundSnowflakeDestinationDefintion = false;
-    for (DestinationDefinitionRead destinationDefinitionRead : destinationDefinitions) {
+    for (final DestinationDefinitionRead destinationDefinitionRead : destinationDefinitions) {
       switch (destinationDefinitionRead.getDestinationDefinitionId().toString()) {
         case "25c5221d-dce2-4163-ade9-739ef790f503" -> {
-          assertEquals(destinationDefinitionRead.getName(), "Postgres");
-          assertEquals(destinationDefinitionRead.getDockerImageTag(), "0.2.0");
+          assertEquals("Postgres", destinationDefinitionRead.getName());
+          assertEquals("0.2.0", destinationDefinitionRead.getDockerImageTag());
           foundPostgresDestinationDefinition = true;
         }
         case "8be1cf83-fde1-477f-a4ad-318d23c9f3c6" -> {
-          assertEquals(destinationDefinitionRead.getDockerImageTag(), "0.2.0");
+          assertEquals("0.2.0", destinationDefinitionRead.getDockerImageTag());
           assertTrue(destinationDefinitionRead.getName().contains("Local CSV"));
           foundLocalCSVDestinationDefinition = true;
         }
@@ -241,20 +240,20 @@ public class MigrationAcceptanceTest {
     final ConnectionApi connectionApi = new ConnectionApi(apiClient);
     final List<ConnectionRead> connections = connectionApi.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections();
     assertEquals(connections.size(), 2);
-    for (ConnectionRead connection : connections) {
+    for (final ConnectionRead connection : connections) {
       if (connection.getConnectionId().toString().equals("a294256f-1abe-4837-925f-91602c7207b4")) {
-        assertEquals(connection.getPrefix(), "");
-        assertEquals(connection.getSourceId().toString(), "28ffee2b-372a-4f72-9b95-8ed56a8b99c5");
-        assertEquals(connection.getDestinationId().toString(), "4e00862d-5484-4f50-9860-f3bbb4317397");
-        assertEquals(connection.getName(), "default");
-        assertEquals(connection.getStatus(), ConnectionStatus.ACTIVE);
+        assertEquals("", connection.getPrefix());
+        assertEquals("28ffee2b-372a-4f72-9b95-8ed56a8b99c5", connection.getSourceId().toString());
+        assertEquals("4e00862d-5484-4f50-9860-f3bbb4317397", connection.getDestinationId().toString());
+        assertEquals("default", connection.getName());
+        assertEquals(ConnectionStatus.ACTIVE, connection.getStatus());
         assertNull(connection.getSchedule());
       } else if (connection.getConnectionId().toString().equals("49dae3f0-158b-4737-b6e4-0eed77d4b74e")) {
-        assertEquals(connection.getPrefix(), "");
-        assertEquals(connection.getSourceId().toString(), "28ffee2b-372a-4f72-9b95-8ed56a8b99c5");
-        assertEquals(connection.getDestinationId().toString(), "5434615d-a3b7-4351-bc6b-a9a695555a30");
-        assertEquals(connection.getName(), "default");
-        assertEquals(connection.getStatus(), ConnectionStatus.ACTIVE);
+        assertEquals("", connection.getPrefix());
+        assertEquals("28ffee2b-372a-4f72-9b95-8ed56a8b99c5", connection.getSourceId().toString());
+        assertEquals("5434615d-a3b7-4351-bc6b-a9a695555a30", connection.getDestinationId().toString());
+        assertEquals("default", connection.getName());
+        assertEquals(ConnectionStatus.ACTIVE, connection.getStatus());
         assertNull(connection.getSchedule());
       } else {
         fail("Unknown sync " + connection.getConnectionId().toString());
@@ -264,18 +263,22 @@ public class MigrationAcceptanceTest {
 
   private WorkspaceIdRequestBody assertWorkspaceInformation(ApiClient apiClient) throws ApiException {
     final WorkspaceApi workspaceApi = new WorkspaceApi(apiClient);
-    WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(UUID.fromString("5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6"));
-    WorkspaceRead workspace = workspaceApi.getWorkspace(workspaceIdRequestBody);
-    assertEquals(workspace.getWorkspaceId().toString(), "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6");
-    assertEquals(workspace.getCustomerId().toString(), "17f90b72-5ae4-40b7-bc49-d6c2943aea57");
-    assertEquals(workspace.getName(), "default");
-    assertEquals(workspace.getSlug(), "default");
-    assertEquals(workspace.getInitialSetupComplete(), true);
-    assertEquals(workspace.getAnonymousDataCollection(), false);
-    assertEquals(workspace.getNews(), false);
-    assertEquals(workspace.getSecurityUpdates(), false);
-    assertEquals(workspace.getDisplaySetupWizard(), false);
-    return workspaceIdRequestBody;
+    final WorkspaceRead workspace = workspaceApi.listWorkspaces().getWorkspaces().get(0);
+    // originally the default workspace started with a hardcoded id. the migration in version 0.29.0
+    // took that id and randomized it. we want to check that the id is now NOT that hardcoded id and
+    // that all related resources use the updated workspaceId as well.
+    assertNotNull(workspace.getWorkspaceId().toString());
+    assertNotEquals("5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6", workspace.getWorkspaceId().toString());
+    assertEquals("17f90b72-5ae4-40b7-bc49-d6c2943aea57", workspace.getCustomerId().toString());
+    assertEquals("default", workspace.getName());
+    assertEquals("default", workspace.getSlug());
+    assertEquals(true, workspace.getInitialSetupComplete());
+    assertEquals(false, workspace.getAnonymousDataCollection());
+    assertEquals(false, workspace.getNews());
+    assertEquals(false, workspace.getSecurityUpdates());
+    assertEquals(false, workspace.getDisplaySetupWizard());
+
+    return new WorkspaceIdRequestBody().workspaceId(workspace.getWorkspaceId());
   }
 
   @SuppressWarnings("UnstableApiUsage")

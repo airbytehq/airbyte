@@ -63,6 +63,7 @@
             "properties": {
               "method": {
                 "type": "string",
+                "const": "Standard",
                 "enum": ["Standard"],
                 "default": "Standard",
                 "order": 0
@@ -77,6 +78,7 @@
             "properties": {
               "method": {
                 "type": "string",
+                "const": "CDC",
                 "enum": ["CDC"],
                 "default": "CDC",
                 "order": 0

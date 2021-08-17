@@ -57,6 +57,10 @@ public interface Configs {
 
   String getConfigDatabaseUrl();
 
+  int getMaxRetriesPerAttempt();
+
+  int getMaxSyncJobAttempts();
+
   String getWebappUrl();
 
   String getWorkspaceDockerMount();
@@ -66,6 +70,8 @@ public interface Configs {
   String getDockerNetwork();
 
   TrackingStrategy getTrackingStrategy();
+
+  DeploymentMode getDeploymentMode();
 
   WorkerEnvironment getWorkerEnvironment();
 
@@ -111,6 +117,11 @@ public interface Configs {
   enum WorkerEnvironment {
     DOCKER,
     KUBERNETES
+  }
+
+  enum DeploymentMode {
+    OSS,
+    CLOUD
   }
 
 }

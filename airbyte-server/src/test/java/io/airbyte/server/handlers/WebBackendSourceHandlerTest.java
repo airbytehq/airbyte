@@ -39,10 +39,10 @@ import io.airbyte.api.model.SourceRecreate;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.helpers.SourceDefinitionHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
-import io.airbyte.server.helpers.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
@@ -72,7 +72,7 @@ public class WebBackendSourceHandlerTest {
     SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
     sourceRead = SourceHelpers.getSourceRead(source, standardSourceDefinition);
 
-    when(workspaceHelper.getWorkspaceForSourceId(sourceRead.getSourceId())).thenReturn(sourceRead.getWorkspaceId());
+    when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceRead.getSourceId())).thenReturn(sourceRead.getWorkspaceId());
   }
 
   @Test
@@ -148,7 +148,7 @@ public class WebBackendSourceHandlerTest {
 
   @Test
   public void testUnmatchedWorkspaces() throws IOException, JsonValidationException, ConfigNotFoundException {
-    when(workspaceHelper.getWorkspaceForSourceId(sourceRead.getSourceId())).thenReturn(UUID.randomUUID());
+    when(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceRead.getSourceId())).thenReturn(UUID.randomUUID());
 
     SourceCreate sourceCreate = new SourceCreate();
     sourceCreate.setName(sourceRead.getName());
