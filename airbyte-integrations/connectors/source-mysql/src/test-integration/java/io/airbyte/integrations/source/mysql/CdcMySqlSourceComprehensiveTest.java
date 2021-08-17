@@ -254,6 +254,14 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
 
     addDataTypeTestData(
         TestDataHolder.builder()
+            .sourceType("datetime")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'2013-09-05T10:10:02'")
+            .addExpectedValues("2013-09-05T10:10:02")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
             .sourceType("timestamp")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("null")
