@@ -26,7 +26,7 @@ from typing import Any, List, Mapping, Tuple
 
 import pendulum
 import requests
-from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -61,6 +61,17 @@ class SourceCart(AbstractSource):
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+
+        # try to check end_date value. It can use for different CI tests
+        end_date = config.get("end_date")
+        if end_date:
+            # validate this value
+            pendulum.parse(end_date)
         authenticator = CustomHeaderAuthenticator(access_token=config["access_token"])
-        args = {"authenticator": authenticator, "start_date": config["start_date"], "store_name": config["store_name"]}
+        args = {
+            "authenticator": authenticator,
+            "start_date": config["start_date"],
+            "store_name": config["store_name"],
+            "end_date": end_date,
+        }
         return [CustomersCart(**args), Orders(**args), OrderPayments(**args), Products(**args)]
