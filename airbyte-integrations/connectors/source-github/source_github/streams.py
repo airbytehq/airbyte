@@ -571,3 +571,22 @@ class Issues(IncrementalGithubStream):
         "sort": "updated",
         "direction": "asc",
     }
+
+class Organizations(GithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/orgs#get-an-organization
+    """
+
+    def __init__(self, organizations: List[str], **kwargs):
+        super(GithubStream, self).__init__(**kwargs)
+        self.organizations = organizations
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        for organization in self.organizations:
+            yield {"organization": organization}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"orgs/{stream_slice['organization']}"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield response.json()

@@ -42,6 +42,7 @@ from .streams import (
     IssueLabels,
     IssueMilestones,
     Issues,
+    Organizations,
     Projects,
     PullRequests,
     Releases,
@@ -87,6 +88,7 @@ class SourceGithub(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(token=config["access_token"], auth_method="token")
+        organizations = list(filter(None, config["organization"].split(" ")))
         repositories = self._generate_repositories(config=config, authenticator=authenticator)
         full_refresh_args = {"authenticator": authenticator, "repositories": repositories}
         incremental_args = {**full_refresh_args, "start_date": config["start_date"]}
@@ -102,6 +104,7 @@ class SourceGithub(AbstractSource):
             IssueLabels(**full_refresh_args),
             IssueMilestones(**incremental_args),
             Issues(**incremental_args),
+            Organizations(**{"authenticator": authenticator, "organizations": organizations}),
             Projects(**incremental_args),
             PullRequests(**incremental_args),
             Releases(**incremental_args),
