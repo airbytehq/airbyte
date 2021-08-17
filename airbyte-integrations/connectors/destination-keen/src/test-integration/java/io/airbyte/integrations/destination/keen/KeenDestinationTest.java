@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 public class KeenDestinationTest extends DestinationAcceptanceTest {
 
-  private static final String SECRET_FILE_PATH = "secrets/credentials.json";
+  private static final String SECRET_FILE_PATH = "secrets/config.json";
 
   private final KeenHttpClient keenHttpClient = new KeenHttpClient();
 
