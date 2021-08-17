@@ -23,7 +23,6 @@
 #
 
 
-import json
 import os
 
 import pytest
@@ -49,26 +48,39 @@ class TestTransformConfig:
         os.chdir(request.config.invocation_dir)
 
     def test_transform_bigquery(self):
-        input = {"project_id": "my_project_id", "dataset_id": "my_dataset_id", "credentials_json": '{ "type": "service_account" }'}
+        input = {"project_id": "my_project_id", "dataset_id": "my_dataset_id", "credentials_json": '{ "type": "service_account-json" }'}
 
         actual_output = TransformConfig().transform_bigquery(input)
         expected_output = {
             "type": "bigquery",
-            "method": "service-account",
+            "method": "service-account-json",
             "project": "my_project_id",
             "dataset": "my_dataset_id",
-            "keyfile": "/tmp/bq_keyfile.json",
+            "keyfile_json": {"type": "service_account-json"},
             "retries": 1,
             "threads": 32,
         }
 
-        with open("/tmp/bq_keyfile.json", "r") as file:
-            actual_keyfile = json.loads(file.read())
-        expected_keyfile = {"type": "service_account"}
-        if os.path.exists("/tmp/bq_keyfile.json"):
-            os.remove("/tmp/bq_keyfile.json")
+        actual_keyfile = actual_output["keyfile_json"]
+        expected_keyfile = {"type": "service_account-json"}
         assert expected_output == actual_output
         assert expected_keyfile == actual_keyfile
+        assert extract_schema(actual_output) == "my_dataset_id"
+
+    def test_transform_bigquery_no_credentials(self):
+        input = {"project_id": "my_project_id", "dataset_id": "my_dataset_id"}
+
+        actual_output = TransformConfig().transform_bigquery(input)
+        expected_output = {
+            "type": "bigquery",
+            "method": "oauth",
+            "project": "my_project_id",
+            "dataset": "my_dataset_id",
+            "retries": 1,
+            "threads": 32,
+        }
+
+        assert expected_output == actual_output
         assert extract_schema(actual_output) == "my_dataset_id"
 
     def test_transform_postgres(self):
