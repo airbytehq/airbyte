@@ -457,6 +457,8 @@ class SourceGoogleAnalyticsV4(AbstractSource):
                 json.loads(custom_reports)
             return True, None
         except (requests.exceptions.RequestException, ValueError) as e:
+            if e == ValueError:
+                logger.error(f"Invalid custom reports json structure.")
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
