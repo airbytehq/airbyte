@@ -29,7 +29,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import MultipleTokenAuthenticator, TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import MultipleTokenAuthenticator
 
 from .streams import (
     Assignees,
@@ -56,9 +56,8 @@ TOKEN_SEPARATOR = ","
 
 
 class SourceGithub(AbstractSource):
-
     @staticmethod
-    def _generate_repositories(config: Mapping[str, Any], authenticator: TokenAuthenticator) -> List[str]:
+    def _generate_repositories(config: Mapping[str, Any], authenticator: MultipleTokenAuthenticator) -> List[str]:
         organizations = list(filter(None, config["organization"].split(" ")))
         repositories = list(filter(None, config["repository"].split(" ")))
 
@@ -69,9 +68,7 @@ class SourceGithub(AbstractSource):
         if organizations:
             repos = Repositories(authenticator=authenticator, organizations=organizations)
             for stream in repos.stream_slices(sync_mode=SyncMode.full_refresh):
-                repositories_list += [
-                    r["full_name"] for r in repos.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream)
-                ]
+                repositories_list += [r["full_name"] for r in repos.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream)]
         if repositories:
             repositories_list += repositories
 
@@ -79,9 +76,6 @@ class SourceGithub(AbstractSource):
 
     @staticmethod
     def _get_authenticator(token: str):
-        if TOKEN_SEPARATOR not in token:
-            return TokenAuthenticator(token=token, auth_method="token")
-
         tokens = [t.strip() for t in token.split(TOKEN_SEPARATOR)]
         return MultipleTokenAuthenticator(tokens=tokens, auth_method="token")
 
