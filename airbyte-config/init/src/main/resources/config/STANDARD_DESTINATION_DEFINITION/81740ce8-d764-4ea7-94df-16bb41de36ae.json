@@ -1,0 +1,7 @@
+{
+  "destinationDefinitionId": "81740ce8-d764-4ea7-94df-16bb41de36ae",
+  "name": "Chargify (Keen)",
+  "dockerRepository": "airbyte/destination-keen",
+  "dockerImgeTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/keen"
+}
