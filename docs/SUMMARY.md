@@ -126,6 +126,7 @@
     * [Google Cloud Storage (GCS)](integrations/destinations/gcs.md)
     * [Google PubSub](integrations/destinations/pubsub.md)
     * [Kafka](integrations/destinations/kafka.md)
+    * [Keen](integrations/destinations/keen.md)
     * [Local CSV](integrations/destinations/local-csv.md)
     * [Local JSON](integrations/destinations/local-json.md)
     * [MeiliSearch](integrations/destinations/meilisearch.md)
