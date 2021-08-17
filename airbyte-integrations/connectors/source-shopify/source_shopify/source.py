@@ -55,7 +55,7 @@ class ShopifyStream(HttpStream, ABC):
         self.api_password = api_password
 
     @staticmethod
-    def _get_json_types(value_type) -> str:
+    def _get_json_types(value_type) -> List[str]:
         json_types = {
             str: ["string"],
             int: ["integer", "number"],
@@ -68,10 +68,8 @@ class ShopifyStream(HttpStream, ABC):
         return json_types.get(value_type)
 
     @staticmethod
-    def _convert(value: Any, convert_type: str):
-        if convert_type == "number":
-            value = Decimal(value)
-        return value
+    def _transform_number(value: Any, convert_type: str):
+        return Decimal(value)
 
     @staticmethod
     def _find_schema_type(schema_types: List[str]) -> str:
@@ -80,7 +78,8 @@ class ShopifyStream(HttpStream, ABC):
             not_null_types.remove("null")
         return not_null_types[0]
 
-    def _transform_array(self, array: List[Any], item_properties: Mapping[str, Any]):
+    def _transform_array(self, array: List[Any], item_properties: MutableMapping[str, Any]):
+        # iterate over items in array, compare schema types and convert if necessary.
         item_types = item_properties.get("type", [])
         if item_types:
             schema_type = self._find_schema_type(item_types)
@@ -88,8 +87,10 @@ class ShopifyStream(HttpStream, ABC):
             for item in array:
                 if schema_type == "object":
                     self._transform_object(item, nested_properties)
+                yield item
 
-    def _transform_object(self, transform_object: Mapping[str, Any], properties: Mapping[str, Any]):
+    def _transform_object(self, transform_object: Mapping[str, Any], properties: MutableMapping[str, Any]):
+        # compare schema types and convert if necessary.
         for object_property, value in transform_object.items():
             if not value:
                 continue
@@ -104,7 +105,7 @@ class ShopifyStream(HttpStream, ABC):
                 schema_type = self._find_schema_type(schema_types)
                 if not any(value_json_type in schema_types for value_json_type in value_json_types):
                     if schema_type == "number":
-                        transform_object[object_property] = self._convert(value, schema_type)
+                        transform_object[object_property] = self._transform_number(value, schema_type)
                 if schema_type == "object":
                     nested_properties = object_properties.get("properties", {})
                     self._transform_object(value, nested_properties)
@@ -112,11 +113,11 @@ class ShopifyStream(HttpStream, ABC):
                     item_properties = object_properties.get("items", {})
                     self._transform_array(value, item_properties)
 
-    def _transform(self, records: List[Mapping[str, Any]]) -> List[Mapping[str, Any]]:
-        stream_properties = self._schema.get("properties", {})
-        for record in records:
-            self._transform_object(record, stream_properties)
-        return records
+    def _transform(self, records: List[MutableMapping[str, Any]]) -> Iterable[Mapping]:
+        # Shopify API returns array of objects
+        # It's need to compare records values with schemas
+        stream_properties = {"type": ["null", "object"], "properties": self._schema.get("properties", {})}
+        yield from self._transform_array(records, stream_properties)
 
     @property
     def url_base(self) -> str:
@@ -142,6 +143,9 @@ class ShopifyStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
         records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
+        # transform method was implemented according to issue 4841
+        # Shopify API returns price fields as a string and it should be converted to number
+        # this solution designed to convert string into number, but in future can be modified for general purpose
         yield from self._transform(records)
 
     @property
