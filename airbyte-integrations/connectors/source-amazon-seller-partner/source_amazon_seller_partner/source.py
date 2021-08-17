@@ -93,8 +93,12 @@ class SourceAmazonSellerPartner(AbstractSource):
         try:
             config = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
             stream_kwargs = self._get_stream_kwargs(config)
-            merchant_listings_reports_gen = MerchantListingsReports(**stream_kwargs).read_records(sync_mode=SyncMode.full_refresh)
-            next(merchant_listings_reports_gen)
+            merchant_listings_reports_stream = MerchantListingsReports(**stream_kwargs)
+            stream_slices = list(merchant_listings_reports_stream.stream_slices(sync_mode=SyncMode.full_refresh))
+            reports_gen = MerchantListingsReports(**stream_kwargs).read_records(
+                sync_mode=SyncMode.full_refresh, stream_slice=stream_slices[0]
+            )
+            next(reports_gen)
             return True, None
         except Exception as error:
             return False, f"Unable to connect to Amazon Seller API with the provided credentials - {repr(error)}"

@@ -28,6 +28,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.exceptions import RequestBodyException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
@@ -142,6 +143,17 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
 
 
 class ReportsAmazonSPStream(AmazonSPStream, ABC):
+    """
+    API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reports_2020-09-04.md
+    API model https://github.com/amzn/selling-partner-api-models/blob/main/models/reports-api-model/reports_2020-09-04.json
+
+    Report streams are intended to work as following:
+        - create a new report;
+        - wait until it's processed;
+        - retrieve the report;
+        - retry the retrieval if the report is still not fully processed.
+    """
+
     primary_key = "reportId"
     path_prefix = f"/reports/{REPORTS_API_VERSION}/reports"
     wait_seconds = 30
@@ -170,8 +182,16 @@ class ReportsAmazonSPStream(AmazonSPStream, ABC):
 
         return report_response.json()[self.data_field]
 
-    def path(self, stream_state: Mapping[str, Any] = None, **kwargs):
-        return f"{self.path_prefix}/{self._create_report(stream_state)[self.primary_key]}"
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        return self._create_report(current_stream_state)
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        return [self._create_report(stream_state)]
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        return f"{self.path_prefix}/{stream_slice[self.primary_key]}"
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         """
@@ -193,6 +213,11 @@ class FbaInventoryReports(ReportsAmazonSPStream):
 
 
 class Orders(IncrementalAmazonSPStream):
+    """
+    API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/orders-api/ordersV0.md
+    API model https://github.com/amzn/selling-partner-api-models/blob/main/models/orders-api-model/ordersV0.json
+    """
+
     name = "Orders"
     primary_key = "AmazonOrderId"
     cursor_field = "LastUpdateDate"
