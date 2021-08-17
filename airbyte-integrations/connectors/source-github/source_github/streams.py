@@ -127,6 +127,8 @@ class GithubStream(HttpStream, ABC):
                 # For private repositories `Teams` stream is not available and we get "404 Client Error: Not Found for
                 # url: https://api.github.com/orgs/sherifnada/teams?per_page=100" error.
                 error_msg = f"Syncing `Team` stream isn't available for repository `{stream_slice['repository']}`."
+            else:
+                raise e
 
             self.logger.warn(error_msg)
 
