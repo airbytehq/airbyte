@@ -23,6 +23,7 @@
 #
 
 
+import re
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk import AirbyteLogger
@@ -54,21 +55,19 @@ from .streams import (
 
 class SourceGithub(AbstractSource):
     def _generate_repositories(self, config: Mapping[str, Any], authenticator: TokenAuthenticator) -> List[str]:
-        organizations = list(filter(None, config["organization"].split(" ")))
         repositories = list(filter(None, config["repository"].split(" ")))
 
-        if not (organizations or repositories):
-            raise Exception("Either `organisation` or `repository` need to be provided for connect to Github API")
+        if not repositories:
+            raise Exception("Field `repository` required to be provided for connect to Github API")
 
-        repositories_list = []
+        repositories_list = [repo for repo in repositories if not re.match("^.*/\\*$", repo)]
+        organizations = [org.split("/")[0] for org in repositories if org not in repositories_list]
         if organizations:
             repos = Repositories(authenticator=authenticator, organizations=organizations)
             for stream in repos.stream_slices(sync_mode=SyncMode.full_refresh):
                 repositories_list += [
                     repository["full_name"] for repository in repos.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream)
                 ]
-        if repositories:
-            repositories_list += repositories
 
         return list(set(repositories_list))
 
