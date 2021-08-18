@@ -34,9 +34,8 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 
-# Basic full refresh stream
-class BigcommerceStream(HttpStream, ABC):
 
+class BigcommerceStream(HttpStream, ABC):
     # Latest Stable Release
     api_version = "v3"
     # Page size
@@ -89,7 +88,7 @@ class BigcommerceStream(HttpStream, ABC):
         records = json_response.get(self.data, []) if self.data is not None else json_response
         yield from records
 
-# Basic incremental stream
+
 class IncrementalBigcommerceStream(BigcommerceStream, ABC):
     # Getting page size as 'limit' from parent class
     @property
@@ -104,6 +103,7 @@ class IncrementalBigcommerceStream(BigcommerceStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
+
     def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         # If there is a next page token then we should only send pagination-related parameters.
@@ -114,11 +114,8 @@ class IncrementalBigcommerceStream(BigcommerceStream, ABC):
                 params[self.filter_field] = stream_state.get(self.cursor_field)
         return params
 
-    # Parse the stream_slice with respect to stream_state for Incremental refresh
-    # cases where we slice the stream, the endpoints for those classes don't accept any other filtering,
-    # but they provide us with the updated_at field in most cases, so we used that as incremental filtering during the order slicing.
+
     def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
-        # Getting records >= state
         if stream_state:
             for record in records_slice:
                 if record[self.cursor_field] >= stream_state.get(self.cursor_field):
@@ -136,17 +133,19 @@ class OrderSubstream(IncrementalBigcommerceStream):
             slice = super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
             yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
 
-class Customers(IncrementalBigcommerceStream):
 
+class Customers(IncrementalBigcommerceStream):
     data_field = "customers"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}"
 
-class Orders(IncrementalBigcommerceStream):
 
+class Orders(IncrementalBigcommerceStream):
     data_field = "orders"
     api_version = "v2"
+    order_field = "id:asc"
+    filter_field = "min_date_modified"
     page = 1
 
     def path(self, **kwargs) -> str:
@@ -156,7 +155,7 @@ class Orders(IncrementalBigcommerceStream):
         return response.json() if len(response.content) > 0 else []
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if len(response.content) > 0:
+        if len(response.content) > 0 and len(response.json())==self.limit:
             self.page = self.page+1
             return dict(page = self.page)
         else:
@@ -164,7 +163,6 @@ class Orders(IncrementalBigcommerceStream):
 
 
 class Pages(IncrementalBigcommerceStream):
-
     data_field = "pages"
     cursor_field = "id"
 
@@ -180,8 +178,14 @@ class Pages(IncrementalBigcommerceStream):
         params = {"limit": self.limit}
         return params
 
-class Transactions(OrderSubstream):
+    def read_records(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+        slice = super().read_records(sync_mode = SyncMode.full_refresh, stream_slice = stream_slice,stream_state = stream_state)
+        yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
 
+
+class Transactions(OrderSubstream):
     data_field = "transactions"
     cursor_field = "id"
 
@@ -190,13 +194,14 @@ class Transactions(OrderSubstream):
         return f"orders/{order_id}/{self.data_field}"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-            return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
 
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = {"limit": self.limit}
         return params
+
 
 class BigcommerceAuthenticator(HttpAuthenticator):
 
@@ -206,9 +211,8 @@ class BigcommerceAuthenticator(HttpAuthenticator):
     def get_auth_header(self) -> Mapping[str, Any]:
         return {"X-Auth-Token": f"{self.token}"}
 
-# Source
-class SourceBigcommerce(AbstractSource):
 
+class SourceBigcommerce(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         store_hash = config["store_hash"]
         access_token = config["access_token"]
@@ -229,8 +233,8 @@ class SourceBigcommerce(AbstractSource):
         auth = BigcommerceAuthenticator(token=config["access_token"])
         args = {"authenticator": auth, "start_date": config["start_date"], "store_hash": config["store_hash"], "access_token": config["access_token"]}
         return [
-                    Customers(**args),
-                    Pages(**args),
-                    Orders(**args),
-                    Transactions(**args),
-                ]
+            Customers(**args),
+            Pages(**args),
+            Orders(**args),
+            Transactions(**args),
+        ]

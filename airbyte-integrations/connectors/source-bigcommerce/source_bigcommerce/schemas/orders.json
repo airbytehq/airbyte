@@ -6,8 +6,7 @@
       "type": ["null", "integer"]
     },
     "date_modified": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "date_shipped": {
       "type": ["null", "string"],
@@ -161,13 +160,16 @@
           "type": ["null", "string"]
         },
         "form_fields": {
-          "type": ["null", "object"],
-          "properties": {
-            "name": {
-              "type": ["null", "string"]
-            },
-            "value": {
-              "type": ["null", "string"]
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "name": {
+                "type": ["null", "string"]
+              },
+              "value": {
+                "type": ["null", "string"]
+              }
             }
           }
         }
@@ -183,8 +185,7 @@
       "type": ["null", "string"]
     },
     "date_create": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "default_currency_code": {
       "type": ["null", "string"]
@@ -231,12 +232,6 @@
     "payment_method": {
       "type": ["null", "string"]
     },
-    "payment_provider_id": {
-      "oneOf": [
-        {"type": ["null", "integer"]},
-        {"type": ["null", "string"]}
-      ]
-    },
     "refunded_amount": {
       "type": ["null", "string"]
     },
@@ -275,3 +270,4 @@
     }
   }
 }
+

@@ -30,7 +30,7 @@
       "type": ["null", "integer"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "date_modified": {
       "type": ["null", "string"],
@@ -164,3 +164,4 @@
     }
   }
 }
+

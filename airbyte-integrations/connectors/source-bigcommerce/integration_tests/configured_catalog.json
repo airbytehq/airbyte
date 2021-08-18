@@ -64,7 +64,7 @@
             "id": {
               "type": [
                 "null",
-                "string"
+                "integer"
               ]
             },
             "date_modified": {
@@ -330,10 +330,13 @@
               }
             }
           }
-        }
+        },
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date_modified"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["updated_at"],
+      "cursor_field": ["date_modified"],
       "destination_sync_mode": "append"
     },
     {
@@ -353,8 +356,7 @@
               "type": [
                 "null",
                 "string"
-              ],
-              "format": "date-time"
+              ]
             },
             "date_shipped": {
               "type": [
@@ -656,22 +658,16 @@
                   ]
                 },
                 "form_fields": {
-                  "type": [
-                    "null",
-                    "object"
-                  ],
-                  "properties": {
-                    "name": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "value": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "name": {
+                        "type": ["null", "string"]
+                      },
+                      "value": {
+                        "type": ["null", "string"]
+                      }
                     }
                   }
                 }
@@ -699,8 +695,7 @@
               "type": [
                 "null",
                 "string"
-              ],
-              "format": "date-time"
+              ]
             },
             "default_currency_code": {
               "type": [
@@ -792,22 +787,6 @@
                 "string"
               ]
             },
-            "payment_provider_id": {
-              "oneOf": [
-                {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
-                },
-                {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
-                }
-              ]
-            },
             "refunded_amount": {
               "type": [
                 "null",
@@ -881,10 +860,13 @@
               ]
             }
           }
-        }
+        },
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date_modified"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["updated_at"],
+      "cursor_field": ["date_modified"],
       "destination_sync_mode": "append"
     },
     {
@@ -1155,10 +1137,13 @@
               }
             }
           }
-        }
+        },
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["id"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["updated_at"],
+      "cursor_field": ["id"],
       "destination_sync_mode": "append"
     },
     {
@@ -1283,11 +1268,15 @@
               ]
             }
           }
-        }
+        },
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["id"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["updated_at"],
+      "cursor_field": ["id"],
       "destination_sync_mode": "append"
     }
   ]
 }
+

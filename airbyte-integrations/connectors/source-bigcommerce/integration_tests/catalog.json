@@ -63,7 +63,7 @@
             "id": {
               "type": [
                 "null",
-                "string"
+                "integer"
               ]
             },
             "date_modified": {
@@ -347,8 +347,7 @@
               "type": [
                 "null",
                 "string"
-              ],
-              "format": "date-time"
+              ]
             },
             "date_shipped": {
               "type": [
@@ -650,22 +649,16 @@
                   ]
                 },
                 "form_fields": {
-                  "type": [
-                    "null",
-                    "object"
-                  ],
-                  "properties": {
-                    "name": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
-                    },
-                    "value": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "name": {
+                        "type": ["null", "string"]
+                      },
+                      "value": {
+                        "type": ["null", "string"]
+                      }
                     }
                   }
                 }
@@ -693,8 +686,7 @@
               "type": [
                 "null",
                 "string"
-              ],
-              "format": "date-time"
+              ]
             },
             "default_currency_code": {
               "type": [
@@ -784,22 +776,6 @@
               "type": [
                 "null",
                 "string"
-              ]
-            },
-            "payment_provider_id": {
-              "oneOf": [
-                {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
-                },
-                {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
-                }
               ]
             },
             "refunded_amount": {
