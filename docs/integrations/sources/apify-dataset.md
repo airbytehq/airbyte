@@ -40,7 +40,7 @@ The Apify dataset connector uses [Apify Python Client](https://docs.apify.com/ap
 
 ### Requirements
 
-* Apify [dataset]((https://docs.apify.com/storage/dataset) ID
+* Apify [dataset](https://docs.apify.com/storage/dataset) ID
 
 ### Changelog
 | Version | Date       | Pull Request | Subject |
