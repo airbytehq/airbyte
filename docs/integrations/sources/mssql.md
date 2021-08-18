@@ -219,6 +219,7 @@ We readily welcome [contributions to our docs](https://github.com/airbytehq/airb
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.3.4   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator | 
 | 0.3.3   | 2021-07-05 | [4689](https://github.com/airbytehq/airbyte/pull/4689) | Add CDC support |
 | 0.3.2   | 2021-06-09 | [3179](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE_ENTRYPOINT for Kubernetes support |
 | 0.3.1   | 2021-06-08 | [3893](https://github.com/airbytehq/airbyte/pull/3893) | Enable SSL connection |
