@@ -26,6 +26,7 @@ write_standard_creds destination-bigquery "$BIGQUERY_INTEGRATION_TEST_CREDS" "cr
 write_standard_creds destination-bigquery-denormalized "$BIGQUERY_INTEGRATION_TEST_CREDS" "credentials.json"
 write_standard_creds destination-gcs "$DESTINATION_GCS_CREDS"
 write_standard_creds destination-kvdb "$DESTINATION_KVDB_TEST_CREDS"
+write_standard_creds destination-keen "$DESTINATION_KEEN_TEST_CREDS"
 write_standard_creds destination-pubsub "$DESTINATION_PUBSUB_TEST_CREDS" "credentials.json"
 write_standard_creds destination-redshift "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS"
 write_standard_creds destination-s3 "$DESTINATION_S3_INTEGRATION_TEST_CREDS"
