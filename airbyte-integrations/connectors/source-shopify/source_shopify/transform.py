@@ -21,12 +21,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+
 from decimal import Decimal
-from typing import List, MutableMapping, Any, Iterable, Mapping
+from typing import Any, Iterable, List, Mapping, MutableMapping
 
 
 class Transformer:
-
     @staticmethod
     def _get_json_types(value_type) -> List[str]:
         json_types = {
@@ -36,7 +36,9 @@ class Transformer:
             dict: ["object"],
             list: ["array"],
             bool: ["boolean"],
-            type(None): ["null", ]
+            type(None): [
+                "null",
+            ],
         }
         return json_types.get(value_type)
 
@@ -60,7 +62,6 @@ class Transformer:
             for item in array:
                 if schema_type == "object":
                     self._transform_object(item, nested_properties)
-                yield item
 
     def _transform_object(self, transform_object: Mapping[str, Any], properties: MutableMapping[str, Any]):
         # compare schema types and convert if necessary.
@@ -71,7 +72,9 @@ class Transformer:
                 object_properties = properties.get(object_property)
                 schema_types = object_properties.get("type", [])
                 if not isinstance(schema_types, list):
-                    schema_types = [schema_types, ]
+                    schema_types = [
+                        schema_types,
+                    ]
                 if not schema_types:
                     continue
                 value_json_types = self._get_json_types(type(value))
@@ -89,5 +92,7 @@ class Transformer:
     def transform(self, records: List[MutableMapping[str, Any]], schema: Mapping[str, Any]) -> Iterable[MutableMapping]:
         # Shopify API returns array of objects
         # It's need to compare records values with schemas
-        stream_properties = {"type": ["null", "object"], "properties": schema.get("properties", {})}
-        yield from self._transform_array(records, stream_properties)
+        properties = schema.get("properties", {})
+        for record in records:
+            self._transform_object(record, properties)
+            yield record
