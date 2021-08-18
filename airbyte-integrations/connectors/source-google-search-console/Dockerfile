@@ -1,25 +1,13 @@
-FROM python:3.7.11-alpine3.14 as base
-FROM base as builder
+FROM python:3.7-slim
 
-
-RUN apk --no-cache upgrade \
-    && pip install --upgrade pip
+# Bash is installed for more convenient debugging.
+RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /airbyte/integration_code
-COPY setup.py ./
-RUN pip install --prefix=/install .
-
-
-FROM base
-COPY --from=builder /install /usr/local
-
-RUN apk --no-cache upgrade \
-    && apk add tzdata
-
-WORKDIR /airbyte/integration_code
-COPY main.py ./
 COPY source_google_search_console ./source_google_search_console
-
+COPY main.py ./
+COPY setup.py ./
+RUN pip install .
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
