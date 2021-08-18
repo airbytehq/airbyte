@@ -3,7 +3,8 @@ FROM base as builder
 
 
 RUN apk --no-cache upgrade \
-    && pip install --upgrade pip
+    && pip install --upgrade pip \
+    && apk add tzdata
 
 WORKDIR /airbyte/integration_code
 COPY setup.py ./
