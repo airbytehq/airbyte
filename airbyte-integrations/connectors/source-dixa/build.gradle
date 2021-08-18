@@ -1,8 +1,7 @@
 plugins {
     id 'airbyte-python'
     id 'airbyte-docker'
-    // TODO acceptance tests are disabled in CI pending a Dixa Sandbox: https://github.com/airbytehq/airbyte/issues/4667
-//    id 'airbyte-source-acceptance-test'
+    id 'airbyte-source-acceptance-test'
 }
 
 airbytePython {
