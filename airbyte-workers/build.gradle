@@ -18,6 +18,7 @@ dependencies {
     implementation 'io.temporal:temporal-sdk:1.0.4'
     implementation 'org.apache.ant:ant:1.10.10'
     implementation 'org.apache.commons:commons-lang3:3.11'
+    implementation 'org.apache.commons:commons-text:1.9'
     implementation 'org.eclipse.jetty:jetty-server:9.4.31.v20200723'
     implementation 'org.eclipse.jetty:jetty-servlet:9.4.31.v20200723'
 

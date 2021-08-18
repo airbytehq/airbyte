@@ -25,10 +25,12 @@
 package io.airbyte.workers.process;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerException;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
+import java.net.InetAddress;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -47,6 +49,17 @@ public class KubeProcessFactory implements ProcessFactory {
   private final ApiClient officialClient;
   private final KubernetesClient fabricClient;
   private final String kubeHeartbeatUrl;
+  private final String processRunnerHost;
+
+  /**
+   * Sets up a process factory with the default processRunnerHost.
+   */
+  public KubeProcessFactory(String namespace,
+                            ApiClient officialClient,
+                            KubernetesClient fabricClient,
+                            String kubeHeartbeatUrl) {
+    this(namespace, officialClient, fabricClient, kubeHeartbeatUrl, Exceptions.toRuntime(() -> InetAddress.getLocalHost().getHostAddress()));
+  }
 
   /**
    * @param namespace kubernetes namespace where spawned pods will live
@@ -54,16 +67,20 @@ public class KubeProcessFactory implements ProcessFactory {
    * @param fabricClient fabric8 kubernetes client
    * @param kubeHeartbeatUrl a url where if the response is not 200 the spawned process will fail
    *        itself
-   * @param workerPorts a set of ports that can be used for IO socket servers
+   * @param processRunnerHost is the local host or ip of the machine running the process factory.
+   *        injectable for testing.
    */
+  @VisibleForTesting
   public KubeProcessFactory(String namespace,
                             ApiClient officialClient,
                             KubernetesClient fabricClient,
-                            String kubeHeartbeatUrl) {
+                            String kubeHeartbeatUrl,
+                            String processRunnerHost) {
     this.namespace = namespace;
     this.officialClient = officialClient;
     this.fabricClient = fabricClient;
     this.kubeHeartbeatUrl = kubeHeartbeatUrl;
+    this.processRunnerHost = processRunnerHost;
   }
 
   @Override
@@ -89,6 +106,7 @@ public class KubeProcessFactory implements ProcessFactory {
       LOGGER.info("{} stderrLocalPort = {}", podName, stderrLocalPort);
 
       return new KubePodProcess(
+          processRunnerHost,
           officialClient,
           fabricClient,
           podName,

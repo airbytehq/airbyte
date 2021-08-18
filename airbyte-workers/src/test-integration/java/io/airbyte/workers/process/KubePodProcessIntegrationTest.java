@@ -74,7 +74,7 @@ public class KubePodProcessIntegrationTest {
 
     officialClient = Config.defaultClient();
     fabricClient = new DefaultKubernetesClient();
-    processFactory = new KubeProcessFactory("default", officialClient, fabricClient, heartbeatUrl);
+    processFactory = new KubeProcessFactory("default", officialClient, fabricClient, heartbeatUrl, getHost());
 
     server = new WorkerHeartbeatServer(heartbeatPort);
     server.startBackground();
@@ -90,6 +90,21 @@ public class KubePodProcessIntegrationTest {
     // start a finite process
     var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
     final Process process = getProcess("echo hi; sleep 1; echo hi2");
+    process.waitFor();
+
+    // the pod should be dead and in a good state
+    assertFalse(process.isAlive());
+    assertEquals(availablePortsBefore, KubePortManagerSingleton.getNumAvailablePorts());
+    assertEquals(0, process.exitValue());
+  }
+
+  @Test
+  public void testSuccessfulSpawningWithQuotes() throws Exception {
+    // start a finite process
+    var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
+    final Process process = getProcess("echo \"h\\\"i\"; sleep 1; echo hi2");
+    var output = new String(process.getInputStream().readAllBytes());
+    assertEquals("h\"i\nhi2\n", output);
     process.waitFor();
 
     // the pod should be dead and in a good state
@@ -128,7 +143,7 @@ public class KubePodProcessIntegrationTest {
   public void testMissingEntrypoint() throws WorkerException, InterruptedException {
     // start a process with an entrypoint that doesn't exist
     var availablePortsBefore = KubePortManagerSingleton.getNumAvailablePorts();
-    final Process process = getProcess("ksaiiiasdfjklaslkei");
+    final Process process = getProcess(null);
     process.waitFor();
 
     // the pod should be dead and in an error state
