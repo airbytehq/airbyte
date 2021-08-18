@@ -85,6 +85,7 @@ jobs:
           CART_TEST_CREDS: ${{ secrets.CART_TEST_CREDS }}
           CHARGEBEE_INTEGRATION_TEST_CREDS: ${{ secrets.CHARGEBEE_INTEGRATION_TEST_CREDS }}
           DESTINATION_PUBSUB_TEST_CREDS: ${{ secrets.DESTINATION_PUBSUB_TEST_CREDS }}
+          DESTINATION_KEEN_TEST_CREDS: ${{ secrets.DESTINATION_KEEN_TEST_CREDS }}
           DESTINATION_KVDB_TEST_CREDS: ${{ secrets.DESTINATION_KVDB_TEST_CREDS }}
           DRIFT_INTEGRATION_TEST_CREDS: ${{ secrets.DRIFT_INTEGRATION_TEST_CREDS }}
           EXCHANGE_RATES_TEST_CREDS: ${{ secrets.EXCHANGE_RATES_TEST_CREDS }}
@@ -162,12 +163,13 @@ jobs:
           # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
           TZ: UTC
       - name: Archive test reports artifacts
-        if: github.event.inputs.comment-id && !success()
+        if: github.event.inputs.comment-id && failure()
         uses: actions/upload-artifact@v2
         with:
           name: test-reports
           path: |
             **/${{ github.event.inputs.connector }}/build/reports/tests/**/**
+            **/${{ github.event.inputs.connector }}/acceptance_tests_logs/**
             **/normalization_test_output/**/dbt_output.log
             **/normalization_test_output/**/destination_output.log
             **/normalization_test_output/**/build/compiled/airbyte_utils/**
@@ -188,7 +190,7 @@ jobs:
           body: |
             > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Add Failure Comment
-        if: github.event.inputs.comment-id && !success()
+        if: github.event.inputs.comment-id && failure()
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.inputs.comment-id }}

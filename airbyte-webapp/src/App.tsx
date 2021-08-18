@@ -31,6 +31,9 @@ const Features: Feature[] = [
   {
     id: "ALLOW_UPLOAD_CUSTOM_IMAGE",
   },
+  {
+    id: "ALLOW_CUSTOM_DBT",
+  },
 ];
 
 const App: React.FC = () => {
