@@ -56,8 +56,8 @@ public class RunMigration implements Runnable, AutoCloseable {
                       ConfigPersistence seedPersistence) {
     this.targetVersion = targetVersion;
     this.seedPersistence = seedPersistence;
-    this.configDumpExporter = new ConfigDumpExporter(configRepository, jobPersistence);
-    this.configDumpImporter = new ConfigDumpImporter(configRepository, jobPersistence);
+    this.configDumpExporter = new ConfigDumpExporter(configRepository, jobPersistence, null);
+    this.configDumpImporter = new ConfigDumpImporter(configRepository, jobPersistence, null);
   }
 
   @Override

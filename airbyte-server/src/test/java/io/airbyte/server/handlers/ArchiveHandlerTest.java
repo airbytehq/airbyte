@@ -43,6 +43,7 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -112,6 +113,7 @@ public class ArchiveHandlerTest {
         VERSION,
         configRepository,
         jobPersistence,
+        new WorkspaceHelper(configRepository, jobPersistence),
         new NoOpFileTtlManager());
   }
 

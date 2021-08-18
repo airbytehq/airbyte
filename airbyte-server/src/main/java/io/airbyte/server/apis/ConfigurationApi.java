@@ -119,6 +119,8 @@ import io.airbyte.validation.json.JsonValidationException;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.UUID;
 
 @javax.ws.rs.Path("/v1")
 public class ConfigurationApi implements io.airbyte.api.V1Api {
@@ -181,7 +183,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     webBackendSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler, workspaceHelper);
     webBackendDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler, workspaceHelper);
     healthCheckHandler = new HealthCheckHandler(configRepository);
-    archiveHandler = new ArchiveHandler(configs.getAirbyteVersion(), configRepository, jobPersistence, archiveTtlManager);
+    archiveHandler = new ArchiveHandler(configs.getAirbyteVersion(), configRepository, jobPersistence, workspaceHelper, archiveTtlManager);
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
     this.configs = configs;
@@ -553,6 +555,16 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public ImportRead importArchive(final File archiveFile) {
     return execute(() -> archiveHandler.importData(archiveFile));
+  }
+
+  @Override
+  public File exportWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody) {
+    return execute(() -> archiveHandler.exportWorkspace(workspaceIdRequestBody));
+  }
+
+  @Override
+  public ImportRead importIntoWorkspace(UUID workspaceId, InputStream archiveFile) {
+    return execute(() -> archiveHandler.importIntoWorkspace(workspaceId, archiveFile));
   }
 
   private <T> T execute(HandlerCall<T> call) {

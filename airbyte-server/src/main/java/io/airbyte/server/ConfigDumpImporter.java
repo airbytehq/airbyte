@@ -42,16 +42,21 @@ import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -81,18 +86,23 @@ public class ConfigDumpImporter {
   private static final String DB_FOLDER_NAME = "airbyte_db";
   private static final String VERSION_FILE_NAME = "VERSION";
   private final ConfigRepository configRepository;
+  private final WorkspaceHelper workspaceHelper;
   private final JsonSchemaValidator jsonSchemaValidator;
   private final JobPersistence postgresPersistence;
 
-  public ConfigDumpImporter(ConfigRepository configRepository, JobPersistence postgresPersistence) {
-    this(configRepository, postgresPersistence, new JsonSchemaValidator());
+  public ConfigDumpImporter(ConfigRepository configRepository, JobPersistence postgresPersistence, WorkspaceHelper workspaceHelper) {
+    this(configRepository, postgresPersistence, workspaceHelper, new JsonSchemaValidator());
   }
 
   @VisibleForTesting
-  public ConfigDumpImporter(ConfigRepository configRepository, JobPersistence postgresPersistence, JsonSchemaValidator jsonSchemaValidator) {
+  public ConfigDumpImporter(ConfigRepository configRepository,
+                            JobPersistence postgresPersistence,
+                            WorkspaceHelper workspaceHelper,
+                            JsonSchemaValidator jsonSchemaValidator) {
     this.jsonSchemaValidator = jsonSchemaValidator;
     this.postgresPersistence = postgresPersistence;
     this.configRepository = configRepository;
+    this.workspaceHelper = workspaceHelper;
   }
 
   public ImportRead importDataWithSeed(String targetVersion, File archive, ConfigPersistence seedPersistence) {
@@ -105,7 +115,8 @@ public class ConfigDumpImporter {
 
         // 2. dry run
         try {
-          checkImport(targetVersion, sourceRoot, seedPersistence);
+          checkImport(targetVersion, sourceRoot);
+          importConfigsFromArchive(sourceRoot, seedPersistence, true);
         } catch (Exception e) {
           LOGGER.error("Dry run failed.", e);
           throw e;
@@ -139,7 +150,7 @@ public class ConfigDumpImporter {
     return result;
   }
 
-  private void checkImport(String targetVersion, Path tempFolder, ConfigPersistence seedPersistence) throws IOException, JsonValidationException {
+  private void checkImport(String targetVersion, Path tempFolder) throws IOException, JsonValidationException {
     final Path versionFile = tempFolder.resolve(VERSION_FILE_NAME);
     final String importVersion = Files.readString(versionFile, Charset.defaultCharset())
         .replace("\n", "").strip();
@@ -150,7 +161,6 @@ public class ConfigDumpImporter {
               "Please upgrade your Airbyte Archive, see more at https://docs.airbyte.io/tutorials/upgrading-airbyte\n",
               importVersion, targetVersion));
     }
-    importConfigsFromArchive(tempFolder, seedPersistence, true);
   }
 
   // Config
@@ -168,7 +178,7 @@ public class ConfigDumpImporter {
     final boolean[] sourceProcessed = {false};
     final boolean[] destinationProcessed = {false};
     final List<String> directories = listDirectories(sourceRoot);
-    // We sort the directories cause we want to process SOURCE_CONNECTION before
+    // We sort the directories because we want to process SOURCE_CONNECTION before
     // STANDARD_SOURCE_DEFINITION and DESTINATION_CONNECTION before STANDARD_DESTINATION_DEFINITION
     // so that we can identify which definitions should not be upgraded to the latest version
     Collections.sort(directories);
@@ -385,6 +395,195 @@ public class ConfigDumpImporter {
     final Optional<String> airbyteDatabaseVersion = postgresPersistence.getVersion();
     airbyteDatabaseVersion
         .ifPresent(dbversion -> AirbyteVersion.assertIsCompatible(airbyteVersion, dbversion));
+  }
+
+  public ImportRead importIntoWorkspace(String targetVersion, UUID workspaceId, InputStream archiveStream) {
+    ImportRead result;
+    try {
+      final Path sourceRoot = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive");
+      try {
+        // 1. Unzip source
+        Archives.extractArchive(archiveStream, sourceRoot);
+
+        // TODO: Auto-migrate archive?
+
+        // 2. dry run
+        try {
+          checkImport(targetVersion, sourceRoot);
+          importConfigsIntoWorkspace(sourceRoot, workspaceId, true);
+        } catch (Exception e) {
+          LOGGER.error("Dry run failed.", e);
+          throw e;
+        }
+
+        // 3. import configs
+        importConfigsIntoWorkspace(sourceRoot, workspaceId, false);
+
+        result = new ImportRead().status(StatusEnum.SUCCEEDED);
+      } finally {
+        FileUtils.deleteDirectory(sourceRoot.toFile());
+      }
+    } catch (IOException | JsonValidationException | RuntimeException | ConfigNotFoundException e) {
+      LOGGER.error("Import Workspace failed", e);
+      result = new ImportRead().status(StatusEnum.FAILED).reason(e.getMessage());
+    }
+
+    return result;
+  }
+
+  private <T> void importConfigsIntoWorkspace(Path sourceRoot, UUID workspaceId, boolean dryRun)
+      throws IOException, JsonValidationException, ConfigNotFoundException {
+    // Keep maps of any re-assigned ids
+    final Map<UUID, UUID> sourceIdMap = new HashMap<>();
+    final Map<UUID, UUID> destinationIdMap = new HashMap<>();
+    final Map<UUID, UUID> connectionIdMap = new HashMap<>();
+    final Map<UUID, UUID> operationIdMap = new HashMap<>();
+
+    final List<String> directories = listDirectories(sourceRoot);
+    Stream<T> standardSyncs = null;
+    final Map<AirbyteConfig, Stream<T>> data = new LinkedHashMap<>();
+    for (final String directory : directories) {
+      final Optional<ConfigSchema> configSchemaOptional = Enums.toEnum(directory.replace(".yaml", ""), ConfigSchema.class);
+
+      if (configSchemaOptional.isEmpty()) {
+        continue;
+      }
+      final ConfigSchema configSchema = configSchemaOptional.get();
+      final Stream<T> configs = readConfigsFromArchive(sourceRoot, configSchema);
+      switch (configSchema) {
+        case STANDARD_SOURCE_DEFINITION, STANDARD_DESTINATION_DEFINITION -> data.put(configSchema, includeStandardDefinitions(configs));
+        case SOURCE_CONNECTION -> data.put(configSchema, mutateSourceConnection(workspaceId, configs, sourceIdMap));
+        case DESTINATION_CONNECTION -> data.put(configSchema, mutateDestinationConnection(workspaceId, configs, destinationIdMap));
+        case STANDARD_SYNC -> standardSyncs = configs; // mutate syncs last (below)
+        case STANDARD_SYNC_OPERATION -> data.put(configSchema, mutateOperation(workspaceId, configs, operationIdMap));
+        default -> {}
+      }
+    }
+    if (standardSyncs != null) {
+      // we mutate connections (standard sync) last to update reference to modified ids
+      data.put(ConfigSchema.STANDARD_SYNC,
+          mutateConnection(workspaceId, standardSyncs, sourceIdMap, destinationIdMap, operationIdMap, connectionIdMap));
+    }
+    configRepository.replaceAllConfigs(data, dryRun);
+  }
+
+  private <T> Stream<T> includeStandardDefinitions(Stream<T> configs) {
+    return configs;
+  }
+
+  private <T> Stream<T> mutateSourceConnection(UUID workspaceId, Stream<T> configs, Map<UUID, UUID> sourceIdMap)
+      throws JsonValidationException, IOException {
+    final Set<UUID> sourceConnectionIdInUse = configRepository.listSourceConnection()
+        .stream()
+        .filter(sourceConnection -> !workspaceId.equals(sourceConnection.getWorkspaceId()))
+        .map(SourceConnection::getSourceId)
+        .collect(Collectors.toSet());
+    return configs.map(config -> {
+      SourceConnection sourceConnection = (SourceConnection) config;
+      if (sourceConnectionIdInUse.contains(sourceConnection.getSourceId())) {
+        final UUID newSourceConnectionId = getNewRandomId(sourceConnectionIdInUse);
+        sourceIdMap.put(sourceConnection.getSourceId(), newSourceConnectionId);
+        sourceConnection.setSourceId(newSourceConnectionId);
+      } else {
+        sourceIdMap.put(sourceConnection.getSourceId(), sourceConnection.getSourceId());
+      }
+      sourceConnection.setWorkspaceId(workspaceId);
+      return (T) sourceConnection;
+    });
+  }
+
+  private <T> Stream<T> mutateDestinationConnection(UUID workspaceId,
+                                                    Stream<T> configs,
+                                                    Map<UUID, UUID> destinationIdMap)
+      throws JsonValidationException, IOException {
+    final Set<UUID> destinationConnectionIdInUse = configRepository.listDestinationConnection()
+        .stream()
+        .filter(destinationConnection -> !workspaceId.equals(destinationConnection.getWorkspaceId()))
+        .map(DestinationConnection::getDestinationId)
+        .collect(Collectors.toSet());
+    return configs.map(config -> {
+      DestinationConnection destinationConnection = (DestinationConnection) config;
+      if (destinationConnectionIdInUse.contains(destinationConnection.getDestinationId())) {
+        final UUID newDestinationConnectionId = getNewRandomId(destinationConnectionIdInUse);
+        destinationIdMap.put(destinationConnection.getDestinationId(), newDestinationConnectionId);
+        destinationConnection.setDestinationId(newDestinationConnectionId);
+      } else {
+        destinationIdMap.put(destinationConnection.getDestinationId(), destinationConnection.getDestinationId());
+      }
+      destinationConnection.setWorkspaceId(workspaceId);
+      return (T) destinationConnection;
+    });
+  }
+
+  private <T> Stream<T> mutateOperation(UUID workspaceId,
+                                        Stream<T> configs,
+                                        Map<UUID, UUID> operationIdMap)
+      throws JsonValidationException, IOException {
+    final Set<UUID> operationIdInUse = configRepository.listStandardSyncOperations()
+        .stream()
+        .filter(standardSyncOperation -> !workspaceId.equals(standardSyncOperation.getWorkspaceId()))
+        .map(StandardSyncOperation::getOperationId)
+        .collect(Collectors.toSet());
+    return configs.map(config -> {
+      StandardSyncOperation operation = (StandardSyncOperation) config;
+      if (operationIdInUse.contains(operation.getOperationId())) {
+        final UUID newOperationId = getNewRandomId(operationIdInUse);
+        operationIdMap.put(operation.getOperationId(), newOperationId);
+        operation.setOperationId(newOperationId);
+      } else {
+        operationIdMap.put(operation.getOperationId(), operation.getOperationId());
+      }
+      operation.setWorkspaceId(workspaceId);
+      return (T) operation;
+    });
+  }
+
+  private <T> Stream<T> mutateConnection(UUID workspaceId,
+                                         Stream<T> configs,
+                                         Map<UUID, UUID> sourceIdMap,
+                                         Map<UUID, UUID> destinationIdMap,
+                                         Map<UUID, UUID> operationIdMap,
+                                         Map<UUID, UUID> connectionIdMap)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    final Set<UUID> connectionIdInUse = configRepository.listStandardSyncs()
+        .stream()
+        .filter(standardSync -> {
+          try {
+            return !workspaceId.equals(workspaceHelper.getWorkspaceForConnection(standardSync.getSourceId(), standardSync.getDestinationId()));
+          } catch (JsonValidationException | ConfigNotFoundException e) {
+            return true;
+          }
+        })
+        .map(StandardSync::getConnectionId)
+        .collect(Collectors.toSet());
+    return configs.map(config -> {
+      StandardSync standardSync = (StandardSync) config;
+      if (connectionIdInUse.contains(standardSync.getConnectionId())) {
+        final UUID newConnectionId = getNewRandomId(connectionIdInUse);
+        connectionIdMap.put(standardSync.getConnectionId(), newConnectionId);
+        standardSync.setConnectionId(newConnectionId);
+      } else {
+        connectionIdMap.put(standardSync.getConnectionId(), standardSync.getConnectionId());
+      }
+      standardSync.setSourceId(sourceIdMap.get(standardSync.getSourceId()));
+      standardSync.setDestinationId(destinationIdMap.get(standardSync.getDestinationId()));
+      standardSync.setOperationIds(standardSync.getOperationIds()
+          .stream()
+          .map(operationIdMap::get)
+          .collect(Collectors.toList()));
+      return (T) standardSync;
+    });
+  }
+
+  /**
+   * @return a new UUID that is not already in use (in @param idsInUse)
+   */
+  private static UUID getNewRandomId(Set<UUID> idsInUse) {
+    UUID newId = UUID.randomUUID();
+    while (idsInUse.contains(newId)) {
+      newId = UUID.randomUUID();
+    }
+    return newId;
   }
 
 }

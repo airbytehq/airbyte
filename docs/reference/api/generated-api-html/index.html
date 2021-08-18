@@ -232,7 +232,9 @@ font-style: italic;
   <h4><a href="#Deployment">Deployment</a></h4>
   <ul>
   <li><a href="#exportArchive"><code><span class="http-method">post</span> /v1/deployment/export</code></a></li>
+  <li><a href="#exportWorkspace"><code><span class="http-method">post</span> /v1/deployment/export_workspace</code></a></li>
   <li><a href="#importArchive"><code><span class="http-method">post</span> /v1/deployment/import</code></a></li>
+  <li><a href="#importIntoWorkspace"><code><span class="http-method">post</span> /v1/deployment/import_into_workspace</code></a></li>
   </ul>
   <h4><a href="#Destination">Destination</a></h4>
   <ul>
@@ -1129,6 +1131,53 @@ font-style: italic;
         <a href="#File">File</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="exportWorkspace"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/deployment/export_workspace</code></pre></div>
+    <div class="method-summary">Export Airbyte Workspace Configuration (<span class="nickname">exportWorkspace</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">WorkspaceIdRequestBody <a href="#WorkspaceIdRequestBody">WorkspaceIdRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      
+      File
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/x-gzip</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#File">File</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="importArchive"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -1153,6 +1202,60 @@ font-style: italic;
 
 
 
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#ImportRead">ImportRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "reason" : "reason",
+  "status" : "succeeded"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#ImportRead">ImportRead</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="importIntoWorkspace"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/deployment/import_into_workspace</code></pre></div>
+    <div class="method-summary">Import Airbyte Configuration into Workspace (this operation might change ids) (<span class="nickname">importIntoWorkspace</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>multipart/mixed</code></li>
+    </ul>
+
+
+
+
+    <h3 class="field-label">Form parameters</h3>
+    <div class="field-items">
+      <div class="param">workspaceId (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Form Parameter</span> &mdash;  default: null format: uuid</div><div class="param">archive (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Form Parameter</span> &mdash;  default: null format: binary</div>
+    </div>  <!-- field-items -->
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
@@ -5427,6 +5530,7 @@ font-style: italic;
     <li><a href="#WorkspaceRead"><code>WorkspaceRead</code> - </a></li>
     <li><a href="#WorkspaceReadList"><code>WorkspaceReadList</code> - </a></li>
     <li><a href="#WorkspaceUpdate"><code>WorkspaceUpdate</code> - </a></li>
+    <li><a href="#inline_object"><code>inline_object</code> - </a></li>
   </ol>
 
   <div class="model">
@@ -6304,6 +6408,14 @@ font-style: italic;
 <div class="param">news </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">securityUpdates </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">notifications (optional)</div><div class="param-desc"><span class="param-type"><a href="#Notification">array[Notification]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="inline_object"><code>inline_object</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">archive (optional)</div><div class="param-desc"><span class="param-type"><a href="#file">File</a></span>  format: binary</div>
     </div>  <!-- field-items -->
   </div>
   </body>

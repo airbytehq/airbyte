@@ -1416,6 +1416,54 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ImportRead"
+  /v1/deployment/export_workspace:
+    post:
+      tags:
+        - deployment
+      summary: Export Airbyte Workspace Configuration
+      operationId: exportWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/x-gzip:
+              schema:
+                $ref: "#/components/schemas/AirbyteArchive"
+  /v1/deployment/import_into_workspace:
+    post:
+      tags:
+        - deployment
+      summary: Import Airbyte Configuration into Workspace (this operation might change ids)
+      operationId: importIntoWorkspace
+      requestBody:
+        content:
+          multipart/mixed:
+            schema:
+              type: object
+              properties:
+                workspaceId:
+                  type: string
+                  format: uuid
+                archive:
+                  type: string
+                  format: binary
+            encoding:
+              archive:
+                contentType: application/x-gzip
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportRead"
 components:
   securitySchemes:
     bearerAuth:
@@ -1900,7 +1948,6 @@ components:
     DestinationCreate:
       type: object
       required:
-        - workspaceId
         - name
         - workspaceId
         - destinationDefinitionId
