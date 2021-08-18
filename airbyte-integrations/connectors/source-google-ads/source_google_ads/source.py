@@ -43,6 +43,7 @@ from .streams import (
     DisplayKeywordPerformanceReport,
     DisplayTopicsPerformanceReport,
     ShoppingPerformanceReport,
+    UserLocationReport,
 )
 
 
