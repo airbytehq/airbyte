@@ -1,10 +1,7 @@
 # Changelog
 
 ## 0.1.10
-Upd multiple token support: switch to list of tokens
-
-## 0.1.9
-Add multiple token support
+Add `MultipleTokenAuthenticator` class to allow cycling through a list of API tokens when making HTTP requests
 
 ## 0.1.8
 Allow to fetch primary key info from singer catalog
