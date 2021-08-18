@@ -39,6 +39,7 @@ REPORT_MAPPING = {
     "display_keyword_performance_report": "display_keyword_view",
     "display_topics_performance_report": "topic_view",
     "shopping_performance_report": "shopping_performance_view",
+    "user_location_report": "user_location_view",
 }
 
 
