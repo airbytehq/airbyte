@@ -43,6 +43,15 @@ class Transformer:
         return json_types.get(value_type)
 
     @staticmethod
+    def _extract_schema_type(properties: Mapping[str, Any]) -> str:
+        schema_types = properties.get("type", [])
+        if not isinstance(schema_types, list):
+            schema_types = [
+                schema_types,
+            ]
+        return schema_types
+
+    @staticmethod
     def _find_schema_type(schema_types: List[str]) -> str:
         not_null_types = schema_types.copy()
         if "null" in not_null_types:
@@ -53,28 +62,27 @@ class Transformer:
     def _transform_number(value: Any):
         return Decimal(value)
 
-    def _transform_array(self, array: List[Any], item_properties: MutableMapping[str, Any]):
+    def _transform_array(self, array: List[Any], item_properties: Mapping[str, Any]):
         # iterate over items in array, compare schema types and convert if necessary.
-        item_types = item_properties.get("type", [])
+        item_types = self._extract_schema_type(item_properties)
         if item_types:
             schema_type = self._find_schema_type(item_types)
             nested_properties = item_properties.get("properties", {})
+            item_properties = item_properties.get("items", {})
             for item in array:
                 if schema_type == "object":
                     self._transform_object(item, nested_properties)
+                if schema_type == "array":
+                    self._transform_array(item, item_properties)
 
-    def _transform_object(self, transform_object: Mapping[str, Any], properties: MutableMapping[str, Any]):
+    def _transform_object(self, transform_object: MutableMapping[str, Any], properties: Mapping[str, Any]):
         # compare schema types and convert if necessary.
         for object_property, value in transform_object.items():
             if value is None:
                 continue
             if object_property in properties:
                 object_properties = properties.get(object_property)
-                schema_types = object_properties.get("type", [])
-                if not isinstance(schema_types, list):
-                    schema_types = [
-                        schema_types,
-                    ]
+                schema_types = self._extract_schema_type(object_properties)
                 if not schema_types:
                     continue
                 value_json_types = self._get_json_types(type(value))
