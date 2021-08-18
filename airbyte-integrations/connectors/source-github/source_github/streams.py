@@ -341,6 +341,26 @@ class IssueLabels(GithubStream):
         return f"repos/{stream_slice['repository']}/labels"
 
 
+class Organizations(GithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/orgs#get-an-organization
+    """
+
+    def __init__(self, organizations: List[str], **kwargs):
+        super(GithubStream, self).__init__(**kwargs)
+        self.organizations = organizations
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        for organization in self.organizations:
+            yield {"organization": organization}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"orgs/{stream_slice['organization']}"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield response.json()
+
+
 class Tags(GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/repos#list-repository-tags
@@ -593,21 +613,13 @@ class Issues(IncrementalGithubStream):
         "direction": "asc",
     }
 
-class Organizations(GithubStream):
+
+class ReviewComments(IncrementalGithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/orgs#get-an-organization
+    API docs: https://docs.github.com/en/rest/reference/pulls#list-review-comments-in-a-repository
     """
 
-    def __init__(self, organizations: List[str], **kwargs):
-        super(GithubStream, self).__init__(**kwargs)
-        self.organizations = organizations
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        for organization in self.organizations:
-            yield {"organization": organization}
+    page_size = 30  # `review-comments` is a large stream so it's better to set smaller page size.
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"orgs/{stream_slice['organization']}"
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield response.json()
+        return f"repos/{stream_slice['repository']}/pulls/comments"
