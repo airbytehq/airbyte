@@ -68,9 +68,6 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
    * that uses this file system config persistence.
    */
   public static boolean hasExistingConfigs(final Path storageRoot) {
-    if (!Files.exists(storageRoot)) {
-      throw new RuntimeException("Storage root does not exist: " + storageRoot);
-    }
     return Files.exists(storageRoot.resolve(CONFIG_DIR));
   }
 

@@ -33,7 +33,7 @@ public interface Configs {
 
   String getAirbyteVersion();
 
-  String getAirbyteApiUrl();
+  String getAirbyteApiHost();
 
   int getAirbyteApiPort();
 

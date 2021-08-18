@@ -24,16 +24,6 @@ spec:
       labels:
         airbyte: server
     spec:
-      affinity:
-        podAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            - labelSelector:
-                matchExpressions:
-                  - key: airbyte
-                    operator: In
-                    values:
-                      - scheduler
-              topologyKey: kubernetes.io/hostname
       containers:
         - name: airbyte-server-container
           image: airbyte/server
@@ -163,6 +153,18 @@ spec:
             - name: gcs-log-creds-volume
               mountPath: /secrets/gcs-log-creds
               readOnly: true
+      initContainers:
+        - name: airbyte-seed
+          image: airbyte/seed
+          command: ["/bin/sh"]
+          args:
+            [
+              "-c",
+              "mkdir -p /configs/config && yes n | cp -r -i /app/seed/config /configs",
+            ]
+          volumeMounts:
+            - name: airbyte-volume-configs
+              mountPath: /configs
       volumes:
         - name: airbyte-volume-workspace
           persistentVolumeClaim:
