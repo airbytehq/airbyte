@@ -66,6 +66,7 @@ services:
       - MAX_SYNC_JOB_ATTEMPTS=${MAX_SYNC_JOB_ATTEMPTS}
       - INTERNAL_API_HOST=${INTERNAL_API_HOST}
     volumes:
+      - workspace:${WORKSPACE_ROOT}
       - /var/run/docker.sock:/var/run/docker.sock
       - ${LOCAL_ROOT}:${LOCAL_ROOT}
   server:
