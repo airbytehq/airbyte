@@ -92,6 +92,7 @@ class SourceGithub(AbstractSource):
         repositories = self._generate_repositories(config=config, authenticator=authenticator)
         full_refresh_args = {"authenticator": authenticator, "repositories": repositories}
         incremental_args = {**full_refresh_args, "start_date": config["start_date"]}
+        organization_args = {"authenticator": authenticator, "organizations": organizations}
 
         return [
             Assignees(**full_refresh_args),
@@ -104,10 +105,11 @@ class SourceGithub(AbstractSource):
             IssueLabels(**full_refresh_args),
             IssueMilestones(**incremental_args),
             Issues(**incremental_args),
-            Organizations(**{"authenticator": authenticator, "organizations": organizations}),
+            Organizations(**organization_args),
             Projects(**incremental_args),
             PullRequests(**incremental_args),
             Releases(**incremental_args),
+            Repositories(**organization_args),
             Reviews(**full_refresh_args),
             Stargazers(**incremental_args),
             Teams(**full_refresh_args),

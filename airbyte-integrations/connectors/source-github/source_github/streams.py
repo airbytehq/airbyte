@@ -159,7 +159,7 @@ class GithubStream(HttpStream, ABC):
         for record in response.json():  # GitHub puts records in an array.
             yield self.transform(record=record, repository=stream_slice["repository"])
 
-    def transform(self, record: MutableMapping[str, Any], repository: str) -> MutableMapping[str, Any]:
+    def transform(self, record: MutableMapping[str, Any], repository: str = None) -> MutableMapping[str, Any]:
         """
         Use this method to:
             - remove excessive fields from record;
@@ -188,7 +188,8 @@ class GithubStream(HttpStream, ABC):
                 record[f"{field}_id"] = field_value.get("id") if field_value else None
             elif isinstance(field_value, list):
                 record[field] = [value.get("id") for value in field_value]
-        record["repository"] = repository
+        if repository:
+            record["repository"] = repository
 
         return record
 
@@ -269,9 +270,10 @@ class IncrementalGithubStream(SemiIncrementalGithubStream):
 
 class Repositories(GithubStream):
     """
-    This stream is technical and not intended for the user, it is used only to obtain repositories for organizations.
     API docs: https://docs.github.com/en/rest/reference/repos#list-organization-repositories
     """
+
+    fields_to_minimize = ("owner",)
 
     def __init__(self, organizations: List[str], **kwargs):
         super(GithubStream, self).__init__(**kwargs)
@@ -285,7 +287,8 @@ class Repositories(GithubStream):
         return f"orgs/{stream_slice['organization']}/repos"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield from response.json()
+        for record in response.json():  # GitHub puts records in an array.
+            yield self.transform(record=record)
 
 
 # Below are full refresh streams
