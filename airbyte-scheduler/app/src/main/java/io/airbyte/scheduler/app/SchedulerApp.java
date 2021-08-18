@@ -255,7 +255,6 @@ public class SchedulerApp {
         HealthCheckRead healthCheck = apiClient.getHealthApi().getHealthCheck();
         isHealthy = healthCheck.getDb();
       } catch (ApiException e) {
-        e.printStackTrace();
         LOGGER.info("Waiting for server to become available...");
         Thread.sleep(2000);
       }
