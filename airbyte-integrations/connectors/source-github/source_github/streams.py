@@ -271,29 +271,6 @@ class IncrementalGithubStream(SemiIncrementalGithubStream):
         return params
 
 
-class Repositories(GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/reference/repos#list-organization-repositories
-    """
-
-    fields_to_minimize = ("owner",)
-
-    def __init__(self, organizations: List[str], **kwargs):
-        super(GithubStream, self).__init__(**kwargs)
-        self.organizations = organizations
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        for organization in self.organizations:
-            yield {"organization": organization}
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"orgs/{stream_slice['organization']}/repos"
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        for record in response.json():  # GitHub puts records in an array.
-            yield self.transform(record=record)
-
-
 # Below are full refresh streams
 
 
@@ -362,6 +339,29 @@ class Organizations(GithubStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield response.json()
+
+
+class Repositories(GithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/repos#list-organization-repositories
+    """
+
+    fields_to_minimize = ("owner",)
+
+    def __init__(self, organizations: List[str], **kwargs):
+        super(GithubStream, self).__init__(**kwargs)
+        self.organizations = organizations
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        for organization in self.organizations:
+            yield {"organization": organization}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"orgs/{stream_slice['organization']}/repos"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        for record in response.json():  # GitHub puts records in an array.
+            yield self.transform(record=record)
 
 
 class Tags(GithubStream):
