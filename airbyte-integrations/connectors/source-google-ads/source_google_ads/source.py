@@ -33,7 +33,6 @@ from google.ads.googleads.errors import GoogleAdsException
 
 from .google_ads import GoogleAds
 from .streams import (
-    UserLocationReport,
     AccountPerformanceReport,
     Accounts,
     AdGroupAdReport,
@@ -43,6 +42,7 @@ from .streams import (
     DisplayKeywordPerformanceReport,
     DisplayTopicsPerformanceReport,
     ShoppingPerformanceReport,
+    UserLocationReport,
 )
 
 
