@@ -57,6 +57,8 @@ public interface Configs {
 
   String getConfigDatabaseUrl();
 
+  boolean runFlywayMigration();
+
   int getMaxRetriesPerAttempt();
 
   int getMaxSyncJobAttempts();

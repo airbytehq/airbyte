@@ -58,6 +58,7 @@ public class EnvConfigs implements Configs {
   public static final String CONFIG_DATABASE_USER = "CONFIG_DATABASE_USER";
   public static final String CONFIG_DATABASE_PASSWORD = "CONFIG_DATABASE_PASSWORD";
   public static final String CONFIG_DATABASE_URL = "CONFIG_DATABASE_URL";
+  public static final String RUN_FLYWAY_MIGRATION = "RUN_FLYWAY_MIGRATION";
   public static final String WEBAPP_URL = "WEBAPP_URL";
   public static final String MAX_RETRIES_PER_ATTEMPT = "MAX_RETRIES_PER_ATTEMPT";
   public static final String MAX_SYNC_JOB_ATTEMPTS = "MAX_SYNC_JOB_ATTEMPTS";
@@ -172,6 +173,11 @@ public class EnvConfigs implements Configs {
   public String getConfigDatabaseUrl() {
     // Default to reuse the job database
     return getEnvOrDefault(CONFIG_DATABASE_URL, getDatabaseUrl());
+  }
+
+  @Override
+  public boolean runFlywayMigration() {
+    return getEnvOrDefault(RUN_FLYWAY_MIGRATION, true);
   }
 
   @Override
@@ -317,6 +323,10 @@ public class EnvConfigs implements Configs {
 
   private long getEnvOrDefault(String key, long defaultValue) {
     return getEnvOrDefault(key, defaultValue, Long::parseLong);
+  }
+
+  private boolean getEnvOrDefault(String key, boolean defaultValue) {
+    return getEnvOrDefault(key, defaultValue, Boolean::parseBoolean);
   }
 
   private <T> T getEnvOrDefault(String key, T defaultValue, Function<String, T> parser) {
