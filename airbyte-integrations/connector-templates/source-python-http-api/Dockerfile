@@ -19,6 +19,9 @@ WORKDIR /airbyte/integration_code
 # copy all loaded and built libraries to a pure basic image
 COPY --from=builder /install /usr/local
 
+# Bash is installed for more convenient debugging.
+RUN apk --no-cache add bash
+
 # copy payload code only
 COPY main.py ./
 COPY source_{{snakeCase name}} ./source_{{snakeCase name}}
