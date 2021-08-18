@@ -39,7 +39,7 @@
 - sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   name: GitHub
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/github
   icon: github.svg
 - sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
@@ -137,7 +137,7 @@
 - sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   name: Hubspot
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
 - sourceDefinitionId: 95e8cffd-b8c4-4039-968e-d32fb4a69bde
@@ -427,3 +427,8 @@
   dockerRepository: airbyte/source-bing-ads
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/bing-ads
+- sourceDefinitionId: 2fed2292-5586-480c-af92-9944e39fe12d
+  name: Short.io
+  dockerRepository: airbyte/source-shortio
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/shortio
