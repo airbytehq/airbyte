@@ -27,6 +27,7 @@ import json
 import os
 import pkgutil
 import sys
+from logging import Logger
 from typing import Any, Dict, Mapping
 
 import pkg_resources
@@ -130,7 +131,7 @@ class ResourceSchemaLoader:
         return raw_schema
 
 
-def check_config_against_spec_or_exit(config: Mapping[str, Any], spec: ConnectorSpecification, logger):
+def check_config_against_spec_or_exit(config: Mapping[str, Any], spec: ConnectorSpecification, logger: Logger):
     """
     Check config object against spec. In case of spec is invalid, throws
     SystemExit exception causeing application to make system exit call with
