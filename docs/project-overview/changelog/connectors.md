@@ -10,6 +10,21 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on.
 
+## 8/18/2021
+
+New sources:
+* [**Bing Ads**](https://docs.airbyte.io/integrations/sources/bing-ads)
+
+New features:
+* **Chargebee** source: Adds supoort for the `items`, `item prices` and  `attached items` endpoints.
+
+Bug fixes:
+* **Quickbooks** source: Now uses the number data type for decimal fields.
+* **Hubspot** source: Fixed `empty string` inside of the `number` and `float` datatypes.
+* **GitHub** source: Validation fixed on non-required fields.
+* **BigQuery** destination: Now supports processing of arrays of records properly.
+* **Oracle** destination: Fixed destination check for users without DBA role.
+
 ## 8/9/2021
 
 New sources:
