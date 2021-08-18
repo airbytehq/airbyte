@@ -317,6 +317,15 @@ class Reviews(GithubStream):
                 yield {"pull_request_number": pull_request["number"], "repository": stream_slice["repository"]}
 
 
+class Branches(GithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/repos#list-branches
+    """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/branches"
+
+
 class Collaborators(GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/repos#list-repository-collaborators

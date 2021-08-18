@@ -33,6 +33,7 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 from .streams import (
     Assignees,
+    Branches,
     Collaborators,
     Comments,
     CommitComments,
@@ -96,6 +97,7 @@ class SourceGithub(AbstractSource):
 
         return [
             Assignees(**full_refresh_args),
+            Branches(**full_refresh_args),
             Collaborators(**full_refresh_args),
             Comments(**incremental_args),
             CommitComments(**incremental_args),
