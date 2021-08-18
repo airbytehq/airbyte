@@ -83,10 +83,10 @@ class HttpRequest(HttpStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if self._response_format == "csv":
             decoded = response.content.decode('utf-8')
-            data = csv.DictReader(decoded.splitlines(), delimiter=self_delimiter)
-            resp = {"type": "RECORD", "value": list(data)}
-            record = AirbyteRecordMessage(stream="http_request", data=resp, emitted_at=int(datetime.now().timestamp()) * 1000)
-            yield AirbyteMessage(type=Type.RECORD, record=record)
+            data = csv.DictReader(decoded.splitlines(), delimiter=self._response_delimiter)
+            for row in data:
+                record = AirbyteRecordMessage(stream="http_request", data=row, emitted_at=int(datetime.now().timestamp()) * 1000)
+                yield AirbyteMessage(type=Type.RECORD, record=record)
         elif self._response_format == "json":
             yield response.json()
         else:
