@@ -193,7 +193,6 @@ class ShoppingPerformanceReport(IncrementalGoogleAdsStream):
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance
     """
 
-
 class UserLocationReport(IncrementalGoogleAdsStream):
     """
     UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v8/user_location_view

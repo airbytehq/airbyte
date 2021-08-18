@@ -427,3 +427,8 @@
   dockerRepository: airbyte/source-bing-ads
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/bing-ads
+- sourceDefinitionId: 2fed2292-5586-480c-af92-9944e39fe12d
+  name: Short.io
+  dockerRepository: airbyte/source-shortio
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/shortio
