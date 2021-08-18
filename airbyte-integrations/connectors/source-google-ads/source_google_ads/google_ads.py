@@ -76,7 +76,8 @@ class GoogleAds:
         query_template = f"SELECT {fields} FROM {from_category} "
 
         if cursor_field:
-            query_template += f"WHERE {cursor_field} > '{from_date}' AND {cursor_field} < '{to_date}' ORDER BY {cursor_field} ASC"
+            # Fix issue 5411: Make date_start and date_end inclusive.
+            query_template += f"WHERE {cursor_field} >= '{from_date}' AND {cursor_field} <= '{to_date}' ORDER BY {cursor_field} ASC"
 
         return query_template
 
