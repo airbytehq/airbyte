@@ -3,8 +3,7 @@ FROM base as builder
 
 
 RUN apk --no-cache upgrade \
-    && pip install --upgrade pip \
-    && apk add tzdata
+    && pip install --upgrade pip
 
 WORKDIR /airbyte/integration_code
 COPY setup.py ./
@@ -13,6 +12,9 @@ RUN pip install --prefix=/install .
 
 FROM base
 COPY --from=builder /install /usr/local
+
+RUN apk --no-cache upgrade \
+    && apk add tzdata
 
 WORKDIR /airbyte/integration_code
 COPY main.py ./
