@@ -23,7 +23,6 @@
 #
 
 from abc import ABC, abstractmethod
-from decimal import Decimal
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
@@ -34,6 +33,8 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
+
+from .transform import Transformer
 
 
 class ShopifyStream(HttpStream, ABC):
@@ -53,71 +54,6 @@ class ShopifyStream(HttpStream, ABC):
         self.start_date = start_date
         self.shop = shop
         self.api_password = api_password
-
-    @staticmethod
-    def _get_json_types(value_type) -> List[str]:
-        json_types = {
-            str: ["string"],
-            int: ["integer", "number"],
-            float: ["number"],
-            dict: ["object"],
-            list: ["array"],
-            bool: ["boolean"],
-            type(None): ["null", ]
-        }
-        return json_types.get(value_type)
-
-    @staticmethod
-    def _transform_number(value: Any, convert_type: str):
-        return Decimal(value)
-
-    @staticmethod
-    def _find_schema_type(schema_types: List[str]) -> str:
-        not_null_types = schema_types.copy()
-        if "null" in not_null_types:
-            not_null_types.remove("null")
-        return not_null_types[0]
-
-    def _transform_array(self, array: List[Any], item_properties: MutableMapping[str, Any]):
-        # iterate over items in array, compare schema types and convert if necessary.
-        item_types = item_properties.get("type", [])
-        if item_types:
-            schema_type = self._find_schema_type(item_types)
-            nested_properties = item_properties.get("properties", {})
-            for item in array:
-                if schema_type == "object":
-                    self._transform_object(item, nested_properties)
-                yield item
-
-    def _transform_object(self, transform_object: Mapping[str, Any], properties: MutableMapping[str, Any]):
-        # compare schema types and convert if necessary.
-        for object_property, value in transform_object.items():
-            if not value:
-                continue
-            if object_property in properties:
-                object_properties = properties.get(object_property)
-                schema_types = object_properties.get("type", [])
-                if not isinstance(schema_types, list):
-                    schema_types = [schema_types, ]
-                if not schema_types:
-                    continue
-                value_json_types = self._get_json_types(type(value))
-                schema_type = self._find_schema_type(schema_types)
-                if not any(value_json_type in schema_types for value_json_type in value_json_types):
-                    if schema_type == "number":
-                        transform_object[object_property] = self._transform_number(value, schema_type)
-                if schema_type == "object":
-                    nested_properties = object_properties.get("properties", {})
-                    self._transform_object(value, nested_properties)
-                if schema_type == "array":
-                    item_properties = object_properties.get("items", {})
-                    self._transform_array(value, item_properties)
-
-    def _transform(self, records: List[MutableMapping[str, Any]]) -> Iterable[Mapping]:
-        # Shopify API returns array of objects
-        # It's need to compare records values with schemas
-        stream_properties = {"type": ["null", "object"], "properties": self._schema.get("properties", {})}
-        yield from self._transform_array(records, stream_properties)
 
     @property
     def url_base(self) -> str:
@@ -141,12 +77,13 @@ class ShopifyStream(HttpStream, ABC):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        transformer = Transformer()
         json_response = response.json()
         records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
         # transform method was implemented according to issue 4841
         # Shopify API returns price fields as a string and it should be converted to number
         # this solution designed to convert string into number, but in future can be modified for general purpose
-        yield from self._transform(records)
+        yield from transformer.transform(records, self._schema)
 
     @property
     @abstractmethod
