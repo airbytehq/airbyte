@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Github Source Spec",
     "type": "object",
-    "required": ["access_token", "start_date"],
+    "required": ["access_token", "start_date", "repository"],
     "additionalProperties": false,
     "properties": {
       "access_token": {
@@ -12,15 +12,10 @@
         "description": "Log into Github and then generate a <a href=\"https://github.com/settings/tokens\"> personal access token</a>.",
         "airbyte_secret": true
       },
-      "organization": {
-        "type": "string",
-        "examples": ["airbytehq"],
-        "description": "Space-delimited list of GitHub organizations. e.g. `airbytehq singer-io`"
-      },
       "repository": {
         "type": "string",
-        "examples": ["airbytehq/airbyte"],
-        "description": "Space-delimited list of GitHub repositories, e.g. `airbytehq/airbyte singer-io/tap-github`"
+        "examples": ["airbytehq/airbyte", "airbytehq/*"],
+        "description": "Space-delimited list of GitHub repositories/organizations, e.g. `airbytehq/airbyte` for single repository and `airbytehq/*` for get all repositories from organization"
       },
       "start_date": {
         "type": "string",
