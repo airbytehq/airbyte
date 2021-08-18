@@ -41,6 +41,7 @@ DESTINATION_SIZE_LIMITS = {
     DestinationType.POSTGRES.value: 63,
     # https://dev.mysql.com/doc/refman/8.0/en/identifier-length.html
     DestinationType.MYSQL.value: 64,
+    DestinationType.ORACLE.value: 128,
 }
 
 # DBT also needs to generate suffix to table names, so we need to make sure it has enough characters to do so...
@@ -148,7 +149,7 @@ class DestinationNameTransformer:
         if self.needs_quotes(result):
             result = result.replace('"', '""')
             result = result.replace("'", "\\'")
-            result = f"adapter.quote('{result}')"
+            result = f"quote('{result}')"
             result = self.__normalize_identifier_case(result, is_quoted=True)
             if not in_jinja:
                 result = jinja_call(result)
@@ -185,6 +186,8 @@ class DestinationNameTransformer:
         elif self.destination_type.value == DestinationType.MYSQL.value:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.lower()
+        elif self.destination_type.value == DestinationType.ORACLE.value:
+            result = input_name.upper()
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result

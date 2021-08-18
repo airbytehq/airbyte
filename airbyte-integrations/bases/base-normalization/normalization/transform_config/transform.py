@@ -40,6 +40,7 @@ class DestinationType(Enum):
     redshift = "redshift"
     snowflake = "snowflake"
     mysql = "mysql"
+    oracle = "oracle"
 
 
 class TransformConfig:
@@ -84,6 +85,7 @@ class TransformConfig:
             DestinationType.redshift.value: self.transform_redshift,
             DestinationType.snowflake.value: self.transform_snowflake,
             DestinationType.mysql.value: self.transform_mysql,
+            DestinationType.oracle.value: self.transform_oracle,
         }[integration_type.value](config)
 
         # merge pre-populated base_profile with destination-specific configuration.
@@ -182,6 +184,22 @@ class TransformConfig:
             "database": config["database"],
             "username": config["username"],
             "password": config.get("password", ""),
+        }
+        return dbt_config
+
+    @staticmethod
+    def transform_oracle(config: Dict[str, Any]):
+        print("transform_oracle")
+        # https://github.com/techindicium/dbt-oracle#configure-your-profile
+        dbt_config = {
+            "type": "oracle",
+            "host": config["host"],
+            "user": config["username"],
+            "pass": config["password"],
+            "port": config["port"],
+            "dbname": config["sid"],
+            "schema": config["schema"],
+            "threads": 4,
         }
         return dbt_config
 

@@ -28,11 +28,11 @@ clean-targets:         # directories to be removed by `dbt clean`
     - "dbt_modules"
 
 quoting:
-  database: true
+  database: false
 # Temporarily disabling the behavior of the ExtendedNameTransformer on table/schema names, see (issue #1785)
 # all schemas should be unquoted
   schema: false
-  identifier: true
+  identifier: false
 
 # You can define configurations for models in the `source-paths` directory here.
 # Using these configurations, you can enable or disable models, change how they

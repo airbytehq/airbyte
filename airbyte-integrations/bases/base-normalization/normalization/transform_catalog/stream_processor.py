@@ -226,14 +226,14 @@ class StreamProcessor(object):
         )
         if self.destination_sync_mode.value == DestinationSyncMode.append_dedup.value:
             from_table = self.add_to_outputs(self.generate_dedup_record_model(from_table, column_names), is_intermediate=True, suffix="ab4")
-            where_clause = "\nwhere _airbyte_row_num = 1"
+            where_clause = "\nwhere airbyte_row_num = 1"
             from_table = self.add_to_outputs(
                 self.generate_scd_type_2_model(from_table, column_names) + where_clause,
                 is_intermediate=False,
                 column_count=column_count,
                 suffix="scd",
             )
-            where_clause = "\nwhere _airbyte_active_row = True"
+            where_clause = "\nwhere airbyte_active_row = 1"
             from_table = self.add_to_outputs(
                 self.generate_final_model(from_table, column_names) + where_clause, is_intermediate=False, column_count=column_count
             )
@@ -321,7 +321,7 @@ select
   {%- for field in fields %}
     {{ field }},
   {%- endfor %}
-    _airbyte_emitted_at
+    airbyte_emitted_at
 from {{ from_table }}
 {{ unnesting_after_query }}
 {{ sql_table_comment }}
@@ -367,7 +367,7 @@ select
   {%- for field in fields %}
     {{ field }},
   {%- endfor %}
-    _airbyte_emitted_at
+    airbyte_emitted_at
 from {{ from_table }}
 {{ sql_table_comment }}
     """
@@ -412,16 +412,16 @@ from {{ from_table }}
             """
 -- SQL model to build a hash column based on the values of this record
 select
-    *,
-    {{ '{{' }} dbt_utils.surrogate_key([
+    ora_hash(
       {%- if parent_hash_id %}
-        '{{ parent_hash_id }}',
+        '{{ parent_hash_id }}' || '~' ||
       {%- endif %}
       {%- for field in fields %}
-        {{ field }},
+        {% if not loop.last %}{{ field }} || '~' ||{% else %}{{ field }}{% endif %}
       {%- endfor %}
-    ]) {{ '}}' }} as {{ hash_id }}
-from {{ from_table }}
+    ) as {{ hash_id }},
+    tmp.*
+from {{ from_table }} tmp
 {{ sql_table_comment }}
     """
         )
@@ -443,25 +443,33 @@ from {{ from_table }}
         Note that the result from this static method should always be used within a jinja context (for example, from jinja macro surrogate_key call)
         """
         if "type" not in definition:
-            return column_name
+            if "('" in column_name:
+                return '{{' + column_name + '}}'
+            else:
+                return column_name
         elif is_boolean(definition["type"]):
-            return f"boolean_to_string({column_name})"
+            s = f"boolean_to_string({column_name})"
+            return '{{' + s + '}}'
         elif is_array(definition["type"]):
-            return f"array_to_string({column_name})"
+            s = f"array_to_string({column_name})"
+            return '{{' + s + '}}'
         else:
-            return column_name
+            if "('" in column_name:
+                return '{{' + column_name + '}}'
+            else:
+                return column_name
 
     def generate_dedup_record_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
         template = Template(
             """
 -- SQL model to prepare for deduplicating records based on the hash record column
 select
-  *,
   row_number() over (
     partition by {{ hash_id }}
-    order by _airbyte_emitted_at asc
-  ) as _airbyte_row_num
-from {{ from_table }}
+    order by airbyte_emitted_at asc
+  ) as airbyte_row_num,
+  tmp.*
+from {{ from_table }} tmp
 {{ sql_table_comment }}
         """
         )
@@ -483,16 +491,16 @@ select
   {%- for field in fields %}
     {{ field }},
   {%- endfor %}
-    {{ cursor_field }} as _airbyte_start_at,
+    {{ cursor_field }} as airbyte_start_at,
     lag({{ cursor_field }}) over (
         partition by {{ primary_key }}
-        order by {{ cursor_field }} is null asc, {{ cursor_field }} desc, _airbyte_emitted_at desc
-    ) as _airbyte_end_at,
-    lag({{ cursor_field }}) over (
+        order by {{ cursor_field }} desc, airbyte_emitted_at desc
+    ) as airbyte_end_at,
+    case when lag({{ cursor_field }}) over (
         partition by {{ primary_key }}
-        order by {{ cursor_field }} is null asc, {{ cursor_field }} desc, _airbyte_emitted_at desc{{ cdc_updated_at_order }}
-    ) is null {{ cdc_active_row }}as _airbyte_active_row,
-    _airbyte_emitted_at,
+        order by {{ cursor_field }} desc, airbyte_emitted_at desc
+    ) is null then 1 else 0 end as airbyte_active_row,
+    airbyte_emitted_at,
     {{ hash_id }}
 from {{ from_table }}
 {{ sql_table_comment }}
@@ -520,7 +528,7 @@ from {{ from_table }}
 
     def get_cursor_field(self, column_names: Dict[str, Tuple[str, str]]) -> str:
         if not self.cursor_field:
-            return "_airbyte_emitted_at"
+            return "airbyte_emitted_at"
         elif len(self.cursor_field) == 1:
             if not is_airbyte_column(self.cursor_field[0]):
                 return column_names[self.cursor_field[0]][0]
@@ -569,7 +577,7 @@ select
   {%- for field in fields %}
     {{ field }},
   {%- endfor %}
-    _airbyte_emitted_at,
+    airbyte_emitted_at,
     {{ hash_id }}
 from {{ from_table }}
 {{ sql_table_comment }}
@@ -590,6 +598,7 @@ from {{ from_table }}
 
     def add_to_outputs(self, sql: str, is_intermediate: bool, column_count: int = 0, suffix: str = "") -> str:
         schema = self.get_schema(is_intermediate)
+        schema = "SYSTEM"
         # MySQL table names need to be manually truncated, because it does not do it automatically
         truncate_name = self.destination_type == DestinationType.MYSQL
         table_name = self.tables_registry.get_table_name(schema, self.json_path, self.stream_name, suffix, truncate_name)
@@ -656,7 +665,11 @@ from {{ from_table }}
         return result
 
     def hash_id(self) -> str:
-        return self.name_transformer.normalize_column_name(f"_airbyte_{self.normalized_stream_name()}_hashid")
+        if self.parent:
+            if self.normalized_stream_name().lower() == self.parent.stream_name.lower():
+                level = len(self.json_path)
+                return self.name_transformer.normalize_column_name(f"airbyte_{self.normalized_stream_name()}_{level}_hashid")
+        return self.name_transformer.normalize_column_name(f"airbyte_{self.normalized_stream_name()}_hashid")
 
     # Nested Streams
 

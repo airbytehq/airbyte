@@ -5,6 +5,7 @@ dbt-project-template/test_output.log
 dbt_modules/
 secrets/
 dist/
+venv/
 
 integration_tests/normalization_test_output/*/*/*.log
 integration_tests/normalization_test_output/*/*/*.yml

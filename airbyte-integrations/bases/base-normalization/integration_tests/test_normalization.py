@@ -77,7 +77,8 @@ def setup_test_path(request):
 # Uncomment the following line as an example on how to run the test on a single destination...
 # @pytest.mark.parametrize("destination_type", [DestinationType.POSTGRES, DestinationType.POSTGRES])
 # Run tests on all destinations:
-@pytest.mark.parametrize("destination_type", list(DestinationType))
+# @pytest.mark.parametrize("destination_type", list(DestinationType))
+@pytest.mark.parametrize("destination_type", [DestinationType.ORACLE])
 def test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
     print("Testing normalization")
     integration_type = destination_type.value
@@ -176,7 +177,7 @@ def generate_dbt_models(destination_type: DestinationType, test_resource_name: s
     """
     catalog_processor = CatalogProcessor(os.path.join(test_root_dir, "models", "generated"), destination_type)
     catalog_processor.process(
-        os.path.join("resources", test_resource_name, "data_input", "catalog.json"), "_airbyte_data", dbt_test_utils.target_schema
+        os.path.join("resources", test_resource_name, "data_input", "catalog.json"), "airbyte_data", dbt_test_utils.target_schema
     )
 
 

@@ -69,6 +69,7 @@ class CatalogProcessor:
         catalog = read_json(catalog_file)
         # print(json.dumps(catalog, separators=(",", ":")))
         substreams = []
+        default_schema = "system"
         stream_processors = self.build_stream_processor(
             catalog=catalog,
             json_column_name=json_column_name,
@@ -87,7 +88,7 @@ class CatalogProcessor:
         for stream_processor in stream_processors:
             # MySQL table names need to be manually truncated, because it does not do it automatically
             truncate = self.destination_type == DestinationType.MYSQL
-            raw_table_name = self.name_transformer.normalize_table_name(f"_airbyte_raw_{stream_processor.stream_name}", truncate=truncate)
+            raw_table_name = self.name_transformer.normalize_table_name(f"airbyte_raw_{stream_processor.stream_name}", truncate=truncate)
             add_table_to_sources(schema_to_source_tables, stream_processor.schema, raw_table_name)
 
             nested_processors = stream_processor.process()
@@ -116,13 +117,13 @@ class CatalogProcessor:
             schema = default_schema
             if "namespace" in stream_config:
                 schema = stream_config["namespace"]
-
+            schema = "system"
             schema_name = name_transformer.normalize_schema_name(schema, truncate=False)
-            raw_schema_name = name_transformer.normalize_schema_name(f"_airbyte_{schema}", truncate=False)
+            raw_schema_name = name_transformer.normalize_schema_name(f"airbyte_{schema}", truncate=False)
             stream_name = get_field(stream_config, "name", f"Invalid Stream: 'name' is not defined in stream: {str(stream_config)}")
             # MySQL table names need to be manually truncated, because it does not do it automatically
             truncate = destination_type == DestinationType.MYSQL
-            raw_table_name = name_transformer.normalize_table_name(f"_airbyte_raw_{stream_name}", truncate=truncate)
+            raw_table_name = name_transformer.normalize_table_name(f"airbyte_raw_{stream_name}", truncate=truncate)
 
             source_sync_mode = get_source_sync_mode(configured_stream, stream_name)
             destination_sync_mode = get_destination_sync_mode(configured_stream, stream_name)
@@ -195,8 +196,8 @@ class CatalogProcessor:
                     "name": schema,
                     "quoting": {
                         "database": True,
-                        "schema": quoted_schema,
-                        "identifier": False,
+                        "schema": True,  # quoted_schema,
+                        "identifier": True,
                     },
                     "tables": tables,
                 }

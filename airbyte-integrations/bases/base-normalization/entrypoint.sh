@@ -31,8 +31,8 @@ function configuredbt() {
     transform-config --config "${CONFIG_FILE}" --integration-type "${INTEGRATION_TYPE}" --out "${PROJECT_DIR}"
     if [[ -n "${CATALOG_FILE}" ]]; then
       # If catalog file is provided, generate normalization models, otherwise skip it
-      echo "Running: transform-catalog --integration-type ${INTEGRATION_TYPE} --profile-config-dir ${PROJECT_DIR} --catalog ${CATALOG_FILE} --out ${PROJECT_DIR}/models/generated/ --json-column _airbyte_data"
-      transform-catalog --integration-type "${INTEGRATION_TYPE}" --profile-config-dir "${PROJECT_DIR}" --catalog "${CATALOG_FILE}" --out "${PROJECT_DIR}/models/generated/" --json-column "_airbyte_data"
+      echo "Running: transform-catalog --integration-type ${INTEGRATION_TYPE} --profile-config-dir ${PROJECT_DIR} --catalog ${CATALOG_FILE} --out ${PROJECT_DIR}/models/generated/ --json-column airbyte_data"
+      transform-catalog --integration-type "${INTEGRATION_TYPE}" --profile-config-dir "${PROJECT_DIR}" --catalog "${CATALOG_FILE}" --out "${PROJECT_DIR}/models/generated/" --json-column "airbyte_data"
     fi
   else
     # Use git repository as a base workspace folder for dbt projects

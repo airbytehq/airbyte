@@ -41,17 +41,19 @@ from normalization.transform_config.transform import TransformConfig
 
 class DbtIntegrationTest(object):
     def __init__(self):
-        self.target_schema = "test_normalization"
+        self.target_schema = "system"
+        # self.target_schema = "test_normalization"
         self.container_prefix = f"test_normalization_db_{self.random_string(3)}"
-        self.db_names = ["postgres", "mysql"]
+        self.db_names = ["postgres", "mysql", "oracle"]
 
     @staticmethod
     def random_string(length: int) -> str:
         return "".join(random.choice(string.ascii_lowercase) for i in range(length))
 
     def setup_db(self):
-        self.setup_postgres_db()
-        self.setup_mysql_db()
+        # self.setup_postgres_db()
+        # self.setup_mysql_db()
+        self.setup_oracle_db()
 
     def setup_postgres_db(self):
         print("Starting localhost postgres container for tests")
@@ -121,6 +123,41 @@ class DbtIntegrationTest(object):
         with open("../secrets/mysql.json", "w") as fh:
             fh.write(json.dumps(config))
 
+    def setup_oracle_db(self):
+        print("Starting localhost oracle container for tests")
+        # port = self.find_free_port()
+        config = {
+            "host": "172.17.0.3",
+            "port": 1521,  # port,
+            "sid": "XE", #"xe",
+            "username": "system",
+            "password": "oracle",
+            "schema": "system",
+        }
+        # commands = [
+        #     "docker",
+        #     "run",
+        #     "--rm",
+        #     "--name",
+        #     f"{self.container_prefix}_oracle",
+        #     "-e",
+        #     "ORACLE_ALLOW_REMOTE=true",
+        #     "-e",
+        #     "RELAX_SECURITY=1",
+        #     "-p",
+        #     f"{config['port']}:1521",
+        #     "-d",
+        #     "epiclabs/docker-oracle-xe-11g",
+        # ]
+        # print("Executing: ", " ".join(commands))
+        # subprocess.call(commands)
+        # time.sleep(120)
+
+        if not os.path.exists("../secrets"):
+            os.makedirs("../secrets")
+        with open("../secrets/oracle.json", "w") as fh:
+            fh.write(json.dumps(config))
+
     @staticmethod
     def find_free_port():
         """
@@ -170,6 +207,8 @@ class DbtIntegrationTest(object):
         else:
             profiles_config["schema"] = self.target_schema
         profiles_yaml = config_generator.transform(destination_type, profiles_config)
+        if destination_type.value == DestinationType.ORACLE.value:
+            profiles_yaml["normalize"]["outputs"]["prod"]["schema"] = "system"
         config_generator.write_yaml_config(test_root_dir, profiles_yaml)
         return profiles_config
 
