@@ -82,6 +82,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[SAP Business One](./sources/sap-business-one.md)| Beta |
 |[Sendgrid](./sources/sendgrid.md)| Certified |
 |[Shopify](./sources/shopify.md)| Certified |
+|[Short.io](./sources/shortio.md)| Beta |
 |[Slack](./sources/slack.md)| Beta |
 |[Spree Commerce](./sources/spree-commerce.md)| Beta |
 |[Smartsheets](./sources/smartsheets.md)| Beta |
