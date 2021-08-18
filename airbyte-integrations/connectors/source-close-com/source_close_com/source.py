@@ -81,12 +81,20 @@ class CloseComStream(HttpStream, ABC):
         Close.com puts the retry time in the `rate_reset` response body so
         we return that value. If the response is anything other than a 429 (e.g: 5XX)
         fall back on default retry behavior.
+        Rate-reset is the same as retry-after.
         Rate Limits Docs: https://developer.close.com/#ratelimits"""
 
-        return response.json().get("error", {}).get("rate_reset", 0)
+        backoff_time = None
+        error = response.json().get("error", backoff_time)
+        if error:
+            backoff_time = error.get("rate_reset", backoff_time)
+        return backoff_time
 
 
 class IncrementalCloseComStream(CloseComStream):
+
+    cursor_field = "date_updated"
+
     def get_updated_state(
         self,
         current_stream_state: MutableMapping[str, Any],
@@ -106,6 +114,8 @@ class CloseComActivitiesMixin(IncrementalCloseComStream):
     General class for activities. Define request params based on cursor_field value.
     """
 
+    cursor_field = "date_created"
+
     def request_params(self, stream_state=None, **kwargs):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
@@ -120,8 +130,6 @@ class CreatedActivities(CloseComActivitiesMixin):
     API Docs: https://developer.close.com/#activities-list-or-filter-all-created-activities
     """
 
-    cursor_field = "date_created"
-
     def path(self, **kwargs) -> str:
         return "activity/created"
 
@@ -131,8 +139,6 @@ class NoteActivities(CloseComActivitiesMixin):
     Get note activities on a specific date
     API Docs: https://developer.close.com/#activities-list-or-filter-all-note-activities
     """
-
-    cursor_field = "date_created"
 
     def path(self, **kwargs) -> str:
         return "activity/note"
@@ -144,8 +150,6 @@ class EmailThreadActivities(CloseComActivitiesMixin):
     API Docs: https://developer.close.com/#activities-list-or-filter-all-emailthread-activities
     """
 
-    cursor_field = "date_created"
-
     def path(self, **kwargs) -> str:
         return "activity/emailthread"
 
@@ -155,8 +159,6 @@ class EmailActivities(CloseComActivitiesMixin):
     Get email activities on a specific date
     API Docs: https://developer.close.com/#activities-list-or-filter-all-email-activities
     """
-
-    cursor_field = "date_created"
 
     def path(self, **kwargs) -> str:
         return "activity/email"
@@ -168,8 +170,6 @@ class SmsActivities(CloseComActivitiesMixin):
     API Docs: https://developer.close.com/#activities-list-or-filter-all-sms-activities
     """
 
-    cursor_field = "date_created"
-
     def path(self, **kwargs) -> str:
         return "activity/sms"
 
@@ -179,8 +179,6 @@ class CallActivities(CloseComActivitiesMixin):
     Get call activities on a specific date
     API Docs: https://developer.close.com/#activities-list-or-filter-all-call-activities
     """
-
-    cursor_field = "date_created"
 
     def path(self, **kwargs) -> str:
         return "activity/call"
@@ -192,8 +190,6 @@ class MeetingActivities(CloseComActivitiesMixin):
     API Docs: https://developer.close.com/#activities-list-or-filter-all-meeting-activities
     """
 
-    cursor_field = "date_created"
-
     def path(self, **kwargs) -> str:
         return "activity/meeting"
 
@@ -203,8 +199,6 @@ class LeadStatusChangeActivities(CloseComActivitiesMixin):
     Get lead status change activities on a specific date
     API Docs: https://developer.close.com/#activities-list-or-filter-all-leadstatuschange-activities
     """
-
-    cursor_field = "date_created"
 
     def path(self, **kwargs) -> str:
         return "activity/status_change/lead"
@@ -216,8 +210,6 @@ class OpportunityStatusChangeActivities(CloseComActivitiesMixin):
     API Docs: https://developer.close.com/#activities-list-or-filter-all-opportunitystatuschange-activities
     """
 
-    cursor_field = "date_created"
-
     def path(self, **kwargs) -> str:
         return "activity/status_change/opportunity"
 
@@ -227,8 +219,6 @@ class TaskCompletedActivities(CloseComActivitiesMixin):
     Get task completed activities on a specific date
     API Docs: https://developer.close.com/#activities-list-or-filter-all-taskcompleted-activities
     """
-
-    cursor_field = "date_created"
 
     def path(self, **kwargs) -> str:
         return "activity/task_completed"
@@ -240,7 +230,6 @@ class Events(IncrementalCloseComStream):
     API Docs: https://developer.close.com/#event-log-retrieve-a-list-of-events
     """
 
-    cursor_field = "date_updated"
     number_of_items_per_page = 50
 
     def path(self, **kwargs) -> str:
@@ -260,8 +249,6 @@ class Leads(IncrementalCloseComStream):
     API Docs: https://developer.close.com/#leads
     """
 
-    cursor_field = "date_updated"
-
     def path(self, **kwargs) -> str:
         return "lead"
 
@@ -278,6 +265,8 @@ class CloseComTasksMixin(IncrementalCloseComStream):
     General class for tasks. Define request params based on _type value.
     """
 
+    cursor_field = "date_created"
+
     def request_params(self, stream_state=None, **kwargs):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
@@ -293,7 +282,6 @@ class LeadTasks(CloseComTasksMixin):
     API Docs: https://developer.close.com/#task
     """
 
-    cursor_field = "date_created"
     _type = "lead"
 
     def path(self, **kwargs) -> str:
@@ -306,7 +294,6 @@ class IncomingEmailTasks(CloseComTasksMixin):
     API Docs: https://developer.close.com/#tasks
     """
 
-    cursor_field = "date_created"
     _type = "incoming_email"
 
     def path(self, **kwargs) -> str:
@@ -319,7 +306,6 @@ class EmailFollowupTasks(CloseComTasksMixin):
     API Docs: https://developer.close.com/#tasks
     """
 
-    cursor_field = "date_created"
     _type = "email_followup"
 
     def path(self, **kwargs) -> str:
@@ -332,7 +318,6 @@ class MissedCallTasks(CloseComTasksMixin):
     API Docs: https://developer.close.com/#task
     """
 
-    cursor_field = "date_created"
     _type = "missed_call"
 
     def path(self, **kwargs) -> str:
@@ -345,7 +330,6 @@ class AnsweredDetachedCallTasks(CloseComTasksMixin):
     API Docs: https://developer.close.com/#task
     """
 
-    cursor_field = "date_created"
     _type = "answered_detached_call"
 
     def path(self, **kwargs) -> str:
@@ -358,7 +342,6 @@ class VoicemailTasks(CloseComTasksMixin):
     API Docs: https://developer.close.com/#task
     """
 
-    cursor_field = "date_created"
     _type = "voicemail"
 
     def path(self, **kwargs) -> str:
@@ -371,7 +354,6 @@ class OpportunityDueTasks(CloseComTasksMixin):
     API Docs: https://developer.close.com/#task
     """
 
-    cursor_field = "date_created"
     _type = "opportunity_due"
 
     def path(self, **kwargs) -> str:
@@ -384,7 +366,6 @@ class IncomingSmsTasks(CloseComTasksMixin):
     API Docs: https://developer.close.com/#task
     """
 
-    cursor_field = "date_created"
     _type = "incoming_sms"
 
     def path(self, **kwargs) -> str:
@@ -442,21 +423,23 @@ class Users(CloseComStream):
 
 
 class Base64HttpAuthenticator(TokenAuthenticator):
-    def __init__(self, auth: Tuple[str, str], auth_method: str = "Basic", **kwargs):
+    """
+    :auth - tuple with (api_key as username, password string). Password should be empty.
+    https://developer.close.com/#authentication
+    """
+
+    def __init__(self, auth: Tuple[str, str], auth_method: str = "Basic"):
         auth_string = f"{auth[0]}:{auth[1]}".encode("latin1")
         b64_encoded = b64encode(auth_string).decode("ascii")
-        super().__init__(token=b64_encoded, auth_method=auth_method, **kwargs)
+        super().__init__(token=b64_encoded, auth_method=auth_method)
 
 
 class SourceCloseCom(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
+            authenticator = Base64HttpAuthenticator(auth=(config["api_key"], "")).get_auth_header()
             url = "https://api.close.com/api/v1/me"
-            response = requests.request(
-                "GET",
-                url=url,
-                auth=(config["api_key"], ""),
-            )
+            response = requests.request("GET", url=url, headers=authenticator)
             response.raise_for_status()
             return True, None
         except Exception as e:
