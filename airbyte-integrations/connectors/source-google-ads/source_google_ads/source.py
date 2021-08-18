@@ -33,6 +33,7 @@ from google.ads.googleads.errors import GoogleAdsException
 
 from .google_ads import GoogleAds
 from .streams import (
+    UserLocationReport,
     AccountPerformanceReport,
     Accounts,
     AdGroupAdReport,
@@ -70,6 +71,7 @@ class SourceGoogleAds(AbstractSource):
             api=google_api, conversion_window_days=config["conversion_window_days"], start_date=config["start_date"]
         )
         return [
+            UserLocationReport(**incremental_stream_config),
             AccountPerformanceReport(**incremental_stream_config),
             DisplayTopicsPerformanceReport(**incremental_stream_config),
             DisplayKeywordPerformanceReport(**incremental_stream_config),
