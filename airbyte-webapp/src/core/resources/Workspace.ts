@@ -5,6 +5,8 @@ export interface Notification {
   notificationType: string;
   slackConfiguration: {
     webhook: string;
+    sendOnSuccess: boolean;
+    sendOnFailure: boolean;
   };
 }
 

@@ -64,8 +64,19 @@ public class SlackNotificationClient implements NotificationClient {
   @Override
   public boolean notifyJobFailure(String sourceConnector, String destinationConnector, String jobDescription, String logUrl)
       throws IOException, InterruptedException {
-    return notify(renderJobData(
+    return notifyFailure(renderJobData(
         "failure_slack_notification_template.txt",
+        sourceConnector,
+        destinationConnector,
+        jobDescription,
+        logUrl));
+  }
+
+  @Override
+  public boolean notifyJobSuccess(String sourceConnector, String destinationConnector, String jobDescription, String logUrl)
+      throws IOException, InterruptedException {
+    return notifySuccess(renderJobData(
+        "success_slack_notification_template.txt",
         sourceConnector,
         destinationConnector,
         jobDescription,
@@ -78,26 +89,39 @@ public class SlackNotificationClient implements NotificationClient {
     return String.format(template, sourceConnector, destinationConnector, jobDescription, logUrl);
   }
 
+  private boolean notify(String message) throws IOException, InterruptedException {
+    final ImmutableMap<String, String> body = new Builder<String, String>()
+        .put("text", message)
+        .build();
+    final HttpRequest request = HttpRequest.newBuilder()
+        .POST(HttpRequest.BodyPublishers.ofString(Jsons.serialize(body)))
+        .uri(URI.create(config.getWebhook()))
+        .header("Content-Type", "application/json")
+        .build();
+    final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+    if (isSuccessfulHttpResponse(response.statusCode())) {
+      LOGGER.info("Successful notification ({}): {}", response.statusCode(), response.body());
+      return true;
+    } else {
+      final String errorMessage = String.format("Failed to deliver notification (%s): %s", response.statusCode(), response.body());
+      throw new IOException(errorMessage);
+    }
+  }
+
   @Override
-  public boolean notify(final String message) throws IOException, InterruptedException {
+  public boolean notifySuccess(final String message) throws IOException, InterruptedException {
     final String webhookUrl = config.getWebhook();
-    if (!Strings.isEmpty(webhookUrl)) {
-      final ImmutableMap<String, String> body = new Builder<String, String>()
-          .put("text", message)
-          .build();
-      final HttpRequest request = HttpRequest.newBuilder()
-          .POST(HttpRequest.BodyPublishers.ofString(Jsons.serialize(body)))
-          .uri(URI.create(webhookUrl))
-          .header("Content-Type", "application/json")
-          .build();
-      final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-      if (isSuccessfulHttpResponse(response.statusCode())) {
-        LOGGER.info("Successful notification ({}): {}", response.statusCode(), response.body());
-        return true;
-      } else {
-        final String errorMessage = String.format("Failed to deliver notification (%s): %s", response.statusCode(), response.body());
-        throw new IOException(errorMessage);
-      }
+    if (!Strings.isEmpty(webhookUrl) && config.getSendOnSuccess()) {
+      return notify(message);
+    }
+    return false;
+  }
+
+  @Override
+  public boolean notifyFailure(final String message) throws IOException, InterruptedException {
+    final String webhookUrl = config.getWebhook();
+    if (!Strings.isEmpty(webhookUrl) && config.getSendOnFailure()) {
+      return notify(message);
     }
     return false;
   }

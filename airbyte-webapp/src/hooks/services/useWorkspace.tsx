@@ -29,8 +29,16 @@ const useWorkspace = (): {
     news: boolean;
     securityUpdates: boolean;
   }) => Promise<Workspace>;
-  updateWebhook: (data: { webhook: string }) => Promise<Workspace>;
-  testWebhook: (webhook: string) => Promise<Notifications>;
+  updateWebhook: (data: {
+    webhook: string;
+    sendOnSuccess: boolean;
+    sendOnFailure: boolean;
+  }) => Promise<Workspace>;
+  testWebhook: (
+    webhook: string,
+    sendOnSuccess: boolean,
+    sendOnFailure: boolean
+  ) => Promise<Notifications>;
   setInitialSetupConfig: (data: {
     email: string;
     anonymousDataCollection: boolean;
@@ -98,18 +106,28 @@ const useWorkspace = (): {
       }
     );
 
-  const testWebhook = async (webhook: string) =>
+  const testWebhook = async (
+    webhook: string,
+    sendOnSuccess: boolean,
+    sendOnFailure: boolean
+  ) =>
     await tryWebhookUrl(
       {
         notificationType: "slack",
         slackConfiguration: {
-          webhook: webhook,
+          webhook,
+          sendOnSuccess,
+          sendOnFailure,
         },
       },
       {}
     );
 
-  const updateWebhook = async (data: { webhook: string }) =>
+  const updateWebhook = async (data: {
+    webhook: string;
+    sendOnSuccess: boolean;
+    sendOnFailure: boolean;
+  }) =>
     await updateWorkspace(
       {},
       {
@@ -124,6 +142,8 @@ const useWorkspace = (): {
             notificationType: "slack",
             slackConfiguration: {
               webhook: data.webhook,
+              sendOnSuccess: data.sendOnSuccess,
+              sendOnFailure: data.sendOnFailure,
             },
           },
         ],

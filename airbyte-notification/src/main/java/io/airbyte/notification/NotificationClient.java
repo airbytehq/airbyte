@@ -37,7 +37,16 @@ public interface NotificationClient {
                            String logUrl)
       throws IOException, InterruptedException;
 
-  boolean notify(String message) throws IOException, InterruptedException;
+  boolean notifyJobSuccess(
+                           String sourceConnector,
+                           String destinationConnector,
+                           String jobDescription,
+                           String logUrl)
+      throws IOException, InterruptedException;
+
+  boolean notifySuccess(String message) throws IOException, InterruptedException;
+
+  boolean notifyFailure(String message) throws IOException, InterruptedException;
 
   static NotificationClient createNotificationClient(final Notification notification) {
     if (notification.getNotificationType() == NotificationType.SLACK) {

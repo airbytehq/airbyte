@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { Field, FieldProps, Form, Formik } from "formik";
 import * as yup from "yup";
 
-import { Label, Input, LoadingButton } from "components";
+import { Label, Input, LoadingButton, LabeledToggle } from "components";
 import { Row, Cell } from "components/SimpleTableComponents";
 
 const Text = styled.div`
@@ -44,18 +44,32 @@ const Error = styled(Success)`
 
 const webhookValidationSchema = yup.object().shape({
   webhook: yup.string().url("form.url.error"),
+  sendOnSuccess: yup.boolean(),
+  sendOnFailure: yup.boolean(),
 });
 
 type WebHookFormProps = {
-  notificationUrl: string;
+  webhook: {
+    notificationUrl: string;
+    sendOnSuccess: boolean;
+    sendOnFailure: boolean;
+  };
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
-  onSubmit: (data: { webhook: string }) => void;
-  onTest: (data: { webhook: string }) => void;
+  onSubmit: (data: {
+    webhook: string;
+    sendOnSuccess: boolean;
+    sendOnFailure: boolean;
+  }) => void;
+  onTest: (data: {
+    webhook: string;
+    sendOnSuccess: boolean;
+    sendOnFailure: boolean;
+  }) => void;
 };
 
 const WebHookForm: React.FC<WebHookFormProps> = ({
-  notificationUrl,
+  webhook,
   onSubmit,
   successMessage,
   errorMessage,
@@ -97,12 +111,21 @@ const WebHookForm: React.FC<WebHookFormProps> = ({
 
   return (
     <Formik
-      initialValues={{ webhook: notificationUrl }}
+      initialValues={{
+        webhook: webhook.notificationUrl,
+        sendOnSuccess: webhook.sendOnSuccess,
+        sendOnFailure: webhook.sendOnFailure,
+      }}
       validateOnBlur={true}
-      validateOnChange={false}
+      validateOnChange={true}
       validationSchema={webhookValidationSchema}
-      onSubmit={async (values) => {
-        if (notificationUrl && notificationUrl === values.webhook) {
+      onSubmit={async (values: any) => {
+        if (
+          webhook &&
+          webhook.notificationUrl === values.webhook &&
+          webhook.sendOnSuccess === values.sendOnSuccess &&
+          webhook.sendOnFailure === values.sendOnFailure
+        ) {
           await onTest(values);
         } else {
           await onSubmit(values);
@@ -150,6 +173,32 @@ const WebHookForm: React.FC<WebHookFormProps> = ({
               <FormattedMessage id="settings.webhookTestText" />
             </Message>
           ) : null}
+          <InputRow>
+            <Cell flex={1}>
+              <Field name="sendOnFailure">
+                {({ field }: FieldProps<string>) => (
+                  <LabeledToggle
+                    {...field}
+                    name="sendOnFailure"
+                    checked={webhook.sendOnFailure}
+                    label={<FormattedMessage id="settings.sendOnFailure" />}
+                  />
+                )}
+              </Field>
+            </Cell>
+            <Cell flex={1}>
+              <Field name="sendOnSuccess">
+                {({ field }: FieldProps<string>) => (
+                  <LabeledToggle
+                    {...field}
+                    name="sendOnSuccess"
+                    checked={webhook.sendOnSuccess}
+                    label={<FormattedMessage id="settings.sendOnSuccess" />}
+                  />
+                )}
+              </Field>
+            </Cell>
+          </InputRow>
         </Form>
       )}
     </Formik>
