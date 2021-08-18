@@ -22,12 +22,13 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db.instance;
+package io.airbyte.db.instance.jobs;
 
 import static org.jooq.impl.DSL.select;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.airbyte.db.Database;
+import io.airbyte.db.instance.AbstractJobsDatabaseTest;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import org.jooq.exception.DataAccessException;
 import org.junit.jupiter.api.AfterAll;
@@ -37,35 +38,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-class JobsDatabaseInstanceTest {
-
-  private static PostgreSQLContainer<?> container;
-
-  @BeforeAll
-  public static void dbSetup() {
-    container = new PostgreSQLContainer<>("postgres:13-alpine")
-        .withDatabaseName("airbyte")
-        .withUsername("docker")
-        .withPassword("docker");
-    container.start();
-  }
-
-  @AfterAll
-  public static void dbDown() {
-    container.close();
-  }
-
-  private Database database;
-
-  @BeforeEach
-  public void setup() throws Exception {
-    database = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-  }
-
-  @AfterEach
-  void tearDown() throws Exception {
-    database.close();
-  }
+class JobsDatabaseInstanceTest extends AbstractJobsDatabaseTest {
 
   @Test
   public void testGet() throws Exception {
