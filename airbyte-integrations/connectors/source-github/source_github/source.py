@@ -50,6 +50,7 @@ from .streams import (
     Repositories,
     Reviews,
     Stargazers,
+    Tags,
     Teams,
 )
 
@@ -114,5 +115,6 @@ class SourceGithub(AbstractSource):
             Repositories(**organization_args),
             Reviews(**full_refresh_args),
             Stargazers(**incremental_args),
+            Tags(**full_refresh_args),
             Teams(**full_refresh_args),
         ]

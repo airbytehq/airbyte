@@ -341,6 +341,15 @@ class IssueLabels(GithubStream):
         return f"repos/{stream_slice['repository']}/labels"
 
 
+class Tags(GithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/repos#list-repository-tags
+    """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/tags"
+
+
 class Teams(GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/teams#list-teams
