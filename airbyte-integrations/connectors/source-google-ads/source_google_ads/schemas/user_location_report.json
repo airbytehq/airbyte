@@ -116,7 +116,7 @@
         "type": ["null", "number"]
     },
     "metrics.interaction_event_types" : {
-        "type": ["null", "number"]
+        "type": ["null", "array"]
     },
     "metrics.interaction_rate" : {
         "type": ["null", "number"]
