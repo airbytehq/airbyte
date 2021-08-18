@@ -30,6 +30,7 @@ from typing import Any, Iterator, Mapping, Optional
 import backoff
 from airbyte_cdk.logger import AirbyteLogger
 from bingads.authorization import AuthorizationData, OAuthTokens, OAuthWebAuthCodeGrant
+from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from bingads.service_client import ServiceClient
 from bingads.util import errorcode_of_exception
 from suds import WebFault, sudsobject
@@ -147,6 +148,17 @@ class Client:
             version=self.api_version,
             authorization_data=self._get_auth_data(account_id),
             # environments supported by Microsoft Advertising: sandbox, production
+            environment="production",
+        )
+
+    @lru_cache(maxsize=None)
+    def get_reporting_service(
+        self,
+        account_id: Optional[str] = None,
+    ) -> ServiceClient:
+        return ReportingServiceManager(
+            authorization_data=self._get_auth_data(account_id),
+            poll_interval_in_milliseconds=5000,
             environment="production",
         )
 
