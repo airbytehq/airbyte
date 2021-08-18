@@ -178,7 +178,7 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "cursor_field": null,
+      "cursor_field": ["modified"],
       "primary_key": null
     },
     {
@@ -268,7 +268,7 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "cursor_field": null,
+      "cursor_field": ["modified"],
       "primary_key": null
     },
     {
@@ -1002,7 +1002,7 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "cursor_field": null,
+      "cursor_field": ["modified"],
       "primary_key": null
     },
     {
@@ -1736,7 +1736,7 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "cursor_field": null,
+      "cursor_field": ["modified"],
       "primary_key": null
     },
     {
@@ -1807,7 +1807,7 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "cursor_field": null,
+      "cursor_field": ["created"],
       "primary_key": null
     }
   ]

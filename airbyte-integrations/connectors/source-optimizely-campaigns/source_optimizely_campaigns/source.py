@@ -100,7 +100,7 @@ class IncrementalOptimizelyStream(OptimizelyStream, ABC):
     def request_params(self, stream_state=None, **kwargs):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
-        params["created[gte]"] = stream_state.get(self.cursor_field)
+        # params["modified[gte]"] = stream_state.get(self.cursor_field)
         return params
 
 
@@ -214,6 +214,12 @@ class Unsubscribes(IncrementalOptimizelyStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "/unsubscribes"
+
+    def request_params(self, stream_state=None, **kwargs):
+        stream_state = stream_state or {}
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        # params["created[gte]"] = stream_state.get(self.cursor_field)
+        return params
 
 
 class SmartCampaigns(IncrementalOptimizelyStream):
