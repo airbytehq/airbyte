@@ -25,6 +25,7 @@
 
 from base_python.catalog_helpers import CatalogHelper
 from base_python.cdk.abstract_source import AbstractSource
+
 # Separate the SDK imports so they can be moved somewhere else more easily
 from base_python.cdk.streams.auth.core import HttpAuthenticator
 from base_python.cdk.streams.auth.oauth import Oauth2Authenticator
