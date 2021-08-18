@@ -30,8 +30,8 @@ from typing import Any, Iterable, List, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.connector import Connector
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
-from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
+from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit
 from pydantic import ValidationError
 
 
@@ -44,9 +44,6 @@ class Destination(Connector, ABC):
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
         """Implement to define how the connector writes data to the destination"""
-
-    def _run_spec(self, spec: ConnectorSpecification) -> AirbyteMessage:
-        return AirbyteMessage(type=Type.SPEC, spec=spec)
 
     def _run_check(self, config: Mapping[str, Any]) -> AirbyteMessage:
         check_result = self.check(self.logger, config)
@@ -111,13 +108,11 @@ class Destination(Connector, ABC):
 
         spec = self.spec(self.logger)
         if cmd == "spec":
-            yield self._run_spec(spec)
+            yield AirbyteMessage(type=Type.SPEC, spec=spec)
             return
         config = self.read_config(config_path=parsed_args.config)
-        check_error_msg = check_config_against_spec(config, spec)
-        if check_error_msg:
-            self.logger.error(check_error_msg)
-            return
+        check_config_against_spec_or_exit(config, spec, self.logger)
+
         if cmd == "check":
             yield self._run_check(config=config)
         elif cmd == "write":

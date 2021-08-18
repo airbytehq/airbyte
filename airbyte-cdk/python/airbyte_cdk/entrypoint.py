@@ -33,7 +33,7 @@ from typing import Iterable, List
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, Status, Type
 from airbyte_cdk.sources import Source
-from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec
+from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit
 
 logger = AirbyteLogger()
 
@@ -90,10 +90,7 @@ class AirbyteEntrypoint(object):
             else:
                 raw_config = self.source.read_config(parsed_args.config)
                 config = self.source.configure(raw_config, temp_dir)
-                check_error_msg = check_config_against_spec(config, source_spec)
-                if check_error_msg:
-                    logger.error(check_error_msg)
-                    return
+                check_config_against_spec_or_exit(config, source_spec, logger)
 
                 if cmd == "check":
                     check_result = self.source.check(logger, config)

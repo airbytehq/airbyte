@@ -152,11 +152,13 @@ def test_config_validate(entrypoint: AirbyteEntrypoint, mocker, config_mock, sch
     check_value = AirbyteConnectionStatus(status=Status.SUCCEEDED)
     mocker.patch.object(MockSource, "check", return_value=check_value)
     mocker.patch.object(MockSource, "spec", return_value=ConnectorSpecification(connectionSpecification=schema))
-    messages = list(entrypoint.run(parsed_args))
     if config_valid:
+        messages = list(entrypoint.run(parsed_args))
         assert [_wrap_message(check_value)] == messages
     else:
-        assert len(messages) == 0
+        with pytest.raises(SystemExit) as ex_info:
+            list(entrypoint.run(parsed_args))
+        assert ex_info.value.code == 1
 
 
 def test_run_check(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
