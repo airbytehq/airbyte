@@ -54,6 +54,7 @@ from .streams import (
     Stargazers,
     Tags,
     Teams,
+    Users
 )
 
 
@@ -118,4 +119,5 @@ class SourceGithub(AbstractSource):
             Stargazers(**incremental_args),
             Tags(**full_refresh_args),
             Teams(**full_refresh_args),
+            Users(**organization_args),
         ]

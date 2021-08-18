@@ -383,6 +383,26 @@ class Teams(GithubStream):
         return f"orgs/{owner}/teams"
 
 
+class Users(GithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/orgs#list-organization-members
+    """
+
+    def __init__(self, organizations: List[str], **kwargs):
+        super(GithubStream, self).__init__(**kwargs)
+        self.organizations = organizations
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        for organization in self.organizations:
+            yield {"organization": organization}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"orgs/{stream_slice['organization']}/members"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield from response.json()
+
+
 # Below are semi incremental streams
 
 
