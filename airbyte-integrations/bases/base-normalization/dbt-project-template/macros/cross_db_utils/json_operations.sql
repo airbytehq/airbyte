@@ -68,7 +68,7 @@
 {%- endmacro %}
 
 {% macro postgres__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
-    {%- if json_column|string() == "_airbyte_nested_data" %}
+    {%- if from_table is defined %}
         jsonb_extract_path({{ json_column }}, {{ format_json_path(json_path_list) }})
     {% else %}
         jsonb_extract_path({{ from_table }}.{{ json_column }}, {{ format_json_path(json_path_list) }})
@@ -76,7 +76,7 @@
 {%- endmacro %}
 
 {% macro mysql__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
-    {%- if json_column|string() == "_airbyte_nested_data" %}
+    {%- if from_table is defined %}
         json_extract({{ json_column }}, {{ format_json_path(normalized_json_path) }})
     {% else %}
         json_extract({{ from_table }}.{{ json_column }}, {{ format_json_path(normalized_json_path) }})
@@ -84,7 +84,7 @@
 {%- endmacro %}
 
 {% macro redshift__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
-    {%- if json_column|string() == "_airbyte_nested_data" %}
+    {%- if from_table is defined %}
         case when json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) != '' then json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) end
     {% else %}
         case when json_extract_path_text({{ from_table }}.{{ json_column }}, {{ format_json_path(json_path_list) }}, true) != '' then json_extract_path_text({{ from_table }}.{{ json_column }}, {{ format_json_path(json_path_list) }}, true) end

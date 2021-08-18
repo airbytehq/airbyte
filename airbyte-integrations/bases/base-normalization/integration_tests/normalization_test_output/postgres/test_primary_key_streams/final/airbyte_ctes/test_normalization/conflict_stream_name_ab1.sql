@@ -5,7 +5,7 @@
 select
     jsonb_extract_path_text(_airbyte_data, 'id') as "id",
     
-        jsonb_extract_path(table_alias._airbyte_data, 'conflict_stream_name')
+        jsonb_extract_path(_airbyte_data, 'conflict_stream_name')
      as conflict_stream_name,
     _airbyte_emitted_at
 from "postgres".test_normalization._airbyte_raw_conflict_stream_name as table_alias
