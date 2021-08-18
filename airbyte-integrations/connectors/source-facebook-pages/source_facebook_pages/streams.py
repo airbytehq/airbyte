@@ -73,8 +73,7 @@ class Page(FacebookPagesStream):
     """
 
     def path(self, **kwargs) -> str:
-        if self._page_id:
-            return self._page_id
+        return self._page_id
 
     def request_params(
         self,
@@ -125,8 +124,7 @@ class PageInsights(FacebookPagesStream):
     """
 
     def path(self, **kwargs) -> str:
-        if self._page_id:
-            return f'{self._page_id}/?fields=insights.metric({",".join(PAGE_METRICS)})'
+        return f'{self._page_id}/?fields=insights.metric({",".join(PAGE_METRICS)})'
 
     def request_params(
         self,
@@ -150,8 +148,7 @@ class PostInsights(FacebookPagesStream):
     """
 
     def path(self, **kwargs) -> str:
-        if self._page_id:
-            return f'{self._page_id}/posts/?fields=insights.metric({",".join(POST_METRICS)})'
+        return f'{self._page_id}/posts/?fields=insights.metric({",".join(POST_METRICS)})'
 
     def request_params(
         self,
