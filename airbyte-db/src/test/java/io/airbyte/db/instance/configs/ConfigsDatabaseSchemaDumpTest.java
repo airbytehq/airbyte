@@ -22,18 +22,23 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db.instance;
+package io.airbyte.db.instance.configs;
 
-public class MigrationConstants {
+import io.airbyte.db.instance.AbstractConfigsDatabaseTest;
+import io.airbyte.db.instance.DatabaseMigrator;
+import org.junit.jupiter.api.Test;
 
-  public static final String BASELINE_VERSION = "0.29.0.001";
-  public static final String BASELINE_DESCRIPTION = "Baseline from file-based migration v1";
-  public static final boolean BASELINE_ON_MIGRATION = true;
+/**
+ * This file generates a schema dump for the configs database. The purpose is to ensure that the latest schema is checked into the codebase
+ * after all migrations are executed.
+ */
+class ConfigsDatabaseSchemaDumpTest extends AbstractConfigsDatabaseTest {
 
-  public static final String CONFIGS_DB_MIGRATION_LOCATION = "classpath:io/airbyte/db/instance/configs/migrations";
-  public static final String JOBS_DB_MIGRATION_LOCATION = "classpath:io/airbyte/db/instance/jobs/migrations";
-
-  public static final String CONFIGS_DB_SCHEMA_DUMP = "src/main/resources/configs_database/schema_dump.txt";
-  public static final String JOBS_DB_SCHEMA_DUMP = "src/main/resources/jobs_database/schema_dump.txt";
+  @Test
+  public void updateSchemaDump() throws Exception {
+    DatabaseMigrator migrator = new ConfigsDatabaseMigrator(database, ConfigsDatabaseSchemaDumpTest.class.getSimpleName());
+    migrator.migrate();
+    migrator.dumpSchemaToFile();
+  }
 
 }

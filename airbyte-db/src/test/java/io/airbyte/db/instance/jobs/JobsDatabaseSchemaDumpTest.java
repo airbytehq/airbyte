@@ -24,29 +24,21 @@
 
 package io.airbyte.db.instance.jobs;
 
-import io.airbyte.db.instance.AbstractConfigsDatabaseTest;
 import io.airbyte.db.instance.AbstractJobsDatabaseTest;
 import io.airbyte.db.instance.DatabaseMigrator;
-import io.airbyte.db.instance.MigrationConstants;
-import java.io.File;
-import java.io.PrintWriter;
-import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 
 /**
  * This file generates a schema dump for the jobs database. The purpose is to ensure that the latest schema is checked into the codebase
  * after all migrations are executed.
  */
-class JobsDatabaseMigrationTest extends AbstractJobsDatabaseTest {
+class JobsDatabaseSchemaDumpTest extends AbstractJobsDatabaseTest {
 
   @Test
   public void updateSchemaDump() throws Exception {
-    DatabaseMigrator migrator = new DatabaseMigrator(database, "jobs", MigrationConstants.JOBS_DB_MIGRATION_LOCATION);
+    DatabaseMigrator migrator = new JobsDatabaseMigrator(database, JobsDatabaseSchemaDumpTest.class.getSimpleName());
     migrator.migrate();
-    String schema = migrator.dumpSchema();
-    try (PrintWriter writer = new PrintWriter(new File(Path.of(MigrationConstants.JOBS_DB_SCHEMA_DUMP).toUri()))) {
-      writer.println(schema);
-    }
+    migrator.dumpSchemaToFile();
   }
 
 }

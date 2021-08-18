@@ -32,7 +32,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-public class AbstractJobsDatabaseTest {
+public abstract class AbstractJobsDatabaseTest {
 
   protected static PostgreSQLContainer<?> container;
 
