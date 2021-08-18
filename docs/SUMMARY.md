@@ -33,7 +33,7 @@
     * [Appstore](integrations/sources/appstore.md)
     * [Asana](integrations/sources/asana.md)
     * [AWS CloudTrail](integrations/sources/aws-cloudtrail.md)
-    * [Braintree](integrations/sources/braintree.md)
+    * [Braintree (Deprecated)](integrations/sources/braintree.md)
     * [Bing Ads](integrations/sources/bing-ads.md)
     * [BigQuery](integrations/sources/bigquery.md)
     * [Braintree (standalone)](integrations/sources/braintree-standalone.md)

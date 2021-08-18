@@ -22,9 +22,9 @@
 # SOFTWARE.
 #
 
-from abc import abstractmethod, abstractproperty
+from abc import abstractmethod
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import Any, Generator, Iterable, List, Mapping, Optional, Union
 
 import backoff
 import braintree
@@ -45,14 +45,15 @@ class BraintreeStream(Stream):
     def create_gateway(config: BraintreeConfig):
         return braintree.BraintreeGateway(braintree.Configuration(**config.dict()))
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def model(self):
         """
         Pydantic model to represent catalog schema
         """
 
     @abstractmethod
-    def get_items(self, start_date: datetime):
+    def get_items(self, start_date: datetime) -> Generator:
         """
         braintree SDK gateway object for items list
         """
@@ -112,6 +113,26 @@ class BraintreeStream(Stream):
         ),
         max_tries=5,
     )
+    def _collect_items(self, stream_slice: Mapping[str, Any]) -> List[Mapping[str, Any]]:
+        """
+        Fetch list of response object normalized acccording to catalog model.
+        Braintree pagination API is designed to use lazy evaluation and SDK is
+        built upon this approach: First its fetch list of ids, wraps it inside
+        generator object and then iterates each items and send for getting
+        additional details. Cause of this implementation we cant handle retry
+        in case of individual item fails.
+        :stream_slice Stream slice with cursor field in case of incremental stream.
+        :return List of objects
+        """
+        start_date = stream_slice.get(self.cursor_field or "start_date")
+        items = self.get_items(start_date)
+        result = []
+        for item in items:
+            item = self.get_json_from_resource(item)
+            item = self.model(**item)
+            result.append(item.dict(exclude_unset=True))
+        return result
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -119,13 +140,7 @@ class BraintreeStream(Stream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        start_date = stream_slice.get(self.cursor_field or "start_date")
-        items = self.get_items(start_date)
-        for item in items:
-            item = self.get_json_from_resource(item)
-            item = self.model(**item)
-            yield item.dict(exclude_unset=True)
-        yield from []
+        yield from self._collect_items(stream_slice)
 
 
 class CustomerStream(BraintreeStream):
