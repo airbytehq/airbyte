@@ -34,7 +34,6 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardWorkspace;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -42,15 +41,7 @@ import org.junit.jupiter.api.Test;
 
 public class YamlSeedConfigPersistenceTest {
 
-  private static final YamlSeedConfigPersistence PERSISTENCE;
-
-  static {
-    try {
-      PERSISTENCE = new YamlSeedConfigPersistence();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
+  private static final YamlSeedConfigPersistence PERSISTENCE = YamlSeedConfigPersistence.get();
 
   @Test
   public void testGetConfig() throws Exception {
@@ -86,8 +77,8 @@ public class YamlSeedConfigPersistenceTest {
   public void testDumpConfigs() {
     Map<String, Stream<JsonNode>> allSeedConfigs = PERSISTENCE.dumpConfigs();
     assertEquals(2, allSeedConfigs.size());
-    assertTrue(allSeedConfigs.get(ConfigSchema.STANDARD_SOURCE_DEFINITION.name()).count() > 0);
-    assertTrue(allSeedConfigs.get(ConfigSchema.STANDARD_DESTINATION_DEFINITION.name()).count() > 0);
+    assertTrue(allSeedConfigs.get(ConfigSchema.STANDARD_SOURCE_DEFINITION.name()).findAny().isPresent());
+    assertTrue(allSeedConfigs.get(ConfigSchema.STANDARD_DESTINATION_DEFINITION.name()).findAny().isPresent());
   }
 
   @Test

@@ -174,7 +174,6 @@ class API:
             self._session.headers["Authorization"] = f"Bearer {self.access_token}"
         else:
             params["hapikey"] = self.api_key
-
         return params
 
     @staticmethod
@@ -185,7 +184,8 @@ class API:
             message = response.json().get("message")
 
         if response.status_code == HTTPStatus.FORBIDDEN:
-            raise HubspotAccessDenied(message, response=response)
+            """ Once hit the forbidden endpoint, we return the error message from response. """
+            pass
         elif response.status_code in (HTTPStatus.UNAUTHORIZED, CLOUDFLARE_ORIGIN_DNS_ERROR):
             raise HubspotInvalidAuth(message, response=response)
         elif response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
@@ -273,9 +273,13 @@ class Stream(ABC):
         target_type = CUSTOM_FIELD_VALUE_TYPE_CAST_REVERSED.get(target_type_name)
 
         if target_type_name == "number":
-            if field_name.endswith("_id"):
-                # do not cast numeric IDs into float, use integer instead
-                target_type = int
+            # do not cast numeric IDs into float, use integer instead
+            target_type = int if field_name.endswith("_id") else target_type
+
+        if target_type_name != "string" and field_value == "":
+            # do not cast empty strings, return None instead to be properly casted.
+            field_value = None
+            return field_value
 
         try:
             casted_value = target_type(field_value)
@@ -335,7 +339,25 @@ class Stream(ABC):
         while True:
             response = getter(params=params)
             if isinstance(response, Mapping):
+                if response.get("status", None) == "error":
+                    """
+                    When the API Key doen't have the permissions to access the endpoint,
+                    we break the read, skip this stream and log warning message for the user.
+
+                    Example:
+
+                    response.json() = {
+                        'status': 'error',
+                        'message': 'This hapikey (....) does not have proper permissions! (requires any of [automation-access])',
+                        'correlationId': '111111-2222-3333-4444-55555555555'}
+                    """
+                    logger.warn(f"Stream `{self.data_field}` cannot be procced. {response.get('message')}")
+                    break
+
                 if response.get(self.data_field) is None:
+                    """
+                    When the response doen't have the stream's data, raise an exception.
+                    """
                     raise RuntimeError("Unexpected API response: {} not in {}".format(self.data_field, response.keys()))
 
                 yield from response[self.data_field]
@@ -451,7 +473,7 @@ class IncrementalStream(Stream, ABC):
                 self._start_date = self._state
 
     def read_chunked(
-        self, getter: Callable, params: Mapping[str, Any] = None, chunk_size: pendulum.Interval = pendulum.interval(days=1)
+        self, getter: Callable, params: Mapping[str, Any] = None, chunk_size: pendulum.duration = pendulum.duration(days=1)
     ) -> Iterator:
         params = {**params} if params else {}
         now_ts = int(pendulum.now().timestamp() * 1000)
