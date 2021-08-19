@@ -27,13 +27,15 @@ import json
 import os
 import pkgutil
 import sys
-from typing import Any, Dict, Mapping
+from typing import Any, ClassVar, Dict, Mapping, Tuple
 
 import pkg_resources
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification
 from jsonschema import RefResolver, validate
 from jsonschema.exceptions import ValidationError
+from pydantic import BaseModel, Field
 
 
 class JsonSchemaResolver:
@@ -145,3 +147,31 @@ def check_config_against_spec_or_exit(config: Mapping[str, Any], spec: Connector
     except ValidationError as validation_error:
         logger.error("Config validation error: " + validation_error.message)
         sys.exit(1)
+
+
+class InternalConfig(BaseModel):
+    KEYWORDS: ClassVar[set] = {"_limit", "_page_size"}
+    limit: int = Field(None, alias="_limit")
+    page_size: int = Field(None, alias="_page_size")
+
+    def dict(self):
+        return super().dict(by_alias=True, exclude_unset=True)
+
+
+def split_config(config: Mapping[str, Any]) -> Tuple[dict, InternalConfig]:
+    """
+    Break config map object into 2 instances: first is a dict with user defined
+    configuration and second is internal config that contains private keys for
+    acceptance test configuration.
+    :param config - Dict object that has been loaded from config file.
+    :return tuple of user defined config dict with filtered out internal
+    parameters and SAT internal config object.
+    """
+    main_config = {}
+    internal_config = {}
+    for k, v in config.items():
+        if k in InternalConfig.KEYWORDS:
+            internal_config[k] = v
+        else:
+            main_config[k] = v
+    return main_config, InternalConfig.parse_obj(internal_config)
