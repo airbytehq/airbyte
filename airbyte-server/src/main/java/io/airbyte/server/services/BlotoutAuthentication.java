@@ -50,7 +50,7 @@ public class BlotoutAuthentication {
     public boolean validateToken(String token) throws IOException, InterruptedException {
         final var request = HttpRequest
                 .newBuilder(URI.create(configs.getBlotoutBaseUrl() + configs.getBlotoutAuthEndpoint()))
-                .timeout(Duration.ofSeconds(30))
+                .timeout(Duration.ofSeconds(120))
                 .header("Content-Type", "application/json") // connect type
                 .header("token", token) // validate token
                 .build();
