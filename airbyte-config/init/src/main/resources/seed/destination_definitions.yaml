@@ -32,7 +32,7 @@
 - destinationDefinitionId: 356668e2-7e34-47f3-a3b0-67a8a481b692
   name: Google PubSub
   dockerRepository: airbyte/destination-pubsub
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/destinations/pubsub
 - destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   name: Snowflake
@@ -42,7 +42,7 @@
 - destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   name: S3
   dockerRepository: airbyte/destination-s3
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/destinations/s3
 - destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   name: Redshift
@@ -75,3 +75,13 @@
   dockerRepository: airbyte/destination-kafka
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/destinations/kafka
+- destinationDefinitionId: 8aaf41d0-f6d2-46de-9e79-c9540f828142
+  name: Keen
+  dockerRepository: airbyte/destination-keen
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/keen
+- destinationDefinitionId: 81740ce8-d764-4ea7-94df-16bb41de36ae
+  name: Chargify (Keen)
+  dockerRepository: airbyte/destination-keen
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/keen
