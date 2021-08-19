@@ -379,8 +379,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   }
 
   protected void assertColumnsWithSameNameAreSame(String nameSpace,
-      String tableName,
-      List<CommonField<DataType>> columns) {
+                                                  String tableName,
+                                                  List<CommonField<DataType>> columns) {
     columns.stream()
         .collect(Collectors.groupingBy(CommonField<DataType>::getName))
         .values()

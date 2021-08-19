@@ -24,23 +24,15 @@
 
 package io.airbyte.db.mongodb;
 
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-public class MongoUtils {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(MongoUtils.class);
-
-  public static JsonSchemaPrimitive getType(MongoDataType dataType) {
-    return switch (dataType) {
-      case BOOLEAN -> JsonSchemaPrimitive.BOOLEAN;
-      case INT32, INT64, DOUBLE -> JsonSchemaPrimitive.NUMBER;
-      case STRING, BINARY, DATE, OBJECTID -> JsonSchemaPrimitive.STRING;
-      case ARRAY -> JsonSchemaPrimitive.ARRAY;
-      case DOCUMENT -> JsonSchemaPrimitive.OBJECT;
-      default -> JsonSchemaPrimitive.STRING;
-    };
-  }
-
+public enum MongoDataType {
+  DOCUMENT,
+  ARRAY,
+  DATE,
+  BOOLEAN,
+  DOUBLE,
+  INT32,
+  INT64,
+  STRING,
+  BINARY,
+  OBJECTID
 }

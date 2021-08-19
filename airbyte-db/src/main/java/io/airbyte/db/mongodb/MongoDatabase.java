@@ -76,4 +76,5 @@ public class MongoDatabase extends AbstractDatabase {
   public String getName() {
     return mongoDatabase.getName();
   }
+
 }

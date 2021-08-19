@@ -34,6 +34,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.Databases;
+import io.airbyte.db.mongodb.MongoDataType;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.db.mongodb.MongoUtils;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -50,12 +51,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.bson.Document;
-import org.jooq.DataType;
-import org.jooq.impl.DefaultDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MongoDbSource extends AbstractDbSource<DataType, MongoDatabase> {
+public class MongoDbSource extends AbstractDbSource<MongoDataType, MongoDatabase> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbSource.class);
 
@@ -102,7 +101,7 @@ public class MongoDbSource extends AbstractDbSource<DataType, MongoDatabase> {
   }
 
   @Override
-  protected JsonSchemaPrimitive getType(DataType fieldType) {
+  protected JsonSchemaPrimitive getType(MongoDataType fieldType) {
     return MongoUtils.getType(fieldType);
   }
 
@@ -112,23 +111,22 @@ public class MongoDbSource extends AbstractDbSource<DataType, MongoDatabase> {
   }
 
   @Override
-  protected List<TableInfo<CommonField<DataType>>> discoverInternal(MongoDatabase database)
+  protected List<TableInfo<CommonField<MongoDataType>>> discoverInternal(MongoDatabase database)
       throws Exception {
-    List<TableInfo<CommonField<DataType>>> tableInfos = new ArrayList<>();
+    List<TableInfo<CommonField<MongoDataType>>> tableInfos = new ArrayList<>();
 
     for (String collectionName : database.getCollectionNames()) {
       MongoCollection<Document> collection = database.getCollection(collectionName);
 
       MongoCursor<Document> cursor = collection.find().iterator();
 
-      List<CommonField<DataType>> fields = new ArrayList<>();
-      Map<String, DataType> uniqueFields = new HashMap<>();
+      List<CommonField<MongoDataType>> fields = new ArrayList<>();
+      Map<String, MongoDataType> uniqueFields = new HashMap<>();
       while (cursor.hasNext()) {
         Document document = cursor.next();
         for (Map.Entry<String, Object> docField : document.entrySet()) {
-          DataType dataType = DefaultDataType.getDefaultDataType("String");
-          
-          fields.add(new CommonField<DataType>(docField.getKey(), dataType));
+          MongoDataType dataType = MongoDataType.STRING;
+          fields.add(new CommonField<MongoDataType>(docField.getKey(), dataType));
         }
       }
 
@@ -136,7 +134,7 @@ public class MongoDbSource extends AbstractDbSource<DataType, MongoDatabase> {
       // collection,
       // is immutable, and may be of any type other than an array.
       // map to airbyte schema
-      TableInfo<CommonField<DataType>> tableInfo = TableInfo.<CommonField<DataType>>builder()
+      TableInfo<CommonField<MongoDataType>> tableInfo = TableInfo.<CommonField<MongoDataType>>builder()
           .nameSpace(database.getName())
           .name(collectionName)
           .fields(fields)
@@ -151,7 +149,7 @@ public class MongoDbSource extends AbstractDbSource<DataType, MongoDatabase> {
 
   @Override
   protected Map<String, List<String>> discoverPrimaryKeys(MongoDatabase database,
-      List<TableInfo<CommonField<DataType>>> tableInfos) {
+                                                          List<TableInfo<CommonField<MongoDataType>>> tableInfos) {
 
     return tableInfos.stream()
         .collect(Collectors.toMap(
@@ -166,9 +164,9 @@ public class MongoDbSource extends AbstractDbSource<DataType, MongoDatabase> {
 
   @Override
   public AutoCloseableIterator<JsonNode> queryTableFullRefresh(MongoDatabase database,
-      List<String> columnNames,
-      String schemaName,
-      String tableName) {
+                                                               List<String> columnNames,
+                                                               String schemaName,
+                                                               String tableName) {
 
     MongoCollection<Document> collection = database.getCollection(tableName);
     MongoCursor<Document> cursor = collection.find().iterator();
@@ -183,15 +181,15 @@ public class MongoDbSource extends AbstractDbSource<DataType, MongoDatabase> {
 
   @Override
   public AutoCloseableIterator<JsonNode> queryTableIncremental(MongoDatabase database,
-      List<String> columnNames,
-      String schemaName,
-      String tableName,
-      String cursorField,
-      DataType cursorFieldType,
-      String cursor) {
+                                                               List<String> columnNames,
+                                                               String schemaName,
+                                                               String tableName,
+                                                               String cursorField,
+                                                               MongoDataType cursorFieldType,
+                                                               String cursor) {
 
     MongoCollection<Document> collection = database.getCollection(tableName);
-    MongoCursor<Document> mongoCursor = collection.find().iterator(); //todo add find query
+    MongoCursor<Document> mongoCursor = collection.find().iterator(); // todo add find query
     List<JsonNode> nodes = new ArrayList<>();
     while (mongoCursor.hasNext()) {
       // todo read and map

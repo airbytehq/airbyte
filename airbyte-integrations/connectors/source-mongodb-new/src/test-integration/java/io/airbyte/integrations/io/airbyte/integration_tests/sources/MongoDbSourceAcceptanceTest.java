@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -65,8 +89,9 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     MongoCollection<Document> collection = mongoDatabase.createCollection("acceptance_test");
     var doc1 = new Document("id", "0001")
         .append("name", "Test");
-    /*var doc2 = new Document("id", "0002")
-        .append("name", "Mongo");*/
+    /*
+     * var doc2 = new Document("id", "0002") .append("name", "Mongo");
+     */
     collection.insertMany(List.of(doc1));
   }
 
@@ -88,9 +113,9 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
             .withCursorField(Lists.newArrayList("_id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                    "test.acceptance_test",
-                    Field.of("id", JsonSchemaPrimitive.STRING),
-                    Field.of("name", JsonSchemaPrimitive.STRING))
+                "test.acceptance_test",
+                Field.of("id", JsonSchemaPrimitive.STRING),
+                Field.of("name", JsonSchemaPrimitive.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
@@ -103,4 +128,5 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   protected List<String> getRegexTests() throws Exception {
     return Collections.emptyList();
   }
+
 }
