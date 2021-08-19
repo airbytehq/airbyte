@@ -197,11 +197,15 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Override default stream_slices CDK method to provide date_slices as page chunks for data fetch.
-        Returns list of dict, example: {
+        Returns list of dict, example: [{
             "startDate": "2020-01-01",
-            "endDate": "2021-12-31"
+            "endDate": "2021-01-02"
             },
-            ...
+            {
+            "startDate": "2020-01-03",
+            "endDate": "2021-01-04"
+            },
+            ...]
         """
 
         start_date = pendulum.parse(self.start_date).date()
@@ -219,6 +223,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             end_date_slice = start_date.add(days=self.window_in_days)
             date_slices.append(
                 {"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date_slice)})
+            # add 1 day for start next slice from next day and not duplicate data from previous slice end date.
             start_date = end_date_slice.add(days=1)
 
         return date_slices
