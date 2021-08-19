@@ -136,7 +136,10 @@ public class JdbcBufferedConsumerFactory {
     return defaultDestSchema;
   }
 
-  private static OnStartFunction onStartFunction(JdbcDatabase database, SSHTunnel sshTunnel, SqlOperations sqlOperations, List<WriteConfig> writeConfigs) {
+  private static OnStartFunction onStartFunction(JdbcDatabase database,
+                                                 SSHTunnel sshTunnel,
+                                                 SqlOperations sqlOperations,
+                                                 List<WriteConfig> writeConfigs) {
     return () -> {
       sshTunnel.openTunnelIfRequested();
       LOGGER.info("Preparing tmp tables in destination started for {} streams", writeConfigs.size());
@@ -171,7 +174,10 @@ public class JdbcBufferedConsumerFactory {
     };
   }
 
-  private static OnCloseFunction onCloseFunction(JdbcDatabase database, SSHTunnel sshTunnel, SqlOperations sqlOperations, List<WriteConfig> writeConfigs) {
+  private static OnCloseFunction onCloseFunction(JdbcDatabase database,
+                                                 SSHTunnel sshTunnel,
+                                                 SqlOperations sqlOperations,
+                                                 List<WriteConfig> writeConfigs) {
     return (hasFailed) -> {
       // copy data
       if (!hasFailed) {

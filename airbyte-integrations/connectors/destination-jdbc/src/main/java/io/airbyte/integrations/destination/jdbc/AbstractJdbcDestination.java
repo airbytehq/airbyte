@@ -74,8 +74,8 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   }
 
   public AbstractJdbcDestination(final String driverClass,
-      final NamingConventionTransformer namingResolver,
-      final SqlOperations sqlOperations) {
+                                 final NamingConventionTransformer namingResolver,
+                                 final SqlOperations sqlOperations) {
     this.driverClass = driverClass;
     this.namingResolver = namingResolver;
     this.sqlOperations = sqlOperations;
@@ -100,9 +100,9 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   }
 
   public static void attemptSQLCreateAndDropTableOperations(String outputSchema,
-      JdbcDatabase database,
-      NamingConventionTransformer namingResolver,
-      SqlOperations sqlOps)
+                                                            JdbcDatabase database,
+                                                            NamingConventionTransformer namingResolver,
+                                                            SqlOperations sqlOps)
       throws Exception {
     // attempt to get metadata from the database as a cheap way of seeing if we can connect.
     database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils::rowToJson);
@@ -124,7 +124,6 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
         jdbcConfig.get("jdbc_url").asText(),
         driverClass);
   }
-
 
   public abstract JsonNode toJdbcConfig(JsonNode config);
 

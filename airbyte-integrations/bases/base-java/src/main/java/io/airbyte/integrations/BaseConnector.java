@@ -25,7 +25,6 @@
 package io.airbyte.integrations;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.Integration;
@@ -49,8 +48,9 @@ public abstract class BaseConnector implements Integration {
   }
 
   /**
-   * Extension point for child classes to add things to the spec json tree
-   * before it's deserialized into a ConnectorSpecification object.
+   * Extension point for child classes to add things to the spec json tree before it's deserialized
+   * into a ConnectorSpecification object.
+   *
    * @param root
    * @return root
    */
