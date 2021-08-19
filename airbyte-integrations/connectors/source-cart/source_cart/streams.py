@@ -45,7 +45,10 @@ class CartStream(HttpStream, ABC):
 
     @property
     def data_field(self) -> str:
-        """Field of the response containing data. By default the value self.name a"""
+        """
+        Field of the response containing data.
+        By default the value self.name will be used if this property is empty or None
+        """
         return None
 
     def path(self, **kwargs) -> str:

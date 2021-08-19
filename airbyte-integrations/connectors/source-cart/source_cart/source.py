@@ -22,6 +22,7 @@
 # SOFTWARE.
 #
 
+from functools import wraps
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
@@ -44,10 +45,29 @@ class CustomHeaderAuthenticator(HttpAuthenticator):
 
 
 class SourceCart(AbstractSource):
+    def validate_config_values(func):
+        """Check input config values for check_connection and stream functions. It will raise an exception if there is an parsing error"""
+
+        @wraps(func)
+        def decorator(self_, *args, **kwargs):
+            for arg in args:
+                if isinstance(arg, Mapping):
+                    pendulum.parse(arg["start_date"])
+                    # try to check an end_date value. It can be ussed for different CI tests
+                    end_date = arg.get("end_date")
+                    if end_date:
+                        pendulum.parse(end_date)
+                    break
+
+            return func(self_, *args, **kwargs)
+
+        return decorator
+
+    @validate_config_values
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             authenticator = CustomHeaderAuthenticator(access_token=config["access_token"])
-            pendulum.parse(config["start_date"])
+
             stream = Products(authenticator=authenticator, start_date=config["start_date"], store_name=config["store_name"])
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
@@ -60,18 +80,13 @@ class SourceCart(AbstractSource):
                 return False, err_message
             return False, repr(e)
 
+    @validate_config_values
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-
-        # try to check an end_date value. It can be used for different CI tests
-        end_date = config.get("end_date")
-        if end_date:
-            # validate this value
-            pendulum.parse(end_date)
         authenticator = CustomHeaderAuthenticator(access_token=config["access_token"])
         args = {
             "authenticator": authenticator,
             "start_date": config["start_date"],
             "store_name": config["store_name"],
-            "end_date": end_date,
+            "end_date": config.get("end_date"),
         }
         return [CustomersCart(**args), Orders(**args), OrderPayments(**args), Products(**args)]
