@@ -83,15 +83,22 @@
                 "default": "CDC",
                 "order": 0
               },
+              "plugin": {
+                "type": "string",
+                "description": "A logical decoding plug-in installed on the PostgreSQL server. `pgoutput` plug-in is used by default.\nIf replication table contains a lot of big jsonb values it is recommended to use `wal2json` plug-in. For more information about `wal2json` plug-in read <a href=\"https://docs.airbyte.io/integrations/sources/postgres\">Postgres Source</a> docs.",
+                "enum": ["pgoutput", "wal2json"],
+                "default": "pgoutput",
+                "order": 1
+              },
               "replication_slot": {
                 "type": "string",
-                "description": "A pgoutput logical replication slot.",
-                "order": 1
+                "description": "A plug-in logical replication slot.",
+                "order": 2
               },
               "publication": {
                 "type": "string",
                 "description": "A Postgres publication used for consuming changes.",
-                "order": 2
+                "order": 3
               }
             }
           }

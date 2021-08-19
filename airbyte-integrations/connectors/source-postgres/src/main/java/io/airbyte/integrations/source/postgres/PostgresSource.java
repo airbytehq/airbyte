@@ -132,7 +132,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
           final String sql = "SELECT * FROM pg_replication_slots WHERE slot_name = ? AND plugin = ? AND database = ?";
           PreparedStatement ps = connection.prepareStatement(sql);
           ps.setString(1, config.get("replication_method").get("replication_slot").asText());
-          ps.setString(2, "pgoutput");
+          ps.setString(2, PostgresUtils.getPluginValue(config.get("replication_method")));
           ps.setString(3, config.get("database").asText());
 
           LOGGER.info("Attempting to find the named replication slot using the query: " + ps.toString());

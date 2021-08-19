@@ -155,6 +155,9 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     props.setProperty("offset.storage", "org.apache.kafka.connect.storage.FileOffsetBackingStore");
     props.setProperty("offset.storage.file.filename", offsetManager.getOffsetFilePath().toString());
     props.setProperty("offset.flush.interval.ms", "1000"); // todo: make this longer
+    // default values from debezium CommonConnectorConfig
+    props.setProperty("max.batch.size", "2048");
+    props.setProperty("max.queue.size", "8192");
 
     if (schemaHistoryManager.isPresent()) {
       // https://debezium.io/documentation/reference/1.4/operations/debezium-server.html#debezium-source-database-history-file-filename

@@ -58,9 +58,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-class CdcPostgresSourceTest extends CdcSourceTest {
+abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   private static final String SLOT_NAME_BASE = "debezium_slot";
   private static final String PUBLICATION = "publication";
@@ -71,6 +72,8 @@ class CdcPostgresSourceTest extends CdcSourceTest {
   private PostgresSource source;
   private JsonNode config;
 
+  protected abstract String getPluginName();
+
   @AfterEach
   void tearDown() throws Exception {
     database.close();
@@ -79,7 +82,8 @@ class CdcPostgresSourceTest extends CdcSourceTest {
 
   @BeforeEach
   protected void setup() throws SQLException {
-    container = new PostgreSQLContainer<>("postgres:13-alpine")
+    DockerImageName myImage = DockerImageName.parse("debezium/postgres:13-alpine").asCompatibleSubstituteFor("postgres");
+    container = new PostgreSQLContainer<>(myImage)
         .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"), "/etc/postgresql/postgresql.conf")
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
     container.start();
@@ -94,7 +98,7 @@ class CdcPostgresSourceTest extends CdcSourceTest {
     final String fullReplicationSlot = SLOT_NAME_BASE + "_" + dbName;
     database = getDatabaseFromConfig(config);
     database.query(ctx -> {
-      ctx.execute("SELECT pg_create_logical_replication_slot('" + fullReplicationSlot + "', 'pgoutput');");
+      ctx.execute("SELECT pg_create_logical_replication_slot('" + fullReplicationSlot + "', '" + getPluginName() + "');");
       ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
 
       return null;
@@ -107,6 +111,7 @@ class CdcPostgresSourceTest extends CdcSourceTest {
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("replication_slot", SLOT_NAME_BASE + "_" + dbName)
         .put("publication", PUBLICATION)
+        .put("plugin", getPluginName())
         .build());
 
     return Jsons.jsonNode(ImmutableMap.builder()
