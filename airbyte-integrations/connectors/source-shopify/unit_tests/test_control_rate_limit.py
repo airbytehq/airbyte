@@ -32,9 +32,9 @@ SLEEP_ON_AVG_LOAD: float = 1.5
 SLEEP_ON_HIGH_LOAD: float = 5.0
 SLEEP_ON_UNKNOWN_LOAD: float = 1.0
 
-test_header_name = "X-Shopify-Shop-Api-Call-Limit"
-test_data_field = "some_data_field"
-test_rate_limit_threshold = 0.9
+TEST_HEADER_NAME = "X-Shopify-Shop-Api-Call-Limit"
+TEST_DATA_FIELD = "some_data_field"
+TEST_RATE_LIMIT_THRESHOLD = 0.9
 
 
 def control_request_rate_limit_decorator(threshold: float = 0.95, limit_header: str = None):
@@ -86,10 +86,10 @@ def control_request_rate_limit_decorator(threshold: float = 0.95, limit_header: 
 
 
 # Simulating real function call based CDK's parse_response() method
-@control_request_rate_limit_decorator(test_rate_limit_threshold, test_header_name)
+@control_request_rate_limit_decorator(TEST_RATE_LIMIT_THRESHOLD, TEST_HEADER_NAME)
 def fake_parse_response(response: requests.Response, **kwargs):
     json_response = response.json()
-    records = json_response.get(test_data_field, []) if test_data_field is not None else json_response
+    records = json_response.get(TEST_DATA_FIELD, []) if TEST_DATA_FIELD is not None else json_response
     yield from records
 
 
