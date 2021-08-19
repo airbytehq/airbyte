@@ -8,6 +8,10 @@ The Airbyte MS SQL Server destination allows you to sync data to SQL Server data
 
 #### Output schema
 
+{% hint style="warning" %}
+Tables in MSSQL destinations will be prefixed by `_airbyte_raw` due to the fact that MSSQL does not currently support basic normalization. This prefix cannot be removed and this is normal behavior.
+{% endhint %}
+
 Each stream will be output into its own table in SQL Server. Each table will contain 3 columns:
 
 * `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in SQL Server is `VARCHAR(64)`.
@@ -75,8 +79,11 @@ You should now have all the requirements needed to configure SQL Server as a des
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.5   | 2021-07-20 | [4874](https://github.com/airbytehq/airbyte/pull/4874) | declare object types correctly in spec |
-| 0.1.4   | 2021-06-17 | [3744](https://github.com/airbytehq/airbyte/pull/3744) | Fix doc/params in specification file |
-| 0.1.3   | 2021-05-28 | [3728](https://github.com/airbytehq/airbyte/pull/3973) | Change dockerfile entrypoint |
-| 0.1.2   | 2021-05-13 | [3367](https://github.com/airbytehq/airbyte/pull/3671) | Fix handle symbols unicode |
-| 0.1.1   | 2021-05-11 | [3566](https://github.com/airbytehq/airbyte/pull/3195) | MS SQL Server Destination Release! |
+| 0.1.8   | 2021-08-07 | [#5272](https://github.com/airbytehq/airbyte/pull/5272) | Add batch method to insert records  |
+| 0.1.7   | 2021-07-30 | [#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
+| 0.1.6   | 2021-06-21 | [#3555](https://github.com/airbytehq/airbyte/pull/3555) | Partial Success in BufferedStreamConsumer |
+| 0.1.5   | 2021-07-20 | [#4874](https://github.com/airbytehq/airbyte/pull/4874) | declare object types correctly in spec |
+| 0.1.4   | 2021-06-17 | [#3744](https://github.com/airbytehq/airbyte/pull/3744) | Fix doc/params in specification file |
+| 0.1.3   | 2021-05-28 | [#3728](https://github.com/airbytehq/airbyte/pull/3973) | Change dockerfile entrypoint |
+| 0.1.2   | 2021-05-13 | [#3367](https://github.com/airbytehq/airbyte/pull/3671) | Fix handle symbols unicode |
+| 0.1.1   | 2021-05-11 | [#3566](https://github.com/airbytehq/airbyte/pull/3195) | MS SQL Server Destination Release! |

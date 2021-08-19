@@ -24,15 +24,18 @@
 
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import Stream
 
 from .auth.core import HttpAuthenticator, NoAuth
-from .exceptions import DefaultBackoffException, UserDefinedBackoffException
+from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
+
+# list of all possible HTTP methods which can be used for sending of request bodies
+BODY_REQUEST_METHODS = ("POST", "PUT", "PATCH")
 
 
 class HttpStream(Stream, ABC):
@@ -56,7 +59,7 @@ class HttpStream(Stream, ABC):
     @property
     def http_method(self) -> str:
         """
-        Override if needed. See get_request_data if using POST.
+        Override if needed. See get_request_data/get_request_json if using POST/PUT/PATCH.
         """
         return "GET"
 
@@ -106,6 +109,23 @@ class HttpStream(Stream, ABC):
         """
         return {}
 
+    def request_body_data(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Union[Mapping, str]]:
+        """
+        Override when creating POST/PUT/PATCH requests to populate the body of the request with a non-JSON payload.
+
+        If returns a ready text that it will be sent as is.
+        If returns a dict that it will be converted to a urlencoded form.
+           E.g. {"key1": "value1", "key2": "value2"} => "key1=value1&key2=value2"
+
+        At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
+        """
+        return None
+
     def request_body_json(
         self,
         stream_state: Mapping[str, Any],
@@ -113,8 +133,9 @@ class HttpStream(Stream, ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         """
-        TODO make this possible to do for non-JSON APIs
-        Override when creating POST requests to populate the body of the request with a JSON payload.
+        Override when creating POST/PUT/PATCH requests to populate the body of the request with a JSON payload.
+
+        At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
         return None
 
@@ -171,13 +192,18 @@ class HttpStream(Stream, ABC):
         return None
 
     def _create_prepared_request(
-        self, path: str, headers: Mapping = None, params: Mapping = None, json: Any = None
+        self, path: str, headers: Mapping = None, params: Mapping = None, json: Any = None, data: Any = None
     ) -> requests.PreparedRequest:
         args = {"method": self.http_method, "url": self.url_base + path, "headers": headers, "params": params}
-
-        if self.http_method.upper() == "POST":
-            # TODO support non-json bodies
-            args["json"] = json
+        if self.http_method.upper() in BODY_REQUEST_METHODS:
+            if json and data:
+                raise RequestBodyException(
+                    "At the same time only one of the 'request_body_data' and 'request_body_json' functions can return data"
+                )
+            elif json:
+                args["json"] = json
+            elif data:
+                args["data"] = data
 
         return self._session.prepare_request(requests.Request(**args))
 
@@ -235,6 +261,7 @@ class HttpStream(Stream, ABC):
                 headers=dict(request_headers, **self.authenticator.get_auth_header()),
                 params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
                 json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             )
             request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
             response = self._send_request(request, request_kwargs)

@@ -247,7 +247,6 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
 }
 
 task('generate') {
-    dependsOn subprojects.collect { it.getTasksByName('generateSeed', true) }
     dependsOn subprojects.collect { it.getTasksByName('generateProtocolClassFiles', true) }
     dependsOn subprojects.collect { it.getTasksByName('generateJsonSchema2Pojo', true) }
 }
@@ -291,50 +290,51 @@ tasks.withType(AbstractArchiveTask) {
     reproducibleFileOrder = true
 }
 
-// Configure what subprojects to publish.
-String[] toPublish = [
-        ':airbyte-analytics',
-        ':airbyte-api',
-        ':airbyte-commons',
-        ':airbyte-commons-docker',
-        ':airbyte-config:init',
-        ':airbyte-config:models',
-        ':airbyte-config:persistence',
-        ':airbyte-db',
-        ':airbyte-json-validation',
-        ':airbyte-migration',
-        ':airbyte-notification',
-        ':airbyte-protocol:models',
-        ':airbyte-scheduler:client',
-        ':airbyte-scheduler:models',
-        ':airbyte-scheduler:persistence',
-        ':airbyte-server',
-        ':airbyte-workers'
-]
-configure(subprojects.findAll { toPublish.contains(it.getPath()) }) {
-    apply plugin: 'maven-publish'
-
-    publishing {
-        repositories {
-            publications {
-                // This block is present so Gradle knows to publish a Maven jar.
-                maven(MavenPublication) {
-                    from components.java
-                    // Gradle will by default use the subproject path as the group id and the subproject name as the artifact id.
-                    // e.g. the subproject :airbyte-scheduler:models is imported at io.airbyte.airbyte-config:persistence:<version-number>.
-                }
-            }
-
-            maven {
-                credentials {
-                    name 'cloudrepo'
-                    username System.getenv('CLOUDREPO_USER')
-                    password System.getenv('CLOUDREPO_PASSWORD')
-                }
-                url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
-            }
-
-            mavenLocal()
-        }
-    }
-}
+// TODO: Davin will turn this back on.
+//// Configure what subprojects to publish.
+//String[] toPublish = [
+//        ':airbyte-analytics',
+//        ':airbyte-api',
+//        ':airbyte-commons',
+//        ':airbyte-commons-docker',
+//        ':airbyte-config:init',
+//        ':airbyte-config:models',
+//        ':airbyte-config:persistence',
+//        ':airbyte-db',
+//        ':airbyte-json-validation',
+//        ':airbyte-migration',
+//        ':airbyte-notification',
+//        ':airbyte-protocol:models',
+//        ':airbyte-scheduler:client',
+//        ':airbyte-scheduler:models',
+//        ':airbyte-scheduler:persistence',
+//        ':airbyte-server',
+//        ':airbyte-workers'
+//]
+//configure(subprojects.findAll { toPublish.contains(it.getPath()) }) {
+//    apply plugin: 'maven-publish'
+//
+//    publishing {
+//        repositories {
+//            publications {
+//                // This block is present so Gradle knows to publish a Maven jar.
+//                maven(MavenPublication) {
+//                    from components.java
+//                    // Gradle will by default use the subproject path as the group id and the subproject name as the artifact id.
+//                    // e.g. the subproject :airbyte-scheduler:models is imported at io.airbyte.airbyte-config:persistence:<version-number>.
+//                }
+//            }
+//
+//            maven {
+//                credentials {
+//                    name 'cloudrepo'
+//                    username System.getenv('CLOUDREPO_USER')
+//                    password System.getenv('CLOUDREPO_PASSWORD')
+//                }
+//                url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
+//            }
+//
+//            mavenLocal()
+//        }
+//    }
+//}

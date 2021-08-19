@@ -10,9 +10,57 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on.
 
-7/30/2021
+## 8/18/2021
+
 New sources:
-* [**PrestaShop**](https://docs.airbyte.io/integrations/sources/prestashop)
+* [**Bing Ads**](https://docs.airbyte.io/integrations/sources/bing-ads)
+
+New features:
+* **Chargebee** source: Adds supoort for the `items`, `item prices` and  `attached items` endpoints.
+
+Bug fixes:
+* **Quickbooks** source: Now uses the number data type for decimal fields.
+* **Hubspot** source: Fixed `empty string` inside of the `number` and `float` datatypes.
+* **GitHub** source: Validation fixed on non-required fields.
+* **BigQuery** destination: Now supports processing of arrays of records properly.
+* **Oracle** destination: Fixed destination check for users without DBA role.
+
+## 8/9/2021
+
+New sources:
+* [**S3/Abstract Files**](https://docs.airbyte.io/integrations/sources/s3)
+* [**Zuora**](https://docs.airbyte.io/integrations/sources/zuora)
+* [**Kustomer**](https://docs.airbyte.io/integrations/sources/kustomer)
+* [**Apify**](https://docs.airbyte.io/integrations/sources/apify)
+* [**Chargebee**](https://docs.airbyte.io/integrations/sources/chargebee)
+
+
+New features:
+* **Shopify** source: The `status` property is now in the `Products` stream.
+* **Amazon Seller Partner** source: Added support for `GET_MERCHANT_LISTINGS_ALL_DATA` and `GET_FBA_INVENTORY_AGED_DATA` stream endpoints.
+* **GitHub** source: Existing streams now don't minify the `user` property.
+* **Hubspot** source: Updated user-defined custom field schema generation.
+* **Zendesk** source: Migrated from Singer to the Airbyte CDK.
+* **Amazon Seller Partner** source: Migrated to the Airbyte CDK.
+
+
+Bug fixes:
+* **Hubspot** source: Casting exceptions are now logged correctly.
+* **S3** source: Fixed bug where syncs could hang indefinitely.
+* **Shopify** source: Fixed the `products` schema to be in accordance with the API.
+* **PayPal Transactions** source: Fixed the start date minimum to be 3 years rather than 45 days.
+* **Google Ads** source: Added the `login-customer-id` setting.
+* **Intercom** source: Rate limit corrected from 1000 requests/minute from 1000 requests/hour.
+* **S3** source: Fixed bug in spec to properly display the `format` field in the UI.
+
+New CDK features:
+* Now allows for setting request data in non-JSON formats.
+
+
+## 7/30/2021
+
+New sources:
+* [**PrestaShop**](https://docs.airbyte.io/integrations/sources/presta-shop)
 * [**Snapchat Marketing**](https://docs.airbyte.io/integrations/sources/snapchat-marketing)
 * [**Drupal**](https://docs.airbyte.io/integrations/sources/drupal)
 * [**Magento**](https://docs.airbyte.io/integrations/sources/magento)
@@ -28,8 +76,6 @@ New sources:
 * [**Woo Commerce**](https://docs.airbyte.io/integrations/sources/woo-commerce)
 * [**Wordpress**](https://docs.airbyte.io/integrations/sources/wordpress)
 * [**Zencart**](https://docs.airbyte.io/integrations/sources/zencart)
-
-New features:
 
 Bug fixes:
 * **Shopify** source: Fixed the `products` schema to be in accordance with the API.
@@ -289,7 +335,7 @@ Other progress on connectors:
 ## 03/22/2021
 
 * 2 new source connectors: [**Gitlab**](https://docs.airbyte.io/integrations/sources/gitlab) and [**Airbyte-native Hubspot**](https://docs.airbyte.io/integrations/sources/hubspot)
-* Developing connectors now requires almost no interaction with Gradle, Airbyte’s  monorepo build tool. If you’re building a Python connector, you never have to worry about developing outside your typical flow. See [the updated documentation](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector).
+* Developing connectors now requires almost no interaction with Gradle, Airbyte’s monorepo build tool. If you’re building a Python connector, you never have to worry about developing outside your typical flow. See [the updated documentation](https://docs.airbyte.io/connector-development).
 
 ## 03/15/2021
 

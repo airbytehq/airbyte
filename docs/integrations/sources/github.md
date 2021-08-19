@@ -41,7 +41,7 @@ meaning that they:
 
     Please, consider this behaviour when using those 8 incremental streams because it may affect you API call limits.
 
-1. We are passing few parameters (`since`, `sort` and `direction`) to GitHub in order to filter records and sometimes
+2. We are passing few parameters (`since`, `sort` and `direction`) to GitHub in order to filter records and sometimes
    for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub
    instead of records (respective `WARN` log message will be outputted). In this case Specifying more recent
    `start_date` may help.
@@ -66,8 +66,11 @@ The Github connector should not run into Github API limitations under normal usa
 
 * Github Account;
 * `access_token` - Github Personal Access Token wih the necessary permissions \(described below\);
-* `repository` - GitHub repository which looks like `<owner>/<repo>`;
-* `start_date` - start date for 3 incremental streams: `comments`, `commits` and `issues`.
+* `start_date` - start date for 3 incremental streams: `comments`, `commits` and `issues`;
+* `repository` - Space-delimited list of GitHub repositories/organizations which looks like `<owner>/<repo> <organization>/* <organization_new>/* <owner_new>/<repo_new>`.
+
+**Note**: if you want to specify the organization to receive data from all its repositories, then you should specify it according to the following pattern: `<organization>/*`
+
 
 ### Setup guide
 
@@ -83,6 +86,10 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.6   | 2021-08-18 | [5456](https://github.com/airbytehq/airbyte/pull/5223) | Add MultipleTokenAuthenticator |
+| 0.1.5   | 2021-08-18 | [5456](https://github.com/airbytehq/airbyte/pull/5456) | Fix set up validation |
+| 0.1.4   | 2021-08-13 | [5136](https://github.com/airbytehq/airbyte/pull/5136) | Support syncing multiple repositories/organizations |
+| 0.1.3   | 2021-08-03 | [5156](https://github.com/airbytehq/airbyte/pull/5156) | Extended existing schemas with `users` property for certain streams |
 | 0.1.2   | 2021-07-13 | [4708](https://github.com/airbytehq/airbyte/pull/4708) | Fix bug with IssueEvents stream and add handling for rate limiting |
 | 0.1.1   | 2021-07-07 | [4590](https://github.com/airbytehq/airbyte/pull/4590) | Fix schema in the `pull_request` stream |
 | 0.1.0   | 2021-07-06 | [4174](https://github.com/airbytehq/airbyte/pull/4174) | New Source: GitHub |

@@ -2,6 +2,6 @@
   "sourceDefinitionId": "bad83517-5e54-4a3d-9b53-63e85fbd4d7c",
   "name": "ClickHouse",
   "dockerRepository": "airbyte/source-clickhouse",
-  "dockerImageTag": "0.1.1",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-clickhouse"
+  "dockerImageTag": "0.1.2",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/clickhouse"
 }

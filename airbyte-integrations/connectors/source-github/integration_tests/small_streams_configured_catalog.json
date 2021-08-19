@@ -2,13 +2,16 @@
   "streams": [
     {
       "stream": {
-        "name": "assignees",
+        "name": "comments",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated_at"]
     },
     {
       "stream": {
@@ -38,6 +41,19 @@
     },
     {
       "stream": {
+        "name": "stargazers",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "default_cursor_field": ["starred_at"],
+        "source_defined_primary_key": [["user_id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["starred_at"]
+    },
+    {
+      "stream": {
         "name": "collaborators",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
@@ -45,6 +61,19 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "pull_requests",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated_at"]
     },
     {
       "stream": {
@@ -59,6 +88,19 @@
     {
       "stream": {
         "name": "projects",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated_at"]
+    },
+    {
+      "stream": {
+        "name": "issues",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": false,

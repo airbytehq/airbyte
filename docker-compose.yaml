@@ -28,13 +28,6 @@ services:
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
     volumes:
       - db:/var/lib/postgresql/data
-  seed:
-    image: airbyte/seed:${VERSION}
-    container_name: airbyte-data-seed
-    # Pre-populate the volume if it is empty.
-    # See: https://docs.docker.com/storage/volumes/#populate-a-volume-using-a-container
-    volumes:
-      - data:/app/seed
   scheduler:
     image: airbyte/scheduler:${VERSION}
     logging: *default-logging
@@ -69,6 +62,8 @@ services:
       - RESOURCE_CPU_LIMIT=${RESOURCE_CPU_LIMIT}
       - RESOURCE_MEMORY_REQUEST=${RESOURCE_MEMORY_REQUEST}
       - RESOURCE_MEMORY_LIMIT=${RESOURCE_MEMORY_LIMIT}
+      - MAX_RETRIES_PER_ATTEMPT=${MAX_RETRIES_PER_ATTEMPT}
+      - MAX_SYNC_JOB_ATTEMPTS=${MAX_SYNC_JOB_ATTEMPTS}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - workspace:${WORKSPACE_ROOT}

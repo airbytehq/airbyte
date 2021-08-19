@@ -85,8 +85,8 @@ public class ConnectionsHandler {
   }
 
   private void validateWorkspace(UUID sourceId, UUID destinationId, Set<UUID> operationIds) {
-    final UUID sourceWorkspace = workspaceHelper.getWorkspaceForSourceId(sourceId);
-    final UUID destinationWorkspace = workspaceHelper.getWorkspaceForDestinationId(destinationId);
+    final UUID sourceWorkspace = workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceId);
+    final UUID destinationWorkspace = workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(destinationId);
 
     Preconditions.checkArgument(
         sourceWorkspace.equals(destinationWorkspace),
@@ -98,7 +98,7 @@ public class ConnectionsHandler {
             destinationWorkspace));
 
     for (UUID operationId : operationIds) {
-      final UUID operationWorkspace = workspaceHelper.getWorkspaceForOperationId(operationId);
+      final UUID operationWorkspace = workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(operationId);
       Preconditions.checkArgument(
           sourceWorkspace.equals(operationWorkspace),
           String.format(
@@ -165,7 +165,7 @@ public class ConnectionsHandler {
 
   private void trackNewConnection(final StandardSync standardSync) {
     try {
-      final UUID workspaceId = workspaceHelper.getWorkspaceForConnectionId(standardSync.getConnectionId());
+      final UUID workspaceId = workspaceHelper.getWorkspaceForConnectionIdIgnoreExceptions(standardSync.getConnectionId());
       final Builder<String, Object> metadataBuilder = generateMetadata(standardSync);
       TrackingClientSingleton.get().track(workspaceId, "New Connection - Backend", metadataBuilder.build());
     } catch (Exception e) {
