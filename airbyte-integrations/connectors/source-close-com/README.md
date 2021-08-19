@@ -32,7 +32,7 @@ should work as you expect.
 #### Building via Gradle
 From the Airbyte repository root, run:
 ```
-./gradlew :airbyte-integrations:connectors:source-close-com:build
+./gradlew clean :airbyte-integrations:connectors:source-close-com:build
 ```
 
 #### Create credentials
@@ -41,7 +41,7 @@ to generate the necessary credentials. Then create a file `secrets/config.json` 
 Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source close-com test creds`
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source close.com test creds`
 and place them into `secrets/config.json`.
 
 ### Locally running the connector
@@ -62,7 +62,7 @@ docker build . -t airbyte/source-close-com:dev
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-close-com:airbyteDocker
+./gradlew clean :airbyte-integrations:connectors:source-close-com:airbyteDocker
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.
