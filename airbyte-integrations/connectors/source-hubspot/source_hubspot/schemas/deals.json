@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
     "id": {
       "type": ["null", "string"]
@@ -9,11 +9,10 @@
       "type": ["null", "object"],
       "properties": {
         "value": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "timestamp": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "versions": {
           "type": ["null", "array"],

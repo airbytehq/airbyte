@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "_ab_github_repository": {
+    "repository": {
       "type": ["string"]
     },
     "html_url": {
@@ -32,8 +32,8 @@
     "commit_id": {
       "type": ["null", "string"]
     },
-    "user_id": {
-      "type": ["null", "integer"]
+    "user": {
+      "$ref": "user.json"
     },
     "created_at": {
       "type": ["null", "string"],

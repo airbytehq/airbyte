@@ -1,0 +1,63 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "type": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"]
+    },
+    "version": {
+      "type": ["null", "integer"]
+    },
+    "is_deleted": {
+      "type": ["null", "boolean"]
+    },
+    "present_at_all_locations": {
+      "type": ["null", "boolean"]
+    },
+    "present_at_location_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "discount_data": {
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type": ["null", "string"]
+        },
+        "discount_type": {
+          "type": ["null", "string"]
+        },
+        "percentage": {
+          "type": ["null", "string"]
+        },
+        "application_method": {
+          "type": ["null", "string"]
+        },
+        "modify_tax_basis": {
+          "type": ["null", "string"]
+        },
+        "amount_money": {
+          "type": ["null", "object"],
+          "properties": {
+            "amount": {
+              "type": ["null", "integer"]
+            },
+            "currency": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "pin_required": {
+          "type": ["null", "boolean"]
+        }
+      }
+    }
+  }
+}

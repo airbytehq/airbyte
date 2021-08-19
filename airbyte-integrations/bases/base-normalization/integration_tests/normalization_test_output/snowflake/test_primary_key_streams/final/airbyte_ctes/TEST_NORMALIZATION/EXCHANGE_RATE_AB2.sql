@@ -10,8 +10,11 @@ select
     varchar
 ) as CURRENCY,
     cast(DATE as 
-    varchar
+    date
 ) as DATE,
+    cast(TIMESTAMP_COL as 
+    timestamp with time zone
+) as TIMESTAMP_COL,
     cast("HKD@spéçiäl & characters" as 
     float
 ) as "HKD@spéçiäl & characters",

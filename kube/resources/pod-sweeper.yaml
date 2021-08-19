@@ -18,7 +18,7 @@ data:
     while :
     do
       # Shorter time window for completed pods
-      SUCCESS_DATE_STR=`date -d 'now - 30 seconds' --utc -Ins`
+      SUCCESS_DATE_STR=`date -d 'now - 2 hours' --utc -Ins`
       SUCCESS_DATE=`date -d $SUCCESS_DATE_STR +%s`
       # Longer time window for pods in error (to debug)
       NON_SUCCESS_DATE_STR=`date -d 'now - 24 hours' --utc -Ins`
@@ -59,6 +59,7 @@ spec:
       labels:
         airbyte: pod-sweeper
     spec:
+      serviceAccountName: airbyte-admin
       containers:
         - name: airbyte-pod-sweeper
           image: bitnami/kubectl

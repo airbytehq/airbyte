@@ -25,12 +25,14 @@
 package io.airbyte.db;
 
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.db.bigquery.BigQueryDatabase;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.mongodb.MongoDatabase;
 import java.util.Optional;
+import java.util.function.Function;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
@@ -44,7 +46,10 @@ public class Databases {
     return createDatabase(username, password, jdbcConnectionString, "org.postgresql.Driver", SQLDialect.POSTGRES);
   }
 
-  public static Database createPostgresDatabaseWithRetry(String username, String password, String jdbcConnectionString) {
+  public static Database createPostgresDatabaseWithRetry(String username,
+                                                         String password,
+                                                         String jdbcConnectionString,
+                                                         Function<Database, Boolean> isDbReady) {
     Database database = null;
 
     while (database == null) {
@@ -52,9 +57,10 @@ public class Databases {
 
       try {
         database = createPostgresDatabase(username, password, jdbcConnectionString);
-        Optional<String> uuid = ServerUuid.get(database);
-        if (uuid.isEmpty()) {
-          throw new Exception("Server UUID not available yet!");
+        if (!isDbReady.apply(database)) {
+          LOGGER.info("Database is not ready yet. Please wait a moment, it might still be initializing...");
+          database = null;
+          Exceptions.toRuntime(() -> Thread.sleep(5000));
         }
       } catch (Exception e) {
         // Ignore the exception because this likely means that the database server is still initializing.
@@ -70,6 +76,10 @@ public class Databases {
 
   public static JdbcDatabase createRedshiftDatabase(String username, String password, String jdbcConnectionString) {
     return createJdbcDatabase(username, password, jdbcConnectionString, "com.amazon.redshift.jdbc.Driver");
+  }
+
+  public static Database createMySqlDatabase(String username, String password, String jdbcConnectionString) {
+    return createDatabase(username, password, jdbcConnectionString, "com.mysql.cj.jdbc.Driver", SQLDialect.MYSQL);
   }
 
   public static Database createSqlServerDatabase(String username, String password, String jdbcConnectionString) {
@@ -156,6 +166,10 @@ public class Databases {
     connectionPool.setUrl(jdbcConnectionString);
     connectionProperties.ifPresent(connectionPool::setConnectionProperties);
     return connectionPool;
+  }
+
+  public static BigQueryDatabase createBigQueryDatabase(final String projectId, final String jsonCreds) {
+    return new BigQueryDatabase(projectId, jsonCreds);
   }
 
   public static MongoDatabase createMongoDatabase(final String connectionString, final String databaseName) {

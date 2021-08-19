@@ -10,7 +10,7 @@
       "aws_region_name",
       "start_date"
     ],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "aws_key_id": {
         "type": "string",

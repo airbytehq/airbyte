@@ -36,3 +36,6 @@ crash.log
 # Airflow Demo
 resources/examples/airflow/logs/*
 !resources/examples/airflow/logs/.gitkeep
+
+# Cloud Demo
+!airbyte-webapp/src/packages/cloud/data
