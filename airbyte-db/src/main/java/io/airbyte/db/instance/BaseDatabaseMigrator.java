@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.MigrationInfoService;
+import org.flywaydb.core.api.output.BaselineResult;
 import org.flywaydb.core.api.output.MigrateResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,6 +87,13 @@ public abstract class BaseDatabaseMigrator implements DatabaseMigrator {
     MigrationInfoService result = flyway.info();
     result.getInfoResult().warnings.forEach(LOGGER::warn);
     return Arrays.asList(result.all());
+  }
+
+  @Override
+  public BaselineResult baseline() {
+    BaselineResult result = flyway.baseline();
+    result.warnings.forEach(LOGGER::warn);
+    return result;
   }
 
   @Override

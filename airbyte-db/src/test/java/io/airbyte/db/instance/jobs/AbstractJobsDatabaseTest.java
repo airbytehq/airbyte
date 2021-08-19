@@ -22,23 +22,17 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db.instance.configs;
+package io.airbyte.db.instance.jobs;
 
-import io.airbyte.db.instance.AbstractConfigsDatabaseTest;
-import io.airbyte.db.instance.DatabaseMigrator;
-import org.junit.jupiter.api.Test;
+import io.airbyte.db.Database;
+import io.airbyte.db.instance.AbstractDatabaseTest;
+import java.io.IOException;
 
-/**
- * This file generates a schema dump for the configs database. The purpose is to ensure that the
- * latest schema is checked into the codebase after all migrations are executed.
- */
-class ConfigsDatabaseSchemaDumpTest extends AbstractConfigsDatabaseTest {
+public abstract class AbstractJobsDatabaseTest extends AbstractDatabaseTest {
 
-  @Test
-  public void updateSchemaDump() throws Exception {
-    DatabaseMigrator migrator = new ConfigsDatabaseMigrator(database, ConfigsDatabaseSchemaDumpTest.class.getSimpleName());
-    migrator.migrate();
-    migrator.dumpSchemaToFile();
+  @Override
+  public Database getAndInitializeDatabase(String username, String password, String connectionString) throws IOException {
+    return new JobsDatabaseInstance(username, password, connectionString).getAndInitialize();
   }
 
 }

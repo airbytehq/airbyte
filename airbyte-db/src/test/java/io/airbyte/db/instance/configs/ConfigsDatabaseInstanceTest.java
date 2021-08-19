@@ -33,7 +33,6 @@ import static io.airbyte.db.instance.configs.AirbyteConfigsTable.UPDATED_AT;
 import static org.jooq.impl.DSL.select;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.airbyte.db.instance.AbstractConfigsDatabaseTest;
 import java.sql.Timestamp;
 import java.time.Instant;
 import org.jooq.JSONB;

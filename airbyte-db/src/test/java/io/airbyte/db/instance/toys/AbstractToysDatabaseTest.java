@@ -22,39 +22,16 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db.instance;
+package io.airbyte.db.instance.toys;
 
+import io.airbyte.db.Database;
+import io.airbyte.db.instance.AbstractDatabaseTest;
 import java.io.IOException;
-import java.util.List;
-import org.flywaydb.core.api.MigrationInfo;
-import org.flywaydb.core.api.output.BaselineResult;
-import org.flywaydb.core.api.output.MigrateResult;
 
-public interface DatabaseMigrator {
+public abstract class AbstractToysDatabaseTest extends AbstractDatabaseTest {
 
-  /**
-   * Run migration.
-   */
-  MigrateResult migrate();
-
-  /**
-   * List migration information.
-   */
-  List<MigrationInfo> info();
-
-  /**
-   * Setup Flyway migration in a database and create baseline.
-   */
-  BaselineResult baseline();
-
-  /**
-   * Dump the current database schema.
-   */
-  String dumpSchema() throws IOException;
-
-  /**
-   * Dump the current database schema to the default file.
-   */
-  String dumpSchemaToFile() throws IOException;
+  public Database getAndInitializeDatabase(String username, String password, String connectionString) throws IOException {
+    return new ToysDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+  }
 
 }

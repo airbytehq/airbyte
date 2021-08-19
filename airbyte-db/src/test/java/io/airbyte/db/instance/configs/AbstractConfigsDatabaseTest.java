@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db.instance;
+package io.airbyte.db.instance.configs;
 
 import static io.airbyte.db.instance.configs.AirbyteConfigsTable.AIRBYTE_CONFIGS;
 import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CONFIG_BLOB;
@@ -32,56 +32,30 @@ import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CREATED_AT;
 import static io.airbyte.db.instance.configs.AirbyteConfigsTable.UPDATED_AT;
 
 import io.airbyte.db.Database;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.db.ExceptionWrappingDatabase;
+import io.airbyte.db.instance.AbstractDatabaseTest;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.UUID;
 import org.jooq.JSONB;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.testcontainers.containers.PostgreSQLContainer;
 
-public abstract class AbstractConfigsDatabaseTest {
+public abstract class AbstractConfigsDatabaseTest extends AbstractDatabaseTest {
 
-  protected static PostgreSQLContainer<?> container;
-
-  @BeforeAll
-  public static void dbSetup() {
-    container = new PostgreSQLContainer<>("postgres:13-alpine")
-        .withDatabaseName("airbyte")
-        .withUsername("docker")
-        .withPassword("docker");
-    container.start();
-  }
-
-  @AfterAll
-  public static void dbDown() {
-    container.close();
-  }
-
-  protected Database database;
-
-  @BeforeEach
-  public void setup() throws Exception {
-    database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+  public Database getAndInitializeDatabase(String username, String password, String connectionString) throws IOException {
+    Database database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
 
     // The configs database is considered ready only if there are some seed records.
     // So we need to create at least one record here.
     Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(System.currentTimeMillis()));
-    database.transaction(ctx -> ctx.insertInto(AIRBYTE_CONFIGS)
+    new ExceptionWrappingDatabase(database).transaction(ctx -> ctx.insertInto(AIRBYTE_CONFIGS)
         .set(CONFIG_ID, UUID.randomUUID().toString())
         .set(CONFIG_TYPE, "STANDARD_SOURCE_DEFINITION")
         .set(CONFIG_BLOB, JSONB.valueOf("{}"))
         .set(CREATED_AT, timestamp)
         .set(UPDATED_AT, timestamp)
         .execute());
-  }
-
-  @AfterEach
-  void tearDown() throws Exception {
-    database.close();
+    return database;
   }
 
 }

@@ -27,7 +27,6 @@ package io.airbyte.db.instance.jobs;
 import static org.jooq.impl.DSL.select;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.airbyte.db.instance.AbstractJobsDatabaseTest;
 import org.jooq.exception.DataAccessException;
 import org.junit.jupiter.api.Test;
 

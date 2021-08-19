@@ -22,39 +22,27 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db.instance;
+package io.airbyte.db.instance.jobs;
 
-import java.io.IOException;
-import java.util.List;
-import org.flywaydb.core.api.MigrationInfo;
-import org.flywaydb.core.api.output.BaselineResult;
-import org.flywaydb.core.api.output.MigrateResult;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public interface DatabaseMigrator {
+import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.db.instance.DatabaseMigrator;
+import org.junit.jupiter.api.Test;
 
-  /**
-   * Run migration.
-   */
-  MigrateResult migrate();
+class JobsDatabaseMigratorTest extends AbstractJobsDatabaseTest {
 
   /**
-   * List migration information.
+   * This method generates a schema dump for the jobs database. The purpose is to ensure that the latest
+   * schema is checked into the codebase after all migrations are executed.
    */
-  List<MigrationInfo> info();
-
-  /**
-   * Setup Flyway migration in a database and create baseline.
-   */
-  BaselineResult baseline();
-
-  /**
-   * Dump the current database schema.
-   */
-  String dumpSchema() throws IOException;
-
-  /**
-   * Dump the current database schema to the default file.
-   */
-  String dumpSchemaToFile() throws IOException;
+  @Test
+  public void testSchemaDump() throws Exception {
+    String schemaDump = MoreResources.readResource("jobs_database/schema_dump.txt").strip();
+    DatabaseMigrator migrator = new JobsDatabaseMigrator(database, JobsDatabaseMigratorTest.class.getSimpleName());
+    migrator.migrate();
+    String newSchemaDump = migrator.dumpSchemaToFile();
+    assertEquals(schemaDump, newSchemaDump);
+  }
 
 }

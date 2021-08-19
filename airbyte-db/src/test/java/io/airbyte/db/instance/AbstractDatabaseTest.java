@@ -25,14 +25,14 @@
 package io.airbyte.db.instance;
 
 import io.airbyte.db.Database;
-import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
+import java.io.IOException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-public abstract class AbstractJobsDatabaseTest {
+public abstract class AbstractDatabaseTest {
 
   protected static PostgreSQLContainer<?> container;
 
@@ -54,12 +54,17 @@ public abstract class AbstractJobsDatabaseTest {
 
   @BeforeEach
   public void setup() throws Exception {
-    database = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    database = getAndInitializeDatabase(container.getUsername(), container.getPassword(), container.getJdbcUrl());
   }
 
   @AfterEach
   void tearDown() throws Exception {
     database.close();
   }
+
+  /**
+   * Create an initialized database. The downstream implementation should do it by calling {@link DatabaseInstance#getAndInitialize}.
+   */
+  public abstract Database getAndInitializeDatabase(String username, String password, String connectionString) throws IOException;
 
 }
