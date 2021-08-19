@@ -1159,6 +1159,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/db_migration/migrate:
+    post:
+      tags:
+        - db_migration
+      summary: Migrate database to the latest version
+      operationId: executeDbMigrationMigrate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DbMigrationRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DbMigrationMigrateRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/web_backend/connections/list:
     post:
       tags:
@@ -2737,9 +2760,8 @@ components:
         - migration_type
         - migration_version
         - migration_description
-        - migration_state
         - migrated_at
-        - location
+        - migration_script
       properties:
         migration_type:
           type: string
@@ -2758,7 +2780,20 @@ components:
     DbMigrationInfoRead:
       type: object
       properties:
-        migration_info_list:
+        migrations:
+          type: array
+          items:
+            $ref: "#/components/schemas/DbMigrationInfoItem"
+    DbMigrationMigrateRead:
+      type: object
+      properties:
+        initial_version:
+          type: string
+        target_version:
+          type: string
+        executed_count:
+          type: integer
+        migrations:
           type: array
           items:
             $ref: "#/components/schemas/DbMigrationInfoItem"

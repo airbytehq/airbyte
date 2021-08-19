@@ -33,6 +33,7 @@ import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.ConnectionState;
 import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.DbMigrationInfoRead;
+import io.airbyte.api.model.DbMigrationMigrateRead;
 import io.airbyte.api.model.DbMigrationRequestBody;
 import io.airbyte.api.model.DestinationCoreConfig;
 import io.airbyte.api.model.DestinationCreate;
@@ -317,6 +318,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public DbMigrationInfoRead executeDbMigrationInfo(final DbMigrationRequestBody request) {
     return execute(() -> dbMigrationHandler.info(request));
+  }
+
+  @Override
+  public DbMigrationMigrateRead executeDbMigrationMigrate(DbMigrationRequestBody request) {
+    return execute(() -> dbMigrationHandler.migrate(request));
   }
 
   // DESTINATION

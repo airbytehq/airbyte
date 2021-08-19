@@ -26,6 +26,7 @@ package io.airbyte.server.handlers;
 
 import io.airbyte.api.model.DbMigrationInfoItem;
 import io.airbyte.api.model.DbMigrationInfoRead;
+import io.airbyte.api.model.DbMigrationMigrateRead;
 import io.airbyte.api.model.DbMigrationRequestBody;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.DatabaseMigrator;
@@ -34,6 +35,8 @@ import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.flywaydb.core.api.MigrationInfo;
+import org.flywaydb.core.api.output.MigrateOutput;
+import org.flywaydb.core.api.output.MigrateResult;
 
 public class DbMigrationHandler {
 
@@ -48,7 +51,17 @@ public class DbMigrationHandler {
   public DbMigrationInfoRead info(DbMigrationRequestBody request) {
     DatabaseMigrator migrator = getMigrator(request.getDatabase());
     return new DbMigrationInfoRead()
-        .migrationInfoList(migrator.info().stream().map(DbMigrationHandler::toInfoItem).collect(Collectors.toList()));
+        .migrations(migrator.info().stream().map(DbMigrationHandler::toInfoItem).collect(Collectors.toList()));
+  }
+
+  public DbMigrationMigrateRead migrate(DbMigrationRequestBody request) {
+    DatabaseMigrator migrator = getMigrator(request.getDatabase());
+    MigrateResult result = migrator.migrate();
+    return new DbMigrationMigrateRead()
+        .initialVersion(result.initialSchemaVersion)
+        .targetVersion(result.targetSchemaVersion)
+        .executedCount(result.migrationsExecuted)
+        .migrations(result.migrations.stream().map(DbMigrationHandler::toInfoItem).collect(Collectors.toList()));
   }
 
   public DatabaseMigrator getMigrator(String database) {
@@ -69,6 +82,15 @@ public class DbMigrationHandler {
         .migratedBy(info.getInstalledBy())
         .migratedAt(info.getExecutionTime())
         .migrationScript(info.getScript());
+  }
+
+  private static DbMigrationInfoItem toInfoItem(MigrateOutput output) {
+    return new DbMigrationInfoItem()
+        .migrationType(String.format("%s %s", output.type, output.category))
+        .migrationVersion(output.version)
+        .migrationDescription(output.description)
+        .migratedAt(output.executionTime)
+        .migrationScript(output.filepath);
   }
 
 }
