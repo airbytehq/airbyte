@@ -5,7 +5,7 @@
     "title": "Google Ads Spec",
     "type": "object",
     "required": ["credentials", "start_date", "customer_id"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "credentials": {
         "type": "object",

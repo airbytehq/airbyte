@@ -138,9 +138,9 @@
         "properties": {
           "property1": {
             "inside": {
-            "type": "number"
+              "type": "number"
+            }
           }
-         }
         }
       }
     }

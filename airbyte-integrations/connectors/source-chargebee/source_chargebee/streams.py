@@ -126,6 +126,7 @@ class SemiIncrementalChargebeeStream(ChargebeeStream):
     This means that semi incremental streams read all records (like full_refresh streams) but do filtering directly
     in the code and output only latest records (like incremental streams).
     """
+
     cursor_field = "updated_at"
 
     def __init__(self, start_date: str):

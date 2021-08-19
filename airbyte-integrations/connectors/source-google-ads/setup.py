@@ -27,10 +27,7 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "google-ads", "pendulum"]
 
-TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-    "pytest-mock",
-]
+TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock", "pendulum"]
 
 setup(
     name="source_google_ads",
