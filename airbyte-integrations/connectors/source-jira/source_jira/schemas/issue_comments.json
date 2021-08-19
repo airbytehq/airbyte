@@ -18,7 +18,6 @@
     },
     "body": {
       "type": "object",
-      "additionalProperties": true,
       "description": "The comment text in [Atlassian Document Format](https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/)."
     },
     "renderedBody": {
