@@ -179,7 +179,9 @@ class TestRun:
 
         parsed_args = argparse.Namespace(**args)
         destination.run_cmd(parsed_args)
-
+        spec_msg = ConnectorSpecification(connectionSpecification={})
+        mocker.patch.object(destination, "spec", return_value=spec_msg)
+        validate_mock = mocker.patch("airbyte_cdk.destinations.destination.check_config_against_spec_or_exit")
         expected_check_result = AirbyteConnectionStatus(status=Status.SUCCEEDED)
         mocker.patch.object(destination, "check", return_value=expected_check_result, autospec=True)
 
@@ -189,6 +191,8 @@ class TestRun:
         destination.check.assert_called_once()  # type: ignore
         # Affirm to Mypy that this is indeed a method on this mock
         destination.check.assert_called_with(logger=ANY, config=dummy_config)  # type: ignore
+        # Check if config validation has been called
+        validate_mock.assert_called_with(dummy_config, spec_msg, destination.logger)
 
         # verify output was correct
         assert _wrapped(expected_check_result) == returned_check_result
@@ -216,6 +220,9 @@ class TestRun:
         mocker.patch.object(
             destination, "write", return_value=iter(expected_write_result), autospec=True  # convert to iterator to mimic real usage
         )
+        spec_msg = ConnectorSpecification(connectionSpecification={})
+        mocker.patch.object(destination, "spec", return_value=spec_msg)
+        validate_mock = mocker.patch("airbyte_cdk.destinations.destination.check_config_against_spec_or_exit")
         # mock input is a record followed by some state messages
         mocked_input: List[AirbyteMessage] = [_wrapped(_record("s1", {"k1": "v1"})), *expected_write_result]
         mocked_stdin_string = "\n".join([record.json(exclude_unset=True) for record in mocked_input])
@@ -236,6 +243,8 @@ class TestRun:
             # that iterates over two iterables to check equality
             input_messages=OrderedIterableMatcher(mocked_input),
         )
+        # Check if config validation has been called
+        validate_mock.assert_called_with(dummy_config, spec_msg, destination.logger)
 
         # verify output was correct
         assert expected_write_result == returned_write_result

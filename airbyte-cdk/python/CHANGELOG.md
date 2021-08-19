@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.11
+Add checking specified config againt spec for read, write, check and discover commands
+
 ## 0.1.10
 Add `MultipleTokenAuthenticator` class to allow cycling through a list of API tokens when making HTTP requests
 
