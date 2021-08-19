@@ -123,6 +123,9 @@ class CloseComActivitiesMixin(IncrementalCloseComStream):
             params["date_created__gt"] = stream_state.get(self.cursor_field)
         return params
 
+    def path(self, **kwargs) -> str:
+        return f"activity/{self._type}"
+
 
 class CreatedActivities(CloseComActivitiesMixin):
     """
@@ -130,8 +133,7 @@ class CreatedActivities(CloseComActivitiesMixin):
     API Docs: https://developer.close.com/#activities-list-or-filter-all-created-activities
     """
 
-    def path(self, **kwargs) -> str:
-        return "activity/created"
+    _type = "created"
 
 
 class NoteActivities(CloseComActivitiesMixin):
@@ -140,8 +142,7 @@ class NoteActivities(CloseComActivitiesMixin):
     API Docs: https://developer.close.com/#activities-list-or-filter-all-note-activities
     """
 
-    def path(self, **kwargs) -> str:
-        return "activity/note"
+    _type = "note"
 
 
 class EmailThreadActivities(CloseComActivitiesMixin):
@@ -150,8 +151,7 @@ class EmailThreadActivities(CloseComActivitiesMixin):
     API Docs: https://developer.close.com/#activities-list-or-filter-all-emailthread-activities
     """
 
-    def path(self, **kwargs) -> str:
-        return "activity/emailthread"
+    _type = "emailthread"
 
 
 class EmailActivities(CloseComActivitiesMixin):
@@ -160,8 +160,7 @@ class EmailActivities(CloseComActivitiesMixin):
     API Docs: https://developer.close.com/#activities-list-or-filter-all-email-activities
     """
 
-    def path(self, **kwargs) -> str:
-        return "activity/email"
+    _type = "email"
 
 
 class SmsActivities(CloseComActivitiesMixin):
@@ -170,8 +169,7 @@ class SmsActivities(CloseComActivitiesMixin):
     API Docs: https://developer.close.com/#activities-list-or-filter-all-sms-activities
     """
 
-    def path(self, **kwargs) -> str:
-        return "activity/sms"
+    _type = "sms"
 
 
 class CallActivities(CloseComActivitiesMixin):
@@ -180,8 +178,7 @@ class CallActivities(CloseComActivitiesMixin):
     API Docs: https://developer.close.com/#activities-list-or-filter-all-call-activities
     """
 
-    def path(self, **kwargs) -> str:
-        return "activity/call"
+    _type = "call"
 
 
 class MeetingActivities(CloseComActivitiesMixin):
@@ -190,8 +187,7 @@ class MeetingActivities(CloseComActivitiesMixin):
     API Docs: https://developer.close.com/#activities-list-or-filter-all-meeting-activities
     """
 
-    def path(self, **kwargs) -> str:
-        return "activity/meeting"
+    _type = "meeting"
 
 
 class LeadStatusChangeActivities(CloseComActivitiesMixin):
@@ -200,8 +196,7 @@ class LeadStatusChangeActivities(CloseComActivitiesMixin):
     API Docs: https://developer.close.com/#activities-list-or-filter-all-leadstatuschange-activities
     """
 
-    def path(self, **kwargs) -> str:
-        return "activity/status_change/lead"
+    _type = "status_change/lead"
 
 
 class OpportunityStatusChangeActivities(CloseComActivitiesMixin):
@@ -210,8 +205,7 @@ class OpportunityStatusChangeActivities(CloseComActivitiesMixin):
     API Docs: https://developer.close.com/#activities-list-or-filter-all-opportunitystatuschange-activities
     """
 
-    def path(self, **kwargs) -> str:
-        return "activity/status_change/opportunity"
+    _type = "status_change/opportunity"
 
 
 class TaskCompletedActivities(CloseComActivitiesMixin):
@@ -220,8 +214,7 @@ class TaskCompletedActivities(CloseComActivitiesMixin):
     API Docs: https://developer.close.com/#activities-list-or-filter-all-taskcompleted-activities
     """
 
-    def path(self, **kwargs) -> str:
-        return "activity/task_completed"
+    _type = "task_completed"
 
 
 class Events(IncrementalCloseComStream):
@@ -275,6 +268,9 @@ class CloseComTasksMixin(IncrementalCloseComStream):
             params["date_created__gt"] = stream_state.get(self.cursor_field)
         return params
 
+    def path(self, **kwargs) -> str:
+        return "task"
+
 
 class LeadTasks(CloseComTasksMixin):
     """
@@ -283,9 +279,6 @@ class LeadTasks(CloseComTasksMixin):
     """
 
     _type = "lead"
-
-    def path(self, **kwargs) -> str:
-        return "task"
 
 
 class IncomingEmailTasks(CloseComTasksMixin):
@@ -296,9 +289,6 @@ class IncomingEmailTasks(CloseComTasksMixin):
 
     _type = "incoming_email"
 
-    def path(self, **kwargs) -> str:
-        return "task"
-
 
 class EmailFollowupTasks(CloseComTasksMixin):
     """
@@ -307,9 +297,6 @@ class EmailFollowupTasks(CloseComTasksMixin):
     """
 
     _type = "email_followup"
-
-    def path(self, **kwargs) -> str:
-        return "task"
 
 
 class MissedCallTasks(CloseComTasksMixin):
@@ -320,9 +307,6 @@ class MissedCallTasks(CloseComTasksMixin):
 
     _type = "missed_call"
 
-    def path(self, **kwargs) -> str:
-        return "task"
-
 
 class AnsweredDetachedCallTasks(CloseComTasksMixin):
     """
@@ -331,9 +315,6 @@ class AnsweredDetachedCallTasks(CloseComTasksMixin):
     """
 
     _type = "answered_detached_call"
-
-    def path(self, **kwargs) -> str:
-        return "task"
 
 
 class VoicemailTasks(CloseComTasksMixin):
@@ -344,9 +325,6 @@ class VoicemailTasks(CloseComTasksMixin):
 
     _type = "voicemail"
 
-    def path(self, **kwargs) -> str:
-        return "task"
-
 
 class OpportunityDueTasks(CloseComTasksMixin):
     """
@@ -355,9 +333,6 @@ class OpportunityDueTasks(CloseComTasksMixin):
     """
 
     _type = "opportunity_due"
-
-    def path(self, **kwargs) -> str:
-        return "task"
 
 
 class IncomingSmsTasks(CloseComTasksMixin):
@@ -368,48 +343,50 @@ class IncomingSmsTasks(CloseComTasksMixin):
 
     _type = "incoming_sms"
 
+
+class CloseComCustomFieldsMixin(CloseComStream):
+    """
+    General class for custom fields. Define path based on _type value.
+    """
+
     def path(self, **kwargs) -> str:
-        return "task"
+        return f"custom_field/{self._type}"
 
 
-class LeadCustomFields(CloseComStream):
+class LeadCustomFields(CloseComCustomFieldsMixin):
     """
     Get lead custom fields for Close.com account organization
     API Docs: https://developer.close.com/#custom-fields-list-all-the-lead-custom-fields-for-your-organization
     """
 
-    def path(self, **kwargs) -> str:
-        return "custom_field/lead"
+    _type = "lead"
 
 
-class ContactCustomFields(CloseComStream):
+class ContactCustomFields(CloseComCustomFieldsMixin):
     """
     Get contact custom fields for Close.com account organization
     API Docs: https://developer.close.com/#custom-fields-list-all-the-contact-custom-fields-for-your-organization
     """
 
-    def path(self, **kwargs) -> str:
-        return "custom_field/contact"
+    _type = "contact"
 
 
-class OpportunityCustomFields(CloseComStream):
+class OpportunityCustomFields(CloseComCustomFieldsMixin):
     """
     Get opportunity custom fields for Close.com account organization
     API Docs: https://developer.close.com/#custom-fields-list-all-the-opportunity-custom-fields-for-your-organization
     """
 
-    def path(self, **kwargs) -> str:
-        return "custom_field/opportunity"
+    _type = "opportunity"
 
 
-class ActivityCustomFields(CloseComStream):
+class ActivityCustomFields(CloseComCustomFieldsMixin):
     """
     Get activity custom fields for Close.com account organization
     API Docs: https://developer.close.com/#custom-fields-list-all-the-activity-custom-fields-for-your-organization
     """
 
-    def path(self, **kwargs) -> str:
-        return "custom_field/activity"
+    _type = "activity"
 
 
 class Users(CloseComStream):
