@@ -62,7 +62,7 @@ We would represent this data in a catalog as follows:
       }
     },
     {
-      "name": "flights",
+      "name": "pilots",
       "supported_sync_modes": [
         "full_refresh",
         "incremental"
