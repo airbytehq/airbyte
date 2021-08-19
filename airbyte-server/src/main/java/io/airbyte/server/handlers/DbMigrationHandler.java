@@ -80,7 +80,7 @@ public class DbMigrationHandler {
         .migrationDescription(info.getDescription())
         .migrationState(info.getState().getDisplayName())
         .migratedBy(info.getInstalledBy())
-        .migratedAt(info.getExecutionTime())
+        .migratedAt(info.getInstalledOn().getTime())
         .migrationScript(info.getScript());
   }
 
@@ -89,7 +89,6 @@ public class DbMigrationHandler {
         .migrationType(String.format("%s %s", output.type, output.category))
         .migrationVersion(output.version)
         .migrationDescription(output.description)
-        .migratedAt(output.executionTime)
         .migrationScript(output.filepath);
   }
 

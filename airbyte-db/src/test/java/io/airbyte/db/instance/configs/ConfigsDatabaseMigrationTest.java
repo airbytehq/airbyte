@@ -28,9 +28,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.instance.DatabaseMigrator;
+import io.airbyte.db.instance.MigrationHelper;
+import java.io.IOException;
+import java.util.List;
+import org.flywaydb.core.api.MigrationInfo;
+import org.flywaydb.core.api.output.MigrateResult;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 
-class ConfigsDatabaseMigratorTest extends AbstractConfigsDatabaseTest {
+class ConfigsDatabaseMigrationTest extends AbstractConfigsDatabaseTest {
 
   /**
    * This method generates a schema dump for the configs database. The purpose is to ensure that the
@@ -39,10 +45,32 @@ class ConfigsDatabaseMigratorTest extends AbstractConfigsDatabaseTest {
   @Test
   public void testSchemaDump() throws Exception {
     String schemaDump = MoreResources.readResource("configs_database/schema_dump.txt").strip();
-    DatabaseMigrator migrator = new ConfigsDatabaseMigrator(database, ConfigsDatabaseMigratorTest.class.getSimpleName());
+    DatabaseMigrator migrator = new ConfigsDatabaseMigrator(database, ConfigsDatabaseMigrationTest.class.getSimpleName());
     migrator.migrate();
     String newSchemaDump = migrator.dumpSchemaToFile();
     assertEquals(schemaDump, newSchemaDump);
+  }
+
+  /**
+   * This method is used for migration development for the configs database. Run it to see how your migration
+   * changes the database schema.
+   */
+  @Ignore
+  @Test
+  public void runMigration() throws IOException {
+    DatabaseMigrator migrator = new ConfigsDatabaseMigrator(database, ConfigsDatabaseMigrationTest.class.getSimpleName());
+    migrator.baseline();
+
+    List<MigrationInfo> preMigrationInfoList = migrator.info();
+    System.out.println("\n==== Pre Migration Info ====\n" + MigrationHelper.format(preMigrationInfoList));
+    System.out.println("\n==== Pre Migration Schema ====\n" + migrator.dumpSchema() + "\n");
+
+    MigrateResult migrateResult = migrator.migrate();
+    System.out.println("\n==== Migration Result ====\n" + MigrationHelper.format(migrateResult));
+
+    List<MigrationInfo> postMigrationInfoList = migrator.info();
+    System.out.println("\n==== Post Migration Info ====\n" + MigrationHelper.format(postMigrationInfoList));
+    System.out.println("\n==== Post Migration Schema ====\n" + migrator.dumpSchema() + "\n");
   }
 
 }
