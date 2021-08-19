@@ -7,8 +7,6 @@ bases:
   - ../../resources
 
 images:
-  - name: airbyte/seed
-    newTag: 0.29.9-alpha
   - name: airbyte/db
     newTag: 0.29.9-alpha
   - name: airbyte/scheduler

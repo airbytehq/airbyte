@@ -204,20 +204,6 @@ spec:
             - name: gcs-log-creds-volume
               mountPath: /secrets/gcs-log-creds
               readOnly: true
-      initContainers:
-        - name: airbyte-seed
-          image: airbyte/seed
-          command: ["/bin/sh"]
-          args:
-            [
-              "-c",
-              "mkdir -p /configs/config && yes n | cp -r -i /app/seed/config /configs",
-            ]
-          volumeMounts:
-            - name: airbyte-volume-configs
-              mountPath: /configs
-            - name: airbyte-volume-workspace
-              mountPath: /workspace
       volumes:
         - name: airbyte-volume-workspace
           persistentVolumeClaim:
