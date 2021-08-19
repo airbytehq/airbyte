@@ -53,9 +53,9 @@ public class AuthenticationFilter implements ContainerRequestFilter {
                         LOGGER.error(" return from validateToken ");
                         return;
                     }
-                } catch (Exception e) {
-                    LOGGER.error(" return from exception " + e.getCause());
-                    e.printStackTrace();
+                } catch (Exception e1) {
+                    LOGGER.error(" return from inner exception " + e1.getCause());
+                    e1.printStackTrace();
                     abortWithUnauthorized(requestContext);
                 }
             }
