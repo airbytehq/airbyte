@@ -26,6 +26,9 @@ package io.airbyte.db.instance;
 
 import io.airbyte.db.Database;
 import java.io.IOException;
+import java.util.List;
+import org.flywaydb.core.api.MigrationInfo;
+import org.flywaydb.core.api.output.MigrateResult;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -63,8 +66,28 @@ public abstract class AbstractDatabaseTest {
   }
 
   /**
-   * Create an initialized database. The downstream implementation should do it by calling {@link DatabaseInstance#getAndInitialize}.
+   * Create an initialized database. The downstream implementation should do it by calling
+   * {@link DatabaseInstance#getAndInitialize}.
    */
   public abstract Database getAndInitializeDatabase(String username, String password, String connectionString) throws IOException;
+
+  /**
+   * This method is used for migration development. Run it to see how your migration changes the
+   * database schema.
+   */
+  public void runMigration(DatabaseMigrator migrator) throws IOException {
+    migrator.baseline();
+
+    List<MigrationInfo> preMigrationInfoList = migrator.info();
+    System.out.println("\n==== Pre Migration Info ====\n" + MigrationHelper.format(preMigrationInfoList));
+    System.out.println("\n==== Pre Migration Schema ====\n" + migrator.dumpSchema() + "\n");
+
+    MigrateResult migrateResult = migrator.migrate();
+    System.out.println("\n==== Migration Result ====\n" + MigrationHelper.format(migrateResult));
+
+    List<MigrationInfo> postMigrationInfoList = migrator.info();
+    System.out.println("\n==== Post Migration Info ====\n" + MigrationHelper.format(postMigrationInfoList));
+    System.out.println("\n==== Post Migration Schema ====\n" + migrator.dumpSchema() + "\n");
+  }
 
 }

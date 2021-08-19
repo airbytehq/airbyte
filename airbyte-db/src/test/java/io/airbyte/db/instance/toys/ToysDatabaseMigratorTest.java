@@ -33,8 +33,9 @@ import org.junit.jupiter.api.Test;
 class ToysDatabaseMigratorTest extends AbstractToysDatabaseTest {
 
   /**
-   * Apart from testing the migration, this method also generates a schema dump for the tests database. The purpose
-   * is to ensure that the latest schema is checked into the codebase after all migrations are executed.
+   * Apart from testing the migration, this method also generates a schema dump for the tests
+   * database. The purpose is to ensure that the latest schema is checked into the codebase after all
+   * migrations are executed.
    */
   @Test
   public void testMigration() throws Exception {

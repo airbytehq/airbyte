@@ -28,11 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.instance.DatabaseMigrator;
-import io.airbyte.db.instance.MigrationHelper;
 import java.io.IOException;
-import java.util.List;
-import org.flywaydb.core.api.MigrationInfo;
-import org.flywaydb.core.api.output.MigrateResult;
 import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 
@@ -51,26 +47,12 @@ class ConfigsDatabaseMigrationTest extends AbstractConfigsDatabaseTest {
     assertEquals(schemaDump, newSchemaDump);
   }
 
-  /**
-   * This method is used for migration development for the configs database. Run it to see how your migration
-   * changes the database schema.
-   */
+  // Run this method to test your migration.
   @Ignore
   @Test
   public void runMigration() throws IOException {
     DatabaseMigrator migrator = new ConfigsDatabaseMigrator(database, ConfigsDatabaseMigrationTest.class.getSimpleName());
-    migrator.baseline();
-
-    List<MigrationInfo> preMigrationInfoList = migrator.info();
-    System.out.println("\n==== Pre Migration Info ====\n" + MigrationHelper.format(preMigrationInfoList));
-    System.out.println("\n==== Pre Migration Schema ====\n" + migrator.dumpSchema() + "\n");
-
-    MigrateResult migrateResult = migrator.migrate();
-    System.out.println("\n==== Migration Result ====\n" + MigrationHelper.format(migrateResult));
-
-    List<MigrationInfo> postMigrationInfoList = migrator.info();
-    System.out.println("\n==== Post Migration Info ====\n" + MigrationHelper.format(postMigrationInfoList));
-    System.out.println("\n==== Post Migration Schema ====\n" + migrator.dumpSchema() + "\n");
+    runMigration(migrator);
   }
 
 }
