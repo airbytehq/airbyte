@@ -29,8 +29,8 @@ import io.airbyte.db.instance.DatabaseMigrator;
 import org.junit.jupiter.api.Test;
 
 /**
- * This file generates a schema dump for the jobs database. The purpose is to ensure that the latest schema is checked into the codebase
- * after all migrations are executed.
+ * This file generates a schema dump for the jobs database. The purpose is to ensure that the latest
+ * schema is checked into the codebase after all migrations are executed.
  */
 class JobsDatabaseSchemaDumpTest extends AbstractJobsDatabaseTest {
 

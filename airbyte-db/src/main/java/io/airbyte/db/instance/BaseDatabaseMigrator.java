@@ -37,7 +37,6 @@ import java.util.stream.Collectors;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.MigrationInfoService;
-import org.flywaydb.core.api.output.BaselineResult;
 import org.flywaydb.core.api.output.MigrateResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,11 +53,12 @@ public abstract class BaseDatabaseMigrator implements DatabaseMigrator {
   private final String schemaDumpFile;
 
   /**
-   * @param dbIdentifier           A name to identify the database. Preferably one word. This identifier will be used to construct the migration
-   *                               history table name. For example, if the identifier is "imports", the history table name will be
-   *                               "airbyte_imports_migrations".
-   * @param migrationFileLocations Example: "classpath:db/migration". See: https://flywaydb.org/documentation/concepts/migrations#discovery-1
-   * @param schemaDumpFile         The default schema dump file for this database.
+   * @param dbIdentifier A name to identify the database. Preferably one word. This identifier will be
+   *        used to construct the migration history table name. For example, if the identifier is
+   *        "imports", the history table name will be "airbyte_imports_migrations".
+   * @param migrationFileLocations Example: "classpath:db/migration". See:
+   *        https://flywaydb.org/documentation/concepts/migrations#discovery-1
+   * @param schemaDumpFile The default schema dump file for this database.
    */
   public BaseDatabaseMigrator(Database database, String dbIdentifier, String migrationRunner, String migrationFileLocations, String schemaDumpFile) {
     this.database = new ExceptionWrappingDatabase(database);
@@ -86,13 +86,6 @@ public abstract class BaseDatabaseMigrator implements DatabaseMigrator {
     MigrationInfoService result = flyway.info();
     result.getInfoResult().warnings.forEach(LOGGER::warn);
     return Arrays.asList(result.all());
-  }
-
-  @Override
-  public BaselineResult baseline() {
-    BaselineResult result = flyway.baseline();
-    result.warnings.forEach(LOGGER::warn);
-    return result;
   }
 
   @Override

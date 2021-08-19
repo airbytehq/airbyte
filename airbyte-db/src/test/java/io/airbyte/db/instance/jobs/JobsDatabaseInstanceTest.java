@@ -27,16 +27,9 @@ package io.airbyte.db.instance.jobs;
 import static org.jooq.impl.DSL.select;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.airbyte.db.Database;
 import io.airbyte.db.instance.AbstractJobsDatabaseTest;
-import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import org.jooq.exception.DataAccessException;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
 
 class JobsDatabaseInstanceTest extends AbstractJobsDatabaseTest {
 

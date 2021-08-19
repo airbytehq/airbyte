@@ -48,6 +48,8 @@ tags:
     description: Destination  related resources.
   - name: connection
     description: Connection between sources and destinations.
+  - name: db_migration
+    description: Database migration related resources.
   - name: web_backend
     description: Connection between sources and destinations.
   - name: health
@@ -1134,6 +1136,29 @@ paths:
                 $ref: "#/components/schemas/CheckConnectionRead"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/db_migration/info:
+    post:
+      tags:
+        - db_migration
+      summary: List current migration status
+      operationId: executeDbMigrationInfo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DbMigrationRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DbMigrationInfoRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/web_backend/connections/list:
     post:
       tags:
@@ -1988,6 +2013,13 @@ components:
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
+    DbMigrationRequestBody:
+      type: object
+      required:
+        - database
+      properties:
+        database:
+          type: string
     WebBackendConnectionRequestBody:
       type: object
       required:
@@ -2698,6 +2730,38 @@ components:
           type: string
         memory_limit:
           type: string
+    # DB Migration
+    DbMigrationInfoItem:
+      type: object
+      required:
+        - migration_type
+        - migration_version
+        - migration_description
+        - migration_state
+        - migrated_at
+        - location
+      properties:
+        migration_type:
+          type: string
+        migration_version:
+          type: string
+        migration_description:
+          type: string
+        migration_state:
+          type: string
+        migrated_by:
+          type: string
+        migrated_at:
+          type: integer
+        migration_script:
+          type: string
+    DbMigrationInfoRead:
+      type: object
+      properties:
+        migration_info_list:
+          type: array
+          items:
+            $ref: "#/components/schemas/DbMigrationInfoItem"
     # Web Backend
     WebBackendConnectionRead:
       type: object

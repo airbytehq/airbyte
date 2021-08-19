@@ -27,6 +27,7 @@ package io.airbyte.server;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -46,6 +47,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static Configs configs;
   private static FileTtlManager archiveTtlManager;
   private static Map<String, String> mdc;
+  private static Map<String, Database> databaseMap;
 
   public static void setConfigRepository(final ConfigRepository configRepository) {
     ConfigurationApiFactory.configRepository = configRepository;
@@ -79,6 +81,10 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.temporalService = temporalService;
   }
 
+  public static void setDatabaseMap(final Map<String, Database> databaseMap) {
+    ConfigurationApiFactory.databaseMap = databaseMap;
+  }
+
   @Override
   public ConfigurationApi provide() {
     MDC.setContextMap(mdc);
@@ -90,7 +96,8 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.synchronousSchedulerClient,
         ConfigurationApiFactory.configs,
         ConfigurationApiFactory.archiveTtlManager,
-        ConfigurationApiFactory.temporalService);
+        ConfigurationApiFactory.temporalService,
+        ConfigurationApiFactory.databaseMap);
   }
 
   @Override
