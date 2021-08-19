@@ -38,10 +38,10 @@ from .cards import (
     VenmoAccount,
     VisaCheckoutCard,
 )
-from .common import CatalogModel as BaseModel
+from .common import CatalogModel
 
 
-class Customer(BaseModel):
+class Customer(CatalogModel):
     addresses: List[Address]
     android_pay_cards: Optional[List[AndroidPayCard]]
     apple_pay_cards: Optional[List[ApplePayCard]]

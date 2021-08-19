@@ -25,10 +25,10 @@
 from decimal import Decimal
 from typing import Optional
 
-from .common import CatalogModel as BaseModel
+from .common import CatalogModel
 
 
-class Discount(BaseModel):
+class Discount(CatalogModel):
     amount: Decimal
     current_billing_cycle: Optional[Decimal]
     description: str

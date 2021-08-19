@@ -25,10 +25,10 @@
 from datetime import datetime
 from typing import Union
 
-from .common import CatalogModel as BaseModel
+from .common import CatalogModel
 
 
-class Address(BaseModel):
+class Address(CatalogModel):
     company: str
     country_code_alpha2: str
     country_code_alpha3: str
@@ -47,7 +47,7 @@ class Address(BaseModel):
     updated_at: datetime
 
 
-class CreditCard(BaseModel):
+class CreditCard(CatalogModel):
     """
     https://developer.paypal.com/braintree/docs/reference/response/credit-card
     """

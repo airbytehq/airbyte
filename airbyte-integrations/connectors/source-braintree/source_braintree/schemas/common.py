@@ -31,7 +31,27 @@ from pydantic.typing import resolve_annotations
 
 
 class AllOptional(pydantic.main.ModelMetaclass):
+    """
+    Metaclass for marking all Pydantic model fields as Optional
+    Here is exmaple of declaring model using this metaclasslike:
+    '''
+            class MyModel(BaseModel, metaclass=AllOptional):
+                a: str
+                b: str
+    '''
+    Its equivalent of:
+    '''
+            class MyModel(BaseModel):
+                a: Optional[str]
+                b: Optional[str]
+    '''
+    It would make code more clear and eliminate a lot of manual work.
+    """
+
     def __new__(self, name, bases, namespaces, **kwargs):
+        """
+        Iterate through fields and wrap then with typing.Optional type.
+        """
         annotations = resolve_annotations(namespaces.get("__annotations__", {}), namespaces.get("__module__", None))
         for base in bases:
             annotations = {**annotations, **getattr(base, "__annotations__", {})}

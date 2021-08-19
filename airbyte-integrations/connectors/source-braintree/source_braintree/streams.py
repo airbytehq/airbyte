@@ -22,7 +22,7 @@
 # SOFTWARE.
 #
 
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any, Generator, Iterable, List, Mapping, Optional, Union
 
@@ -36,7 +36,7 @@ from source_braintree.schemas import Customer, Discount, Dispute, MerchantAccoun
 from source_braintree.spec import BraintreeConfig
 
 
-class BraintreeStream(Stream):
+class BraintreeStream(Stream, ABC):
     def __init__(self, config: BraintreeConfig):
         self._start_date = config.start_date
         self._gateway = BraintreeStream.create_gateway(config)

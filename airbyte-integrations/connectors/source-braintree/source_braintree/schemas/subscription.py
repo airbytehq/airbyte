@@ -26,13 +26,12 @@ from datetime import datetime
 from decimal import Decimal
 from typing import List
 
-from .common import AddOn, AllOptional
-from .common import CatalogModel as BaseModel
+from .common import AddOn, CatalogModel
 from .discount import Discount
 from .transaction import Transaction
 
 
-class Subscription(BaseModel, metaclass=AllOptional):
+class Subscription(CatalogModel):
     add_ons: List[AddOn]
     balance: Decimal
     billing_day_of_month: Decimal

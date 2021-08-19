@@ -26,11 +26,10 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import List, Optional
 
-from .common import AllOptional
-from .common import CatalogModel as BaseModel
+from .common import AllOptional, CatalogModel
 
 
-class Evidence(BaseModel, metaclass=AllOptional):
+class Evidence(CatalogModel, metaclass=AllOptional):
     created_at: datetime
     id: str
     sent_to_processor_at: datetime
@@ -38,13 +37,13 @@ class Evidence(BaseModel, metaclass=AllOptional):
     comment: str
 
 
-class PaypalMessage(BaseModel):
+class PaypalMessage(CatalogModel):
     message: str
     send_at: datetime
     sender: str
 
 
-class Dispute(BaseModel):
+class Dispute(CatalogModel):
     amount_disputed: Decimal
     amount_won: Decimal
     case_number: str
