@@ -64,7 +64,11 @@
 {%- endmacro %}
 
 {% macro bigquery__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
-    json_extract({{ from_table}}.{{ json_column }}, {{ format_json_path(normalized_json_path) }})
+    {%- if from_table|string() == '' %}
+        json_extract({{ json_column }}, {{ format_json_path(normalized_json_path) }})
+    {% else %}
+        json_extract({{ from_table}}.{{ json_column }}, {{ format_json_path(normalized_json_path) }})
+    {% endif -%}
 {%- endmacro %}
 
 {% macro postgres__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
@@ -92,7 +96,11 @@
 {%- endmacro %}
 
 {% macro snowflake__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
-    get_path(parse_json({{ from_table }}.{{ json_column }}), {{ format_json_path(json_path_list) }})
+    {%- if from_table|string() == '' %}
+        get_path(parse_json({{ json_column }}), {{ format_json_path(json_path_list) }})
+    {% else %}
+        get_path(parse_json({{ from_table }}.{{ json_column }}), {{ format_json_path(json_path_list) }})
+    {% endif -%}
 {%- endmacro %}
 
 {# json_extract_scalar -------------------------------------------------     #}

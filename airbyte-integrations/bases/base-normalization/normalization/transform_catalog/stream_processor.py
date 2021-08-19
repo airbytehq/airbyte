@@ -109,7 +109,6 @@ class StreamProcessor(object):
         self.sql_outputs: Dict[str, str] = {}
         self.parent: Optional["StreamProcessor"] = None
         self.is_nested_array: bool = False
-        self.table_alias: str = "table_alias"
 
     @staticmethod
     def create_from_parent(
@@ -336,32 +335,27 @@ from {{ from_table }} as table_alias
             fields=self.extract_json_columns(column_names),
             from_table=jinja_call(from_table),
             unnesting_after_query=self.unnesting_after_query(),
-            sql_table_comment=self.sql_table_comment(),
+            sql_table_comment=self.sql_table_comment()
         )
         return sql
 
     def extract_json_columns(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
-        # The `unnest_dest_alias` is used when destination macro unnested_column_value alias
-        # the join table. This causes conflict with table_alias alias when extract the json info
-        # from main table.
-        unnest_dest_alias = self.destination_type in [DestinationType.MYSQL, DestinationType.POSTGRES, DestinationType.REDSHIFT]
         return [
             StreamProcessor.extract_json_column(
-                field, self.json_column_name, self.properties[field], column_names[field][0], self.table_alias, unnest_dest_alias
+                field, self.json_column_name, self.properties[field], column_names[field][0], 'table_alias'
             )
             for field in column_names
         ]
 
     @staticmethod
     def extract_json_column(
-        property_name: str, json_column_name: str, definition: Dict, column_name: str, table_alias: str, unnest_dest_alias: bool
-    ) -> str:
+        property_name: str, json_column_name: str, definition: Dict, column_name: str, table_alias: str) -> str:
         json_path = [property_name]
         # In some cases, some destination aren't able to parse the JSON blob using the original property name
         # we make their life easier by using a pre-populated and sanitized column name instead...
         normalized_json_path = [transform_json_naming(property_name)]
         table_alias = f"{table_alias}"
-        if "unnested_column_value" in json_column_name and unnest_dest_alias:
+        if "unnested_column_value" in json_column_name:
             table_alias = ''
         json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path})")
         if "type" in definition:
@@ -599,8 +593,7 @@ from {{ from_table }}
             fields=self.list_fields(column_names),
             hash_id=self.hash_id(),
             from_table=jinja_call(from_table),
-            sql_table_comment=self.sql_table_comment(include_from_table=True),
-            table_alias=self.table_alias,
+            sql_table_comment=self.sql_table_comment(include_from_table=True)
         )
         return sql
 
