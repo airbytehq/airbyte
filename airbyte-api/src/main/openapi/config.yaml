@@ -2757,26 +2757,24 @@ components:
     DbMigrationInfoItem:
       type: object
       required:
-        - migration_type
-        - migration_version
-        - migration_description
-        - migrated_at
-        - migration_script
+        - migrationType
+        - migrationVersion
+        - migrationDescription
       properties:
-        migration_type:
+        migrationType:
           type: string
-        migration_version:
+        migrationVersion:
           type: string
-        migration_description:
+        migrationDescription:
           type: string
-        migration_state:
+        migrationState:
           type: string
-        migrated_by:
+        migratedBy:
           type: string
-        migrated_at:
+        migratedAt:
           type: integer
           format: int64
-        migration_script:
+        migrationScript:
           type: string
     DbMigrationInfoRead:
       type: object
@@ -2788,11 +2786,11 @@ components:
     DbMigrationMigrateRead:
       type: object
       properties:
-        initial_version:
+        initialVersion:
           type: string
-        target_version:
+        targetVersion:
           type: string
-        executed_count:
+        executedCount:
           type: integer
         migrations:
           type: array

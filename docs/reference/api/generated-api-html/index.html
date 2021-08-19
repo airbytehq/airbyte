@@ -1136,21 +1136,21 @@ font-style: italic;
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "migrations" : [ {
-    "migration_type" : "migration_type",
-    "migrated_at" : 0,
-    "migrated_by" : "migrated_by",
-    "migration_description" : "migration_description",
-    "migration_version" : "migration_version",
-    "migration_state" : "migration_state",
-    "migration_script" : "migration_script"
+    "migrationVersion" : "migrationVersion",
+    "migrationDescription" : "migrationDescription",
+    "migratedAt" : 0,
+    "migrationType" : "migrationType",
+    "migrationScript" : "migrationScript",
+    "migrationState" : "migrationState",
+    "migratedBy" : "migratedBy"
   }, {
-    "migration_type" : "migration_type",
-    "migrated_at" : 0,
-    "migrated_by" : "migrated_by",
-    "migration_description" : "migration_description",
-    "migration_version" : "migration_version",
-    "migration_state" : "migration_state",
-    "migration_script" : "migration_script"
+    "migrationVersion" : "migrationVersion",
+    "migrationDescription" : "migrationDescription",
+    "migratedAt" : 0,
+    "migrationType" : "migrationType",
+    "migrationScript" : "migrationScript",
+    "migrationState" : "migrationState",
+    "migratedBy" : "migratedBy"
   } ]
 }</code></pre>
 
@@ -1209,26 +1209,26 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
-  "executed_count" : 0,
-  "initial_version" : "initial_version",
+  "executedCount" : 0,
   "migrations" : [ {
-    "migration_type" : "migration_type",
-    "migrated_at" : 0,
-    "migrated_by" : "migrated_by",
-    "migration_description" : "migration_description",
-    "migration_version" : "migration_version",
-    "migration_state" : "migration_state",
-    "migration_script" : "migration_script"
+    "migrationVersion" : "migrationVersion",
+    "migrationDescription" : "migrationDescription",
+    "migratedAt" : 0,
+    "migrationType" : "migrationType",
+    "migrationScript" : "migrationScript",
+    "migrationState" : "migrationState",
+    "migratedBy" : "migratedBy"
   }, {
-    "migration_type" : "migration_type",
-    "migrated_at" : 0,
-    "migrated_by" : "migrated_by",
-    "migration_description" : "migration_description",
-    "migration_version" : "migration_version",
-    "migration_state" : "migration_state",
-    "migration_script" : "migration_script"
+    "migrationVersion" : "migrationVersion",
+    "migrationDescription" : "migrationDescription",
+    "migratedAt" : 0,
+    "migrationType" : "migrationType",
+    "migrationScript" : "migrationScript",
+    "migrationState" : "migrationState",
+    "migratedBy" : "migratedBy"
   } ],
-  "target_version" : "target_version"
+  "initialVersion" : "initialVersion",
+  "targetVersion" : "targetVersion"
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -5776,13 +5776,13 @@ font-style: italic;
     <h3><a name="DbMigrationInfoItem"><code>DbMigrationInfoItem</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">migration_type </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">migration_version </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">migration_description </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">migration_state (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">migrated_by (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">migrated_at </div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
-<div class="param">migration_script </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+      <div class="param">migrationType </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">migrationVersion </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">migrationDescription </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">migrationState (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">migratedBy (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">migratedAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+<div class="param">migrationScript (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -5796,9 +5796,9 @@ font-style: italic;
     <h3><a name="DbMigrationMigrateRead"><code>DbMigrationMigrateRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">initial_version (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">target_version (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">executed_count (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
+      <div class="param">initialVersion (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">targetVersion (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">executedCount (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
 <div class="param">migrations (optional)</div><div class="param-desc"><span class="param-type"><a href="#DbMigrationInfoItem">array[DbMigrationInfoItem]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
