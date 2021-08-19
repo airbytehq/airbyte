@@ -162,7 +162,16 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         Override get_json_schema CDK method to retrieve the schema information for GoogleAnalyticsV4 Object dynamically.
         """
 
-        schema = {"type": ["null", "object"], "additionalProperties": False, "properties": {"view_id": {"type": ["string"]}}}
+        schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": ["null", "object"],
+            "additionalProperties": False,
+            "properties": {
+                "view_id": {
+                    "type": ["string"]
+                },
+            },
+        }
 
         # Add the dimensions to the schema
         for dimension in self.report["dimensions"]:
@@ -195,15 +204,24 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             ...
         """
 
-        start_date = pendulum.parse(self.start_date)
+        start_date = pendulum.parse(self.start_date).date()
+        end_date = pendulum.now().date()
 
         # Determine stream_state, if no stream_state we use start_date
         if stream_state:
-            start_date = pendulum.parse(stream_state.get(self.cursor_field))
+            start_date = pendulum.parse(stream_state.get(self.cursor_field)).date()
 
-        end_date = start_date.add(days=self.window_in_days)
+        # use the lowest date between start_date and self.end_date, otherwise API fails if start_date is in future
+        start_date = min(start_date, end_date)
+        date_slices = []
 
-        return [{"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date)}]
+        while start_date <= end_date:
+            end_date_slice = start_date.add(days=self.window_in_days)
+            date_slices.append(
+                {"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date_slice)})
+            start_date = end_date_slice
+
+        return date_slices
 
     def get_data(self, data):
         for data_field in self.data_fields:
