@@ -23,14 +23,10 @@
 #
 
 from datetime import date
-import pendulum
 
 import pendulum
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.streams import IncrementalGoogleAdsStream, chunk_date_range
-
-from source_google_ads.streams import chunk_date_range
-from source_google_ads.streams import IncrementalGoogleAdsStream
 
 SAMPLE_SCHEMA = {
     "properties": {
@@ -121,18 +117,6 @@ def test_get_fields_from_schema():
     response = GoogleAds.get_fields_from_schema(SAMPLE_SCHEMA)
     assert response == ["segment.date"]
 
-def test_interval_chunking():
-    mock_intervals = [{'segments.date': '2021-05-18'}, {'segments.date': '2021-06-18'}, {'segments.date': '2021-07-18'}]
-    intervals = chunk_date_range('2021-06-01', 14, 'segments.date', '2021-08-15')
-
-    assert mock_intervals == intervals
-
-def test_get_date_params():
-    mock_start_date = '2021-05-19' # Please note that this is equal to inputted stream_slice start date + 1 day
-    mock_end_date = '2021-06-18'
-    start_date, end_date = IncrementalGoogleAdsStream.get_date_params(stream_slice={'segments.date': '2021-05-18'}, cursor_field='segments.date', end_date=pendulum.parse('2021-08-15'))
-
-    assert mock_start_date == start_date and mock_end_date == end_date
 
 def test_interval_chunking():
     mock_intervals = [{"segments.date": "2021-05-18"}, {"segments.date": "2021-06-18"}, {"segments.date": "2021-07-18"}]
@@ -142,7 +126,8 @@ def test_interval_chunking():
 
 
 def test_get_date_params():
-    mock_start_date = "2021-05-19"  # Please note that this is equal to inputted stream_slice start date + 1 day
+    # Please note that this is equal to inputted stream_slice start date + 1 day
+    mock_start_date = "2021-05-19"
     mock_end_date = "2021-06-18"
     start_date, end_date = IncrementalGoogleAdsStream.get_date_params(
         stream_slice={"segments.date": "2021-05-18"}, cursor_field="segments.date", end_date=pendulum.parse("2021-08-15")
