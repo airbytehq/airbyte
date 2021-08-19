@@ -39,7 +39,9 @@ export enum Routes {
   ConnectionNew = "/new-connection",
   SourceNew = "/new-source",
   DestinationNew = "/new-destination",
-  Settings = "/settings",
+  Settings = "/airbyte/settings",
+  SettingsDestination = "/destination",
+  SettingsSource = "/source",
   Configuration = "/configuration",
   Notifications = "/notifications",
   Metrics = "/metrics",
@@ -82,10 +84,10 @@ const getPageName = (pathname: string) => {
   if (pathname.match(itemSourcePageRegex)) {
     return "Source Item Page";
   }
-  if (pathname === `${Routes.Settings}${Routes.Source}`) {
+  if (pathname === `${Routes.Settings}${Routes.SettingsSource}`) {
     return "Settings Sources Connectors Page";
   }
-  if (pathname === `${Routes.Settings}${Routes.Destination}`) {
+  if (pathname === `${Routes.Settings}${Routes.SettingsDestination}`) {
     return "Settings Destinations Connectors Page";
   }
   if (pathname === `${Routes.Settings}${Routes.Configuration}`) {
