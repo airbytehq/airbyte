@@ -134,9 +134,9 @@ Your database user should now be ready for use with Airbyte.
 
 ## Change Data Capture \(CDC\) / Logical Replication / WAL Replication
 
-We use [logical replication](https://www.postgresql.org/docs/10/logical-replication.html) of the Postgres write-ahead log \(WAL\) to incrementally capture deletes using the `pgoutput` plugin.
+We use [logical replication](https://www.postgresql.org/docs/10/logical-replication.html) of the Postgres write-ahead log \(WAL\) to incrementally capture deletes using a replication plugin.
 
-We do not require installing custom plugins like `wal2json` or `test_decoding`. We use `pgoutput`, which is included in Postgres 10+ by default.
+We use `pgoutput` as a default plugin, which is included in Postgres 10+. Also `wal2json` plugin is supported, please read [the section on replication plugins below](postgres.md#select-replication-plugin) for more information.
 
 Please read the [CDC docs](../../understanding-airbyte/cdc.md) for an overview of how Airbyte approaches CDC.
 
@@ -172,6 +172,11 @@ Follow one of these guides to enable logical replication:
 
 We recommend using a user specifically for Airbyte's replication so you can minimize access. This Airbyte user for your instance needs to be granted `REPLICATION` and `LOGIN` permissions. You can create a role with `CREATE ROLE <name> REPLICATION LOGIN;` and grant that role to the user. You still need to make sure the user can connect to the database, use the schema, and to use `SELECT` on tables \(the same are required for non-CDC incremental syncs and all full refreshes\).
 
+#### Select replication plugin
+
+We recommend using a `pgoutput` plugin as it is the standard logical decoding plugin in Postgres.
+In case the replication table contains a lot of big JSON blobs and table size exceeds 1 GB, we recommend using a `wal2json` instead. Please note that `wal2json` may require additional installation for Bare Metal, VMs \(EC2/GCE/etc\), Docker, etc. For more information read [wal2json documentation](https://github.com/eulerto/wal2json).
+
 #### Create replication slot
 
 Next, you will need to create a replication slot. Here is the query used to create a replication slot called `airbyte_slot`:
@@ -180,7 +185,7 @@ Next, you will need to create a replication slot. Here is the query used to crea
 SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
 ```
 
-This slot **must** use `pgoutput`.
+If you would like to use `wal2json` plugin, please change `pgoutput` to `wal2json` value in the above query.
 
 #### Create publications and replication identities for tables
 
@@ -246,6 +251,7 @@ If you encounter one of those not listed below, please consider [contributing to
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.3.9   | 2021-08-17 | [5304](https://github.com/airbytehq/airbyte/pull/5304) | Fix CDC OOM issue |
 | 0.3.8   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |
 | 0.3.4   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
 | 0.3.3   | 2021-06-08 | [3960](https://github.com/airbytehq/airbyte/pull/3960) | Add method field in specification parameters |

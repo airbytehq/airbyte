@@ -25,22 +25,13 @@
 package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import java.util.Properties;
 
-public class PostgresCdcProperties {
+public class PostgresUtils {
 
-  static Properties getDebeziumProperties(JsonNode config) {
-    final Properties props = new Properties();
-    props.setProperty("plugin.name", PostgresUtils.getPluginValue(config.get("replication_method")));
-    props.setProperty("connector.class", "io.debezium.connector.postgresql.PostgresConnector");
-    props.setProperty("snapshot.mode", "exported");
+  private static final String PGOUTPUT_PLUGIN = "pgoutput";
 
-    props.setProperty("slot.name", config.get("replication_method").get("replication_slot").asText());
-    props.setProperty("publication.name", config.get("replication_method").get("publication").asText());
-
-    props.setProperty("publication.autocreate.mode", "disabled");
-
-    return props;
+  public static String getPluginValue(JsonNode field) {
+    return field.has("plugin") ? field.get("plugin").asText() : PGOUTPUT_PLUGIN;
   }
 
 }
