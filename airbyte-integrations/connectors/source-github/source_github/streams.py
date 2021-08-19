@@ -280,6 +280,45 @@ class Assignees(GithubStream):
     """
 
 
+class PullRequestStats(GithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
+    """
+
+    fields_to_minimize = ("merged_by",)
+
+    @property
+    def record_keys(self) -> List[str]:
+        return list(self.get_json_schema()['properties'].keys())
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_request_number']}"
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        for stream_slice in super().stream_slices(**kwargs):
+            pull_requests_stream = PullRequests(authenticator=self.authenticator, repositories=[stream_slice["repository"]], start_date="")
+            for pull_request in pull_requests_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+                yield {"pull_request_number": pull_request["number"], "repository": stream_slice["repository"]}
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        yield self.transform(response.json(), repository=stream_slice["repository"])
+
+    def transform(self, record: MutableMapping[str, Any], repository: str = None) -> MutableMapping[str, Any]:
+        record = super().transform(record=record, repository=repository)
+        keys = [key for key in record if key not in self.record_keys]
+        for key in keys:
+             del record[key]
+        return record
+
+
 class Reviews(GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request
