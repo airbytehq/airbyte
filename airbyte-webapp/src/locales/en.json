@@ -333,6 +333,7 @@
   "admin.downloadSchedulerLogs": "Download Scheduler Logs",
   "admin.upgradeAll": "Upgrade all",
   "admin.upgraded": "Upgraded!",
+  "admin.runMigration": "Run Migration",
 
   "settings.accountSettings": "Account Settings",
   "settings.changeSaved": "change saved!",
@@ -369,6 +370,7 @@
   "connector.source": "Source",
   "connector.destination": "Destination",
 
+  "dbMigration.titleSuffix": " Database Migration",
   "dbMigration.type": "Type",
   "dbMigration.version": "Version",
   "dbMigration.description": "Description",

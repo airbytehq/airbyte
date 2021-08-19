@@ -1,21 +1,16 @@
 import React from "react";
-import HeadTitle from "components/HeadTitle";
 import { DbMigrationInfoItem } from "core/resources/DbMigration";
-import { Block, Title } from "../../ConnectorsPage/components/PageComponents";
+import { Block } from "../../ConnectorsPage/components/PageComponents";
 import Table from "components/Table/Table";
 import { FormattedMessage } from "react-intl";
 
 type MigrationsViewProps = {
-  database: string;
   migrations: Array<DbMigrationInfoItem>;
 };
 
 const defaultSortField = [{ id: "migrationVersion" }];
 
-const MigrationsView: React.FC<MigrationsViewProps> = ({
-  database,
-  migrations,
-}) => {
+const MigrationTableView: React.FC<MigrationsViewProps> = ({ migrations }) => {
   const columns = React.useMemo(
     () => [
       {
@@ -52,10 +47,8 @@ const MigrationsView: React.FC<MigrationsViewProps> = ({
 
   return (
     <>
-      <HeadTitle titles={[{ id: "settings.dbMigrations" }]} />
       {migrations.length > 0 && (
         <Block>
-          <Title bold>{database} Database Migrations</Title>
           <Table
             columns={columns}
             data={migrations}
@@ -67,4 +60,4 @@ const MigrationsView: React.FC<MigrationsViewProps> = ({
   );
 };
 
-export default MigrationsView;
+export default MigrationTableView;
