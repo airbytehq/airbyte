@@ -22,15 +22,19 @@
 # SOFTWARE.
 #
 
+from decimal import Decimal
+from typing import Optional
 
-from setuptools import find_packages, setup
+from .common import CatalogModel
 
-setup(
-    name="source_braintree_singer",
-    description="Source implementation for Braintree.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    install_requires=["tap-braintree==0.9.1", "python-dateutil==2.8.1", "airbyte-protocol", "base-singer", "base-python", "pytest==6.1.2"],
-    packages=find_packages(),
-    package_data={"": ["*.json"]},
-)
+
+class Discount(CatalogModel):
+    amount: Decimal
+    current_billing_cycle: Optional[Decimal]
+    description: str
+    id: str
+    kind: str
+    name: str
+    never_expires: bool
+    number_of_billing_cycles: Optional[Decimal]
+    quantity: Optional[Decimal]
