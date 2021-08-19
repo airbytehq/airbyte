@@ -29,6 +29,7 @@ import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
+import io.airbyte.db.mongodb.MongoDatabase;
 import java.util.Optional;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.SQLDialect;
@@ -155,6 +156,10 @@ public class Databases {
     connectionPool.setUrl(jdbcConnectionString);
     connectionProperties.ifPresent(connectionPool::setConnectionProperties);
     return connectionPool;
+  }
+
+  public static MongoDatabase createMongoDatabase(final String connectionString, final String databaseName) {
+    return new MongoDatabase(connectionString, databaseName);
   }
 
 }

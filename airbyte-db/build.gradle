@@ -10,6 +10,9 @@ dependencies {
 
     implementation project(':airbyte-protocol:models')
 
+    // MongoDB
+    implementation group: 'org.mongodb', name: 'mongo-java-driver', version: '3.12.8'
+
     testImplementation project(':airbyte-test-utils')
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'

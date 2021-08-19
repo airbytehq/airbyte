@@ -56,6 +56,7 @@ import io.airbyte.protocol.models.SyncMode;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -348,7 +349,53 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @return list of table/data structure info
    * @throws Exception might throw an error during connection to database
    */
-  protected abstract List<TableInfo<Field>> getTables(final Database database) throws Exception;
+  protected List<TableInfo<Field>> getTables(final Database database) throws Exception {
+    final List<TableInfo<CommonField<DataType>>> tableInfos = discoverWithoutSystemTables(database);
+    final Map<String, List<String>> fullyQualifiedTableNameToPrimaryKeys = discoverPrimaryKeys(
+        database, tableInfos);
+
+    return tableInfos.stream()
+        .map(t -> {
+          // some databases return multiple copies of the same record for a column (e.g. redshift) because
+          // they have at least once delivery guarantees. we want to dedupe these, but first we check that the
+          // records are actually the same and provide a good error message if they are not.
+          assertColumnsWithSameNameAreSame(t.getNameSpace(), t.getName(), t.getFields());
+          final List<Field> fields = t.getFields()
+              .stream()
+              .map(f -> Field.of(f.getName(), getType(f.getType())))
+              .distinct()
+              .collect(Collectors.toList());
+          final String fullyQualifiedTableName = getFullyQualifiedTableName(t.getNameSpace(),
+              t.getName());
+          final List<String> primaryKeys = fullyQualifiedTableNameToPrimaryKeys
+              .getOrDefault(fullyQualifiedTableName, Collections
+                  .emptyList());
+
+          return TableInfo.<Field>builder().nameSpace(t.getNameSpace()).name(t.getName())
+              .fields(fields).primaryKeys(primaryKeys)
+              .build();
+        })
+        .collect(Collectors.toList());
+  }
+
+  protected void assertColumnsWithSameNameAreSame(String nameSpace,
+      String tableName,
+      List<CommonField<DataType>> columns) {
+    columns.stream()
+        .collect(Collectors.groupingBy(CommonField<DataType>::getName))
+        .values()
+        .forEach(columnsWithSameName -> {
+          final CommonField<DataType> comparisonColumn = columnsWithSameName.get(0);
+          columnsWithSameName.forEach(column -> {
+            if (!column.equals(comparisonColumn)) {
+              throw new RuntimeException(
+                  String.format(
+                      "Found multiple columns with same name: %s in table: %s.%s but the columns are not the same. columns: %s",
+                      comparisonColumn.getName(), nameSpace, tableName, columns));
+            }
+          });
+        });
+  }
 
   /**
    * Map a database implementation-specific configuration to json object that adheres to the database
@@ -435,7 +482,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                                         String tableName);
 
   /**
-   * Read incremental data from a table. Incremental read should returns only records where cursor
+   * Read incremental data from a table. Incremental read should return only records where cursor
    * column value is bigger than cursor.
    *
    * @param database source database
