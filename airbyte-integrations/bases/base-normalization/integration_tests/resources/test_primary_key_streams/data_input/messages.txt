@@ -38,5 +38,3 @@
 
 {"type":"RECORD","record":{"stream":"conflict_stream_array","data":{"id":1, "conflict_stream_array": {"conflict_stream_array": [{"id": 1}, {"id": 2}, {"id": 3}]}}, "emitted_at":1623861660}}
 {"type":"RECORD","record":{"stream":"conflict_stream_array","data":{"id":2, "conflict_stream_array": {"conflict_stream_array": [{"id": 4}, {"id": 5}, {"id": 6}]}}, "emitted_at":1623861860}}
-
-

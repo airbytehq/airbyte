@@ -8,7 +8,7 @@ select
     json_value(_airbyte_data, 
     '$."date"') as `date`,
     
-        json_extract(_airbyte_data, 
+        json_extract(table_alias._airbyte_data, 
     '$."partition"')
      as `partition`,
     _airbyte_emitted_at

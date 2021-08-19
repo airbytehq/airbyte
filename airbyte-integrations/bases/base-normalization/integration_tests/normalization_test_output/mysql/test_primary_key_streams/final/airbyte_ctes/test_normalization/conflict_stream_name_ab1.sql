@@ -6,7 +6,7 @@ select
     json_value(_airbyte_data, 
     '$."id"') as id,
     
-        json_extract(_airbyte_data, 
+        json_extract(table_alias._airbyte_data, 
     '$."conflict_stream_name"')
      as conflict_stream_name,
     _airbyte_emitted_at

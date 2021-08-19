@@ -361,8 +361,8 @@ from {{ from_table }} as table_alias
         # we make their life easier by using a pre-populated and sanitized column name instead...
         normalized_json_path = [transform_json_naming(property_name)]
         table_alias = f"{table_alias}"
-        if "unnest_cte" in json_column_name and unnest_dest_alias:
-            table_alias = None
+        if "unnested_column_value" in json_column_name and unnest_dest_alias:
+            table_alias = ''
         json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path})")
         if "type" in definition:
             if is_array(definition["type"]):

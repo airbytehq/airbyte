@@ -5,7 +5,7 @@
 select
     _airbyte_conflict_stream_name_hashid,
     
-        json_extract(conflict_stream_name, 
+        json_extract(table_alias.conflict_stream_name, 
     '$."conflict_stream_name"')
      as conflict_stream_name,
     _airbyte_emitted_at
