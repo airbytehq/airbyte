@@ -23,7 +23,8 @@
 #
 
 
-from typing import Any, Mapping
+from itertools import cycle
+from typing import Any, List, Mapping
 
 from .core import HttpAuthenticator
 
@@ -36,3 +37,14 @@ class TokenAuthenticator(HttpAuthenticator):
 
     def get_auth_header(self) -> Mapping[str, Any]:
         return {self.auth_header: f"{self.auth_method} {self._token}"}
+
+
+class MultipleTokenAuthenticator(HttpAuthenticator):
+    def __init__(self, tokens: List[str], auth_method: str = "Bearer", auth_header: str = "Authorization"):
+        self.auth_method = auth_method
+        self.auth_header = auth_header
+        self._tokens = tokens
+        self._tokens_iter = cycle(self._tokens)
+
+    def get_auth_header(self) -> Mapping[str, Any]:
+        return {self.auth_header: f"{self.auth_method} {next(self._tokens_iter)}"}
