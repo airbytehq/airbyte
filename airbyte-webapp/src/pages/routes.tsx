@@ -41,6 +41,7 @@ export enum Routes {
   Notifications = "/notifications",
   Metrics = "/metrics",
   Account = "/account",
+  DbMigrations = "/db-migrations",
   Root = "/",
 }
 

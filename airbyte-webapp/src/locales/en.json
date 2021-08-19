@@ -350,6 +350,7 @@
   "settings.securityUpdates": "Security updates (recommended)",
   "settings.newsletter": "Newsletter with feature updates.",
   "settings.account": "Account",
+  "settings.dbMigrations": "Database Migration",
 
   "connector.requestConnectorBlock": "+ Request a new connector",
   "connector.requestConnector": "Request a new connector",
@@ -367,6 +368,14 @@
   "connector.email.placeholder": "richard@piedpiper.com",
   "connector.source": "Source",
   "connector.destination": "Destination",
+
+  "dbMigration.type": "Type",
+  "dbMigration.version": "Version",
+  "dbMigration.description": "Description",
+  "dbMigration.state": "State",
+  "dbMigration.migratedBy": "Author",
+  "dbMigration.migratedAt": "Time",
+  "dbMigration.script": "Script",
 
   "demo.message.title": "This Airbyte demo is read-only",
   "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so."
