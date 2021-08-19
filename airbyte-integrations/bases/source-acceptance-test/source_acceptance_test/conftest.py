@@ -33,7 +33,7 @@ from subprocess import run
 from typing import Any, List, MutableMapping, Optional
 
 import pytest
-from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
+from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
 from docker import errors
 from source_acceptance_test.config import Config
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, load_config
@@ -148,13 +148,13 @@ def expected_records_fixture(inputs, base_path) -> List[AirbyteRecordMessage]:
 
 
 @pytest.fixture(name="cached_schemas", scope="session")
-def cached_schemas_fixture() -> MutableMapping[str, Any]:
+def cached_schemas_fixture() -> MutableMapping[str, AirbyteStream]:
     """Simple cache for discovered catalog: stream_name -> json_schema"""
     return {}
 
 
 @pytest.fixture(name="discovered_catalog")
-def discovered_catalog_fixture(connector_config, docker_runner: ConnectorRunner, cached_schemas) -> MutableMapping[str, Any]:
+def discovered_catalog_fixture(connector_config, docker_runner: ConnectorRunner, cached_schemas) -> MutableMapping[str, AirbyteStream]:
     """JSON schemas for each stream"""
     if not cached_schemas:
         output = docker_runner.call_discover(config=connector_config)
