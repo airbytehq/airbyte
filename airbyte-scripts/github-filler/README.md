@@ -1,18 +1,12 @@
 # Create Template GitHub Repository
 
-## Prerequiereties
+## Pre requirements
 ### 1. Create a repository on www.github.com
-### 2. Create an api key https://github.com/settings/tokens (select all checkboxes)
+### 2. Create an api key https://github.com/settings/tokens (select all checkboxes, with all checkboxes script will have all privileges and will not fail)
 
 ---
-
-### 1. In root folder create python virtualenv
-    python -m venv .env
-### 2. Activate python virtualenv
-    source .env/bin/activate
-### 3. Install libraries
-    pip install requirements.txt
-### 4. Then just run and enter credentials
+### 1. Copy github-filler to another directory without any initialized repository
+### 2. Then just run and enter credentials
     ./run.sh
 
 ---
