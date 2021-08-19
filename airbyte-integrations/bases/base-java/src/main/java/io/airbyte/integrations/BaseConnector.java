@@ -24,10 +24,13 @@
 
 package io.airbyte.integrations;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.Integration;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import java.io.IOException;
 
 public abstract class BaseConnector implements Integration {
 
@@ -42,7 +45,17 @@ public abstract class BaseConnector implements Integration {
   public ConnectorSpecification spec() throws Exception {
     // return a JsonSchema representation of the spec for the integration.
     final String resourceString = MoreResources.readResource("spec.json");
-    return Jsons.deserialize(resourceString, ConnectorSpecification.class);
+    return Jsons.object(addToSpec(Jsons.deserialize(resourceString)), ConnectorSpecification.class);
+  }
+
+  /**
+   * Extension point for child classes to add things to the spec json tree
+   * before it's deserialized into a ConnectorSpecification object.
+   * @param root
+   * @return root
+   */
+  public JsonNode addToSpec(JsonNode root) throws IOException {
+    return root;
   }
 
 }

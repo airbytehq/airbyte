@@ -25,6 +25,9 @@
 package io.airbyte.integrations.destination.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -37,6 +40,7 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.io.IOException;
 import java.util.UUID;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
@@ -58,13 +62,20 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     return namingResolver;
   }
 
+  @Override
+  public JsonNode addToSpec(JsonNode spec) throws IOException {
+    ObjectNode propNode = (ObjectNode) spec.get("connectionSpecification").get("properties");
+    propNode.set("tunnel_method", Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json")));
+    return spec;
+  }
+
   protected SqlOperations getSqlOperations() {
     return sqlOperations;
   }
 
   public AbstractJdbcDestination(final String driverClass,
-                                 final NamingConventionTransformer namingResolver,
-                                 final SqlOperations sqlOperations) {
+      final NamingConventionTransformer namingResolver,
+      final SqlOperations sqlOperations) {
     this.driverClass = driverClass;
     this.namingResolver = namingResolver;
     this.sqlOperations = sqlOperations;
@@ -89,9 +100,9 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   }
 
   public static void attemptSQLCreateAndDropTableOperations(String outputSchema,
-                                                            JdbcDatabase database,
-                                                            NamingConventionTransformer namingResolver,
-                                                            SqlOperations sqlOps)
+      JdbcDatabase database,
+      NamingConventionTransformer namingResolver,
+      SqlOperations sqlOps)
       throws Exception {
     // attempt to get metadata from the database as a cheap way of seeing if we can connect.
     database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils::rowToJson);
@@ -119,7 +130,8 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
   @Override
   public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> outputRecordCollector) {
-    return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(config), SSHTunnel.getInstance(config), sqlOperations, namingResolver, config, catalog);
+    return JdbcBufferedConsumerFactory
+        .create(outputRecordCollector, getDatabase(config), SSHTunnel.getInstance(config), sqlOperations, namingResolver, config, catalog);
   }
 
 }

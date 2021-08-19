@@ -131,6 +131,8 @@ public class IntegrationRunner {
       // envelope) while the other commands return what goes inside it.
       case READ -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
+        final SSHTunnel sshTunnel = SSHTunnel.getInstance(config);
+        sshTunnel.openTunnelIfRequested();
         validateConfig(integration.spec().getConnectionSpecification(), config, "READ");
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
         final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
@@ -138,6 +140,7 @@ public class IntegrationRunner {
         try (messageIterator) {
           messageIterator.forEachRemaining(outputRecordCollector::accept);
         }
+        sshTunnel.closeTunnel(); // JENNY DEBUG - need try-finally if this stays.
       }
       // destination only
       case WRITE -> {
