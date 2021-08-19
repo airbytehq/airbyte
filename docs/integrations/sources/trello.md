@@ -49,4 +49,4 @@ Please read [How to get your APIs Token and Kay](https://developer.atlassian.com
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.0   | 2021-08-18 | [0000](https://github.com/airbytehq/airbyte/pull/0000) | Release Trello CDK Connector |
+| 0.1.0   | 2021-08-18 | [5501](https://github.com/airbytehq/airbyte/pull/5501) | Release Trello CDK Connector |
