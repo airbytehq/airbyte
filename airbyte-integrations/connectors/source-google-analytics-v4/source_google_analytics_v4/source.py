@@ -219,7 +219,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             end_date_slice = start_date.add(days=self.window_in_days)
             date_slices.append(
                 {"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date_slice)})
-            start_date = end_date_slice
+            start_date = end_date_slice.add(days=1)
 
         return date_slices
 
