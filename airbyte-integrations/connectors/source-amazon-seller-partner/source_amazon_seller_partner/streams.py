@@ -49,9 +49,9 @@ class AmazonSPStream(HttpStream, ABC):
         super().__init__(*args, **kwargs)
 
         self._url_base = url_base
-        self._aws_signature = aws_signature
         self._replication_start_date = replication_start_date
         self.marketplace_ids = marketplace_ids
+        self._session.auth = aws_signature
 
     @property
     def url_base(self) -> str:
@@ -61,12 +61,10 @@ class AmazonSPStream(HttpStream, ABC):
         self, path: str, method: str = None, headers: Mapping = None, params: Mapping = None, json: Any = None, data: Any = None
     ) -> requests.PreparedRequest:
         """
-        Override to prepare request for AWS API.
-        AWS signature flow require prepared request to correctly generate `authorization` header.
-        Add `auth` arg to sign all the requests with AWS signature.
+        Override to make http_method configurable per method call
         """
         http_method = method or self.http_method
-        args = {"method": http_method, "url": self.url_base + path, "headers": headers, "params": params, "auth": self._aws_signature}
+        args = {"method": http_method, "url": self.url_base + path, "headers": headers, "params": params}
         if http_method.upper() in BODY_REQUEST_METHODS:
             if json and data:
                 raise RequestBodyException(
@@ -147,7 +145,7 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
 class ReportsAmazonSPStream(AmazonSPStream, ABC):
     """
     API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reports_2020-09-04.md
-    API model https://github.com/amzn/selling-partner-api-models/blob/main/models/reports-api-model/reports_2020-09-04.json
+    API model: https://github.com/amzn/selling-partner-api-models/blob/main/models/reports-api-model/reports_2020-09-04.json
 
     Report streams are intended to work as following:
         - create a new report;
@@ -196,9 +194,6 @@ class ReportsAmazonSPStream(AmazonSPStream, ABC):
         return f"{self.path_prefix}/{stream_slice[self.primary_key]}"
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        """
-        :return an iterable containing each record in the response
-        """
         yield response.json().get(self.data_field, {})
 
 
@@ -237,7 +232,7 @@ class VendorInventoryHealthReports(ReportsAmazonSPStream):
 class Orders(IncrementalAmazonSPStream):
     """
     API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/orders-api/ordersV0.md
-    API model https://github.com/amzn/selling-partner-api-models/blob/main/models/orders-api-model/ordersV0.json
+    API model: https://github.com/amzn/selling-partner-api-models/blob/main/models/orders-api-model/ordersV0.json
     """
 
     name = "Orders"
@@ -253,24 +248,37 @@ class Orders(IncrementalAmazonSPStream):
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, next_page_token, **kwargs)
+        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         if not next_page_token:
             params.update({"MarketplaceIds": ",".join(self.marketplace_ids)})
         return params
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        """
-        :return an iterable containing each record in the response
-        """
         yield from response.json().get(self.data_field, {}).get(self.name, [])
 
 
 class VendorDirectFulfillmentShipping(AmazonSPStream):
+    """
+    API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/vendor-direct-fulfillment-shipping-api/vendorDirectFulfillmentShippingV1.md
+    API model: https://github.com/amzn/selling-partner-api-models/blob/main/models/vendor-direct-fulfillment-shipping-api-model/vendorDirectFulfillmentShippingV1.json
+
+    Returns a list of shipping labels created during the time frame that you specify.
+    Both createdAfter and createdBefore parameters required to select the time frame.
+    The date range to search must not be more than 7 days.
+    """
+
     name = "VendorDirectFulfillmentShipping"
     primary_key = [["labelData", "packageIdentifier"]]
     replication_start_date_field = "createdAfter"
     next_page_token_field = "nextToken"
     page_size_field = "limit"
+    time_format = "%Y-%m-%dT%H:%M:%SZ"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.replication_start_date_field = max(
+            pendulum.parse(self._replication_start_date), pendulum.now("utc").subtract(days=7, hours=1)
+        ).strftime(self.time_format)
 
     def path(self, **kwargs) -> str:
         return f"/vendor/directFulfillment/shipping/{VENDOR_API_VERSIONS}/shippingLabels"
@@ -280,11 +288,8 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, next_page_token, **kwargs)
         if not next_page_token:
-            params.update({"createdBefore": pendulum.now("utc").strftime("%Y-%m-%dT%H:%M:%SZ")})
+            params.update({"createdBefore": pendulum.now("utc").strftime(self.time_format)})
         return params
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        """
-        :return an iterable containing each record in the response
-        """
         yield from response.json().get(self.data_field, {}).get("shippingLabels", [])
