@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.airbyte.integrations.destination.keen;
 
 import static io.airbyte.integrations.destination.keen.KeenDestination.KEEN_BASE_API_PATH;
@@ -36,8 +60,7 @@ public class KeenHttpClient {
 
     URI deleteUri = URI.create(String.format(
         KEEN_BASE_API_PATH + "/projects/%s/events/%s",
-        projectId, streamToDelete
-    ));
+        projectId, streamToDelete));
 
     HttpRequest request = HttpRequest.newBuilder()
         .uri(deleteUri)
@@ -54,11 +77,9 @@ public class KeenHttpClient {
         LOGGER.info("Deletes limit exceeded. Sleeping 60 seconds.");
         Thread.sleep(MINUTE_MILLIS);
         eraseStream(streamToDelete, projectId, apiKey, true);
-      }
-      else {
+      } else {
         throw new IllegalStateException(String.format("Could not erase data from stream designed for overriding: "
-            + "%s. Error message: %s", streamToDelete, response.body()
-        ));
+            + "%s. Error message: %s", streamToDelete, response.body()));
       }
     }
   }
@@ -68,8 +89,7 @@ public class KeenHttpClient {
     URI extractionUri = URI.create(String.format(
         keenBaseApiPath + "/projects/%s/queries/extraction" +
             "?api_key=%s&timeframe=this_7_years&event_collection=%s",
-        projectId, apiKey, streamName
-    ));
+        projectId, apiKey, streamName));
 
     HttpRequest request = HttpRequest.newBuilder()
         .uri(extractionUri)
@@ -90,8 +110,7 @@ public class KeenHttpClient {
       throws IOException, InterruptedException {
     URI listCollectionsUri = URI.create(String.format(
         KEEN_BASE_API_PATH + "/projects/%s/events",
-        projectId
-    ));
+        projectId));
 
     HttpRequest request = HttpRequest.newBuilder()
         .uri(listCollectionsUri)
@@ -103,13 +122,14 @@ public class KeenHttpClient {
     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
     List<KeenCollection> keenCollections = objectMapper.readValue(objectMapper.createParser(response.body()),
-        new TypeReference<>(){});
+        new TypeReference<>() {});
 
     return keenCollections.stream().map(KeenCollection::getName).collect(Collectors.toList());
   }
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   private static class KeenCollection {
+
     private String name;
 
     public String getName() {
@@ -119,6 +139,7 @@ public class KeenHttpClient {
     public void setName(String name) {
       this.name = name;
     }
+
   }
 
 }

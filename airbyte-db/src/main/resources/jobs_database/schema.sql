@@ -1,7 +1,3 @@
--- extensions
- CREATE
-    EXTENSION IF NOT EXISTS "uuid-ossp";
-
 -- types
  CREATE
     TYPE JOB_STATUS AS ENUM(
@@ -71,13 +67,3 @@ CREATE
         job_id,
         attempt_number
     );
-
--- entries
- INSERT
-    INTO
-        AIRBYTE_METADATA
-    VALUES(
-        'server_uuid',
-        uuid_generate_v4()
-    ) ON
-    CONFLICT DO NOTHING;
