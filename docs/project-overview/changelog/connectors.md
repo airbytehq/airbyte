@@ -31,7 +31,7 @@ New sources:
 * [**S3/Abstract Files**](https://docs.airbyte.io/integrations/sources/s3)
 * [**Zuora**](https://docs.airbyte.io/integrations/sources/zuora)
 * [**Kustomer**](https://docs.airbyte.io/integrations/sources/kustomer)
-* [**Apify**](https://docs.airbyte.io/integrations/sources/apify)
+* [**Apify**](https://docs.airbyte.io/integrations/sources/apify-dataset)
 * [**Chargebee**](https://docs.airbyte.io/integrations/sources/chargebee)
 
 
