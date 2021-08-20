@@ -43,7 +43,7 @@ def control_request_rate_limit_decorator(threshold: float = 0.95, limit_header: 
     This decorator was replicated completely, as separeted function in order to be tested.
     The only difference is:
     :: the real one inside utils.py sleeps the actual defined time and returns the function back,
-    :: and this fake one simply sleeps and returns the _sleep as actual sleep time in order to be tested.
+    :: and this fake one simply sleeps and returns the wait_time as actual sleep time in order to be tested.
     """
 
     def decorator(func):
@@ -77,7 +77,7 @@ def control_request_rate_limit_decorator(threshold: float = 0.95, limit_header: 
             elif load < avg_load:
                 wait_time = SLEEP_ON_LOW_LOAD
 
-            # for test SLEEP & RETURN wait_time based on load conditions
+            # for this test RETURN wait_time based on load conditions
             return wait_time
 
         return wrapper_control_request_rate_limit

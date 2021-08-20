@@ -30,13 +30,15 @@ import requests
 
 
 class ShopifyRequestRateLimits(object):
+
+    @staticmethod
     def balance_rate_limit(threshold: float = 0.9, rate_limit_header: str = "X-Shopify-Shop-Api-Call-Limit"):
         """
         To avoid reaching Shopify API Rate Limits, use the "X-Shopify-Shop-Api-Call-Limit" header value,
-        to determine the current rate limits and load and handle sleep time based on load %.
-        Recomended sleep time between each request is 1 sec, we would handle this dynamicaly.
+        to determine the current rate limits and load and handle wait_time based on load %.
+        Recomended wait_time between each request is 1 sec, we would handle this dynamicaly.
 
-        :: default_sleep time between each request - 100 miliseconds
+        :: wait_time time between each request - 100 miliseconds
 
         Header example:
         {"X-Shopify-Shop-Api-Call-Limit": 10/40}, where: 10 - current load, 40 - max requests capacity.
@@ -55,7 +57,7 @@ class ShopifyRequestRateLimits(object):
             def wrapper_balance_rate_limit(*args, **kwargs):
                 # average load based on threshold
                 avg_load = threshold / 2
-                # find the Responce inside args list
+                # find the requests.Response inside args list
                 for arg in args:
                     response = arg if type(arg) is requests.models.Response else None
 
@@ -69,7 +71,7 @@ class ShopifyRequestRateLimits(object):
                 else:
                     load = None
 
-                # define sleep time based on load conditions
+                # define wait_time based on load conditions
                 if not load:
                     # when there is no rate_limits from header,
                     # use the 1.0 sec
