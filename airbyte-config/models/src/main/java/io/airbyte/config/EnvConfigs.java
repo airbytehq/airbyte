@@ -165,7 +165,7 @@ public class EnvConfigs implements Configs {
   @Override
   public String getConfigDatabasePassword() {
     // Default to reuse the job database
-    return getEnvOrDefault(CONFIG_DATABASE_PASSWORD, getDatabasePassword());
+    return getEnvOrDefault(CONFIG_DATABASE_PASSWORD, getDatabasePassword(), true);
   }
 
   @Override
@@ -312,19 +312,27 @@ public class EnvConfigs implements Configs {
   }
 
   private String getEnvOrDefault(String key, String defaultValue) {
-    return getEnvOrDefault(key, defaultValue, Function.identity());
+    return getEnvOrDefault(key, defaultValue, Function.identity(), false);
+  }
+
+  private String getEnvOrDefault(String key, String defaultValue, boolean isSecret) {
+    return getEnvOrDefault(key, defaultValue, Function.identity(), isSecret);
   }
 
   private long getEnvOrDefault(String key, long defaultValue) {
-    return getEnvOrDefault(key, defaultValue, Long::parseLong);
+    return getEnvOrDefault(key, defaultValue, Long::parseLong, false);
   }
 
   private <T> T getEnvOrDefault(String key, T defaultValue, Function<String, T> parser) {
+    return getEnvOrDefault(key, defaultValue, parser, false);
+  }
+
+  private <T> T getEnvOrDefault(String key, T defaultValue, Function<String, T> parser, boolean isSecret) {
     final String value = getEnv.apply(key);
     if (value != null && !value.isEmpty()) {
       return parser.apply(value);
     } else {
-      LOGGER.info(key + " not found or empty, defaulting to " + defaultValue);
+      LOGGER.info("{} not found or empty, defaulting to {}", key, isSecret ? "*****" : defaultValue);
       return defaultValue;
     }
   }
