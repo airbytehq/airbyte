@@ -51,7 +51,7 @@ class TrelloStream(HttpStream, ABC):
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(authenticator=config["authenticator"])
         self.start_date = config["start_date"]
-        self._config = config
+        self.config = config
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -78,7 +78,7 @@ class ChildStreamMixin:
     parent_stream_class: Optional[TrelloStream] = None
 
     def stream_slices(self, sync_mode, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        for item in self.parent_stream_class(config=self._config).read_records(sync_mode=sync_mode):
+        for item in self.parent_stream_class(config=self.config).read_records(sync_mode=sync_mode):
             yield {"id": item["id"]}
 
         yield from []
