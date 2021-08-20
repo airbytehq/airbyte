@@ -30,13 +30,18 @@
 {"type":"RECORD","record":{"stream":"dedup_cdc_excluded","data":{"id":7,"name":"lotus","_ab_cdc_updated_at":1623850868237,"_ab_cdc_lsn":27010048,"_ab_cdc_deleted_at":null},"emitted_at":1623861660}}
 {"type":"RECORD","record":{"stream":"dedup_cdc_excluded","data":{"id":6,"name":null,"_ab_cdc_updated_at":1623850868371,"_ab_cdc_lsn":27010232,"_ab_cdc_deleted_at":1623850868371},"emitted_at":1623861660}}
 
-{"type":"RECORD","record":{"stream":"conflict_stream_name","data":{"id":1,"conflict_stream_name":{"conflict_stream_name": {"groups": "1", "other_info": "hello", "conflict_stream_name": 3}}},"emitted_at":1623861660}}
-{"type":"RECORD","record":{"stream":"conflict_stream_name","data":{"id":2,"conflict_stream_name":{"conflict_stream_name": {"groups": "2", "other_info": "hi", "conflict_stream_name": 3}}},"emitted_at":1623861660}}
+{"type":"RECORD","record":{"stream":"conflict_stream_name","data":{"id":1,"conflict_stream_name":{"conflict_stream_name": {"groups": "1", "custom_fields": [{"id":1, "value":3}, {"id":2, "value":4}], "conflict_stream_name": 3}}},"emitted_at":1623861660}}
+{"type":"RECORD","record":{"stream":"conflict_stream_name","data":{"id":2,"conflict_stream_name":{"conflict_stream_name": {"groups": "2", "custom_fields": [{"id":1, "value":3}, {"id":2, "value":4}], "conflict_stream_name": 3}}},"emitted_at":1623861660}}
 
 {"type":"RECORD","record":{"stream":"conflict_stream_scalar","data":{"id":1,"conflict_stream_scalar": 2},"emitted_at":1623861660}}
 {"type":"RECORD","record":{"stream":"conflict_stream_scalar","data":{"id":2,"conflict_stream_scalar": 2},"emitted_at":1623861660}}
 
-{"type":"RECORD","record":{"stream":"conflict_stream_array","data":{"id":1,"conflict_stream_array": {"conflict_stream_array": "conflict_stream_array": [{"id": 1}, {"id": 2}, {"id": 3}]}},"emitted_at":1623861660}}
-{"type":"RECORD","record":{"stream":"conflict_stream_array","data":{"id":2,"conflict_stream_array": {"conflict_stream_array": "conflict_stream_array": [{"id": 4}, {"id": 5}, {"id": 6}]}},"emitted_at":1623861660}}
+{"type":"RECORD","record":{"stream":"conflict_stream_array","data":{"id":1, "conflict_stream_array": {"conflict_stream_array": [{"id": 1}, {"id": 2}, {"id": 3}]}}, "emitted_at":1623861660}}
+{"type":"RECORD","record":{"stream":"conflict_stream_array","data":{"id":2, "conflict_stream_array": {"conflict_stream_array": [{"id": 4}, {"id": 5}, {"id": 6}]}}, "emitted_at":1623861860}}
 
+{"type":"RECORD","record":{"stream":"conflict_stream_scalar","data":{"id":1,"conflict_stream_scalar": 2},"emitted_at":1623861660}}
+{"type":"RECORD","record":{"stream":"conflict_stream_scalar","data":{"id":2,"conflict_stream_scalar": 2},"emitted_at":1623861660}}
+
+{"type":"RECORD","record":{"stream":"unnest_alias","data":{"id":1, "children": [{"ab_id": 1, "owner": {"owner_id": 1}},{"ab_id": 2, "owner": {"owner_id": 2}}]},"emitted_at":1623861660}}
+{"type":"RECORD","record":{"stream":"unnest_alias","data":{"id":2, "children": [{"ab_id": 3, "owner": {"owner_id": 3}},{"ab_id": 4, "owner": {"owner_id": 4}}]},"emitted_at":1623861660}}
 

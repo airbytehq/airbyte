@@ -11,7 +11,9 @@ with __dbt__CTE__conflict_stream_name_conflict_stream_name_ab1 as (
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
 select
     _airbyte_conflict_stream_name_hashid,
-    case when json_extract_path_text(table_alias.conflict_stream_name, 'conflict_stream_name', true) != '' then json_extract_path_text(table_alias.conflict_stream_name, 'conflict_stream_name', true) end as conflict_stream_name,
+    
+        case when json_extract_path_text(table_alias.conflict_stream_name, 'conflict_stream_name', true) != '' then json_extract_path_text(table_alias.conflict_stream_name, 'conflict_stream_name', true) end
+     as conflict_stream_name,
     _airbyte_emitted_at
 from "integrationtests".test_normalization."conflict_stream_name" as table_alias
 where conflict_stream_name is not null
