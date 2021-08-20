@@ -8,7 +8,7 @@ select
     *,
     to_hex(md5(cast(concat(coalesce(cast(id as 
     string
-), ''), '-', coalesce(cast(conflict_stream_array as 
+), ''), '-', coalesce(cast(array_to_string(conflict_stream_array, "|", "") as 
     string
 ), '')) as 
     string
