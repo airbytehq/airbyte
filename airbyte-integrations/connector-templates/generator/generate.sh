@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-function error_handler {
+error_handler() {
   echo "While trying to generate a connector, an error occurred on line $1 of generate.sh and the process aborted early.  This is probably a bug."
 }
 trap 'error_handler $LINENO' ERR
