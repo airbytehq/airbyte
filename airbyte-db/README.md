@@ -48,7 +48,7 @@ public class V0_29_9_001__Add_active_column extends BaseJavaMigration {
 }
 ```
 
-- You can test the migration by running the `runMigration` method in `<db-name>DatabaseMigrationTest`. After running this method, you can see the database schema change in the `resources/<db-name>_databases/schema_dump.txt` file.
+- You can test the migration by running the `runMigration` method in `<db-name>DatabaseMigrationTest`. After running this method, you can see the database schema change in the `resources/<db-name>_databases/schema_dump.txt` file. There are also detailed logs about what is going on with the database before and after the migrations.
   - For the `configs` database, the file is `ConfigsDatabaseMigrationTest.java`.
   - This method is for dev testing only. It is not run by CI.
 - This test file also has a `testSchemaDump` method that is run by CI. It will dump the database schema automatically. Please remember to check in any change in the schema dump. In this way, we can be sure that there is no unexpected schema changes caused by any new migration.
