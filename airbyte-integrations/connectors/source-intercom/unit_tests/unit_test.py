@@ -25,16 +25,34 @@
 
 import pytest
 import requests
-from source_intercom.source import IntercomStream, Companies, Contacts
+from source_intercom.source import Companies, Contacts, IntercomStream
 
 test_data = [
-    (IntercomStream, {"data": [], "pages": {"next": "https://api.intercom.io/conversations?per_page=1&page=2"}}, {"per_page": "1", "page": "2"}),
-    (Companies, {"data": [], "scroll_param": "25b649f7-4d33-4ef6-88f5-60e5b8244309"}, {"scroll_param": "25b649f7-4d33-4ef6-88f5-60e5b8244309"}),
-    (Contacts, {"data": [], "pages": {"next": {"starting_after": "1HaSB+xrOyyMXAkS/c1RteCL7BzOzTvYjmjakgTergIH31eoe2v4/sbLsJWP\nIncfQLD3ouPkZlCwJ86F\n"}}}, {"starting_after": "1HaSB+xrOyyMXAkS/c1RteCL7BzOzTvYjmjakgTergIH31eoe2v4/sbLsJWP\nIncfQLD3ouPkZlCwJ86F\n"})
+    (
+        IntercomStream,
+        {"data": [], "pages": {"next": "https://api.intercom.io/conversations?per_page=1&page=2"}},
+        {"per_page": "1", "page": "2"},
+    ),
+    (
+        Companies,
+        {"data": [{"type": "company"}], "scroll_param": "25b649f7-4d33-4ef6-88f5-60e5b8244309"},
+        {"scroll_param": "25b649f7-4d33-4ef6-88f5-60e5b8244309"},
+    ),
+    (
+        Contacts,
+        {
+            "data": [],
+            "pages": {"next": {"starting_after": "1HaSB+xrOyyMXAkS/c1RteCL7BzOzTvYjmjakgTergIH31eoe2v4/sbLsJWP"
+                                                 "\nIncfQLD3ouPkZlCwJ86F\n"}},
+        },
+        {"starting_after": "1HaSB+xrOyyMXAkS/c1RteCL7BzOzTvYjmjakgTergIH31eoe2v4/sbLsJWP\nIncfQLD3ouPkZlCwJ86F\n"},
+    ),
 ]
 
 
-@pytest.mark.parametrize("intercom_class,response_json,expected_output_token", test_data, ids=["base pagination", "companies pagination", "contacts pagination"])
+@pytest.mark.parametrize(
+    "intercom_class,response_json,expected_output_token", test_data, ids=["base pagination", "companies pagination", "contacts pagination"]
+)
 def test_get_next_page_token(intercom_class, response_json, expected_output_token, requests_mock):
     """
     Test shows that next_page parameters are parsed correctly from the response object and could be passed for next request API call,

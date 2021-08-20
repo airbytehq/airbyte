@@ -187,10 +187,10 @@ class Companies(IncrementalIntercomStream):
         """For reset scroll needs to iterate pages untill the last.
         Another way need wait 1 min for the scroll to expire to get a new list for companies segments."""
 
-        next_page = response.json().get("scroll_param")
+        data = response.json().get("data")
 
-        if next_page:
-            return {"scroll_param": next_page}
+        if data:
+            return {"scroll_param": response.json().get("scroll_param")}
 
     def path(self, **kwargs) -> str:
         return "companies/scroll"
