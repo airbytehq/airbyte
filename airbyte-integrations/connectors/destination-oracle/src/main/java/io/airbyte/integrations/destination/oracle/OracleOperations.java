@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.destination.oracle;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
@@ -37,6 +38,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 
 public class OracleOperations implements SqlOperations {
 
@@ -150,8 +152,9 @@ public class OracleOperations implements SqlOperations {
         int i = 1;
         for (final AirbyteRecordMessage message : records) {
           // 1-indexed
+          final JsonNode formattedData = StandardNameTransformer.formatJsonPath(message.getData());
           statement.setString(i, uuidSupplier.get().toString());
-          statement.setString(i + 1, Jsons.serialize(message.getData()));
+          statement.setString(i + 1, Jsons.serialize(formattedData));
           statement.setTimestamp(i + 2, Timestamp.from(Instant.ofEpochMilli(message.getEmittedAt())));
           i += 3;
         }
