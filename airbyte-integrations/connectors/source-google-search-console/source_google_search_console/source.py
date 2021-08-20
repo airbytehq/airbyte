@@ -30,11 +30,22 @@ from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from source_google_search_console.streams import SearchAnalytics, Sitemaps, Sites
+from source_google_search_console.streams import (
+    SearchAnalyticsAllFields,
+    SearchAnalyticsByCountry,
+    SearchAnalyticsByDate,
+    SearchAnalyticsByDevice,
+    SearchAnalyticsByPage,
+    SearchAnalyticsByQuery,
+    Sitemaps,
+    Sites,
+)
 
 
 class SourceGoogleSearchConsole(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(
+        self, logger: AirbyteLogger, config: Mapping[str, Any]
+    ) -> Tuple[bool, Any]:
         try:
             stream_kwargs = self.get_stream_kwargs(config)
             sites = Sites(**stream_kwargs)
@@ -43,14 +54,26 @@ class SourceGoogleSearchConsole(AbstractSource):
             return True, None
 
         except Exception as error:
-            return False, f"Unable to connect to Google Search Console API with the provided credentials - {repr(error)}"
+            return (
+                False,
+                f"Unable to connect to Google Search Console API with the provided credentials - {repr(error)}",
+            )
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         stream_kwargs = self.get_stream_kwargs(config)
-        streams = [Sites(**stream_kwargs), Sitemaps(**stream_kwargs), SearchAnalytics(**stream_kwargs)]
+        streams = [
+            Sites(**stream_kwargs),
+            Sitemaps(**stream_kwargs),
+            SearchAnalyticsByCountry(**stream_kwargs),
+            SearchAnalyticsByDevice(**stream_kwargs),
+            SearchAnalyticsByDate(**stream_kwargs),
+            SearchAnalyticsByQuery(**stream_kwargs),
+            SearchAnalyticsByPage(**stream_kwargs),
+            SearchAnalyticsAllFields(**stream_kwargs),
+        ]
 
         return streams
 

@@ -1,8 +1,7 @@
 {
-  "start_date": "2020-08-08",
-  "client_id": "test_id",
-  "client_secret": "test_secret",
-  "refresh_token": "test_refresh",
-  "site_url": "test_url",
-  "user_agent": "test <test@example.com>"
+  "client_id": "YOUR_CLIENT_ID",
+  "client_secret": "YOUR_CLIENT_SECRET",
+  "refresh_token": "YOUR_REFRESH_TOKEN",
+  "site_url": "https://example.com",
+  "start_date": "2021-05-01"
 }
