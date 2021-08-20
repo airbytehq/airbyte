@@ -335,28 +335,25 @@ from {{ from_table }} as table_alias
             fields=self.extract_json_columns(column_names),
             from_table=jinja_call(from_table),
             unnesting_after_query=self.unnesting_after_query(),
-            sql_table_comment=self.sql_table_comment()
+            sql_table_comment=self.sql_table_comment(),
         )
         return sql
 
     def extract_json_columns(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
         return [
-            StreamProcessor.extract_json_column(
-                field, self.json_column_name, self.properties[field], column_names[field][0], 'table_alias'
-            )
+            StreamProcessor.extract_json_column(field, self.json_column_name, self.properties[field], column_names[field][0], "table_alias")
             for field in column_names
         ]
 
     @staticmethod
-    def extract_json_column(
-        property_name: str, json_column_name: str, definition: Dict, column_name: str, table_alias: str) -> str:
+    def extract_json_column(property_name: str, json_column_name: str, definition: Dict, column_name: str, table_alias: str) -> str:
         json_path = [property_name]
         # In some cases, some destination aren't able to parse the JSON blob using the original property name
         # we make their life easier by using a pre-populated and sanitized column name instead...
         normalized_json_path = [transform_json_naming(property_name)]
         table_alias = f"{table_alias}"
         if "unnested_column_value" in json_column_name:
-            table_alias = ''
+            table_alias = ""
         json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path})")
         if "type" in definition:
             if is_array(definition["type"]):
@@ -593,7 +590,7 @@ from {{ from_table }}
             fields=self.list_fields(column_names),
             hash_id=self.hash_id(),
             from_table=jinja_call(from_table),
-            sql_table_comment=self.sql_table_comment(include_from_table=True)
+            sql_table_comment=self.sql_table_comment(include_from_table=True),
         )
         return sql
 

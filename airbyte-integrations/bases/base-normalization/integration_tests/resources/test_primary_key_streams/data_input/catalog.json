@@ -52,30 +52,18 @@
               "type": "integer"
             },
             "children": {
-              "type": [
-                "null",
-                "array"
-              ],
+              "type": ["null", "array"],
               "items": {
                 "type": "object",
                 "properties": {
                   "ab_id": {
-                    "type": [
-                      "null",
-                      "integer"
-                    ]
+                    "type": ["null", "integer"]
                   },
                   "owner": {
-                    "type": [
-                      "null",
-                      "object"
-                    ],
+                    "type": ["null", "object"],
                     "properties": {
                       "owner_id": {
-                        "type": [
-                          "null",
-                          "integer"
-                        ]
+                        "type": ["null", "integer"]
                       }
                     }
                   }

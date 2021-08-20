@@ -52,7 +52,6 @@ from .streams import (
     Teams,
 )
 
-
 TOKEN_SEPARATOR = ","
 
 
