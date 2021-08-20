@@ -99,6 +99,7 @@
     * [Salesforce](integrations/sources/salesforce.md)
     * [Sendgrid](integrations/sources/sendgrid.md)
     * [Shopify](integrations/sources/shopify.md)
+    * [Shortio](integrations/sources/shortio.md)
     * [Slack](integrations/sources/slack.md)
     * [Smartsheets](integrations/sources/smartsheets.md)
     * [Snapchat Marketing](integrations/sources/snapchat-marketing.md)
