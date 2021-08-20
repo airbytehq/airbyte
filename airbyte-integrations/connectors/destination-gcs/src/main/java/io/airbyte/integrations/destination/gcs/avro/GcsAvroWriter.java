@@ -22,7 +22,6 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.s3.avro;
 package io.airbyte.integrations.destination.gcs.avro;
 
 import alex.mojaki.s3upload.MultiPartOutputStream;
