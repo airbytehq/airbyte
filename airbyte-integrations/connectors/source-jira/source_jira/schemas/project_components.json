@@ -283,7 +283,7 @@
             "readOnly": true
           },
           "key": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details."
           },
           "accountId": {
@@ -402,7 +402,7 @@
           "applicationRoles": {
             "description": "The application roles the user is assigned to.",
             "readOnly": true,
-            "type": "object",
+            "type": ["object", "null"],
             "properties": {
               "size": {
                 "type": "integer",
