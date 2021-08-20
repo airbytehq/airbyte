@@ -247,7 +247,6 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
 }
 
 task('generate') {
-    dependsOn subprojects.collect { it.getTasksByName('generateSeed', true) }
     dependsOn subprojects.collect { it.getTasksByName('generateProtocolClassFiles', true) }
     dependsOn subprojects.collect { it.getTasksByName('generateJsonSchema2Pojo', true) }
 }

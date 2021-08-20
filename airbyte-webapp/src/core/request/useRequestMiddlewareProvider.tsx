@@ -25,7 +25,7 @@ export const useRequestMiddlewareProvider = (): RequestMiddlewareProvider => {
   }>();
 
   useEffect(() => {
-    middlewares = requestMiddlewares;
+    middlewares = { ...middlewares, ...requestMiddlewares };
   }, [requestMiddlewares]);
 
   return useMemo<RequestMiddlewareProvider>(

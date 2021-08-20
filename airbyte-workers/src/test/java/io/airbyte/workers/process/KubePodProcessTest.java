@@ -34,7 +34,6 @@ import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -64,30 +63,6 @@ public class KubePodProcessTest {
 
     var noVarDockerfile = Resources.getResource(TEST_IMAGE_NO_VAR_PATH);
     DockerUtils.buildImage(noVarDockerfile.getPath(), TEST_IMAGE_NO_VAR_NAME);
-  }
-
-  @Nested
-  class GetCommand {
-
-    @Test
-    @DisplayName("Should error if image does not have the right env var set.")
-    public void testGetCommandFromImageNoCommand() {
-      assertThrows(RuntimeException.class, () -> KubePodProcess.getCommandFromImage(K8s, TEST_IMAGE_NO_VAR_NAME, "default"));
-    }
-
-    @Test
-    @DisplayName("Should error if image does not exists.")
-    public void testGetCommandFromImageMissingImage() {
-      assertThrows(RuntimeException.class, () -> KubePodProcess.getCommandFromImage(K8s, "bad_missing_image", "default"));
-    }
-
-    @Test
-    @DisplayName("Should retrieve the right command if image has the right env var set.")
-    public void testGetCommandFromImageCommandPresent() throws IOException, InterruptedException {
-      var command = KubePodProcess.getCommandFromImage(K8s, TEST_IMAGE_WITH_VAR_NAME, "default");
-      assertEquals(ENTRYPOINT, command);
-    }
-
   }
 
   @Nested
