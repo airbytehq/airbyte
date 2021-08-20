@@ -12,11 +12,14 @@ Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/
 
 ## 8/18/2021
 
-New sources:
+New source:
 * [**Bing Ads**](https://docs.airbyte.io/integrations/sources/bing-ads)
 
+New destination:
+* [**Keen**](https://docs.airbyte.io/integrations/destinations/keen)
+
 New features:
-* **Chargebee** source: Adds supoort for the `items`, `item prices` and  `attached items` endpoints.
+* **Chargebee** source: Adds support for the `items`, `item prices` and  `attached items` endpoints.
 
 Bug fixes:
 * **Quickbooks** source: Now uses the number data type for decimal fields.
