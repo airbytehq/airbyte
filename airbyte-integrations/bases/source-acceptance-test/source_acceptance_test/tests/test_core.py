@@ -208,7 +208,7 @@ class TestBasicRead(BaseTest):
         detailed_logger,
     ):
         output = docker_runner.call_read(connector_config, configured_catalog)
-        records = filter_output(output, Type.RECORD)
+        records = [message.record for message in filter_output(output, Type.RECORD)]
 
         assert records, "At least one record should be read using provided catalog"
 
