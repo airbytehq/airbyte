@@ -44,6 +44,56 @@
     },
     {
       "stream": {
+        "name": "unnest_alias",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "children": {
+              "type": [
+                "null",
+                "array"
+              ],
+              "items": {
+                "type": "object",
+                "properties": {
+                  "ab_id": {
+                    "type": [
+                      "null",
+                      "integer"
+                    ]
+                  },
+                  "owner": {
+                    "type": [
+                      "null",
+                      "object"
+                    ],
+                    "properties": {
+                      "owner_id": {
+                        "type": [
+                          "null",
+                          "integer"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "dedup_exchange_rate",
         "json_schema": {
           "type": ["null", "object"],
@@ -212,8 +262,17 @@
                         "type": "string"
                       }
                     },
-                    "other_info": {
-                      "type": "string"
+                    "custom_fields": {
+                      "items": {
+                        "properties": {
+                          "id": {
+                            "type": ["null", "integer"]
+                          },
+                          "value": {}
+                        },
+                        "type": ["null", "object"]
+                      },
+                      "type": ["null", "array"]
                     },
                     "conflict_stream_name": {
                       "type": "integer"
@@ -264,7 +323,7 @@
               "type": ["null", "number", "string"]
             },
             "conflict_stream_array": {
-              "type": ["null", "object"],
+              "type": ["null", "array"],
               "properties": {
                 "conflict_stream_name": {
                   "type": ["null", "array"],
