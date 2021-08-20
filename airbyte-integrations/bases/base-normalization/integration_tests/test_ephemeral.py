@@ -203,4 +203,4 @@ def generate_dbt_models(destination_type: DestinationType, test_root_dir: str, c
     catalog = os.path.join(test_root_dir, "catalog.json")
     with open(catalog, "w") as fh:
         fh.write(json.dumps(catalog_config))
-    catalog_processor.process(catalog, "_airbyte_data", dbt_test_utils.target_schema)
+    catalog_processor.process(catalog, "airbyte_data", dbt_test_utils.target_schema)

@@ -1,0 +1,14 @@
+
+
+  create  table SYSTEM.CONFLICT_STREAM_NAME__dbt_tmp
+  
+  as
+    
+-- Final base SQL model
+select
+    ID,
+    CONFLICT_STREAM_NAME,
+    airbyte_emitted_at,
+    AIRBYTE_CONFLICT_STREAM_NAME_HASHID
+from SYSTEM.CONFLICT_STREAM_NAME_AB3
+-- CONFLICT_STREAM_NAME from "SYSTEM"."AIRBYTE_RAW_CONFLICT_STREAM_NAME"

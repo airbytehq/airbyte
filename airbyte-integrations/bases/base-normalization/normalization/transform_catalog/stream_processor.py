@@ -29,7 +29,7 @@ from typing import Dict, List, Optional, Tuple
 from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMode
 from jinja2 import Template
 from normalization.destination_type import DestinationType
-from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer
+from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer, transform_standard_naming
 from normalization.transform_catalog.table_name_registry import TableNameRegistry
 from normalization.transform_catalog.utils import (
     is_airbyte_column,
@@ -233,7 +233,7 @@ class StreamProcessor(object):
                 column_count=column_count,
                 suffix="scd",
             )
-            where_clause = "\nwhere airbyte_active_row = 1"
+            where_clause = "\nwhere airbyte_active_row = 'Latest'"
             from_table = self.add_to_outputs(
                 self.generate_final_model(from_table, column_names) + where_clause, is_intermediate=False, column_count=column_count
             )
@@ -496,10 +496,10 @@ select
         partition by {{ primary_key }}
         order by {{ cursor_field }} desc, airbyte_emitted_at desc
     ) as airbyte_end_at,
-    case when lag({{ cursor_field }}) over (
+    coalesce(cast(lag({{ cursor_field }}) over (
         partition by {{ primary_key }}
         order by {{ cursor_field }} desc, airbyte_emitted_at desc
-    ) is null then 1 else 0 end as airbyte_active_row,
+    ) as varchar(200)), 'Latest') as airbyte_active_row,
     airbyte_emitted_at,
     {{ hash_id }}
 from {{ from_table }}

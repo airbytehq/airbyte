@@ -1,0 +1,14 @@
+
+
+  create  table SYSTEM.CONFLICT_STREAM_ARRAY__dbt_tmp
+  
+  as
+    
+-- Final base SQL model
+select
+    ID,
+    CONFLICT_STREAM_ARRAY,
+    airbyte_emitted_at,
+    AIRBYTE_CONFLICT_STREAM_ARRAY_HASHID
+from SYSTEM.CONFLICT_STREAM_ARRAY_AB3
+-- CONFLICT_STREAM_ARRAY from "SYSTEM"."AIRBYTE_RAW_CONFLICT_STREAM_ARRAY"

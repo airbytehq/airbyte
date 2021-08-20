@@ -3,6 +3,11 @@
     { "HKD_special___characters": "HKD_special___characters_1" },
     { "'\"HKD@spéçiäl & characters\"'": "HKD_special___characters" }
   ],
+  "oracle": [
+    { "HKD_special___characters": "HKD_special___characters_1" },
+    { "'\"HKD@spéçiäl & characters\"'": "HKD_special___characters" },
+    { "'\"column`_'with\"_quotes\"'": "column__with__quotes"}
+  ],
   "postgres": [
     {
       "nested_stream_with_complex_columns_resulting_into_long_names_partition_double_array_data": "nested_stream_with_c__ion_double_array_data"

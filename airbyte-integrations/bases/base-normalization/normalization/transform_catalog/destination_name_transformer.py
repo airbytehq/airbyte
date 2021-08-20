@@ -77,7 +77,9 @@ class DestinationNameTransformer:
             return False
         doesnt_start_with_alphaunderscore = match("[^A-Za-z_]", input_name[0]) is not None
         contains_non_alphanumeric = match(".*[^A-Za-z0-9_].*", input_name) is not None
-        return doesnt_start_with_alphaunderscore or contains_non_alphanumeric
+        if self.destination_type.value == DestinationType.ORACLE.value:
+            start_with_underscore = input_name.startswith('_')
+        return doesnt_start_with_alphaunderscore or contains_non_alphanumeric or start_with_underscore
 
     def normalize_schema_name(self, schema_name: str, in_jinja: bool = False, truncate: bool = True) -> str:
         """
@@ -163,8 +165,11 @@ class DestinationNameTransformer:
 
     def __normalize_naming_conventions(self, input_name: str) -> str:
         result = input_name
-        if self.destination_type.value == DestinationType.BIGQUERY.value:
+        if self.destination_type.value == DestinationType.ORACLE.value:
+            return transform_standard_naming(result)
+        if self.destination_type.value in [DestinationType.BIGQUERY.value, DestinationType.ORACLE.value]:
             result = transform_standard_naming(result)
+        if self.destination_type.value == DestinationType.BIGQUERY.value:
             doesnt_start_with_alphaunderscore = match("[^A-Za-z_]", result[0]) is not None
             if doesnt_start_with_alphaunderscore:
                 result = f"_{result}"

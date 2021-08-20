@@ -1,0 +1,13 @@
+
+  create view SYSTEM.SIMPLE_STREAM_WITH_NAMESPACE_RESULTING_INTO_LONG_NAMES_AB3__dbt_tmp as
+    
+-- SQL model to build a hash column based on the values of this record
+select
+    ora_hash(
+        'ID' || '~' ||
+        "DATE"
+    ) as AIRBYTE_SIMPLE_STREAM_WITH_NAMESPACE_RESULTING_INTO_LONG_NAMES_HASHID,
+    tmp.*
+from SYSTEM.SIMPLE_STREAM_WITH_NAMESPACE_RESULTING_INTO_LONG_NAMES_AB2 tmp
+-- SIMPLE_STREAM_WITH_NAMESPACE_RESULTING_INTO_LONG_NAMES
+
