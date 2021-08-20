@@ -34,10 +34,12 @@ import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.SyncMode;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 public class DefaultJobCreator implements JobCreator {
@@ -104,17 +106,22 @@ public class DefaultJobCreator implements JobCreator {
                                       DestinationConnection destination,
                                       StandardSync standardSync,
                                       String sourceDockerImageName,
-                                      String destinationDockerImageName)
+                                      String destinationDockerImageName,
+                                      List<StandardSyncOperation> standardSyncOperations)
       throws IOException {
     // reusing this isn't going to quite work.
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
+        .withNamespaceDefinition(standardSync.getNamespaceDefinition())
+        .withNamespaceFormat(standardSync.getNamespaceFormat())
         .withPrefix(standardSync.getPrefix())
         .withSourceDockerImage(sourceDockerImageName)
         .withSourceConfiguration(source.getConfiguration())
         .withDestinationDockerImage(destinationDockerImageName)
         .withDestinationConfiguration(destination.getConfiguration())
+        .withOperationSequence(standardSyncOperations)
         .withConfiguredAirbyteCatalog(standardSync.getCatalog())
-        .withState(null);
+        .withState(null)
+        .withResourceRequirements(standardSync.getResourceRequirements());
 
     jobPersistence.getCurrentState(standardSync.getConnectionId()).ifPresent(jobSyncConfig::withState);
 
@@ -132,7 +139,10 @@ public class DefaultJobCreator implements JobCreator {
   // 4. The Empty source emits no state message, so state will start at null (i.e. start from the
   // beginning on the next sync).
   @Override
-  public Optional<Long> createResetConnectionJob(DestinationConnection destination, StandardSync standardSync, String destinationDockerImage)
+  public Optional<Long> createResetConnectionJob(DestinationConnection destination,
+                                                 StandardSync standardSync,
+                                                 String destinationDockerImage,
+                                                 List<StandardSyncOperation> standardSyncOperations)
       throws IOException {
     final ConfiguredAirbyteCatalog configuredAirbyteCatalog = standardSync.getCatalog();
     configuredAirbyteCatalog.getStreams().forEach(configuredAirbyteStream -> {
@@ -141,10 +151,14 @@ public class DefaultJobCreator implements JobCreator {
     });
 
     final JobResetConnectionConfig resetConnectionConfig = new JobResetConnectionConfig()
+        .withNamespaceDefinition(standardSync.getNamespaceDefinition())
+        .withNamespaceFormat(standardSync.getNamespaceFormat())
         .withPrefix(standardSync.getPrefix())
         .withDestinationDockerImage(destinationDockerImage)
         .withDestinationConfiguration(destination.getConfiguration())
-        .withConfiguredAirbyteCatalog(configuredAirbyteCatalog);
+        .withOperationSequence(standardSyncOperations)
+        .withConfiguredAirbyteCatalog(configuredAirbyteCatalog)
+        .withResourceRequirements(standardSync.getResourceRequirements());
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)

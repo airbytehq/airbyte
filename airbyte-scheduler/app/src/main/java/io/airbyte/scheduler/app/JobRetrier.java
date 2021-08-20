@@ -24,6 +24,7 @@
 
 package io.airbyte.scheduler.app;
 
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.JobNotifier;
@@ -40,7 +41,7 @@ import org.slf4j.LoggerFactory;
 public class JobRetrier implements Runnable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JobRetrier.class);
-  private static final int MAX_SYNC_JOB_ATTEMPTS = 3;
+  private static final int MAX_SYNC_JOB_ATTEMPTS = new EnvConfigs().getMaxSyncJobAttempts();;
   private static final int RETRY_WAIT_MINUTES = 1;
 
   private final JobPersistence persistence;
@@ -55,7 +56,7 @@ public class JobRetrier implements Runnable {
 
   @Override
   public void run() {
-    LOGGER.info("Running Job Retrier...");
+    LOGGER.debug("Running Job Retrier...");
 
     final AtomicInteger failedJobs = new AtomicInteger();
     final AtomicInteger retriedJobs = new AtomicInteger();
@@ -71,11 +72,17 @@ public class JobRetrier implements Runnable {
       }
     });
 
-    LOGGER.info("Completed Job Retrier...");
-    LOGGER.info("Job Retrier Summary. Incomplete jobs: {}, Job set to retry: {}, Jobs set to failed: {}",
-        incompleteJobs.size(),
-        failedJobs.get(),
-        retriedJobs.get());
+    LOGGER.debug("Completed Job Retrier...");
+
+    int incompleteJobCount = incompleteJobs.size();
+    int failedJobCount = failedJobs.get();
+    int retriedJobCount = retriedJobs.get();
+    if (incompleteJobCount > 0 || failedJobCount > 0 || retriedJobCount > 0) {
+      LOGGER.info("Job Retrier Summary. Incomplete jobs: {}, Job set to retry: {}, Jobs set to failed: {}",
+          incompleteJobs.size(),
+          failedJobs.get(),
+          retriedJobs.get());
+    }
   }
 
   private List<Job> incompleteJobs() {

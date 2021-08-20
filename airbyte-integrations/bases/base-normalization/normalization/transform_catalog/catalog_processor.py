@@ -1,26 +1,26 @@
-"""
-MIT License
-
-Copyright (c) 2020 Airbyte
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
+#
+# MIT License
+#
+# Copyright (c) 2020 Airbyte
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 
 
 import json
@@ -32,6 +32,7 @@ from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMo
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer
 from normalization.transform_catalog.stream_processor import StreamProcessor
+from normalization.transform_catalog.table_name_registry import TableNameRegistry
 
 
 class CatalogProcessor:
@@ -63,31 +64,33 @@ class CatalogProcessor:
         @param json_column_name is the column name containing the JSON Blob with the raw data
         @param default_schema is the final schema where to output the final transformed data to
         """
-        # Registry of all tables in for each schema
-        tables_registry: Dict[str, Set[str]] = {}
-        # Registry of source tables in each schemas
+        tables_registry: TableNameRegistry = TableNameRegistry(self.destination_type)
         schema_to_source_tables: Dict[str, Set[str]] = {}
-
         catalog = read_json(catalog_file)
         # print(json.dumps(catalog, separators=(",", ":")))
         substreams = []
-        for stream_processor in self.build_stream_processor(
+        stream_processors = self.build_stream_processor(
             catalog=catalog,
             json_column_name=json_column_name,
             default_schema=default_schema,
             name_transformer=self.name_transformer,
             destination_type=self.destination_type,
             tables_registry=tables_registry,
-        ):
-            # Check properties
-            if not stream_processor.properties:
-                raise EOFError("Invalid Catalog: Unexpected empty properties in catalog")
-
-            raw_table_name = self.name_transformer.normalize_table_name(f"_airbyte_raw_{stream_processor.stream_name}", truncate=False)
+        )
+        for stream_processor in stream_processors:
+            stream_processor.collect_table_names()
+        for conflict in tables_registry.resolve_names():
+            print(
+                f"WARN: Resolving conflict: {conflict.schema}.{conflict.table_name_conflict} "
+                f"from '{'.'.join(conflict.json_path)}' into {conflict.table_name_resolved}"
+            )
+        for stream_processor in stream_processors:
+            # MySQL table names need to be manually truncated, because it does not do it automatically
+            truncate = self.destination_type == DestinationType.MYSQL
+            raw_table_name = self.name_transformer.normalize_table_name(f"_airbyte_raw_{stream_processor.stream_name}", truncate=truncate)
             add_table_to_sources(schema_to_source_tables, stream_processor.schema, raw_table_name)
 
             nested_processors = stream_processor.process()
-            add_table_to_registry(tables_registry, stream_processor)
             if nested_processors and len(nested_processors) > 0:
                 substreams += nested_processors
             for file in stream_processor.sql_outputs:
@@ -102,21 +105,24 @@ class CatalogProcessor:
         default_schema: str,
         name_transformer: DestinationNameTransformer,
         destination_type: DestinationType,
-        tables_registry: Dict[str, Set[str]],
+        tables_registry: TableNameRegistry,
     ) -> List[StreamProcessor]:
         result = []
         for configured_stream in get_field(catalog, "streams", "Invalid Catalog: 'streams' is not defined in Catalog"):
             stream_config = get_field(configured_stream, "stream", "Invalid Stream: 'stream' is not defined in Catalog streams")
 
-            # The logic here matches the logic in JdbcBufferedConsumerFactory.java. Any modifications need to be reflected there and vice versa.
+            # The logic here matches the logic in JdbcBufferedConsumerFactory.java.
+            # Any modifications need to be reflected there and vice versa.
             schema = default_schema
             if "namespace" in stream_config:
                 schema = stream_config["namespace"]
 
-            schema_name = name_transformer.normalize_schema_name(schema)
+            schema_name = name_transformer.normalize_schema_name(schema, truncate=False)
             raw_schema_name = name_transformer.normalize_schema_name(f"_airbyte_{schema}", truncate=False)
             stream_name = get_field(stream_config, "name", f"Invalid Stream: 'name' is not defined in stream: {str(stream_config)}")
-            raw_table_name = name_transformer.normalize_table_name(f"_airbyte_raw_{stream_name}", truncate=False)
+            # MySQL table names need to be manually truncated, because it does not do it automatically
+            truncate = destination_type == DestinationType.MYSQL
+            raw_table_name = name_transformer.normalize_table_name(f"_airbyte_raw_{stream_name}", truncate=truncate)
 
             source_sync_mode = get_source_sync_mode(configured_stream, stream_name)
             destination_sync_mode = get_destination_sync_mode(configured_stream, stream_name)
@@ -138,10 +144,6 @@ class CatalogProcessor:
 
             from_table = "source('{}', '{}')".format(schema_name, raw_table_name)
 
-            # Check properties
-            if not properties:
-                raise EOFError("Invalid Catalog: Unexpected empty properties in catalog")
-
             stream_processor = StreamProcessor.create(
                 stream_name=stream_name,
                 destination_type=destination_type,
@@ -159,7 +161,7 @@ class CatalogProcessor:
             result.append(stream_processor)
         return result
 
-    def process_substreams(self, substreams: List[StreamProcessor], tables_registry: Dict[str, Set[str]]):
+    def process_substreams(self, substreams: List[StreamProcessor], tables_registry: TableNameRegistry):
         """
         Handle nested stream/substream/children
         """
@@ -169,7 +171,6 @@ class CatalogProcessor:
             for substream in children:
                 substream.tables_registry = tables_registry
                 nested_processors = substream.process()
-                add_table_to_registry(tables_registry, substream)
                 if nested_processors:
                     substreams += nested_processors
                 for file in substream.sql_outputs:
@@ -180,10 +181,11 @@ class CatalogProcessor:
         Generate the sources.yaml file as described in https://docs.getdbt.com/docs/building-a-dbt-project/using-sources/
         """
         schemas = []
-        for schema in schema_to_source_tables:
+        for entry in sorted(schema_to_source_tables.items(), key=lambda kv: kv[0]):
+            schema = entry[0]
             quoted_schema = self.name_transformer.needs_quotes(schema)
             tables = []
-            for source in schema_to_source_tables[schema]:
+            for source in sorted(schema_to_source_tables[schema]):
                 if quoted_schema:
                     tables.append({"name": source, "quoting": {"identifier": True}})
                 else:
@@ -201,8 +203,11 @@ class CatalogProcessor:
             )
         source_config = {"version": 2, "sources": schemas}
         source_path = os.path.join(self.output_directory, "sources.yml")
+        output_dir = os.path.dirname(source_path)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
         with open(source_path, "w") as fh:
-            fh.write(yaml.dump(source_config))
+            fh.write(yaml.dump(source_config, sort_keys=False))
 
 
 # Static Functions
@@ -272,24 +277,6 @@ def add_table_to_sources(schema_to_source_tables: Dict[str, Set[str]], schema_na
         schema_to_source_tables[schema_name].add(table_name)
     else:
         raise KeyError(f"Duplicate table {table_name} in {schema_name}")
-
-
-def add_table_to_registry(tables_registry: Dict[str, Set[str]], processor: StreamProcessor):
-    """
-    Keeps track of all table names created by this catalog, regardless of their destination schema
-
-    @param tables_registry where all table names are recorded
-    @param processor the processor that created tables as part of its process
-    """
-    for schema in processor.local_registry:
-        if schema not in tables_registry:
-            tables_registry[schema] = processor.local_registry[schema]
-        else:
-            for table_name in processor.local_registry[schema]:
-                if table_name not in tables_registry[schema]:
-                    tables_registry[schema].add(table_name)
-                else:
-                    raise KeyError(f"Duplicate table {table_name} in schema {schema}")
 
 
 def output_sql_file(file: str, sql: str):

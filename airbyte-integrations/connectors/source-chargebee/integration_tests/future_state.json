@@ -1,0 +1,31 @@
+{
+  "subscription": {
+    "updated_at": 2147483647
+  },
+  "customer": {
+    "updated_at": 2147483647
+  },
+  "invoice": {
+    "updated_at": 2147483647
+  },
+  "order": {
+    "updated_at": 2147483647
+  },
+  "addon": {
+    "updated_at": 2147483647
+  },
+  "plan": {
+    "updated_at": 2147483647
+  },
+  "item": {
+    "updated_at": 2147483647
+  },
+  "item_price": {
+    "updated_at": 2147483647
+  },
+  "attached_item": {
+    "cbdemo_standard": {
+      "updated_at": 2147483647
+    }
+  }
+}

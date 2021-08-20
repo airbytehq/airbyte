@@ -1,26 +1,26 @@
-"""
-MIT License
-
-Copyright (c) 2020 Airbyte
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
+#
+# MIT License
+#
+# Copyright (c) 2020 Airbyte
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 
 
 import unicodedata as ud
@@ -31,19 +31,23 @@ from normalization.transform_catalog.reserved_keywords import is_reserved_keywor
 from normalization.transform_catalog.utils import jinja_call
 
 DESTINATION_SIZE_LIMITS = {
+    # https://cloud.google.com/bigquery/quotas#all_tables
     DestinationType.BIGQUERY.value: 1024,
+    # https://docs.snowflake.com/en/sql-reference/identifiers-syntax.html
     DestinationType.SNOWFLAKE.value: 255,
+    # https://docs.aws.amazon.com/redshift/latest/dg/r_names.html
     DestinationType.REDSHIFT.value: 127,
+    # https://www.postgresql.org/docs/12/limits.html
     DestinationType.POSTGRES.value: 63,
+    # https://dev.mysql.com/doc/refman/8.0/en/identifier-length.html
+    DestinationType.MYSQL.value: 64,
 }
 
 # DBT also needs to generate suffix to table names, so we need to make sure it has enough characters to do so...
 TRUNCATE_DBT_RESERVED_SIZE = 12
-
-# We reserve this many characters from identifier names to be used for prefix/suffix for airbyte
-# before reaching the database name length limit
-# 2 characters for signaling truncate with '__' and 6 others for generating unique strings
-TRUNCATE_RESERVED_SIZE: int = 8
+# we keep 4 characters for 1 underscore and 3 characters for suffix (_ab1, _ab2, etc)
+# we keep 4 characters for 1 underscore and 3 characters hash (of the schema)
+TRUNCATE_RESERVED_SIZE = 8
 
 
 class DestinationNameTransformer:
@@ -83,30 +87,44 @@ class DestinationNameTransformer:
         """
         return self.__normalize_non_column_identifier_name(input_name=schema_name, in_jinja=in_jinja, truncate=truncate)
 
-    def normalize_table_name(self, table_name: str, in_jinja: bool = False, truncate: bool = True) -> str:
+    def normalize_table_name(
+        self, table_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
+    ) -> str:
         """
         @param table_name is the table to normalize
         @param in_jinja is a boolean to specify if the returned normalized will be used inside a jinja macro or not
         @param truncate force ignoring truncate operation on resulting normalized name. For example, if we don't
         control how the name would be normalized
+        @param conflict if there is a conflict between stream name and fields
+        @param conflict_level is the json_path level conflict happened
         """
-        return self.__normalize_non_column_identifier_name(input_name=table_name, in_jinja=in_jinja, truncate=truncate)
+        return self.__normalize_non_column_identifier_name(
+            input_name=table_name, in_jinja=in_jinja, truncate=truncate, conflict=conflict, conflict_level=conflict_level
+        )
 
-    def normalize_column_name(self, column_name: str, in_jinja: bool = False, truncate: bool = True) -> str:
+    def normalize_column_name(
+        self, column_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
+    ) -> str:
         """
         @param column_name is the column to normalize
         @param in_jinja is a boolean to specify if the returned normalized will be used inside a jinja macro or not
         @param truncate force ignoring truncate operation on resulting normalized name. For example, if we don't
         control how the name would be normalized
+        @param conflict if there is a conflict between stream name and fields
+        @param conflict_level is the json_path level conflict happened
         """
-        return self.__normalize_identifier_name(column_name=column_name, in_jinja=in_jinja, truncate=truncate)
+        return self.__normalize_identifier_name(
+            column_name=column_name, in_jinja=in_jinja, truncate=truncate, conflict=conflict, conflict_level=conflict_level
+        )
 
-    def truncate_identifier_name(self, input_name: str, custom_limit: int = -1) -> str:
+    def truncate_identifier_name(self, input_name: str, custom_limit: int = -1, conflict: bool = False, conflict_level: int = 0) -> str:
         """
         @param input_name is the identifier name to middle truncate
         @param custom_limit uses a custom length as the max instead of the destination max length
+        @param conflict if there is a conflict between stream name and fields
+        @param conflict_level is the json_path level conflict happened
         """
-        limit = custom_limit if custom_limit > 0 else self.get_name_max_length()
+        limit = custom_limit - 1 if custom_limit > 0 else self.get_name_max_length()
 
         if limit < len(input_name):
             middle = round(limit / 2)
@@ -114,8 +132,11 @@ class DestinationNameTransformer:
             prefix = input_name[: limit - middle - 1]
             suffix = input_name[1 - middle :]
             # Add extra characters '__', signaling a truncate in identifier
-            print(f"Truncating {input_name} (#{len(input_name)}) to {prefix}__{suffix} (#{2 + len(prefix) + len(suffix)})")
-            input_name = f"{prefix}__{suffix}"
+            print(f"Truncating {input_name} (#{len(input_name)}) to {prefix}_{suffix} (#{2 + len(prefix) + len(suffix)})")
+            mid = "__"
+            if conflict:
+                mid = f"_{conflict_level}"
+            input_name = f"{prefix}{mid}{suffix}"
 
         return input_name
 
@@ -128,21 +149,28 @@ class DestinationNameTransformer:
 
     # Private methods
 
-    def __normalize_non_column_identifier_name(self, input_name: str, in_jinja: bool = False, truncate: bool = True) -> str:
+    def __normalize_non_column_identifier_name(
+        self, input_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
+    ) -> str:
         # We force standard naming for non column names (see issue #1785)
         result = transform_standard_naming(input_name)
         result = self.__normalize_naming_conventions(result)
         if truncate:
-            result = self.truncate_identifier_name(result)
+            result = self.truncate_identifier_name(input_name=result, conflict=conflict, conflict_level=conflict_level)
         result = self.__normalize_identifier_case(result, is_quoted=False)
         return result
 
-    def __normalize_identifier_name(self, column_name: str, in_jinja: bool = False, truncate: bool = True) -> str:
+    def __normalize_identifier_name(
+        self, column_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
+    ) -> str:
         result = self.__normalize_naming_conventions(column_name)
         if truncate:
-            result = self.truncate_identifier_name(result)
+            result = self.truncate_identifier_name(input_name=result, conflict=conflict, conflict_level=conflict_level)
         if self.needs_quotes(result):
-            result = result.replace('"', '""')
+            if self.destination_type.value != DestinationType.MYSQL.value:
+                result = result.replace('"', '""')
+            else:
+                result = result.replace("`", "_")
             result = result.replace("'", "\\'")
             result = f"adapter.quote('{result}')"
             result = self.__normalize_identifier_case(result, is_quoted=True)
@@ -178,6 +206,9 @@ class DestinationNameTransformer:
         elif self.destination_type.value == DestinationType.SNOWFLAKE.value:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.upper()
+        elif self.destination_type.value == DestinationType.MYSQL.value:
+            if not is_quoted and not self.needs_quotes(input_name):
+                result = input_name.lower()
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result
@@ -191,6 +222,11 @@ def transform_standard_naming(input_name: str) -> str:
     result = strip_accents(result)
     result = sub(r"\s+", "_", result)
     result = sub(r"[^a-zA-Z0-9_]", "_", result)
+    return result
+
+
+def transform_json_naming(input_name: str) -> str:
+    result = sub(r"['\"`]", "_", input_name)
     return result
 
 

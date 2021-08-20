@@ -3,40 +3,41 @@ import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
 import ContentCard from "components/ContentCard";
-import ServiceForm from "components/ServiceForm";
+import ServiceForm from "views/Connector/ServiceForm";
 import ConnectionBlock from "components/ConnectionBlock";
+import { JobsLogItem } from "components/JobItem";
+
 import SourceDefinitionResource from "core/resources/SourceDefinition";
-import { AnalyticsService } from "core/analytics/AnalyticsService";
-import usePrepareDropdownLists from "./usePrepareDropdownLists";
 import { useDestinationDefinitionSpecificationLoad } from "components/hooks/services/useDestinationHook";
-import { IDataItem } from "components/DropDown/components/ListItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { JobInfo } from "core/resources/Scheduler";
-import { JobsLogItem } from "components/JobItem";
-import SkipOnboardingButton from "./SkipOnboardingButton";
 import { ConnectionConfiguration } from "core/domain/connection";
+import { DestinationDefinition } from "core/resources/DestinationDefinition";
+
+import SkipOnboardingButton from "./SkipOnboardingButton";
+import { useAnalytics } from "components/hooks/useAnalytics";
 
 type IProps = {
-  dropDownData: IDataItem[];
-  hasSuccess?: boolean;
+  availableServices: DestinationDefinition[];
+  currentSourceDefinitionId: string;
   onSubmit: (values: {
     name: string;
     serviceType: string;
     destinationDefinitionId?: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => void;
+  hasSuccess?: boolean;
   error?: null | { message?: string; status?: number };
-  currentSourceDefinitionId: string;
   jobInfo?: JobInfo;
   afterSelectConnector?: () => void;
 };
 
 const DestinationStep: React.FC<IProps> = ({
   onSubmit,
-  dropDownData,
+  availableServices,
+  currentSourceDefinitionId,
   hasSuccess,
   error,
-  currentSourceDefinitionId,
   jobInfo,
   afterSelectConnector,
 }) => {
@@ -48,11 +49,13 @@ const DestinationStep: React.FC<IProps> = ({
   const currentSource = useResource(SourceDefinitionResource.detailShape(), {
     sourceDefinitionId: currentSourceDefinitionId,
   });
-  const { getDestinationDefinitionById } = usePrepareDropdownLists();
+  const analyticsService = useAnalytics();
 
-  const onDropDownSelect = (sourceId: string) => {
-    const destinationConnector = getDestinationDefinitionById(sourceId);
-    AnalyticsService.track("New Destination - Action", {
+  const onDropDownSelect = (destinationDefinition: string) => {
+    const destinationConnector = availableServices.find(
+      (s) => s.destinationDefinitionId === destinationDefinition
+    );
+    analyticsService.track("New Destination - Action", {
       action: "Select a connector",
       connector_destination: destinationConnector?.name,
       connector_destination_definition_id:
@@ -63,7 +66,7 @@ const DestinationStep: React.FC<IProps> = ({
       afterSelectConnector();
     }
 
-    setDestinationDefinitionId(sourceId);
+    setDestinationDefinitionId(destinationDefinition);
   };
   const onSubmitForm = async (values: {
     name: string;
@@ -80,20 +83,22 @@ const DestinationStep: React.FC<IProps> = ({
 
   return (
     <>
-      <ConnectionBlock itemFrom={{ name: currentSource.name }} />
+      <ConnectionBlock
+        itemFrom={{ name: currentSource.name, icon: currentSource.icon }}
+      />
       <ContentCard
         title={<FormattedMessage id="onboarding.destinationSetUp" />}
       >
         <ServiceForm
+          formType="destination"
           additionBottomControls={
             <SkipOnboardingButton step="destination connection" />
           }
           allowChangeConnector
-          onDropDownSelect={onDropDownSelect}
+          onServiceSelect={onDropDownSelect}
           onSubmit={onSubmitForm}
           hasSuccess={hasSuccess}
-          formType="destination"
-          dropDownData={dropDownData}
+          availableServices={availableServices}
           errorMessage={errorMessage}
           specifications={
             destinationDefinitionSpecification?.connectionSpecification

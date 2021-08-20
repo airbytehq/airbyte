@@ -54,8 +54,28 @@ public class SqlOperationsUtils {
                                                    JdbcDatabase jdbcDatabase,
                                                    List<AirbyteRecordMessage> records)
       throws SQLException {
-    insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID);
+    insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, true);
+  }
 
+  /**
+   * Inserts "raw" records in a single query. The purpose of helper to abstract away database-specific
+   * SQL syntax from this query.
+   *
+   * This version does not add a semicolon at the end of the INSERT statement.
+   *
+   * @param insertQueryComponent the first line of the query e.g. INSERT INTO public.users (ab_id,
+   *        data, emitted_at)
+   * @param recordQueryComponent query template for a full record e.g. (?, ?::jsonb ?)
+   * @param jdbcDatabase jdbc database
+   * @param records records to write
+   * @throws SQLException exception
+   */
+  public static void insertRawRecordsInSingleQueryNoSem(String insertQueryComponent,
+                                                        String recordQueryComponent,
+                                                        JdbcDatabase jdbcDatabase,
+                                                        List<AirbyteRecordMessage> records)
+      throws SQLException {
+    insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, false);
   }
 
   @VisibleForTesting
@@ -63,7 +83,8 @@ public class SqlOperationsUtils {
                                             String recordQueryComponent,
                                             JdbcDatabase jdbcDatabase,
                                             List<AirbyteRecordMessage> records,
-                                            Supplier<UUID> uuidSupplier)
+                                            Supplier<UUID> uuidSupplier,
+                                            boolean sem)
       throws SQLException {
     if (records.isEmpty()) {
       return;
@@ -80,7 +101,7 @@ public class SqlOperationsUtils {
       final StringBuilder sql = new StringBuilder(insertQueryComponent);
       records.forEach(r -> sql.append(recordQueryComponent));
       final String s = sql.toString();
-      final String s1 = s.substring(0, s.length() - 2) + ";";
+      final String s1 = s.substring(0, s.length() - 2) + (sem ? ";" : "");
 
       try (final PreparedStatement statement = connection.prepareStatement(s1)) {
         // second loop: bind values to the SQL string.

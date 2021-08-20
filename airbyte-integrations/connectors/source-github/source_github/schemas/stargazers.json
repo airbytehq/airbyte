@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "repository": {
+      "type": ["string"]
+    },
+    "user_id": {
+      "type": ["null", "integer"]
+    },
+    "starred_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "user": {
+      "$ref": "user.json"
+    }
+  }
+}

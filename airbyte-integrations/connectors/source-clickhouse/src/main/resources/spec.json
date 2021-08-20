@@ -1,0 +1,38 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/clickhouse",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "ClickHouse Source Spec",
+    "type": "object",
+    "required": ["host", "port", "database", "username"],
+    "additionalProperties": false,
+    "properties": {
+      "host": {
+        "description": "Host Endpoint of the Clickhouse Cluster",
+        "type": "string"
+      },
+      "port": {
+        "description": "Port of the database.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 8123,
+        "examples": ["8123"]
+      },
+      "database": {
+        "description": "Name of the database.",
+        "type": "string",
+        "examples": ["default"]
+      },
+      "username": {
+        "description": "Username to use to access the database.",
+        "type": "string"
+      },
+      "password": {
+        "description": "Password associated with the username.",
+        "type": "string",
+        "airbyte_secret": true
+      }
+    }
+  }
+}

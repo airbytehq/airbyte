@@ -42,12 +42,10 @@
       "type": ["null", "object"],
       "properties": {
         "start": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "end": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "number"]
         }
       }
     },
@@ -84,8 +82,7 @@
           "type": ["null", "string"]
         },
         "created": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "statement_description": {
           "type": ["null", "string"]
@@ -140,8 +137,7 @@
           "properties": {}
         },
         "updated": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "number"]
         }
       }
     },

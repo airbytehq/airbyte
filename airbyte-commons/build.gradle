@@ -3,7 +3,5 @@ plugins {
 }
 
 dependencies {
-    testImplementation 'org.apache.commons:commons-lang3:3.11'
-
-    implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.20'
+    // Dependencies for this module should be specified in the top-level build.gradle.
 }

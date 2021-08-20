@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "application": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "globalId": {
+      "type": "string"
+    },
+    "id": {
+      "type": "integer"
+    },
+    "object": {
+      "properties": {
+        "icon": {
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "url16x16": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "status": {
+          "properties": {
+            "icon": {
+              "properties": {
+                "link": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "url16x16": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "resolved": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "relationship": {
+      "type": "string"
+    },
+    "self": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

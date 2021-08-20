@@ -24,32 +24,37 @@
 
 package io.airbyte.config.persistence;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.lang.MoreBooleans;
+import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSyncSchedule;
+import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 public class ConfigRepository {
 
   private final ConfigPersistence persistence;
 
-  public ConfigRepository(ConfigPersistence persistence) {
+  public ConfigRepository(final ConfigPersistence persistence) {
     this.persistence = persistence;
   }
 
-  public StandardWorkspace getStandardWorkspace(final UUID workspaceId, boolean includeTombstone)
+  public StandardWorkspace getStandardWorkspace(final UUID workspaceId, final boolean includeTombstone)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    StandardWorkspace workspace = persistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), StandardWorkspace.class);
+    final StandardWorkspace workspace = persistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), StandardWorkspace.class);
 
     if (!MoreBooleans.isTruthy(workspace.getTombstone()) || includeTombstone) {
       return workspace;
@@ -58,23 +63,26 @@ public class ConfigRepository {
     throw new ConfigNotFoundException(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString());
   }
 
-  public StandardWorkspace getWorkspaceBySlug(String slug, boolean includeTombstone)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
-    for (StandardWorkspace workspace : listStandardWorkspaces(includeTombstone)) {
+  public Optional<StandardWorkspace> getWorkspaceBySlugOptional(final String slug, final boolean includeTombstone)
+      throws JsonValidationException, IOException {
+    for (final StandardWorkspace workspace : listStandardWorkspaces(includeTombstone)) {
       if (workspace.getSlug().equals(slug)) {
-        return workspace;
+        return Optional.of(workspace);
       }
     }
-
-    throw new ConfigNotFoundException(ConfigSchema.STANDARD_WORKSPACE, slug);
+    return Optional.empty();
   }
 
-  public List<StandardWorkspace> listStandardWorkspaces(boolean includeTombstone)
-      throws JsonValidationException, IOException {
+  public StandardWorkspace getWorkspaceBySlug(final String slug, final boolean includeTombstone)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    return getWorkspaceBySlugOptional(slug, includeTombstone).orElseThrow(() -> new ConfigNotFoundException(ConfigSchema.STANDARD_WORKSPACE, slug));
+  }
 
-    List<StandardWorkspace> workspaces = new ArrayList<StandardWorkspace>();
+  public List<StandardWorkspace> listStandardWorkspaces(final boolean includeTombstone) throws JsonValidationException, IOException {
 
-    for (StandardWorkspace workspace : persistence.listConfigs(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class)) {
+    final List<StandardWorkspace> workspaces = new ArrayList<>();
+
+    for (final StandardWorkspace workspace : persistence.listConfigs(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class)) {
       if (!MoreBooleans.isTruthy(workspace.getTombstone()) || includeTombstone) {
         workspaces.add(workspace);
       }
@@ -92,20 +100,20 @@ public class ConfigRepository {
     return persistence.getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinitionId.toString(), StandardSourceDefinition.class);
   }
 
-  public StandardSourceDefinition getSourceDefinitionFromSource(UUID sourceId) {
+  public StandardSourceDefinition getSourceDefinitionFromSource(final UUID sourceId) {
     try {
       final SourceConnection source = getSourceConnection(sourceId);
       return getStandardSourceDefinition(source.getSourceDefinitionId());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  public StandardSourceDefinition getSourceDefinitionFromConnection(UUID connectionId) {
+  public StandardSourceDefinition getSourceDefinitionFromConnection(final UUID connectionId) {
     try {
       final StandardSync sync = getStandardSync(connectionId);
       return getSourceDefinitionFromSource(sync.getSourceId());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -124,20 +132,20 @@ public class ConfigRepository {
         StandardDestinationDefinition.class);
   }
 
-  public StandardDestinationDefinition getDestinationDefinitionFromDestination(UUID destinationId) {
+  public StandardDestinationDefinition getDestinationDefinitionFromDestination(final UUID destinationId) {
     try {
       final DestinationConnection destination = getDestinationConnection(destinationId);
       return getStandardDestinationDefinition(destination.getDestinationDefinitionId());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  public StandardDestinationDefinition getDestinationDefinitionFromConnection(UUID connectionId) {
+  public StandardDestinationDefinition getDestinationDefinitionFromConnection(final UUID connectionId) {
     try {
       final StandardSync sync = getStandardSync(connectionId);
       return getDestinationDefinitionFromDestination(sync.getDestinationId());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -171,7 +179,7 @@ public class ConfigRepository {
     return persistence.getConfig(ConfigSchema.DESTINATION_CONNECTION, destinationId.toString(), DestinationConnection.class);
   }
 
-  public void writeDestinationConnection(DestinationConnection destinationConnection) throws JsonValidationException, IOException {
+  public void writeDestinationConnection(final DestinationConnection destinationConnection) throws JsonValidationException, IOException {
     persistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, destinationConnection.getDestinationId().toString(), destinationConnection);
   }
 
@@ -191,12 +199,24 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class);
   }
 
-  public StandardSyncSchedule getStandardSyncSchedule(final UUID connectionId) throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(ConfigSchema.STANDARD_SYNC_SCHEDULE, connectionId.toString(), StandardSyncSchedule.class);
+  public StandardSyncOperation getStandardSyncOperation(final UUID operationId) throws JsonValidationException, IOException, ConfigNotFoundException {
+    return persistence.getConfig(ConfigSchema.STANDARD_SYNC_OPERATION, operationId.toString(), StandardSyncOperation.class);
   }
 
-  public void writeStandardSchedule(final StandardSyncSchedule schedule) throws JsonValidationException, IOException {
-    persistence.writeConfig(ConfigSchema.STANDARD_SYNC_SCHEDULE, schedule.getConnectionId().toString(), schedule);
+  public void writeStandardSyncOperation(final StandardSyncOperation standardSyncOperation) throws JsonValidationException, IOException {
+    persistence.writeConfig(ConfigSchema.STANDARD_SYNC_OPERATION, standardSyncOperation.getOperationId().toString(), standardSyncOperation);
+  }
+
+  public List<StandardSyncOperation> listStandardSyncOperations() throws IOException, JsonValidationException {
+    return persistence.listConfigs(ConfigSchema.STANDARD_SYNC_OPERATION, StandardSyncOperation.class);
+  }
+
+  public <T> void replaceAllConfigs(final Map<AirbyteConfig, Stream<T>> configs, final boolean dryRun) throws IOException {
+    persistence.replaceAllConfigs(configs, dryRun);
+  }
+
+  public Map<String, Stream<JsonNode>> dumpConfigs() throws IOException {
+    return persistence.dumpConfigs();
   }
 
 }

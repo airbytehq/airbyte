@@ -1,0 +1,25 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/ReplicationAttemptSummary.yaml
+title: ReplicationAttemptSummary
+type: object
+required:
+  - status
+  - recordsSynced
+  - bytesSynced
+  - startTime
+  - endTime
+additionalProperties: false
+properties:
+  status:
+    "$ref": ReplicationStatus.yaml
+  recordsSynced:
+    type: integer
+    minValue: 0
+  bytesSynced:
+    type: integer
+    minValue: 0
+  startTime:
+    type: integer
+  endTime:
+    type: integer

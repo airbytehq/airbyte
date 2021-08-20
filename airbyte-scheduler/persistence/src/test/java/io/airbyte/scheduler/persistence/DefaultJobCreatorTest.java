@@ -40,16 +40,22 @@ import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
+import io.airbyte.config.OperatorNormalization;
+import io.airbyte.config.OperatorNormalization.Option;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,6 +71,7 @@ public class DefaultJobCreatorTest {
   private static final SourceConnection SOURCE_CONNECTION;
   private static final DestinationConnection DESTINATION_CONNECTION;
   private static final StandardSync STANDARD_SYNC;
+  private static final StandardSyncOperation STANDARD_SYNC_OPERATION;
   private static final long JOB_ID = 12L;
 
   private JobPersistence jobPersistence;
@@ -102,15 +109,26 @@ public class DefaultJobCreatorTest {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(stream));
 
     final UUID connectionId = UUID.randomUUID();
+    final UUID operationId = UUID.randomUUID();
 
     STANDARD_SYNC = new StandardSync()
         .withConnectionId(connectionId)
         .withName("presto to hudi")
+        .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
+        .withNamespaceFormat(null)
         .withPrefix("presto_to_hudi")
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(catalog)
         .withSourceId(sourceId)
-        .withDestinationId(destinationId);
+        .withDestinationId(destinationId)
+        .withOperationIds(List.of(operationId));
+
+    STANDARD_SYNC_OPERATION = new StandardSyncOperation()
+        .withOperationId(operationId)
+        .withName("normalize")
+        .withTombstone(false)
+        .withOperatorType(OperatorType.NORMALIZATION)
+        .withOperatorNormalization(new OperatorNormalization().withOption(Option.BASIC));
   }
 
   @BeforeEach
@@ -187,12 +205,15 @@ public class DefaultJobCreatorTest {
   @Test
   void testCreateSyncJob() throws IOException {
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
+        .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
+        .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
         .withPrefix(STANDARD_SYNC.getPrefix())
         .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
         .withSourceDockerImage(SOURCE_IMAGE_NAME)
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
-        .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog());
+        .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
+        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION));
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.SYNC)
@@ -206,19 +227,23 @@ public class DefaultJobCreatorTest {
         DESTINATION_CONNECTION,
         STANDARD_SYNC,
         SOURCE_IMAGE_NAME,
-        DESTINATION_IMAGE_NAME).orElseThrow();
+        DESTINATION_IMAGE_NAME,
+        List.of(STANDARD_SYNC_OPERATION)).orElseThrow();
     assertEquals(JOB_ID, jobId);
   }
 
   @Test
   void testCreateSyncJobEnsureNoQueuing() throws IOException {
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
+        .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
+        .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
         .withPrefix(STANDARD_SYNC.getPrefix())
         .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
         .withSourceDockerImage(SOURCE_IMAGE_NAME)
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
-        .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog());
+        .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
+        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION));
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.SYNC)
@@ -232,7 +257,8 @@ public class DefaultJobCreatorTest {
         DESTINATION_CONNECTION,
         STANDARD_SYNC,
         SOURCE_IMAGE_NAME,
-        DESTINATION_IMAGE_NAME).isEmpty());
+        DESTINATION_IMAGE_NAME,
+        List.of(STANDARD_SYNC_OPERATION)).isEmpty());
   }
 
   @Test
@@ -245,10 +271,13 @@ public class DefaultJobCreatorTest {
         });
 
     final JobResetConnectionConfig JobResetConnectionConfig = new JobResetConnectionConfig()
+        .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
+        .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
         .withPrefix(STANDARD_SYNC.getPrefix())
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
-        .withConfiguredAirbyteCatalog(expectedCatalog);
+        .withConfiguredAirbyteCatalog(expectedCatalog)
+        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION));
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
@@ -260,7 +289,8 @@ public class DefaultJobCreatorTest {
     final long jobId = jobCreator.createResetConnectionJob(
         DESTINATION_CONNECTION,
         STANDARD_SYNC,
-        DESTINATION_IMAGE_NAME).orElseThrow();
+        DESTINATION_IMAGE_NAME,
+        List.of(STANDARD_SYNC_OPERATION)).orElseThrow();
     assertEquals(JOB_ID, jobId);
   }
 
@@ -274,10 +304,13 @@ public class DefaultJobCreatorTest {
         });
 
     final JobResetConnectionConfig JobResetConnectionConfig = new JobResetConnectionConfig()
+        .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
+        .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
         .withPrefix(STANDARD_SYNC.getPrefix())
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
-        .withConfiguredAirbyteCatalog(expectedCatalog);
+        .withConfiguredAirbyteCatalog(expectedCatalog)
+        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION));
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
@@ -289,7 +322,8 @@ public class DefaultJobCreatorTest {
     assertTrue(jobCreator.createResetConnectionJob(
         DESTINATION_CONNECTION,
         STANDARD_SYNC,
-        DESTINATION_IMAGE_NAME).isEmpty());
+        DESTINATION_IMAGE_NAME,
+        List.of(STANDARD_SYNC_OPERATION)).isEmpty());
   }
 
 }

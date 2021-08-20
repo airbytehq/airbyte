@@ -9,7 +9,32 @@ import { theme } from "./theme";
 
 import { Routing } from "./pages/routes";
 import LoadingPage from "./components/LoadingPage";
-import NetworkErrorBoundary from "./components/NetworkErrorBoundary";
+import ApiErrorBoundary from "./components/ApiErrorBoundary";
+import NotificationService from "components/hooks/services/Notification";
+import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
+import {
+  useCurrentWorkspace,
+  usePickFirstWorkspace,
+} from "components/hooks/services/useWorkspace";
+import { Feature, FeatureService } from "components/hooks/services/Feature";
+import { registerService } from "./core/servicesProvider";
+
+registerService("currentWorkspaceProvider", usePickFirstWorkspace);
+
+function useCustomerIdProvider() {
+  const workspace = useCurrentWorkspace();
+
+  return workspace.customerId;
+}
+
+const Features: Feature[] = [
+  {
+    id: "ALLOW_UPLOAD_CUSTOM_IMAGE",
+  },
+  {
+    id: "ALLOW_CUSTOM_DBT",
+  },
+];
 
 const App: React.FC = () => {
   return (
@@ -19,9 +44,17 @@ const App: React.FC = () => {
         <IntlProvider locale="en" messages={en}>
           <CacheProvider>
             <Suspense fallback={<LoadingPage />}>
-              <NetworkErrorBoundary>
-                <Routing />
-              </NetworkErrorBoundary>
+              <FeatureService features={Features}>
+                <ApiErrorBoundary>
+                  <NotificationService>
+                    <AnalyticsInitializer
+                      customerIdProvider={useCustomerIdProvider}
+                    >
+                      <Routing />
+                    </AnalyticsInitializer>
+                  </NotificationService>
+                </ApiErrorBoundary>
+              </FeatureService>
             </Suspense>
           </CacheProvider>
         </IntlProvider>

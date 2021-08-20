@@ -1,0 +1,310 @@
+{
+  "properties": {
+    "actor": {
+      "properties": {
+        "alternateId": {
+          "type": ["string", "null"]
+        },
+        "detail": {
+          "additionalProperties": {
+            "type": ["object", "null"]
+          },
+          "type": ["object", "null"]
+        },
+        "displayName": {
+          "type": ["string", "null"]
+        },
+        "id": {
+          "type": ["string", "null"]
+        },
+        "type": {
+          "type": ["string", "null"]
+        }
+      },
+      "type": ["object", "null"]
+    },
+    "authenticationContext": {
+      "properties": {
+        "authenticationProvider": {
+          "enum": [
+            "OKTA_AUTHENTICATION_PROVIDER",
+            "ACTIVE_DIRECTORY",
+            "LDAP",
+            "FEDERATION",
+            "SOCIAL",
+            "FACTOR_PROVIDER"
+          ],
+          "type": ["string", "null"]
+        },
+        "authenticationStep": {
+          "type": ["integer", "null"]
+        },
+        "credentialProvider": {
+          "enum": [
+            "OKTA_AUTHENTICATION_PROVIDER",
+            "OKTA_CREDENTIAL_PROVIDER",
+            "RSA",
+            "SYMANTEC",
+            "GOOGLE",
+            "DUO",
+            "YUBIKEY"
+          ],
+          "type": ["string", "null"]
+        },
+        "credentialType": {
+          "enum": [
+            "OTP",
+            "SMS",
+            "PASSWORD",
+            "ASSERTION",
+            "IWA",
+            "EMAIL",
+            "OAUTH2",
+            "JWT"
+          ],
+          "type": ["string", "null"]
+        },
+        "externalSessionId": {
+          "type": ["string", "null"]
+        },
+        "interface": {
+          "type": ["string", "null"]
+        },
+        "issuer": {
+          "properties": {
+            "id": {
+              "type": ["string", "null"]
+            },
+            "type": {
+              "type": ["string", "null"]
+            }
+          },
+          "type": ["object", "null"]
+        }
+      },
+      "type": ["object", "null"]
+    },
+    "client": {
+      "properties": {
+        "device": {
+          "type": ["string", "null"]
+        },
+        "geographicalContext": {
+          "properties": {
+            "city": {
+              "type": ["string", "null"]
+            },
+            "country": {
+              "type": ["string", "null"]
+            },
+            "geolocation": {
+              "properties": {
+                "lat": {
+                  "format": "double",
+                  "type": ["number", "null"]
+                },
+                "lon": {
+                  "format": "double",
+                  "type": ["number", "null"]
+                }
+              },
+              "type": ["object", "null"]
+            },
+            "postalCode": {
+              "type": ["string", "null"]
+            },
+            "state": {
+              "type": ["string", "null"]
+            }
+          },
+          "type": ["object", "null"]
+        },
+        "id": {
+          "type": ["string", "null"]
+        },
+        "ipAddress": {
+          "type": ["string", "null"]
+        },
+        "userAgent": {
+          "properties": {
+            "browser": {
+              "type": ["string", "null"]
+            },
+            "os": {
+              "type": ["string", "null"]
+            },
+            "rawUserAgent": {
+              "type": ["string", "null"]
+            }
+          },
+          "type": ["object", "null"]
+        },
+        "zone": {
+          "type": ["string", "null"]
+        }
+      },
+      "type": ["object", "null"]
+    },
+    "debugContext": {
+      "properties": {
+        "debugData": {
+          "additionalProperties": {
+            "type": ["object", "null"]
+          },
+          "type": ["object", "null"]
+        }
+      },
+      "type": ["object", "null"]
+    },
+    "displayMessage": {
+      "type": ["string", "null"]
+    },
+    "eventType": {
+      "type": "string"
+    },
+    "legacyEventType": {
+      "type": ["string", "null"]
+    },
+    "outcome": {
+      "properties": {
+        "reason": {
+          "type": ["string", "null"]
+        },
+        "result": {
+          "type": ["string", "null"]
+        }
+      },
+      "type": ["object", "null"]
+    },
+    "published": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "request": {
+      "properties": {
+        "ipChain": {
+          "items": {
+            "properties": {
+              "geographicalContext": {
+                "properties": {
+                  "city": {
+                    "type": ["string", "null"]
+                  },
+                  "country": {
+                    "type": ["string", "null"]
+                  },
+                  "geolocation": {
+                    "properties": {
+                      "lat": {
+                        "format": "double",
+                        "type": ["number", "null"]
+                      },
+                      "lon": {
+                        "format": "double",
+                        "type": ["number", "null"]
+                      }
+                    },
+                    "type": ["object", "null"]
+                  },
+                  "postalCode": {
+                    "type": ["string", "null"]
+                  },
+                  "state": {
+                    "type": ["string", "null"]
+                  }
+                },
+                "type": ["object", "null"]
+              },
+              "ip": {
+                "type": ["string", "null"]
+              },
+              "source": {
+                "type": ["string", "null"]
+              },
+              "version": {
+                "type": "string"
+              }
+            },
+            "type": ["object", "null"]
+          },
+          "type": ["array", "null"]
+        }
+      },
+      "type": ["object", "null"]
+    },
+    "securityContext": {
+      "properties": {
+        "asNumber": {
+          "type": ["integer", "null"]
+        },
+        "asOrg": {
+          "type": ["string", "null"]
+        },
+        "domain": {
+          "type": ["string", "null"]
+        },
+        "isProxy": {
+          "type": ["boolean", "null"]
+        },
+        "isp": {
+          "type": ["string", "null"]
+        }
+      },
+      "type": ["object", "null"]
+    },
+    "severity": {
+      "enum": ["DEBUG", "INFO", "WARN", "ERROR"],
+      "type": "string"
+    },
+    "target": {
+      "items": {
+        "properties": {
+          "alternateId": {
+            "type": ["string", "null"]
+          },
+          "detailEntry": {
+            "additionalProperties": {
+              "type": ["object", "null"]
+            },
+            "type": ["object", "null"]
+          },
+          "displayName": {
+            "type": ["string", "null"]
+          },
+          "id": {
+            "type": ["string", "null"]
+          },
+          "type": {
+            "type": ["string", "null"]
+          }
+        },
+        "type": ["object", "null"]
+      },
+      "type": ["array", "null"]
+    },
+    "transaction": {
+      "properties": {
+        "detail": {
+          "additionalProperties": {
+            "type": ["object", "null"]
+          },
+          "type": ["object", "null"]
+        },
+        "id": {
+          "type": ["string", "null"]
+        },
+        "type": {
+          "type": ["string", "null"]
+        }
+      },
+      "type": ["object", "null"]
+    },
+    "uuid": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

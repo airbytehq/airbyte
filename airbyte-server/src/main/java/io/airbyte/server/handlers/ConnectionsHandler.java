@@ -25,6 +25,7 @@
 package io.airbyte.server.handlers;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
@@ -36,23 +37,28 @@ import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.ConnectionSchedule;
 import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.ConnectionUpdate;
-import io.airbyte.api.model.SyncMode;
+import io.airbyte.api.model.ResourceRequirements;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.converters.CatalogConverter;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -65,28 +71,72 @@ public class ConnectionsHandler {
 
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidGenerator;
+  private final WorkspaceHelper workspaceHelper;
 
   @VisibleForTesting
-  ConnectionsHandler(final ConfigRepository configRepository, final Supplier<UUID> uuidGenerator) {
+  ConnectionsHandler(final ConfigRepository configRepository, final Supplier<UUID> uuidGenerator, final WorkspaceHelper workspaceHelper) {
     this.configRepository = configRepository;
     this.uuidGenerator = uuidGenerator;
+    this.workspaceHelper = workspaceHelper;
   }
 
-  public ConnectionsHandler(final ConfigRepository configRepository) {
-    this(configRepository, UUID::randomUUID);
+  public ConnectionsHandler(final ConfigRepository configRepository, final WorkspaceHelper workspaceHelper) {
+    this(configRepository, UUID::randomUUID, workspaceHelper);
+  }
+
+  private void validateWorkspace(UUID sourceId, UUID destinationId, Set<UUID> operationIds) {
+    final UUID sourceWorkspace = workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceId);
+    final UUID destinationWorkspace = workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(destinationId);
+
+    Preconditions.checkArgument(
+        sourceWorkspace.equals(destinationWorkspace),
+        String.format(
+            "Source and destination do not belong to the same workspace. Source id: %s, Source workspace id: %s, Destination id: %s, Destination workspace id: %s",
+            sourceId,
+            sourceWorkspace,
+            destinationId,
+            destinationWorkspace));
+
+    for (UUID operationId : operationIds) {
+      final UUID operationWorkspace = workspaceHelper.getWorkspaceForOperationIdIgnoreExceptions(operationId);
+      Preconditions.checkArgument(
+          sourceWorkspace.equals(operationWorkspace),
+          String.format(
+              "Operation and connection do not belong to the same workspace. Workspace id: %s, Operation id: %s, Operation workspace id: %s",
+              sourceWorkspace,
+              operationId,
+              operationWorkspace));
+    }
   }
 
   public ConnectionRead createConnection(ConnectionCreate connectionCreate) throws JsonValidationException, IOException, ConfigNotFoundException {
+    // Validate source and destination
+    configRepository.getSourceConnection(connectionCreate.getSourceId());
+    configRepository.getDestinationConnection(connectionCreate.getDestinationId());
+    validateWorkspace(connectionCreate.getSourceId(), connectionCreate.getDestinationId(), new HashSet<>(connectionCreate.getOperationIds()));
+
     final UUID connectionId = uuidGenerator.get();
 
     // persist sync
     final StandardSync standardSync = new StandardSync()
         .withConnectionId(connectionId)
         .withName(connectionCreate.getName() != null ? connectionCreate.getName() : "default")
+        .withNamespaceDefinition(Enums.convertTo(connectionCreate.getNamespaceDefinition(), NamespaceDefinitionType.class))
+        .withNamespaceFormat(connectionCreate.getNamespaceFormat())
         .withPrefix(connectionCreate.getPrefix())
         .withSourceId(connectionCreate.getSourceId())
         .withDestinationId(connectionCreate.getDestinationId())
+        .withOperationIds(connectionCreate.getOperationIds())
         .withStatus(toPersistenceStatus(connectionCreate.getStatus()));
+    if (connectionCreate.getResourceRequirements() != null) {
+      standardSync.withResourceRequirements(new io.airbyte.config.ResourceRequirements()
+          .withCpuRequest(connectionCreate.getResourceRequirements().getCpuRequest())
+          .withCpuLimit(connectionCreate.getResourceRequirements().getCpuLimit())
+          .withMemoryRequest(connectionCreate.getResourceRequirements().getMemoryRequest())
+          .withMemoryLimit(connectionCreate.getResourceRequirements().getMemoryLimit()));
+    } else {
+      standardSync.withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+    }
 
     // TODO Undesirable behavior: sending a null configured catalog should not be valid?
     if (connectionCreate.getSyncCatalog() != null) {
@@ -95,38 +145,35 @@ public class ConnectionsHandler {
       standardSync.withCatalog(new ConfiguredAirbyteCatalog().withStreams(Collections.emptyList()));
     }
 
-    configRepository.writeStandardSync(standardSync);
-
-    // persist schedule
-    final StandardSyncSchedule standardSyncSchedule = new StandardSyncSchedule().withConnectionId(connectionId);
     if (connectionCreate.getSchedule() != null) {
       final Schedule schedule = new Schedule()
           .withTimeUnit(toPersistenceTimeUnit(connectionCreate.getSchedule().getTimeUnit()))
           .withUnits(connectionCreate.getSchedule().getUnits());
-      standardSyncSchedule
+      standardSync
           .withManual(false)
           .withSchedule(schedule);
     } else {
-      standardSyncSchedule.withManual(true);
+      standardSync.withManual(true);
     }
 
-    configRepository.writeStandardSchedule(standardSyncSchedule);
+    configRepository.writeStandardSync(standardSync);
 
-    trackNewConnection(standardSync, standardSyncSchedule);
+    trackNewConnection(standardSync);
 
     return buildConnectionRead(connectionId);
   }
 
-  private void trackNewConnection(final StandardSync standardSync, final StandardSyncSchedule standardSyncSchedule) {
+  private void trackNewConnection(final StandardSync standardSync) {
     try {
-      final Builder<String, Object> metadataBuilder = generateMetadata(standardSync, standardSyncSchedule);
-      TrackingClientSingleton.get().track("New Connection - Backend", metadataBuilder.build());
+      final UUID workspaceId = workspaceHelper.getWorkspaceForConnectionIdIgnoreExceptions(standardSync.getConnectionId());
+      final Builder<String, Object> metadataBuilder = generateMetadata(standardSync);
+      TrackingClientSingleton.get().track(workspaceId, "New Connection - Backend", metadataBuilder.build());
     } catch (Exception e) {
       LOGGER.error("failed while reporting usage.", e);
     }
   }
 
-  private Builder<String, Object> generateMetadata(final StandardSync standardSync, final StandardSyncSchedule standardSyncSchedule) {
+  private Builder<String, Object> generateMetadata(final StandardSync standardSync) {
     final Builder<String, Object> metadata = ImmutableMap.builder();
 
     final UUID connectionId = standardSync.getConnectionId();
@@ -141,10 +188,10 @@ public class ConnectionsHandler {
     metadata.put("connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
 
     final String frequencyString;
-    if (standardSyncSchedule.getManual()) {
+    if (standardSync.getManual()) {
       frequencyString = "manual";
     } else {
-      final long intervalInMinutes = TimeUnit.SECONDS.toMinutes(ScheduleHelpers.getIntervalInSecond(standardSyncSchedule.getSchedule()));
+      final long intervalInMinutes = TimeUnit.SECONDS.toMinutes(ScheduleHelpers.getIntervalInSecond(standardSync.getSchedule()));
       frequencyString = intervalInMinutes + " min";
     }
     metadata.put("frequency", frequencyString);
@@ -152,39 +199,42 @@ public class ConnectionsHandler {
   }
 
   public ConnectionRead updateConnection(ConnectionUpdate connectionUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
-    // retrieve sync
-    final StandardSync persistedSync = configRepository.getStandardSync(connectionUpdate.getConnectionId())
+    // retrieve and update sync
+    final StandardSync persistedSync = configRepository.getStandardSync(connectionUpdate.getConnectionId());
+
+    validateWorkspace(persistedSync.getSourceId(), persistedSync.getDestinationId(), new HashSet<>(connectionUpdate.getOperationIds()));
+
+    final StandardSync newConnection = Jsons.clone(persistedSync)
+        .withNamespaceDefinition(Enums.convertTo(connectionUpdate.getNamespaceDefinition(), NamespaceDefinitionType.class))
+        .withNamespaceFormat(connectionUpdate.getNamespaceFormat())
         .withPrefix(connectionUpdate.getPrefix())
+        .withOperationIds(connectionUpdate.getOperationIds())
         .withCatalog(CatalogConverter.toProtocol(connectionUpdate.getSyncCatalog()))
         .withStatus(toPersistenceStatus(connectionUpdate.getStatus()));
 
-    return updateConnection(connectionUpdate, persistedSync);
-  }
-
-  public ConnectionRead updateConnection(ConnectionUpdate connectionUpdate, StandardSync persistedSync)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-    final UUID connectionId = connectionUpdate.getConnectionId();
-
-    // retrieve schedule
-    final StandardSyncSchedule persistedSchedule = configRepository.getStandardSyncSchedule(connectionId);
-    if (connectionUpdate.getSchedule() != null) {
-      final Schedule schedule = new Schedule()
-          .withTimeUnit(toPersistenceTimeUnit(connectionUpdate.getSchedule().getTimeUnit()))
-          .withUnits(connectionUpdate.getSchedule().getUnits());
-
-      persistedSchedule
-          .withSchedule(schedule)
-          .withManual(false);
+    // update Resource Requirements
+    if (connectionUpdate.getResourceRequirements() != null) {
+      newConnection.withResourceRequirements(new io.airbyte.config.ResourceRequirements()
+          .withCpuRequest(connectionUpdate.getResourceRequirements().getCpuRequest())
+          .withCpuLimit(connectionUpdate.getResourceRequirements().getCpuLimit())
+          .withMemoryRequest(connectionUpdate.getResourceRequirements().getMemoryRequest())
+          .withMemoryLimit(connectionUpdate.getResourceRequirements().getMemoryLimit()));
     } else {
-      persistedSchedule
-          .withSchedule(null)
-          .withManual(true);
+      newConnection.withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
     }
 
-    configRepository.writeStandardSync(persistedSync);
-    configRepository.writeStandardSchedule(persistedSchedule);
+    // update sync schedule
+    if (connectionUpdate.getSchedule() != null) {
+      final Schedule newSchedule = new Schedule()
+          .withTimeUnit(toPersistenceTimeUnit(connectionUpdate.getSchedule().getTimeUnit()))
+          .withUnits(connectionUpdate.getSchedule().getUnits());
+      newConnection.withManual(false).withSchedule(newSchedule);
+    } else {
+      newConnection.withManual(true).withSchedule(null);
+    }
 
-    return buildConnectionRead(connectionId);
+    configRepository.writeStandardSync(newConnection);
+    return buildConnectionRead(connectionUpdate.getConnectionId());
   }
 
   public ConnectionReadList listConnectionsForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody)
@@ -217,11 +267,15 @@ public class ConnectionsHandler {
 
   public void deleteConnection(ConnectionRead connectionRead) throws ConfigNotFoundException, IOException, JsonValidationException {
     final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
+        .namespaceDefinition(connectionRead.getNamespaceDefinition())
+        .namespaceFormat(connectionRead.getNamespaceFormat())
         .prefix(connectionRead.getPrefix())
         .connectionId(connectionRead.getConnectionId())
+        .operationIds(connectionRead.getOperationIds())
         .syncCatalog(connectionRead.getSyncCatalog())
         .schedule(connectionRead.getSchedule())
-        .status(ConnectionStatus.DEPRECATED);
+        .status(ConnectionStatus.DEPRECATED)
+        .resourceRequirements(connectionRead.getResourceRequirements());
 
     updateConnection(connectionUpdate);
   }
@@ -234,41 +288,50 @@ public class ConnectionsHandler {
 
   private ConnectionRead buildConnectionRead(UUID connectionId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    // read sync from db
     final StandardSync standardSync = configRepository.getStandardSync(connectionId);
-
-    // read schedule from db
-    final StandardSyncSchedule standardSyncSchedule = configRepository.getStandardSyncSchedule(connectionId);
-    return buildConnectionRead(standardSync, standardSyncSchedule);
+    return buildConnectionRead(standardSync);
   }
 
-  private ConnectionRead buildConnectionRead(final StandardSync standardSync,
-                                             final StandardSyncSchedule standardSyncSchedule) {
+  private ConnectionRead buildConnectionRead(final StandardSync standardSync) {
     ConnectionSchedule apiSchedule = null;
 
-    if (!standardSyncSchedule.getManual()) {
+    if (!standardSync.getManual()) {
       apiSchedule = new ConnectionSchedule()
-          .timeUnit(toApiTimeUnit(standardSyncSchedule.getSchedule().getTimeUnit()))
-          .units(standardSyncSchedule.getSchedule().getUnits());
+          .timeUnit(toApiTimeUnit(standardSync.getSchedule().getTimeUnit()))
+          .units(standardSync.getSchedule().getUnits());
     }
 
-    return new ConnectionRead()
+    final ConnectionRead connectionRead = new ConnectionRead()
         .connectionId(standardSync.getConnectionId())
         .sourceId(standardSync.getSourceId())
         .destinationId(standardSync.getDestinationId())
+        .operationIds(standardSync.getOperationIds())
         .status(toApiStatus(standardSync.getStatus()))
         .schedule(apiSchedule)
         .name(standardSync.getName())
+        .namespaceDefinition(Enums.convertTo(standardSync.getNamespaceDefinition(), io.airbyte.api.model.NamespaceDefinitionType.class))
+        .namespaceFormat(standardSync.getNamespaceFormat())
         .prefix(standardSync.getPrefix())
         .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()));
+
+    if (standardSync.getResourceRequirements() != null) {
+      connectionRead.resourceRequirements(new ResourceRequirements()
+          .cpuRequest(standardSync.getResourceRequirements().getCpuRequest())
+          .cpuLimit(standardSync.getResourceRequirements().getCpuLimit())
+          .memoryRequest(standardSync.getResourceRequirements().getMemoryRequest())
+          .memoryLimit(standardSync.getResourceRequirements().getMemoryLimit()));
+    } else {
+      connectionRead.resourceRequirements(new ResourceRequirements()
+          .cpuRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuRequest())
+          .cpuLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuLimit())
+          .memoryRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryRequest())
+          .memoryLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryLimit()));
+    }
+    return connectionRead;
   }
 
   private StandardSync.Status toPersistenceStatus(ConnectionStatus apiStatus) {
     return Enums.convertTo(apiStatus, StandardSync.Status.class);
-  }
-
-  private SyncMode toApiSyncMode(io.airbyte.config.SyncMode persistenceStatus) {
-    return Enums.convertTo(persistenceStatus, SyncMode.class);
   }
 
   private ConnectionStatus toApiStatus(StandardSync.Status status) {

@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "description": {
+      "type": "string"
+    },
+    "expand": {
+      "type": "string"
+    },
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "permissions": {
+      "items": {
+        "properties": {
+          "holder": {
+            "properties": {
+              "expand": {
+                "type": "string"
+              },
+              "parameter": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "permission": {
+            "type": "string"
+          },
+          "self": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "self": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

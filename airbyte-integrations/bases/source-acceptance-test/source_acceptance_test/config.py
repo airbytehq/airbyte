@@ -1,39 +1,41 @@
-"""
-MIT License
-
-Copyright (c) 2020 Airbyte
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
+#
+# MIT License
+#
+# Copyright (c) 2020 Airbyte
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 
 
 from enum import Enum
-from typing import List, Mapping, Optional
+from pathlib import Path
+from typing import List, Mapping, Optional, Set
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
 config_path: str = Field(default="secrets/config.json", description="Path to a JSON object representing a valid connector configuration")
 invalid_config_path: str = Field(description="Path to a JSON object representing an invalid connector configuration")
 spec_path: str = Field(
     default="secrets/spec.json", description="Path to a JSON object representing the spec expected to be output by this connector"
 )
-configured_catalog_path: str = Field(default="sample_files/configured_catalog.json", description="Path to configured catalog")
+configured_catalog_path: str = Field(default="integration_tests/configured_catalog.json", description="Path to configured catalog")
+timeout_seconds: int = Field(default=None, description="Test execution timeout_seconds", ge=0)
 
 
 class BaseConfig(BaseModel):
@@ -43,6 +45,8 @@ class BaseConfig(BaseModel):
 
 class SpecTestConfig(BaseConfig):
     spec_path: str = spec_path
+    config_path: str = config_path
+    timeout_seconds: int = timeout_seconds
 
 
 class ConnectionTestConfig(BaseConfig):
@@ -53,22 +57,53 @@ class ConnectionTestConfig(BaseConfig):
 
     config_path: str = config_path
     status: Status = Field(Status.Succeed, description="Indicate if connection check should succeed with provided config")
+    timeout_seconds: int = timeout_seconds
 
 
 class DiscoveryTestConfig(BaseConfig):
     config_path: str = config_path
-    configured_catalog_path: Optional[str] = configured_catalog_path
+    timeout_seconds: int = timeout_seconds
+
+
+class ExpectedRecordsConfig(BaseModel):
+    class Config:
+        extra = "forbid"
+
+    path: Path = Field(description="File with expected records")
+    extra_fields: bool = Field(False, description="Allow records to have other fields")
+    exact_order: bool = Field(False, description="Ensure that records produced in exact same order")
+    extra_records: bool = Field(
+        True, description="Allow connector to produce extra records, but still enforce all records from the expected file to be produced"
+    )
+
+    @validator("exact_order", always=True)
+    def validate_exact_order(cls, exact_order, values):
+        if "extra_fields" in values:
+            if values["extra_fields"] and not exact_order:
+                raise ValueError("exact_order must be on if extra_fields enabled")
+        return exact_order
+
+    @validator("extra_records", always=True)
+    def validate_extra_records(cls, extra_records, values):
+        if "extra_fields" in values:
+            if values["extra_fields"] and extra_records:
+                raise ValueError("extra_records must by off if extra_fields enabled")
+        return extra_records
 
 
 class BasicReadTestConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: Optional[str] = configured_catalog_path
-    validate_output_from_all_streams: bool = Field(False, description="Verify that all streams have records")
+    empty_streams: Set[str] = Field(default_factory=set, description="We validate that all streams has records. These are exceptions")
+    expect_records: Optional[ExpectedRecordsConfig] = Field(description="Expected records from the read")
+    validate_schema: bool = Field(True, description="Ensure that records match the schema of the corresponding stream")
+    timeout_seconds: int = timeout_seconds
 
 
 class FullRefreshConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: str = configured_catalog_path
+    timeout_seconds: int = timeout_seconds
 
 
 class IncrementalConfig(BaseConfig):
@@ -77,7 +112,8 @@ class IncrementalConfig(BaseConfig):
     cursor_paths: Optional[Mapping[str, List[str]]] = Field(
         description="For each stream, the path of its cursor field in the output state messages."
     )
-    state_path: Optional[str] = Field(description="Path to state file")
+    future_state_path: Optional[str] = Field(description="Path to a state file with values in far future")
+    timeout_seconds: int = timeout_seconds
 
 
 class TestConfig(BaseConfig):

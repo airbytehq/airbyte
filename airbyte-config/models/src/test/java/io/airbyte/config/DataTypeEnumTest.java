@@ -27,7 +27,7 @@ package io.airbyte.config;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import org.junit.jupiter.api.Test;
 
 public class DataTypeEnumTest {

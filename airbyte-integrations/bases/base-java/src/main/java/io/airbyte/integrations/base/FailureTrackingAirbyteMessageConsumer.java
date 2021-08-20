@@ -25,7 +25,6 @@
 package io.airbyte.integrations.base;
 
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,15 +58,12 @@ public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMe
     }
   }
 
-  protected abstract void acceptTracked(AirbyteRecordMessage msg) throws Exception;
+  protected abstract void acceptTracked(AirbyteMessage msg) throws Exception;
 
   @Override
   public void accept(AirbyteMessage msg) throws Exception {
     try {
-      // ignore all other message types
-      if (msg.getType() == AirbyteMessage.Type.RECORD) {
-        acceptTracked(msg.getRecord());
-      }
+      acceptTracked(msg);
     } catch (Exception e) {
       hasFailed = true;
       throw e;
@@ -78,7 +74,11 @@ public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMe
 
   @Override
   public void close() throws Exception {
-    LOGGER.info("hasFailed: {}.", hasFailed);
+    if (hasFailed) {
+      LOGGER.warn("Airbyte message consumer: failed.");
+    } else {
+      LOGGER.info("Airbyte message consumer: succeeded.");
+    }
     close(hasFailed);
   }
 

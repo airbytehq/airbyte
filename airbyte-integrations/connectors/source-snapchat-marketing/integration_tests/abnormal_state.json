@@ -1,0 +1,23 @@
+{
+  "adaccounts": {
+    "updated_at": "2221-01-01T00:00:00Z"
+  },
+  "creatives": {
+    "updated_at": "2221-01-01T00:00:00Z"
+  },
+  "media": {
+    "updated_at": "2221-01-01T00:00:00Z"
+  },
+  "campaigns": {
+    "updated_at": "2221-01-01T00:00:00Z"
+  },
+  "ads": {
+    "updated_at": "2221-01-01T00:00:00Z"
+  },
+  "adsquads": {
+    "updated_at": "2221-01-01T00:00:00Z"
+  },
+  "segments": {
+    "updated_at": "2221-01-01T00:00:00Z"
+  }
+}

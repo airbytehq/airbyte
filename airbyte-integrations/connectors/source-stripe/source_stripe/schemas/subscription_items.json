@@ -43,8 +43,7 @@
           "type": ["null", "string"]
         },
         "created": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "statement_description": {
           "type": ["null", "string"]
@@ -99,8 +98,7 @@
           "properties": {}
         },
         "updated": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "number"]
         }
       }
     },
@@ -108,12 +106,10 @@
       "type": ["null", "string"]
     },
     "trial_start": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "created": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "cancel_at_period_end": {
       "type": ["null", "boolean"]
@@ -125,12 +121,10 @@
       "type": ["null", "number"]
     },
     "current_period_start": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "start": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "discount": {
       "type": ["null", "object"],
@@ -155,12 +149,10 @@
       "type": ["null", "boolean"]
     },
     "ended_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "number"]
     },
     "trial_end": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "number"]
     }
   }
 }

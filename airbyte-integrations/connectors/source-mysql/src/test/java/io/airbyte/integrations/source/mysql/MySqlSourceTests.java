@@ -29,12 +29,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Properties;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
 
@@ -60,7 +60,7 @@ public class MySqlSourceTests {
     Properties properties = new Properties();
     properties.putAll(ImmutableMap.of("user", "root", "password", TEST_PASSWORD, "serverTimezone", "Europe/Moscow"));
     DriverManager.getConnection(container.getJdbcUrl(), properties);
-    String dbName = "db_" + RandomStringUtils.randomAlphabetic(10);
+    final String dbName = Strings.addRandomSuffix("db", "_", 10);
     config = getConfig(container, dbName, "serverTimezone=Europe/Moscow");
 
     try (Connection connection = DriverManager.getConnection(container.getJdbcUrl(), properties)) {

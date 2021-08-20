@@ -11,6 +11,7 @@ export const createFormErrorMessage = (error: {
   if (!error.status || error.status === 0) {
     return null;
   }
+
   return error.status === 400 ? (
     <FormattedMessage id="form.validationError" />
   ) : (

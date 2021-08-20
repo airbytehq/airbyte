@@ -65,7 +65,7 @@ class DefaultGetSpecWorkerTest {
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class);
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
-    when(integrationLauncher.spec(jobRoot).start()).thenReturn(process);
+    when(integrationLauncher.spec(jobRoot)).thenReturn(process);
 
     worker = new DefaultGetSpecWorker(integrationLauncher);
   }

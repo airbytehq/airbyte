@@ -13,15 +13,25 @@ const Page = styled.div`
   height: 100%;
 `;
 
+/**
+ * @param headTitle the title shown in the browser toolbar
+ * @param pageTitle the title shown on the page
+ */
 type IProps = {
-  title?: React.ReactNode;
+  headTitle?: React.ReactNode;
+  pageTitle?: React.ReactNode;
   children?: React.ReactNode;
 };
 
-const MainPageWithScroll: React.FC<IProps> = ({ title, children }) => {
+const MainPageWithScroll: React.FC<IProps> = ({
+  headTitle,
+  pageTitle,
+  children,
+}) => {
   return (
     <Page>
-      {title}
+      {headTitle}
+      {pageTitle}
       <Content>{children}</Content>
     </Page>
   );

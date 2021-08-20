@@ -1,4 +1,5 @@
 import React, { useCallback } from "react";
+import { useResource } from "rest-hooks";
 
 import { ConnectionTable } from "components/EntityTable";
 import { Routes } from "pages/routes";
@@ -7,6 +8,9 @@ import { Connection } from "core/resources/Connection";
 import useSyncActions from "components/EntityTable/hooks";
 import { getConnectionTableData } from "components/EntityTable/utils";
 import { ITableDataItem } from "components/EntityTable/types";
+import SourceDefinitionResource from "core/resources/SourceDefinition";
+import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+import useWorkspace from "components/hooks/services/useWorkspace";
 
 type IProps = {
   connections: Connection[];
@@ -14,10 +18,29 @@ type IProps = {
 
 const ConnectionsTable: React.FC<IProps> = ({ connections }) => {
   const { push } = useRouter();
-
+  const { workspace } = useWorkspace();
   const { changeStatus, syncManualConnection } = useSyncActions();
 
-  const data = getConnectionTableData(connections, "connection");
+  const { sourceDefinitions } = useResource(
+    SourceDefinitionResource.listShape(),
+    {
+      workspaceId: workspace.workspaceId,
+    }
+  );
+
+  const { destinationDefinitions } = useResource(
+    DestinationDefinitionResource.listShape(),
+    {
+      workspaceId: workspace.workspaceId,
+    }
+  );
+
+  const data = getConnectionTableData(
+    connections,
+    sourceDefinitions,
+    destinationDefinitions,
+    "connection"
+  );
 
   const onChangeStatus = useCallback(
     async (connectionId: string) => {

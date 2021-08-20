@@ -35,20 +35,23 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
-import io.airbyte.server.errors.KnownException;
+import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DestinationDefinitionsHandler {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(DestinationDefinitionsHandler.class);
 
   private final DockerImageValidator imageValidator;
   private final ConfigRepository configRepository;
@@ -85,8 +88,8 @@ public class DestinationDefinitionsHandler {
           .dockerImageTag(standardDestinationDefinition.getDockerImageTag())
           .documentationUrl(new URI(standardDestinationDefinition.getDocumentationUrl()))
           .icon(loadIcon(standardDestinationDefinition.getIcon()));
-    } catch (URISyntaxException | NullPointerException | IOException e) {
-      throw new KnownException(500, "Unable to process retrieved latest destination definitions list", e);
+    } catch (URISyntaxException | NullPointerException e) {
+      throw new InternalServerKnownException("Unable to process retrieved latest destination definitions list", e);
     }
   }
 
@@ -108,10 +111,8 @@ public class DestinationDefinitionsHandler {
   private List<StandardDestinationDefinition> getLatestDestinations() {
     try {
       return githubStore.getLatestDestinations();
-    } catch (IOException e) {
-      return Collections.emptyList();
     } catch (InterruptedException e) {
-      throw new KnownException(500, "Request to retrieve latest destination definitions failed", e);
+      throw new InternalServerKnownException("Request to retrieve latest destination definitions failed", e);
     }
   }
 
@@ -161,8 +162,12 @@ public class DestinationDefinitionsHandler {
     return buildDestinationDefinitionRead(newDestination);
   }
 
-  public static String loadIcon(String name) throws IOException {
-    return name == null ? null : MoreResources.readResource("icons/" + name);
+  public static String loadIcon(String name) {
+    try {
+      return name == null ? null : MoreResources.readResource("icons/" + name);
+    } catch (Exception e) {
+      return null;
+    }
   }
 
 }

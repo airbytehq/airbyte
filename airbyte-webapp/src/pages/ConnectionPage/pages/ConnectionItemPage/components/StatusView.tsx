@@ -5,25 +5,25 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 import { useFetcher, useResource, useSubscription } from "rest-hooks";
 
-import ContentCard from "../../../../../components/ContentCard";
-import Button from "../../../../../components/Button";
+import ContentCard from "components/ContentCard";
+import { Button, LoadingButton } from "components";
 import StatusMainInfo from "./StatusMainInfo";
-import ConnectionResource, {
-  Connection,
-} from "../../../../../core/resources/Connection";
-import JobResource from "../../../../../core/resources/Job";
+import ConnectionResource, { Connection } from "core/resources/Connection";
+import JobResource from "core/resources/Job";
 import JobsList from "./JobsList";
-import { AnalyticsService } from "../../../../../core/analytics/AnalyticsService";
-import config from "../../../../../config";
-import EmptyResource from "../../../../../components/EmptyResourceBlock";
-import ResetDataModal from "../../../../../components/ResetDataModal";
-import useConnection from "../../../../../components/hooks/services/useConnectionHook";
-import useLoadingStateHook from "../../../../../components/hooks/useLoadingStateHook";
-import LoadingButton from "../../../../../components/Button/LoadingButton";
+import EmptyResource from "components/EmptyResourceBlock";
+import ResetDataModal from "components/ResetDataModal";
+import useConnection from "components/hooks/services/useConnectionHook";
+import useLoadingStateHook from "components/hooks/useLoadingStateHook";
+import { DestinationDefinition } from "core/resources/DestinationDefinition";
+import { SourceDefinition } from "core/resources/SourceDefinition";
+import { useAnalytics } from "components/hooks/useAnalytics";
 
 type IProps = {
   connection: Connection;
   frequencyText?: string;
+  destinationDefinition?: DestinationDefinition;
+  sourceDefinition?: SourceDefinition;
 };
 
 const Content = styled.div`
@@ -54,9 +54,15 @@ const SyncButton = styled(LoadingButton)`
   min-height: 28px;
 `;
 
-const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
+const StatusView: React.FC<IProps> = ({
+  connection,
+  frequencyText,
+  destinationDefinition,
+  sourceDefinition,
+}) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { isLoading, showFeedback, startAction } = useLoadingStateHook();
+  const analyticsService = useAnalytics();
   const { jobs } = useResource(JobResource.listShape(), {
     configId: connection.connectionId,
     configTypes: ["sync", "reset_connection"],
@@ -71,8 +77,7 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
   const { resetConnection } = useConnection();
 
   const onSync = async () => {
-    AnalyticsService.track("Source - Action", {
-      user_id: config.ui.workspaceId,
+    analyticsService.track("Source - Action", {
       action: "Full refresh sync",
       connector_source: connection.source?.sourceName,
       connector_source_id: connection.source?.sourceDefinitionId,
@@ -93,7 +98,12 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
 
   return (
     <Content>
-      <StatusMainInfo connection={connection} frequencyText={frequencyText} />
+      <StatusMainInfo
+        connection={connection}
+        frequencyText={frequencyText}
+        sourceDefinition={sourceDefinition}
+        destinationDefinition={destinationDefinition}
+      />
       <StyledContentCard
         title={
           <Title>

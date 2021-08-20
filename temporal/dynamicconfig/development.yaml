@@ -1,3 +1,4 @@
+# when modifying, remember to update the kube version of this file kube/resources/temporal.yaml
 frontend.enableClientVersionCheck:
   - value: true
     constraints: {}

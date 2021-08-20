@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "defaultGroups": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "defined": {
+      "type": "boolean"
+    },
+    "groups": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "hasUnlimitedSeats": {
+      "type": "boolean"
+    },
+    "key": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "numberOfSeats": {
+      "type": "integer"
+    },
+    "platform": {
+      "type": "boolean"
+    },
+    "remainingSeats": {
+      "type": "integer"
+    },
+    "selectedByDefault": {
+      "type": "boolean"
+    },
+    "userCount": {
+      "type": "integer"
+    },
+    "userCountDescription": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}
