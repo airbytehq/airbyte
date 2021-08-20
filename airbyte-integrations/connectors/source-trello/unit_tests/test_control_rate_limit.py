@@ -32,11 +32,10 @@ SLEEP_ON_HIGH_LOAD: float = 9.0
 TEST_DATA_FIELD = "some_data_field"
 TEST_RATE_LIMIT_THRESHOLD = 0.1
 TEST_HEADERS_NAME = [("x-rate-limit-api-key-remaining", "x-rate-limit-api-key-max"),
-                    ("x-rate-limit-api-token-remaining", "x-rate-limit-api-token-max")]
+                     ("x-rate-limit-api-token-remaining", "x-rate-limit-api-token-max")]
 
 
 def control_request_rate_limit_decorator(threshold: float = 0.05, limit_headers=None):
-
     """
     This decorator was replicated completely, as separeted function in order to be tested.
     The only difference is:
@@ -89,10 +88,10 @@ def test_with_load(requests_mock):
     In this case we should wait at least 9 sec before next API call.
     """
     test_response_header = {
-                            "x-rate-limit-api-token-max": "300",
-                            "x-rate-limit-api-token-remaining": "10",
-                            "x-rate-limit-api-key-max": "300",
-                            "x-rate-limit-api-key-remaining": "100"}
+        "x-rate-limit-api-token-max": "300",
+        "x-rate-limit-api-token-remaining": "10",
+        "x-rate-limit-api-key-max": "300",
+        "x-rate-limit-api-key-remaining": "100"}
 
     requests_mock.get("https://test.trello.com/", headers=test_response_header)
     test_response = requests.get("https://test.trello.com/")
