@@ -55,7 +55,8 @@ class IntercomStream(HttpStream, ABC):
 
         super().__init__(authenticator=authenticator)
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    @staticmethod
+    def next_page_token(response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
         Abstract method of HttpStream - should be overwritten.
         Returning None means there are no more pages to read in response.
@@ -181,16 +182,15 @@ class Companies(IncrementalIntercomStream):
     Endpoint: https://api.intercom.io/companies/scroll
     """
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    @staticmethod
+    def next_page_token(response: requests.Response) -> Optional[Mapping[str, Any]]:
         """For reset scroll needs to iterate pages untill the last.
         Another way need wait 1 min for the scroll to expire to get a new list for companies segments."""
 
-        data = response.json().get("data")
+        next_page = response.json().get("scroll_param")
 
-        if data:
-            return {"scroll_param": response.json()["scroll_param"]}
-        else:
-            return None
+        if next_page:
+            return {"scroll_param": next_page}
 
     def path(self, **kwargs) -> str:
         return "companies/scroll"
@@ -251,7 +251,8 @@ class Contacts(IncrementalIntercomStream):
     Endpoint: https://api.intercom.io/contacts
     """
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    @staticmethod
+    def next_page_token(response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
         Abstract method of HttpStream - should be overwritten.
         Returning None means there are no more pages to read in response.
