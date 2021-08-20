@@ -33,6 +33,8 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 
+from .utils import TrelloRequestRateLimits as balancer
+
 
 class TrelloStream(HttpStream, ABC):
     url_base = "https://api.trello.com/1/"
@@ -44,9 +46,6 @@ class TrelloStream(HttpStream, ABC):
     limit = None
 
     extra_params = None
-
-    # https://developer.atlassian.com/cloud/trello/guides/rest-api/rate-limits/
-    queries_per_900_seconds = 100  # 100 queries per 900 seconds
 
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(authenticator=config["authenticator"])
@@ -66,12 +65,11 @@ class TrelloStream(HttpStream, ABC):
             params.update(self.extra_params)
         return params
 
+    @balancer.balance_rate_limit()
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
         for record in json_response:
             yield record
-
-        time.sleep(900 / self.queries_per_900_seconds)
 
 
 class ChildStreamMixin:
