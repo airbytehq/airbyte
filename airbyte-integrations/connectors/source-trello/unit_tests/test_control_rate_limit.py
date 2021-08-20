@@ -94,8 +94,8 @@ def test_with_load(requests_mock):
                             "x-rate-limit-api-key-max": "300",
                             "x-rate-limit-api-key-remaining": "100"}
 
-    requests_mock.get("https://test.myshopify.com/", headers=test_response_header)
-    test_response = requests.get("https://test.myshopify.com/")
+    requests_mock.get("https://test.trello.com/", headers=test_response_header)
+    test_response = requests.get("https://test.trello.com/")
 
     actual_sleep_time = fake_parse_response(test_response)
 
