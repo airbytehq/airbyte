@@ -21,7 +21,7 @@
       "site_url": {
         "type": "string",
         "description": "Website URL property; do not include the domain-level property in the list",
-        "examples": "https://example.com"
+        "examples": ["https://example.com"]
       },
       "start_date": {
         "type": "string",
