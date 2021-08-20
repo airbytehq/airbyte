@@ -1,0 +1,16 @@
+package io.airbyte.db.instance.<db-name>.migrations;
+
+import org.flywaydb.core.api.migration.BaseJavaMigration;
+import org.flywaydb.core.api.migration.Context;
+import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
+
+// TODO: update migration description in the class name
+public class V<version>_<id>__<description> extends BaseJavaMigration {
+
+  @Override
+  public void migrate(Context context) throws Exception {
+    DSLContext ctx = DSL.using(context.getConnection());
+  }
+
+}
