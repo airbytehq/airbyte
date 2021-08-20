@@ -80,7 +80,7 @@ public class DbMigrationHandler {
         .migrationDescription(info.getDescription())
         .migrationState(info.getState().getDisplayName())
         .migratedBy(info.getInstalledBy())
-        .migratedAt(info.getInstalledOn().getTime())
+        .migratedAt(info.getInstalledOn() == null ? null : info.getInstalledOn().getTime())
         .migrationScript(info.getScript());
   }
 

@@ -351,7 +351,7 @@
   "settings.securityUpdates": "Security updates (recommended)",
   "settings.newsletter": "Newsletter with feature updates.",
   "settings.account": "Account",
-  "settings.dbMigrations": "Database Migration",
+  "settings.dbMigrations": "Database Migrations",
 
   "connector.requestConnectorBlock": "+ Request a new connector",
   "connector.requestConnector": "Request a new connector",

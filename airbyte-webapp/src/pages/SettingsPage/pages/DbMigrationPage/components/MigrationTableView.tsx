@@ -31,11 +31,14 @@ const MigrationTableView: React.FC<MigrationsViewProps> = ({ migrations }) => {
       },
       {
         Header: <FormattedMessage id="dbMigration.migratedBy" />,
-        accessor: "migratedBy",
+        id: "migratedBy",
+        accessor: (row: any) =>
+          row.migratedBy === "null" ? "" : row.migratedBy,
       },
       {
         Header: <FormattedMessage id="dbMigration.migratedAt" />,
-        accessor: "migratedAt",
+        id: "migratedAt",
+        accessor: (row: any) => new Date(row.migratedAt).toLocaleString(),
       },
       {
         Header: <FormattedMessage id="dbMigration.script" />,

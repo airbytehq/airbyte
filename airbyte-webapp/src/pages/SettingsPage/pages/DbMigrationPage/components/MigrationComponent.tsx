@@ -22,10 +22,18 @@ const MigrationComponent: React.FC<DbMigrationComponentProps> = ({
   const { info, migrate } = useDbMigration();
 
   const [migrations, setMigrations] = useState<Array<DbMigrationInfoItem>>([]);
+  const [hasPendingMigration, setHasPendingMigration] = useState(false);
 
   useEffect(() => {
     info(databaseIdentifier).then((result) => setMigrations(result.migrations));
   }, []);
+
+  useEffect(() => {
+    const hasPending = migrations.some(
+      (migration) => migration.migrationState === "Pending"
+    );
+    setHasPendingMigration(hasPending);
+  }, [migrations]);
 
   const [{ loading: migrating }, onMigrate] = useAsyncFn(async () => {
     await migrate(databaseIdentifier);
@@ -40,7 +48,11 @@ const MigrationComponent: React.FC<DbMigrationComponentProps> = ({
       <Block>
         <Title bold>
           {databaseTitle} <FormattedMessage id="dbMigration.titleSuffix" />
-          <LoadingButton onClick={onMigrate} isLoading={migrating}>
+          <LoadingButton
+            onClick={onMigrate}
+            isLoading={migrating}
+            disabled={!hasPendingMigration}
+          >
             <FormattedMessage id="admin.runMigration" />
           </LoadingButton>
         </Title>

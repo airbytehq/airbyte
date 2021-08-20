@@ -61,7 +61,7 @@ public class MigrationHelper {
         info.getType().name(),
         info.getVersion().toString(),
         info.getDescription(),
-        info.getState().name(),
+        info.getState().getDisplayName(),
         info.getInstalledOn() == null ? null : new Date(info.getInstalledOn().getTime()))));
     return result.format();
   }
