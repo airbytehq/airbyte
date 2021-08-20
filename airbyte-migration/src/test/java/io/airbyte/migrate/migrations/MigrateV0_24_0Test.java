@@ -90,9 +90,8 @@ public class MigrateV0_24_0Test {
         .of(STANDARD_SYNC_RESOURCE_ID,
             getResourceStream(OUTPUT_CONFIG_PATH + "/STANDARD_SYNC.yaml")
                 .collect(Collectors.toList()));
-    final Map<ResourceId, List<JsonNode>> expectedOutput =
-        MigrationTestUtils
-            .createExpectedOutput(migration.getOutputSchema().keySet(), expectedOutputOverrides);
+    final Map<ResourceId, List<JsonNode>> expectedOutput = MigrationTestUtils
+        .createExpectedOutput(migration.getOutputSchema().keySet(), expectedOutputOverrides);
 
     final Map<ResourceId, List<JsonNode>> outputAsList = MigrationTestUtils
         .collectConsumersToList(outputConsumer);

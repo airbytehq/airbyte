@@ -22,31 +22,31 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.s3;
+package io.airbyte.integrations.destination.gcs;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.integrations.destination.gcs.credential.GcsCredentialConfig;
+import io.airbyte.integrations.destination.gcs.credential.GcsCredentialConfigs;
+import io.airbyte.integrations.destination.s3.S3FormatConfig;
+import io.airbyte.integrations.destination.s3.S3FormatConfigs;
 
 public class GcsDestinationConfig {
 
   private final String bucketName;
   private final String bucketPath;
   private final String bucketRegion;
-  private final String accessKeyId;
-  private final String secretAccessKey;
+  private final GcsCredentialConfig credentialConfig;
   private final S3FormatConfig formatConfig;
 
-  public GcsDestinationConfig(
-                             String bucketName,
-                             String bucketPath,
-                             String bucketRegion,
-                             String accessKeyId,
-                             String secretAccessKey,
-                             S3FormatConfig formatConfig) {
+  public GcsDestinationConfig(String bucketName,
+                              String bucketPath,
+                              String bucketRegion,
+                              GcsCredentialConfig credentialConfig,
+                              S3FormatConfig formatConfig) {
     this.bucketName = bucketName;
     this.bucketPath = bucketPath;
     this.bucketRegion = bucketRegion;
-    this.accessKeyId = accessKeyId;
-    this.secretAccessKey = secretAccessKey;
+    this.credentialConfig = credentialConfig;
     this.formatConfig = formatConfig;
   }
 
@@ -55,8 +55,7 @@ public class GcsDestinationConfig {
         config.get("gcs_bucket_name").asText(),
         config.get("gcs_bucket_path").asText(),
         config.get("gcs_bucket_region").asText(),
-        config.get("access_key_id").asText(),
-        config.get("secret_access_key").asText(),
+        GcsCredentialConfigs.getCredentialConfig(config),
         S3FormatConfigs.getS3FormatConfig(config));
   }
 
@@ -72,14 +71,10 @@ public class GcsDestinationConfig {
     return bucketRegion;
   }
 
-  public String getAccessKeyId() {
-    return accessKeyId;
+  public GcsCredentialConfig getCredentialConfig() {
+    return credentialConfig;
   }
 
-  public String getSecretAccessKey() {
-    return secretAccessKey;
-  }
-  
   public S3FormatConfig getFormatConfig() {
     return formatConfig;
   }

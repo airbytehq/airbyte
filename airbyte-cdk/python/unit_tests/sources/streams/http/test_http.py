@@ -23,6 +23,7 @@
 #
 
 
+import json
 from typing import Any, Iterable, Mapping, Optional
 from unittest.mock import ANY
 
@@ -30,7 +31,7 @@ import pytest
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
+from airbyte_cdk.sources.streams.http.exceptions import RequestBodyException, UserDefinedBackoffException
 
 
 class StubBasicReadHttpStream(HttpStream):
@@ -99,7 +100,7 @@ class StubNextPageTokenHttpStream(StubBasicReadHttpStream):
 
 
 def test_next_page_token_is_input_to_other_methods(mocker):
-    """ Validates that the return value from next_page_token is passed into other methods that need it like request_params, headers, body, etc.."""
+    """Validates that the return value from next_page_token is passed into other methods that need it like request_params, headers, body, etc.."""
     pages = 5
     stream = StubNextPageTokenHttpStream(pages=pages)
     blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
@@ -143,6 +144,7 @@ class StubCustomBackoffHttpStream(StubBasicReadHttpStream):
 
 
 def test_stub_custom_backoff_http_stream(mocker):
+    mocker.patch("time.sleep", lambda x: None)
     stream = StubCustomBackoffHttpStream()
     req = requests.Response()
     req.status_code = 429
@@ -153,3 +155,86 @@ def test_stub_custom_backoff_http_stream(mocker):
         list(stream.read_records(SyncMode.full_refresh))
 
     # TODO(davin): Figure out how to assert calls.
+
+
+class PostHttpStream(StubBasicReadHttpStream):
+    http_method = "POST"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """Returns response data as is"""
+        yield response.json()
+
+
+class TestRequestBody:
+    """Suite of different tests for request bodies"""
+
+    json_body = {"key": "value"}
+    data_body = "key:value"
+    form_body = {"key1": "value1", "key2": 1234}
+    urlencoded_form_body = "key1=value1&key2=1234"
+
+    def request2response(self, request, context):
+        return json.dumps({"body": request.text, "content_type": request.headers.get("Content-Type")})
+
+    def test_json_body(self, mocker, requests_mock):
+
+        stream = PostHttpStream()
+        mocker.patch.object(stream, "request_body_json", return_value=self.json_body)
+
+        requests_mock.register_uri("POST", stream.url_base, text=self.request2response)
+        response = list(stream.read_records(sync_mode=SyncMode.full_refresh))[0]
+
+        assert response["content_type"] == "application/json"
+        assert json.loads(response["body"]) == self.json_body
+
+    def test_text_body(self, mocker, requests_mock):
+
+        stream = PostHttpStream()
+        mocker.patch.object(stream, "request_body_data", return_value=self.data_body)
+
+        requests_mock.register_uri("POST", stream.url_base, text=self.request2response)
+        response = list(stream.read_records(sync_mode=SyncMode.full_refresh))[0]
+
+        assert response["content_type"] is None
+        assert response["body"] == self.data_body
+
+    def test_form_body(self, mocker, requests_mock):
+
+        stream = PostHttpStream()
+        mocker.patch.object(stream, "request_body_data", return_value=self.form_body)
+
+        requests_mock.register_uri("POST", stream.url_base, text=self.request2response)
+        response = list(stream.read_records(sync_mode=SyncMode.full_refresh))[0]
+
+        assert response["content_type"] == "application/x-www-form-urlencoded"
+        assert response["body"] == self.urlencoded_form_body
+
+    def test_text_json_body(self, mocker, requests_mock):
+        """checks a exception if both functions were overridden"""
+        stream = PostHttpStream()
+        mocker.patch.object(stream, "request_body_data", return_value=self.data_body)
+        mocker.patch.object(stream, "request_body_json", return_value=self.json_body)
+        requests_mock.register_uri("POST", stream.url_base, text=self.request2response)
+        with pytest.raises(RequestBodyException):
+            list(stream.read_records(sync_mode=SyncMode.full_refresh))
+
+    def test_body_for_all_methods(self, mocker, requests_mock):
+        """Stream must send a body for POST/PATCH/PUT methods only"""
+        stream = PostHttpStream()
+        methods = {
+            "POST": True,
+            "PUT": True,
+            "PATCH": True,
+            "GET": False,
+            "DELETE": False,
+            "OPTIONS": False,
+        }
+        for method, with_body in methods.items():
+            stream.http_method = method
+            mocker.patch.object(stream, "request_body_data", return_value=self.data_body)
+            requests_mock.register_uri(method, stream.url_base, text=self.request2response)
+            response = list(stream.read_records(sync_mode=SyncMode.full_refresh))[0]
+            if with_body:
+                assert response["body"] == self.data_body
+            else:
+                assert response["body"] is None

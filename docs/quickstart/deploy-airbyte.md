@@ -11,7 +11,12 @@ docker-compose up
 
 * Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000](http://localhost:8000)!
 
-----
+## FAQ
 
-If you want to schedule a 20-min call with our team to get you set up, don't hesitate to select [some time here](https://calendly.com/nataliekwong/airbyte-onboarding). 
+If you have any questions about the Airbyte setup and deployment process, head over to our [Getting Started FAQ](../faq/getting-started.md) that answers the following questions and more:
 
+- How long does it take to set up Airbyte?
+- Where can I see my data once I've run a sync?
+- Can I set a start time for my sync?
+
+If there are any questions that we couldn't answer here, we'd love to help you get started. [Join our Slack](https://airbytehq.slack.com/ssb/redirect) and feel free to ask your questions in the #getting-started channel.

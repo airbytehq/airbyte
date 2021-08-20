@@ -5,14 +5,12 @@ import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useResource } from "rest-hooks";
 
+import { Button } from "components";
 import LoadingSchema from "components/LoadingSchema";
 import ContentCard from "components/ContentCard";
 import { JobsLogItem } from "components/JobItem";
 import ConnectionForm from "views/Connection/ConnectionForm";
-import { Button } from "components";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
-
-import { AnalyticsService } from "core/analytics/AnalyticsService";
 import { Source } from "core/resources/Source";
 import { Destination } from "core/resources/Destination";
 
@@ -22,6 +20,8 @@ import useConnection, {
 import { useDiscoverSchema } from "components/hooks/services/useSchemaHook";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+import { IDataItem } from "components/base/DropDown/components/Option";
+import { useAnalytics } from "components/hooks/useAnalytics";
 
 const SkipButton = styled.div`
   margin-top: 6px;
@@ -51,6 +51,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
   additionBottomControls,
 }) => {
   const { createConnection } = useConnection();
+  const analyticsService = useAnalytics();
 
   const sourceDefinition = useResource(SourceDefinitionResource.detailShape(), {
     sourceDefinitionId: source.sourceDefinitionId,
@@ -119,10 +120,10 @@ const CreateConnectionContent: React.FC<IProps> = ({
     }
   };
 
-  const onSelectFrequency = (item: { text: string }) => {
-    AnalyticsService.track("New Connection - Action", {
+  const onSelectFrequency = (item: IDataItem | null) => {
+    analyticsService.track("New Connection - Action", {
       action: "Select a frequency",
-      frequency: item?.text,
+      frequency: item?.label,
       connector_source_definition: source?.sourceName,
       connector_source_definition_id: source?.sourceDefinitionId,
       connector_destination_definition: destination?.destinationName,

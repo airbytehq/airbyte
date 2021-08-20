@@ -16,7 +16,7 @@ select
     case when json_extract_path_text(_airbyte_data, '_ab_cdc_updated_at', true) != '' then json_extract_path_text(_airbyte_data, '_ab_cdc_updated_at', true) end as _ab_cdc_updated_at,
     case when json_extract_path_text(_airbyte_data, '_ab_cdc_deleted_at', true) != '' then json_extract_path_text(_airbyte_data, '_ab_cdc_deleted_at', true) end as _ab_cdc_deleted_at,
     _airbyte_emitted_at
-from "integrationtests".test_normalization._airbyte_raw_dedup_cdc_excluded
+from "integrationtests".test_normalization._airbyte_raw_dedup_cdc_excluded as table_alias
 -- dedup_cdc_excluded
 ),  __dbt__CTE__dedup_cdc_excluded_ab2 as (
 
@@ -71,11 +71,11 @@ select
     _airbyte_emitted_at as _airbyte_start_at,
     lag(_airbyte_emitted_at) over (
         partition by id
-        order by _airbyte_emitted_at desc, _airbyte_emitted_at desc
+        order by _airbyte_emitted_at is null asc, _airbyte_emitted_at desc, _airbyte_emitted_at desc
     ) as _airbyte_end_at,
     lag(_airbyte_emitted_at) over (
         partition by id
-        order by _airbyte_emitted_at desc, _airbyte_emitted_at desc, _ab_cdc_updated_at desc
+        order by _airbyte_emitted_at is null asc, _airbyte_emitted_at desc, _airbyte_emitted_at desc, _ab_cdc_updated_at desc
     ) is null and _ab_cdc_deleted_at is null as _airbyte_active_row,
     _airbyte_emitted_at,
     _airbyte_dedup_cdc_excluded_hashid

@@ -12,8 +12,11 @@ select
     string
 ) as currency,
     cast(date as 
-    string
+    date
 ) as date,
+    cast(timestamp_col as 
+    timestamp
+) as timestamp_col,
     cast(HKD_special___characters as 
     float64
 ) as HKD_special___characters,

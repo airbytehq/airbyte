@@ -22,15 +22,17 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.s3.csv;
+package io.airbyte.integrations.destination.gcs.csv;
 
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
-import io.airbyte.integrations.destination.s3.GcsDestinationConfig;
+import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.integrations.destination.gcs.writer.BaseGcsWriter;
 import io.airbyte.integrations.destination.s3.S3Format;
+import io.airbyte.integrations.destination.s3.csv.CsvSheetGenerator;
+import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
-import io.airbyte.integrations.destination.s3.writer.BaseGcsWriter;
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -55,9 +57,9 @@ public class GcsCsvWriter extends BaseGcsWriter implements S3Writer {
   private final CSVPrinter csvPrinter;
 
   public GcsCsvWriter(GcsDestinationConfig config,
-                     AmazonS3 s3Client,
-                     ConfiguredAirbyteStream configuredStream,
-                     Timestamp uploadTimestamp)
+                      AmazonS3 s3Client,
+                      ConfiguredAirbyteStream configuredStream,
+                      Timestamp uploadTimestamp)
       throws IOException {
     super(config, s3Client, configuredStream);
 

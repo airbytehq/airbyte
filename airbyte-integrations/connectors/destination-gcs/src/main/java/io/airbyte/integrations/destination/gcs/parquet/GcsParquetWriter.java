@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.s3.parquet;
+package io.airbyte.integrations.destination.gcs.parquet;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -30,11 +30,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.s3.GcsDestinationConfig;
+import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.integrations.destination.gcs.credential.GcsHmacKeyCredentialConfig;
+import io.airbyte.integrations.destination.gcs.writer.BaseGcsWriter;
 import io.airbyte.integrations.destination.s3.S3Format;
-import io.airbyte.integrations.destination.s3.writer.BaseGcsWriter;
-import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
+import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
+import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.IOException;
@@ -47,7 +49,6 @@ import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericData.Record;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.s3a.Constants;
 import org.apache.parquet.avro.AvroParquetWriter;
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.util.HadoopOutputFile;
@@ -67,11 +68,11 @@ public class GcsParquetWriter extends BaseGcsWriter implements S3Writer {
   private final JsonAvroConverter converter = new JsonAvroConverter();
 
   public GcsParquetWriter(GcsDestinationConfig config,
-                         AmazonS3 s3Client,
-                         ConfiguredAirbyteStream configuredStream,
-                         Timestamp uploadTimestamp,
-                         Schema schema,
-                         JsonFieldNameUpdater nameUpdater)
+                          AmazonS3 s3Client,
+                          ConfiguredAirbyteStream configuredStream,
+                          Timestamp uploadTimestamp,
+                          Schema schema,
+                          JsonFieldNameUpdater nameUpdater)
       throws URISyntaxException, IOException {
     super(config, s3Client, configuredStream);
     this.schema = schema;
@@ -79,14 +80,12 @@ public class GcsParquetWriter extends BaseGcsWriter implements S3Writer {
 
     String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.PARQUET);
     String objectKey = String.join("/", outputPrefix, outputFilename);
+    LOGGER.info("Storage path for stream '{}': {}/{}", stream.getName(), config.getBucketName(), objectKey);
 
-    // LOGGER.info("Storage path for stream '{}': {}/{}", stream.getName(), config.getBucketName(), objectKey);
-
-    URI uri = new URI(
-        String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename));    // <----- CHECK
+    URI uri = new URI(String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename));
     Path path = new Path(uri);
 
-    // LOGGER.info("Full Gcs path for stream '{}': {}", stream.getName(), path.toString());
+    LOGGER.info("Full GCS path for stream '{}': {}", stream.getName(), path);
 
     S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
     Configuration hadoopConfig = getHadoopConfig(config);
@@ -102,15 +101,19 @@ public class GcsParquetWriter extends BaseGcsWriter implements S3Writer {
   }
 
   public static Configuration getHadoopConfig(GcsDestinationConfig config) {
+    GcsHmacKeyCredentialConfig hmacKeyCredential = (GcsHmacKeyCredentialConfig) config.getCredentialConfig();
     Configuration hadoopConfig = new Configuration();
 
+    // the default org.apache.hadoop.fs.s3a.S3AFileSystem does not work for GCS
+    hadoopConfig.set("fs.s3a.impl", "io.airbyte.integrations.destination.gcs.util.GcsS3FileSystem");
+
     // https://stackoverflow.com/questions/64141204/process-data-in-google-storage-on-an-aws-emr-cluster-in-spark
-    hadoopConfig.set("fs.s3a.access.key", config.getAccessKeyId());
-    hadoopConfig.set("fs.s3a.secret.key", config.getSecretAccessKey());
+    hadoopConfig.set("fs.s3a.access.key", hmacKeyCredential.getHmacKeyAccessId());
+    hadoopConfig.set("fs.s3a.secret.key", hmacKeyCredential.getHmacKeySecret());
     hadoopConfig.setBoolean("fs.s3a.path.style.access", true);
     hadoopConfig.set("fs.s3a.endpoint", "storage.googleapis.com");
     hadoopConfig.setInt("fs.s3a.list.version", 1);
-    
+
     return hadoopConfig;
   }
 

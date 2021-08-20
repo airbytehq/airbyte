@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faLifeRing, faBook, faCog } from "@fortawesome/free-solid-svg-icons";
+import { faRocket, faBook, faCog } from "@fortawesome/free-solid-svg-icons";
 import { faSlack } from "@fortawesome/free-brands-svg-icons";
 import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
@@ -10,13 +10,13 @@ import { Routes } from "pages/routes";
 import config from "config";
 
 import useConnector from "components/hooks/services/useConnector";
-import Link from "components/Link";
+import { Link } from "components";
 import Version from "components/Version";
 import Indicator from "components/Indicator";
 
-import Source from "./components/Source";
-import Connections from "./components/Connections";
-import Destination from "./components/Destination";
+import Source from "./components/SourceIcon";
+import Connections from "./components/ConnectionsIcon";
+import Destination from "./components/DestinationIcon";
 
 const Bar = styled.nav`
   width: 100px;
@@ -161,19 +161,19 @@ const SideBar: React.FC = () => {
       </div>
       <Menu>
         <li>
+          <MenuLinkItem href={config.ui.updateLink} target="_blank">
+            <HelpIcon icon={faRocket} />
+            <Text>
+              <FormattedMessage id="sidebar.update" />
+            </Text>
+          </MenuLinkItem>
+        </li>
+        <li>
           <MenuLinkItem href={config.ui.slackLink} target="_blank">
             {/*@ts-ignore slack icon fails here*/}
             <HelpIcon icon={faSlack} />
             <Text>
               <FormattedMessage id="sidebar.slack" />
-            </Text>
-          </MenuLinkItem>
-        </li>
-        <li>
-          <MenuLinkItem href={config.ui.helpLink} target="_blank">
-            <HelpIcon icon={faLifeRing} />
-            <Text>
-              <FormattedMessage id="sidebar.help" />
             </Text>
           </MenuLinkItem>
         </li>

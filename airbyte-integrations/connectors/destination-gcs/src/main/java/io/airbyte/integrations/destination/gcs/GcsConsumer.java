@@ -22,19 +22,14 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.s3;
+package io.airbyte.integrations.destination.gcs;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.client.builder.AwsClientBuilder;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.integrations.destination.gcs.writer.GcsWriterFactory;
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
-import io.airbyte.integrations.destination.s3.writer.GcsWriterFactory;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -47,7 +42,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-
 public class GcsConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   private final GcsDestinationConfig gcsDestinationConfig;
@@ -59,9 +53,9 @@ public class GcsConsumer extends FailureTrackingAirbyteMessageConsumer {
   private AirbyteMessage lastStateMessage = null;
 
   public GcsConsumer(GcsDestinationConfig gcsDestinationConfig,
-                    ConfiguredAirbyteCatalog configuredCatalog,
-                    GcsWriterFactory writerFactory,
-                    Consumer<AirbyteMessage> outputRecordCollector) {
+                     ConfiguredAirbyteCatalog configuredCatalog,
+                     GcsWriterFactory writerFactory,
+                     Consumer<AirbyteMessage> outputRecordCollector) {
     this.gcsDestinationConfig = gcsDestinationConfig;
     this.configuredCatalog = configuredCatalog;
     this.writerFactory = writerFactory;
@@ -71,14 +65,7 @@ public class GcsConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   @Override
   protected void startTracked() throws Exception {
-    BasicAWSCredentials awsCreds = new BasicAWSCredentials(gcsDestinationConfig.getAccessKeyId(), gcsDestinationConfig.getSecretAccessKey());
-
-    AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-        .withEndpointConfiguration(
-          new AwsClientBuilder.EndpointConfiguration(
-          "https://storage.googleapis.com", gcsDestinationConfig.getBucketRegion()))
-        .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-        .build();
+    AmazonS3 s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
 
     Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 

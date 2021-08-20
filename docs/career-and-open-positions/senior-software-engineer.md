@@ -1,6 +1,6 @@
 # Senior Software Engineer
 
-Join [Airbyte's](https://airbyte.io/) small, but growing, engineering team. We are backed by the world's [top investors](https://docs.airbyte.io/career-and-open-positions#our-investors) (Benchmark, Accel, YCombinator, etc.).
+Join [Airbyte's](https://airbyte.io/) small, but growing, engineering team. We are backed by the world's [top investors](https://airbyte.io/about-us) (Benchmark, Accel, YCombinator, etc.).
 
 You will spend your time solving one of the most complex and unsolved problem with data: Access. We're on a mission to allow anyone to access data, wherever it is, and make it available into the system of their choice.
 

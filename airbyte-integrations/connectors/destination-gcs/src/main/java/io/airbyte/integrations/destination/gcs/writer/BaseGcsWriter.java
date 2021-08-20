@@ -22,20 +22,21 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.s3.writer;
+package io.airbyte.integrations.destination.gcs.writer;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
-import com.amazonaws.services.s3.model.DeleteObjectsResult;
+import com.amazonaws.services.s3.model.HeadBucketRequest;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import io.airbyte.integrations.destination.s3.GcsDestinationConfig;
+import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.util.S3OutputPathHelper;
+import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -44,8 +45,6 @@ import java.util.List;
 import java.util.TimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 /**
  * The base implementation takes care of the following:
@@ -63,8 +62,8 @@ public abstract class BaseGcsWriter implements S3Writer {
   protected final String outputPrefix;
 
   protected BaseGcsWriter(GcsDestinationConfig config,
-                         AmazonS3 s3Client,
-                         ConfiguredAirbyteStream configuredStream) {
+                          AmazonS3 s3Client,
+                          ConfiguredAirbyteStream configuredStream) {
     this.config = config;
     this.s3Client = s3Client;
     this.stream = configuredStream.getStream();
@@ -77,9 +76,9 @@ public abstract class BaseGcsWriter implements S3Writer {
    * <li>2. Under OVERWRITE mode, delete all objects with the output prefix.</li>
    */
   @Override
-  public void initialize() throws IOException{
+  public void initialize() {
     String bucket = config.getBucketName();
-    if (!s3Client.doesBucketExistV2(bucket)) {
+    if (!gcsBucketExist(s3Client, bucket)) {
       LOGGER.info("Bucket {} does not exist; creating...", bucket);
       s3Client.createBucket(bucket);
       LOGGER.info("Bucket {} has been created.", bucket);
@@ -95,15 +94,28 @@ public abstract class BaseGcsWriter implements S3Writer {
       }
 
       if (keysToDelete.size() > 0) {
-        LOGGER.info("Purging non-empty output path for stream '{}' under OVERWRITE mode...",
-            stream.getName());
-        // Google Cloud Storage doesn't acceppt request to delete multiple objects so looping
+        LOGGER.info("Purging non-empty output path for stream '{}' under OVERWRITE mode...", stream.getName());
+        // Google Cloud Storage doesn't accept request to delete multiple objects
         for (KeyVersion keyToDelete : keysToDelete) {
           s3Client.deleteObject(bucket, keyToDelete.getKey());
         }
         LOGGER.info("Deleted {} file(s) for stream '{}'.", keysToDelete.size(),
             stream.getName());
       }
+    }
+  }
+
+  /**
+   * {@link AmazonS3#doesBucketExistV2} should be used to check the bucket existence. However, this
+   * method does not work for GCS. So we use {@link AmazonS3#headBucket} instead, which will throw an
+   * exception if the bucket does not exist, or there is no permission to access it.
+   */
+  public boolean gcsBucketExist(AmazonS3 s3Client, String bucket) {
+    try {
+      s3Client.headBucket(new HeadBucketRequest(bucket));
+      return true;
+    } catch (Exception e) {
+      return false;
     }
   }
 
