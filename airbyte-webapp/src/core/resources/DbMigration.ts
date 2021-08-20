@@ -22,13 +22,7 @@ export interface DbMigrationMigrateResult {
   migrations: Array<DbMigrationInfoItem>;
 }
 
-export default class DbMigrationResource
-  extends BaseResource
-  implements DbMigrationInfoItem {
-  readonly migrationType: string = "";
-  readonly migrationVersion: string = "";
-  readonly migrationDescription: string = "";
-
+export default class DbMigrationResource extends BaseResource {
   pk(): string {
     return "1";
   }
