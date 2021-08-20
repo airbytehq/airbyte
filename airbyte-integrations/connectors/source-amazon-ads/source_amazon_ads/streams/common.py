@@ -25,16 +25,68 @@
 import json
 from abc import ABC, abstractmethod
 from http import HTTPStatus
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from pydantic import BaseModel, ValidationError
-from source_amazon_ads.common import SourceContext
 from source_amazon_ads.schemas import CatalogModel
+from source_amazon_ads.schemas.profile import Profile
 
 URL_BASE = "https://advertising-api.amazon.com/"
+
+"""
+This class hierarchy may seem overcomplicated so here is a visualization of
+class to provide explanation why it had been done in this way.
+
+airbyte_cdk.sources.streams.core.Stream
+└── BasicAmazonAdsStream
+    ├── airbyte_cdk.sources.streams.http.HttpStream
+    │   └── AmazonAdsStream
+    │       ├── Profiles
+    │       └── SubProfilesStream
+    │           └── PaginationStream
+    │               ├── SponsoredDisplayAdGroups
+    │               ├── SponsoredDisplayCampaigns
+    │               ├── SponsoredDisplayProductAds
+    │               ├── SponsoredDisplayTargetings
+    │               ├── SponsoredProductAdGroups
+    │               ├── SponsoredProductAds
+    │               ├── SponsoredProductCampaigns
+    │               ├── SponsoredProductKeywords
+    │               ├── SponsoredProductNegativeKeywords
+    │               ├── SponsoredProductTargetings
+    │               ├── SponsoredBrandsCampaigns
+    │               ├── SponsoredBrandsAdGroups
+    │               ├── SponsoredBrandsKeywords
+    │               ├── SponsoredDisplayReportStream
+    │               ├── SponsoredProductsReportStream
+    │               └── SponsoredBrandsReportStream
+    └── ReportStream
+        ├── SponsoredBrandsReportStream
+        ├── SponsoredDisplayReportStream
+        └── SponsoredProductsReportStream
+
+BasicAmazonAdsStream is base class inherited from CDK's Stream class and used
+for storing list of profiles that later be used by all the streams to get
+profile id. Also it stores pydantic model and API url for requests.
+
+AmazonAdsStream is Http based class, it used for making request that could be
+accomlished by single http call (any but report streams). Also in contains
+transform method to modify output data (see transform method comment).
+
+SubProfilesStream is subclass for http streams to perform read_records from
+basic class for EACH profile from self._profiles list.
+
+PaginationStream class implement Amazon Ads API pagintaion for all requests.
+This is base class for all the sync http streams that used by source.
+
+ReportStream (It implemented on report_stream.py file) is subclass for async
+report streams. This is not standard http stream and used for generating
+reports for profiles from BasicAmazonAdsStream _profiles list.
+
+"""
 
 
 class ErrorResponse(BaseModel):
@@ -44,8 +96,12 @@ class ErrorResponse(BaseModel):
 
 
 class BasicAmazonAdsStream(Stream, ABC):
-    def __init__(self, config, context: SourceContext = None):
-        self._ctx = context or SourceContext()
+    """
+    Base class for all Amazon Ads streams.
+    """
+
+    def __init__(self, config, profiles: List[Profile] = None):
+        self._profiles = profiles or []
         self._client_id = config.client_id
         self._url = config.host or URL_BASE
 
@@ -62,10 +118,16 @@ class BasicAmazonAdsStream(Stream, ABC):
 
 # Basic full refresh stream
 class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
+    """
+    Class for getting data from streams that based on single http request.
+    """
+
+    # List of properties that used by transform method to convert "object"
+    # subtype with complex dict to plan string.
     flatten_properties = []
 
-    def __init__(self, config, *args, context: SourceContext = None, **kwargs):
-        BasicAmazonAdsStream.__init__(self, config, context=context or SourceContext())
+    def __init__(self, config, *args, profiles: List[Profile] = None, **kwargs):
+        BasicAmazonAdsStream.__init__(self, config, profiles=profiles)
         HttpStream.__init__(self, *args, **kwargs)
 
     @property
@@ -73,6 +135,11 @@ class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
         return self._url
 
     def transform(self, record: dict):
+        """
+        Convert properties that listed on flatten_properties variable from dict
+        to plain string. We need it to not overcomplicate catalog model with
+        objects containing internal information and unlikely to be used for analytics.
+        """
         for prop in self.flatten_properties:
             if prop in record:
                 record[prop] = json.dumps(record[prop])
@@ -129,7 +196,7 @@ class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
                 raise http_exception
 
 
-class ContextStream(AmazonAdsStream):
+class SubProfilesStream(AmazonAdsStream):
     """
     Stream for getting resources based on context set by previous stream.
     """
@@ -139,33 +206,41 @@ class ContextStream(AmazonAdsStream):
             yield self.transform(record)
 
     def read_records(self, *args, **kvargs) -> Iterable[Mapping[str, Any]]:
-        for profile in self._ctx.profiles:
-            self._ctx.current_profile_id = profile.profileId
+        """
+        Iterate through self._profiles list and send read all records for each profile.
+        """
+        for profile in self._profiles:
+            self._current_profile_id = profile.profileId
             yield from super().read_records(*args, **kvargs)
 
     def request_headers(self, *args, **kvargs) -> MutableMapping[str, Any]:
         headers = super().request_headers(*args, **kvargs)
-        headers["Amazon-Advertising-API-Scope"] = str(self._ctx.current_profile_id)
+        headers["Amazon-Advertising-API-Scope"] = str(self._current_profile_id)
         return headers
 
 
-class PaginationStream(ContextStream):
+class PaginationStream(SubProfilesStream):
     """
-    Stream for getting resources with pagination support
+    Stream for getting resources with pagination support.
     """
 
     page_size = 100
+
+    def __init__(self, *args, **kvargs):
+        self._current_offset = 0
+        super().__init__(*args, **kvargs)
 
     def next_page_token(self, response: requests.Response) -> Optional[int]:
         if not response:
             return 0
         responses = response.json()
         if len(responses) < self.page_size:
-            self._ctx.current_offset = 0
+            # This is last page, reset current offset
+            self._current_offset = 0
             return 0
         else:
-            next_offset = self._ctx.current_offset + self.page_size
-            self._ctx.current_offset = next_offset
+            next_offset = self._current_offset + self.page_size
+            self._current_offset = next_offset
             return next_offset
 
     def request_params(

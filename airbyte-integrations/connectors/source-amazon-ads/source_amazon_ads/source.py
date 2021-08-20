@@ -31,10 +31,8 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
-from .common import SourceContext
 from .spec import AmazonAdsConfig
 from .streams import (
-    DisplayReportStream,
     Profiles,
     SponsoredBrandsAdGroups,
     SponsoredBrandsCampaigns,
@@ -43,6 +41,7 @@ from .streams import (
     SponsoredDisplayAdGroups,
     SponsoredDisplayCampaigns,
     SponsoredDisplayProductAds,
+    SponsoredDisplayReportStream,
     SponsoredDisplayTargetings,
     SponsoredProductAdGroups,
     SponsoredProductAds,
@@ -53,14 +52,13 @@ from .streams import (
     SponsoredProductTargetings,
 )
 
+# Oauth 2.0 authentication URL for amazon
 TOKEN_URL = "https://api.amazon.com/auth/o2/token"
 
 
-# Source
 class SourceAmazonAds(AbstractSource):
     def __init__(self):
         super().__init__()
-        self.ctx = SourceContext()
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
@@ -69,24 +67,36 @@ class SourceAmazonAds(AbstractSource):
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
         config = AmazonAdsConfig(**config)
-        Profiles(config, authenticator=self._make_authenticator(config)).fill_context()
+        # Check connection by sending list of profiles request. Its most simple
+        # request, not require additional parameters and usually has few data
+        # in response body.
+        # It doesnt support pagination so there is no sense of reading single
+        # record, it would fetch all the data anyway.
+        Profiles(config, authenticator=self._make_authenticator(config)).get_all_profiles()
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
+        :return list of streams for current source
         """
         config = AmazonAdsConfig(**config)
         auth = self._make_authenticator(config)
-        stream_args = {"config": config, "context": self.ctx, "authenticator": auth}
+        stream_args = {"config": config, "authenticator": auth}
+        # All data for individual Amazon Ads stream divided into sets of data for
+        # each profile. Every API request except profiles has required
+        # paramater passed over "Amazon-Advertising-API-Scope" http header and
+        # should contain profile id. So every stream is dependant on Profiles
+        # stream and should have information about all profiles.
         profiles_stream = Profiles(**stream_args)
-        profiles_stream.fill_context()
+        profiles_list = profiles_stream.get_all_profiles()
+        stream_args["profiles"] = profiles_list
         non_profile_stream_classes = [
             SponsoredDisplayCampaigns,
             SponsoredDisplayAdGroups,
             SponsoredDisplayProductAds,
             SponsoredDisplayTargetings,
-            DisplayReportStream,
+            SponsoredDisplayReportStream,
             SponsoredProductCampaigns,
             SponsoredProductAdGroups,
             SponsoredProductKeywords,

@@ -192,7 +192,7 @@ class Tactics(str, Enum):
     REMARKETING = "remarketing"
 
 
-class DisplayReportStream(ReportStream):
+class SponsoredDisplayReportStream(ReportStream):
     """
     https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Reports
     """

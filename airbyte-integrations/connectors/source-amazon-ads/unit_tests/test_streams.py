@@ -108,7 +108,7 @@ def test_streams_profile(test_config, profiles_response):
     schema = profile_stream.get_json_schema()
     records = get_all_stream_records(profile_stream)
     assert len(responses.calls) == 2
-    assert len(profile_stream._ctx.profiles) == 4
+    assert len(profile_stream._profiles) == 4
     assert len(records) == 4
     expected_records = json.loads(profiles_response)
     for record, expected_record in zip(records, expected_records):

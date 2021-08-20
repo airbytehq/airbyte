@@ -31,10 +31,9 @@ from airbyte_cdk.models import SyncMode
 from freezegun import freeze_time
 from pytest import raises
 from requests.exceptions import ConnectionError
-from source_amazon_ads.common import SourceContext
 from source_amazon_ads.schemas.profile import AccountInfo, Profile
 from source_amazon_ads.spec import AmazonAdsConfig
-from source_amazon_ads.streams import DisplayReportStream, SponsoredBrandsReportStream, SponsoredProductsReportStream
+from source_amazon_ads.streams import SponsoredBrandsReportStream, SponsoredDisplayReportStream, SponsoredProductsReportStream
 from source_amazon_ads.streams.report_streams.report_streams import TooManyRequests
 
 """
@@ -109,16 +108,14 @@ REPORT_STATUS_RESPONSE = """
 """
 
 
-def make_context(profile_type="seller"):
-    ctx = SourceContext()
-    ctx.profiles.append(
+def make_profiles(profile_type="seller"):
+    return [
         Profile(
             profileId=1,
             timezone="America/Los_Angeles",
             accountInfo=AccountInfo(marketplaceStringId="", id="", type=profile_type),
         )
-    )
-    return ctx
+    ]
 
 
 @responses.activate
@@ -130,17 +127,17 @@ def test_display_report_stream(test_config):
     )
 
     config = AmazonAdsConfig(**test_config)
-    ctx = make_context()
+    profiles = make_profiles()
 
-    stream = DisplayReportStream(config, ctx, authenticator=mock.MagicMock())
+    stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
     stream_slice = {"reportDate": "20210725"}
     metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
     assert len(metrics) == METRICS_COUNT * len(stream.metrics_map)
     updated_state = stream.get_updated_state(None, stream_slice)
     assert updated_state == stream_slice
 
-    ctx = make_context(profile_type="vendor")
-    stream = DisplayReportStream(config, ctx, authenticator=mock.MagicMock())
+    profiles = make_profiles(profile_type="vendor")
+    stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
     metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
     # Skip asins record for vendor profiles
     assert len(metrics) == METRICS_COUNT * (len(stream.metrics_map) - 1)
@@ -155,9 +152,9 @@ def test_products_report_stream(test_config):
     )
 
     config = AmazonAdsConfig(**test_config)
-    ctx = make_context(profile_type="vendor")
+    profiles = make_profiles(profile_type="vendor")
 
-    stream = SponsoredProductsReportStream(config, ctx, authenticator=mock.MagicMock())
+    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
     stream_slice = {"reportDate": "20210725"}
     metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
     assert len(metrics) == METRICS_COUNT * len(stream.metrics_map)
@@ -172,9 +169,9 @@ def test_brands_report_stream(test_config):
     )
 
     config = AmazonAdsConfig(**test_config)
-    ctx = make_context()
+    profiles = make_profiles()
 
-    stream = SponsoredBrandsReportStream(config, ctx, authenticator=mock.MagicMock())
+    stream = SponsoredBrandsReportStream(config, profiles, authenticator=mock.MagicMock())
     stream_slice = {"reportDate": "20210725"}
     metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
     assert len(metrics) == METRICS_COUNT * len(stream.metrics_map)
@@ -189,9 +186,9 @@ def test_display_report_stream_report_generation_failure(test_config):
     )
 
     config = AmazonAdsConfig(**test_config)
-    ctx = make_context()
+    profiles = make_profiles()
 
-    stream = DisplayReportStream(config, ctx, authenticator=mock.MagicMock())
+    stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
     stream_slice = {"reportDate": "20210725"}
     metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
     assert metrics == []
@@ -200,8 +197,8 @@ def test_display_report_stream_report_generation_failure(test_config):
 @responses.activate
 def test_display_report_stream_init_failure(mocker, test_config):
     config = AmazonAdsConfig(**test_config)
-    ctx = make_context()
-    stream = DisplayReportStream(config, ctx, authenticator=mock.MagicMock())
+    profiles = make_profiles()
+    stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
     stream_slice = {"reportDate": "20210725"}
     responses.add(
         responses.POST, re.compile(r"https://advertising-api.amazon.com/sd/[a-zA-Z]+/report"), json={"error": "some error"}, status=400
@@ -215,8 +212,8 @@ def test_display_report_stream_init_failure(mocker, test_config):
 def test_display_report_stream_init_http_exception(mocker, test_config):
     mocker.patch("time.sleep", lambda x: None)
     config = AmazonAdsConfig(**test_config)
-    ctx = make_context()
-    stream = DisplayReportStream(config, ctx, authenticator=mock.MagicMock())
+    profiles = make_profiles()
+    stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
     stream_slice = {"reportDate": "20210725"}
     responses.add(responses.POST, re.compile(r"https://advertising-api.amazon.com/sd/[a-zA-Z]+/report"), body=ConnectionError())
 
@@ -229,8 +226,8 @@ def test_display_report_stream_init_http_exception(mocker, test_config):
 def test_display_report_stream_init_too_many_requests(mocker, test_config):
     mocker.patch("time.sleep", lambda x: None)
     config = AmazonAdsConfig(**test_config)
-    ctx = make_context()
-    stream = DisplayReportStream(config, ctx, authenticator=mock.MagicMock())
+    profiles = make_profiles()
+    stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
     stream_slice = {"reportDate": "20210725"}
     responses.add(responses.POST, re.compile(r"https://advertising-api.amazon.com/sd/[a-zA-Z]+/report"), json={}, status=429)
 
@@ -264,8 +261,8 @@ def test_display_report_stream_timeout(mocker, test_config):
             responses.GET, re.compile(r"https://advertising-api.amazon.com/v2/reports/[^/]+$"), callback=StatusCallback()
         )
         config = AmazonAdsConfig(**test_config)
-        ctx = make_context()
-        stream = DisplayReportStream(config, ctx, authenticator=mock.MagicMock())
+        profiles = make_profiles()
+        stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
         stream_slice = {"reportDate": "20210725"}
 
         metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
@@ -277,7 +274,7 @@ def test_display_report_stream_timeout(mocker, test_config):
 @responses.activate
 def test_display_report_stream_slices_full_refresh(test_config):
     config = AmazonAdsConfig(**test_config)
-    stream = DisplayReportStream(config, None, authenticator=mock.MagicMock())
+    stream = SponsoredDisplayReportStream(config, None, authenticator=mock.MagicMock())
     slices = stream.stream_slices(SyncMode.full_refresh, cursor_field=stream.cursor_field)
     assert slices == [{"reportDate": "20210730"}]
 
@@ -286,7 +283,7 @@ def test_display_report_stream_slices_full_refresh(test_config):
 @responses.activate
 def test_display_report_stream_slices_incremental(test_config):
     config = AmazonAdsConfig(**test_config)
-    stream = DisplayReportStream(config, None, authenticator=mock.MagicMock())
+    stream = SponsoredDisplayReportStream(config, None, authenticator=mock.MagicMock())
     stream_state = {"reportDate": "20210726"}
     slices = stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state=stream_state)
     assert slices == [

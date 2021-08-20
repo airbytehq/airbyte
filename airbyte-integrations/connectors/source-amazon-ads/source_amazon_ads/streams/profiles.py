@@ -22,7 +22,7 @@
 # SOFTWARE.
 #
 
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, List, Mapping
 
 import requests
 from airbyte_cdk.models import SyncMode
@@ -45,17 +45,29 @@ class Profiles(AmazonAdsStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         for record in super().parse_response(response, **kwargs):
             profile_id_obj = self.model.parse_obj(record)
-            self._ctx.profiles.append(profile_id_obj)
+            # Populate self._profiles list with profiles objects to not make
+            # unnecessary API calls.
+            self._profiles.append(profile_id_obj)
             yield record
 
     def read_records(self, *args, **kvargs) -> Iterable[Mapping[str, Any]]:
-        if self._ctx.profiles:
-            yield from [profile.dict(exclude_unset=True) for profile in self._ctx.profiles]
+        if self._profiles:
+            # In case if we have _profiles populated we can use it instead of making API call.
+            yield from [profile.dict(exclude_unset=True) for profile in self._profiles]
         else:
+            # Make API call by the means of basic HttpStream class.
             yield from super().read_records(*args, **kvargs)
 
-    def fill_context(self):
+    def get_all_profiles(self) -> List[Profile]:
         """
-        Fill profiles info for other streams in case of "profiles" stream havent been specified on catalog config
+        Fetch all profiles and return it as list. We need this to set
+        dependecies for other streams since all of the Amazon Ads API calls
+        require profile id to be passed.
+        :return List of profile object
         """
-        _ = [record for record in self.read_records(SyncMode.full_refresh)]
+        # Call this list comprehension to iterate through responses and
+        # populate self._profiles variable. We cant just return this list cause
+        # it would contain raw dicts and we need list of Profile models.
+        _ = [_ for _ in self.read_records(SyncMode.full_refresh)]
+        # This list was populated with parse_response method.
+        return self._profiles

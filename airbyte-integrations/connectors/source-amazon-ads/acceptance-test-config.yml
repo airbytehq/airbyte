@@ -34,7 +34,7 @@ tests:
       configured_catalog_path: "integration_tests/configured_catalog_display.json"
       empty_streams:
         [
-          "display_report_stream",
+          "sponsored_display_report_stream",
           "sponsored_display_product_ads",
           "sponsored_display_targetings",
         ]
