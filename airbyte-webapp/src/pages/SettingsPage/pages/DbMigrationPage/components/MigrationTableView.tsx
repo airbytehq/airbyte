@@ -1,8 +1,11 @@
 import React from "react";
-import { DbMigrationInfoItem } from "core/resources/DbMigration";
-import { Block } from "../../ConnectorsPage/components/PageComponents";
-import Table from "components/Table/Table";
 import { FormattedMessage } from "react-intl";
+import dayjs from "dayjs";
+
+import { DbMigrationInfoItem } from "core/resources/DbMigration";
+import Table from "components/Table";
+
+import { Block } from "./PageComponents";
 
 type MigrationsViewProps = {
   migrations: Array<DbMigrationInfoItem>;
@@ -38,7 +41,8 @@ const MigrationTableView: React.FC<MigrationsViewProps> = ({ migrations }) => {
       {
         Header: <FormattedMessage id="dbMigration.migratedAt" />,
         id: "migratedAt",
-        accessor: (row: any) => new Date(row.migratedAt).toLocaleString(),
+        accessor: (row: any) =>
+          dayjs(row.migratedAt).format("YYYY-MM-DD hh:mm A"),
       },
       {
         Header: <FormattedMessage id="dbMigration.script" />,

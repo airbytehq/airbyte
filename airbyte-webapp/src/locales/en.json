@@ -370,7 +370,7 @@
   "connector.source": "Source",
   "connector.destination": "Destination",
 
-  "dbMigration.titleSuffix": " Database Migration",
+  "dbMigration.titleSuffix": " Database Migrations",
   "dbMigration.type": "Type",
   "dbMigration.version": "Version",
   "dbMigration.description": "Description",

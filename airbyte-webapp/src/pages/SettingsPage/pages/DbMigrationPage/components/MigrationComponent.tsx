@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { useFetcher } from "rest-hooks";
-import DbMigrationResource, {
-  DbMigrationInfoItem,
-} from "core/resources/DbMigration";
-import useDbMigration from "components/hooks/services/useDbMigrationHook";
-import { useAsyncFn } from "react-use";
-import { Block, Title } from "../../ConnectorsPage/components/PageComponents";
-import { LoadingButton } from "components";
 import { FormattedMessage } from "react-intl";
+import { useAsyncFn } from "react-use";
+
+import { DbMigrationInfoItem } from "core/resources/DbMigration";
+import { LoadingButton } from "components";
+import useDbMigration from "components/hooks/services/useDbMigration";
+
 import MigrationTableView from "./MigrationTableView";
+import { Block, Title } from "./PageComponents";
 
 type DbMigrationComponentProps = {
   databaseTitle: string;
@@ -40,8 +39,6 @@ const MigrationComponent: React.FC<DbMigrationComponentProps> = ({
     const result = await info(databaseIdentifier);
     setMigrations(result.migrations);
   }, [migrate]);
-
-  useFetcher(DbMigrationResource.infoShape());
 
   return (
     <>

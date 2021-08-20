@@ -1,9 +1,10 @@
+import { useFetcher } from "rest-hooks";
+
 import DbMigrationResource, {
   DbMigrationInfoResult,
   DbMigrationMigrateResult,
 } from "core/resources/DbMigration";
 import { useAnalytics } from "../useAnalytics";
-import { useFetcher } from "rest-hooks";
 
 type DbMigrationService = {
   info: (database: string) => Promise<DbMigrationInfoResult>;
