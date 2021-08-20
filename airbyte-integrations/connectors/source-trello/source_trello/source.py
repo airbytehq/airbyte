@@ -181,6 +181,10 @@ class Actions(ChildStreamMixin, IncrementalTrelloStream):
 
 
 class TrelloAuthenticator(HttpAuthenticator):
+    """
+    Generate auth header for start making requests from API token and API key.
+    """
+
     def __init__(
         self,
         token: str,
