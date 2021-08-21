@@ -1,4 +1,4 @@
-# Linkedin Ads Source
+# Linkedin Ads Source Connector
 
 This is the repository for the Linkedin Ads source connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/linkedin-ads).
@@ -101,8 +101,10 @@ Customize `acceptance-test-config.yml` file to configure tests. See [Source Acce
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
 To run your integration tests with acceptance tests, from the connector root, run
 ```
-python -m pytest integration_tests -p integration_tests.acceptance
+docker build . --no-cache -t airbyte/source-linkedin-ads:dev \
+&& python -m pytest integration_tests -p integration_tests.acceptance
 ```
+
 To run your integration tests with docker
 
 ### Using gradle to run tests
