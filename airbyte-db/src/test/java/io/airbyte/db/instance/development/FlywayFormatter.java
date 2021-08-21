@@ -22,10 +22,11 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db.instance;
+package io.airbyte.db.instance.development;
 
 import static org.jooq.impl.DSL.field;
 
+import io.airbyte.db.instance.DatabaseMigrator;
 import java.sql.Date;
 import java.util.List;
 import org.flywaydb.core.api.MigrationInfo;
@@ -40,17 +41,14 @@ import org.jooq.SQLDialect;
 import org.jooq.impl.DefaultDSLContext;
 import org.jooq.impl.SQLDataType;
 
-/**
- * Helper methods that format outputs of {@link DatabaseMigrator} for debugging.
- */
-public class MigrationHelper {
+public class FlywayFormatter {
 
   private static final DSLContext CTX = new DefaultDSLContext(SQLDialect.DEFAULT);
 
   /**
    * Format the {@link DatabaseMigrator#info} output.
    */
-  public static String format(List<MigrationInfo> migrationInfoList) {
+  static String formatMigrationInfoList(List<MigrationInfo> migrationInfoList) {
     Field<String> type = field("Type", SQLDataType.VARCHAR);
     Field<String> version = field("Version", SQLDataType.VARCHAR);
     Field<String> description = field("Description", SQLDataType.VARCHAR);
@@ -66,7 +64,7 @@ public class MigrationHelper {
     return result.format();
   }
 
-  public static String formatOutputs(List<MigrateOutput> migrationOutputList) {
+  static String formatMigrationOutputList(List<MigrateOutput> migrationOutputList) {
     Field<String> type = field("Type", SQLDataType.VARCHAR);
     Field<String> version = field("Version", SQLDataType.VARCHAR);
     Field<String> description = field("Description", SQLDataType.VARCHAR);
@@ -81,13 +79,12 @@ public class MigrationHelper {
   }
 
   /**
-   * Format the {@link DatabaseMigrator#migrate()} output.
+   * Format the {@link DatabaseMigrator#migrate} output.
    */
-  public static String format(MigrateResult result) {
-    String output = String.format("Version: %s -> %s\n", result.initialSchemaVersion, result.targetSchemaVersion)
+  static String formatMigrationResult(MigrateResult result) {
+    return String.format("Version: %s -> %s\n", result.initialSchemaVersion, result.targetSchemaVersion)
         + String.format("Migrations executed: %s\n", result.migrationsExecuted)
-        + formatOutputs(result.migrations);
-    return output;
+        + formatMigrationOutputList(result.migrations);
   }
 
 }

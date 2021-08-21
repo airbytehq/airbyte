@@ -24,6 +24,7 @@
 
 package io.airbyte.db.instance;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import java.io.File;
@@ -37,19 +38,20 @@ import java.util.stream.Collectors;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.MigrationInfoService;
+import org.flywaydb.core.api.configuration.FluentConfiguration;
 import org.flywaydb.core.api.output.BaselineResult;
 import org.flywaydb.core.api.output.MigrateResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class BaseDatabaseMigrator implements DatabaseMigrator {
+public class BaseDatabaseMigrator implements DatabaseMigrator {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseDatabaseMigrator.class);
   private static final String BASELINE_VERSION = "0.29.0.001";
   private static final String BASELINE_DESCRIPTION = "Baseline from file-based migration v1";
   private static final boolean BASELINE_ON_MIGRATION = true;
 
-  private final ExceptionWrappingDatabase database;
+  private final Database database;
   private final Flyway flyway;
   private final String schemaDumpFile;
 
@@ -61,18 +63,35 @@ public abstract class BaseDatabaseMigrator implements DatabaseMigrator {
    *        https://flywaydb.org/documentation/concepts/migrations#discovery-1
    * @param schemaDumpFile The default schema dump file for this database.
    */
-  public BaseDatabaseMigrator(Database database, String dbIdentifier, String migrationRunner, String migrationFileLocations, String schemaDumpFile) {
-    this.database = new ExceptionWrappingDatabase(database);
+  protected BaseDatabaseMigrator(Database database,
+                                 String dbIdentifier,
+                                 String migrationRunner,
+                                 String migrationFileLocations,
+                                 String schemaDumpFile) {
+    this.database = database;
     this.schemaDumpFile = schemaDumpFile;
-    this.flyway = Flyway.configure()
+    this.flyway = getConfiguration(database, dbIdentifier, migrationRunner, migrationFileLocations).load();
+  }
+
+  @VisibleForTesting
+  public BaseDatabaseMigrator(Database database, String schemaDumpFile, Flyway flyway) {
+    this.database = database;
+    this.schemaDumpFile = schemaDumpFile;
+    this.flyway = flyway;
+  }
+
+  public static FluentConfiguration getConfiguration(Database database,
+                                                     String dbIdentifier,
+                                                     String migrationRunner,
+                                                     String migrationFileLocations) {
+    return Flyway.configure()
         .dataSource(database.getDataSource())
         .baselineVersion(BASELINE_VERSION)
         .baselineDescription(BASELINE_DESCRIPTION)
         .baselineOnMigrate(BASELINE_ON_MIGRATION)
         .installedBy(migrationRunner)
         .table(String.format("airbyte_%s_migrations", dbIdentifier))
-        .locations(migrationFileLocations)
-        .load();
+        .locations(migrationFileLocations);
   }
 
   @Override
@@ -98,7 +117,7 @@ public abstract class BaseDatabaseMigrator implements DatabaseMigrator {
 
   @Override
   public String dumpSchema() throws IOException {
-    return database.query(ctx -> ctx.meta().ddl().queryStream()
+    return new ExceptionWrappingDatabase(database).query(ctx -> ctx.meta().ddl().queryStream()
         .map(query -> query.toString() + ";")
         .filter(statement -> !statement.startsWith("create schema"))
         .collect(Collectors.joining("\n")));
@@ -113,6 +132,16 @@ public abstract class BaseDatabaseMigrator implements DatabaseMigrator {
       throw new IOException(e);
     }
     return schema;
+  }
+
+  @VisibleForTesting
+  public Database getDatabase() {
+    return database;
+  }
+
+  @VisibleForTesting
+  public Flyway getFlyway() {
+    return flyway;
   }
 
 }

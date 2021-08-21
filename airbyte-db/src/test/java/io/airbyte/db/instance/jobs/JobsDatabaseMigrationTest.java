@@ -28,12 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.instance.DatabaseMigrator;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.file.Path;
-import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 
 class JobsDatabaseMigrationTest extends AbstractJobsDatabaseTest {
@@ -49,39 +43,6 @@ class JobsDatabaseMigrationTest extends AbstractJobsDatabaseTest {
     migrator.migrate();
     String newSchemaDump = migrator.dumpSchemaToFile();
     assertEquals(schemaDump, newSchemaDump);
-  }
-
-  @Ignore
-  @Test
-  public void createMigration() throws IOException {
-    String dbName = "jobs";
-    String version = "0_29_10";
-    String id = "002";
-    String description = "New_migration";
-
-    String template = MoreResources.readResource("migration_template.txt");
-    String newMigration = template.replace("<db-name>", dbName)
-        .replace("<version>", version)
-        .replace("<id>", id)
-        .replace("<description>", description)
-        .strip();
-
-    String fileName = String.format("V%s_%s__%s.java", version, id, description);
-    String filePath = String.format("src/main/java/io/airbyte/db/instance/%s/migrations/%s", dbName, fileName);
-
-    try (PrintWriter writer = new PrintWriter(new File(Path.of(filePath).toUri()))) {
-      writer.println(newMigration);
-    } catch (FileNotFoundException e) {
-      throw new IOException(e);
-    }
-  }
-
-  // Run this method to test your migration.
-  @Ignore
-  @Test
-  public void runMigration() throws IOException {
-    DatabaseMigrator migrator = new JobsDatabaseMigrator(database, JobsDatabaseMigrationTest.class.getSimpleName());
-    runMigration(migrator);
   }
 
 }

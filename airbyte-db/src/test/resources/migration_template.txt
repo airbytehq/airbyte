@@ -6,7 +6,7 @@ import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 
 // TODO: update migration description in the class name
-public class V<version>_<id>__<description> extends BaseJavaMigration {
+public class V<version-id>__<description> extends BaseJavaMigration {
 
   @Override
   public void migrate(Context context) throws Exception {

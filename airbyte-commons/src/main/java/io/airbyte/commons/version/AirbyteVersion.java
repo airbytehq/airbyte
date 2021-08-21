@@ -56,6 +56,13 @@ public class AirbyteVersion {
     }
   }
 
+  public AirbyteVersion(final String major, final String minor, final String patch) {
+    this.version = String.format("%s.%s.%s", major, minor, patch);
+    this.major = major;
+    this.minor = minor;
+    this.patch = patch;
+  }
+
   public String getVersion() {
     return version;
   }
@@ -85,6 +92,28 @@ public class AirbyteVersion {
       return majorDiff;
     }
     return minor.compareTo(another.minor);
+  }
+
+  /**
+   * Check if the current one is greater than another. This method compares all version parts.
+   */
+  public boolean isGreaterThan(final AirbyteVersion other) {
+    if (version.equals(DEV_VERSION) || other.version.equals(DEV_VERSION)) {
+      return true;
+    }
+    int majorDiff = Integer.compare(Integer.parseInt(major), Integer.parseInt(other.major));
+    if (majorDiff > 0) {
+      return true;
+    } else if (majorDiff < 0) {
+      return false;
+    }
+    int minorDiff = Integer.compare(Integer.parseInt(minor), Integer.parseInt(other.minor));
+    if (minorDiff > 0) {
+      return true;
+    } else if (minorDiff < 0) {
+      return false;
+    }
+    return patch.compareTo(other.patch) > 0;
   }
 
   /**

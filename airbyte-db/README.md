@@ -16,9 +16,10 @@ Check `io.airbyte.db.instance.configs` for example.
 - Create a new package `migrations` under the database package. Put all migrations files there.
 
 # How to Write a Migration
-- Create a migration file under `io.airbyte.db.instance.<db-name>.migrations`.
-- This file should extend from `BaseJavaMigration`.
-- The name of the file should follow this pattern: `V(version)__(migration_description_in_snake_case).java`.
+- Go to `<db-name>DatabaseMigrationDevCenter.java`. This file is the command center for migration development.
+  - E.g. for the `configs` database, the file is `ConfigsDatabaseMigrationTest.java`.
+- Run the `createMigration` to create a new migration file under `io.airbyte.db.instance.<db-name>.migrations`.
+  - The name of the file should follow this pattern: `V(version)__(migration_description_in_snake_case).java`.
   - This pattern is mandatory for Flyway to correctly locate and sort the migrations.
   - The first part is `V`, which denotes for *versioned* migration.
   - The second part is a version string with this pattern: `<major>_<minor>_<patch>_<id>`.
@@ -28,6 +29,7 @@ Check `io.airbyte.db.instance.configs` for example.
   - The third part is a double underscore separator `__`.
   - The fourth part is a brief description in snake case. Only the first letter should be capitalized for consistency. 
   - See original Flyway [documentation](https://flywaydb.org/documentation/concepts/migrations#naming-1) for more details.
+- Write the migration using [`jOOQ`](https://www.jooq.org/).
 
 Sample migration file:
 
@@ -48,10 +50,8 @@ public class V0_29_9_001__Add_active_column extends BaseJavaMigration {
 }
 ```
 
-- You can test the migration by running the `runMigration` method in `<db-name>DatabaseMigrationTest`. After running this method, you can see the database schema change in the `resources/<db-name>_databases/schema_dump.txt` file. There are also detailed logs about what is going on with the database before and after the migrations.
-  - For the `configs` database, the file is `ConfigsDatabaseMigrationTest.java`.
-  - This method is for dev testing only. It is not run by CI.
-- This test file also has a `testSchemaDump` method that is run by CI. It will dump the database schema automatically. Please remember to check in any change in the schema dump. In this way, we can be sure that there is no unexpected schema changes caused by any new migration.
+- Run the `runMigration` method to run the newly-created migration. There are detailed information in the logs about what is going on with the database before and after the migration.
+- Each database also has a `<db-name>DatabaseMigrationTest` that will run all migrations, and create a schema dump in `resources/<db-name>_databases/schema_dump.txt` automatically. Please remember to check in any change in the schema dump. In this way, we can be sure that there is no unexpected schema changes caused by any new migration.
 
 # How to Run a Migration
 - Automatic. Migrations will be run automatically in the server. If you prefer to manually run the migration, change `RUN_FLYWAY_MIGRATION` to `false` in `.env`.

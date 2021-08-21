@@ -24,25 +24,30 @@
 
 package io.airbyte.db.instance.configs;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.instance.DatabaseMigrator;
+import io.airbyte.db.instance.BaseDatabaseMigrator;
+import io.airbyte.db.instance.development.DevDatabaseMigrator;
+import io.airbyte.db.instance.development.MigrationDevHelper;
+import java.io.IOException;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 
-class ConfigsDatabaseMigrationTest extends AbstractConfigsDatabaseTest {
+public class ConfigsDatabaseMigrationDevCenter extends AbstractConfigsDatabaseTest {
 
-  /**
-   * This method generates a schema dump for the configs database. The purpose is to ensure that the
-   * latest schema is checked into the codebase after all migrations are executed.
-   */
+  // 1. Run this method to create a new migration file.
+  @Ignore
   @Test
-  public void testSchemaDump() throws Exception {
-    String schemaDump = MoreResources.readResource("configs_database/schema_dump.txt").strip();
-    DatabaseMigrator migrator = new ConfigsDatabaseMigrator(database, ConfigsDatabaseMigrationTest.class.getSimpleName());
-    migrator.migrate();
-    String newSchemaDump = migrator.dumpSchemaToFile();
-    assertEquals(schemaDump, newSchemaDump);
+  public void createMigration() throws IOException {
+    BaseDatabaseMigrator migrator = new ConfigsDatabaseMigrator(database, ConfigsDatabaseMigrationDevCenter.class.getSimpleName());
+    MigrationDevHelper.createNextMigrationFile("configs", migrator);
+  }
+
+  // 2. Run this method to test the new migration.
+  @Ignore
+  @Test
+  public void runLastMigration() throws IOException {
+    BaseDatabaseMigrator fullMigrator = new ConfigsDatabaseMigrator(database, ConfigsDatabaseMigrationDevCenter.class.getSimpleName());
+    DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(fullMigrator);
+    MigrationDevHelper.runLastMigration(devDatabaseMigrator);
   }
 
 }
