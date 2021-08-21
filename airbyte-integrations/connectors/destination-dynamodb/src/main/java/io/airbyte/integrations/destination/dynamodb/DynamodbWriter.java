@@ -36,153 +36,152 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DynamodbWriter {
 
-    protected static final Logger LOGGER = LoggerFactory.getLogger(DynamodbWriter.class);
+  protected static final Logger LOGGER = LoggerFactory.getLogger(DynamodbWriter.class);
 
-    private static final ObjectMapper MAPPER = MoreMappers.initMapper();
-    private static final ObjectWriter WRITER = MAPPER.writer();
+  private static final ObjectMapper MAPPER = MoreMappers.initMapper();
+  private static final ObjectWriter WRITER = MAPPER.writer();
 
-    private final DynamodbDestinationConfig config;
-    private final DynamoDB dynamodb;
-    private final ConfiguredAirbyteStream configuredStream;
-    private final long uploadTimestamp;
-    private TableWriteItems tableWriteItems;
-    private final String outputTableName;
+  private final DynamodbDestinationConfig config;
+  private final DynamoDB dynamodb;
+  private final ConfiguredAirbyteStream configuredStream;
+  private final long uploadTimestamp;
+  private TableWriteItems tableWriteItems;
+  private final String outputTableName;
 
-    public DynamodbWriter(DynamodbDestinationConfig config,
-                          AmazonDynamoDB amazonDynamodb,
-                          ConfiguredAirbyteStream configuredStream,
-                          long uploadTimestamp) {
+  public DynamodbWriter(DynamodbDestinationConfig config,
+                        AmazonDynamoDB amazonDynamodb,
+                        ConfiguredAirbyteStream configuredStream,
+                        long uploadTimestamp) {
 
-        this.config = config;
-        this.dynamodb = new DynamoDB(amazonDynamodb);
-        this.configuredStream = configuredStream;
-        this.uploadTimestamp = uploadTimestamp;
-        this.outputTableName = DynamodbOutputTableHelper.getOutputTableName(config.getTableName(), configuredStream.getStream());
+    this.config = config;
+    this.dynamodb = new DynamoDB(amazonDynamodb);
+    this.configuredStream = configuredStream;
+    this.uploadTimestamp = uploadTimestamp;
+    this.outputTableName = DynamodbOutputTableHelper.getOutputTableName(config.getTableName(), configuredStream.getStream());
 
-        final DestinationSyncMode syncMode = configuredStream.getDestinationSyncMode();
-        if (syncMode == null) {
-            throw new IllegalStateException("Undefined destination sync mode");
-        }
-
-        final boolean isAppendMode = syncMode != DestinationSyncMode.OVERWRITE;
-        boolean tableExist = true;
-
-        try {
-            if (!isAppendMode) {
-                Table table = dynamodb.getTable(outputTableName);
-
-                if (isTableExist(table)) {
-                    table.delete();
-                    table.waitForDelete();
-                }
-            }
-
-            var table = createTableIfNotExists(amazonDynamodb, outputTableName);
-            table.waitForActive();
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage());
-        }
-
-        this.tableWriteItems = new TableWriteItems(outputTableName);
+    final DestinationSyncMode syncMode = configuredStream.getDestinationSyncMode();
+    if (syncMode == null) {
+      throw new IllegalStateException("Undefined destination sync mode");
     }
 
-    private static boolean isTableExist(Table table) {
-        try {
-            table.describe();
-        } catch (ResourceNotFoundException e) {
-            return false;
+    final boolean isAppendMode = syncMode != DestinationSyncMode.OVERWRITE;
+    boolean tableExist = true;
+
+    try {
+      if (!isAppendMode) {
+        Table table = dynamodb.getTable(outputTableName);
+
+        if (isTableExist(table)) {
+          table.delete();
+          table.waitForDelete();
         }
-        return true;
+      }
+
+      var table = createTableIfNotExists(amazonDynamodb, outputTableName);
+      table.waitForActive();
+    } catch (Exception e) {
+      LOGGER.error(e.getMessage());
     }
 
-    private Table createTableIfNotExists(AmazonDynamoDB amazonDynamodb, String tableName) throws Exception {
-        AttributeDefinition partitionKeyDefinition = new AttributeDefinition()
-                .withAttributeName(JavaBaseConstants.COLUMN_NAME_AB_ID)
-                .withAttributeType(ScalarAttributeType.S);
-        AttributeDefinition sortKeyDefinition = new AttributeDefinition()
-                .withAttributeName("sync_time")
-                .withAttributeType(ScalarAttributeType.N);
-        KeySchemaElement partitionKeySchema = new KeySchemaElement()
-                .withAttributeName(JavaBaseConstants.COLUMN_NAME_AB_ID)
-                .withKeyType(KeyType.HASH);
-        KeySchemaElement sortKeySchema = new KeySchemaElement()
-                .withAttributeName("sync_time")
-                .withKeyType(KeyType.RANGE);
-        ProvisionedThroughput throughput = new ProvisionedThroughput()
-                .withReadCapacityUnits(10L)
-                .withWriteCapacityUnits(10L);
+    this.tableWriteItems = new TableWriteItems(outputTableName);
+  }
 
-        TableUtils.createTableIfNotExists(amazonDynamodb, new CreateTableRequest()
-                .withTableName(tableName)
-                .withAttributeDefinitions(partitionKeyDefinition)
-                .withKeySchema(partitionKeySchema)
-                .withAttributeDefinitions(sortKeyDefinition)
-                .withKeySchema(sortKeySchema)
-                .withProvisionedThroughput(throughput));
-        return new DynamoDB(amazonDynamodb).getTable(tableName);
+  private static boolean isTableExist(Table table) {
+    try {
+      table.describe();
+    } catch (ResourceNotFoundException e) {
+      return false;
     }
+    return true;
+  }
 
-    public void write(UUID id, AirbyteRecordMessage recordMessage) {
+  private Table createTableIfNotExists(AmazonDynamoDB amazonDynamodb, String tableName) throws Exception {
+    AttributeDefinition partitionKeyDefinition = new AttributeDefinition()
+        .withAttributeName(JavaBaseConstants.COLUMN_NAME_AB_ID)
+        .withAttributeType(ScalarAttributeType.S);
+    AttributeDefinition sortKeyDefinition = new AttributeDefinition()
+        .withAttributeName("sync_time")
+        .withAttributeType(ScalarAttributeType.N);
+    KeySchemaElement partitionKeySchema = new KeySchemaElement()
+        .withAttributeName(JavaBaseConstants.COLUMN_NAME_AB_ID)
+        .withKeyType(KeyType.HASH);
+    KeySchemaElement sortKeySchema = new KeySchemaElement()
+        .withAttributeName("sync_time")
+        .withKeyType(KeyType.RANGE);
+    ProvisionedThroughput throughput = new ProvisionedThroughput()
+        .withReadCapacityUnits(10L)
+        .withWriteCapacityUnits(10L);
 
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String, Object> dataMap = mapper.convertValue(recordMessage.getData(), new TypeReference<Map<String, Object>>() {
-        });
+    TableUtils.createTableIfNotExists(amazonDynamodb, new CreateTableRequest()
+        .withTableName(tableName)
+        .withAttributeDefinitions(partitionKeyDefinition)
+        .withKeySchema(partitionKeySchema)
+        .withAttributeDefinitions(sortKeyDefinition)
+        .withKeySchema(sortKeySchema)
+        .withProvisionedThroughput(throughput));
+    return new DynamoDB(amazonDynamodb).getTable(tableName);
+  }
 
-        var item = new Item()
-                .withPrimaryKey(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(), "sync_time", uploadTimestamp)
-                .withMap(JavaBaseConstants.COLUMN_NAME_DATA, dataMap)
-                .withLong(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
-        tableWriteItems.addItemToPut(item);
-        BatchWriteItemOutcome outcome;
-        if (tableWriteItems.getItemsToPut().size() >= 25) {
-            try {
-                int maxRetries = 5;
-                outcome = dynamodb.batchWriteItem(tableWriteItems);
-                tableWriteItems = new TableWriteItems(this.outputTableName);
+  public void write(UUID id, AirbyteRecordMessage recordMessage) {
 
-                while (outcome.getUnprocessedItems().size() > 0 && maxRetries > 0) {
-                    outcome = dynamodb.batchWriteItemUnprocessed(outcome.getUnprocessedItems());
-                    maxRetries--;
-                }
+    ObjectMapper mapper = new ObjectMapper();
+    Map<String, Object> dataMap = mapper.convertValue(recordMessage.getData(), new TypeReference<Map<String, Object>>() {});
 
-                if (maxRetries == 0) {
-                    LOGGER.warn(String.format("Unprocessed items count after retry %d times: %s", 5, Integer.toString(outcome.getUnprocessedItems().size())));
-                }
-            } catch (Exception e) {
-                LOGGER.error(e.getMessage());
-            }
+    var item = new Item()
+        .withPrimaryKey(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(), "sync_time", uploadTimestamp)
+        .withMap(JavaBaseConstants.COLUMN_NAME_DATA, dataMap)
+        .withLong(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
+    tableWriteItems.addItemToPut(item);
+    BatchWriteItemOutcome outcome;
+    if (tableWriteItems.getItemsToPut().size() >= 25) {
+      try {
+        int maxRetries = 5;
+        outcome = dynamodb.batchWriteItem(tableWriteItems);
+        tableWriteItems = new TableWriteItems(this.outputTableName);
+
+        while (outcome.getUnprocessedItems().size() > 0 && maxRetries > 0) {
+          outcome = dynamodb.batchWriteItemUnprocessed(outcome.getUnprocessedItems());
+          maxRetries--;
         }
-    }
 
-    public void close(boolean hasFailed) throws IOException {
-        if (hasFailed) {
-            LOGGER.warn("Failure in writing data to DynamoDB. Aborting...");
-        } else {
-            try {
-                int maxRetries = 5;
-                if (tableWriteItems.getItemsToPut().size() > 0) {
-                    var outcome = dynamodb.batchWriteItem(tableWriteItems);
-                    while (outcome.getUnprocessedItems().size() > 0 && maxRetries > 0) {
-                        outcome = dynamodb.batchWriteItemUnprocessed(outcome.getUnprocessedItems());
-                        maxRetries--;
-                    }
-                    if (maxRetries == 0) {
-                        LOGGER.warn(String.format("Unprocessed items count after retry %d times: %s", 5, Integer.toString(outcome.getUnprocessedItems().size())));
-                    }
-                }
-            } catch (Exception e) {
-                LOGGER.error(e.getMessage());
-            }
-            LOGGER.info("Data writing completed for DynamoDB.");
+        if (maxRetries == 0) {
+          LOGGER.warn(String.format("Unprocessed items count after retry %d times: %s", 5, Integer.toString(outcome.getUnprocessedItems().size())));
         }
+      } catch (Exception e) {
+        LOGGER.error(e.getMessage());
+      }
     }
+  }
+
+  public void close(boolean hasFailed) throws IOException {
+    if (hasFailed) {
+      LOGGER.warn("Failure in writing data to DynamoDB. Aborting...");
+    } else {
+      try {
+        int maxRetries = 5;
+        if (tableWriteItems.getItemsToPut().size() > 0) {
+          var outcome = dynamodb.batchWriteItem(tableWriteItems);
+          while (outcome.getUnprocessedItems().size() > 0 && maxRetries > 0) {
+            outcome = dynamodb.batchWriteItemUnprocessed(outcome.getUnprocessedItems());
+            maxRetries--;
+          }
+          if (maxRetries == 0) {
+            LOGGER.warn(String.format("Unprocessed items count after retry %d times: %s", 5, Integer.toString(outcome.getUnprocessedItems().size())));
+          }
+        }
+      } catch (Exception e) {
+        LOGGER.error(e.getMessage());
+      }
+      LOGGER.info("Data writing completed for DynamoDB.");
+    }
+  }
+
 }
