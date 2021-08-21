@@ -25,6 +25,7 @@
 package io.airbyte.db.instance.jobs;
 
 import io.airbyte.db.instance.BaseDatabaseMigrator;
+import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
 import java.io.IOException;
@@ -33,7 +34,9 @@ import org.junit.jupiter.api.Test;
 
 public class JobsDatabaseMigrationDevCenter extends AbstractJobsDatabaseTest {
 
-  // 1. Run this method to create a new migration file.
+  /**
+   * 1. Run this method to create a new migration file.
+   */
   @Ignore
   @Test
   public void createMigration() throws IOException {
@@ -41,13 +44,29 @@ public class JobsDatabaseMigrationDevCenter extends AbstractJobsDatabaseTest {
     MigrationDevHelper.createNextMigrationFile("jobs", migrator);
   }
 
-  // 2. Run this method to test the new migration.
+  /**
+   * 2. Run this method to test the new migration.
+   */
   @Ignore
   @Test
   public void runLastMigration() throws IOException {
     BaseDatabaseMigrator fullMigrator = new JobsDatabaseMigrator(database, JobsDatabaseMigrationDevCenter.class.getSimpleName());
     DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(fullMigrator);
     MigrationDevHelper.runLastMigration(devDatabaseMigrator);
+  }
+
+  /**
+   * 3. This method performs the following to integration the latest migration changes:
+   * <ul>
+   *   <li>Update the schema dump.</li>
+   *   <li>Update jOOQ-generated code.</li>
+   * </ul>
+   * Please make sure to check in the changes after running this method.
+   */
+  @Test
+  public void integrateMigration() throws Exception {
+    DatabaseMigrator migrator = new JobsDatabaseMigrator(database, JobsDatabaseMigrationDevCenter.class.getSimpleName());
+    MigrationDevHelper.integrateMigration(container, migrator, "jobs");
   }
 
 }

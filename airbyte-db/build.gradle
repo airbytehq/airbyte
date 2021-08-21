@@ -10,6 +10,7 @@ dependencies {
 
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-json-validation')
+    implementation 'org.jooq:jooq-codegen:3.13.4'
     implementation "org.flywaydb:flyway-core:7.14.0"
 
     testImplementation project(':airbyte-test-utils')

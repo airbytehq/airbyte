@@ -28,6 +28,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.db.instance.BaseDatabaseMigrator;
+import io.airbyte.db.instance.DatabaseMigrator;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -50,8 +51,14 @@ import org.flywaydb.core.internal.resolver.java.ScanningJavaMigrationResolver;
 import org.flywaydb.core.internal.scanner.LocationScannerCache;
 import org.flywaydb.core.internal.scanner.ResourceNameCache;
 import org.flywaydb.core.internal.scanner.Scanner;
+import org.jooq.codegen.GenerationTool;
+import org.jooq.meta.jaxb.Database;
+import org.jooq.meta.jaxb.Generator;
+import org.jooq.meta.jaxb.Jdbc;
+import org.jooq.meta.jaxb.Target;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 public class MigrationDevHelper {
 
@@ -74,6 +81,28 @@ public class MigrationDevHelper {
     List<MigrationInfo> postMigrationInfoList = migrator.info();
     System.out.println("\n==== Post Migration Info ====\n" + FlywayFormatter.formatMigrationInfoList(postMigrationInfoList));
     System.out.println("\n==== Post Migration Schema ====\n" + migrator.dumpSchema() + "\n");
+  }
+
+  public static void integrateMigration(PostgreSQLContainer<?> container, DatabaseMigrator migrator, String dbIdentifier) throws Exception {
+    migrator.migrate();
+    migrator.dumpSchemaToFile();
+
+    org.jooq.meta.jaxb.Configuration configuration = new org.jooq.meta.jaxb.Configuration()
+        .withJdbc(new Jdbc()
+            .withDriver("org.postgresql.Driver")
+            .withUrl(container.getJdbcUrl())
+            .withUser(container.getUsername())
+            .withPassword(container.getPassword()))
+        .withGenerator(new Generator()
+            .withDatabase(new Database()
+                .withName("org.jooq.meta.postgres.PostgresDatabase")
+                .withIncludes(".*")
+                .withExcludes(String.format("airbyte_%s_migrations", dbIdentifier))
+                .withInputSchema("public"))
+            .withTarget(new Target()
+                .withPackageName(String.format("io.airbyte.db.instance.%s.jooq", dbIdentifier))
+                .withDirectory("src/main/java")));
+    GenerationTool.generate(configuration);
   }
 
   public static void createNextMigrationFile(String dbIdentifier, BaseDatabaseMigrator migrator) throws IOException {

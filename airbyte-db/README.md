@@ -51,7 +51,10 @@ public class V0_29_9_001__Add_active_column extends BaseJavaMigration {
 ```
 
 - Run the `runMigration` method to run the newly-created migration. There are detailed information in the logs about what is going on with the database before and after the migration.
-- Each database also has a `<db-name>DatabaseMigrationTest` that will run all migrations, and create a schema dump in `resources/<db-name>_databases/schema_dump.txt` automatically. Please remember to check in any change in the schema dump. In this way, we can be sure that there is no unexpected schema changes caused by any new migration.
+- Once everything looks correct, run the `integrateMigration` method to:
+  - Update the schema dump in `resources/<db-name>_databases/schema_dump.txt`.
+  - Update the jOOQ-generated code in `src/main/java/io.airbyte.db.instance.<db-name>.jooq`.
+  - Please remember to check in all the above changes in the schema dump.
 
 # How to Run a Migration
 - Automatic. Migrations will be run automatically in the server. If you prefer to manually run the migration, change `RUN_FLYWAY_MIGRATION` to `false` in `.env`.
