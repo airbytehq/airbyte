@@ -26,3 +26,14 @@ dependencies {
     implementation 'org.projectlombok:lombok:1.18.20'
     annotationProcessor('org.projectlombok:lombok:1.18.20')
 }
+
+sourceSets {
+    main {
+        java {
+            srcDirs "$buildDir/generated/jooq/src/main/java"
+        }
+        resources {
+            srcDir "$projectDir/src/main/resources"
+        }
+    }
+}

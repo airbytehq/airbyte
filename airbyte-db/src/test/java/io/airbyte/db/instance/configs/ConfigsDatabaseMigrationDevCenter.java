@@ -57,10 +57,9 @@ public class ConfigsDatabaseMigrationDevCenter extends AbstractConfigsDatabaseTe
 
   /**
    * 3. This method performs the following to integration the latest migration changes:
-   * <ul>
-   *   <li>Update the schema dump.</li>
-   *   <li>Update jOOQ-generated code.</li>
-   * </ul>
+   * <li>Update the schema dump.</li>
+   * <li>Update jOOQ-generated code.</li>
+   *
    * Please make sure to check in the changes after running this method.
    */
   @Test

@@ -101,7 +101,7 @@ public class MigrationDevHelper {
                 .withInputSchema("public"))
             .withTarget(new Target()
                 .withPackageName(String.format("io.airbyte.db.instance.%s.jooq", dbIdentifier))
-                .withDirectory("src/main/java")));
+                .withDirectory("build/generated/jooq/src/main/java")));
     GenerationTool.generate(configuration);
   }
 
