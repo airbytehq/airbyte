@@ -122,6 +122,7 @@
     * [Zuora](integrations/sources/zuora.md)
   * [Destinations](integrations/destinations/README.md)
     * [BigQuery](integrations/destinations/bigquery.md)
+    * [DynamoDB](integrations/destinations/dynamodb.md)
     * [Google Cloud Storage (GCS)](integrations/destinations/gcs.md)
     * [Google PubSub](integrations/destinations/pubsub.md)
     * [Kafka](integrations/destinations/kafka.md)
