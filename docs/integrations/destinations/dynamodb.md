@@ -52,3 +52,9 @@ This connector by default uses 10 capacity units for both Read and Write in Dyna
     * This depends on your networking setup.
     * You can check AWS DynamoDB documentation with a tutorial on how to properly configure your DynamoDB's access [here](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/access-control-overview.html).
     * The easiest way to verify if Airbyte is able to connect to your DynamoDB tables is via the check connection tool in the UI.
+
+## CHANGELOG
+
+| Version | Date | Pull Request | Subject |
+| :--- | :---  | :--- | :--- |
+| 0.1.0 | 2021-08-20 | [#5561](https://github.com/airbytehq/airbyte/pull/5561) | Initial release. |
