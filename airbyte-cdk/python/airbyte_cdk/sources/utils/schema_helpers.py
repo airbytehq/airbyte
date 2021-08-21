@@ -30,7 +30,6 @@ import sys
 from typing import Any, Dict, Mapping
 
 import pkg_resources
-
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification
 from jsonschema import RefResolver, validate
