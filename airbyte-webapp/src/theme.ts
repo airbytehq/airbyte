@@ -1,5 +1,5 @@
 export const theme = {
-  primaryColor: "#625EFF",
+  primaryColor: "#615EFF",
   primaryColor25: "rgba(98, 94, 255, .25)",
   primaryColor12: "rgba(103, 87, 255, .12)",
   mediumPrimaryColor: "#36348F",
@@ -18,11 +18,11 @@ export const theme = {
   successColor: "#45E698",
   successColor10: "rgba(69, 230, 152, .1)",
   successColor20: "rgba(69, 230, 152, .2)",
-  backgroundColor: "#F8F8FF",
+  backgroundColor: "#FEF9F4",
   shadowColor: "rgba(0, 0, 0, 0.25)",
   cardShadowColor: "rgba(26, 25, 77, 0.12)",
 
-  textColor: "#1A1A21",
+  textColor: "#1A194D",
   textColor90: "rgba(26,26,33, .9)",
   greyColor80: "#353542",
   greyColor70: "#555461",
