@@ -29,6 +29,7 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
@@ -37,56 +38,79 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 class LinkedinAdsStream(HttpStream, ABC):
 
     url_base = "https://api.linkedin.com/v2/"
+    primary_key = "id"
+    limit = 1
 
     def __init__(self, config: Dict):
         super().__init__(authenticator=config["authenticator"])
         self.config = config
+        self.start_date = config["start_date"]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
         """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
-        Usually contains common params e.g. pagination size etc.
+        https://docs.microsoft.com/en-us/linkedin/shared/api-guide/concepts/pagination?context=linkedin/marketing/context
         """
-        return {}
+        if len(response.json().get("elements")) < self.limit:
+            return None
+        return {"start": response.json().get("paging").get("start") + self.limit}
+        
+    def request_params(self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = {"count": self.limit, "q": "search"}
+        if next_page_token:
+            params.update(**next_page_token)
+        return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        TODO: Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
-        """
-        yield {}
+        yield from response.json().get("elements")
+
+
+class LinkedinAdsStreamMixin(LinkedinAdsStream):
+
+    search_param = "search.account.values[0]"
+    search_value = "urn:li:sponsoredAccount:"
+
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        params[self.search_param] = f"{self.search_value}{stream_slice.get('account_id')}"
+        return params
+
+    def read_records(self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        stream_state = stream_state or {}
+        accounts_stream = Accounts(config=self.config)
+        for data in accounts_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield from super().read_records(stream_slice={"account_id": data[self.primary_key]}, **kwargs)
 
 
 class Accounts(LinkedinAdsStream):
+    """
+    https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-accounts?tabs=http
+    """
 
-    primary_key = "id"
+    def path(self, **kwargs) -> str:
+        return "adAccountsV2"
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
 
-        return "/adAccountsV2/"
+class CampaignGroups(LinkedinAdsStreamMixin):
+    """
+    https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaign-groups?tabs=http
+    """
+
+    def path(self, **kwargs) -> str:
+        return "adCampaignGroupsV2"
+
+    
 
 
 class IncrementalLinkedinAdsStream(LinkedinAdsStream, ABC):
 
-    # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
-    state_checkpoint_interval = None
+    @property
+    def limit(self):
+        return self.limit
+
+    state_checkpoint_interval = limit
 
     @property
     def cursor_field(self) -> str:
-        """
-        TODO
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
-        :return str: The name of the cursor field.
-        """
         return []
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -127,6 +151,7 @@ class SourceLinkedinAds(AbstractSource):
         try:
             response = requests.get(url=profile_url, headers=header)
             response.raise_for_status()
+            print(response.headers)
             return True, None
         except requests.exceptions.HTTPError as e:
             return False, f"{e}, {response.json().get('message')}"
@@ -141,4 +166,5 @@ class SourceLinkedinAds(AbstractSource):
 
         return [
             Accounts(config),
+            CampaignGroups(config)
         ]
