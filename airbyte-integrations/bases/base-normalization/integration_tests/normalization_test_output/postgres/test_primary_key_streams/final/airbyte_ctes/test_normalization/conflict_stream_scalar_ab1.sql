@@ -1,5 +1,5 @@
 
-  create view "postgres"._airbyte_test_normalization."conflict_stream_scalar_ab1__dbt_tmp" as (
+  create view postgres._airbyte_test_normalization.conflict_stream_scalar_ab1__dbt_tmp as (
     
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
 select

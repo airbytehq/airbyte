@@ -221,7 +221,6 @@
     {
       "stream": {
         "name": "simple_stream_with_namespace_resulting_into_long_names",
-        "namespace": "test_normalization_namespace",
         "json_schema": {
           "type": ["null", "object"],
           "properties": {

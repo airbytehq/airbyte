@@ -7,5 +7,5 @@ select
         'conflict_stream_scalar',
     ]) }} as _airbyte_conflict_stream_scalar_hashid
 from {{ ref('conflict_stream_scalar_ab2') }}
--- conflict_stream_scalar
+-- conflict_stream_scalar 
 

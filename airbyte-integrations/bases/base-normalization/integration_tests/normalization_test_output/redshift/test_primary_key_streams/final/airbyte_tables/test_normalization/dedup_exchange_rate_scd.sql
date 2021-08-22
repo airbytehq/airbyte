@@ -1,7 +1,7 @@
 
 
   create  table
-    "integrationtests".test_normalization."dedup_exchange_rate_scd__dbt_tmp"
+    integrationtests.test_normalization.dedup_exchange_rate_scd__dbt_tmp
     
     
   as (

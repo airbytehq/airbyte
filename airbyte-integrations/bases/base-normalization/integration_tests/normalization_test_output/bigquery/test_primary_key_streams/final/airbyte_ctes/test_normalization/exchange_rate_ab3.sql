@@ -1,6 +1,6 @@
 
 
-  create or replace view `dataline-integration-testing`._airbyte_test_normalization.`exchange_rate_ab3`
+  create or replace view dataline-integration-testing._airbyte_test_normalization.exchange_rate_ab3
   OPTIONS()
   as 
 -- SQL model to build a hash column based on the values of this record
@@ -25,6 +25,6 @@ select
 ), '')) as 
     string
 ))) as _airbyte_exchange_rate_hashid
-from `dataline-integration-testing`._airbyte_test_normalization.`exchange_rate_ab2`
+from dataline-integration-testing._airbyte_test_normalization.exchange_rate_ab2
 -- exchange_rate;
 

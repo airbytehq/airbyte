@@ -8,5 +8,5 @@ select
         'OWNER',
     ]) }} as _AIRBYTE_CHILDREN_HASHID
 from {{ ref('UNNEST_ALIAS_CHILDREN_AB2') }}
--- CHILDREN at unnest_alias/children
+-- CHILDREN at unnest_alias/children 
 

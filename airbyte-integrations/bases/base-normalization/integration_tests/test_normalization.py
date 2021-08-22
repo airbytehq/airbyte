@@ -88,10 +88,12 @@ def test_normalization(destination_type: DestinationType, test_resource_name: st
     assert setup_input_raw_data(integration_type, test_resource_name, test_root_dir, destination_config)
     # Normalization step
     generate_dbt_models(destination_type, test_resource_name, test_root_dir)
-    dbt_test_utils.dbt_run(test_root_dir)
-    # Run checks on Tests results
-    dbt_test(destination_type, test_resource_name, test_root_dir)
-    check_outputs(destination_type, test_resource_name, test_root_dir)
+    if integration_type != DestinationType.ORACLE.value:
+        # Oracle doesnt support nested with clauses
+        dbt_test_utils.dbt_run(test_root_dir)
+        # Run checks on Tests results
+        dbt_test(destination_type, test_resource_name, test_root_dir)
+        check_outputs(destination_type, test_resource_name, test_root_dir)
 
 
 def setup_test_dir(integration_type: str, test_resource_name: str) -> str:
@@ -175,8 +177,11 @@ def generate_dbt_models(destination_type: DestinationType, test_resource_name: s
     This is the normalization step generating dbt models files from the destination_catalog.json taken as input.
     """
     catalog_processor = CatalogProcessor(os.path.join(test_root_dir, "models", "generated"), destination_type)
+    airbyte_data = "_airbyte_data"
+    if destination_type == DestinationType.ORACLE:
+        airbyte_data = airbyte_data[1:]
     catalog_processor.process(
-        os.path.join("resources", test_resource_name, "data_input", "catalog.json"), "_airbyte_data", dbt_test_utils.target_schema
+        os.path.join("resources", test_resource_name, "data_input", "catalog.json"), airbyte_data, dbt_test_utils.target_schema
     )
 
 

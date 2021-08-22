@@ -7,5 +7,5 @@ select
         array_to_string('CHILDREN'),
     ]) }} as _AIRBYTE_UNNEST_ALIAS_HASHID
 from {{ ref('UNNEST_ALIAS_AB2') }}
--- UNNEST_ALIAS
+-- UNNEST_ALIAS 
 

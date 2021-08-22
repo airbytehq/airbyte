@@ -1,7 +1,7 @@
 
 
   create  table
-    "integrationtests".test_normalization."conflict_stream_name_conflict_stream_name__dbt_tmp"
+    integrationtests.test_normalization.conflict_stream_name_conflict_stream_name__dbt_tmp
     
     
   as (
@@ -15,7 +15,7 @@ select
         case when json_extract_path_text(table_alias.conflict_stream_name, 'conflict_stream_name', true) != '' then json_extract_path_text(table_alias.conflict_stream_name, 'conflict_stream_name', true) end
      as conflict_stream_name,
     _airbyte_emitted_at
-from "integrationtests".test_normalization."conflict_stream_name" as table_alias
+from integrationtests.test_normalization.conflict_stream_name as table_alias
 where conflict_stream_name is not null
 -- conflict_stream_name at conflict_stream_name/conflict_stream_name
 ),  __dbt__CTE__conflict_stream_name_conflict_stream_name_ab2 as (
@@ -46,5 +46,5 @@ select
     _airbyte_emitted_at,
     _airbyte_conflict_stream_name_2_hashid
 from __dbt__CTE__conflict_stream_name_conflict_stream_name_ab3
--- conflict_stream_name at conflict_stream_name/conflict_stream_name from "integrationtests".test_normalization."conflict_stream_name"
+-- conflict_stream_name at conflict_stream_name/conflict_stream_name from integrationtests.test_normalization.conflict_stream_name
   );

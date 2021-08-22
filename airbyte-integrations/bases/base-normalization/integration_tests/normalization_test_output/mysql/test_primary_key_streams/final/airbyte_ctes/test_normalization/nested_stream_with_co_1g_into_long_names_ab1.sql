@@ -1,5 +1,5 @@
 
-  create view _airbyte_test_normalization.`nested_stream_with_co_1g_into_long_names_ab1__dbt_tmp` as (
+  create view _airbyte_test_normalization.nested_stream_with_co_1g_into_long_names_ab1__dbt_tmp as (
     
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
 select

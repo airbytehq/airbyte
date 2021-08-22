@@ -8,5 +8,5 @@ select
         adapter.quote('partition'),
     ]) }} as _airbyte_nested_stream_with_complex_columns_resulting_into_long_names_hashid
 from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_ab2') }}
--- nested_stream_with_complex_columns_resulting_into_long_names
+-- nested_stream_with_complex_columns_resulting_into_long_names 
 

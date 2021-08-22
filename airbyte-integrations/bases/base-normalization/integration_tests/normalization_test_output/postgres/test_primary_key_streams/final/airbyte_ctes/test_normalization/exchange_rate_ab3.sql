@@ -1,5 +1,5 @@
 
-  create view "postgres"._airbyte_test_normalization."exchange_rate_ab3__dbt_tmp" as (
+  create view postgres._airbyte_test_normalization.exchange_rate_ab3__dbt_tmp as (
     
 -- SQL model to build a hash column based on the values of this record
 select
@@ -27,6 +27,6 @@ select
  as 
     varchar
 )) as _airbyte_exchange_rate_hashid
-from "postgres"._airbyte_test_normalization."exchange_rate_ab2"
+from postgres._airbyte_test_normalization.exchange_rate_ab2
 -- exchange_rate
   );

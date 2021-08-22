@@ -1,6 +1,6 @@
 
 
-      create or replace transient table "AIRBYTE_DATABASE".TEST_NORMALIZATION."DEDUP_EXCHANGE_RATE_SCD"  as
+      create or replace transient table AIRBYTE_DATABASE.TEST_NORMALIZATION.DEDUP_EXCHANGE_RATE_SCD  as
       (
 -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
 select
@@ -27,7 +27,7 @@ select
     ) is null as _airbyte_active_row,
     _airbyte_emitted_at,
     _AIRBYTE_DEDUP_EXCHANGE_RATE_HASHID
-from "AIRBYTE_DATABASE"._AIRBYTE_TEST_NORMALIZATION."DEDUP_EXCHANGE_RATE_AB4"
+from AIRBYTE_DATABASE._AIRBYTE_TEST_NORMALIZATION.DEDUP_EXCHANGE_RATE_AB4
 -- DEDUP_EXCHANGE_RATE from "AIRBYTE_DATABASE".TEST_NORMALIZATION._AIRBYTE_RAW_DEDUP_EXCHANGE_RATE
 where _airbyte_row_num = 1
       );

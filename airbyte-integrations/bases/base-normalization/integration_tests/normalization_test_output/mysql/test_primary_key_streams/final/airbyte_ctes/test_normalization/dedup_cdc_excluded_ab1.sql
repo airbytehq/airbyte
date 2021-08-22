@@ -1,5 +1,5 @@
 
-  create view _airbyte_test_normalization.`dedup_cdc_excluded_ab1__dbt_tmp` as (
+  create view _airbyte_test_normalization.dedup_cdc_excluded_ab1__dbt_tmp as (
     
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
 select

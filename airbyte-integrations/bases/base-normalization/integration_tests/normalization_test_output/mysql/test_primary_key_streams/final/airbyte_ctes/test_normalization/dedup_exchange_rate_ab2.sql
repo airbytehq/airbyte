@@ -1,5 +1,5 @@
 
-  create view _airbyte_test_normalization.`dedup_exchange_rate_ab2__dbt_tmp` as (
+  create view _airbyte_test_normalization.dedup_exchange_rate_ab2__dbt_tmp as (
     
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
 select
@@ -22,6 +22,6 @@ select
     float
 ) as usd,
     _airbyte_emitted_at
-from _airbyte_test_normalization.`dedup_exchange_rate_ab1`
+from _airbyte_test_normalization.dedup_exchange_rate_ab1
 -- dedup_exchange_rate
   );

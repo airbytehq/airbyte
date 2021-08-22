@@ -1,7 +1,7 @@
 
 
   create  table
-    "integrationtests".test_normalization."dedup_exchange_rate__dbt_tmp"
+    integrationtests.test_normalization.dedup_exchange_rate__dbt_tmp
     
     
   as (
@@ -18,7 +18,7 @@ select
     usd,
     _airbyte_emitted_at,
     _airbyte_dedup_exchange_rate_hashid
-from "integrationtests".test_normalization."dedup_exchange_rate_scd"
+from integrationtests.test_normalization.dedup_exchange_rate_scd
 -- dedup_exchange_rate from "integrationtests".test_normalization._airbyte_raw_dedup_exchange_rate
 where _airbyte_active_row = True
   );

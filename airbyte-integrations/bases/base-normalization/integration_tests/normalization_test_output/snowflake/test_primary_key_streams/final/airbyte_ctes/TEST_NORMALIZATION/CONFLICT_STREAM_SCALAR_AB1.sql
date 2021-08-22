@@ -1,5 +1,5 @@
 
-  create or replace  view "AIRBYTE_DATABASE"._AIRBYTE_TEST_NORMALIZATION."CONFLICT_STREAM_SCALAR_AB1"  as (
+  create or replace  view AIRBYTE_DATABASE._AIRBYTE_TEST_NORMALIZATION.CONFLICT_STREAM_SCALAR_AB1  as (
     
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
 select

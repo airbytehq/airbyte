@@ -76,6 +76,8 @@ python3 main_dev_transform_catalog.py \
         schema = self.config["schema"]
         output = self.config["output_path"]
         json_col = self.config["json_column"]
+        if destination_type == DestinationType.ORACLE:
+            json_col = json_col[1:]
         processor = CatalogProcessor(output_directory=output, destination_type=destination_type)
         for catalog_file in self.config["catalog"]:
             print(f"Processing {catalog_file}...")

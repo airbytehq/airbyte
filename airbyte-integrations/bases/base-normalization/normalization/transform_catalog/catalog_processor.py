@@ -118,7 +118,10 @@ class CatalogProcessor:
                 schema = stream_config["namespace"]
 
             schema_name = name_transformer.normalize_schema_name(schema, truncate=False)
-            raw_schema_name = name_transformer.normalize_schema_name(f"_airbyte_{schema}", truncate=False)
+            if destination_type == DestinationType.ORACLE:
+                raw_schema_name = name_transformer.normalize_schema_name(schema, truncate=False)
+            else:
+                raw_schema_name = name_transformer.normalize_schema_name(f"_airbyte_{schema}", truncate=False)
             stream_name = get_field(stream_config, "name", f"Invalid Stream: 'name' is not defined in stream: {str(stream_config)}")
             # MySQL table names need to be manually truncated, because it does not do it automatically
             truncate = destination_type == DestinationType.MYSQL

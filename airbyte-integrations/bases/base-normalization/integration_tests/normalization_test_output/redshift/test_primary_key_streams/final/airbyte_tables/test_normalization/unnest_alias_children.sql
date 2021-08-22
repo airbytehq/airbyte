@@ -1,7 +1,7 @@
 
 
   create  table
-    "integrationtests".test_normalization."unnest_alias_children__dbt_tmp"
+    integrationtests.test_normalization.unnest_alias_children__dbt_tmp
     
     
   as (
@@ -47,7 +47,7 @@ joined as (
     select
         _airbyte_unnest_alias_hashid as _airbyte_hashid,
         json_extract_array_element_text(children, numbers.generated_number::int - 1, true) as _airbyte_nested_data
-    from "integrationtests".test_normalization."unnest_alias"
+    from integrationtests.test_normalization.unnest_alias
     cross join numbers
     -- only generate the number of records in the cross join that corresponds
     -- to the number of items in unnest_alias.children
@@ -60,7 +60,7 @@ select
         case when json_extract_path_text(_airbyte_nested_data, 'owner', true) != '' then json_extract_path_text(_airbyte_nested_data, 'owner', true) end
      as owner,
     _airbyte_emitted_at
-from "integrationtests".test_normalization."unnest_alias" as table_alias
+from integrationtests.test_normalization.unnest_alias as table_alias
 left join joined on _airbyte_unnest_alias_hashid = joined._airbyte_hashid
 where children is not null
 -- children at unnest_alias/children
@@ -96,5 +96,5 @@ select
     _airbyte_emitted_at,
     _airbyte_children_hashid
 from __dbt__CTE__unnest_alias_children_ab3
--- children at unnest_alias/children from "integrationtests".test_normalization."unnest_alias"
+-- children at unnest_alias/children from integrationtests.test_normalization.unnest_alias
   );

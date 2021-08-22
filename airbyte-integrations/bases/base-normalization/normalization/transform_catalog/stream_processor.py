@@ -109,6 +109,7 @@ class StreamProcessor(object):
         self.sql_outputs: Dict[str, str] = {}
         self.parent: Optional["StreamProcessor"] = None
         self.is_nested_array: bool = False
+        self.airbyte_emitted_at = '_airbyte_emitted_at'
 
     @staticmethod
     def create_from_parent(
@@ -228,14 +229,21 @@ class StreamProcessor(object):
         )
         if self.destination_sync_mode.value == DestinationSyncMode.append_dedup.value:
             from_table = self.add_to_outputs(self.generate_dedup_record_model(from_table, column_names), is_intermediate=True, suffix="ab4")
-            where_clause = "\nwhere _airbyte_row_num = 1"
+            if self.destination_type == DestinationType.ORACLE:
+                where_clause = "\nwhere airbyte_row_num = 1"
+            else:
+                where_clause = "\nwhere _airbyte_row_num = 1"
             from_table = self.add_to_outputs(
                 self.generate_scd_type_2_model(from_table, column_names) + where_clause,
                 is_intermediate=False,
                 column_count=column_count,
                 suffix="scd",
             )
-            where_clause = "\nwhere _airbyte_active_row = True"
+            if self.destination_type == DestinationType.ORACLE:
+                where_clause = "\nwhere airbyte_active_row = 'Latest'"
+            else:
+                where_clause = "\nwhere _airbyte_active_row = True"
+
             from_table = self.add_to_outputs(
                 self.generate_final_model(from_table, column_names) + where_clause, is_intermediate=False, column_count=column_count
             )
@@ -312,6 +320,10 @@ class StreamProcessor(object):
         return children
 
     def generate_json_parsing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
+        if self.destination_type == DestinationType.ORACLE:
+            table_alias = ""
+        else:
+            table_alias = "as table_alias"
         template = Template(
             """
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
@@ -323,13 +335,15 @@ select
   {%- for field in fields %}
     {{ field }},
   {%- endfor %}
-    _airbyte_emitted_at
-from {{ from_table }} as table_alias
+    {{ airbyte_emitted_at }}
+from {{ from_table }} {{ table_alias }}
 {{ unnesting_after_query }}
 {{ sql_table_comment }}
 """
         )
         sql = template.render(
+            table_alias=table_alias,
+            airbyte_emitted_at=self.get_airbyte_emitted_at(),
             unnesting_before_query=self.unnesting_before_query(),
             parent_hash_id=self.parent_hash_id(),
             fields=self.extract_json_columns(column_names),
@@ -378,12 +392,13 @@ select
   {%- for field in fields %}
     {{ field }},
   {%- endfor %}
-    _airbyte_emitted_at
+    {{ airbyte_emitted_at }}
 from {{ from_table }}
 {{ sql_table_comment }}
     """
         )
         sql = template.render(
+            airbyte_emitted_at=self.get_airbyte_emitted_at(),
             parent_hash_id=self.parent_hash_id(),
             fields=self.cast_property_types(column_names),
             from_table=jinja_call(from_table),
@@ -423,8 +438,23 @@ from {{ from_table }}
         return f"cast({column_name} as {sql_type}) as {column_name}"
 
     def generate_id_hashing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
-        template = Template(
-            """
+        if self.destination_type == DestinationType.ORACLE:
+            hash_sql_template = """
+-- SQL model to build a hash column based on the values of this record
+select
+    ora_hash(
+      {%- if parent_hash_id %}
+        '{{ parent_hash_id }}' || '~' ||
+      {%- endif %}
+      {%- for field in fields %}
+        {% if not loop.last %}{{ field }} || '~' ||{% else %}{{ field }}{% endif %}
+      {%- endfor %}
+    ) as {{ hash_id }},
+    tmp.*
+from {{ from_table }} tmp
+{{ sql_table_comment }}"""
+        else:
+            hash_sql_template = """
 -- SQL model to build a hash column based on the values of this record
 select
     *,
@@ -437,9 +467,8 @@ select
       {%- endfor %}
     ]) {{ '}}' }} as {{ hash_id }}
 from {{ from_table }}
-{{ sql_table_comment }}
-    """
-        )
+{{ sql_table_comment }} """
+        template = Template(hash_sql_template)
         sql = template.render(
             parent_hash_id=self.parent_hash_id(),
             fields=self.safe_cast_to_strings(column_names),
@@ -450,7 +479,18 @@ from {{ from_table }}
         return sql
 
     def safe_cast_to_strings(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
-        return [StreamProcessor.safe_cast_to_string(self.properties[field], column_names[field][1]) for field in column_names]
+        columns_name_safety = [StreamProcessor.safe_cast_to_string(self.properties[field], column_names[field][1]) for field in column_names]
+        if self.destination_type == DestinationType.ORACLE:
+            oracle_cols_safe = []
+            for col in columns_name_safety:
+                if '(' in col:
+                    oracle_cols_safe.append('{{' + col + '}}')
+                else:
+                    oracle_cols_safe.append(col)
+
+            return oracle_cols_safe
+
+        return columns_name_safety
 
     @staticmethod
     def safe_cast_to_string(definition: Dict, column_name: str) -> str:
@@ -467,8 +507,20 @@ from {{ from_table }}
             return column_name
 
     def generate_dedup_record_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
-        template = Template(
-            """
+        if self.destination_type == DestinationType.ORACLE:
+            dedup_record_sql_template = """
+-- SQL model to prepare for deduplicating records based on the hash record column
+select
+  row_number() over (
+    partition by {{ hash_id }}
+    order by airbyte_emitted_at asc
+  ) as airbyte_row_num,
+  tmp.*
+from {{ from_table }} tmp
+{{ sql_table_comment }}
+        """
+        else:
+            dedup_record_sql_template = """
 -- SQL model to prepare for deduplicating records based on the hash record column
 select
   *,
@@ -479,15 +531,41 @@ select
 from {{ from_table }}
 {{ sql_table_comment }}
         """
-        )
+
+        template = Template(dedup_record_sql_template)
         sql = template.render(
             hash_id=self.hash_id(), from_table=jinja_call(from_table), sql_table_comment=self.sql_table_comment(include_from_table=True)
         )
         return sql
 
     def generate_scd_type_2_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
-        template = Template(
-            """
+
+        if self.destination_type == DestinationType.ORACLE:
+            scd_sql_template =             """
+-- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
+select
+  {%- if parent_hash_id %}
+    {{ parent_hash_id }},
+  {%- endif %}
+  {%- for field in fields %}
+    {{ field }},
+  {%- endfor %}
+    {{ cursor_field }} as airbyte_start_at,
+    lag({{ cursor_field }}) over (
+        partition by {{ primary_key }}
+        order by {{ cursor_field }} desc, airbyte_emitted_at desc
+    ) as airbyte_end_at,
+    coalesce(cast(lag({{ cursor_field }}) over (
+        partition by {{ primary_key }}
+        order by {{ cursor_field }} desc, airbyte_emitted_at desc
+    ) as varchar(200)), 'Latest') as airbyte_active_row,
+    airbyte_emitted_at,
+    {{ hash_id }}
+from {{ from_table }}
+{{ sql_table_comment }}
+        """
+        else:
+            scd_sql_template = """
 -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
 select
   {%- if parent_hash_id %}
@@ -510,7 +588,8 @@ select
 from {{ from_table }}
 {{ sql_table_comment }}
         """
-        )
+
+        template = Template(scd_sql_template)
 
         cdc_active_row_pattern = ""
         cdc_updated_order_pattern = ""
@@ -533,7 +612,10 @@ from {{ from_table }}
 
     def get_cursor_field(self, column_names: Dict[str, Tuple[str, str]]) -> str:
         if not self.cursor_field:
-            return "_airbyte_emitted_at"
+            s = "_airbyte_emitted_at"
+            if self.destination_type == DestinationType.ORACLE:
+                return s[1:]
+            return s
         elif len(self.cursor_field) == 1:
             if not is_airbyte_column(self.cursor_field[0]):
                 return column_names[self.cursor_field[0]][0]
@@ -582,13 +664,14 @@ select
   {%- for field in fields %}
     {{ field }},
   {%- endfor %}
-    _airbyte_emitted_at,
+    {{ airbyte_emitted_at }},
     {{ hash_id }}
 from {{ from_table }}
 {{ sql_table_comment }}
     """
         )
         sql = template.render(
+            airbyte_emitted_at=self.get_airbyte_emitted_at(),
             parent_hash_id=self.parent_hash_id(),
             fields=self.list_fields(column_names),
             hash_id=self.hash_id(),
@@ -681,6 +764,12 @@ from {{ from_table }}
         if self.parent:
             return self.parent.hash_id()
         return ""
+
+    def get_airbyte_emitted_at(self):
+        if self.destination_type == DestinationType.ORACLE:
+            return self.airbyte_emitted_at[1:]
+        else:
+            return self.airbyte_emitted_at
 
     def unnesting_before_query(self) -> str:
         if self.parent and self.is_nested_array:

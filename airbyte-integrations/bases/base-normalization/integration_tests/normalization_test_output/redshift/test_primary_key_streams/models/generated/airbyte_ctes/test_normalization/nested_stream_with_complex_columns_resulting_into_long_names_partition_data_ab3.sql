@@ -7,5 +7,5 @@ select
         'currency',
     ]) }} as _airbyte_data_hashid
 from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_partition_data_ab2') }}
--- data at nested_stream_with_complex_columns_resulting_into_long_names/partition/DATA
+-- data at nested_stream_with_complex_columns_resulting_into_long_names/partition/DATA 
 

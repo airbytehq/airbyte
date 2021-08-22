@@ -1,7 +1,7 @@
 
 
   create  table
-    "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_scd__dbt_tmp"
+    integrationtests.test_normalization.nested_stream_with_complex_columns_resulting_into_long_names_scd__dbt_tmp
     
     
   as (

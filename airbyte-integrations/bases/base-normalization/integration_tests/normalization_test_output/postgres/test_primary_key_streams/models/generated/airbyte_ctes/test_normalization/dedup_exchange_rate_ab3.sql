@@ -13,5 +13,5 @@ select
         'usd',
     ]) }} as _airbyte_dedup_exchange_rate_hashid
 from {{ ref('dedup_exchange_rate_ab2') }}
--- dedup_exchange_rate
+-- dedup_exchange_rate 
 

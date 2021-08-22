@@ -7,5 +7,5 @@ select
         'currency',
     ]) }} as _airbyte_column___with__quotes_hashid
 from {{ ref('nested_stream_with_c__column___with__quotes_ab2') }}
--- column___with__quotes at nested_stream_with_complex_columns_resulting_into_long_names/partition/column`_'with"_quotes
+-- column___with__quotes at nested_stream_with_complex_columns_resulting_into_long_names/partition/column`_'with"_quotes 
 

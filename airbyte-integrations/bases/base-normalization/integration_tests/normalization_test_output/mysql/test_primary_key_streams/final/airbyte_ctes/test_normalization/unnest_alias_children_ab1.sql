@@ -1,5 +1,5 @@
 
-  create view _airbyte_test_normalization.`unnest_alias_children_ab1__dbt_tmp` as (
+  create view _airbyte_test_normalization.unnest_alias_children_ab1__dbt_tmp as (
     
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
 with numbers as (
@@ -41,7 +41,7 @@ with numbers as (
             _airbyte_unnest_alias_hashid as _airbyte_hashid,
             
             json_extract(children, concat("$[", numbers.generated_number - 1, "][0]")) as _airbyte_nested_data
-        from test_normalization.`unnest_alias`
+        from test_normalization.unnest_alias
         cross join numbers
         -- only generate the number of records in the cross join that corresponds
         -- to the number of items in unnest_alias.children
@@ -56,7 +56,7 @@ select
     '$."owner"')
      as `owner`,
     _airbyte_emitted_at
-from test_normalization.`unnest_alias` as table_alias
+from test_normalization.unnest_alias as table_alias
 left join joined on _airbyte_unnest_alias_hashid = joined._airbyte_hashid
 where children is not null
 -- children at unnest_alias/children

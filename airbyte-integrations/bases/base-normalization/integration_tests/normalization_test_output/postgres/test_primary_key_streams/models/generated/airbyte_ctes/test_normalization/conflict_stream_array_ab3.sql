@@ -7,5 +7,5 @@ select
         array_to_string('conflict_stream_array'),
     ]) }} as _airbyte_conflict_stream_array_hashid
 from {{ ref('conflict_stream_array_ab2') }}
--- conflict_stream_array
+-- conflict_stream_array 
 

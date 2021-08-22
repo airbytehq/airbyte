@@ -1,5 +1,5 @@
 
-  create or replace  view "AIRBYTE_DATABASE"._AIRBYTE_TEST_NORMALIZATION."EXCHANGE_RATE_AB2"  as (
+  create or replace  view AIRBYTE_DATABASE._AIRBYTE_TEST_NORMALIZATION.EXCHANGE_RATE_AB2  as (
     
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
 select
@@ -28,6 +28,6 @@ select
     float
 ) as USD,
     _airbyte_emitted_at
-from "AIRBYTE_DATABASE"._AIRBYTE_TEST_NORMALIZATION."EXCHANGE_RATE_AB1"
+from AIRBYTE_DATABASE._AIRBYTE_TEST_NORMALIZATION.EXCHANGE_RATE_AB1
 -- EXCHANGE_RATE
   );

@@ -1,5 +1,5 @@
 
-  create view "postgres"._airbyte_test_normalization."unnest_alias_children_ab1__dbt_tmp" as (
+  create view postgres._airbyte_test_normalization.unnest_alias_children_ab1__dbt_tmp as (
     
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
 
@@ -10,7 +10,7 @@ select
         jsonb_extract_path(_airbyte_nested_data, 'owner')
      as "owner",
     _airbyte_emitted_at
-from "postgres".test_normalization."unnest_alias" as table_alias
+from postgres.test_normalization.unnest_alias as table_alias
 cross join jsonb_array_elements(
         case jsonb_typeof(children)
         when 'array' then children

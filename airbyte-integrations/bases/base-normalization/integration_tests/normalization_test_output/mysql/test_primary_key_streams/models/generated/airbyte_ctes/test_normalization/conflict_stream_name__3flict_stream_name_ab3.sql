@@ -7,5 +7,5 @@ select
         adapter.quote('groups'),
     ]) }} as _airbyte_conflict_stream_name_3_hashid
 from {{ ref('conflict_stream_name__3flict_stream_name_ab2') }}
--- conflict_stream_name at conflict_stream_name/conflict_stream_name/conflict_stream_name
+-- conflict_stream_name at conflict_stream_name/conflict_stream_name/conflict_stream_name 
 

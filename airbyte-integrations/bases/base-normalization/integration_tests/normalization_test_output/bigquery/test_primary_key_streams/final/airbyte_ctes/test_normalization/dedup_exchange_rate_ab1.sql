@@ -1,6 +1,6 @@
 
 
-  create or replace view `dataline-integration-testing`._airbyte_test_normalization.`dedup_exchange_rate_ab1`
+  create or replace view dataline-integration-testing._airbyte_test_normalization.dedup_exchange_rate_ab1
   OPTIONS()
   as 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema

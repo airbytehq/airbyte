@@ -13,5 +13,5 @@ select
         'USD',
     ]) }} as _airbyte_exchange_rate_hashid
 from {{ ref('exchange_rate_ab2') }}
--- exchange_rate
+-- exchange_rate 
 

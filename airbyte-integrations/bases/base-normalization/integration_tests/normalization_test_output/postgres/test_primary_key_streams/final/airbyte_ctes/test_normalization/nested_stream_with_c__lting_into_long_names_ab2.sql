@@ -1,5 +1,5 @@
 
-  create view "postgres"._airbyte_test_normalization."nested_stream_with_c__lting_into_long_names_ab2__dbt_tmp" as (
+  create view postgres._airbyte_test_normalization.nested_stream_with_c__lting_into_long_names_ab2__dbt_tmp as (
     
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
 select
@@ -13,6 +13,6 @@ select
     jsonb
 ) as "partition",
     _airbyte_emitted_at
-from "postgres"._airbyte_test_normalization."nested_stream_with_c__lting_into_long_names_ab1"
+from postgres._airbyte_test_normalization.nested_stream_with_c__lting_into_long_names_ab1
 -- nested_stream_with_c__lting_into_long_names
   );
