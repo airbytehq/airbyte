@@ -26,6 +26,7 @@ package io.airbyte.integrations.destination.bigquery;
 
 import static java.util.Objects.isNull;
 
+import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
@@ -45,6 +46,7 @@ import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.WriteChannelConfiguration;
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -52,6 +54,9 @@ import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.integrations.destination.gcs.GcsS3Helper;
+import io.airbyte.integrations.destination.gcs.csv.GcsCsvWriter;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -61,6 +66,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -74,6 +80,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestination.class);
   private static final int MiB = 1024 * 1024;
+  static final String LOADING_METHOD = "loading_method";
   static final String CONFIG_DATASET_ID = "dataset_id";
   static final String CONFIG_PROJECT_ID = "project_id";
   static final String CONFIG_DATASET_LOCATION = "dataset_location";
@@ -97,11 +104,18 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       final String datasetId = config.get(CONFIG_DATASET_ID).asText();
       final String datasetLocation = getDatasetLocation(config);
       final BigQuery bigquery = getBigQuery(config);
+      final UploadingMethod uploadingMethod = getLoadingMethod(config);
+
       createSchemaTable(bigquery, datasetId, datasetLocation);
       QueryJobConfiguration queryConfig = QueryJobConfiguration
           .newBuilder(String.format("SELECT * FROM %s.INFORMATION_SCHEMA.TABLES LIMIT 1;", datasetId))
           .setUseLegacySql(false)
           .build();
+
+      if (UploadingMethod.GCS.equals(uploadingMethod)){
+        throw new Exception("Check() for GCS is not implemented yet");
+        // TODO add check for GCS if gcs is method is selected !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      }
 
       final ImmutablePair<Job, String> result = BigQueryUtils.executeQuery(bigquery, queryConfig);
       if (result.getLeft() != null) {
@@ -202,7 +216,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   @Override
   public AirbyteMessageConsumer getConsumer(JsonNode config,
                                             ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector) {
+                                            Consumer<AirbyteMessage> outputRecordCollector)
+      throws IOException {
     final BigQuery bigquery = getBigQuery(config);
     Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs = new HashMap<>();
     Set<String> existingSchemas = new HashSet<>();
@@ -239,13 +254,44 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       }
       final WriteDisposition syncMode = getWriteDisposition(configStream.getDestinationSyncMode());
 
-      writeConfigs.put(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
-          new BigQueryWriteConfig(TableId.of(schemaName, tableName), TableId.of(schemaName, tmpTableName), writer, syncMode, schema));
+      if(UploadingMethod.GCS.equals(getLoadingMethod(config))){
+        GcsCsvWriter gcsCsvWriter = initGcsWriter(config, configStream);
+        gcsCsvWriter.initialize();
+        writeConfigs.put(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
+            new BigQueryWriteConfig(TableId.of(schemaName, tableName), TableId.of(schemaName, tmpTableName), writer, syncMode, schema, gcsCsvWriter));
+      } else{
+        writeConfigs.put(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
+            new BigQueryWriteConfig(TableId.of(schemaName, tableName), TableId.of(schemaName, tmpTableName), writer, syncMode, schema, null));
+      }
+
     }
     // write to tmp tables
     // if success copy delete main table if exists. rename tmp tables to real tables.
     return getRecordConsumer(bigquery, writeConfigs, catalog, outputRecordCollector);
   }
+
+  private GcsCsvWriter initGcsWriter(JsonNode config, ConfiguredAirbyteStream configuredStream) throws IOException {
+    Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
+
+    JsonNode properties = config.get("properties");
+
+    JsonNode gcsJsonNode = Jsons.jsonNode(ImmutableMap.builder()
+        .put("gcs_bucket_name", properties.get("gcs_bucket_name"))
+        .put("gcs_bucket_path", "test_pathSssss") //TODO should be a random TMP if not set explicitly !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        .put("gcs_bucket_region", getDatasetLocation(config))
+        .put("credential", properties.get("credential"))
+        .put("format", Jsons.deserialize("{\n"
+            + "  \"format_type\": \"CSV\",\n"
+            + "  \"flattening\": \"Root level flattening\"\n"
+            + "}"))
+        .build());
+
+    GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
+        .getGcsDestinationConfig(gcsJsonNode);
+    AmazonS3 s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
+    return new GcsCsvWriter(gcsDestinationConfig, s3Client, configuredStream, uploadTimestamp);
+  }
+
 
   protected String getTargetTableName(String streamName) {
     return namingResolver.getRawTableName(streamName);
@@ -298,6 +344,19 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       }
       default -> throw new IllegalStateException("Unrecognized destination sync mode: " + syncMode);
     }
+  }
+
+  private UploadingMethod getLoadingMethod(JsonNode config){
+    if(config.get(LOADING_METHOD) != null && "GCS Staging".equals(config.get(LOADING_METHOD).asText())){
+      return UploadingMethod.GCS;
+    } else {
+      return UploadingMethod.STANDARD;
+    }
+  }
+
+  public enum UploadingMethod {
+    STANDARD,
+    GCS
   }
 
   public static void main(String[] args) throws Exception {
