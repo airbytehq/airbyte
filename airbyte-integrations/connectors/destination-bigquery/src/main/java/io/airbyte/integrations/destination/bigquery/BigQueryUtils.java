@@ -24,8 +24,11 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
+import com.google.cloud.bigquery.Dataset;
+import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
@@ -35,6 +38,7 @@ import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
+import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
@@ -70,6 +74,27 @@ public class BigQueryUtils {
     } catch (Exception e) {
       LOGGER.error("Failed to wait for a query job:" + queryJob);
       throw new RuntimeException(e);
+    }
+  }
+
+  static void createSchemaAndTableIfNeeded(BigQuery bigquery,
+      Set<String> existingSchemas,
+      String schemaName,
+      String tmpTableName,
+      String datasetLocation,
+      Schema schema) {
+    if (!existingSchemas.contains(schemaName)) {
+      createSchemaTable(bigquery, schemaName, datasetLocation);
+      existingSchemas.add(schemaName);
+    }
+    BigQueryUtils.createTable(bigquery, schemaName, tmpTableName, schema);
+  }
+
+  static void createSchemaTable(BigQuery bigquery, String datasetId, String datasetLocation) {
+    final Dataset dataset = bigquery.getDataset(datasetId);
+    if (dataset == null || !dataset.exists()) {
+      final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
+      bigquery.create(datasetInfo);
     }
   }
 

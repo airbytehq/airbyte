@@ -89,8 +89,9 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   private static final com.google.cloud.bigquery.Schema SCHEMA = com.google.cloud.bigquery.Schema.of(
       Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
-      Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING),
-      Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
+      Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.STRING),
+//      Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP), // TODO Add timestamp handling as a timestamp type field
+      Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING));
 
   private final BigQuerySQLNameTransformer namingResolver;
 
@@ -106,7 +107,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       final BigQuery bigquery = getBigQuery(config);
       final UploadingMethod uploadingMethod = getLoadingMethod(config);
 
-      createSchemaTable(bigquery, datasetId, datasetLocation);
+      BigQueryUtils.createSchemaTable(bigquery, datasetId, datasetLocation);
       QueryJobConfiguration queryConfig = QueryJobConfiguration
           .newBuilder(String.format("SELECT * FROM %s.INFORMATION_SCHEMA.TABLES LIMIT 1;", datasetId))
           .setUseLegacySql(false)
@@ -153,14 +154,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       chunkSizeFromConfig = chunkSizeFromConfig * MiB;
     }
     return chunkSizeFromConfig;
-  }
-
-  private void createSchemaTable(BigQuery bigquery, String datasetId, String datasetLocation) {
-    final Dataset dataset = bigquery.getDataset(datasetId);
-    if (dataset == null || !dataset.exists()) {
-      final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
-      bigquery.create(datasetInfo);
-    }
   }
 
   private BigQuery getBigQuery(JsonNode config) {
@@ -230,7 +223,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       final String tableName = getTargetTableName(streamName);
       final String tmpTableName = namingResolver.getTmpTableName(streamName);
       final String datasetLocation = getDatasetLocation(config);
-      createSchemaAndTableIfNeeded(bigquery, existingSchemas, schemaName, tmpTableName, datasetLocation, stream.getJsonSchema());
+      BigQueryUtils.createSchemaAndTableIfNeeded(bigquery, existingSchemas, schemaName, tmpTableName,
+          datasetLocation, getBigQuerySchema(stream.getJsonSchema()));
       final Schema schema = getBigQuerySchema(stream.getJsonSchema());
       // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
       final WriteChannelConfiguration writeChannelConfiguration = WriteChannelConfiguration
@@ -257,6 +251,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       if(UploadingMethod.GCS.equals(getLoadingMethod(config))){
         GcsCsvWriter gcsCsvWriter = initGcsWriter(config, configStream);
         gcsCsvWriter.initialize();
+        // TODO create target schema and tables
         writeConfigs.put(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
             new BigQueryWriteConfig(TableId.of(schemaName, tableName), TableId.of(schemaName, tmpTableName), writer, syncMode, schema, gcsCsvWriter));
       } else{
@@ -282,7 +277,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         .put("credential", properties.get("credential"))
         .put("format", Jsons.deserialize("{\n"
             + "  \"format_type\": \"CSV\",\n"
-            + "  \"flattening\": \"Root level flattening\"\n"
+//            + "  \"flattening\": \"Root level flattening\"\n"
+            + "  \"flattening\": \"No flattening\"\n"
             + "}"))
         .build());
 
@@ -317,19 +313,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return srcNamespace;
   }
 
-  private void createSchemaAndTableIfNeeded(BigQuery bigquery,
-                                            Set<String> existingSchemas,
-                                            String schemaName,
-                                            String tmpTableName,
-                                            String datasetLocation,
-                                            JsonNode jsonSchema) {
-    if (!existingSchemas.contains(schemaName)) {
-      createSchemaTable(bigquery, schemaName, datasetLocation);
-      existingSchemas.add(schemaName);
-    }
-    final Schema schema = getBigQuerySchema(jsonSchema);
-    BigQueryUtils.createTable(bigquery, schemaName, tmpTableName, schema);
-  }
 
   private static WriteDisposition getWriteDisposition(DestinationSyncMode syncMode) {
     if (syncMode == null) {

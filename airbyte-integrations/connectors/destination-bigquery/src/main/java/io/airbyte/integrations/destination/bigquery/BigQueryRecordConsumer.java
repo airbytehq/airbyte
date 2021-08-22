@@ -24,11 +24,14 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static com.amazonaws.util.StringUtils.UTF8;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.CopyJobConfiguration;
+import com.google.cloud.bigquery.CsvOptions;
 import com.google.cloud.bigquery.FormatOptions;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobInfo;
@@ -174,37 +177,41 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
     // TODO move data from files to bigQuery
 
-    gcsCsvFilesToMigrateToBigquery.forEach(csvFile -> {
 
-      try {
-        // TODO get values from params !!!!!!!!!!!!!!!!!!!!!
-        loadCsvFromGcsTruncate("airbyte_tests_zeug11628271447440", "_airbyte_tmp_kmq_users0", "gs://airbyte-integration-test-destination-gcs/" + csvFile);
-//        loadCsvFromGcsTruncate("aaaEugDataset", "aaaEugTableName",csvFile);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
+    writeConfigs.values().stream()
+        .filter(pair -> pair.getGcsCsvWriter() != null)
+        .forEach(pair -> {
+          try {
+            // TODO get values from params !!!!!!!!!!!!!!!!!!!!!
 
-    });
+            TableId tmpTable = pair.getTmpTable();
+            String csvFile = "gs://airbyte-integration-test-destination-gcs/" +  pair.getGcsCsvWriter().getObjectKey();
+            loadCsvFromGcsTruncate(pair.getSchema(), tmpTable, csvFile);
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
+        });
 
 
-    // close normal uploading bigquery streams
     closeNormalBigqueryStreams(hasFailed);
   }
 
 
-  public void loadCsvFromGcsTruncate(String datasetName, String tableName, String sourceUri)
+  public void loadCsvFromGcsTruncate(Schema schema, TableId tmpTable, String sourceUri)
       throws Exception {
     try {
       // Initialize client that will be used to send requests. This client only needs to be created
       // once, and can be reused for multiple requests.
 //      BigQuery bigquery = BigQueryOptions.getDefaultInstance().getService();
 
-      TableId tableId = TableId.of(datasetName, tableName);
+      CsvOptions csvOptions = CsvOptions.newBuilder().setEncoding(UTF8).setSkipLeadingRows(1).build();
 
       LoadJobConfiguration configuration =
-          LoadJobConfiguration.builder(tableId, sourceUri)
-              .setFormatOptions(FormatOptions.csv())
+          LoadJobConfiguration.builder(tmpTable, sourceUri)
+              .setFormatOptions(csvOptions)
+//              .setFormatOptions(FormatOptions.csv())
               // Set the write disposition to overwrite existing table data
+              .setSchema(schema) // TODO why schema doesn't work for emitted_ar and timestampt, check for https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv#data_types
               .setWriteDisposition(WriteDisposition.WRITE_TRUNCATE) // TODO take this from config file
               .build();
 
