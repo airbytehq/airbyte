@@ -59,6 +59,23 @@ export function useCreateWorkspace() {
   ).mutateAsync;
 }
 
+export function useUpdateWorkspace() {
+  const service = useGetWorkspaceService();
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    async (workspaceId: string) => service.update(workspaceId, { name: "" }),
+    {
+      onSuccess: (result) => {
+        queryClient.setQueryData<CloudWorkspace[]>("workspaces", (old) => [
+          ...(old ?? []),
+          result,
+        ]);
+      },
+    }
+  ).mutateAsync;
+}
+
 export function useRemoveWorkspace() {
   const service = useGetWorkspaceService();
   const queryClient = useQueryClient();

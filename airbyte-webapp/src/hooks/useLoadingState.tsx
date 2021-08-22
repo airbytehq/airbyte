@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const useLoadingStateHook = (): {
+const useLoadingState = (): {
   isLoading: boolean;
   startAction: ({
     action,
@@ -40,4 +40,4 @@ const useLoadingStateHook = (): {
   return { isLoading, showFeedback, startAction };
 };
 
-export default useLoadingStateHook;
+export default useLoadingState;

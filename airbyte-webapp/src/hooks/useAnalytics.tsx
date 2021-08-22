@@ -21,7 +21,7 @@ function AnalyticsServiceProvider({
   return (
     <>
       <analyticsServiceContext.Provider value={analyticsService}>
-        {children}
+        {children}x
       </analyticsServiceContext.Provider>
     </>
   );

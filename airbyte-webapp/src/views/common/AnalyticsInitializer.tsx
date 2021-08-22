@@ -2,12 +2,10 @@ import React, { useEffect } from "react";
 import * as FullStory from "@fullstory/browser";
 
 import config from "config";
-import useFullStory from "components/hooks/useFullStory";
-import AnalyticsServiceProvider, {
-  useAnalytics,
-} from "components/hooks/useAnalytics";
-import useTracker from "components/hooks/useOpenReplay";
-import useSegment from "components/hooks/useSegment";
+import useFullStory from "hooks/useFullStory";
+import AnalyticsServiceProvider, { useAnalytics } from "hooks/useAnalytics";
+import useTracker from "hooks/useOpenReplay";
+import useSegment from "hooks/useSegment";
 
 function WithAnalytics({
   customerId,

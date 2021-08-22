@@ -4,7 +4,7 @@ import { useStatefulResource } from "@rest-hooks/legacy";
 
 import SourceResource, { Source } from "core/resources/Source";
 import { Routes } from "pages/routes";
-import useRouter from "../useRouterHook";
+import useRouter from "../useRouter";
 import ConnectionResource, { Connection } from "core/resources/Connection";
 import SourceDefinitionSpecificationResource, {
   SourceDefinitionSpecification,

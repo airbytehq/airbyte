@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useMemo } from "react";
 import { useQueryClient } from "react-query";
 
 import { GoogleAuthService } from "packages/cloud/lib/auth/GoogleAuthService";
-import useTypesafeReducer from "components/hooks/useTypesafeReducer";
+import useTypesafeReducer from "hooks/useTypesafeReducer";
 import {
   actions,
   AuthServiceState,

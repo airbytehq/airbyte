@@ -6,7 +6,7 @@ import { Field, FieldArray, FieldProps, Form, Formik } from "formik";
 import { Button, DropDown, H5, Input, LoadingButton, Modal } from "components";
 import { Cell, Header, Row } from "components/SimpleTableComponents";
 import { useGetUserService } from "packages/cloud/services/users/UserService";
-import { useCurrentWorkspace } from "components/hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
 const Content = styled.div`
   width: 614px;

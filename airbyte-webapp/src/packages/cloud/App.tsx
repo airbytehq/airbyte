@@ -14,35 +14,15 @@ import "packages/cloud/config/firebase";
 import { Routing } from "./routes";
 import LoadingPage from "components/LoadingPage";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
-import NotificationServiceProvider from "components/hooks/services/Notification";
+import NotificationServiceProvider from "hooks/services/Notification";
 import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
-import {
-  AuthenticationProvider,
-  useAuthService,
-} from "./services/auth/AuthService";
-import { FeatureService } from "components/hooks/services/Feature";
-import { registerService } from "core/servicesProvider";
-import {
-  useGetWorkspace,
-  useWorkspaceService,
-} from "./services/workspaces/WorkspacesService";
+import { AuthenticationProvider } from "./services/auth/AuthService";
+import { FeatureService } from "hooks/services/Feature";
+import { useCustomerIdProvider } from "./services";
 
 const queryClient = new QueryClient();
 
 const messages = Object.assign({}, en, cloudLocales);
-
-// TODO: move to proper place
-const useCustomerIdProvider = () => {
-  const { user } = useAuthService();
-  return user?.userId ?? "";
-};
-
-registerService("currentWorkspaceProvider", () => {
-  const { currentWorkspaceId } = useWorkspaceService();
-  const { data: workspace } = useGetWorkspace(currentWorkspaceId ?? "");
-
-  return workspace;
-});
 
 const App: React.FC = () => {
   return (

@@ -1,4 +1,4 @@
-import { useAnalytics } from "components/hooks/useAnalytics";
+import { useAnalytics } from "hooks/useAnalytics";
 
 type Values = {
   connectorType: string;

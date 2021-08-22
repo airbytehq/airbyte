@@ -10,7 +10,7 @@ import DestinationDefinitionResource from "core/resources/DestinationDefinition"
 
 jest.mock("core/domain/connector/SourceDefinitionService");
 jest.mock("core/domain/connector/DestinationDefinitionService");
-jest.mock("components/hooks/services/useWorkspace", () => ({
+jest.mock("hooks/services/useWorkspace", () => ({
   useWorkspace: () => ({
     workspace: {
       workspaceId: "workspaceId",

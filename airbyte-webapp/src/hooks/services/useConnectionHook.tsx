@@ -16,12 +16,12 @@ import { SyncSchema } from "core/domain/catalog";
 import { SourceDefinition } from "core/resources/SourceDefinition";
 import { Source } from "core/resources/Source";
 import { Routes } from "pages/routes";
-import useRouter from "../useRouterHook";
+import useRouter from "../useRouter";
 import { Destination } from "core/resources/Destination";
 import useWorkspace from "./useWorkspace";
 import { Operation } from "core/domain/connection/operation";
 import { equal } from "utils/objects";
-import { useAnalytics } from "components/hooks/useAnalytics";
+import { useAnalytics } from "hooks/useAnalytics";
 
 export type ValuesProps = {
   schedule: ScheduleProperties | null;

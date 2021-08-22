@@ -7,7 +7,7 @@ import {
   NotificationServiceApi,
   NotificationServiceState,
 } from "./types";
-import useTypesafeReducer from "components/hooks/useTypesafeReducer";
+import useTypesafeReducer from "hooks/useTypesafeReducer";
 import { actions, initialState, notificationServiceReducer } from "./reducer";
 
 const notificationServiceContext = React.createContext<NotificationServiceApi | null>(

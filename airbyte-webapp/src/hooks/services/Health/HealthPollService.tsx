@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useIntl } from "react-intl";
 
-import { useNotificationService } from "components/hooks/services/Notification/NotificationService";
+import { useNotificationService } from "hooks/services/Notification/NotificationService";
 import { HealthService } from "core/health/HealthService";
 
 const HEALTH_NOTIFICATION_ID = "health.error";

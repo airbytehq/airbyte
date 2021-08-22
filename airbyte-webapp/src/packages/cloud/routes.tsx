@@ -23,10 +23,10 @@ import NotificationPage from "pages/SettingsPage/pages/NotificationPage";
 import LoadingPage from "components/LoadingPage";
 import MainView from "packages/cloud/views/layout/MainView";
 import { WorkspacesPage } from "packages/cloud/views/workspaces";
-import { useApiHealthPoll } from "components/hooks/services/Health";
+import { useApiHealthPoll } from "hooks/services/Health";
 import { Auth } from "packages/cloud/views/auth";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
-import useConnector from "components/hooks/services/useConnector";
+import useConnector from "hooks/services/useConnector";
 
 import {
   useGetWorkspace,

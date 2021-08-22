@@ -19,9 +19,9 @@ import LoadingPage from "components/LoadingPage";
 import MainView from "views/layout/MainView";
 import SupportChat from "components/SupportChat";
 
-import { useWorkspace } from "components/hooks/services/useWorkspace";
-import { useNotificationService } from "components/hooks/services/Notification/NotificationService";
-import { useApiHealthPoll } from "components/hooks/services/Health";
+import { useWorkspace } from "hooks/services/useWorkspace";
+import { useNotificationService } from "hooks/services/Notification/NotificationService";
+import { useApiHealthPoll } from "hooks/services/Health";
 import { WithPageAnalytics } from "./withPageAnalytics";
 import { HealthService } from "core/health/HealthService";
 
