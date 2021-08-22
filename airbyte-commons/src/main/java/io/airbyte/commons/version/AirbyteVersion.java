@@ -80,11 +80,11 @@ public class AirbyteVersion {
   public int compatibleVersionCompareTo(final AirbyteVersion another) {
     if (version.equals(DEV_VERSION) || another.version.equals(DEV_VERSION))
       return 0;
-    final int majorDiff = major.compareTo(another.major);
+    final int majorDiff = compareVersion(major, another.major);
     if (majorDiff != 0) {
       return majorDiff;
     }
-    return minor.compareTo(another.minor);
+    return compareVersion(minor, another.minor);
   }
 
   /**
@@ -94,15 +94,24 @@ public class AirbyteVersion {
     if (version.equals(DEV_VERSION) || another.version.equals(DEV_VERSION)) {
       return 0;
     }
-    final int majorDiff = major.compareTo(another.major);
+    final int majorDiff = compareVersion(major, another.major);
     if (majorDiff != 0) {
       return majorDiff;
     }
-    final int minorDiff = minor.compareTo(another.minor);
+    final int minorDiff = compareVersion(minor, another.minor);
     if (minorDiff != 0) {
       return minorDiff;
     }
-    return patch.compareTo(another.patch);
+    return compareVersion(patch, another.patch);
+  }
+
+  /**
+   * Version string needs to be converted to integer for comparison, because string comparison does
+   * not handle version string with different digits correctly. For example:
+   * {@code "11".compare("3") < 0}, while {@code Integer.compare(11, 3) > 0}.
+   */
+  private static int compareVersion(String v1, String v2) {
+    return Integer.compare(Integer.parseInt(v1), Integer.parseInt(v2));
   }
 
   public static void assertIsCompatible(final String version1, final String version2) throws IllegalStateException {
