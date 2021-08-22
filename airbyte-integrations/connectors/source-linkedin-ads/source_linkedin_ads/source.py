@@ -39,7 +39,7 @@ class LinkedinAdsStream(HttpStream, ABC):
 
     url_base = "https://api.linkedin.com/v2/"
     primary_key = "id"
-    limit = 1
+    limit = 500
 
     def __init__(self, config: Dict):
         super().__init__(authenticator=config["authenticator"])
@@ -83,22 +83,58 @@ class LinkedinAdsStreamMixin(LinkedinAdsStream):
 
 class Accounts(LinkedinAdsStream):
     """
+    Get Accounts data.
+    More info about LinkedIn Ads / Accounts:
     https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-accounts?tabs=http
     """
+    #TODO: add ability to use the account_ids from user's spec in UI
+    #TODO: edit schema based on example response from link
 
     def path(self, **kwargs) -> str:
         return "adAccountsV2"
 
+class AccountUsers(LinkedinAdsStreamMixin):
+    """
+    Get AccountUsers data using `account_id` slicing.
+    More info about LinkedIn Ads / AccountUsers:
+    https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-account-users?tabs=http
+    """
+
+    search_param = "accounts"
+
+    def path(self, **kwargs) -> str:
+        return "adAccountUsersV2"
+
+    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        params["q"] = self.search_param
+        return params
+
 
 class CampaignGroups(LinkedinAdsStreamMixin):
     """
+    Get CampaignGroups data using `account_id` slicing.
+    More info about LinkedIn Ads / CampaignGroups:
     https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaign-groups?tabs=http
     """
+    #TODO: edit schema based on example response from link
 
     def path(self, **kwargs) -> str:
         return "adCampaignGroupsV2"
 
-    
+
+class Campaigns(LinkedinAdsStreamMixin):
+    """
+    Get Campaigns data using `account_id` slicing.
+    More info about LinkedIn Ads / Campaigns:
+    https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaigns?tabs=http
+    """
+    #TODO: edit schema based on example response from link
+
+    def path(self, **kwargs) -> str:
+        return "adCampaignsV2"
+
+
 
 
 class IncrementalLinkedinAdsStream(LinkedinAdsStream, ABC):
@@ -166,5 +202,7 @@ class SourceLinkedinAds(AbstractSource):
 
         return [
             Accounts(config),
-            CampaignGroups(config)
+            AccountUsers(config),
+            CampaignGroups(config),
+            Campaigns(config)
         ]
