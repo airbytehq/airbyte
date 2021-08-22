@@ -30,10 +30,17 @@ dependencies {
 sourceSets {
     main {
         java {
-            srcDirs "$buildDir/generated/jooq/src/main/java"
+            srcDirs "$buildDir/generated/jooq/src/main/java", "$projectDir/src/main/java"
         }
         resources {
             srcDir "$projectDir/src/main/resources"
         }
+    }
+}
+
+test {
+    filter {
+        excludeTestsMatching "*DatabaseMigrationDevCenter.createMigration"
+        excludeTestsMatching "*DatabaseMigrationDevCenter.runLastMigration"
     }
 }
