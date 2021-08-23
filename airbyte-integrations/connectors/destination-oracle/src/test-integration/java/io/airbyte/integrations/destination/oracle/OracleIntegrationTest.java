@@ -114,8 +114,7 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
   }
 
   private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
-    List<org.jooq.Record> result = Databases.createOracleDatabase(config.get("user").asText(), config.get("password").asText(), "oracle.jdbc.driver.OracleDriver")
-        .query(ctx -> ctx
+    List<org.jooq.Record> result = getDatabase().query(ctx -> ctx
             .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, OracleDestination.COLUMN_NAME_EMITTED_AT))
             .stream()
             .collect(Collectors.toList()));
@@ -160,10 +159,6 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
     baseConfig = getStaticConfig();
     config = Jsons.clone(baseConfig);
     final Database database = getDatabase();
-    database.query(ctx -> {
-      ctx.execute("alter database default tablespace users");
-      return null;
-    });
     allTables = getAllTables(database);
   }
 
