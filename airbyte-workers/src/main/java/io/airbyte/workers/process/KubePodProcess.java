@@ -26,7 +26,6 @@ package io.airbyte.workers.process;
 
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.config.ResourceRequirements;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
@@ -48,7 +47,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ProcessHandle.Info;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -64,6 +62,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -93,6 +92,9 @@ import org.slf4j.MDC;
  * handling.</li>
  * <li>8) A heartbeat sidecar checks if the worker that launched the pod is still alive. If not, the
  * pod will fail.</li>
+ *
+ * The docker image used for this pod process must expose a AIRBYTE_ENTRYPOINT which contains the
+ * entrypoint we will wrap when creating the main container in the pod.
  *
  * See the constructor for more information.
  */
@@ -141,48 +143,6 @@ public class KubePodProcess extends Process {
   private final int stderrLocalPort;
   private final ExecutorService executorService;
 
-  // TODO(Davin): Cache this result.
-  public static String getCommandFromImage(KubernetesClient client, String imageName, String namespace) throws InterruptedException {
-    final String podName = Strings.addRandomSuffix("airbyte-command-fetcher", "-", 5);
-
-    Container commandFetcher = new ContainerBuilder()
-        .withName("airbyte-command-fetcher")
-        .withImage(imageName)
-        .withCommand("sh", "-c", "echo \"AIRBYTE_ENTRYPOINT=$AIRBYTE_ENTRYPOINT\"")
-        .build();
-
-    Pod pod = new PodBuilder()
-        .withApiVersion("v1")
-        .withNewMetadata()
-        .withName(podName)
-        .withLabels(AIRBYTE_POD_LABELS)
-        .endMetadata()
-        .withNewSpec()
-        .withRestartPolicy("Never")
-        .withContainers(commandFetcher)
-        .endSpec()
-        .build();
-    LOGGER.info("Creating pod...");
-    Pod podDefinition = client.pods().inNamespace(namespace).createOrReplace(pod);
-    LOGGER.info("Waiting until command fetcher pod completes...");
-    // TODO(Davin): If a pod is missing, this will wait for up to 2 minutes before error-ing out.
-    // Figure out a better way.
-    client.resource(podDefinition).waitUntilCondition(p -> p.getStatus().getPhase().equals("Succeeded"), 2, TimeUnit.MINUTES);
-
-    var logs = client.pods().inNamespace(namespace).withName(podName).getLog();
-    if (!logs.contains("AIRBYTE_ENTRYPOINT")) {
-      throw new RuntimeException(
-          "Missing AIRBYTE_ENTRYPOINT from command fetcher logs. This should not happen. Check the echo command has not been changed.");
-    }
-
-    var envVal = logs.split("=", 2)[1].strip();
-    if (envVal.isEmpty()) {
-      throw new RuntimeException("No AIRBYTE_ENTRYPOINT environment variable found. Connectors must have this set in order to run on Kubernetes.");
-    }
-
-    return envVal;
-  }
-
   public static String getPodIP(KubernetesClient client, String podName, String namespace) {
     var pod = client.pods().inNamespace(namespace).withName(podName).get();
     if (pod == null) {
@@ -211,14 +171,14 @@ public class KubePodProcess extends Process {
 
   private static Container getMain(String image,
                                    boolean usesStdin,
-                                   String entrypoint,
+                                   String entrypointOverride,
                                    List<VolumeMount> mainVolumeMounts,
                                    ResourceRequirements resourceRequirements,
                                    String[] args)
       throws IOException {
     var argsStr = String.join(" ", args);
-    var entrypointWithArgs = entrypoint + " " + argsStr;
     var optionalStdin = usesStdin ? String.format("cat %s | ", STDIN_PIPE_FILE) : "";
+    var entrypointOverrideValue = entrypointOverride == null ? "" : StringEscapeUtils.escapeXSI(entrypointOverride);
 
     // communicates its completion to the heartbeat check via a file and closes itself if the heartbeat
     // fails
@@ -226,7 +186,8 @@ public class KubePodProcess extends Process {
         .replaceAll("TERMINATION_FILE_CHECK", TERMINATION_FILE_CHECK)
         .replaceAll("TERMINATION_FILE_MAIN", TERMINATION_FILE_MAIN)
         .replaceAll("OPTIONAL_STDIN", optionalStdin)
-        .replaceAll("ENTRYPOINT", entrypointWithArgs)
+        .replace("ENTRYPOINT_OVERRIDE_VALUE", entrypointOverrideValue) // use replace and not replaceAll to preserve escaping and quoting
+        .replaceAll("ARGS", argsStr)
         .replaceAll("STDERR_PIPE_FILE", STDERR_PIPE_FILE)
         .replaceAll("STDOUT_PIPE_FILE", STDOUT_PIPE_FILE);
 
@@ -282,7 +243,8 @@ public class KubePodProcess extends Process {
     LOGGER.info("Init container ready..");
   }
 
-  public KubePodProcess(ApiClient officialClient,
+  public KubePodProcess(String processRunnerHost,
+                        ApiClient officialClient,
                         KubernetesClient fabricClient,
                         String podName,
                         String namespace,
@@ -305,8 +267,9 @@ public class KubePodProcess extends Process {
     executorService = Executors.newFixedThreadPool(2);
     setupStdOutAndStdErrListeners();
 
-    String entrypoint = entrypointOverride == null ? getCommandFromImage(fabricClient, image, namespace) : entrypointOverride;
-    LOGGER.info("Found entrypoint: {}", entrypoint);
+    if (entrypointOverride != null) {
+      LOGGER.info("Found entrypoint override: {}", entrypointOverride);
+    }
 
     Volume pipeVolume = new VolumeBuilder()
         .withName("airbyte-pipes")
@@ -345,7 +308,7 @@ public class KubePodProcess extends Process {
     Container main = getMain(
         image,
         usesStdin,
-        entrypoint,
+        entrypointOverride,
         List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount),
         resourceRequirements,
         args);
@@ -357,18 +320,17 @@ public class KubePodProcess extends Process {
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .build();
 
-    var localIp = InetAddress.getLocalHost().getHostAddress();
     Container relayStdout = new ContainerBuilder()
         .withName("relay-stdout")
         .withImage("alpine/socat:1.7.4.1-r1")
-        .withCommand("sh", "-c", String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDOUT_PIPE_FILE, localIp, stdoutLocalPort))
+        .withCommand("sh", "-c", String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDOUT_PIPE_FILE, processRunnerHost, stdoutLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .build();
 
     Container relayStderr = new ContainerBuilder()
         .withName("relay-stderr")
         .withImage("alpine/socat:1.7.4.1-r1")
-        .withCommand("sh", "-c", String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDERR_PIPE_FILE, localIp, stderrLocalPort))
+        .withCommand("sh", "-c", String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDERR_PIPE_FILE, processRunnerHost, stderrLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .build();
 

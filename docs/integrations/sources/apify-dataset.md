@@ -1,11 +1,25 @@
+---
+description: >-
+  Web scraping and automation platform.
+---
+
 # Apify dataset
 
 ## Overview
+[Apify](https://www.apify.com) is a web scraping and web automation platform providing both ready-made and custom solutions, an open-source [SDK](https://sdk.apify.com/) for web scraping, proxies, and many other tools to help you build and run web automation jobs at scale.
 
+The results of a scraping job are usually stored in [Apify Dataset](https://docs.apify.com/storage/dataset). This Airbyte connector allows you
+to automatically sync the contents of a dataset to your chosen destination using Airbyte.
 
-The Apify dataset connect supports full refresh sync only.
+To sync data from a dataset, all you need to know is its ID. You will find it in [Apify console](https://my.apify.com/) under storages.
 
-It can sync data from a single [Apify Dataset](https://docs.apify.com/storage/dataset) by its ID.
+### Running Airbyte sync from Apify webhook
+When your Apify job (aka [actor run](https://docs.apify.com/actors/running)) finishes, it can trigger an Airbyte sync by calling the Airbyte
+[API](https://airbyte-public-api-docs.s3.us-east-2.amazonaws.com/rapidoc-api-docs.html#post-/v1/connections/sync) manual
+connection trigger (`POST /v1/connections/sync`). The API can be called from Apify [webhook](https://docs.apify.com/webhooks) which is
+executed when your Apify run finishes.
+
+![](../../.gitbook/assets/apify_trigger_airbyte_connection.png)
 
 ### Output schema
 
@@ -26,7 +40,7 @@ The Apify dataset connector uses [Apify Python Client](https://docs.apify.com/ap
 
 ### Requirements
 
-* Dataset Id
+* Apify [dataset](https://docs.apify.com/storage/dataset) ID
 
 ### Changelog
 | Version | Date       | Pull Request | Subject |

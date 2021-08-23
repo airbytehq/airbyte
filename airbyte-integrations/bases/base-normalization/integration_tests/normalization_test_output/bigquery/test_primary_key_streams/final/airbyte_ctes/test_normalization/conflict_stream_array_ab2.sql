@@ -8,9 +8,7 @@ select
     cast(id as 
     string
 ) as id,
-    cast(conflict_stream_array as 
-    string
-) as conflict_stream_array,
+    conflict_stream_array,
     _airbyte_emitted_at
 from `dataline-integration-testing`._airbyte_test_normalization.`conflict_stream_array_ab1`
 -- conflict_stream_array;
