@@ -39,7 +39,12 @@ class BigQueryWriteConfig {
   private final Schema schema;
   private final GcsCsvWriter gcsCsvWriter;
 
-  BigQueryWriteConfig(TableId table, TableId tmpTable, TableDataWriteChannel writer, WriteDisposition syncMode, Schema schema, GcsCsvWriter gcsCsvWriter) {
+  BigQueryWriteConfig(TableId table,
+                      TableId tmpTable,
+                      TableDataWriteChannel writer,
+                      WriteDisposition syncMode,
+                      Schema schema,
+                      GcsCsvWriter gcsCsvWriter) {
     this.table = table;
     this.tmpTable = tmpTable;
     this.writer = writer;

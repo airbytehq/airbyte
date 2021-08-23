@@ -103,4 +103,5 @@ public class GcsCsvWriter extends BaseGcsWriter implements S3Writer {
   public String getObjectKey() {
     return objectKey;
   }
+
 }

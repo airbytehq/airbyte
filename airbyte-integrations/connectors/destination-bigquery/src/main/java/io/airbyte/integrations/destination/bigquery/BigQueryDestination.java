@@ -31,8 +31,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
-import com.google.cloud.bigquery.Dataset;
-import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FormatOptions;
 import com.google.cloud.bigquery.Job;
@@ -54,6 +52,7 @@ import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.gcs.GcsDestination;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsS3Helper;
 import io.airbyte.integrations.destination.gcs.csv.GcsCsvWriter;
@@ -89,8 +88,9 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   private static final com.google.cloud.bigquery.Schema SCHEMA = com.google.cloud.bigquery.Schema.of(
       Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
+      // GCS works with only date\datetime formats, so need to have it a string for a while
+      // https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv#data_types
       Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.STRING),
-//      Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP), // TODO Add timestamp handling as a timestamp type field
       Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING));
 
   private final BigQuerySQLNameTransformer namingResolver;
@@ -113,9 +113,13 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .setUseLegacySql(false)
           .build();
 
-      if (UploadingMethod.GCS.equals(uploadingMethod)){
-        throw new Exception("Check() for GCS is not implemented yet");
-        // TODO add check for GCS if gcs is method is selected !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      // GCS upload time re-uses destination-GCS for check and other uploading (CSV format writer)
+      if (UploadingMethod.GCS.equals(uploadingMethod)) {
+        GcsDestination gcsDestination = new GcsDestination();
+        AirbyteConnectionStatus airbyteConnectionStatus = gcsDestination.check(getGcsJsonNodeConfig(config));
+        if (Status.FAILED == airbyteConnectionStatus.getStatus()) {
+          return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(airbyteConnectionStatus.getMessage());
+        }
       }
 
       final ImmutablePair<Job, String> result = BigQueryUtils.executeQuery(bigquery, queryConfig);
@@ -248,13 +252,13 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       }
       final WriteDisposition syncMode = getWriteDisposition(configStream.getDestinationSyncMode());
 
-      if(UploadingMethod.GCS.equals(getLoadingMethod(config))){
+      if (UploadingMethod.GCS.equals(getLoadingMethod(config))) {
         GcsCsvWriter gcsCsvWriter = initGcsWriter(config, configStream);
         gcsCsvWriter.initialize();
-        // TODO create target schema and tables
+
         writeConfigs.put(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
             new BigQueryWriteConfig(TableId.of(schemaName, tableName), TableId.of(schemaName, tmpTableName), writer, syncMode, schema, gcsCsvWriter));
-      } else{
+      } else {
         writeConfigs.put(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
             new BigQueryWriteConfig(TableId.of(schemaName, tableName), TableId.of(schemaName, tmpTableName), writer, syncMode, schema, null));
       }
@@ -268,26 +272,11 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   private GcsCsvWriter initGcsWriter(JsonNode config, ConfiguredAirbyteStream configuredStream) throws IOException {
     Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
-    JsonNode properties = config.get("properties");
-
-    JsonNode gcsJsonNode = Jsons.jsonNode(ImmutableMap.builder()
-        .put("gcs_bucket_name", properties.get("gcs_bucket_name"))
-        .put("gcs_bucket_path", "test_pathSssss") //TODO should be a random TMP if not set explicitly !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        .put("gcs_bucket_region", getDatasetLocation(config))
-        .put("credential", properties.get("credential"))
-        .put("format", Jsons.deserialize("{\n"
-            + "  \"format_type\": \"CSV\",\n"
-//            + "  \"flattening\": \"Root level flattening\"\n"
-            + "  \"flattening\": \"No flattening\"\n"
-            + "}"))
-        .build());
-
     GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
-        .getGcsDestinationConfig(gcsJsonNode);
+        .getGcsDestinationConfig(getGcsJsonNodeConfig(config));
     AmazonS3 s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
     return new GcsCsvWriter(gcsDestinationConfig, s3Client, configuredStream, uploadTimestamp);
   }
-
 
   protected String getTargetTableName(String streamName) {
     return namingResolver.getRawTableName(streamName);
@@ -313,6 +302,23 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return srcNamespace;
   }
 
+  public JsonNode getGcsJsonNodeConfig(JsonNode config) {
+    JsonNode properties = config.get("properties");
+
+    JsonNode gcsJsonNode = Jsons.jsonNode(ImmutableMap.builder()
+        .put("gcs_bucket_name", properties.get("gcs_bucket_name"))
+        .put("gcs_bucket_path", properties.get("gcs_bucket_path"))
+        .put("gcs_bucket_region", getDatasetLocation(config))
+        .put("credential", properties.get("credential"))
+        .put("format", Jsons.deserialize("{\n"
+            + "  \"format_type\": \"CSV\",\n"
+            + "  \"flattening\": \"No flattening\"\n"
+            + "}"))
+        .build());
+
+    LOGGER.debug("Composed GCS config is: \n" + gcsJsonNode.toPrettyString());
+    return gcsJsonNode;
+  }
 
   private static WriteDisposition getWriteDisposition(DestinationSyncMode syncMode) {
     if (syncMode == null) {
@@ -329,8 +335,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
-  private UploadingMethod getLoadingMethod(JsonNode config){
-    if(config.get(LOADING_METHOD) != null && "GCS Staging".equals(config.get(LOADING_METHOD).asText())){
+  private UploadingMethod getLoadingMethod(JsonNode config) {
+    if (config.get(LOADING_METHOD) != null && "GCS Staging".equals(config.get(LOADING_METHOD).asText())) {
       return UploadingMethod.GCS;
     } else {
       return UploadingMethod.STANDARD;

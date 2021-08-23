@@ -29,10 +29,8 @@ import static com.amazonaws.util.StringUtils.UTF8;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
-import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.CopyJobConfiguration;
 import com.google.cloud.bigquery.CsvOptions;
-import com.google.cloud.bigquery.FormatOptions;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.JobInfo.CreateDisposition;
@@ -114,10 +112,11 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       final BigQueryWriteConfig writer = writeConfigs.get(pair);
 
       // select the way of uploading - normal or through the GCS
-      if (writer.getGcsCsvWriter() == null){
+      if (writer.getGcsCsvWriter() == null) {
         // Normal uploading way
         try {
-          writer.getWriter().write(ByteBuffer.wrap((Jsons.serialize(formatRecord(writer.getSchema(), recordMessage)) + "\n").getBytes(Charsets.UTF_8)));
+          writer.getWriter()
+              .write(ByteBuffer.wrap((Jsons.serialize(formatRecord(writer.getSchema(), recordMessage)) + "\n").getBytes(Charsets.UTF_8)));
         } catch (IOException | RuntimeException e) {
           LOGGER.error("Got an error while writing message:" + e.getMessage());
           LOGGER.error(String.format(
@@ -156,12 +155,12 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
     final List<BigQueryWriteConfig> gcsWritersList = writeConfigs.values().parallelStream()
         .filter(el -> el.getGcsCsvWriter() != null)
-        .peek(el -> gcsCsvFilesToMigrateToBigquery.add(el.getGcsCsvWriter().getObjectKey())) //collect gs csv fileNames
+        .peek(el -> gcsCsvFilesToMigrateToBigquery.add(el.getGcsCsvWriter().getObjectKey())) // collect gs csv fileNames
         .collect(Collectors.toList());
 
-    if (!gcsWritersList.isEmpty()){
+    if (!gcsWritersList.isEmpty()) {
       LOGGER.info("GCS connectors that need to be closed:" + gcsWritersList);
-      gcsWritersList.parallelStream().forEach(writer->{
+      gcsWritersList.parallelStream().forEach(writer -> {
         final GcsCsvWriter gcsCsvWriter = writer.getGcsCsvWriter();
 
         try {
@@ -177,42 +176,44 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
     // TODO move data from files to bigQuery
 
-
     writeConfigs.values().stream()
         .filter(pair -> pair.getGcsCsvWriter() != null)
         .forEach(pair -> {
           try {
-            // TODO get values from params !!!!!!!!!!!!!!!!!!!!!
-
-            TableId tmpTable = pair.getTmpTable();
-            String csvFile = "gs://airbyte-integration-test-destination-gcs/" +  pair.getGcsCsvWriter().getObjectKey();
-            loadCsvFromGcsTruncate(pair.getSchema(), tmpTable, csvFile);
+            loadCsvFromGcsTruncate(pair);
           } catch (Exception e) {
             e.printStackTrace();
           }
         });
 
-
     closeNormalBigqueryStreams(hasFailed);
   }
 
-
-  public void loadCsvFromGcsTruncate(Schema schema, TableId tmpTable, String sourceUri)
+  public void loadCsvFromGcsTruncate(BigQueryWriteConfig bigQueryWriteConfig)
       throws Exception {
     try {
+
+      TableId tmpTable = bigQueryWriteConfig.getTmpTable();
+      Schema schema = bigQueryWriteConfig.getSchema();
+
+      // TODO get values from params !!!!!!!!!!!!!!!!!!!!!
+      String csvFile = "gs://airbyte-integration-test-destination-gcs/" + bigQueryWriteConfig.getGcsCsvWriter().getObjectKey();
+
       // Initialize client that will be used to send requests. This client only needs to be created
       // once, and can be reused for multiple requests.
-//      BigQuery bigquery = BigQueryOptions.getDefaultInstance().getService();
+
+      LOGGER.info(String.format("Started coping data from %s GCS csv file to %s tmp BigQuery table with schema: \n %s",
+          csvFile, tmpTable, schema));
 
       CsvOptions csvOptions = CsvOptions.newBuilder().setEncoding(UTF8).setSkipLeadingRows(1).build();
 
       LoadJobConfiguration configuration =
-          LoadJobConfiguration.builder(tmpTable, sourceUri)
+          LoadJobConfiguration.builder(tmpTable, csvFile)
               .setFormatOptions(csvOptions)
-//              .setFormatOptions(FormatOptions.csv())
               // Set the write disposition to overwrite existing table data
-              .setSchema(schema) // TODO why schema doesn't work for emitted_ar and timestampt, check for https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv#data_types
-              .setWriteDisposition(WriteDisposition.WRITE_TRUNCATE) // TODO take this from config file
+              .setSchema(schema) // TODO why schema doesn't work for emitted_ar and timestampt, check for
+                                 // https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv#data_types
+              .setWriteDisposition(bigQueryWriteConfig.getSyncMode())
               .build();
 
       // For more information on Job see:
@@ -220,28 +221,33 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       // Load the table
       Job loadJob = bigquery.create(JobInfo.of(configuration));
 
+      LOGGER.info("Crated a new job GCS csv file to tmp BigQuery table: " + loadJob);
+      LOGGER.info("Waiting for job to complete...");
+
       // Load data from a GCS parquet file into the table
       // Blocks until this load table job completes its execution, either failing or succeeding.
       Job completedJob = loadJob.waitFor();
 
       // Check for errors
       if (completedJob == null) {
+        LOGGER.error("Job not executed since it no longer exists.");
         throw new Exception("Job not executed since it no longer exists.");
       } else if (completedJob.getStatus().getError() != null) {
         // You can also look at queryJob.getStatus().getExecutionErrors() for all
         // errors, not just the latest one.
-        throw new Exception(
-            "BigQuery was unable to load into the table due to an error: \n"
-                + loadJob.getStatus().getError());
+        String msg = "BigQuery was unable to load into the table due to an error: \n"
+            + loadJob.getStatus().getError();
+        LOGGER.error(msg);
+        throw new Exception(msg);
       }
       LOGGER.info("Table is successfully overwritten by CSV file loaded from GCS");
     } catch (BigQueryException | InterruptedException e) {
       LOGGER.error("Column not added during load append \n" + e.toString());
+      throw new RuntimeException("Column not added during load append \n" + e.toString());
     }
   }
 
-
-  private void closeNormalBigqueryStreams(boolean hasFailed){
+  private void closeNormalBigqueryStreams(boolean hasFailed) {
     try {
       writeConfigs.values().parallelStream().forEach(bigQueryWriteConfig -> Exceptions.toRuntime(() -> {
         TableDataWriteChannel writer = bigQueryWriteConfig.getWriter();

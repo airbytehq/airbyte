@@ -24,7 +24,6 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Dataset;
@@ -78,11 +77,11 @@ public class BigQueryUtils {
   }
 
   static void createSchemaAndTableIfNeeded(BigQuery bigquery,
-      Set<String> existingSchemas,
-      String schemaName,
-      String tmpTableName,
-      String datasetLocation,
-      Schema schema) {
+                                           Set<String> existingSchemas,
+                                           String schemaName,
+                                           String tmpTableName,
+                                           String datasetLocation,
+                                           Schema schema) {
     if (!existingSchemas.contains(schemaName)) {
       createSchemaTable(bigquery, schemaName, datasetLocation);
       existingSchemas.add(schemaName);
