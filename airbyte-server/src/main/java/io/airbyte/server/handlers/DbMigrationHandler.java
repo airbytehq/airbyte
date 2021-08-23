@@ -64,7 +64,7 @@ public class DbMigrationHandler {
         .migrations(result.migrations.stream().map(DbMigrationHandler::toInfoItem).collect(Collectors.toList()));
   }
 
-  public DatabaseMigrator getMigrator(String database) {
+  private DatabaseMigrator getMigrator(String database) {
     if (database.equalsIgnoreCase("configs")) {
       return configDbMigrator;
     } else if (database.equalsIgnoreCase("jobs")) {
