@@ -66,21 +66,21 @@ class HttpStream(Stream, ABC):
     @property
     def raise_on_http_errors(self) -> bool:
         """
-        Override if needed. If set to False, allows opting-out of raising HTTP code exception .
+        Override if needed. If set to False, allows opting-out of raising HTTP code exception.
         """
         return True
 
     @property
     def max_retries(self) -> int:
         """
-        Override if needed. Specifies maximum amount of retries for backoff policy
+        Override if needed. Specifies maximum amount of retries for backoff policy.
         """
         return 5
 
     @property
     def retry_factor(self) -> int:
         """
-        Override if needed. Specifies factor for backoff policy
+        Override if needed. Specifies factor for backoff policy.
         """
         return 5
 
