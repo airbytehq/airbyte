@@ -40,6 +40,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.apache.commons.io.FileUtils;
 import org.flywaydb.core.api.ClassProvider;
 import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.MigrationVersion;
@@ -122,7 +123,10 @@ public class MigrationDevHelper {
 
     LOGGER.info("New migration file: {}", filePath);
 
-    try (PrintWriter writer = new PrintWriter(new File(Path.of(filePath).toUri()))) {
+    File file = new File(Path.of(filePath).toUri());
+    FileUtils.forceMkdirParent(file);
+
+    try (PrintWriter writer = new PrintWriter(file)) {
       writer.println(newMigration);
     } catch (FileNotFoundException e) {
       throw new IOException(e);

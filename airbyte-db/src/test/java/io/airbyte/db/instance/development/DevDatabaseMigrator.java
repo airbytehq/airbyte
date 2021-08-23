@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * This migrator can prepare the database with previous migrations, and only run the latest
- * migration for testing.
+ * migration for testing. It is used in {@link MigrationDevHelper#runLastMigration}.
  */
 public class DevDatabaseMigrator implements DatabaseMigrator {
 

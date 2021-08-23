@@ -32,7 +32,6 @@ import io.airbyte.db.Database;
 import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
-import java.util.Map;
 import java.util.stream.Collectors;
 import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.output.MigrateOutput;
@@ -43,9 +42,9 @@ public class DbMigrationHandler {
   private final DatabaseMigrator configDbMigrator;
   private final DatabaseMigrator jobDbMigrator;
 
-  public DbMigrationHandler(Map<String, Database> databaseMap) {
-    this.configDbMigrator = new ConfigsDatabaseMigrator(databaseMap.get("configs"), DbMigrationHandler.class.getSimpleName());
-    this.jobDbMigrator = new JobsDatabaseMigrator(databaseMap.get("jobs"), DbMigrationHandler.class.getSimpleName());
+  public DbMigrationHandler(Database configsDatabase, Database jobsDatabase) {
+    this.configDbMigrator = new ConfigsDatabaseMigrator(configsDatabase, DbMigrationHandler.class.getSimpleName());
+    this.jobDbMigrator = new JobsDatabaseMigrator(jobsDatabase, DbMigrationHandler.class.getSimpleName());
   }
 
   public DbMigrationInfoRead info(DbMigrationRequestBody request) {

@@ -41,6 +41,9 @@ import org.jooq.SQLDialect;
 import org.jooq.impl.DefaultDSLContext;
 import org.jooq.impl.SQLDataType;
 
+/**
+ * This class formats the Flyway outputs so that it is easier to inspect them and debug the migration.
+ */
 public class FlywayFormatter {
 
   private static final DSLContext CTX = new DefaultDSLContext(SQLDialect.DEFAULT);

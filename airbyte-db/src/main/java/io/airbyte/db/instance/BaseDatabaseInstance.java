@@ -54,6 +54,7 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
    *        jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT/${DATABASE_DB}
    * @param databaseName this name is only for logging purpose; it may not be the actual database name
    *        in the server
+   * @param initialSchema the initial database structure.
    * @param isDatabaseReady a function to check if the database has been initialized and ready for
    *        consumption
    */

@@ -33,7 +33,6 @@ import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
 import io.temporal.serviceclient.WorkflowServiceStubs;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.MDC;
@@ -45,7 +44,8 @@ public interface ServerFactory {
                         WorkflowServiceStubs temporalService,
                         ConfigRepository configRepository,
                         JobPersistence jobPersistence,
-                        Map<String, Database> databaseMap,
+                        Database configsDatabase,
+                        Database jobsDatabase,
                         Configs configs);
 
   class Api implements ServerFactory {
@@ -56,7 +56,8 @@ public interface ServerFactory {
                                  WorkflowServiceStubs temporalService,
                                  ConfigRepository configRepository,
                                  JobPersistence jobPersistence,
-                                 Map<String, Database> databaseMap,
+                                 Database configsDatabase,
+                                 Database jobsDatabase,
                                  Configs configs) {
       // set static values for factory
       ConfigurationApiFactory.setSchedulerJobClient(schedulerJobClient);
@@ -67,7 +68,7 @@ public interface ServerFactory {
       ConfigurationApiFactory.setConfigs(configs);
       ConfigurationApiFactory.setArchiveTtlManager(new FileTtlManager(10, TimeUnit.MINUTES, 10));
       ConfigurationApiFactory.setMdc(MDC.getCopyOfContextMap());
-      ConfigurationApiFactory.setDatabaseMap(databaseMap);
+      ConfigurationApiFactory.setDatabases(configsDatabase, jobsDatabase);
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class);

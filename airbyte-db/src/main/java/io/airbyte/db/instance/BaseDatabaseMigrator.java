@@ -47,6 +47,8 @@ import org.slf4j.LoggerFactory;
 public class BaseDatabaseMigrator implements DatabaseMigrator {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseDatabaseMigrator.class);
+  // Constants for Flyway baseline. See here for details:
+  // https://flywaydb.org/documentation/command/baseline
   private static final String BASELINE_VERSION = "0.29.0.001";
   private static final String BASELINE_DESCRIPTION = "Baseline from file-based migration v1";
   private static final boolean BASELINE_ON_MIGRATION = true;
@@ -80,10 +82,10 @@ public class BaseDatabaseMigrator implements DatabaseMigrator {
     this.flyway = flyway;
   }
 
-  public static FluentConfiguration getConfiguration(Database database,
-                                                     String dbIdentifier,
-                                                     String migrationRunner,
-                                                     String migrationFileLocations) {
+  private static FluentConfiguration getConfiguration(Database database,
+                                                      String dbIdentifier,
+                                                      String migrationRunner,
+                                                      String migrationFileLocations) {
     return Flyway.configure()
         .dataSource(database.getDataSource())
         .baselineVersion(BASELINE_VERSION)

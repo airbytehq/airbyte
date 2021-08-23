@@ -27,18 +27,20 @@ package io.airbyte.db.instance.jobs;
 import io.airbyte.db.instance.BaseDatabaseMigrator;
 import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
+import io.airbyte.db.instance.development.MigrationDevCenter;
 import io.airbyte.db.instance.development.MigrationDevHelper;
 import java.io.IOException;
 import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 
-public class JobsDatabaseMigrationDevCenter extends AbstractJobsDatabaseTest {
+public class JobsDatabaseMigrationDevCenter extends AbstractJobsDatabaseTest implements MigrationDevCenter {
 
   /**
    * 1. Run this method to create a new migration file.
    */
   @Ignore
   @Test
+  @Override
   public void createMigration() throws IOException {
     BaseDatabaseMigrator migrator = new JobsDatabaseMigrator(database, JobsDatabaseMigrationDevCenter.class.getSimpleName());
     MigrationDevHelper.createNextMigrationFile("jobs", migrator);
@@ -49,6 +51,7 @@ public class JobsDatabaseMigrationDevCenter extends AbstractJobsDatabaseTest {
    */
   @Ignore
   @Test
+  @Override
   public void runLastMigration() throws IOException {
     BaseDatabaseMigrator fullMigrator = new JobsDatabaseMigrator(database, JobsDatabaseMigrationDevCenter.class.getSimpleName());
     DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(fullMigrator);
@@ -63,6 +66,7 @@ public class JobsDatabaseMigrationDevCenter extends AbstractJobsDatabaseTest {
    * Please make sure to check in the changes after running this method.
    */
   @Test
+  @Override
   public void integrateMigration() throws Exception {
     DatabaseMigrator migrator = new JobsDatabaseMigrator(database, JobsDatabaseMigrationDevCenter.class.getSimpleName());
     MigrationDevHelper.integrateMigration(container, migrator, "jobs");

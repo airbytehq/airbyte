@@ -124,7 +124,6 @@ import io.airbyte.validation.json.JsonValidationException;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 
 @javax.ws.rs.Path("/v1")
 public class ConfigurationApi implements io.airbyte.api.V1Api {
@@ -155,7 +154,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
                           final Configs configs,
                           final FileTtlManager archiveTtlManager,
                           final WorkflowServiceStubs temporalService,
-                          final Map<String, Database> databaseMap) {
+                          final Database configsDatabase,
+                          final Database jobsDatabase) {
     final SpecFetcher specFetcher = new SpecFetcher(synchronousSchedulerClient);
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
     final JobNotifier jobNotifier = new JobNotifier(configs.getWebappUrl(), configRepository, new WorkspaceHelper(configRepository, jobPersistence));
@@ -190,7 +190,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     archiveHandler = new ArchiveHandler(configs.getAirbyteVersion(), configRepository, jobPersistence, archiveTtlManager);
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
-    dbMigrationHandler = new DbMigrationHandler(databaseMap);
+    dbMigrationHandler = new DbMigrationHandler(configsDatabase, jobsDatabase);
     this.configs = configs;
   }
 

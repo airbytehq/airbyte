@@ -24,7 +24,6 @@
 
 package io.airbyte.server;
 
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.resources.MoreResources;
@@ -240,7 +239,6 @@ public class ServerApp implements ServerRunnable {
       final SchedulerJobClient schedulerJobClient = new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence));
       final DefaultSynchronousSchedulerClient syncSchedulerClient = new DefaultSynchronousSchedulerClient(temporalClient, jobTracker);
       final SpecCachingSynchronousSchedulerClient cachingSchedulerClient = new SpecCachingSynchronousSchedulerClient(syncSchedulerClient);
-      final Map<String, Database> databaseMap = ImmutableMap.of("configs", configDatabase, "jobs", jobDatabase);
 
       return apiFactory.create(
           schedulerJobClient,
@@ -248,7 +246,8 @@ public class ServerApp implements ServerRunnable {
           temporalService,
           configRepository,
           jobPersistence,
-          databaseMap,
+          configDatabase,
+          jobDatabase,
           configs);
     } else {
       LOGGER.info("Start serving version mismatch errors. Automatic migration either failed or didn't run");
@@ -296,7 +295,7 @@ public class ServerApp implements ServerRunnable {
     return databaseVersion.getMinorVersion().compareTo(serverVersion.getMinorVersion()) < 0;
   }
 
-  public static void runFlywayMigration(Database configDatabase, Database jobDatabase) {
+  private static void runFlywayMigration(Database configDatabase, Database jobDatabase) {
     LOGGER.info("Migrating configs database");
     DatabaseMigrator configDbMigrator = new ConfigsDatabaseMigrator(configDatabase, ServerApp.class.getSimpleName());
     configDbMigrator.migrate();
