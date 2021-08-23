@@ -22,11 +22,15 @@
 # SOFTWARE.
 #
 
+#import logging
+#logging.basicConfig(level=logging.DEBUG)
 
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from urllib.parse import urlencode
 
 import requests
+import pendulum
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.models import SyncMode
@@ -34,17 +38,20 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
+from .utils import transform_date_fields
+
 
 class LinkedinAdsStream(HttpStream, ABC):
 
     url_base = "https://api.linkedin.com/v2/"
     primary_key = "id"
-    limit = 500
+    limit = 900
 
     def __init__(self, config: Dict):
         super().__init__(authenticator=config["authenticator"])
         self.config = config
-        self.start_date = config["start_date"]
+        self.start_date = pendulum.parse(config.get("start_date")).timestamp() * 1000
+        self.accounts = config.get("account_ids", None)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -61,45 +68,101 @@ class LinkedinAdsStream(HttpStream, ABC):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield from response.json().get("elements")
+        records = response.json().get("elements")
+        yield from transform_date_fields(records)
 
 
-class LinkedinAdsStreamMixin(LinkedinAdsStream):
+class IncrementalLinkedinAdsStream(LinkedinAdsStream, ABC):
+
+    cursor_field = "lastModified"
+
+    @property
+    def limit(self):
+        return super().limit
+
+    state_checkpoint_interval = limit
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
+        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
+        """
+        current_stream_state = {self.cursor_field: self.start_date} if not current_stream_state else current_stream_state
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, None), current_stream_state.get(self.cursor_field, None))}
+
+    # Parse the stream_slice with respect to stream_state for Incremental refresh
+    def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
+        # Getting records >= state
+        if stream_state:
+            for record in records_slice:
+                if record[self.cursor_field] >= stream_state.get(self.cursor_field):
+                    yield record
+        else:
+            yield from records_slice
+
+class AccountsStreamMixin(IncrementalLinkedinAdsStream):
+    """
+    This class stands for provide stream slicing.
+    :: Streams: AccountUsers, CampaignGroups, Campaigns
+    
+    :: `slice_key` - the key for slices dict.
+    :: `search_param` - the query param to pass with request_params
+    :: `search_value` - the value for `search_param` to pass with request_params
+    """
 
     search_param = "search.account.values[0]"
     search_value = "urn:li:sponsoredAccount:"
+    slice_key = "account_id"
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
-        params[self.search_param] = f"{self.search_value}{stream_slice.get('account_id')}"
+        params[self.search_param] = f"{self.search_value}{stream_slice.get(self.slice_key)}"
         return params
 
     def read_records(self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         accounts_stream = Accounts(config=self.config)
         for data in accounts_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"account_id": data[self.primary_key]}, **kwargs)
-
+            slice = super().read_records(stream_slice={self.slice_key: data[self.primary_key]}, **kwargs)
+            yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
 
 class Accounts(LinkedinAdsStream):
     """
-    Get Accounts data.
-    More info about LinkedIn Ads / Accounts:
+    Get Accounts data. More info about LinkedIn Ads / Accounts:
     https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-accounts?tabs=http
     """
-    #TODO: add ability to use the account_ids from user's spec in UI
-    #TODO: edit schema based on example response from link
-
+    
     def path(self, **kwargs) -> str:
         return "adAccountsV2"
 
-class AccountUsers(LinkedinAdsStreamMixin):
+    def request_headers(self, stream_state: Mapping[str, Any], **kwargs) -> Mapping[str, Any]:
+        """
+        If account_ids are specified as user's input from configuration, 
+        we must use MODIFIED header: {'X-RestLi-Protocol-Version': '2.0.0'}
+        """
+        return {'X-RestLi-Protocol-Version': '2.0.0'} if self.accounts else {}
+
+    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        """
+        Override request_params() to have the ability to accept the specific account_ids from user's configuration.
+        If we have list of account_ids, we need to make sure that the request_params are encoded correctly,
+        We will get HTTP Error 500, if we use standard requests.urlencode methods to parse parameters,
+        so the urlencode(..., safe=":(),") is used instead, to keep the values as they are.
+        """
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        if self.accounts:
+            account_list = ",".join(map(str, self.config.get("account_ids")))
+            params["search"] = f'(id:(values:List({account_list})))'
+            return urlencode(params, safe=":(),")
+        return params
+    
+        
+class AccountUsers(AccountsStreamMixin):
     """
-    Get AccountUsers data using `account_id` slicing.
-    More info about LinkedIn Ads / AccountUsers:
+    Get AccountUsers data using `account_id` slicing. More info about LinkedIn Ads / AccountUsers:
     https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-account-users?tabs=http
     """
-
+    
     search_param = "accounts"
 
     def path(self, **kwargs) -> str:
@@ -111,19 +174,18 @@ class AccountUsers(LinkedinAdsStreamMixin):
         return params
 
 
-class CampaignGroups(LinkedinAdsStreamMixin):
+class CampaignGroups(AccountsStreamMixin):
     """
     Get CampaignGroups data using `account_id` slicing.
     More info about LinkedIn Ads / CampaignGroups:
     https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaign-groups?tabs=http
     """
-    #TODO: edit schema based on example response from link
 
     def path(self, **kwargs) -> str:
         return "adCampaignGroupsV2"
 
 
-class Campaigns(LinkedinAdsStreamMixin):
+class Campaigns(AccountsStreamMixin):
     """
     Get Campaigns data using `account_id` slicing.
     More info about LinkedIn Ads / Campaigns:
@@ -133,44 +195,6 @@ class Campaigns(LinkedinAdsStreamMixin):
 
     def path(self, **kwargs) -> str:
         return "adCampaignsV2"
-
-
-
-
-class IncrementalLinkedinAdsStream(LinkedinAdsStream, ABC):
-
-    @property
-    def limit(self):
-        return self.limit
-
-    state_checkpoint_interval = limit
-
-    @property
-    def cursor_field(self) -> str:
-        return []
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
-        """
-        return {}
-
-
-class Employees(IncrementalLinkedinAdsStream):
-
-    cursor_field = "start_date"
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "employee_id"
-
-    def path(self, **kwargs) -> str:
-
-        return "employees"
-
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-
-        raise NotImplementedError("Implement stream slices or delete this method!")
 
 
 class SourceLinkedinAds(AbstractSource):

@@ -1,0 +1,38 @@
+{
+  "type": [
+    "null",
+    "object"
+  ],
+  "properties": {
+    "account": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "created": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "lastModified": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "role": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "user": {
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  }
+}

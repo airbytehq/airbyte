@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Linkedin Ads Spec",
     "type": "object",
-    "required": ["start_date","credentials","redirect_uri"],
+    "required": ["start_date","credentials","account_ids"],
     "additionalProperties": false,
     "properties": {
       "start_date": {
@@ -12,7 +12,7 @@
         "title": "Start Date",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "description": "UTC date and time in the format 2020-09-17T00:00:00Z. Any data before this date will not be replicated.",
-        "examples": ["2020-09-17T00:00:00Z"]
+        "examples": ["2021-05-17T00:00:00Z"]
       },
       "access_token": {
         "type": "string",
@@ -25,7 +25,7 @@
         "type": "array",
         "description": "The account ids, from which you would like to fetch the data, separated by space. Leave empty to fetch from all accounts.",
         "items": {
-          "type": "string"
+          "type": "integer"
         },
         "default": []
       }

@@ -25,7 +25,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "beautifulsoup4"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "pendulum"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
