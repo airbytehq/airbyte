@@ -30,7 +30,7 @@ dependencies {
 sourceSets {
     main {
         java {
-            srcDirs "$buildDir/generated/jooq/src/main/java", "$projectDir/src/main/java"
+            srcDirs "$projectDir/src/main/java", "$buildDir/generated/jooq/src/main/java"
         }
         resources {
             srcDir "$projectDir/src/main/resources"
