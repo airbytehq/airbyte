@@ -72,7 +72,7 @@ public class FlywayFormatter {
     Field<String> type = field("Type", SQLDataType.VARCHAR);
     Field<String> version = field("Version", SQLDataType.VARCHAR);
     Field<String> description = field("Description", SQLDataType.VARCHAR);
-    Field<String> script = field("State", SQLDataType.VARCHAR);
+    Field<String> script = field("Script", SQLDataType.VARCHAR);
     Result<Record4<String, String, String, String>> result = CTX.newResult(type, version, description, script);
     migrationOutputList.forEach(output -> result.add(CTX.newRecord(type, version, description, script).values(
         String.format("%s %s", output.type, output.category),
