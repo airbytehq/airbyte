@@ -27,11 +27,7 @@ package io.airbyte.db.instance;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -55,7 +51,6 @@ public class BaseDatabaseMigrator implements DatabaseMigrator {
 
   private final Database database;
   private final Flyway flyway;
-  private final String schemaDumpFile;
 
   /**
    * @param dbIdentifier A name to identify the database. Preferably one word. This identifier will be
@@ -63,22 +58,18 @@ public class BaseDatabaseMigrator implements DatabaseMigrator {
    *        "imports", the history table name will be "airbyte_imports_migrations".
    * @param migrationFileLocations Example: "classpath:db/migration". See:
    *        https://flywaydb.org/documentation/concepts/migrations#discovery-1
-   * @param schemaDumpFile The default schema dump file for this database.
    */
   protected BaseDatabaseMigrator(Database database,
                                  String dbIdentifier,
                                  String migrationRunner,
-                                 String migrationFileLocations,
-                                 String schemaDumpFile) {
+                                 String migrationFileLocations) {
     this.database = database;
-    this.schemaDumpFile = schemaDumpFile;
     this.flyway = getConfiguration(database, dbIdentifier, migrationRunner, migrationFileLocations).load();
   }
 
   @VisibleForTesting
-  public BaseDatabaseMigrator(Database database, String schemaDumpFile, Flyway flyway) {
+  public BaseDatabaseMigrator(Database database, Flyway flyway) {
     this.database = database;
-    this.schemaDumpFile = schemaDumpFile;
     this.flyway = flyway;
   }
 
@@ -123,17 +114,6 @@ public class BaseDatabaseMigrator implements DatabaseMigrator {
         .map(query -> query.toString() + ";")
         .filter(statement -> !statement.startsWith("create schema"))
         .collect(Collectors.joining("\n")));
-  }
-
-  @Override
-  public String dumpSchemaToFile() throws IOException {
-    String schema = dumpSchema();
-    try (PrintWriter writer = new PrintWriter(new File(Path.of(schemaDumpFile).toUri()))) {
-      writer.println(schema);
-    } catch (FileNotFoundException e) {
-      throw new IOException(e);
-    }
-    return schema;
   }
 
   @VisibleForTesting

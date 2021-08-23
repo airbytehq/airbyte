@@ -52,9 +52,4 @@ public interface DatabaseMigrator {
    */
   String dumpSchema() throws IOException;
 
-  /**
-   * Dump the current database schema to the default file.
-   */
-  String dumpSchemaToFile() throws IOException;
-
 }

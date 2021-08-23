@@ -37,7 +37,7 @@ public class ToysDatabaseMigrator extends BaseDatabaseMigrator {
   public static final String DB_SCHEMA_DUMP = "src/test/resources/toys_database/schema_dump.txt";
 
   public ToysDatabaseMigrator(Database database, String migrationRunner) {
-    super(database, DB_IDENTIFIER, migrationRunner, MIGRATION_FILE_LOCATION, DB_SCHEMA_DUMP);
+    super(database, DB_IDENTIFIER, migrationRunner, MIGRATION_FILE_LOCATION);
   }
 
 }

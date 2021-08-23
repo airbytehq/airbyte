@@ -81,11 +81,6 @@ public class DevDatabaseMigrator implements DatabaseMigrator {
       return "";
     }
 
-    @Override
-    public String dumpSchemaToFile() {
-      return "";
-    }
-
   }
 
   /**
@@ -114,7 +109,7 @@ public class DevDatabaseMigrator implements DatabaseMigrator {
     LOGGER.info("Baseline migrator target version: {}", secondToLastMigrationVersion.get());
     baselineConfig.target(secondToLastMigrationVersion.get());
 
-    return new BaseDatabaseMigrator(fullMigrator.getDatabase(), null, baselineConfig.load());
+    return new BaseDatabaseMigrator(fullMigrator.getDatabase(), baselineConfig.load());
   }
 
   @Override
@@ -138,11 +133,6 @@ public class DevDatabaseMigrator implements DatabaseMigrator {
   @Override
   public String dumpSchema() throws IOException {
     return fullMigrator.dumpSchema();
-  }
-
-  @Override
-  public String dumpSchemaToFile() {
-    throw new UnsupportedOperationException("This method should not be called from this testing implementation");
   }
 
 }

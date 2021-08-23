@@ -43,14 +43,14 @@ class ToysDatabaseMigratorTest extends AbstractToysDatabaseTest {
 
     // Compare pre migration baseline schema
     migrator.baseline();
-    String actualPreMigrationSchema = migrator.dumpSchema();
     String preMigrationSchema = MoreResources.readResource("toys_database/pre_migration_schema.txt").strip();
+    String actualPreMigrationSchema = migrator.dumpSchema();
     assertEquals(preMigrationSchema, actualPreMigrationSchema, "The pre migration schema dump has changed");
 
     // Compare post migration schema
     migrator.migrate();
-    String actualPostMigrationSchema = migrator.dumpSchemaToFile();
     String postMigrationSchema = MoreResources.readResource("toys_database/schema_dump.txt").strip();
+    String actualPostMigrationSchema = migrator.dumpSchema();
     assertEquals(postMigrationSchema, actualPostMigrationSchema, "The post migration schema dump has changed");
   }
 

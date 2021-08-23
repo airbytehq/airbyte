@@ -84,9 +84,15 @@ public class MigrationDevHelper {
     System.out.println("\n==== Post Migration Schema ====\n" + migrator.dumpSchema() + "\n");
   }
 
-  public static void integrateMigration(PostgreSQLContainer<?> container, DatabaseMigrator migrator, String dbIdentifier) throws Exception {
+  public static void integrateMigration(PostgreSQLContainer<?> container, DatabaseMigrator migrator, String dbIdentifier, String schemaDumpFile)
+      throws Exception {
     migrator.migrate();
-    migrator.dumpSchemaToFile();
+    String schema = migrator.dumpSchema();
+    try (PrintWriter writer = new PrintWriter(new File(Path.of(schemaDumpFile).toUri()))) {
+      writer.println(schema);
+    } catch (FileNotFoundException e) {
+      throw new IOException(e);
+    }
 
     org.jooq.meta.jaxb.Configuration configuration = new org.jooq.meta.jaxb.Configuration()
         .withJdbc(new Jdbc()

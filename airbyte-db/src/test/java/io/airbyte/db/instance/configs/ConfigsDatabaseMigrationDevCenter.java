@@ -69,7 +69,7 @@ public class ConfigsDatabaseMigrationDevCenter extends AbstractConfigsDatabaseTe
   @Override
   public void integrateMigration() throws Exception {
     DatabaseMigrator migrator = new ConfigsDatabaseMigrator(database, ConfigsDatabaseMigrationDevCenter.class.getSimpleName());
-    MigrationDevHelper.integrateMigration(container, migrator, "configs");
+    MigrationDevHelper.integrateMigration(container, migrator, "configs", ConfigsDatabaseMigrator.DB_SCHEMA_DUMP);
   }
 
 }

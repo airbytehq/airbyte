@@ -69,7 +69,7 @@ public class JobsDatabaseMigrationDevCenter extends AbstractJobsDatabaseTest imp
   @Override
   public void integrateMigration() throws Exception {
     DatabaseMigrator migrator = new JobsDatabaseMigrator(database, JobsDatabaseMigrationDevCenter.class.getSimpleName());
-    MigrationDevHelper.integrateMigration(container, migrator, "jobs");
+    MigrationDevHelper.integrateMigration(container, migrator, "jobs", JobsDatabaseMigrator.DB_SCHEMA_DUMP);
   }
 
 }
