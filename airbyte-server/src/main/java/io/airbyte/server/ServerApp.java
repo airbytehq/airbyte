@@ -225,10 +225,7 @@ public class ServerApp implements ServerRunnable {
       }
     }
 
-    LOGGER.info("Run flyway migration: {}", configs.runFlywayMigration());
-    if (configs.runFlywayMigration()) {
-      runFlywayMigration(configDatabase, jobDatabase);
-    }
+    runFlywayMigration(configs, configDatabase, jobDatabase);
 
     if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
       LOGGER.info("Starting server...");
@@ -295,14 +292,21 @@ public class ServerApp implements ServerRunnable {
     return databaseVersion.getMinorVersion().compareTo(serverVersion.getMinorVersion()) < 0;
   }
 
-  private static void runFlywayMigration(Database configDatabase, Database jobDatabase) {
-    LOGGER.info("Migrating configs database");
+  private static void runFlywayMigration(Configs configs, Database configDatabase, Database jobDatabase) {
     DatabaseMigrator configDbMigrator = new ConfigsDatabaseMigrator(configDatabase, ServerApp.class.getSimpleName());
-    configDbMigrator.migrate();
-
-    LOGGER.info("Migrating jobs database");
     DatabaseMigrator jobDbMigrator = new JobsDatabaseMigrator(jobDatabase, ServerApp.class.getSimpleName());
-    jobDbMigrator.migrate();
+
+    configDbMigrator.baseline();
+    jobDbMigrator.baseline();
+
+    if (configs.runFlywayMigration()) {
+      LOGGER.info("Migrating configs database");
+      configDbMigrator.migrate();
+      LOGGER.info("Migrating jobs database");
+      jobDbMigrator.migrate();
+    } else {
+      LOGGER.info("Auto Flyway migration is skipped");
+    }
   }
 
 }
