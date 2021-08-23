@@ -22,18 +22,16 @@
 # SOFTWARE.
 #
 
-#import logging
-#logging.basicConfig(level=logging.DEBUG)
 
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import urlencode
 
-import requests
 import pendulum
+import requests
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
@@ -60,8 +58,10 @@ class LinkedinAdsStream(HttpStream, ABC):
         if len(response.json().get("elements")) < self.limit:
             return None
         return {"start": response.json().get("paging").get("start") + self.limit}
-        
-    def request_params(self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
         params = {"count": self.limit, "q": "search"}
         if next_page_token:
             params.update(**next_page_token)
@@ -100,11 +100,12 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream, ABC):
         else:
             yield from records_slice
 
+
 class AccountsStreamMixin(IncrementalLinkedinAdsStream):
     """
     This class stands for provide stream slicing.
     :: Streams: AccountUsers, CampaignGroups, Campaigns
-    
+
     :: `slice_key` - the key for slices dict.
     :: `search_param` - the query param to pass with request_params
     :: `search_value` - the value for `search_param` to pass with request_params
@@ -119,28 +120,31 @@ class AccountsStreamMixin(IncrementalLinkedinAdsStream):
         params[self.search_param] = f"{self.search_value}{stream_slice.get(self.slice_key)}"
         return params
 
-    def read_records(self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         accounts_stream = Accounts(config=self.config)
         for data in accounts_stream.read_records(sync_mode=SyncMode.full_refresh):
-            slice = super().read_records(stream_slice={self.slice_key: data[self.primary_key]}, **kwargs)
+            slice = super().read_records(stream_slice={self.slice_key: data["id"]}, **kwargs)
             yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
+
 
 class Accounts(LinkedinAdsStream):
     """
     Get Accounts data. More info about LinkedIn Ads / Accounts:
     https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-accounts?tabs=http
     """
-    
+
     def path(self, **kwargs) -> str:
         return "adAccountsV2"
 
     def request_headers(self, stream_state: Mapping[str, Any], **kwargs) -> Mapping[str, Any]:
         """
-        If account_ids are specified as user's input from configuration, 
+        If account_ids are specified as user's input from configuration,
         we must use MODIFIED header: {'X-RestLi-Protocol-Version': '2.0.0'}
         """
-        return {'X-RestLi-Protocol-Version': '2.0.0'} if self.accounts else {}
+        return {"X-RestLi-Protocol-Version": "2.0.0"} if self.accounts else {}
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         """
@@ -152,17 +156,17 @@ class Accounts(LinkedinAdsStream):
         params = super().request_params(stream_state=stream_state, **kwargs)
         if self.accounts:
             account_list = ",".join(map(str, self.config.get("account_ids")))
-            params["search"] = f'(id:(values:List({account_list})))'
+            params["search"] = f"(id:(values:List({account_list})))"
             return urlencode(params, safe=":(),")
         return params
-    
-        
+
+
 class AccountUsers(AccountsStreamMixin):
     """
     Get AccountUsers data using `account_id` slicing. More info about LinkedIn Ads / AccountUsers:
     https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-account-users?tabs=http
     """
-    
+    primary_key = None
     search_param = "accounts"
 
     def path(self, **kwargs) -> str:
@@ -191,7 +195,6 @@ class Campaigns(AccountsStreamMixin):
     More info about LinkedIn Ads / Campaigns:
     https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaigns?tabs=http
     """
-    #TODO: edit schema based on example response from link
 
     def path(self, **kwargs) -> str:
         return "adCampaignsV2"
@@ -211,9 +214,8 @@ class SourceLinkedinAds(AbstractSource):
         try:
             response = requests.get(url=profile_url, headers=header)
             response.raise_for_status()
-            print(response.headers)
             return True, None
-        except requests.exceptions.HTTPError as e:
+        except requests.exceptions.RequestException as e:
             return False, f"{e}, {response.json().get('message')}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -224,9 +226,4 @@ class SourceLinkedinAds(AbstractSource):
 
         config["authenticator"] = TokenAuthenticator(token=config["access_token"])
 
-        return [
-            Accounts(config),
-            AccountUsers(config),
-            CampaignGroups(config),
-            Campaigns(config)
-        ]
+        return [Accounts(config), AccountUsers(config), CampaignGroups(config), Campaigns(config)]

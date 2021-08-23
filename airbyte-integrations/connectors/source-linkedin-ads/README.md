@@ -111,11 +111,11 @@ To run your integration tests with docker
 All commands should be run from airbyte project root.
 To run unit tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-linkedin-ads:unitTest
+./gradlew clean :airbyte-integrations:connectors:source-linkedin-ads:unitTest
 ```
 To run acceptance and custom integration tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-linkedin-ads:integrationTest
+./gradlew clean :airbyte-integrations:connectors:source-linkedin-ads:integrationTest
 ```
 
 ## Dependency Management

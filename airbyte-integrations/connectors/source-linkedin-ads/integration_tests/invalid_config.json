@@ -1,5 +1,5 @@
 {
   "start_date": "2020-01-01T00:00:00Z",
   "access_token": "ACCESS_TOKEN",
-  "account_ids": ["1", "2"]
+  "account_ids": [1, 2]
 }
