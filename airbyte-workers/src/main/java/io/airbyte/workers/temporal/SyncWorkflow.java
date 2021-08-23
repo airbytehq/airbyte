@@ -143,8 +143,6 @@ public interface SyncWorkflow {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReplicationActivityImpl.class);
 
-    private static final int MAX_RETRIES = new EnvConfigs().getMaxRetriesPerAttempt();
-
     private final ProcessFactory processFactory;
     private final Path workspaceRoot;
     private final AirbyteConfigValidator validator;
