@@ -32,7 +32,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 
-from .streams import CustomersCart, OrderPayments, Orders, Products, OrderItems
+from .streams import CustomersCart, OrderItems, OrderPayments, Orders, Products
 
 
 class CustomHeaderAuthenticator(HttpAuthenticator):
