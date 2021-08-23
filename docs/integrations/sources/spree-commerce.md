@@ -1,6 +1,6 @@
 # Spree Commerce
 
-[Spree Commerce](https://www.sugarcrm.com/) is an open source eCommerce platform built on Wordpress.
+[Spree Commerce](https://spreecommerce.org/) is an open source eCommerce platform for global brands.
 
 ## Sync overview
 
@@ -15,4 +15,4 @@ Reach out to your service representative or system admin to find the parameters 
 
 
 ### Output schema
-The Spree Commerce schema is described in the [Spree Internals](https://guides.spreecommerce.org/developer/internals/) section of the Spree docs. Otherwise, the schema will follow the rules of the MySQL or Postgres connectors. 
+The Spree Commerce schema is described in the [Spree Internals](https://dev-docs.spreecommerce.org/internals/) section of the Spree docs. Otherwise, the schema will follow the rules of the MySQL or Postgres connectors. 
