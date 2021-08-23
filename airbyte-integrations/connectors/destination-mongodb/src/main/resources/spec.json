@@ -47,10 +47,7 @@
             "properties": {
               "authorization": {
                 "type": "string",
-                "description": "Without authorization.",
-                "enum": ["none"],
-                "default": "none",
-                "order": 0
+                "const": "none"
               }
             }
           },
@@ -63,10 +60,7 @@
             "properties": {
               "authorization": {
                 "type": "string",
-                "description": "Authorization by login and password.",
-                "enum": ["login/password"],
-                "default": "login/password",
-                "order": 0
+                "const": "login/password"
               },
               "username": {
                 "title": "User",

@@ -32,6 +32,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
@@ -93,23 +94,8 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
             String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
                 Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
       }
-      try {
-        Map<String, Object> result = objectMapper.convertValue(recordMessage.getData(), new TypeReference<>() {});
-        var newDocument = new Document();
-        newDocument.put(AIRBYTE_DATA, new Document(result));
-        newDocument.put(AIRBYTE_EMITTED_AT, new LocalDateTime().toString());
-
-        var writeConfig = writeConfigs.get(pair);
-        var collection = writeConfig.getCollection();
-
-        var documents = writeConfig.getDocuments();
-        if (!documents.contains(newDocument.get(AIRBYTE_DATA, Document.class))) {
-          collection.insertOne(newDocument);
-        }
-      } catch (RuntimeException e) {
-        LOGGER.error("Got an error while writing message:" + e.getMessage());
-        throw new RuntimeException(e);
-      }
+      var writeConfig = writeConfigs.get(pair);
+      insertRecordToTmpCollection(writeConfig, message, recordMessage);
     }
   }
 
@@ -118,16 +104,23 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
     try {
       if (!hasFailed) {
         LOGGER.info("Migration finished with no explicit errors. Copying data from tmp tables to permanent");
-        writeConfigs.values()
-            .forEach(
-                mongodbWriteConfig -> copyTable(mongoDatabase, mongodbWriteConfig.getCollectionName(),
-                    mongodbWriteConfig.getTmpCollectionName()));
+        writeConfigs.values().forEach(mongodbWriteConfig -> Exceptions.toRuntime(() -> {
+          try {
+            copyTable(mongoDatabase, mongodbWriteConfig.getCollectionName(), mongodbWriteConfig.getTmpCollectionName());
+          } catch (RuntimeException e) {
+            LOGGER.error("Failed to process a message for Streams numbers: {}, \nSyncMode: {}, \nCollectionName: {}, \nTmpCollectionName: {}",
+                catalog.getStreams().size(), mongodbWriteConfig.getSyncMode(), mongodbWriteConfig.getCollectionName(),
+                mongodbWriteConfig.getTmpCollectionName());
+            LOGGER.error("Failed with exception: {}", e.getMessage());
+            throw new RuntimeException(e);
+          }
+        }));
         outputRecordCollector.accept(lastStateMessage);
       } else {
-        LOGGER.warn("Had errors while migrations");
+        LOGGER.error("Had errors while migrations");
       }
     } finally {
-      LOGGER.info("Removing tmp tables...");
+      LOGGER.info("Removing tmp collections...");
       writeConfigs.values()
           .forEach(mongodbWriteConfig -> mongoDatabase.getCollection(mongodbWriteConfig.getTmpCollectionName()).drop());
       LOGGER.info("Finishing destination process...completed");
@@ -135,6 +128,30 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
   }
 
   /* Helpers */
+
+  private void insertRecordToTmpCollection(MongodbWriteConfig writeConfig,
+                                           AirbyteMessage message,
+                                           AirbyteRecordMessage recordMessage) {
+    try {
+      Map<String, Object> result = objectMapper.convertValue(recordMessage.getData(), new TypeReference<>() {});
+      var newDocument = new Document();
+      newDocument.put(AIRBYTE_DATA, new Document(result));
+      newDocument.put(AIRBYTE_EMITTED_AT, new LocalDateTime().toString());
+
+      var collection = writeConfig.getCollection();
+
+      var documents = writeConfig.getDocuments();
+      if (!documents.contains(newDocument.get(AIRBYTE_DATA, Document.class))) {
+        collection.insertOne(newDocument);
+      }
+    } catch (RuntimeException e) {
+      LOGGER.error("Got an error while writing message:" + e.getMessage());
+      LOGGER.error(String.format(
+          "Failed to process a message for Streams numbers: %s, \nSyncMode: %s, \nCollectionName: %s, \nTmpCollectionName: %s, \nAirbyteMessage: %s",
+          catalog.getStreams().size(), writeConfig.getSyncMode(), writeConfig.getCollectionName(), writeConfig.getTmpCollectionName(), message));
+      throw new RuntimeException(e);
+    }
+  }
 
   private static void copyTable(MongoDatabase mongoDatabase, String collectionName, String tmpCollectionName) {
 

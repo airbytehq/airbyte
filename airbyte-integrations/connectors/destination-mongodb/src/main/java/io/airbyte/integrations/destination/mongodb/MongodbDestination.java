@@ -93,6 +93,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
       var database = getMongoDatabase(client, config.get(DATABASE).asText());
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (RuntimeException e) {
+      LOGGER.info("Check failed.", e);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED)
           .withMessage(e.getMessage() != null ? e.getMessage() : e.toString());
     }
@@ -113,7 +114,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
       final String collectionName = namingResolver.getRawTableName(streamName);
       final String tmpCollectionName = namingResolver.getTmpTableName(streamName);
 
-      if (configStream.getDestinationSyncMode() == DestinationSyncMode.OVERWRITE) {
+      if (DestinationSyncMode.OVERWRITE == configStream.getDestinationSyncMode()) {
         database.getCollection(collectionName).drop();
       }
 
@@ -126,7 +127,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
       }
 
       writeConfigs.put(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
-          new MongodbWriteConfig(collectionName, tmpCollectionName, collection, documents));
+          new MongodbWriteConfig(collectionName, tmpCollectionName, configStream.getDestinationSyncMode(), collection, documents));
     }
     return new MongodbRecordConsumer(writeConfigs, database, catalog, outputRecordCollector);
   }
