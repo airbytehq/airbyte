@@ -35,7 +35,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .utils import ShopifyRequestRateLimits as balancer
+from .utils import BalanceRateLimit as balancer
 
 
 class ShopifyStream(HttpStream, ABC):

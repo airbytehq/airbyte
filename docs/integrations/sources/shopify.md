@@ -45,11 +45,11 @@ This Source is capable of syncing the following core Streams:
 ### Performance considerations
 
 Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-apis/rate-limits).
-Typicaly, there shoulld not be issues with throttling or exceeding the rate limits, in some edge cases, user can receive the warning message as follows:
+Typically, there should not be issues with throttling or exceeding the rate limits but in some edge cases, user can receive the warning message as follows:
 ```
 "Caught retryable error '<some_error> or null' after <some_number> tries. Waiting <some_number> seconds then retrying..."
 ```
-It is normal when the connector hit the 429 - Rate Limit Exceeded HTTP Error.
+This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Error.
 With given error message the sync operation is still goes on, but will require more time to finish.
 
 ## Getting started

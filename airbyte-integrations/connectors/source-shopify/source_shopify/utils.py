@@ -29,63 +29,73 @@ from time import sleep
 import requests
 
 
-class ShopifyRequestRateLimits(object):
+class RateLimitTimings:
+    """
+    Define timings for RateLimits. Adjust timings if needed.
+    """
 
-    @staticmethod
-    def balance_rate_limit(threshold: float = 0.9, rate_limit_header: str = "X-Shopify-Shop-Api-Call-Limit"):
+    on_unknown_load: float = 1.0
+    on_low_load: float = 0.2
+    on_mid_load: float = 1.5
+    on_high_load: float = 5.0
+
+
+class RateLimiter:
+    def get_wait_time(*args, threshold: float = 0.9, rate_limit_header: str = "X-Shopify-Shop-Api-Call-Limit"):
         """
         To avoid reaching Shopify API Rate Limits, use the "X-Shopify-Shop-Api-Call-Limit" header value,
         to determine the current rate limits and load and handle wait_time based on load %.
         Recomended wait_time between each request is 1 sec, we would handle this dynamicaly.
 
-        :: wait_time time between each request - 100 miliseconds
+        :: threshold - is the % cutoff for the rate_limits % load, if this cutoff is crossed,
+                        the connector waits `sleep_on_high_load` amount of time, default value = 0.9 (90%)
+        :: wait_time - time between each request = 200 miliseconds
+        :: rate_limit_header - responce header item, contains information with rate_limits (current/max)
 
         Header example:
         {"X-Shopify-Shop-Api-Call-Limit": 10/40}, where: 10 - current load, 40 - max requests capacity.
 
         More information: https://shopify.dev/api/usage/rate-limits
         """
+        # average load based on threshold
+        mid_load = threshold / 2
+        # find the requests.Response inside args list
+        for arg in args:
+            response = arg if isinstance(arg, requests.models.Response) else None
+        # Get the rate_limits from response
+        rate_limits = response.headers.get(rate_limit_header) if response else None
+        # define current load from rate_limits
+        if rate_limits:
+            current_rate, max_rate_limit = rate_limits.split("/")
+            load = int(current_rate) / int(max_rate_limit)
+        else:
+            load = None
+        # define wait_time based on load conditions
+        if not load:
+            # when there is no rate_limits from header, use the `sleep_on_unknown_load`
+            wait_time = RateLimitTimings.on_unknown_load
+        elif load >= threshold:
+            wait_time = RateLimitTimings.on_high_load
+        elif load >= mid_load:
+            wait_time = RateLimitTimings.on_mid_load
+        elif load < mid_load:
+            wait_time = RateLimitTimings.on_low_load
+        return wait_time
 
-        # Define standard timings in seconds
-        sleep_on_low_load: float = 0.2
-        sleep_on_avg_load: float = 1.5
-        sleep_on_high_load: float = 5.0
-        sleep_on_unknown_load: float = 1.0
+    def wait_time(wait_time: float):
+        return sleep(wait_time)
 
+
+class BalanceRateLimit:
+    """
+    Adjust `threshold` and `rate_limit_header` if needed.
+    """
+
+    def balance_rate_limit(threshold: float = 0.9, rate_limit_header: str = "X-Shopify-Shop-Api-Call-Limit"):
         def decorator(func):
             @wraps(func)
             def wrapper_balance_rate_limit(*args, **kwargs):
-                # average load based on threshold
-                avg_load = threshold / 2
-                # find the requests.Response inside args list
-                for arg in args:
-                    response = arg if type(arg) is requests.models.Response else None
-
-                # Get the rate_limits from response
-                rate_limits = response.headers.get(rate_limit_header) if response else None
-
-                # define current load from rate_limits
-                if rate_limits:
-                    current_rate, max_rate_limit = rate_limits.split("/")
-                    load = int(current_rate) / int(max_rate_limit)
-                else:
-                    load = None
-
-                # define wait_time based on load conditions
-                if not load:
-                    # when there is no rate_limits from header,
-                    # use the 1.0 sec
-                    wait_time = sleep_on_unknown_load
-                elif load >= threshold:
-                    wait_time = sleep_on_high_load
-                elif load >= avg_load < threshold:
-                    wait_time = sleep_on_avg_load
-                elif load < avg_load:
-                    wait_time = sleep_on_low_load
-
-                # sleep based on load conditions
-                sleep(wait_time)
-
+                RateLimiter.wait_time(RateLimiter.get_wait_time(*args, threshold=threshold, rate_limit_header=rate_limit_header))
                 return func(*args, **kwargs)
 
             return wrapper_balance_rate_limit
