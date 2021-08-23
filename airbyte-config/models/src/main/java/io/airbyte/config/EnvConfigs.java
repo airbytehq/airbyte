@@ -25,10 +25,15 @@
 package io.airbyte.config;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import io.airbyte.config.helpers.LogClientSingleton;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -59,6 +64,7 @@ public class EnvConfigs implements Configs {
   public static final String CONFIG_DATABASE_PASSWORD = "CONFIG_DATABASE_PASSWORD";
   public static final String CONFIG_DATABASE_URL = "CONFIG_DATABASE_URL";
   public static final String WEBAPP_URL = "WEBAPP_URL";
+  public static final String WORKER_POD_TOLERATIONS = "WORKER_POD_TOLERATIONS";
   public static final String MAX_SYNC_JOB_ATTEMPTS = "MAX_SYNC_JOB_ATTEMPTS";
   public static final String MAX_SYNC_TIMEOUT_DAYS = "MAX_SYNC_TIMEOUT_DAYS";
   private static final String MINIMUM_WORKSPACE_RETENTION_DAYS = "MINIMUM_WORKSPACE_RETENTION_DAYS";
@@ -230,6 +236,38 @@ public class EnvConfigs implements Configs {
     long maxSizeMb = getEnvOrDefault(MAXIMUM_WORKSPACE_SIZE_MB, DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB);
 
     return new WorkspaceRetentionConfig(minDays, maxDays, maxSizeMb);
+  }
+
+  @Override
+  public List<WorkerPodToleration> getWorkerPodTolerations() {
+    // Format:
+    // Tolerations separated by ;;
+    // Each toleration has k=v format for necessary fields separated by ,
+    // t1-k1=v1,t1-k2=v2,t1-k3=v3;;t2-k1=v1,t2-k2=v2,t2-k3=v3 ....
+    // we need at-least key, effect and operator to be present. value is optional
+    // we do not
+    String tolerations = getEnvOrDefault(WORKER_POD_TOLERATIONS, "");
+    return Strings.isNullOrEmpty(tolerations) ? List.of() : Splitter.on(";;")
+        .splitToStream(tolerations)
+        .filter(tolerationStr -> !Strings.isNullOrEmpty(tolerationStr))
+        .map(tolerationStr -> {
+          Map<String, String> tolerationMap = Splitter.on(",")
+              .splitToStream(tolerationStr)
+              .map(s -> s.split("="))
+              .collect(Collectors.toMap(s -> s[0], s -> s[1]));
+          if (tolerationMap.containsKey("key") && tolerationMap.containsKey("effect") && tolerationMap.containsKey("operator")) {
+            return new WorkerPodToleration(tolerationMap.get("key"),
+                tolerationMap.get("effect"),
+                tolerationMap.get("value"),
+                tolerationMap.get("operator"));
+          } else {
+            LOGGER.warn("Ignoring toleration {}, missing one of key,effect or operator",
+                tolerationStr);
+            return null;
+          }
+        })
+        .filter(Objects::nonNull)
+        .collect(Collectors.toList());
   }
 
   @Override
