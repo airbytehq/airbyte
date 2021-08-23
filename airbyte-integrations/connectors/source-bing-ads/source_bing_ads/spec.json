@@ -11,7 +11,8 @@
       "customer_id",
       "developer_token",
       "refresh_token",
-      "user_id"
+      "user_id",
+      "reports_start_date"
     ],
     "additionalProperties": false,
     "properties": {
@@ -84,6 +85,11 @@
       "user_id": {
         "type": "string",
         "description": "Unique user identifier."
+      },
+      "reports_start_date": {
+        "type": "string",
+        "format": "date-time",
+        "description": "From which date perform initial sync for report related streams."
       }
     }
   }

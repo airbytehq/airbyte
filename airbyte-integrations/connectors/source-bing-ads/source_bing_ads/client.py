@@ -23,16 +23,17 @@
 #
 
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 from typing import Any, Iterator, Mapping, Optional
 
 import backoff
+import pendulum
 from airbyte_cdk.logger import AirbyteLogger
 from bingads.authorization import AuthorizationData, OAuthTokens, OAuthWebAuthCodeGrant
-from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from bingads.service_client import ServiceClient
 from bingads.util import errorcode_of_exception
+from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from suds import WebFault, sudsobject
 
 
@@ -56,6 +57,7 @@ class Client:
         client_secret: str,
         client_id: str,
         refresh_token: str,
+        reports_start_date: str,
         **kwargs: Mapping[str, Any],
     ) -> None:
         self.authorization_data: Mapping[str, AuthorizationData] = {}
@@ -70,6 +72,7 @@ class Client:
         self.developer_token = developer_token
 
         self.oauth: OAuthTokens = self._get_access_token()
+        self.reports_start_date = pendulum.parse(reports_start_date).astimezone(tz=timezone.utc)
 
     @lru_cache(maxsize=None)
     def _get_auth_data(self, account_id: Optional[str] = None) -> AuthorizationData:
