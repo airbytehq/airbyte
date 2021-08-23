@@ -61,6 +61,7 @@ public class EnvConfigs implements Configs {
   public static final String WEBAPP_URL = "WEBAPP_URL";
   public static final String MAX_RETRIES_PER_ATTEMPT = "MAX_RETRIES_PER_ATTEMPT";
   public static final String MAX_SYNC_JOB_ATTEMPTS = "MAX_SYNC_JOB_ATTEMPTS";
+  public static final String MAX_SYNC_TIMEOUT_DAYS = "MAX_SYNC_TIMEOUT_DAYS";
   private static final String MINIMUM_WORKSPACE_RETENTION_DAYS = "MINIMUM_WORKSPACE_RETENTION_DAYS";
   private static final String MAXIMUM_WORKSPACE_RETENTION_DAYS = "MAXIMUM_WORKSPACE_RETENTION_DAYS";
   private static final String MAXIMUM_WORKSPACE_SIZE_MB = "MAXIMUM_WORKSPACE_SIZE_MB";
@@ -154,6 +155,11 @@ public class EnvConfigs implements Configs {
   @Override
   public int getMaxSyncJobAttempts() {
     return Integer.parseInt(getEnvOrDefault(MAX_SYNC_JOB_ATTEMPTS, "3"));
+  }
+
+  @Override
+  public int getMaxSyncTimeoutDays() {
+    return Integer.parseInt(getEnvOrDefault(MAX_SYNC_TIMEOUT_DAYS, "3"));
   }
 
   @Override
