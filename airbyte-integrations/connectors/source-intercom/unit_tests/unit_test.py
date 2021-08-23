@@ -25,6 +25,7 @@
 
 import pytest
 import requests
+from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_intercom.source import Companies, Contacts, IntercomStream
 
 test_data = [
@@ -60,6 +61,7 @@ def test_get_next_page_token(intercom_class, response_json, expected_output_toke
 
     requests_mock.get("https://api.intercom.io/conversations", json=response_json)
     response = requests.get("https://api.intercom.io/conversations")
-    test = intercom_class.next_page_token(response)
+    intercom_class = type("intercom_class", (intercom_class,), {"path": ""})
+    test = intercom_class(authenticator=NoAuth).next_page_token(response)
 
     assert test == expected_output_token
