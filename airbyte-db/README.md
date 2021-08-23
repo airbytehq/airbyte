@@ -17,7 +17,7 @@ Check `io.airbyte.db.instance.configs` for example.
 
 # How to Write a Migration
 - Go to `<db-name>DatabaseMigrationDevCenter.java`. This file is the command center for migration development.
-  - E.g. for the `configs` database, the file is `ConfigsDatabaseMigrationTest.java`.
+  - E.g. for the `configs` database, the file is `ConfigsDatabaseMigrationDevCenter.java`.
 - Run the `createMigration` to create a new migration file under `io.airbyte.db.instance.<db-name>.migrations`.
   - The name of the file should follow this pattern: `V(version)__(migration_description_in_snake_case).java`.
   - This pattern is mandatory for Flyway to correctly locate and sort the migrations.
