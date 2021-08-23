@@ -25,7 +25,9 @@
 package io.airbyte.integrations.destination.oracle;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
@@ -34,6 +36,7 @@ import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTes
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.nio.file.Path;
 import java.util.stream.Collectors;
 import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
@@ -41,21 +44,18 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.OracleContainer;
 
 public class OracleIntegrationTest extends DestinationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleIntegrationTest.class);
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
-  private static OracleContainer db;
+  private static JsonNode baseConfig;
   private ExtendedNameTransformer namingResolver = new OracleNameTransformer();
-  private JsonNode config;
+  private static JsonNode config;
 
-  @BeforeAll
-  protected static void init() {
-    db = new OracleContainer("epiclabs/docker-oracle-xe-11g");
-    db.start();
+  public JsonNode getStaticConfig() {
+    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
   }
 
   @Override
@@ -63,32 +63,9 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
     return "airbyte/destination-oracle:dev";
   }
 
-  private JsonNode getConfig(OracleContainer db) {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("schema", "testSchema")
-        .put("sid", db.getSid())
-        .build());
-  }
-
   @Override
   protected JsonNode getConfig() {
     return config;
-  }
-
-  @Override
-  protected JsonNode getFailCheckConfig() {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("username", db.getUsername())
-        .put("password", "wrong password")
-        .put("schema", "public")
-        .put("port", db.getFirstMappedPort())
-        .put("sid", db.getSid())
-        .build());
   }
 
   @Override
@@ -117,6 +94,13 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
   }
 
   @Override
+  protected JsonNode getFailCheckConfig() {
+    final JsonNode invalidConfig = Jsons.clone(config);
+    ((ObjectNode) invalidConfig).put("password", "wrong password");
+    return invalidConfig;
+  }
+
+  @Override
   protected List<String> resolveIdentifier(String identifier) {
     final List<String> result = new ArrayList<>();
     final String resolved = namingResolver.getIdentifier(identifier);
@@ -130,7 +114,7 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
   }
 
   private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
-    List<org.jooq.Record> result = Databases.createOracleDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl())
+    List<org.jooq.Record> result = Databases.createOracleDatabase(config.get("user").asText(), config.get("password").asText(), "oracle.jdbc.driver.OracleDriver")
         .query(ctx -> ctx
             .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, OracleDestination.COLUMN_NAME_EMITTED_AT))
             .stream()
@@ -142,16 +126,16 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
         .collect(Collectors.toList());
   }
 
-  private static Database getDatabase(JsonNode config) {
+  private static Database getDatabase() {
     // todo (cgardens) - rework this abstraction so that we do not have to pass a null into the
     // constructor. at least explicitly handle it, even if the impl doesn't change.
     return Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        baseConfig.get("username").asText(),
+            baseConfig.get("password").asText(),
         String.format("jdbc:oracle:thin:@//%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("sid").asText()),
+                baseConfig.get("host").asText(),
+                baseConfig.get("port").asText(),
+                baseConfig.get("sid").asText()),
         "oracle.jdbc.driver.OracleDriver",
         null);
   }
@@ -172,9 +156,10 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
 
   @Override
   protected void setup(TestDestinationEnv testEnv) throws SQLException {
-    config = getConfig(db);
-
-    final Database database = getDatabase(config);
+    // config = getConfig(db);
+    baseConfig = getStaticConfig();
+    config = Jsons.clone(baseConfig);
+    final Database database = getDatabase();
     database.query(ctx -> {
       ctx.execute("alter database default tablespace users");
       return null;
@@ -184,9 +169,9 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) {
-    config = getConfig(db);
+    config = getStaticConfig();
 
-    final Database database = getDatabase(config);
+    final Database database = getDatabase();
     var tables = getAllTables(database);
     tables.removeAll(allTables);
     try {
@@ -199,12 +184,6 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
     } catch (SQLException e) {
       LOGGER.error("Error while cleaning up test.", e);
     }
-  }
-
-  @AfterAll
-  static void cleanUp() {
-    db.stop();
-    db.close();
   }
 
 }
