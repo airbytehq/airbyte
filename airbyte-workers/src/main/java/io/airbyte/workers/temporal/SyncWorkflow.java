@@ -39,7 +39,6 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
-import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.DbtTransformationRunner;
@@ -67,8 +66,6 @@ import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.function.BiFunction;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -174,28 +171,7 @@ public interface SyncWorkflow {
         return syncInput;
       };
 
-      final Predicate<ReplicationOutput> shouldAttemptAgain =
-          output -> output.getReplicationAttemptSummary().getStatus() != ReplicationStatus.COMPLETED;
-
-      final BiFunction<StandardSyncInput, ReplicationOutput, StandardSyncInput> nextAttemptInput = (input, lastOutput) -> {
-        final StandardSyncInput newInput = Jsons.clone(input);
-        newInput.setState(lastOutput.getState());
-        return newInput;
-      };
-
-      // final RetryingTemporalAttemptExecution<StandardSyncInput, ReplicationOutput>
-      // temporalAttemptExecution =
-      // new RetryingTemporalAttemptExecution<>(
-      // workspaceRoot,
-      // jobRunConfig,
-      // getWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput),
-      // inputSupplier,
-      // new CancellationHandler.TemporalCancellationHandler(),
-      // shouldAttemptAgain,
-      // nextAttemptInput,
-      // MAX_RETRIES);
-
-      final var temporalAttempt = new TemporalAttemptExecution<StandardSyncInput, ReplicationOutput>(
+      final TemporalAttemptExecution<StandardSyncInput, ReplicationOutput> temporalAttempt = new TemporalAttemptExecution<>(
           workspaceRoot,
           jobRunConfig,
           getWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput),
