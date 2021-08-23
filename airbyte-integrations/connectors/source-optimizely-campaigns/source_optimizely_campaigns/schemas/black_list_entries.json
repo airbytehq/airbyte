@@ -1,0 +1,58 @@
+{
+  "type": "object",
+  "required": ["mailingGroupId", "pattern"],
+  "properties": {
+    "mailingGroupId": {
+      "type": "number"
+    },
+    "pattern": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "created": {
+      "type": "string"
+    },
+    "modified": {
+      "type": "string"
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "params": {
+          "type": "object",
+          "properties": {
+            "additionalProp1": {
+              "type": "string"
+            },
+            "additionalProp2": {
+              "type": "string"
+            },
+            "additionalProp3": {
+              "type": "string"
+            }
+          }
+        },
+        "type": {
+          "type": "string"
+        },
+        "uri": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "rel": {
+          "type": "string"
+        },
+        "uriBuilder": {
+          "type": "array"
+        },
+        "rels": {
+          "type": "array"
+        }
+      }
+    }
+  }
+}

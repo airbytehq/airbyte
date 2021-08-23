@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "required": ["attributeNames"],
+  "properties": {
+    "recipient_list": {
+      "type": "number"
+    },
+    "attributeNames": {
+      "type": "array"
+    }
+  }
+}

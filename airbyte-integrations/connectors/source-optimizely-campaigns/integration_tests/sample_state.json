@@ -1,0 +1,17 @@
+{
+  "recipient_lists": {
+    "modified": "2020-12-31T00:00:00+01:00"
+  },
+  "recipients": {
+    "modified": "2020-12-31T00:00:00+01:00"
+  },
+  "smart_campaigns": {
+    "modified": "2020-12-31T00:00:00+01:00"
+  },
+  "transactional_mails": {
+    "modified": "2020-12-31T00:00:00+01:00"
+  },
+  "unsubscribes": {
+    "created": "2020-12-31T00:00:00+01:00"
+  }
+}

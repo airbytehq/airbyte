@@ -1,0 +1,130 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "attribute_names",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "default_cursor_field": [],
+        "source_defined_primary_key": []
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": null,
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "black_list_entries",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "default_cursor_field": [],
+        "source_defined_primary_key": [["pattern"], ["mailingGroupId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": null,
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "recipient_lists",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["modified"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["modified"],
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "recipients",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["modified"],
+        "source_defined_primary_key": [["id"], ["recipient_list"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["modified"],
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "smart_campaign_reports",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "default_cursor_field": [],
+        "source_defined_primary_key": [["campaignId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": null,
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "smart_campaigns",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["modified"],
+        "source_defined_primary_key": [["id"], ["mailingGroupId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["modified"],
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "transactional_mail_reports",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "default_cursor_field": [],
+        "source_defined_primary_key": [["campaignId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": null,
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "transactional_mails",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["modified"],
+        "source_defined_primary_key": [["id"], ["mailingGroupId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["modified"],
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "unsubscribes",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created"],
+        "source_defined_primary_key": [["recipientListId"], ["recipientId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["created"],
+      "primary_key": null
+    }
+  ]
+}

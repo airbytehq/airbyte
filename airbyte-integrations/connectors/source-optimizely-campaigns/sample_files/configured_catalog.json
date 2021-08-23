@@ -1,0 +1,1814 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "attribute_names",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "recipient_list": {
+              "type": "number"
+            },
+            "attributeNames": {
+              "type": "array"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "default_cursor_field": [],
+        "source_defined_primary_key": []
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": null,
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "black_list_entries",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "mailingGroupId": {
+              "type": "number"
+            },
+            "pattern": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "created": {
+              "type": "string"
+            },
+            "modified": {
+              "type": "string"
+            },
+            "links": {
+              "type": "object",
+              "properties": {
+                "params": {
+                  "type": "object",
+                  "properties": {
+                    "additionalProp1": {
+                      "type": "string"
+                    },
+                    "additionalProp2": {
+                      "type": "string"
+                    },
+                    "additionalProp3": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "type": {
+                  "type": "string"
+                },
+                "uri": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "rel": {
+                  "type": "string"
+                },
+                "uriBuilder": {
+                  "type": "array"
+                },
+                "rels": {
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "default_cursor_field": [],
+        "source_defined_primary_key": [["pattern"], ["mailingGroupId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": null,
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "recipient_lists",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "number"
+            },
+            "name": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "recipients": {
+              "type": "number"
+            },
+            "mediaTypes": {
+              "type": "array"
+            },
+            "testList": {
+              "type": "boolean"
+            },
+            "forTransactionApi": {
+              "type": "boolean"
+            },
+            "created": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "modified": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "attributes": {
+              "type": "string"
+            },
+            "links": {
+              "type": "object",
+              "properties": {
+                "params": {
+                  "type": "object",
+                  "properties": {
+                    "additionalProp1": {
+                      "type": "string"
+                    },
+                    "additionalProp2": {
+                      "type": "string"
+                    },
+                    "additionalProp3": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "type": {
+                  "type": "string"
+                },
+                "uri": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "rel": {
+                  "type": "string"
+                },
+                "uriBuilder": {
+                  "type": "array"
+                },
+                "rels": {
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["modified"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": null,
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "recipients",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "recipient_list": {
+              "type": "number"
+            },
+            "name": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "recipients": {
+              "type": "number"
+            },
+            "mediaTypes": {
+              "type": "array"
+            },
+            "testList": {
+              "type": "boolean"
+            },
+            "forTransactionApi": {
+              "type": "boolean"
+            },
+            "created": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "modified": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "optInMailId": {
+              "type": "string"
+            },
+            "links": {
+              "type": "object",
+              "properties": {
+                "params": {
+                  "type": "object",
+                  "properties": {
+                    "additionalProp1": {
+                      "type": "string"
+                    },
+                    "additionalProp2": {
+                      "type": "string"
+                    },
+                    "additionalProp3": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "type": {
+                  "type": "string"
+                },
+                "uri": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "rel": {
+                  "type": "string"
+                },
+                "uriBuilder": {
+                  "type": "array"
+                },
+                "rels": {
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["modified"],
+        "source_defined_primary_key": [["id"], ["recipient_list"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": null,
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "smart_campaign_reports",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "campaignId": {
+              "type": "number"
+            },
+            "campaignName": {
+              "type": "string"
+            },
+            "recipients": {
+              "type": "object",
+              "properties": {
+                "net": {
+                  "type": "number"
+                },
+                "total": {
+                  "type": "number"
+                },
+                "skipped": {
+                  "type": "number"
+                },
+                "inQueue": {
+                  "type": "number"
+                }
+              }
+            },
+            "bounces": {
+              "type": "object",
+              "properties": {
+                "hard": {
+                  "type": "number"
+                },
+                "soft": {
+                  "type": "number"
+                }
+              }
+            },
+            "unsubscribes": {
+              "type": "number"
+            },
+            "opens": {
+              "type": "object",
+              "properties": {
+                "total": {
+                  "type": "number"
+                },
+                "unique": {
+                  "type": "number"
+                }
+              }
+            },
+            "clicks": {
+              "type": "object",
+              "properties": {
+                "total": {
+                  "type": "number"
+                },
+                "unique": {
+                  "type": "number"
+                }
+              }
+            },
+            "links": {
+              "type": "object",
+              "properties": {
+                "params": {
+                  "type": "object",
+                  "properties": {
+                    "additionalProp1": {
+                      "type": "string"
+                    },
+                    "additionalProp2": {
+                      "type": "string"
+                    },
+                    "additionalProp3": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "type": {
+                  "type": "string"
+                },
+                "uri": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "rel": {
+                  "type": "string"
+                },
+                "uriBuilder": {
+                  "type": "array"
+                },
+                "rels": {
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "default_cursor_field": [],
+        "source_defined_primary_key": [["campaignId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": null,
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "smart_campaigns",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "number"
+            },
+            "mailingGroupId": {
+              "type": "number"
+            },
+            "name": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "created": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "modified": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "started": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "finished": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "links": {
+              "type": "object",
+              "properties": {
+                "params": {
+                  "type": "object",
+                  "properties": {
+                    "additionalProp1": {
+                      "type": "string"
+                    },
+                    "additionalProp2": {
+                      "type": "string"
+                    },
+                    "additionalProp3": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "type": {
+                  "type": "string"
+                },
+                "uri": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "rel": {
+                  "type": "string"
+                },
+                "uriBuilder": {
+                  "type": "array"
+                },
+                "rels": {
+                  "type": "array"
+                }
+              }
+            },
+            "recipientLists": {
+              "type": "object",
+              "properties": {
+                "nodeId": {
+                  "type": "string"
+                },
+                "successorNodeId": {
+                  "type": "string"
+                },
+                "recipientListIds": {
+                  "type": "array"
+                },
+                "gridLocation": {
+                  "type": "object",
+                  "properties": {
+                    "x": {
+                      "type": "string"
+                    },
+                    "y": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "links": {
+                  "type": "object",
+                  "properties": {
+                    "params": {
+                      "type": "object",
+                      "properties": {
+                        "additionalProp1": {
+                          "type": "string"
+                        },
+                        "additionalProp2": {
+                          "type": "string"
+                        },
+                        "additionalProp3": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "uri": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "rel": {
+                      "type": "string"
+                    },
+                    "uriBuilder": {
+                      "type": "array"
+                    },
+                    "rels": {
+                      "type": "array"
+                    }
+                  }
+                }
+              }
+            },
+            "targetGroups": {
+              "type": "object",
+              "properties": {
+                "nodeId": {
+                  "type": "string"
+                },
+                "successorNodeId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "targetGroup": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "gridLocation": {
+                  "type": "object",
+                  "properties": {
+                    "x": {
+                      "type": "string"
+                    },
+                    "y": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "links": {
+                  "type": "object",
+                  "properties": {
+                    "params": {
+                      "type": "object",
+                      "properties": {
+                        "additionalProp1": {
+                          "type": "string"
+                        },
+                        "additionalProp2": {
+                          "type": "string"
+                        },
+                        "additionalProp3": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "uri": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "rel": {
+                      "type": "string"
+                    },
+                    "uriBuilder": {
+                      "type": "array"
+                    },
+                    "rels": {
+                      "type": "array"
+                    }
+                  }
+                }
+              }
+            },
+            "messages": {
+              "type": "object",
+              "properties": {
+                "nodeId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "mailingId": {
+                  "type": "number"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "mediaType": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "created": {
+                  "type": "string"
+                },
+                "modified": {
+                  "type": "string"
+                },
+                "started": {
+                  "type": "string"
+                },
+                "finished": {
+                  "type": "string"
+                },
+                "senderAddress": {
+                  "type": "string"
+                },
+                "senderName": {
+                  "type": "string"
+                },
+                "replyToAddress": {
+                  "type": "string"
+                },
+                "replyToName": {
+                  "type": "string"
+                },
+                "subject": {
+                  "type": "object",
+                  "properties": {
+                    "additionalProp1": {
+                      "type": "string"
+                    },
+                    "additionalProp2": {
+                      "type": "string"
+                    },
+                    "additionalProp3": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "mediaCode": {
+                  "type": "string"
+                },
+                "format": {
+                  "type": "string"
+                },
+                "dispatchOption": {
+                  "type": "string"
+                },
+                "dispatchStrategyOption": {
+                  "type": "string"
+                },
+                "accumulateMessagesForDays": {
+                  "type": "string"
+                },
+                "pushType": {
+                  "type": "string"
+                },
+                "icon": {
+                  "type": "string"
+                },
+                "clickAction": {
+                  "type": "string"
+                },
+                "contentType": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "subtype": {
+                      "type": "string"
+                    },
+                    "parameters": {
+                      "type": "object",
+                      "properties": {
+                        "additionalProp1": {
+                          "type": "string"
+                        },
+                        "additionalProp2": {
+                          "type": "string"
+                        },
+                        "additionalProp3": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "wildcardType": {
+                      "type": "boolean"
+                    },
+                    "wildcardSubtype": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "smsParts": {
+                  "type": "number"
+                },
+                "deeplinks": {
+                  "type": "object",
+                  "properties": {
+                    "additionalProp1": {
+                      "type": "string"
+                    },
+                    "additionalProp2": {
+                      "type": "string"
+                    },
+                    "additionalProp3": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "content": {
+                  "type": "string"
+                },
+                "payload": {
+                  "type": "object",
+                  "properties": {
+                    "additionalProp1": {
+                      "type": "string"
+                    },
+                    "additionalProp2": {
+                      "type": "string"
+                    },
+                    "additionalProp3": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "expiry": {
+                  "type": "string"
+                },
+                "links": {
+                  "type": "object",
+                  "properties": {
+                    "params": {
+                      "type": "object",
+                      "properties": {
+                        "additionalProp1": {
+                          "type": "string"
+                        },
+                        "additionalProp2": {
+                          "type": "string"
+                        },
+                        "additionalProp3": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "uri": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "rel": {
+                      "type": "string"
+                    },
+                    "uriBuilder": {
+                      "type": "array"
+                    },
+                    "rels": {
+                      "type": "array"
+                    }
+                  }
+                },
+                "gridLocation": {
+                  "type": "object",
+                  "properties": {
+                    "x": {
+                      "type": "string"
+                    },
+                    "y": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "message": {
+              "type": "object",
+              "properties": {
+                "nodeId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "mailingId": {
+                  "type": "number"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "mediaType": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "created": {
+                  "type": "string"
+                },
+                "modified": {
+                  "type": "string"
+                },
+                "started": {
+                  "type": "string"
+                },
+                "finished": {
+                  "type": "string"
+                },
+                "senderAddress": {
+                  "type": "string"
+                },
+                "senderName": {
+                  "type": "string"
+                },
+                "replyToAddress": {
+                  "type": "string"
+                },
+                "replyToName": {
+                  "type": "string"
+                },
+                "subject": {
+                  "type": "object",
+                  "properties": {
+                    "additionalProp1": {
+                      "type": "string"
+                    },
+                    "additionalProp2": {
+                      "type": "string"
+                    },
+                    "additionalProp3": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "mediaCode": {
+                  "type": "string"
+                },
+                "format": {
+                  "type": "string"
+                },
+                "dispatchOption": {
+                  "type": "string"
+                },
+                "dispatchStrategyOption": {
+                  "type": "string"
+                },
+                "accumulateMessagesForDays": {
+                  "type": "string"
+                },
+                "pushType": {
+                  "type": "string"
+                },
+                "icon": {
+                  "type": "string"
+                },
+                "clickAction": {
+                  "type": "string"
+                },
+                "contentType": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "subtype": {
+                      "type": "string"
+                    },
+                    "parameters": {
+                      "type": "object",
+                      "properties": {
+                        "additionalProp1": {
+                          "type": "string"
+                        },
+                        "additionalProp2": {
+                          "type": "string"
+                        },
+                        "additionalProp3": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "wildcardType": {
+                      "type": "boolean"
+                    },
+                    "wildcardSubtype": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "smsParts": {
+                  "type": "number"
+                },
+                "deeplinks": {
+                  "type": "object",
+                  "properties": {
+                    "additionalProp1": {
+                      "type": "string"
+                    },
+                    "additionalProp2": {
+                      "type": "string"
+                    },
+                    "additionalProp3": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "content": {
+                  "type": "string"
+                },
+                "payload": {
+                  "type": "object",
+                  "properties": {
+                    "additionalProp1": {
+                      "type": "string"
+                    },
+                    "additionalProp2": {
+                      "type": "string"
+                    },
+                    "additionalProp3": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "expiry": {
+                  "type": "string"
+                },
+                "links": {
+                  "type": "object",
+                  "properties": {
+                    "params": {
+                      "type": "object",
+                      "properties": {
+                        "additionalProp1": {
+                          "type": "string"
+                        },
+                        "additionalProp2": {
+                          "type": "string"
+                        },
+                        "additionalProp3": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "uri": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "rel": {
+                      "type": "string"
+                    },
+                    "uriBuilder": {
+                      "type": "array"
+                    },
+                    "rels": {
+                      "type": "array"
+                    }
+                  }
+                },
+                "gridLocation": {
+                  "type": "object",
+                  "properties": {
+                    "x": {
+                      "type": "string"
+                    },
+                    "y": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["modified"],
+        "source_defined_primary_key": [["id"], ["mailingGroupId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": null,
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "transactional_mail_reports",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "campaignId": {
+              "type": "number"
+            },
+            "campaignName": {
+              "type": "string"
+            },
+            "recipients": {
+              "type": "object",
+              "properties": {
+                "net": {
+                  "type": "number"
+                },
+                "total": {
+                  "type": "number"
+                },
+                "skipped": {
+                  "type": "number"
+                },
+                "inQueue": {
+                  "type": "number"
+                }
+              }
+            },
+            "bounces": {
+              "type": "object",
+              "properties": {
+                "hard": {
+                  "type": "number"
+                },
+                "soft": {
+                  "type": "number"
+                }
+              }
+            },
+            "unsubscribes": {
+              "type": "number"
+            },
+            "opens": {
+              "type": "object",
+              "properties": {
+                "total": {
+                  "type": "number"
+                },
+                "unique": {
+                  "type": "number"
+                }
+              }
+            },
+            "clicks": {
+              "type": "object",
+              "properties": {
+                "total": {
+                  "type": "number"
+                },
+                "unique": {
+                  "type": "number"
+                }
+              }
+            },
+            "links": {
+              "type": "object",
+              "properties": {
+                "params": {
+                  "type": "object",
+                  "properties": {
+                    "additionalProp1": {
+                      "type": "string"
+                    },
+                    "additionalProp2": {
+                      "type": "string"
+                    },
+                    "additionalProp3": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "type": {
+                  "type": "string"
+                },
+                "uri": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "rel": {
+                  "type": "string"
+                },
+                "uriBuilder": {
+                  "type": "array"
+                },
+                "rels": {
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "default_cursor_field": [],
+        "source_defined_primary_key": [["campaignId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": null,
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "transactional_mails",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "number"
+            },
+            "mailingGroupId": {
+              "type": "number"
+            },
+            "name": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "created": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "modified": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "started": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "finished": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "links": {
+              "type": "object",
+              "properties": {
+                "params": {
+                  "type": "object",
+                  "properties": {
+                    "additionalProp1": {
+                      "type": "string"
+                    },
+                    "additionalProp2": {
+                      "type": "string"
+                    },
+                    "additionalProp3": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "type": {
+                  "type": "string"
+                },
+                "uri": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "rel": {
+                  "type": "string"
+                },
+                "uriBuilder": {
+                  "type": "array"
+                },
+                "rels": {
+                  "type": "array"
+                }
+              }
+            },
+            "recipientLists": {
+              "type": "object",
+              "properties": {
+                "nodeId": {
+                  "type": "string"
+                },
+                "successorNodeId": {
+                  "type": "string"
+                },
+                "recipientListIds": {
+                  "type": "array"
+                },
+                "gridLocation": {
+                  "type": "object",
+                  "properties": {
+                    "x": {
+                      "type": "string"
+                    },
+                    "y": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "links": {
+                  "type": "object",
+                  "properties": {
+                    "params": {
+                      "type": "object",
+                      "properties": {
+                        "additionalProp1": {
+                          "type": "string"
+                        },
+                        "additionalProp2": {
+                          "type": "string"
+                        },
+                        "additionalProp3": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "uri": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "rel": {
+                      "type": "string"
+                    },
+                    "uriBuilder": {
+                      "type": "array"
+                    },
+                    "rels": {
+                      "type": "array"
+                    }
+                  }
+                }
+              }
+            },
+            "targetGroups": {
+              "type": "object",
+              "properties": {
+                "nodeId": {
+                  "type": "string"
+                },
+                "successorNodeId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "targetGroup": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "gridLocation": {
+                  "type": "object",
+                  "properties": {
+                    "x": {
+                      "type": "string"
+                    },
+                    "y": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "links": {
+                  "type": "object",
+                  "properties": {
+                    "params": {
+                      "type": "object",
+                      "properties": {
+                        "additionalProp1": {
+                          "type": "string"
+                        },
+                        "additionalProp2": {
+                          "type": "string"
+                        },
+                        "additionalProp3": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "uri": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "rel": {
+                      "type": "string"
+                    },
+                    "uriBuilder": {
+                      "type": "array"
+                    },
+                    "rels": {
+                      "type": "array"
+                    }
+                  }
+                }
+              }
+            },
+            "messages": {
+              "type": "object",
+              "properties": {
+                "nodeId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "mailingId": {
+                  "type": "number"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "mediaType": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "created": {
+                  "type": "string"
+                },
+                "modified": {
+                  "type": "string"
+                },
+                "started": {
+                  "type": "string"
+                },
+                "finished": {
+                  "type": "string"
+                },
+                "senderAddress": {
+                  "type": "string"
+                },
+                "senderName": {
+                  "type": "string"
+                },
+                "replyToAddress": {
+                  "type": "string"
+                },
+                "replyToName": {
+                  "type": "string"
+                },
+                "subject": {
+                  "type": "object",
+                  "properties": {
+                    "additionalProp1": {
+                      "type": "string"
+                    },
+                    "additionalProp2": {
+                      "type": "string"
+                    },
+                    "additionalProp3": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "mediaCode": {
+                  "type": "string"
+                },
+                "format": {
+                  "type": "string"
+                },
+                "dispatchOption": {
+                  "type": "string"
+                },
+                "dispatchStrategyOption": {
+                  "type": "string"
+                },
+                "accumulateMessagesForDays": {
+                  "type": "string"
+                },
+                "pushType": {
+                  "type": "string"
+                },
+                "icon": {
+                  "type": "string"
+                },
+                "clickAction": {
+                  "type": "string"
+                },
+                "contentType": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "subtype": {
+                      "type": "string"
+                    },
+                    "parameters": {
+                      "type": "object",
+                      "properties": {
+                        "additionalProp1": {
+                          "type": "string"
+                        },
+                        "additionalProp2": {
+                          "type": "string"
+                        },
+                        "additionalProp3": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "wildcardType": {
+                      "type": "boolean"
+                    },
+                    "wildcardSubtype": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "smsParts": {
+                  "type": "number"
+                },
+                "deeplinks": {
+                  "type": "object",
+                  "properties": {
+                    "additionalProp1": {
+                      "type": "string"
+                    },
+                    "additionalProp2": {
+                      "type": "string"
+                    },
+                    "additionalProp3": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "content": {
+                  "type": "string"
+                },
+                "payload": {
+                  "type": "object",
+                  "properties": {
+                    "additionalProp1": {
+                      "type": "string"
+                    },
+                    "additionalProp2": {
+                      "type": "string"
+                    },
+                    "additionalProp3": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "expiry": {
+                  "type": "string"
+                },
+                "links": {
+                  "type": "object",
+                  "properties": {
+                    "params": {
+                      "type": "object",
+                      "properties": {
+                        "additionalProp1": {
+                          "type": "string"
+                        },
+                        "additionalProp2": {
+                          "type": "string"
+                        },
+                        "additionalProp3": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "uri": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "rel": {
+                      "type": "string"
+                    },
+                    "uriBuilder": {
+                      "type": "array"
+                    },
+                    "rels": {
+                      "type": "array"
+                    }
+                  }
+                },
+                "gridLocation": {
+                  "type": "object",
+                  "properties": {
+                    "x": {
+                      "type": "string"
+                    },
+                    "y": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "message": {
+              "type": "object",
+              "properties": {
+                "nodeId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "mailingId": {
+                  "type": "number"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "mediaType": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "created": {
+                  "type": "string"
+                },
+                "modified": {
+                  "type": "string"
+                },
+                "started": {
+                  "type": "string"
+                },
+                "finished": {
+                  "type": "string"
+                },
+                "senderAddress": {
+                  "type": "string"
+                },
+                "senderName": {
+                  "type": "string"
+                },
+                "replyToAddress": {
+                  "type": "string"
+                },
+                "replyToName": {
+                  "type": "string"
+                },
+                "subject": {
+                  "type": "object",
+                  "properties": {
+                    "additionalProp1": {
+                      "type": "string"
+                    },
+                    "additionalProp2": {
+                      "type": "string"
+                    },
+                    "additionalProp3": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "mediaCode": {
+                  "type": "string"
+                },
+                "format": {
+                  "type": "string"
+                },
+                "dispatchOption": {
+                  "type": "string"
+                },
+                "dispatchStrategyOption": {
+                  "type": "string"
+                },
+                "accumulateMessagesForDays": {
+                  "type": "string"
+                },
+                "pushType": {
+                  "type": "string"
+                },
+                "icon": {
+                  "type": "string"
+                },
+                "clickAction": {
+                  "type": "string"
+                },
+                "contentType": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "subtype": {
+                      "type": "string"
+                    },
+                    "parameters": {
+                      "type": "object",
+                      "properties": {
+                        "additionalProp1": {
+                          "type": "string"
+                        },
+                        "additionalProp2": {
+                          "type": "string"
+                        },
+                        "additionalProp3": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "wildcardType": {
+                      "type": "boolean"
+                    },
+                    "wildcardSubtype": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "smsParts": {
+                  "type": "number"
+                },
+                "deeplinks": {
+                  "type": "object",
+                  "properties": {
+                    "additionalProp1": {
+                      "type": "string"
+                    },
+                    "additionalProp2": {
+                      "type": "string"
+                    },
+                    "additionalProp3": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "content": {
+                  "type": "string"
+                },
+                "payload": {
+                  "type": "object",
+                  "properties": {
+                    "additionalProp1": {
+                      "type": "string"
+                    },
+                    "additionalProp2": {
+                      "type": "string"
+                    },
+                    "additionalProp3": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "expiry": {
+                  "type": "string"
+                },
+                "links": {
+                  "type": "object",
+                  "properties": {
+                    "params": {
+                      "type": "object",
+                      "properties": {
+                        "additionalProp1": {
+                          "type": "string"
+                        },
+                        "additionalProp2": {
+                          "type": "string"
+                        },
+                        "additionalProp3": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "uri": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "rel": {
+                      "type": "string"
+                    },
+                    "uriBuilder": {
+                      "type": "array"
+                    },
+                    "rels": {
+                      "type": "array"
+                    }
+                  }
+                },
+                "gridLocation": {
+                  "type": "object",
+                  "properties": {
+                    "x": {
+                      "type": "string"
+                    },
+                    "y": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["modified"],
+        "source_defined_primary_key": [["id"], ["mailingGroupId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": null,
+      "primary_key": null
+    },
+    {
+      "stream": {
+        "name": "unsubscribes",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "recipientListId": {
+              "type": "number"
+            },
+            "recipientId": {
+              "type": "string"
+            },
+            "mailingId": {
+              "type": "number"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "created": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "links": {
+              "type": "object",
+              "properties": {
+                "params": {
+                  "type": "object",
+                  "properties": {
+                    "additionalProp1": {
+                      "type": "string"
+                    },
+                    "additionalProp2": {
+                      "type": "string"
+                    },
+                    "additionalProp3": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "type": {
+                  "type": "string"
+                },
+                "uri": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "rel": {
+                  "type": "string"
+                },
+                "uriBuilder": {
+                  "type": "array"
+                },
+                "rels": {
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created"],
+        "source_defined_primary_key": [["recipientListId"], ["recipientId"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": null,
+      "primary_key": null
+    }
+  ]
+}
