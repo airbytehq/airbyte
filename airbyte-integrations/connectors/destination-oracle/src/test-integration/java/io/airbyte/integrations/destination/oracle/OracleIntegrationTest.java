@@ -26,22 +26,19 @@ package io.airbyte.integrations.destination.oracle;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.nio.file.Path;
 import java.util.stream.Collectors;
 import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -115,9 +112,9 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
 
   private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
     List<org.jooq.Record> result = getDatabase().query(ctx -> ctx
-            .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, OracleDestination.COLUMN_NAME_EMITTED_AT))
-            .stream()
-            .collect(Collectors.toList()));
+        .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, OracleDestination.COLUMN_NAME_EMITTED_AT))
+        .stream()
+        .collect(Collectors.toList()));
     return result
         .stream()
         .map(r -> r.formatJSON(JSON_FORMAT))
@@ -130,11 +127,11 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
     // constructor. at least explicitly handle it, even if the impl doesn't change.
     return Databases.createDatabase(
         baseConfig.get("username").asText(),
-            baseConfig.get("password").asText(),
+        baseConfig.get("password").asText(),
         String.format("jdbc:oracle:thin:@//%s:%s/%s",
-                baseConfig.get("host").asText(),
-                baseConfig.get("port").asText(),
-                baseConfig.get("sid").asText()),
+            baseConfig.get("host").asText(),
+            baseConfig.get("port").asText(),
+            baseConfig.get("sid").asText()),
         "oracle.jdbc.driver.OracleDriver",
         null);
   }

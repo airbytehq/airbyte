@@ -27,6 +27,7 @@ package io.airbyte.integrations.destination.oracle;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.sql.PreparedStatement;
@@ -38,7 +39,6 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import io.airbyte.integrations.destination.StandardNameTransformer;
 
 public class OracleOperations implements SqlOperations {
 
