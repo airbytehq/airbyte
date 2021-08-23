@@ -1,5 +1,31 @@
 # Changelog
 
+## 08/20/2021 Summary
+
+Hey Airbyte community, we got some patch notes for y'all. Here's all the changes we've pushed since the last update.
+
+* **New Source**: S3/Abstract Files
+* **New Source**: Zuora
+* **New Source**: Kustomer
+* **New Source**: Apify
+* **New Source**: Chargebee
+* **New Source**: Bing Ads
+
+New Destination: Keen
+
+* ✨ Shopify source: The `status` property is now in the `Products` stream.
+* ✨ Amazon Seller Partner source: Added support for `GET_MERCHANT_LISTINGS_ALL_DATA` and `GET_FBA_INVENTORY_AGED_DATA` stream endpoints.
+* ✨ GitHub source: Existing streams now don't minify the user property.
+* ✨ Hubspot source: Updated user-defined custom field schema generation.
+* ✨ Zendesk source: Migrated from Singer to the Airbyte CDK.
+* ✨ Amazon Seller Partner source: Migrated to the Airbyte CDK.
+* 🐛 Shopify source: Fixed the `products` schema to be in accordance with the API.
+* 🐛 S3 source: Fixed bug where syncs could hang indefinitely.
+
+And as always... we'd love to shout out the awesome contributors that have helped push Airbyte forward. As a reminder, you can now see your contributions publicly reflected on our [contributors page](https://airbyte.io/contributors).
+
+Thank you to Rodrigo Parra, Brian Krausz, Max Krog, Apostol Tegko, Matej Hamas, Vladimir Remar, Marco Fontana, Nicholas Bull, @mildbyte, @subhaklp, and Maciej Nędza!
+
 ## 07/30/2021 Summary
 
 For this week's update, we got... a few new connectors this week in 0.29.0. We found that a lot of sources can pull data directly from the underlying db instance, which we naturally already supported.
