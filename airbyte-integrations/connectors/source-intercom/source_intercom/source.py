@@ -26,6 +26,7 @@ import time
 from abc import ABC
 from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from urllib.parse import parse_qsl, urlparse
 
 import requests
 from airbyte_cdk.logger import AirbyteLogger
@@ -63,9 +64,7 @@ class IntercomStream(HttpStream, ABC):
         next_page = response.json().get("pages", {}).get("next")
 
         if next_page:
-            return {"starting_after": next_page["starting_after"]}
-        else:
-            return None
+            return dict(parse_qsl(urlparse(next_page).query))
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = {}
@@ -189,9 +188,7 @@ class Companies(IncrementalIntercomStream):
         data = response.json().get("data")
 
         if data:
-            return {"scroll_param": response.json()["scroll_param"]}
-        else:
-            return None
+            return {"scroll_param": response.json().get("scroll_param")}
 
     def path(self, **kwargs) -> str:
         return "companies/scroll"
@@ -251,6 +248,17 @@ class Contacts(IncrementalIntercomStream):
     API Docs: https://developers.intercom.com/intercom-api-reference/reference#list-contacts
     Endpoint: https://api.intercom.io/contacts
     """
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        Abstract method of HttpStream - should be overwritten.
+        Returning None means there are no more pages to read in response.
+        """
+
+        next_page = response.json().get("pages", {}).get("next")
+
+        if next_page:
+            return {"starting_after": next_page["starting_after"]}
 
     def path(self, **kwargs) -> str:
         return "contacts"

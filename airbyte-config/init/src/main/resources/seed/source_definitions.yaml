@@ -188,7 +188,7 @@
 - sourceDefinitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
   name: Intercom
   dockerRepository: airbyte/source-intercom
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/intercom
   icon: intercom.svg
 - sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993

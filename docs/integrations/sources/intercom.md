@@ -55,5 +55,6 @@ Please read [How to get your Access Token](https://developers.intercom.com/build
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.2   | 2021-08-19 | [5531](https://github.com/airbytehq/airbyte/pull/5531) | Corrected pagination |
 | 0.1.1   | 2021-07-31 | [5123](https://github.com/airbytehq/airbyte/pull/5123) | Corrected rate limit |
 | 0.1.0   | 2021-07-19 | [4676](https://github.com/airbytehq/airbyte/pull/4676) | Release Slack CDK Connector |
