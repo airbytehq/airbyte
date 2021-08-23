@@ -115,7 +115,7 @@ run {
     environment "DATABASE_URL", "jdbc:postgresql://localhost:5433/${env.DATABASE_DB}"
     environment "CONFIG_DATABASE_URL", "jdbc:postgresql://localhost:5433/${env.CONFIG_DATABASE_DB}"
 
-    environment "RUN_FLYWAY_MIGRATION", "true"
+    environment "RUN_DATABASE_MIGRATION_ON_STARTUP", "true"
 
     environment "WORKSPACE_ROOT", env.WORKSPACE_ROOT
     environment "CONFIG_ROOT", "/tmp/airbyte_config"

@@ -58,7 +58,7 @@ public class EnvConfigs implements Configs {
   public static final String CONFIG_DATABASE_USER = "CONFIG_DATABASE_USER";
   public static final String CONFIG_DATABASE_PASSWORD = "CONFIG_DATABASE_PASSWORD";
   public static final String CONFIG_DATABASE_URL = "CONFIG_DATABASE_URL";
-  public static final String RUN_FLYWAY_MIGRATION = "RUN_FLYWAY_MIGRATION";
+  public static final String RUN_DATABASE_MIGRATION_ON_STARTUP = "RUN_DATABASE_MIGRATION_ON_STARTUP";
   public static final String WEBAPP_URL = "WEBAPP_URL";
   public static final String MAX_RETRIES_PER_ATTEMPT = "MAX_RETRIES_PER_ATTEMPT";
   public static final String MAX_SYNC_JOB_ATTEMPTS = "MAX_SYNC_JOB_ATTEMPTS";
@@ -176,8 +176,8 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public boolean runFlywayMigration() {
-    return getEnvOrDefault(RUN_FLYWAY_MIGRATION, true);
+  public boolean runDatabaseMigrationOnStartup() {
+    return getEnvOrDefault(RUN_DATABASE_MIGRATION_ON_STARTUP, true);
   }
 
   @Override

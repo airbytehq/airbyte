@@ -57,6 +57,6 @@ public class V0_29_9_001__Add_active_column extends BaseJavaMigration {
   - Please remember to check in all the above changes in the schema dump.
 
 # How to Run a Migration
-- Automatic. Migrations will be run automatically in the server. If you prefer to manually run the migration, change `RUN_FLYWAY_MIGRATION` to `false` in `.env`.
+- Automatic. Migrations will be run automatically in the server. If you prefer to manually run the migration, change `RUN_DATABASE_MIGRATION_ON_STARTUP` to `false` in `.env`.
 - UI. You can navigate to `/settings/db-migrations` and run the migrations for each database on the UI.
 - API. Call `api/v1/db_migrations/info` to retrieve the current migration status, and call `api/v1/db_migrations/migrate` to run the migrations. Check the API [documentation](https://airbyte-public-api-docs.s3.us-east-2.amazonaws.com/rapidoc-api-docs.html#tag--db_migration) for more details.

@@ -57,7 +57,7 @@ public interface Configs {
 
   String getConfigDatabaseUrl();
 
-  boolean runFlywayMigration();
+  boolean runDatabaseMigrationOnStartup();
 
   int getMaxRetriesPerAttempt();
 

@@ -299,7 +299,7 @@ public class ServerApp implements ServerRunnable {
     configDbMigrator.baseline();
     jobDbMigrator.baseline();
 
-    if (configs.runFlywayMigration()) {
+    if (configs.runDatabaseMigrationOnStartup()) {
       LOGGER.info("Migrating configs database");
       configDbMigrator.migrate();
       LOGGER.info("Migrating jobs database");
