@@ -64,6 +64,7 @@ services:
       - RESOURCE_MEMORY_LIMIT=${RESOURCE_MEMORY_LIMIT}
       - MAX_RETRIES_PER_ATTEMPT=${MAX_RETRIES_PER_ATTEMPT}
       - MAX_SYNC_JOB_ATTEMPTS=${MAX_SYNC_JOB_ATTEMPTS}
+      - MAX_SYNC_TIMEOUT_DAYS=${MAX_SYNC_TIMEOUT_DAYS}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - workspace:${WORKSPACE_ROOT}
