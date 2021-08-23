@@ -100,7 +100,7 @@ class StubNextPageTokenHttpStream(StubBasicReadHttpStream):
 
 
 def test_next_page_token_is_input_to_other_methods(mocker):
-    """ Validates that the return value from next_page_token is passed into other methods that need it like request_params, headers, body, etc.."""
+    """Validates that the return value from next_page_token is passed into other methods that need it like request_params, headers, body, etc.."""
     pages = 5
     stream = StubNextPageTokenHttpStream(pages=pages)
     blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
@@ -144,6 +144,7 @@ class StubCustomBackoffHttpStream(StubBasicReadHttpStream):
 
 
 def test_stub_custom_backoff_http_stream(mocker):
+    mocker.patch("time.sleep", lambda x: None)
     stream = StubCustomBackoffHttpStream()
     req = requests.Response()
     req.status_code = 429

@@ -74,7 +74,7 @@ All tests are located in the `unit_tests` directory. Run `pytest --cov=airbyte_c
 
 1. Bump the package version in `setup.py`
 2. Open a PR
-3. An Airbyte member must comment `/publish-cdk --dry-run=<true or false>`. Dry runs publish to test.pypi.org.
+3. An Airbyte member must comment `/publish-cdk dry-run=true` to publish the package to test.pypi.org or `/publish-cdk dry-run=false` to publish it to the real index of pypi.org.
 
 ## Coming Soon
 

@@ -31,11 +31,13 @@ from typing import Any, Iterable, List, Mapping
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.connector import Connector
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
+from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit
 from pydantic import ValidationError
 
 
 class Destination(Connector, ABC):
     logger = AirbyteLogger()
+    VALID_CMDS = {"spec", "check", "write"}
 
     @abstractmethod
     def write(
@@ -43,24 +45,21 @@ class Destination(Connector, ABC):
     ) -> Iterable[AirbyteMessage]:
         """Implement to define how the connector writes data to the destination"""
 
-    def _run_spec(self) -> AirbyteMessage:
-        return AirbyteMessage(type=Type.SPEC, spec=self.spec(self.logger))
-
-    def _run_check(self, config_path: str) -> AirbyteMessage:
-        config = self.read_config(config_path=config_path)
+    def _run_check(self, config: Mapping[str, Any]) -> AirbyteMessage:
         check_result = self.check(self.logger, config)
         return AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=check_result)
 
     def _parse_input_stream(self, input_stream: io.TextIOWrapper) -> Iterable[AirbyteMessage]:
-        """ Reads from stdin, converting to Airbyte messages"""
+        """Reads from stdin, converting to Airbyte messages"""
         for line in input_stream:
             try:
                 yield AirbyteMessage.parse_raw(line)
             except ValidationError:
                 self.logger.info(f"ignoring input which can't be deserialized as Airbyte Message: {line}")
 
-    def _run_write(self, config_path: str, configured_catalog_path: str, input_stream: io.TextIOWrapper) -> Iterable[AirbyteMessage]:
-        config = self.read_config(config_path=config_path)
+    def _run_write(
+        self, config: Mapping[str, Any], configured_catalog_path: str, input_stream: io.TextIOWrapper
+    ) -> Iterable[AirbyteMessage]:
         catalog = ConfiguredAirbyteCatalog.parse_file(configured_catalog_path)
         input_messages = self._parse_input_stream(input_stream)
         self.logger.info("Begin writing to the destination...")
@@ -104,18 +103,22 @@ class Destination(Connector, ABC):
 
     def run_cmd(self, parsed_args: argparse.Namespace) -> Iterable[AirbyteMessage]:
         cmd = parsed_args.command
+        if cmd not in self.VALID_CMDS:
+            raise Exception(f"Unrecognized command: {cmd}")
+
+        spec = self.spec(self.logger)
         if cmd == "spec":
-            yield self._run_spec()
-        elif cmd == "check":
-            yield self._run_check(config_path=parsed_args.config)
+            yield AirbyteMessage(type=Type.SPEC, spec=spec)
+            return
+        config = self.read_config(config_path=parsed_args.config)
+        check_config_against_spec_or_exit(config, spec, self.logger)
+
+        if cmd == "check":
+            yield self._run_check(config=config)
         elif cmd == "write":
             # Wrap in UTF-8 to override any other input encodings
             wrapped_stdin = io.TextIOWrapper(sys.stdin.buffer, encoding="utf-8")
-            yield from self._run_write(
-                config_path=parsed_args.config, configured_catalog_path=parsed_args.catalog, input_stream=wrapped_stdin
-            )
-        else:
-            raise Exception(f"Unrecognized command: {cmd}")
+            yield from self._run_write(config=config, configured_catalog_path=parsed_args.catalog, input_stream=wrapped_stdin)
 
     def run(self, args: List[str]):
         parsed_args = self.parse_args(args)
