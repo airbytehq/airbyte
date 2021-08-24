@@ -55,7 +55,8 @@
       }
     },
     "closed_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "confirmed": {
       "type": ["null", "boolean"]
@@ -64,7 +65,8 @@
       "type": ["null", "string"]
     },
     "created_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "currency": {
       "type": ["null", "string"]
@@ -533,7 +535,8 @@
       "type": ["null", "integer"]
     },
     "updated_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "user_id": {
       "type": ["null", "number"]
@@ -735,7 +738,8 @@
             "type": ["null", "string"]
           },
           "created_at": {
-            "type": ["null", "string"]
+            "type": ["null", "string"],
+            "format": "date-time"
           },
           "location_id": {
             "type": ["null", "integer"]
@@ -774,7 +778,8 @@
             "type": ["null", "array"]
           },
           "updated_at": {
-            "type": ["null", "string"]
+            "type": ["null", "string"],
+            "format": "date-time"
           },
           "line_items": {
             "type": ["null", "array"],
