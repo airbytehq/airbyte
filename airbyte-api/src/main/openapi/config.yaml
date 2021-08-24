@@ -1140,7 +1140,7 @@ paths:
     post:
       tags:
         - db_migration
-      summary: List current migration status
+      summary: List all database migrations
       operationId: listMigrations
       requestBody:
         content:
@@ -1154,7 +1154,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DbMigrationInfoRead"
+                $ref: "#/components/schemas/DbMigrationReadList"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -1163,8 +1163,8 @@ paths:
     post:
       tags:
         - db_migration
-      summary: Migrate database to the latest version
-      operationId: executeDbMigrationMigrate
+      summary: Migrate the database to the latest version
+      operationId: executeMigrations
       requestBody:
         content:
           application/json:
@@ -1177,7 +1177,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DbMigrationMigrateRead"
+                $ref: "#/components/schemas/DbMigrationExecutionRead"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -2754,7 +2754,28 @@ components:
         memory_limit:
           type: string
     # DB Migration
-    DbMigrationInfoItem:
+    DbMigrationState:
+      type: string
+      # https://github.com/flyway/flyway/blob/master/flyway-core/src/main/java/org/flywaydb/core/api/MigrationState.java
+      enum:
+        - pending
+        - above_target
+        - below_baseline
+        - baseline
+        - ignored
+        - missing_success
+        - missing_failed
+        - success
+        - undone
+        - available
+        - failed
+        - out_of_order
+        - future_success
+        - future_failed
+        - outdated
+        - superseded
+        - deleted
+    DbMigrationRead:
       type: object
       required:
         - migrationType
@@ -2768,7 +2789,7 @@ components:
         migrationDescription:
           type: string
         migrationState:
-          type: string
+          $ref: "#/components/schemas/DbMigrationState"
         migratedBy:
           type: string
         migratedAt:
@@ -2776,26 +2797,24 @@ components:
           format: int64
         migrationScript:
           type: string
-    DbMigrationInfoRead:
+    DbMigrationReadList:
       type: object
       properties:
         migrations:
           type: array
           items:
-            $ref: "#/components/schemas/DbMigrationInfoItem"
-    DbMigrationMigrateRead:
+            $ref: "#/components/schemas/DbMigrationRead"
+    DbMigrationExecutionRead:
       type: object
       properties:
         initialVersion:
           type: string
         targetVersion:
           type: string
-        executedCount:
-          type: integer
-        migrations:
+        executedMigrations:
           type: array
           items:
-            $ref: "#/components/schemas/DbMigrationInfoItem"
+            $ref: "#/components/schemas/DbMigrationRead"
     # Web Backend
     WebBackendConnectionRead:
       type: object

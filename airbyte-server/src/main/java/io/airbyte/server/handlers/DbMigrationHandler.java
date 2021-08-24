@@ -24,10 +24,11 @@
 
 package io.airbyte.server.handlers;
 
-import io.airbyte.api.model.DbMigrationInfoItem;
-import io.airbyte.api.model.DbMigrationInfoRead;
-import io.airbyte.api.model.DbMigrationMigrateRead;
+import io.airbyte.api.model.DbMigrationExecutionRead;
+import io.airbyte.api.model.DbMigrationRead;
+import io.airbyte.api.model.DbMigrationReadList;
 import io.airbyte.api.model.DbMigrationRequestBody;
+import io.airbyte.api.model.DbMigrationState;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
@@ -47,20 +48,19 @@ public class DbMigrationHandler {
     this.jobDbMigrator = new JobsDatabaseMigrator(jobsDatabase, DbMigrationHandler.class.getSimpleName());
   }
 
-  public DbMigrationInfoRead info(DbMigrationRequestBody request) {
+  public DbMigrationReadList list(DbMigrationRequestBody request) {
     DatabaseMigrator migrator = getMigrator(request.getDatabase());
-    return new DbMigrationInfoRead()
-        .migrations(migrator.info().stream().map(DbMigrationHandler::toInfoItem).collect(Collectors.toList()));
+    return new DbMigrationReadList()
+        .migrations(migrator.info().stream().map(DbMigrationHandler::toMigrationRead).collect(Collectors.toList()));
   }
 
-  public DbMigrationMigrateRead migrate(DbMigrationRequestBody request) {
+  public DbMigrationExecutionRead migrate(DbMigrationRequestBody request) {
     DatabaseMigrator migrator = getMigrator(request.getDatabase());
     MigrateResult result = migrator.migrate();
-    return new DbMigrationMigrateRead()
+    return new DbMigrationExecutionRead()
         .initialVersion(result.initialSchemaVersion)
         .targetVersion(result.targetSchemaVersion)
-        .executedCount(result.migrationsExecuted)
-        .migrations(result.migrations.stream().map(DbMigrationHandler::toInfoItem).collect(Collectors.toList()));
+        .executedMigrations(result.migrations.stream().map(DbMigrationHandler::toMigrationRead).collect(Collectors.toList()));
   }
 
   private DatabaseMigrator getMigrator(String database) {
@@ -72,19 +72,19 @@ public class DbMigrationHandler {
     throw new IllegalArgumentException("Unexpected database: " + database);
   }
 
-  private static DbMigrationInfoItem toInfoItem(MigrationInfo info) {
-    return new DbMigrationInfoItem()
+  private static DbMigrationRead toMigrationRead(MigrationInfo info) {
+    return new DbMigrationRead()
         .migrationType(info.getType().name())
         .migrationVersion(info.getVersion().toString())
         .migrationDescription(info.getDescription())
-        .migrationState(info.getState().getDisplayName())
+        .migrationState(DbMigrationState.fromValue(info.getState().name()))
         .migratedBy(info.getInstalledBy())
         .migratedAt(info.getInstalledOn() == null ? null : info.getInstalledOn().getTime())
         .migrationScript(info.getScript());
   }
 
-  private static DbMigrationInfoItem toInfoItem(MigrateOutput output) {
-    return new DbMigrationInfoItem()
+  private static DbMigrationRead toMigrationRead(MigrateOutput output) {
+    return new DbMigrationRead()
         .migrationType(String.format("%s %s", output.type, output.category))
         .migrationVersion(output.version)
         .migrationDescription(output.description)

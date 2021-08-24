@@ -231,8 +231,8 @@ font-style: italic;
   </ul>
   <h4><a href="#DbMigration">DbMigration</a></h4>
   <ul>
-  <li><a href="#executeDbMigrationInfo"><code><span class="http-method">post</span> /v1/db_migrations/info</code></a></li>
-  <li><a href="#executeDbMigrationMigrate"><code><span class="http-method">post</span> /v1/db_migrations/migrate</code></a></li>
+  <li><a href="#executeMigrations"><code><span class="http-method">post</span> /v1/db_migrations/migrate</code></a></li>
+  <li><a href="#listMigrations"><code><span class="http-method">post</span> /v1/db_migrations/list</code></a></li>
   </ul>
   <h4><a href="#Deployment">Deployment</a></h4>
   <ul>
@@ -1099,11 +1099,11 @@ font-style: italic;
   </div> <!-- method -->
   <hr/>
   <h1><a name="DbMigration">DbMigration</a></h1>
-  <div class="method"><a name="executeDbMigrationInfo"/>
+  <div class="method"><a name="executeMigrations"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/db_migrations/info</code></pre></div>
-    <div class="method-summary">List current migration status (<span class="nickname">executeDbMigrationInfo</span>)</div>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/db_migrations/migrate</code></pre></div>
+    <div class="method-summary">Migrate the database to the latest version (<span class="nickname">executeMigrations</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -1126,7 +1126,81 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
-      <a href="#DbMigrationInfoRead">DbMigrationInfoRead</a>
+      <a href="#DbMigrationExecutionRead">DbMigrationExecutionRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "initialVersion" : "initialVersion",
+  "executedMigrations" : [ {
+    "migrationVersion" : "migrationVersion",
+    "migrationDescription" : "migrationDescription",
+    "migratedAt" : 0,
+    "migrationType" : "migrationType",
+    "migrationScript" : "migrationScript",
+    "migratedBy" : "migratedBy"
+  }, {
+    "migrationVersion" : "migrationVersion",
+    "migrationDescription" : "migrationDescription",
+    "migratedAt" : 0,
+    "migrationType" : "migrationType",
+    "migrationScript" : "migrationScript",
+    "migratedBy" : "migratedBy"
+  } ],
+  "targetVersion" : "targetVersion"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#DbMigrationExecutionRead">DbMigrationExecutionRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="listMigrations"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/db_migrations/list</code></pre></div>
+    <div class="method-summary">List all database migrations (<span class="nickname">listMigrations</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">DbMigrationRequestBody <a href="#DbMigrationRequestBody">DbMigrationRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#DbMigrationReadList">DbMigrationReadList</a>
       
     </div>
 
@@ -1141,7 +1215,6 @@ font-style: italic;
     "migratedAt" : 0,
     "migrationType" : "migrationType",
     "migrationScript" : "migrationScript",
-    "migrationState" : "migrationState",
     "migratedBy" : "migratedBy"
   }, {
     "migrationVersion" : "migrationVersion",
@@ -1149,7 +1222,6 @@ font-style: italic;
     "migratedAt" : 0,
     "migrationType" : "migrationType",
     "migrationScript" : "migrationScript",
-    "migrationState" : "migrationState",
     "migratedBy" : "migratedBy"
   } ]
 }</code></pre>
@@ -1164,84 +1236,7 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     Successful operation
-        <a href="#DbMigrationInfoRead">DbMigrationInfoRead</a>
-    <h4 class="field-label">404</h4>
-    Object with given id was not found.
-        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
-    <h4 class="field-label">422</h4>
-    Input failed validation
-        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
-  </div> <!-- method -->
-  <hr/>
-  <div class="method"><a name="executeDbMigrationMigrate"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/db_migrations/migrate</code></pre></div>
-    <div class="method-summary">Migrate database to the latest version (<span class="nickname">executeDbMigrationMigrate</span>)</div>
-    <div class="method-notes"></div>
-
-
-    <h3 class="field-label">Consumes</h3>
-    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Request body</h3>
-    <div class="field-items">
-      <div class="param">DbMigrationRequestBody <a href="#DbMigrationRequestBody">DbMigrationRequestBody</a> (required)</div>
-
-      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
-
-    </div>  <!-- field-items -->
-
-
-
-
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      <a href="#DbMigrationMigrateRead">DbMigrationMigrateRead</a>
-      
-    </div>
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-    <h3 class="field-label">Example data</h3>
-    <div class="example-data-content-type">Content-Type: application/json</div>
-    <pre class="example"><code>{
-  "executedCount" : 0,
-  "migrations" : [ {
-    "migrationVersion" : "migrationVersion",
-    "migrationDescription" : "migrationDescription",
-    "migratedAt" : 0,
-    "migrationType" : "migrationType",
-    "migrationScript" : "migrationScript",
-    "migrationState" : "migrationState",
-    "migratedBy" : "migratedBy"
-  }, {
-    "migrationVersion" : "migrationVersion",
-    "migrationDescription" : "migrationDescription",
-    "migratedAt" : 0,
-    "migrationType" : "migrationType",
-    "migrationScript" : "migrationScript",
-    "migrationState" : "migrationState",
-    "migratedBy" : "migratedBy"
-  } ],
-  "initialVersion" : "initialVersion",
-  "targetVersion" : "targetVersion"
-}</code></pre>
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    Successful operation
-        <a href="#DbMigrationMigrateRead">DbMigrationMigrateRead</a>
+        <a href="#DbMigrationReadList">DbMigrationReadList</a>
     <h4 class="field-label">404</h4>
     Object with given id was not found.
         <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
@@ -5509,10 +5504,11 @@ font-style: italic;
     <li><a href="#ConnectionStatus"><code>ConnectionStatus</code> - </a></li>
     <li><a href="#ConnectionUpdate"><code>ConnectionUpdate</code> - </a></li>
     <li><a href="#DataType"><code>DataType</code> - </a></li>
-    <li><a href="#DbMigrationInfoItem"><code>DbMigrationInfoItem</code> - </a></li>
-    <li><a href="#DbMigrationInfoRead"><code>DbMigrationInfoRead</code> - </a></li>
-    <li><a href="#DbMigrationMigrateRead"><code>DbMigrationMigrateRead</code> - </a></li>
+    <li><a href="#DbMigrationExecutionRead"><code>DbMigrationExecutionRead</code> - </a></li>
+    <li><a href="#DbMigrationRead"><code>DbMigrationRead</code> - </a></li>
+    <li><a href="#DbMigrationReadList"><code>DbMigrationReadList</code> - </a></li>
     <li><a href="#DbMigrationRequestBody"><code>DbMigrationRequestBody</code> - </a></li>
+    <li><a href="#DbMigrationState"><code>DbMigrationState</code> - </a></li>
     <li><a href="#DestinationCoreConfig"><code>DestinationCoreConfig</code> - </a></li>
     <li><a href="#DestinationCreate"><code>DestinationCreate</code> - </a></li>
     <li><a href="#DestinationDefinitionCreate"><code>DestinationDefinitionCreate</code> - </a></li>
@@ -5773,33 +5769,32 @@ font-style: italic;
           </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="DbMigrationInfoItem"><code>DbMigrationInfoItem</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="DbMigrationExecutionRead"><code>DbMigrationExecutionRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">initialVersion (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">targetVersion (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">executedMigrations (optional)</div><div class="param-desc"><span class="param-type"><a href="#DbMigrationRead">array[DbMigrationRead]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="DbMigrationRead"><code>DbMigrationRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">migrationType </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">migrationVersion </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">migrationDescription </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">migrationState (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">migrationState (optional)</div><div class="param-desc"><span class="param-type"><a href="#DbMigrationState">DbMigrationState</a></span>  </div>
 <div class="param">migratedBy (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">migratedAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
 <div class="param">migrationScript (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="DbMigrationInfoRead"><code>DbMigrationInfoRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="DbMigrationReadList"><code>DbMigrationReadList</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">migrations (optional)</div><div class="param-desc"><span class="param-type"><a href="#DbMigrationInfoItem">array[DbMigrationInfoItem]</a></span>  </div>
-    </div>  <!-- field-items -->
-  </div>
-  <div class="model">
-    <h3><a name="DbMigrationMigrateRead"><code>DbMigrationMigrateRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
-    <div class="field-items">
-      <div class="param">initialVersion (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">targetVersion (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">executedCount (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
-<div class="param">migrations (optional)</div><div class="param-desc"><span class="param-type"><a href="#DbMigrationInfoItem">array[DbMigrationInfoItem]</a></span>  </div>
+      <div class="param">migrations (optional)</div><div class="param-desc"><span class="param-type"><a href="#DbMigrationRead">array[DbMigrationRead]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -5808,6 +5803,12 @@ font-style: italic;
     <div class="field-items">
       <div class="param">database </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="DbMigrationState"><code>DbMigrationState</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+          </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="DestinationCoreConfig"><code>DestinationCoreConfig</code> - </a> <a class="up" href="#__Models">Up</a></h3>
