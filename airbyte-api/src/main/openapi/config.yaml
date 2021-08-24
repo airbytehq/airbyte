@@ -1136,7 +1136,7 @@ paths:
                 $ref: "#/components/schemas/CheckConnectionRead"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
-  /v1/db_migrations/info:
+  /v1/db_migrations/list:
     post:
       tags:
         - db_migration
