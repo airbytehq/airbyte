@@ -101,7 +101,7 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream, ABC):
             yield from records_slice
 
 
-class AccountsStreamMixin(IncrementalLinkedinAdsStream):
+class AccountStreamMixin(IncrementalLinkedinAdsStream):
     """
     This class stands for provide stream slicing.
     :: Streams: AccountUsers, CampaignGroups, Campaigns
@@ -161,7 +161,7 @@ class Accounts(LinkedinAdsStream):
         return params
 
 
-class AccountUsers(AccountsStreamMixin):
+class AccountUsers(AccountStreamMixin):
     """
     Get AccountUsers data using `account_id` slicing. More info about LinkedIn Ads / AccountUsers:
     https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-account-users?tabs=http
@@ -178,7 +178,7 @@ class AccountUsers(AccountsStreamMixin):
         return params
 
 
-class CampaignGroups(AccountsStreamMixin):
+class CampaignGroups(AccountStreamMixin):
     """
     Get CampaignGroups data using `account_id` slicing.
     More info about LinkedIn Ads / CampaignGroups:
@@ -189,7 +189,7 @@ class CampaignGroups(AccountsStreamMixin):
         return "adCampaignGroupsV2"
 
 
-class Campaigns(AccountsStreamMixin):
+class Campaigns(AccountStreamMixin):
     """
     Get Campaigns data using `account_id` slicing.
     More info about LinkedIn Ads / Campaigns:
