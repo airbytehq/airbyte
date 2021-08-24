@@ -1141,7 +1141,7 @@ paths:
       tags:
         - db_migration
       summary: List current migration status
-      operationId: executeDbMigrationInfo
+      operationId: listMigrations
       requestBody:
         content:
           application/json:
