@@ -118,11 +118,6 @@ public class SSHTunnel {
    */
   public void openTunnelIfRequested() throws IOException {
     if (shouldTunnel()) {
-      try {
-        throw new Exception("Troubleshooting JENNY");
-      } catch (Exception e) {
-        LOGGER.error("Troubleshooting! ", e);
-      }
       if (tunnelSession != null || sshclient != null) {
         throw new RuntimeException("SSH Tunnel was requested to be opened while it was already open.  This is a coding error.");
       }
