@@ -56,11 +56,14 @@ public class FlywayDatabaseMigrator implements DatabaseMigrator {
    * @param dbIdentifier A name to identify the database. Preferably one word. This identifier will be
    *        used to construct the migration history table name. For example, if the identifier is
    *        "imports", the history table name will be "airbyte_imports_migrations".
+   * @param migrationFileLocations Example: "classpath:db/migration". See:
+   *        https://flywaydb.org/documentation/concepts/migrations#discovery-1
    */
   protected FlywayDatabaseMigrator(Database database,
                                    String dbIdentifier,
-                                   String migrationRunner) {
-    this(database, getConfiguration(database, dbIdentifier, migrationRunner).load());
+                                   String migrationRunner,
+                                   String migrationFileLocations) {
+    this(database, getConfiguration(database, dbIdentifier, migrationRunner, migrationFileLocations).load());
   }
 
   @VisibleForTesting
@@ -75,7 +78,8 @@ public class FlywayDatabaseMigrator implements DatabaseMigrator {
 
   private static FluentConfiguration getConfiguration(Database database,
                                                       String dbIdentifier,
-                                                      String migrationRunner) {
+                                                      String migrationRunner,
+                                                      String migrationFileLocations) {
     return Flyway.configure()
         .dataSource(database.getDataSource())
         .baselineVersion(BASELINE_VERSION)
@@ -83,7 +87,7 @@ public class FlywayDatabaseMigrator implements DatabaseMigrator {
         .baselineOnMigrate(BASELINE_ON_MIGRATION)
         .installedBy(migrationRunner)
         .table(String.format("airbyte_%s_migrations", dbIdentifier))
-        .locations(getDefaultMigrationFileLocation(dbIdentifier));
+        .locations(migrationFileLocations);
   }
 
   @Override
