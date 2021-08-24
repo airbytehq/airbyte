@@ -96,14 +96,15 @@ class ShopifyRateLimiter:
         The decorator function.
         Adjust `threshold` and `rate_limit_header` if needed.
         """
+
         def decorator(func):
             @wraps(func)
             def wrapper_balance_rate_limit(*args, **kwargs):
                 ShopifyRateLimiter.wait_time(
-                    ShopifyRateLimiter.get_wait_time(*args, threshold=threshold, rate_limit_header=rate_limit_header))
+                    ShopifyRateLimiter.get_wait_time(*args, threshold=threshold, rate_limit_header=rate_limit_header)
+                )
                 return func(*args, **kwargs)
 
             return wrapper_balance_rate_limit
 
         return decorator
-
