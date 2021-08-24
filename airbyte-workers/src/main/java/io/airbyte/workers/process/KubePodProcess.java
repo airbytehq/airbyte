@@ -249,15 +249,15 @@ public class KubePodProcess extends Process {
   private Toleration[] buildPodTolerations(List<WorkerPodToleration> tolerations) {
     if (tolerations == null || tolerations.isEmpty()) {
       return null;
-    } else {
-      return tolerations.stream().map(workerPodToleration ->
-              new TolerationBuilder()
-                  .withKey(workerPodToleration.getKey())
-                  .withEffect(workerPodToleration.getEffect())
-                  .withOperator(workerPodToleration.getOperator())
-                  .withValue(workerPodToleration.getValue())
-                  .build())
-          .toArray(Toleration[]::new);
+    }
+    return tolerations.stream().map(workerPodToleration ->
+            new TolerationBuilder()
+                .withKey(workerPodToleration.getKey())
+                .withEffect(workerPodToleration.getEffect())
+                .withOperator(workerPodToleration.getOperator())
+                .withValue(workerPodToleration.getValue())
+                .build())
+        .toArray(Toleration[]::new);
     }
   }
 
