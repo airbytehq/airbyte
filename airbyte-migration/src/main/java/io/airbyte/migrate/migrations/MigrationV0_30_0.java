@@ -68,8 +68,7 @@ public class MigrationV0_30_0 extends BaseMigration implements Migration {
 
   @Override
   public Map<ResourceId, JsonNode> getOutputSchema() {
-    final Map<ResourceId, JsonNode> outputSchema = new HashMap<>(
-        previousMigration.getOutputSchema());
+    final Map<ResourceId, JsonNode> outputSchema = new HashMap<>(previousMigration.getOutputSchema());
     outputSchema.put(WORKSPACE_RESOURCE_ID,
         MigrationUtils.getSchemaFromResourcePath(RESOURCE_PATH, WORKSPACE_RESOURCE_ID));
     return outputSchema;
