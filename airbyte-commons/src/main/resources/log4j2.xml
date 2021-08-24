@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="INFO">
     <Properties>
-        <Property name="default-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %highlight{%p} %C{1.}(%M):%L - %X - %m%n</Property>
-        <Property name="default-worker-file-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %p (%X{job_root}) %C{1}(%M):%L - %m%n</Property>
+
+        <!-- The following patterns mask the string apikey=<string> to apikey=***** to prevent secrets leaking. -->
+        <Property name="default-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %highlight{%p} %C{1.}(%M):%L - %X - %replace{%m}{apikey=\w*}{apikey=*****}%n</Property>
+        <Property name="docker-worker-file-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %p (%X{job_root}) %C{1}(%M):%L - %replace{%m}{apikey=\w*}{apikey=*****}%n</Property>
+        <!-- Remove paths from logs on Cloud as users aren't able to access file paths and these end up being noise. -->
+        <Property name="cloud-worker-file-pattern">%d{yyyy-MM-dd HH:mm:ss} %-5p %replace{%m}{apikey=\w*}{apikey=*****}%n</Property>
+
         <!-- Always log INFO by default. -->
         <Property name="log-level">$${env:LOG_LEVEL:-INFO}</Property>
 
@@ -29,7 +34,7 @@
                 </Route>
                 <Route>
                     <File name="${ctx:job_log_path}-local" fileName="${ctx:job_log_path}">
-                        <PatternLayout pattern="${default-worker-file-pattern}"/>
+                        <PatternLayout pattern="${docker-worker-file-pattern}"/>
                     </File>
                 </Route>
             </Routes>
@@ -55,9 +60,7 @@
                       s3AwsKey="${s3-aws-key}" s3AwsSecret="${s3-aws-secret}"
                       s3ServiceEndpoint="${s3-minio-endpoint}" s3PathStyleAccess="${s3-path-style-access}"
                       gcpStorageBucket="${gcp-storage-bucket}" gcpStorageBlobNamePrefix="job-logging${ctx:job_log_path}">
-                        <PatternLayout>
-                            <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %m%n</Pattern>
-                        </PatternLayout>
+                        <PatternLayout pattern="${cloud-worker-file-pattern}"/>
                     </Log4j2Appender>
                 </Route>
             </Routes>
@@ -76,9 +79,7 @@
                             fileName="${ctx:workspace_app_root}/logs.log"
                             filePattern="${ctx:workspace_app_root}/logs.%i.log.gz"
                             ignoreExceptions="false">
-                        <PatternLayout>
-                            <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %m%n</Pattern>
-                        </PatternLayout>
+                        <PatternLayout pattern="${docker-worker-file-pattern}"/>
                         <Policies>
                             <SizeBasedTriggeringPolicy size="100MB" />
                         </Policies>
@@ -101,9 +102,7 @@
                       s3AwsKey="${s3-aws-key}" s3AwsSecret="${s3-aws-secret}"
                       s3ServiceEndpoint="${s3-minio-endpoint}" s3PathStyleAccess="${s3-path-style-access}"
                       gcpStorageBucket="${gcp-storage-bucket}" gcpStorageBlobNamePrefix="app-logging${ctx:workspace_app_root}">
-                        <PatternLayout>
-                            <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %m%n</Pattern>
-                        </PatternLayout>
+                        <PatternLayout pattern="${cloud-worker-file-pattern}"/>
                     </Log4j2Appender>
                 </Route>
             </Routes>
