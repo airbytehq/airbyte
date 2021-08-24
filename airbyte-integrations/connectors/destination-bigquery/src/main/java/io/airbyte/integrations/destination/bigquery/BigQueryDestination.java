@@ -302,8 +302,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return srcNamespace;
   }
 
-  public JsonNode getGcsJsonNodeConfig(JsonNode config) {
+
+  // TODO move this to Utils class
+  public static JsonNode getGcsJsonNodeConfig(JsonNode config) {
     JsonNode properties = config.get("properties");
+
+    // TODO move arg names to final static String params
 
     JsonNode gcsJsonNode = Jsons.jsonNode(ImmutableMap.builder()
         .put("gcs_bucket_name", properties.get("gcs_bucket_name"))
@@ -336,9 +340,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   private UploadingMethod getLoadingMethod(JsonNode config) {
-    if (config.get(LOADING_METHOD) != null && "GCS Staging".equals(config.get(LOADING_METHOD).asText())) {
+    JsonNode properties = config.get("properties");
+    if (properties != null && properties.get(LOADING_METHOD) != null && "GCS Staging".equals(properties.get(LOADING_METHOD).asText())) {
+      LOGGER.info("Selected loading method is set to: " + UploadingMethod.GCS);
       return UploadingMethod.GCS;
     } else {
+      LOGGER.info("Selected loading method is set to: " + UploadingMethod.STANDARD);
       return UploadingMethod.STANDARD;
     }
   }

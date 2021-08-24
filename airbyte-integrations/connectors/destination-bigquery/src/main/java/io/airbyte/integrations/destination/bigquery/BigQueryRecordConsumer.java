@@ -58,7 +58,6 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -151,6 +150,11 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   public void close(boolean hasFailed) {
     LOGGER.info("Started closing all connections");
     // process gcs streams
+    closeGcsStreamsAndCopyDataToBigQuery(hasFailed);
+    closeNormalBigqueryStreams(hasFailed);
+  }
+
+  private void closeGcsStreamsAndCopyDataToBigQuery(boolean hasFailed){
     final List<BigQueryWriteConfig> gcsWritersList = writeConfigs.values().parallelStream()
         .filter(el -> el.getGcsCsvWriter() != null)
         .collect(Collectors.toList());
@@ -171,6 +175,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       });
     }
 
+    // copy data from tmp gcs storage to bigquery tables
     writeConfigs.values().stream()
         .filter(pair -> pair.getGcsCsvWriter() != null)
         .forEach(pair -> {
@@ -180,11 +185,9 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
             e.printStackTrace();
           }
         });
-
-    closeNormalBigqueryStreams(hasFailed);
   }
 
-  public void loadCsvFromGcsTruncate(BigQueryWriteConfig bigQueryWriteConfig)
+  private void loadCsvFromGcsTruncate(BigQueryWriteConfig bigQueryWriteConfig)
       throws Exception {
     try {
 
