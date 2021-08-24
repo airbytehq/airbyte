@@ -26,6 +26,7 @@ const Label = styled.label<{ disabled?: boolean }>`
 const BigCheckBox = styled(CheckBox)`
   height: 25px;
   width: 25px;
+  min-width: 25px;
   background: ${({ theme, checked }) =>
     checked ? theme.primaryColor : theme.whiteColor};
   border: ${({ theme, checked }) =>

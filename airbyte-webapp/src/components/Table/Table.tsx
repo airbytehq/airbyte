@@ -45,8 +45,8 @@ const Tr = styled.tr<{
 
 const Td = styled.td<{ collapse?: boolean; customWidth?: number }>`
   padding: 16px 13px;
-  font-size: 14px;
-  line-height: 17px;
+  font-size: 12px;
+  line-height: 15px;
   font-weight: normal;
   color: ${({ theme }) => theme.darkPrimaryColor};
   white-space: nowrap;
@@ -62,17 +62,18 @@ const Td = styled.td<{ collapse?: boolean; customWidth?: number }>`
 `;
 
 const Th = styled.th<IThProps>`
-  background: ${({ theme }) => theme.greyColor0};
-  padding: 7px 13px 8px;
+  background: ${({ theme }) => theme.textColor};
+  padding: 9px 13px 10px;
   text-align: left;
-  font-size: 14px;
-  line-height: 17px;
-  font-weight: normal;
-  opacity: ${({ highlighted }) => (highlighted ? 1 : 0.6)};
-  color: ${({ theme }) => theme.darkPrimaryColor};
-  border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
+  font-size: 10px;
+  line-height: 12px;
+  color: ${({ theme, highlighted }) =>
+    highlighted ? theme.whiteColor : theme.lightTextColor};
+  border-bottom: 1px solid ${({ theme }) => theme.backgroundColor};
   width: ${({ collapse, customWidth }) =>
     customWidth ? `${customWidth}%` : collapse ? "0.0000000001%" : "auto"};
+  font-weight: 600;
+  text-transform: uppercase;
 
   &:first-child {
     padding-left: 45px;

@@ -75,9 +75,9 @@ const LoginPage: React.FC = () => {
                 {({ field, meta }: FieldProps<string>) => (
                   <LabeledInput
                     {...field}
-                    label={<FormattedMessage id="login.password" />}
+                    label={<FormattedMessage id="login.yourPassword" />}
                     placeholder={formatMessage({
-                      id: "login.password.placeholder",
+                      id: "login.yourPassword.placeholder",
                     })}
                     type="password"
                     error={!!meta.error && meta.touched}

@@ -30,7 +30,7 @@ const Badge = styled.div<IProps>`
     props.success
       ? props.theme.successColor
       : props.inactive
-      ? props.theme.greyColor40
+      ? props.theme.lightTextColor
       : props.empty
       ? props.theme.attentionColor
       : props.theme.dangerColor};

@@ -10,11 +10,12 @@ import {
   Form,
   RowFieldItem,
 } from "../components/FormComponents";
-import { Button, H5, LabeledInput } from "components";
+import { Button, H5, LabeledInput, Link } from "components";
 import { FormTitle } from "../components/FormTitle";
 import CheckBoxControl from "../components/CheckBoxControl";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
+import config from "config";
 
 const MarginBlock = styled.div`
   margin-bottom: 15px;
@@ -168,7 +169,33 @@ const SignupPage: React.FC = () => {
                     {...field}
                     checked={!!field.value}
                     checkbox
-                    label={<FormattedMessage id="login.security" />}
+                    label={
+                      <FormattedMessage
+                        id="login.security"
+                        values={{
+                          terms: (...terms: React.ReactNode[]) => (
+                            <Link
+                              $clear
+                              target="_blank"
+                              href={config.ui.termsLink}
+                              as="a"
+                            >
+                              {terms}
+                            </Link>
+                          ),
+                          privacy: (...privacy: React.ReactNode[]) => (
+                            <Link
+                              $clear
+                              target="_blank"
+                              href={config.ui.privacyLink}
+                              as="a"
+                            >
+                              {privacy}
+                            </Link>
+                          ),
+                        }}
+                      />
+                    }
                     message={
                       meta.touched &&
                       meta.error &&

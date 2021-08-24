@@ -13,9 +13,9 @@ import useConnector from "components/hooks/services/useConnector";
 import { Link } from "components";
 import Indicator from "components/Indicator";
 
-import Source from "./components/SourceIcon";
-import Connections from "./components/ConnectionsIcon";
-import Destination from "./components/DestinationIcon";
+import Source from "views/layout/SideBar/components/SourceIcon";
+import Connections from "views/layout/SideBar/components/ConnectionsIcon";
+import Destination from "views/layout/SideBar/components/DestinationIcon";
 import { WorkspacePopout } from "packages/cloud/views/workspaces/WorkspacePopout";
 
 const Bar = styled.nav`
@@ -102,16 +102,22 @@ const Notification = styled(Indicator)`
 
 const WorkspaceButton = styled.div`
   font-size: 9px;
-  line-height: 11px;
+  line-height: 21px;
   height: 21px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  //display: flex;
+  //justify-content: center;
+  //align-items: center;
   color: ${({ theme }) => theme.whiteColor};
   border-radius: 10px;
   margin-top: 13px;
   background: rgba(255, 255, 255, 0.2);
   cursor: pointer;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 3px;
+  text-align: center;
 `;
 
 const SideBar: React.FC = () => {
