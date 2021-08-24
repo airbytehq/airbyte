@@ -258,7 +258,6 @@ public class KubePodProcess extends Process {
                 .withValue(workerPodToleration.getValue())
                 .build())
         .toArray(Toleration[]::new);
-    }
   }
 
   public KubePodProcess(String processRunnerHost,

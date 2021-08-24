@@ -2,7 +2,9 @@ package io.airbyte.config;
 
 import java.util.Objects;
 
-// represents a minimal io.fabric8.kubernetes.api.model.Toleration
+/**
+ * Represents a minimal io.fabric8.kubernetes.api.model.Toleration
+ */
 public class WorkerPodToleration {
 
   private final String key;

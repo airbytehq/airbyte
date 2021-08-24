@@ -38,6 +38,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -238,34 +239,47 @@ public class EnvConfigs implements Configs {
     return new WorkspaceRetentionConfig(minDays, maxDays, maxSizeMb);
   }
 
+  private WorkerPodToleration workerPodToleration(String tolerationStr) {
+    Map<String, String> tolerationMap = Splitter.on(",")
+        .splitToStream(tolerationStr)
+        .map(s -> s.split("="))
+        .collect(Collectors.toMap(s -> s[0], s -> s[1]));
+
+    if (tolerationMap.containsKey("key") && tolerationMap.containsKey("effect") && tolerationMap.containsKey("operator")) {
+      return new WorkerPodToleration(tolerationMap.get("key"),
+          tolerationMap.get("effect"),
+          tolerationMap.get("value"),
+          tolerationMap.get("operator"));
+    } else {
+      LOGGER.warn("Ignoring toleration {}, missing one of key,effect or operator",
+          tolerationStr);
+      return null;
+    }
+  }
+
+  /**
+   * Returns worker pod tolerations parsed from its own environment variable. The value of the env
+   * is a string that represents one or more tolerations.
+   * <li> Tolerations are separated by a `;`
+   * <li> Each toleration contains k=v pairs mentioning some/all of key, effect, operator and value and separated by `,`
+   * <p>
+   * For example:- The following represents two tolerations, one checking existence and another
+   * matching a value
+   * <p>
+   * key=airbyte-server,operator=Exists,effect=NoSchedule;key=airbyte-server,operator=Equals,value=true,effect=NoSchedule
+   *
+   * @return list of WorkerPodToleration parsed from env
+   */
   @Override
   public List<WorkerPodToleration> getWorkerPodTolerations() {
-    // Format:
-    // Tolerations separated by ;;
-    // Each toleration has k=v format for necessary fields separated by ,
-    // t1-k1=v1,t1-k2=v2,t1-k3=v3;;t2-k1=v1,t2-k2=v2,t2-k3=v3 ....
-    // we need at-least key, effect and operator to be present. value is optional
-    // we do not
-    String tolerations = getEnvOrDefault(WORKER_POD_TOLERATIONS, "");
-    return Strings.isNullOrEmpty(tolerations) ? List.of() : Splitter.on(";;")
-        .splitToStream(tolerations)
-        .filter(tolerationStr -> !Strings.isNullOrEmpty(tolerationStr))
-        .map(tolerationStr -> {
-          Map<String, String> tolerationMap = Splitter.on(",")
-              .splitToStream(tolerationStr)
-              .map(s -> s.split("="))
-              .collect(Collectors.toMap(s -> s[0], s -> s[1]));
-          if (tolerationMap.containsKey("key") && tolerationMap.containsKey("effect") && tolerationMap.containsKey("operator")) {
-            return new WorkerPodToleration(tolerationMap.get("key"),
-                tolerationMap.get("effect"),
-                tolerationMap.get("value"),
-                tolerationMap.get("operator"));
-          } else {
-            LOGGER.warn("Ignoring toleration {}, missing one of key,effect or operator",
-                tolerationStr);
-            return null;
-          }
-        })
+    String tolerationsStr = getEnvOrDefault(WORKER_POD_TOLERATIONS, "");
+
+    Stream<String> tolerations = Strings.isNullOrEmpty(tolerationsStr) ? Stream.of() : Splitter.on(";")
+        .splitToStream(tolerationsStr)
+        .filter(tolerationStr -> !Strings.isNullOrEmpty(tolerationStr));
+
+    return tolerations
+        .map(this::workerPodToleration)
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
   }
