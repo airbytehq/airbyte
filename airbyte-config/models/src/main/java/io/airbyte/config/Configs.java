@@ -59,8 +59,6 @@ public interface Configs {
 
   boolean runDatabaseMigrationOnStartup();
 
-  int getMaxRetriesPerAttempt();
-
   int getMaxSyncJobAttempts();
 
   int getMaxSyncTimeoutDays();
