@@ -59,7 +59,7 @@ public class OracleNameTransformer extends ExtendedNameTransformer {
     if (!result.isEmpty() && result.charAt(0) == '_') {
       result = result.substring(1);
     }
-    return maxStringLength(result, 30);
+    return maxStringLength(result, 128);
   }
 
 }
