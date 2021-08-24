@@ -296,8 +296,8 @@ public class ServerApp implements ServerRunnable {
     DatabaseMigrator configDbMigrator = new ConfigsDatabaseMigrator(configDatabase, ServerApp.class.getSimpleName());
     DatabaseMigrator jobDbMigrator = new JobsDatabaseMigrator(jobDatabase, ServerApp.class.getSimpleName());
 
-    configDbMigrator.baseline();
-    jobDbMigrator.baseline();
+    configDbMigrator.createBaseline();
+    jobDbMigrator.createBaseline();
 
     if (configs.runDatabaseMigrationOnStartup()) {
       LOGGER.info("Migrating configs database");

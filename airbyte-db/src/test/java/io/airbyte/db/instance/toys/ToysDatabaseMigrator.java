@@ -25,12 +25,12 @@
 package io.airbyte.db.instance.toys;
 
 import io.airbyte.db.Database;
-import io.airbyte.db.instance.BaseDatabaseMigrator;
+import io.airbyte.db.instance.FlywayDatabaseMigrator;
 
 /**
  * A database migrator for testing purposes only.
  */
-public class ToysDatabaseMigrator extends BaseDatabaseMigrator {
+public class ToysDatabaseMigrator extends FlywayDatabaseMigrator {
 
   public static final String DB_IDENTIFIER = "toy";
   public static final String MIGRATION_FILE_LOCATION = "classpath:io/airbyte/db/instance/toys/migrations";

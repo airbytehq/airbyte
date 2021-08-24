@@ -37,7 +37,7 @@ import java.util.function.Function;
 public class ToysDatabaseInstance extends BaseDatabaseInstance {
 
   public static final String DATABASE_LOGGING_NAME = "toys";
-  public static final String TABLE_NAME = "toy_table";
+  public static final String TABLE_NAME = "toy_cars";
   public static final String SCHEMA_PATH = "toys_database/schema.sql";
   public static final Function<Database, Boolean> IS_DATABASE_READY = database -> {
     try {

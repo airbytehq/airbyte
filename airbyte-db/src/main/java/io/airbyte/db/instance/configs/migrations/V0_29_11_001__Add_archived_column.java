@@ -22,34 +22,26 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db.instance;
+package io.airbyte.db.instance.configs.migrations;
 
-import java.io.IOException;
-import java.util.List;
-import org.flywaydb.core.api.MigrationInfo;
-import org.flywaydb.core.api.output.BaselineResult;
-import org.flywaydb.core.api.output.MigrateResult;
+import static org.jooq.impl.DSL.field;
 
-public interface DatabaseMigrator {
+import org.flywaydb.core.api.migration.BaseJavaMigration;
+import org.flywaydb.core.api.migration.Context;
+import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
+import org.jooq.impl.SQLDataType;
 
-  /**
-   * Run migration.
-   */
-  MigrateResult migrate();
+public class V0_29_11_001__Add_archived_column extends BaseJavaMigration {
 
-  /**
-   * List migration information.
-   */
-  List<MigrationInfo> list();
+  @Override
+  public void migrate(Context context) throws Exception {
+    DSLContext ctx = DSL.using(context.getConnection());
+    ctx.alterTable("airbyte_configs")
+        .addColumn(field("archived", SQLDataType.BOOLEAN.defaultValue(false).nullable(true)))
+        .execute();
+    // population
 
-  /**
-   * Setup Flyway migration in a database and create baseline.
-   */
-  BaselineResult createBaseline();
-
-  /**
-   * Dump the current database schema.
-   */
-  String dumpSchema() throws IOException;
+  }
 
 }

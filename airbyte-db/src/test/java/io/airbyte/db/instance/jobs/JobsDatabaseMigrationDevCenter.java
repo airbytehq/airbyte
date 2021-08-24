@@ -24,8 +24,7 @@
 
 package io.airbyte.db.instance.jobs;
 
-import io.airbyte.db.instance.BaseDatabaseMigrator;
-import io.airbyte.db.instance.DatabaseMigrator;
+import io.airbyte.db.instance.FlywayDatabaseMigrator;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevCenter;
 import io.airbyte.db.instance.development.MigrationDevHelper;
@@ -42,7 +41,7 @@ public class JobsDatabaseMigrationDevCenter extends AbstractJobsDatabaseTest imp
   @Test
   @Override
   public void createMigration() throws IOException {
-    BaseDatabaseMigrator migrator = new JobsDatabaseMigrator(database, JobsDatabaseMigrationDevCenter.class.getSimpleName());
+    FlywayDatabaseMigrator migrator = new JobsDatabaseMigrator(database, JobsDatabaseMigrationDevCenter.class.getSimpleName());
     MigrationDevHelper.createNextMigrationFile("jobs", migrator);
   }
 
@@ -53,7 +52,7 @@ public class JobsDatabaseMigrationDevCenter extends AbstractJobsDatabaseTest imp
   @Test
   @Override
   public void runLastMigration() throws IOException {
-    BaseDatabaseMigrator fullMigrator = new JobsDatabaseMigrator(database, JobsDatabaseMigrationDevCenter.class.getSimpleName());
+    FlywayDatabaseMigrator fullMigrator = new JobsDatabaseMigrator(database, JobsDatabaseMigrationDevCenter.class.getSimpleName());
     DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(fullMigrator);
     MigrationDevHelper.runLastMigration(devDatabaseMigrator);
   }
@@ -68,8 +67,8 @@ public class JobsDatabaseMigrationDevCenter extends AbstractJobsDatabaseTest imp
   @Test
   @Override
   public void integrateMigration() throws Exception {
-    DatabaseMigrator migrator = new JobsDatabaseMigrator(database, JobsDatabaseMigrationDevCenter.class.getSimpleName());
-    MigrationDevHelper.integrateMigration(container, migrator, "jobs", JobsDatabaseMigrator.DB_SCHEMA_DUMP);
+    FlywayDatabaseMigrator migrator = new JobsDatabaseMigrator(database, JobsDatabaseMigrationDevCenter.class.getSimpleName());
+    MigrationDevHelper.integrateMigration(container, migrator, "jobs", MigrationDevHelper.getDefaultSchemaDumpFile("jobs"));
   }
 
 }

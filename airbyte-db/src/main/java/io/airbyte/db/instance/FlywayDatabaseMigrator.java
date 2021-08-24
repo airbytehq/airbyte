@@ -40,9 +40,9 @@ import org.flywaydb.core.api.output.MigrateResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BaseDatabaseMigrator implements DatabaseMigrator {
+public class FlywayDatabaseMigrator implements DatabaseMigrator {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BaseDatabaseMigrator.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(FlywayDatabaseMigrator.class);
   // Constants for Flyway baseline. See here for details:
   // https://flywaydb.org/documentation/command/baseline
   private static final String BASELINE_VERSION = "0.29.0.001";
@@ -56,27 +56,26 @@ public class BaseDatabaseMigrator implements DatabaseMigrator {
    * @param dbIdentifier A name to identify the database. Preferably one word. This identifier will be
    *        used to construct the migration history table name. For example, if the identifier is
    *        "imports", the history table name will be "airbyte_imports_migrations".
-   * @param migrationFileLocations Example: "classpath:db/migration". See:
-   *        https://flywaydb.org/documentation/concepts/migrations#discovery-1
    */
-  protected BaseDatabaseMigrator(Database database,
-                                 String dbIdentifier,
-                                 String migrationRunner,
-                                 String migrationFileLocations) {
-    this.database = database;
-    this.flyway = getConfiguration(database, dbIdentifier, migrationRunner, migrationFileLocations).load();
+  protected FlywayDatabaseMigrator(Database database,
+                                   String dbIdentifier,
+                                   String migrationRunner) {
+    this(database, getConfiguration(database, dbIdentifier, migrationRunner).load());
   }
 
   @VisibleForTesting
-  public BaseDatabaseMigrator(Database database, Flyway flyway) {
+  public FlywayDatabaseMigrator(Database database, Flyway flyway) {
     this.database = database;
     this.flyway = flyway;
   }
 
+  private static String getDefaultMigrationFileLocation(String dbIdentifier) {
+    return String.format("classpath:io/airbyte/db/instance/%s/migrations", dbIdentifier);
+  }
+
   private static FluentConfiguration getConfiguration(Database database,
                                                       String dbIdentifier,
-                                                      String migrationRunner,
-                                                      String migrationFileLocations) {
+                                                      String migrationRunner) {
     return Flyway.configure()
         .dataSource(database.getDataSource())
         .baselineVersion(BASELINE_VERSION)
@@ -84,7 +83,7 @@ public class BaseDatabaseMigrator implements DatabaseMigrator {
         .baselineOnMigrate(BASELINE_ON_MIGRATION)
         .installedBy(migrationRunner)
         .table(String.format("airbyte_%s_migrations", dbIdentifier))
-        .locations(migrationFileLocations);
+        .locations(getDefaultMigrationFileLocation(dbIdentifier));
   }
 
   @Override
@@ -95,14 +94,14 @@ public class BaseDatabaseMigrator implements DatabaseMigrator {
   }
 
   @Override
-  public List<MigrationInfo> info() {
+  public List<MigrationInfo> list() {
     MigrationInfoService result = flyway.info();
     result.getInfoResult().warnings.forEach(LOGGER::warn);
     return Arrays.asList(result.all());
   }
 
   @Override
-  public BaselineResult baseline() {
+  public BaselineResult createBaseline() {
     BaselineResult result = flyway.baseline();
     result.warnings.forEach(LOGGER::warn);
     return result;

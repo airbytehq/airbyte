@@ -50,7 +50,7 @@ public class FlywayFormatter {
   private static final DSLContext CTX = new DefaultDSLContext(SQLDialect.DEFAULT);
 
   /**
-   * Format the {@link DatabaseMigrator#info} output.
+   * Format the {@link DatabaseMigrator#list} output.
    */
   static String formatMigrationInfoList(List<MigrationInfo> migrationInfoList) {
     Field<String> type = field("Type", SQLDataType.VARCHAR);

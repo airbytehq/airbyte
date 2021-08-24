@@ -51,7 +51,7 @@ public class DbMigrationHandler {
   public DbMigrationReadList list(DbMigrationRequestBody request) {
     DatabaseMigrator migrator = getMigrator(request.getDatabase());
     return new DbMigrationReadList()
-        .migrations(migrator.info().stream().map(DbMigrationHandler::toMigrationRead).collect(Collectors.toList()));
+        .migrations(migrator.list().stream().map(DbMigrationHandler::toMigrationRead).collect(Collectors.toList()));
   }
 
   public DbMigrationExecutionRead migrate(DbMigrationRequestBody request) {

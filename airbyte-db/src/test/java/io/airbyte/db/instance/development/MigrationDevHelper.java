@@ -27,8 +27,8 @@ package io.airbyte.db.instance.development;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
-import io.airbyte.db.instance.BaseDatabaseMigrator;
 import io.airbyte.db.instance.DatabaseMigrator;
+import io.airbyte.db.instance.FlywayDatabaseMigrator;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -65,21 +65,25 @@ public class MigrationDevHelper {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MigrationDevHelper.class);
 
+  public static String getDefaultSchemaDumpFile(String dbIdentifier) {
+    return String.format("src/main/resources/%s_database/schema_dump.txt", dbIdentifier);
+  }
+
   /**
    * This method is used for migration development. Run it to see how your migration changes the
    * database schema.
    */
   public static void runLastMigration(DevDatabaseMigrator migrator) throws IOException {
-    migrator.baseline();
+    migrator.createBaseline();
 
-    List<MigrationInfo> preMigrationInfoList = migrator.info();
+    List<MigrationInfo> preMigrationInfoList = migrator.list();
     System.out.println("\n==== Pre Migration Info ====\n" + FlywayFormatter.formatMigrationInfoList(preMigrationInfoList));
     System.out.println("\n==== Pre Migration Schema ====\n" + migrator.dumpSchema() + "\n");
 
     MigrateResult migrateResult = migrator.migrate();
     System.out.println("\n==== Migration Result ====\n" + FlywayFormatter.formatMigrationResult(migrateResult));
 
-    List<MigrationInfo> postMigrationInfoList = migrator.info();
+    List<MigrationInfo> postMigrationInfoList = migrator.list();
     System.out.println("\n==== Post Migration Info ====\n" + FlywayFormatter.formatMigrationInfoList(postMigrationInfoList));
     System.out.println("\n==== Post Migration Schema ====\n" + migrator.dumpSchema() + "\n");
   }
@@ -112,7 +116,7 @@ public class MigrationDevHelper {
     GenerationTool.generate(configuration);
   }
 
-  public static void createNextMigrationFile(String dbIdentifier, BaseDatabaseMigrator migrator) throws IOException {
+  public static void createNextMigrationFile(String dbIdentifier, FlywayDatabaseMigrator migrator) throws IOException {
     String description = "New_migration";
 
     MigrationVersion nextMigrationVersion = getNextMigrationVersion(migrator);
@@ -139,7 +143,7 @@ public class MigrationDevHelper {
     }
   }
 
-  public static Optional<MigrationVersion> getSecondToLastMigrationVersion(BaseDatabaseMigrator migrator) {
+  public static Optional<MigrationVersion> getSecondToLastMigrationVersion(FlywayDatabaseMigrator migrator) {
     List<ResolvedMigration> migrations = getAllMigrations(migrator);
     if (migrations.isEmpty() || migrations.size() == 1) {
       return Optional.empty();
@@ -152,7 +156,7 @@ public class MigrationDevHelper {
    * interface. Reference:
    * https://github.com/flyway/flyway/blob/master/flyway-core/src/main/java/org/flywaydb/core/Flyway.java#L621.
    */
-  private static List<ResolvedMigration> getAllMigrations(BaseDatabaseMigrator migrator) {
+  private static List<ResolvedMigration> getAllMigrations(FlywayDatabaseMigrator migrator) {
     Configuration configuration = migrator.getFlyway().getConfiguration();
     ClassProvider<JavaMigration> scanner = new Scanner<>(
         JavaMigration.class,
@@ -171,7 +175,7 @@ public class MigrationDevHelper {
         .collect(Collectors.toList());
   }
 
-  private static Optional<MigrationVersion> getLastMigrationVersion(BaseDatabaseMigrator migrator) {
+  private static Optional<MigrationVersion> getLastMigrationVersion(FlywayDatabaseMigrator migrator) {
     List<ResolvedMigration> migrations = getAllMigrations(migrator);
     if (migrations.isEmpty()) {
       return Optional.empty();
@@ -223,7 +227,7 @@ public class MigrationDevHelper {
     return version.getVersion().split("\\.")[3];
   }
 
-  private static MigrationVersion getNextMigrationVersion(BaseDatabaseMigrator migrator) {
+  private static MigrationVersion getNextMigrationVersion(FlywayDatabaseMigrator migrator) {
     Optional<MigrationVersion> lastMigrationVersion = getLastMigrationVersion(migrator);
     AirbyteVersion currentAirbyteVersion = getCurrentAirbyteVersion();
     return getNextMigrationVersion(currentAirbyteVersion, lastMigrationVersion);

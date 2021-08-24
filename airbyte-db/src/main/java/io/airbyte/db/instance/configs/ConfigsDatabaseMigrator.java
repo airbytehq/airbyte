@@ -25,16 +25,14 @@
 package io.airbyte.db.instance.configs;
 
 import io.airbyte.db.Database;
-import io.airbyte.db.instance.BaseDatabaseMigrator;
+import io.airbyte.db.instance.FlywayDatabaseMigrator;
 
-public class ConfigsDatabaseMigrator extends BaseDatabaseMigrator {
+public class ConfigsDatabaseMigrator extends FlywayDatabaseMigrator {
 
   public static final String DB_IDENTIFIER = "configs";
-  public static final String MIGRATION_FILE_LOCATION = "classpath:io/airbyte/db/instance/configs/migrations";
-  public static final String DB_SCHEMA_DUMP = "src/main/resources/configs_database/schema_dump.txt";
 
   public ConfigsDatabaseMigrator(Database database, String migrationRunner) {
-    super(database, DB_IDENTIFIER, migrationRunner, MIGRATION_FILE_LOCATION);
+    super(database, DB_IDENTIFIER, migrationRunner);
   }
 
 }

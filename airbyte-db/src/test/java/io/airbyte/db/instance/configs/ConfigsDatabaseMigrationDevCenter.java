@@ -24,8 +24,7 @@
 
 package io.airbyte.db.instance.configs;
 
-import io.airbyte.db.instance.BaseDatabaseMigrator;
-import io.airbyte.db.instance.DatabaseMigrator;
+import io.airbyte.db.instance.FlywayDatabaseMigrator;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevCenter;
 import io.airbyte.db.instance.development.MigrationDevHelper;
@@ -42,7 +41,7 @@ public class ConfigsDatabaseMigrationDevCenter extends AbstractConfigsDatabaseTe
   @Test
   @Override
   public void createMigration() throws IOException {
-    BaseDatabaseMigrator migrator = new ConfigsDatabaseMigrator(database, ConfigsDatabaseMigrationDevCenter.class.getSimpleName());
+    FlywayDatabaseMigrator migrator = new ConfigsDatabaseMigrator(database, ConfigsDatabaseMigrationDevCenter.class.getSimpleName());
     MigrationDevHelper.createNextMigrationFile("configs", migrator);
   }
 
@@ -53,7 +52,7 @@ public class ConfigsDatabaseMigrationDevCenter extends AbstractConfigsDatabaseTe
   @Test
   @Override
   public void runLastMigration() throws IOException {
-    BaseDatabaseMigrator fullMigrator = new ConfigsDatabaseMigrator(database, ConfigsDatabaseMigrationDevCenter.class.getSimpleName());
+    FlywayDatabaseMigrator fullMigrator = new ConfigsDatabaseMigrator(database, ConfigsDatabaseMigrationDevCenter.class.getSimpleName());
     DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(fullMigrator);
     MigrationDevHelper.runLastMigration(devDatabaseMigrator);
   }
@@ -68,8 +67,8 @@ public class ConfigsDatabaseMigrationDevCenter extends AbstractConfigsDatabaseTe
   @Test
   @Override
   public void integrateMigration() throws Exception {
-    DatabaseMigrator migrator = new ConfigsDatabaseMigrator(database, ConfigsDatabaseMigrationDevCenter.class.getSimpleName());
-    MigrationDevHelper.integrateMigration(container, migrator, "configs", ConfigsDatabaseMigrator.DB_SCHEMA_DUMP);
+    FlywayDatabaseMigrator migrator = new ConfigsDatabaseMigrator(database, ConfigsDatabaseMigrationDevCenter.class.getSimpleName());
+    MigrationDevHelper.integrateMigration(container, migrator, "configs", MigrationDevHelper.getDefaultSchemaDumpFile("configs"));
   }
 
 }

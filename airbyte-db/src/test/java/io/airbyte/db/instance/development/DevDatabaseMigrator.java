@@ -24,8 +24,8 @@
 
 package io.airbyte.db.instance.development;
 
-import io.airbyte.db.instance.BaseDatabaseMigrator;
 import io.airbyte.db.instance.DatabaseMigrator;
+import io.airbyte.db.instance.FlywayDatabaseMigrator;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -54,7 +54,7 @@ public class DevDatabaseMigrator implements DatabaseMigrator {
   // before the last migration.
   private final DatabaseMigrator baselineMigrator;
 
-  public DevDatabaseMigrator(BaseDatabaseMigrator fullMigrator) {
+  public DevDatabaseMigrator(FlywayDatabaseMigrator fullMigrator) {
     this.fullMigrator = fullMigrator;
     this.baselineMigrator = getBaselineMigrator(fullMigrator);
   }
@@ -67,12 +67,12 @@ public class DevDatabaseMigrator implements DatabaseMigrator {
     }
 
     @Override
-    public List<MigrationInfo> info() {
+    public List<MigrationInfo> list() {
       return Collections.emptyList();
     }
 
     @Override
-    public BaselineResult baseline() {
+    public BaselineResult createBaseline() {
       return null;
     }
 
@@ -87,7 +87,7 @@ public class DevDatabaseMigrator implements DatabaseMigrator {
    * Create a baseline migration from a full migrator. The baseline migrator does not run the last
    * migration, which will be usually the migration to be tested.
    */
-  private static DatabaseMigrator getBaselineMigrator(BaseDatabaseMigrator fullMigrator) {
+  private static DatabaseMigrator getBaselineMigrator(FlywayDatabaseMigrator fullMigrator) {
     Configuration fullConfig = fullMigrator.getFlyway().getConfiguration();
     FluentConfiguration baselineConfig = Flyway.configure()
         .dataSource(fullConfig.getDataSource())
@@ -109,7 +109,7 @@ public class DevDatabaseMigrator implements DatabaseMigrator {
     LOGGER.info("Baseline migrator target version: {}", secondToLastMigrationVersion.get());
     baselineConfig.target(secondToLastMigrationVersion.get());
 
-    return new BaseDatabaseMigrator(fullMigrator.getDatabase(), baselineConfig.load());
+    return new FlywayDatabaseMigrator(fullMigrator.getDatabase(), baselineConfig.load());
   }
 
   @Override
@@ -118,16 +118,16 @@ public class DevDatabaseMigrator implements DatabaseMigrator {
   }
 
   @Override
-  public List<MigrationInfo> info() {
-    return fullMigrator.info();
+  public List<MigrationInfo> list() {
+    return fullMigrator.list();
   }
 
   @Override
-  public BaselineResult baseline() {
-    fullMigrator.baseline();
+  public BaselineResult createBaseline() {
+    fullMigrator.createBaseline();
     // Run all previous migration except for the last one to establish the baseline database state.
     baselineMigrator.migrate();
-    return fullMigrator.baseline();
+    return fullMigrator.createBaseline();
   }
 
   @Override
