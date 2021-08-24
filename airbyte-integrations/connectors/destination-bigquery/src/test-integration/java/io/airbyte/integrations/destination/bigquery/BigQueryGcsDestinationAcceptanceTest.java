@@ -24,6 +24,9 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
@@ -46,11 +49,14 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.integrations.destination.gcs.GcsS3Helper;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -60,9 +66,9 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest {
+public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationAcceptanceTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryGcsDestinationAcceptanceTest.class);
 
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
 
@@ -72,6 +78,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
   private static final String CONFIG_CREDS = "credentials_json";
 
   private BigQuery bigquery;
+  private AmazonS3 s3Client; // s3Amazon client is used here to connect to GCS
   private Dataset dataset;
   private boolean tornDown;
   private JsonNode config;
@@ -189,22 +196,41 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
-    final String fullConfigAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
-    final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
-    final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();
+    final String fullConfigFromSecretFileAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+
+    final JsonNode fullConfigFromSecretFileJson = Jsons.deserialize(fullConfigFromSecretFileAsString);
+    final JsonNode bigqueryConfigFromSecretFile = fullConfigFromSecretFileJson.get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
+    final JsonNode gcsConfigFromSecretFile = fullConfigFromSecretFileJson.get(BigQueryConsts.GCS_CONFIG);
+
+    final String projectId = bigqueryConfigFromSecretFile.get(CONFIG_PROJECT_ID).asText();
     final String datasetLocation = "US";
 
     final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
 
+    JsonNode gcsCredentialFromSecretFile = gcsConfigFromSecretFile.get(BigQueryConsts.CREDENTIAL);
+    JsonNode credential = Jsons.jsonNode(ImmutableMap.builder()
+        .put(BigQueryConsts.CREDENTIAL_TYPE, gcsCredentialFromSecretFile.get(BigQueryConsts.CREDENTIAL_TYPE))
+        .put(BigQueryConsts.HMAC_KEY_ACCESS_ID, gcsCredentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_ID))
+        .put(BigQueryConsts.HMAC_KEY_ACCESS_SECRET, gcsCredentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_SECRET))
+        .build());
+
+    JsonNode properties = Jsons.jsonNode(ImmutableMap.builder()
+        .put(BigQueryConsts.LOADING_METHOD, "GCS Staging")
+        .put(BigQueryConsts.GCS_BUCKET_NAME, gcsConfigFromSecretFile.get(BigQueryConsts.GCS_BUCKET_NAME))
+        .put(BigQueryConsts.GCS_BUCKET_PATH, gcsConfigFromSecretFile.get(BigQueryConsts.GCS_BUCKET_PATH).asText() + System.currentTimeMillis())
+        .put(BigQueryConsts.CREDENTIAL, credential)
+        .build());
+
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(CONFIG_PROJECT_ID, projectId)
-        .put(CONFIG_CREDS, credentialsJson.toString())
-        .put(CONFIG_DATASET_ID, datasetId)
-        .put(CONFIG_DATASET_LOCATION, datasetLocation)
+        .put(BigQueryConsts.CONFIG_PROJECT_ID, projectId)
+        .put(BigQueryConsts.CONFIG_CREDS, bigqueryConfigFromSecretFile.toString())
+        .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
+        .put(BigQueryConsts.CONFIG_DATASET_LOCATION, datasetLocation)
+        .put(BigQueryConsts.PROPERTIES, properties)
         .build());
 
     final ServiceAccountCredentials credentials = ServiceAccountCredentials
-        .fromStream(new ByteArrayInputStream(credentialsJson.toString().getBytes()));
+        .fromStream(new ByteArrayInputStream(bigqueryConfigFromSecretFile.toString().getBytes()));
 
     bigquery = BigQueryOptions.newBuilder()
         .setProjectId(config.get(CONFIG_PROJECT_ID).asText())
@@ -215,6 +241,10 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
     final DatasetInfo datasetInfo =
         DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).setLocation(config.get(CONFIG_DATASET_LOCATION).asText()).build();
     dataset = bigquery.create(datasetInfo);
+
+    GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
+        .getGcsDestinationConfig(BigQueryDestination.getGcsJsonNodeConfig(config));
+    this.s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
 
     tornDown = false;
     Runtime.getRuntime()
@@ -230,6 +260,33 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
   @Override
   protected void tearDown(TestDestinationEnv testEnv) {
     tearDownBigQuery();
+    tearDownGcs();
+  }
+
+  /**
+   * Remove all the GCS output from the tests.
+   */
+  protected void tearDownGcs() {
+    JsonNode properties = config.get(BigQueryConsts.PROPERTIES);
+    String gcsBucketName = properties.get(BigQueryConsts.GCS_BUCKET_NAME).asText();
+    String gcs_bucket_path = properties.get(BigQueryConsts.GCS_BUCKET_PATH).asText();
+
+    List<KeyVersion> keysToDelete = new LinkedList<>();
+    List<S3ObjectSummary> objects = s3Client
+        .listObjects(gcsBucketName, gcs_bucket_path)
+        .getObjectSummaries();
+    for (S3ObjectSummary object : objects) {
+      keysToDelete.add(new KeyVersion(object.getKey()));
+    }
+
+    if (keysToDelete.size() > 0) {
+      LOGGER.info("Tearing down test bucket path: {}/{}", gcsBucketName, gcs_bucket_path);
+      // Google Cloud Storage doesn't accept request to delete multiple objects
+      for (KeyVersion keyToDelete : keysToDelete) {
+        s3Client.deleteObject(gcsBucketName, keyToDelete.getKey());
+      }
+      LOGGER.info("Deleted {} file(s).", keysToDelete.size());
+    }
   }
 
   private void tearDownBigQuery() {

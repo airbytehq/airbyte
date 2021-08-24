@@ -154,7 +154,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     closeNormalBigqueryStreams(hasFailed);
   }
 
-  private void closeGcsStreamsAndCopyDataToBigQuery(boolean hasFailed){
+  private void closeGcsStreamsAndCopyDataToBigQuery(boolean hasFailed) {
     final List<BigQueryWriteConfig> gcsWritersList = writeConfigs.values().parallelStream()
         .filter(el -> el.getGcsCsvWriter() != null)
         .collect(Collectors.toList());

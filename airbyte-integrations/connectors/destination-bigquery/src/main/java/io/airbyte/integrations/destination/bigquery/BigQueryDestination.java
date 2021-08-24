@@ -78,13 +78,6 @@ import org.slf4j.LoggerFactory;
 public class BigQueryDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestination.class);
-  private static final int MiB = 1024 * 1024;
-  static final String LOADING_METHOD = "loading_method";
-  static final String CONFIG_DATASET_ID = "dataset_id";
-  static final String CONFIG_PROJECT_ID = "project_id";
-  static final String CONFIG_DATASET_LOCATION = "dataset_location";
-  static final String CONFIG_CREDS = "credentials_json";
-  static final String BIG_QUERY_CLIENT_CHUNK_SIZE = "big_query_client_buffer_size_mb";
 
   private static final com.google.cloud.bigquery.Schema SCHEMA = com.google.cloud.bigquery.Schema.of(
       Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
@@ -102,7 +95,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
     try {
-      final String datasetId = config.get(CONFIG_DATASET_ID).asText();
+      final String datasetId = config.get(BigQueryConsts.CONFIG_DATASET_ID).asText();
       final String datasetLocation = getDatasetLocation(config);
       final BigQuery bigquery = getBigQuery(config);
       final UploadingMethod uploadingMethod = getLoadingMethod(config);
@@ -139,8 +132,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   private static String getDatasetLocation(JsonNode config) {
-    if (config.has(CONFIG_DATASET_LOCATION)) {
-      return config.get(CONFIG_DATASET_LOCATION).asText();
+    if (config.has(BigQueryConsts.CONFIG_DATASET_LOCATION)) {
+      return config.get(BigQueryConsts.CONFIG_DATASET_LOCATION).asText();
     } else {
       return "US";
     }
@@ -149,19 +142,19 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   // https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html
   private Integer getBigQueryClientChunkSize(JsonNode config) {
     Integer chunkSizeFromConfig = null;
-    if (config.has(BIG_QUERY_CLIENT_CHUNK_SIZE)) {
-      chunkSizeFromConfig = config.get(BIG_QUERY_CLIENT_CHUNK_SIZE).asInt();
+    if (config.has(BigQueryConsts.BIG_QUERY_CLIENT_CHUNK_SIZE)) {
+      chunkSizeFromConfig = config.get(BigQueryConsts.BIG_QUERY_CLIENT_CHUNK_SIZE).asInt();
       if (chunkSizeFromConfig <= 0) {
         LOGGER.error("BigQuery client Chunk (buffer) size must be a positive number (MB), but was:" + chunkSizeFromConfig);
         throw new IllegalArgumentException("BigQuery client Chunk (buffer) size must be a positive number (MB)");
       }
-      chunkSizeFromConfig = chunkSizeFromConfig * MiB;
+      chunkSizeFromConfig = chunkSizeFromConfig * BigQueryConsts.MiB;
     }
     return chunkSizeFromConfig;
   }
 
   private BigQuery getBigQuery(JsonNode config) {
-    final String projectId = config.get(CONFIG_PROJECT_ID).asText();
+    final String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
 
     try {
       BigQueryOptions.Builder bigQueryBuilder = BigQueryOptions.newBuilder();
@@ -170,7 +163,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         // handle the credentials json being passed as a json object or a json object already serialized as
         // a string.
         final String credentialsString =
-            config.get(CONFIG_CREDS).isObject() ? Jsons.serialize(config.get(CONFIG_CREDS)) : config.get(CONFIG_CREDS).asText();
+            config.get(BigQueryConsts.CONFIG_CREDS).isObject() ? Jsons.serialize(config.get(BigQueryConsts.CONFIG_CREDS))
+                : config.get(BigQueryConsts.CONFIG_CREDS).asText();
         credentials = ServiceAccountCredentials
             .fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
       }
@@ -185,7 +179,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   public static boolean isUsingJsonCredentials(JsonNode config) {
-    return config.has(CONFIG_CREDS) && !config.get(CONFIG_CREDS).asText().isEmpty();
+    return config.has(BigQueryConsts.CONFIG_CREDS) && !config.get(BigQueryConsts.CONFIG_CREDS).asText().isEmpty();
   }
 
   /**
@@ -294,7 +288,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   private static String getSchema(JsonNode config, ConfiguredAirbyteStream stream) {
-    final String defaultSchema = config.get(CONFIG_DATASET_ID).asText();
+    final String defaultSchema = config.get(BigQueryConsts.CONFIG_DATASET_ID).asText();
     final String srcNamespace = stream.getStream().getNamespace();
     if (srcNamespace == null) {
       return defaultSchema;
@@ -302,19 +296,15 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return srcNamespace;
   }
 
-
   // TODO move this to Utils class
   public static JsonNode getGcsJsonNodeConfig(JsonNode config) {
-    JsonNode properties = config.get("properties");
-
-    // TODO move arg names to final static String params
-
+    JsonNode properties = config.get(BigQueryConsts.PROPERTIES);
     JsonNode gcsJsonNode = Jsons.jsonNode(ImmutableMap.builder()
-        .put("gcs_bucket_name", properties.get("gcs_bucket_name"))
-        .put("gcs_bucket_path", properties.get("gcs_bucket_path"))
-        .put("gcs_bucket_region", getDatasetLocation(config))
-        .put("credential", properties.get("credential"))
-        .put("format", Jsons.deserialize("{\n"
+        .put(BigQueryConsts.GCS_BUCKET_NAME, properties.get(BigQueryConsts.GCS_BUCKET_NAME))
+        .put(BigQueryConsts.GCS_BUCKET_PATH, properties.get(BigQueryConsts.GCS_BUCKET_PATH))
+        .put(BigQueryConsts.GCS_BUCKET_REGION, getDatasetLocation(config))
+        .put(BigQueryConsts.CREDENTIAL, properties.get(BigQueryConsts.CREDENTIAL))
+        .put(BigQueryConsts.FORMAT, Jsons.deserialize("{\n"
             + "  \"format_type\": \"CSV\",\n"
             + "  \"flattening\": \"No flattening\"\n"
             + "}"))
@@ -341,7 +331,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   private UploadingMethod getLoadingMethod(JsonNode config) {
     JsonNode properties = config.get("properties");
-    if (properties != null && properties.get(LOADING_METHOD) != null && "GCS Staging".equals(properties.get(LOADING_METHOD).asText())) {
+    if (properties != null && properties.get(BigQueryConsts.LOADING_METHOD) != null
+        && "GCS Staging".equals(properties.get(BigQueryConsts.LOADING_METHOD).asText())) {
       LOGGER.info("Selected loading method is set to: " + UploadingMethod.GCS);
       return UploadingMethod.GCS;
     } else {
