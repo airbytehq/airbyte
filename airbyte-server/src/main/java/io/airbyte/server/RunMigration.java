@@ -24,13 +24,12 @@
 
 package io.airbyte.server;
 
-import io.airbyte.api.model.ImportRead;
-import io.airbyte.api.model.ImportRead.StatusEnum;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.migrate.MigrateConfig;
 import io.airbyte.migrate.MigrationRunner;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -78,12 +77,8 @@ public class RunMigration implements Runnable, AutoCloseable {
       MigrationRunner.run(migrateConfig);
 
       // Import data
-      ImportRead importRead = configDumpImporter.importDataWithSeed(targetVersion, output, seedPersistence);
-      if (importRead.getStatus() == StatusEnum.FAILED) {
-        throw new RuntimeException("Automatic migration failed : " + importRead.getReason());
-      }
-
-    } catch (IOException e) {
+      configDumpImporter.importDataWithSeed(targetVersion, output, seedPersistence);
+    } catch (IOException | JsonValidationException e) {
       throw new RuntimeException("Automatic migration failed", e);
     }
   }

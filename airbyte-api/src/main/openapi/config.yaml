@@ -1435,27 +1435,39 @@ paths:
             application/x-gzip:
               schema:
                 $ref: "#/components/schemas/AirbyteArchive"
+  /v1/deployment/upload_archive_resource:
+    post:
+      tags:
+        - deployment
+      summary: Upload a GZIP archive tarball and stage it in the server's cache as a temporary resource
+      operationId: uploadArchiveResource
+      requestBody:
+        content:
+          application/x-gzip:
+            schema:
+              $ref: "#/components/schemas/AirbyteArchive"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadRead"
   /v1/deployment/import_into_workspace:
     post:
       tags:
         - deployment
-      summary: Import Airbyte Configuration into Workspace (this operation might change ids)
+      summary: >
+        Import Airbyte Configuration into Workspace (this operation might change ids of imported
+        configurations). Note, in order to use this api endpoint, you might need to upload a
+        temporary archive resource with 'deployment/upload_archive_resource' first
       operationId: importIntoWorkspace
       requestBody:
         content:
-          multipart/mixed:
+          application/json:
             schema:
-              type: object
-              properties:
-                workspaceId:
-                  type: string
-                  format: uuid
-                archive:
-                  type: string
-                  format: binary
-            encoding:
-              archive:
-                contentType: application/x-gzip
+              $ref: "#/components/schemas/ImportRequestBody"
         required: true
       responses:
         "200":
@@ -1464,6 +1476,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ImportRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
 components:
   securitySchemes:
     bearerAuth:
@@ -2842,6 +2856,31 @@ components:
             - failed
         reason:
           type: string
+    ResourceId:
+      type: string
+      format: uuid
+    UploadRead:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - succeeded
+            - failed
+        resourceId:
+          $ref: "#/components/schemas/ResourceId"
+    ImportRequestBody:
+      type: object
+      required:
+        - resourceId
+        - workspaceId
+      properties:
+        resourceId:
+          $ref: "#/components/schemas/ResourceId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
     InvalidInputProperty:
       type: object
       required:

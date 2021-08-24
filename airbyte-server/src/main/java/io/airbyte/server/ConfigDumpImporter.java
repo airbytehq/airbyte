@@ -29,8 +29,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import io.airbyte.analytics.TrackingClientSingleton;
-import io.airbyte.api.model.ImportRead;
-import io.airbyte.api.model.ImportRead.StatusEnum;
+import io.airbyte.api.model.UploadRead;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.io.Archives;
 import io.airbyte.commons.io.IOs;
@@ -53,12 +52,12 @@ import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -87,10 +86,13 @@ public class ConfigDumpImporter {
   private static final String CONFIG_FOLDER_NAME = "airbyte_config";
   private static final String DB_FOLDER_NAME = "airbyte_db";
   private static final String VERSION_FILE_NAME = "VERSION";
+  private static final String TMP_AIRBYTE_STAGED_RESOURCES = "/tmp/airbyte_staged_resources";
+
   private final ConfigRepository configRepository;
   private final WorkspaceHelper workspaceHelper;
   private final JsonSchemaValidator jsonSchemaValidator;
   private final JobPersistence postgresPersistence;
+  private final Path stagedResourceRoot;
 
   public ConfigDumpImporter(ConfigRepository configRepository, JobPersistence postgresPersistence, WorkspaceHelper workspaceHelper) {
     this(configRepository, postgresPersistence, workspaceHelper, new JsonSchemaValidator());
@@ -105,51 +107,52 @@ public class ConfigDumpImporter {
     this.postgresPersistence = postgresPersistence;
     this.configRepository = configRepository;
     this.workspaceHelper = workspaceHelper;
+    try {
+      this.stagedResourceRoot = Path.of(TMP_AIRBYTE_STAGED_RESOURCES);
+      if (stagedResourceRoot.toFile().exists()) {
+        FileUtils.forceDelete(stagedResourceRoot.toFile());
+      }
+      FileUtils.forceMkdir(stagedResourceRoot.toFile());
+      FileUtils.forceDeleteOnExit(stagedResourceRoot.toFile());
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to create staging resource folder", e);
+    }
   }
 
-  public ImportRead importDataWithSeed(String targetVersion, File archive, ConfigPersistence seedPersistence) {
-    ImportRead result;
+  public void importDataWithSeed(String targetVersion, File archive, ConfigPersistence seedPersistence) throws IOException, JsonValidationException {
+    final Path sourceRoot = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive");
     try {
-      final Path sourceRoot = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive");
+      // 1. Unzip source
+      Archives.extractArchive(archive.toPath(), sourceRoot);
+
+      // 2. dry run
       try {
-        // 1. Unzip source
-        Archives.extractArchive(archive.toPath(), sourceRoot);
-
-        // 2. dry run
-        try {
-          checkImport(targetVersion, sourceRoot);
-          importConfigsFromArchive(sourceRoot, seedPersistence, true);
-        } catch (Exception e) {
-          LOGGER.error("Dry run failed.", e);
-          throw e;
-        }
-
-        // 3. Import Postgres content
-        importDatabaseFromArchive(sourceRoot, targetVersion);
-
-        // 4. Import Configs
-        importConfigsFromArchive(sourceRoot, seedPersistence, false);
-
-        // 5. Set DB version
-        LOGGER.info("Setting the DB Airbyte version to : " + targetVersion);
-        postgresPersistence.setVersion(targetVersion);
-
-        // 6. check db version
-        checkDBVersion(targetVersion);
-        result = new ImportRead().status(StatusEnum.SUCCEEDED);
-      } finally {
-        FileUtils.deleteDirectory(sourceRoot.toFile());
-        FileUtils.deleteQuietly(archive);
+        checkImport(targetVersion, sourceRoot);
+        importConfigsFromArchive(sourceRoot, seedPersistence, true);
+      } catch (Exception e) {
+        LOGGER.error("Dry run failed.", e);
+        throw e;
       }
 
-      // identify this instance as the new customer id.
-      configRepository.listStandardWorkspaces(true).forEach(workspace -> TrackingClientSingleton.get().identify(workspace.getWorkspaceId()));
-    } catch (IOException | JsonValidationException | RuntimeException e) {
-      LOGGER.error("Import failed", e);
-      result = new ImportRead().status(StatusEnum.FAILED).reason(e.getMessage());
+      // 3. Import Postgres content
+      importDatabaseFromArchive(sourceRoot, targetVersion);
+
+      // 4. Import Configs
+      importConfigsFromArchive(sourceRoot, seedPersistence, false);
+
+      // 5. Set DB version
+      LOGGER.info("Setting the DB Airbyte version to : " + targetVersion);
+      postgresPersistence.setVersion(targetVersion);
+
+      // 6. check db version
+      checkDBVersion(targetVersion);
+    } finally {
+      FileUtils.deleteDirectory(sourceRoot.toFile());
+      FileUtils.deleteQuietly(archive);
     }
 
-    return result;
+    // identify this instance as the new customer id.
+    configRepository.listStandardWorkspaces(true).forEach(workspace -> TrackingClientSingleton.get().identify(workspace.getWorkspaceId()));
   }
 
   private void checkImport(String targetVersion, Path tempFolder) throws IOException, JsonValidationException {
@@ -399,38 +402,55 @@ public class ConfigDumpImporter {
         .ifPresent(dbversion -> AirbyteVersion.assertIsCompatible(airbyteVersion, dbversion));
   }
 
-  public ImportRead importIntoWorkspace(String targetVersion, UUID workspaceId, InputStream archiveStream) {
-    ImportRead result;
+  public UploadRead uploadArchiveResource(File archive) {
     try {
-      final Path sourceRoot = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive");
-      try {
-        // 1. Unzip source
-        Archives.extractArchive(archiveStream, sourceRoot);
-
-        // TODO: Auto-migrate archive?
-
-        // 2. dry run
-        try {
-          checkImport(targetVersion, sourceRoot);
-          importConfigsIntoWorkspace(sourceRoot, workspaceId, true);
-        } catch (Exception e) {
-          LOGGER.error("Dry run failed.", e);
-          throw e;
-        }
-
-        // 3. import configs
-        importConfigsIntoWorkspace(sourceRoot, workspaceId, false);
-
-        result = new ImportRead().status(StatusEnum.SUCCEEDED);
-      } finally {
-        FileUtils.deleteDirectory(sourceRoot.toFile());
-      }
-    } catch (IOException | JsonValidationException | RuntimeException | ConfigNotFoundException e) {
-      LOGGER.error("Import Workspace failed", e);
-      result = new ImportRead().status(StatusEnum.FAILED).reason(e.getMessage());
+      final UUID resourceId = UUID.randomUUID();
+      FileUtils.moveFile(archive, stagedResourceRoot.resolve(resourceId.toString()).toFile());
+      return new UploadRead()
+          .status(UploadRead.StatusEnum.SUCCEEDED)
+          .resourceId(resourceId);
+    } catch (IOException e) {
+      LOGGER.error("Failed to upload archive resource", e);
+      return new UploadRead().status(UploadRead.StatusEnum.FAILED);
     }
+  }
 
-    return result;
+  public File getArchiveResource(UUID resourceId) {
+    final File archive = stagedResourceRoot.resolve(resourceId.toString()).toFile();
+    if (!archive.exists()) {
+      throw new IdNotFoundKnownException("Archive Resource not found", resourceId.toString());
+    }
+    return archive;
+  }
+
+  public void deleteArchiveResource(UUID resourceId) {
+    final File archive = getArchiveResource(resourceId);
+    FileUtils.deleteQuietly(archive);
+  }
+
+  public void importIntoWorkspace(String targetVersion, UUID workspaceId, File archive)
+      throws IOException, JsonValidationException, ConfigNotFoundException {
+    final Path sourceRoot = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive");
+    try {
+      // 1. Unzip source
+      Archives.extractArchive(archive.toPath(), sourceRoot);
+
+      // TODO: Auto-migrate archive?
+
+      // 2. dry run
+      try {
+        checkImport(targetVersion, sourceRoot);
+        importConfigsIntoWorkspace(sourceRoot, workspaceId, true);
+      } catch (Exception e) {
+        LOGGER.error("Dry run failed.", e);
+        throw e;
+      }
+
+      // 3. import configs
+      importConfigsIntoWorkspace(sourceRoot, workspaceId, false);
+    } finally {
+      FileUtils.deleteDirectory(sourceRoot.toFile());
+    }
   }
 
   private <T> void importConfigsIntoWorkspace(Path sourceRoot, UUID workspaceId, boolean dryRun)

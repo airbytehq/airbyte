@@ -29,7 +29,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -68,16 +67,12 @@ public class Archives {
     archive.closeArchiveEntry();
   }
 
-  public static void extractArchive(final Path archiveFile, final Path destinationFolder) throws IOException {
-    extractArchive(Files.newInputStream(archiveFile), destinationFolder);
-  }
-
   /**
    * Uncompress a Gzip Tarball @param archiveFile into the @param destinationFolder
    */
-  public static void extractArchive(final InputStream archiveStream, final Path destinationFolder) throws IOException {
+  public static void extractArchive(final Path archiveFile, final Path destinationFolder) throws IOException {
     final TarArchiveInputStream archive =
-        new TarArchiveInputStream(new GzipCompressorInputStream(new BufferedInputStream(archiveStream)));
+        new TarArchiveInputStream(new GzipCompressorInputStream(new BufferedInputStream(Files.newInputStream(archiveFile))));
     ArchiveEntry entry;
     while ((entry = archive.getNextEntry()) != null) {
       final Path newPath = zipSlipProtect(entry, destinationFolder);

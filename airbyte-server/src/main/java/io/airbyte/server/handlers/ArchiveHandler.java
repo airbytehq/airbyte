@@ -27,6 +27,8 @@ package io.airbyte.server.handlers;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.model.ImportRead;
 import io.airbyte.api.model.ImportRead.StatusEnum;
+import io.airbyte.api.model.ImportRequestBody;
+import io.airbyte.api.model.UploadRead;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -40,10 +42,6 @@ import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.UUID;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,29 +120,33 @@ public class ArchiveHandler {
     }
   }
 
+  public UploadRead uploadArchiveResource(File archive) {
+    return configDumpImporter.uploadArchiveResource(archive);
+  }
+
   /**
-   * Extract Airbyte configuration data from the @param archive tarball file (using Gzip compression)
-   * as produced by {@link #exportWorkspace(WorkspaceIdRequestBody)}. The configurations from the
-   * tarball may get mutated to be safely included into the current workspace. (the exact same tarball
-   * could be imported into 2 different workspaces) Note that the provided archived file will be
-   * deleted.
+   * Extract Airbyte configuration data from the archive tarball file (using Gzip compression) as
+   * produced by {@link #exportWorkspace(WorkspaceIdRequestBody)}. The configurations from the tarball
+   * may get mutated to be safely included into the current workspace. (the exact same tarball could
+   * be imported into 2 different workspaces) Note that the provided archived file will be deleted.
    *
    * @return a status object describing if import was successful or not.
    */
-  public ImportRead importIntoWorkspace(UUID workspaceId, InputStream archiveStream) {
-    return importInternal(() -> configDumpImporter.importIntoWorkspace(version, workspaceId, archiveStream));
+  public ImportRead importIntoWorkspace(ImportRequestBody importRequestBody) {
+    final File archive = configDumpImporter.getArchiveResource(importRequestBody.getResourceId());
+    try {
+      return importInternal(
+          () -> configDumpImporter.importIntoWorkspace(version, importRequestBody.getWorkspaceId(), archive));
+    } finally {
+      configDumpImporter.deleteArchiveResource(importRequestBody.getResourceId());
+    }
   }
 
   private ImportRead importInternal(importCall importCall) {
     ImportRead result;
     try {
-      final Path tempFolder = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive");
-      try {
-        importCall.importData();
-        result = new ImportRead().status(StatusEnum.SUCCEEDED);
-      } finally {
-        FileUtils.deleteDirectory(tempFolder.toFile());
-      }
+      importCall.importData();
+      result = new ImportRead().status(StatusEnum.SUCCEEDED);
     } catch (Exception e) {
       LOGGER.error("Import failed", e);
       result = new ImportRead().status(StatusEnum.FAILED).reason(e.getMessage());
@@ -155,7 +157,7 @@ public class ArchiveHandler {
 
   public interface importCall {
 
-    void importData();
+    void importData() throws IOException, JsonValidationException, ConfigNotFoundException;
 
   }
 
