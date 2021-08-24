@@ -55,6 +55,9 @@ type Config = {
     technicalSupport: string;
   };
   segment: { token: string };
+  sentry: {
+    dns?: string;
+  };
   papercups: {
     accountId: string;
     baseUrl: string;
@@ -90,6 +93,9 @@ const config: Config = {
         ? process.env.REACT_APP_SEGMENT_TOKEN ||
           "6cxNSmQyGSKcATLdJ2pL6WsawkzEMDAN"
         : "",
+  },
+  sentry: {
+    dns: process.env.REACT_APP_SENTRY_DNS,
   },
   papercups: PaperCupsConfig,
   openreplay: OpenReplayConfig,
