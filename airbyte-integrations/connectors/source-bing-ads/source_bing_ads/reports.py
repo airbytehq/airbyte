@@ -23,32 +23,43 @@
 #
 
 from datetime import datetime
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
-
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
+import abc
 import source_bing_ads.source
 from airbyte_cdk.models import SyncMode
 from bingads.v13.reporting import ReportingDownloadParameters
 from suds import sudsobject
+import pendulum
 
 
-class ReportsMixin:
+class IncrementalReportStream(abc.ABC):
     file_directory = "/tmp"
-    timeout = 60000  # in msec
+    timeout = 60000  # in milliseconds
     report_file_format = "Csv"
     # list of possible aggregations, if None aggregation is disabled
     # https://docs.microsoft.com/en-us/advertising/reporting-service/reportaggregation?view=bingads-13
     aggregation = None
 
-    def get_request_date(self, reporting_service, date: datetime):
+    def get_request_date(self, reporting_service, date: datetime) -> sudsobject.Object:
         request_date = reporting_service.factory.create("Date")
         request_date.Day = date.day
         request_date.Month = date.month
         request_date.Year = date.year
         return request_date
 
-    def send_request(self, params: Mapping[str, Any], account_id: str = None):
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        account_id: str = None,
+        **kwargs: Mapping[str, Any]
+    ) -> Mapping[str, Any]:
+        if not stream_state or not account_id or not stream_state.get(account_id, {}).get(self.cursor_field):
+            start_date = self.client.reports_start_date
+        else:
+            start_date = pendulum.from_timestamp(stream_state[account_id][self.cursor_field])
+
         reporting_service = self.client.get_service("ReportingService")
-        request_start_date = self.get_request_date(reporting_service, self.client.reports_start_date)
+        request_start_date = self.get_request_date(reporting_service, start_date)
         request_end_date = self.get_request_date(reporting_service, datetime.utcnow())
         request_time_zone = reporting_service.factory.create("ReportTimeZone")
 
@@ -58,31 +69,52 @@ class ReportsMixin:
         report_time.PredefinedTime = None
         report_time.ReportTimeZone = request_time_zone.GreenwichMeanTimeDublinEdinburghLisbonLondon
 
-        reporting_service_manager = self.client.get_reporting_service(account_id)
         report_request = self.get_report_request(
             account_id, self.aggregation, False, False, False, self.report_file_format, False, report_time
         )
 
-        reporting_download_parameters = ReportingDownloadParameters(
-            report_request=report_request,
-            result_file_directory=self.file_directory,
-            result_file_name=self.operation_name,
-            overwrite_result_file=True,
-            timeout_in_milliseconds=self.timeout,
-        )
+        return {
+            "report_request": report_request,
+            "result_file_directory": self.file_directory,
+            "result_file_name": self.operation_name,
+            "overwrite_result_file": True,
+            "timeout_in_milliseconds": self.timeout,
+        }
 
+    def get_cursor_value(self, latest_record: Mapping[str, Any]) -> Union[str, int, None]:
+        for key in self.cursor:
+            try:
+                latest_record = latest_record[key]
+            except KeyError:
+                return None
+
+        return latest_record
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        account_id = latest_record['AccountId']
+        current_stream_state[account_id] = current_stream_state.get(account_id, {})
+
+        current_stream_state[account_id][self.cursor_field] = max(
+            pendulum.parse(latest_record[self.cursor_field]).int_timestamp,
+            current_stream_state[account_id].get(self.cursor_field, 1),
+        )
+        return current_stream_state
+
+    def send_request(self, params: Mapping[str, Any], account_id: str):
+        reporting_service_manager = self.client.get_reporting_service(account_id)
+        reporting_download_parameters = ReportingDownloadParameters(**params)
         return reporting_service_manager.download_report(reporting_download_parameters)
 
     def get_report_request(
         self,
-        account_id,
-        aggregation,
-        exclude_column_headers,
-        exclude_report_footer,
-        exclude_report_header,
-        report_file_format,
-        return_only_complete_data,
-        time,
+        account_id: str,
+        aggregation: Optional[str],
+        exclude_column_headers: bool,
+        exclude_report_footer: bool,
+        exclude_report_header: bool,
+        report_file_format: str,
+        return_only_complete_data: bool,
+        time: sudsobject.Object,
     ) -> sudsobject.Object:
         reporting_service = self.client.get_service(self.service_name)
         report_request = reporting_service.factory.create(f"{self.operation_name}Request")
@@ -105,7 +137,7 @@ class ReportsMixin:
         report_request.Columns = columns
         return report_request
 
-    def parse_response(self, response: sudsobject.Object, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: sudsobject.Object, **kwargs: Mapping[str, Any]) -> Iterable[Mapping]:
         if response is not None:
             for row in response.report_records:
                 yield {column: row.value(column) for column in self.report_columns}
@@ -120,10 +152,3 @@ class ReportsMixin:
             yield {"account_id": account["Id"]}
 
         yield from []
-
-    def request_params(
-        self,
-        stream_slice: Mapping[str, Any] = None,
-        **kwargs: Mapping[str, Any],
-    ) -> MutableMapping[str, Any]:
-        return {}

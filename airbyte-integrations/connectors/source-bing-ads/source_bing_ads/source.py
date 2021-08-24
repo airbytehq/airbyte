@@ -32,7 +32,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from source_bing_ads.cache import VcrCache
 from source_bing_ads.client import Client
-from source_bing_ads.mixins import ReportsMixin
+from source_bing_ads.reports import IncrementalReportStream
 from suds import sudsobject
 
 CACHE: VcrCache = VcrCache()
@@ -110,7 +110,7 @@ class BingAdsStream(Stream, ABC):
         """
         Fetches account_id from slice object
         """
-        return stream_slice.get("account_id") if stream_slice else None
+        return str(stream_slice.get("account_id")) if stream_slice else None
 
     def read_records(
         self,
@@ -121,15 +121,17 @@ class BingAdsStream(Stream, ABC):
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         next_page_token = None
+        account_id = self.get_account_id(stream_slice)
 
         while True:
             params = self.request_params(
                 stream_state=stream_state,
                 stream_slice=stream_slice,
                 next_page_token=next_page_token,
+                account_id=account_id
             )
 
-            response = self.send_request(params, account_id=self.get_account_id(stream_slice))
+            response = self.send_request(params, account_id=account_id)
             for record in self.parse_response(response):
                 yield record
 
@@ -314,11 +316,12 @@ class Ads(BingAdsStream):
         yield from []
 
 
-class BudgetSummaryReport(ReportsMixin, BingAdsStream):
+class BudgetSummaryReport(IncrementalReportStream, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
     operation_name: str = "BudgetSummaryReport"
     additional_fields: str = ""
+    cursor_field = 'Date'
 
     report_columns = [
         "AccountName",
@@ -333,12 +336,13 @@ class BudgetSummaryReport(ReportsMixin, BingAdsStream):
     ]
 
 
-class CampaignPerformanceReport(ReportsMixin, BingAdsStream):
+class CampaignPerformanceReport(IncrementalReportStream, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
     operation_name: str = "CampaignPerformanceReport"
     additional_fields: str = ""
     aggregation = "Daily"
+    cursor_field = 'TimePeriod'
 
     report_columns = [
         "AccountName",
@@ -360,12 +364,13 @@ class CampaignPerformanceReport(ReportsMixin, BingAdsStream):
     ]
 
 
-class AdPerformanceReport(ReportsMixin, BingAdsStream):
+class AdPerformanceReport(IncrementalReportStream, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
     operation_name: str = "AdPerformanceReport"
     additional_fields: str = ""
     aggregation = "Daily"
+    cursor_field = 'TimePeriod'
 
     report_columns = [
         "AccountName",
@@ -392,12 +397,13 @@ class AdPerformanceReport(ReportsMixin, BingAdsStream):
     ]
 
 
-class AdGroupPerformanceReport(ReportsMixin, BingAdsStream):
+class AdGroupPerformanceReport(IncrementalReportStream, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
     operation_name: str = "AdGroupPerformanceReport"
     additional_fields: str = ""
     aggregation = "Daily"
+    cursor_field = 'TimePeriod'
 
     report_columns = [
         "AccountName",
@@ -421,12 +427,13 @@ class AdGroupPerformanceReport(ReportsMixin, BingAdsStream):
     ]
 
 
-class KeywordPerformanceReport(ReportsMixin, BingAdsStream):
+class KeywordPerformanceReport(IncrementalReportStream, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
     operation_name: str = "KeywordPerformanceReport"
     additional_fields: str = ""
     aggregation = "Daily"
+    cursor_field = 'TimePeriod'
 
     report_columns = [
         "AccountName",
@@ -452,12 +459,13 @@ class KeywordPerformanceReport(ReportsMixin, BingAdsStream):
     ]
 
 
-class AccountPerformanceReport(ReportsMixin, BingAdsStream):
+class AccountPerformanceReport(IncrementalReportStream, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
     operation_name: str = "AccountPerformanceReport"
     additional_fields: str = ""
     aggregation = "Daily"
+    cursor_field = 'TimePeriod'
 
     report_columns = [
         "AccountName",
