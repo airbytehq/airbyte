@@ -63,6 +63,8 @@ public interface Configs {
 
   int getMaxSyncJobAttempts();
 
+  int getMaxSyncTimeoutDays();
+
   String getWebappUrl();
 
   String getWorkspaceDockerMount();
