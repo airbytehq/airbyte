@@ -56,7 +56,7 @@
 - sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   name: Postgres
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 0.3.8
+  dockerImageTag: 0.3.9
   documentationUrl: https://docs.airbyte.io/integrations/sources/postgres
   icon: postgresql.svg
 - sourceDefinitionId: 9fa5862c-da7c-11eb-8d19-0242ac130003
@@ -148,7 +148,7 @@
 - sourceDefinitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
   name: Shopify
   dockerRepository: airbyte/source-shopify
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.io/integrations/sources/shopify
 - sourceDefinitionId: e87ffa8e-a3b5-f69c-9076-6011339de1f6
   name: Redshift
@@ -167,12 +167,6 @@
   dockerImageTag: 0.2.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/freshdesk
   icon: freshdesk.svg
-- sourceDefinitionId: 396e4ca3-8a97-4b85-aa4e-c9d8c2d5f992
-  name: Braintree
-  dockerRepository: airbyte/source-braintree-singer
-  dockerImageTag: 0.2.3
-  documentationUrl: https://docs.airbyte.io/integrations/sources/braintree
-  icon: braintree.svg
 - sourceDefinitionId: 59f1e50a-331f-4f09-b3e8-2e8d4d355f44
   name: Greenhouse
   dockerRepository: airbyte/source-greenhouse
@@ -194,7 +188,7 @@
 - sourceDefinitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
   name: Intercom
   dockerRepository: airbyte/source-intercom
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/intercom
   icon: intercom.svg
 - sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
@@ -437,3 +431,9 @@
   dockerRepository: airbyte/source-shortio
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/shortio
+- sourceDefinitionId: 63cea06f-1c75-458d-88fe-ad48c7cb27fd
+  name: Braintree
+  dockerRepository: airbyte/source-braintree
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/braintree
+  icon: braintree.svg
