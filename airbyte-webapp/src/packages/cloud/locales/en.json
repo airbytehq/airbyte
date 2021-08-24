@@ -8,6 +8,8 @@
   "login.yourEmail.placeholder": "christophersmith@gmail.com",
   "login.password": "Create a password*",
   "login.password.placeholder": "Enter a strong password",
+  "login.yourPassword": "Enter your password*",
+  "login.yourPassword.placeholder": "Your password",
   "login.forgotPassword": "Forgot your password",
   "login.backLogin": "Back to Log in",
   "login.resetPassword": "Reset your password",
