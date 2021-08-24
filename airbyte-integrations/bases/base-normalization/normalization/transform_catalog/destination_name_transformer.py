@@ -76,7 +76,7 @@ class DestinationNameTransformer:
             return True
         if self.destination_type.value == DestinationType.BIGQUERY.value:
             return False
-        if self.destination_type.value == DestinationType.ORACLE.value and input_name.startswith('_'):
+        if self.destination_type.value == DestinationType.ORACLE.value and input_name.startswith("_"):
             return True
         doesnt_start_with_alphaunderscore = match("[^A-Za-z_]", input_name[0]) is not None
         contains_non_alphanumeric = match(".*[^A-Za-z0-9_].*", input_name) is not None
@@ -89,7 +89,7 @@ class DestinationNameTransformer:
         @param truncate force ignoring truncate operation on resulting normalized name. For example, if we don't
         control how the name would be normalized
         """
-        if self.destination_type == DestinationType.ORACLE and schema_name.startswith('_'):
+        if self.destination_type == DestinationType.ORACLE and schema_name.startswith("_"):
             schema_name = schema_name[1:]
         return self.__normalize_non_column_identifier_name(input_name=schema_name, in_jinja=in_jinja, truncate=truncate)
 
@@ -104,7 +104,7 @@ class DestinationNameTransformer:
         @param conflict if there is a conflict between stream name and fields
         @param conflict_level is the json_path level conflict happened
         """
-        if self.destination_type == DestinationType.ORACLE and table_name.startswith('_'):
+        if self.destination_type == DestinationType.ORACLE and table_name.startswith("_"):
             table_name = table_name[1:]
         return self.__normalize_non_column_identifier_name(
             input_name=table_name, in_jinja=in_jinja, truncate=truncate, conflict=conflict, conflict_level=conflict_level

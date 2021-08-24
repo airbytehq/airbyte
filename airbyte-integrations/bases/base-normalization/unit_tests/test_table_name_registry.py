@@ -55,7 +55,7 @@ def before_tests(request):
         "nested_catalog",  # sample catalog from facebook
     ],
 )
-#@pytest.mark.parametrize("destination_type", list(DestinationType))
+# @pytest.mark.parametrize("destination_type", list(DestinationType))
 @pytest.mark.parametrize("destination_type", [DestinationType.ORACLE])
 def test_resolve_names(destination_type: DestinationType, catalog_file: str):
     """

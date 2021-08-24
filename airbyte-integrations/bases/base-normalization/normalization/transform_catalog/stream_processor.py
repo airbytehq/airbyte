@@ -109,7 +109,7 @@ class StreamProcessor(object):
         self.sql_outputs: Dict[str, str] = {}
         self.parent: Optional["StreamProcessor"] = None
         self.is_nested_array: bool = False
-        self.airbyte_emitted_at = '_airbyte_emitted_at'
+        self.airbyte_emitted_at = "_airbyte_emitted_at"
 
     @staticmethod
     def create_from_parent(
@@ -349,28 +349,25 @@ from {{ from_table }} {{ table_alias }}
             fields=self.extract_json_columns(column_names),
             from_table=jinja_call(from_table),
             unnesting_after_query=self.unnesting_after_query(),
-            sql_table_comment=self.sql_table_comment()
+            sql_table_comment=self.sql_table_comment(),
         )
         return sql
 
     def extract_json_columns(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
         return [
-            StreamProcessor.extract_json_column(
-                field, self.json_column_name, self.properties[field], column_names[field][0], 'table_alias'
-            )
+            StreamProcessor.extract_json_column(field, self.json_column_name, self.properties[field], column_names[field][0], "table_alias")
             for field in column_names
         ]
 
     @staticmethod
-    def extract_json_column(
-        property_name: str, json_column_name: str, definition: Dict, column_name: str, table_alias: str) -> str:
+    def extract_json_column(property_name: str, json_column_name: str, definition: Dict, column_name: str, table_alias: str) -> str:
         json_path = [property_name]
         # In some cases, some destination aren't able to parse the JSON blob using the original property name
         # we make their life easier by using a pre-populated and sanitized column name instead...
         normalized_json_path = [transform_json_naming(property_name)]
         table_alias = f"{table_alias}"
         if "unnested_column_value" in json_column_name:
-            table_alias = ''
+            table_alias = ""
         json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path})")
         if "type" in definition:
             if is_array(definition["type"]):
@@ -479,12 +476,14 @@ from {{ from_table }}
         return sql
 
     def safe_cast_to_strings(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
-        columns_name_safety = [StreamProcessor.safe_cast_to_string(self.properties[field], column_names[field][1]) for field in column_names]
+        columns_name_safety = [
+            StreamProcessor.safe_cast_to_string(self.properties[field], column_names[field][1]) for field in column_names
+        ]
         if self.destination_type == DestinationType.ORACLE:
             oracle_cols_safe = []
             for col in columns_name_safety:
-                if '(' in col:
-                    oracle_cols_safe.append('{{' + col + '}}')
+                if "(" in col:
+                    oracle_cols_safe.append("{{" + col + "}}")
                 else:
                     oracle_cols_safe.append(col)
 
@@ -541,7 +540,7 @@ from {{ from_table }}
     def generate_scd_type_2_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
 
         if self.destination_type == DestinationType.ORACLE:
-            scd_sql_template =             """
+            scd_sql_template = """
 -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
 select
   {%- if parent_hash_id %}
@@ -676,7 +675,7 @@ from {{ from_table }}
             fields=self.list_fields(column_names),
             hash_id=self.hash_id(),
             from_table=jinja_call(from_table),
-            sql_table_comment=self.sql_table_comment(include_from_table=True)
+            sql_table_comment=self.sql_table_comment(include_from_table=True),
         )
         return sql
 

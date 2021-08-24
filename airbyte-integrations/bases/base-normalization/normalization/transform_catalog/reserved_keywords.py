@@ -2071,7 +2071,7 @@ RESERVED_KEYWORDS = {
     DestinationType.REDSHIFT.value: REDSHIFT,
     DestinationType.SNOWFLAKE.value: SNOWFLAKE,
     DestinationType.MYSQL.value: MYSQL,
-    DestinationType.ORACLE.value: ORACLE
+    DestinationType.ORACLE.value: ORACLE,
 }
 
 
