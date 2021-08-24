@@ -136,6 +136,17 @@ class OrderPayments(IncrementalCartStream):
         return "order_payments"
 
 
+class OrderItems(IncrementalCartStream):
+    """
+    Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1order_items/get
+    """
+
+    data_field = "items"
+
+    def path(self, **kwargs) -> str:
+        return "order_items"
+
+
 class Products(IncrementalCartStream):
     """
     Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1products/get

@@ -32,7 +32,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 
-from .streams import CustomersCart, OrderPayments, Orders, Products
+from .streams import CustomersCart, OrderItems, OrderPayments, Orders, Products
 
 
 class CustomHeaderAuthenticator(HttpAuthenticator):
@@ -63,4 +63,4 @@ class SourceCart(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = CustomHeaderAuthenticator(access_token=config["access_token"])
         args = {"authenticator": authenticator, "start_date": config["start_date"], "store_name": config["store_name"]}
-        return [CustomersCart(**args), Orders(**args), OrderPayments(**args), Products(**args)]
+        return [CustomersCart(**args), Orders(**args), OrderPayments(**args), OrderItems(**args), Products(**args)]
