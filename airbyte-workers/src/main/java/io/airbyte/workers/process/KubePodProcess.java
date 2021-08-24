@@ -285,6 +285,7 @@ public class KubePodProcess extends Process {
     Volume configVolume = new VolumeBuilder()
         .withName("airbyte-config")
         .withNewEmptyDir()
+        .withMedium("Memory")
         .endEmptyDir()
         .build();
 
