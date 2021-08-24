@@ -559,8 +559,7 @@
         "discounted_price_set": {},
         "price_set": {},
         "price": {
-          "type": ["null", "string"],
-          "format": "singer.decimal"
+          "type": ["null", "string"]
         },
         "title": {
           "type": ["null", "string"]
@@ -663,8 +662,7 @@
       "type": ["null", "boolean"]
     },
     "total_price": {
-      "type": ["null", "string"],
-      "format": "singer.decimal"
+      "type": ["null", "string"]
     },
     "completed_at": {
       "type": ["null", "string"],

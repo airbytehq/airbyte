@@ -40,7 +40,8 @@
       "type": ["null", "integer"]
     },
     "created_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "status": {
       "type": ["null", "string"]
