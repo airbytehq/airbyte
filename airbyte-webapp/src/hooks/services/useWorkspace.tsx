@@ -114,10 +114,10 @@ const useWorkspace = (): {
     await tryWebhookUrl(
       {
         notificationType: "slack",
+        sendOnSuccess,
+        sendOnFailure,
         slackConfiguration: {
           webhook,
-          sendOnSuccess,
-          sendOnFailure,
         },
       },
       {}
@@ -140,10 +140,10 @@ const useWorkspace = (): {
         notifications: [
           {
             notificationType: "slack",
+            sendOnSuccess: data.sendOnSuccess,
+            sendOnFailure: data.sendOnFailure,
             slackConfiguration: {
               webhook: data.webhook,
-              sendOnSuccess: data.sendOnSuccess,
-              sendOnFailure: data.sendOnFailure,
             },
           },
         ],

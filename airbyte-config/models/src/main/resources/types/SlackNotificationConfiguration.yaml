@@ -10,9 +10,3 @@ additionalProperties: false
 properties:
   webhook:
     type: string
-  sendOnSuccess:
-    type: boolean
-    default: false
-  sendOnFailure:
-    type: boolean
-    default: true

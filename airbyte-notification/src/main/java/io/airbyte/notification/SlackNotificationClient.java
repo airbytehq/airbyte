@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.Notification;
 import io.airbyte.config.SlackNotificationConfiguration;
 import java.io.IOException;
 import java.net.URI;
@@ -48,7 +49,7 @@ import org.slf4j.LoggerFactory;
  *
  * For example, slack API expects some text message in the { "text" : "Hello World" } field...
  */
-public class SlackNotificationClient implements NotificationClient {
+public class SlackNotificationClient extends NotificationClient {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SlackNotificationClient.class);
 
@@ -57,8 +58,9 @@ public class SlackNotificationClient implements NotificationClient {
       .build();
   private final SlackNotificationConfiguration config;
 
-  public SlackNotificationClient(final SlackNotificationConfiguration config) {
-    this.config = config;
+  public SlackNotificationClient(final Notification notification) {
+    super(notification);
+    this.config = notification.getSlackConfiguration();
   }
 
   @Override
@@ -111,7 +113,7 @@ public class SlackNotificationClient implements NotificationClient {
   @Override
   public boolean notifySuccess(final String message) throws IOException, InterruptedException {
     final String webhookUrl = config.getWebhook();
-    if (!Strings.isEmpty(webhookUrl) && config.getSendOnSuccess()) {
+    if (!Strings.isEmpty(webhookUrl) && sendOnSuccess) {
       return notify(message);
     }
     return false;
@@ -120,7 +122,7 @@ public class SlackNotificationClient implements NotificationClient {
   @Override
   public boolean notifyFailure(final String message) throws IOException, InterruptedException {
     final String webhookUrl = config.getWebhook();
-    if (!Strings.isEmpty(webhookUrl) && config.getSendOnFailure()) {
+    if (!Strings.isEmpty(webhookUrl) && sendOnFailure) {
       return notify(message);
     }
     return false;

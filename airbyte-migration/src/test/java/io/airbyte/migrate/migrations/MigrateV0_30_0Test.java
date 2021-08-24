@@ -79,7 +79,7 @@ public class MigrateV0_30_0Test {
             getResourceStream(OUTPUT_CONFIG_PATH + "/STANDARD_WORKSPACE.yaml")
                 .collect(Collectors.toList()));
     final Map<ResourceId, List<JsonNode>> expectedOutput = MigrationTestUtils
-            .createExpectedOutput(migration.getOutputSchema().keySet(), expectedOutputOverrides);
+        .createExpectedOutput(migration.getOutputSchema().keySet(), expectedOutputOverrides);
 
     final Map<ResourceId, List<JsonNode>> outputAsList = MigrationTestUtils
         .collectConsumersToList(outputConsumer);
