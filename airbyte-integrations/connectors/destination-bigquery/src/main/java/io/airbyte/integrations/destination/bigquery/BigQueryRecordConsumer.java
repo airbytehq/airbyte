@@ -151,11 +151,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   public void close(boolean hasFailed) {
     LOGGER.info("Started closing all connections");
     // process gcs streams
-    final List<String> gcsCsvFilesToMigrateToBigquery = new ArrayList<>();
-
     final List<BigQueryWriteConfig> gcsWritersList = writeConfigs.values().parallelStream()
         .filter(el -> el.getGcsCsvWriter() != null)
-        .peek(el -> gcsCsvFilesToMigrateToBigquery.add(el.getGcsCsvWriter().getObjectKey())) // collect gs csv fileNames
         .collect(Collectors.toList());
 
     if (!gcsWritersList.isEmpty()) {
@@ -173,8 +170,6 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
         }
       });
     }
-
-    // TODO move data from files to bigQuery
 
     writeConfigs.values().stream()
         .filter(pair -> pair.getGcsCsvWriter() != null)
@@ -196,12 +191,10 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       TableId tmpTable = bigQueryWriteConfig.getTmpTable();
       Schema schema = bigQueryWriteConfig.getSchema();
 
-      // TODO get values from params !!!!!!!!!!!!!!!!!!!!!
-      String csvFile = "gs://airbyte-integration-test-destination-gcs/" + bigQueryWriteConfig.getGcsCsvWriter().getObjectKey();
+      String csvFile = bigQueryWriteConfig.getGcsCsvWriter().getGcsCsvFileLocation();
 
       // Initialize client that will be used to send requests. This client only needs to be created
       // once, and can be reused for multiple requests.
-
       LOGGER.info(String.format("Started coping data from %s GCS csv file to %s tmp BigQuery table with schema: \n %s",
           csvFile, tmpTable, schema));
 
