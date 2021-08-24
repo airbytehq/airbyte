@@ -57,9 +57,9 @@ public interface Configs {
 
   String getConfigDatabaseUrl();
 
-  int getMaxRetriesPerAttempt();
-
   int getMaxSyncJobAttempts();
+
+  int getMaxSyncTimeoutDays();
 
   String getWebappUrl();
 
