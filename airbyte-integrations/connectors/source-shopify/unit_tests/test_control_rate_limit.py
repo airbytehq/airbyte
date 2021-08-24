@@ -24,7 +24,7 @@
 
 
 import requests
-from source_shopify.utils import RateLimiter, RateLimitTimings
+from source_shopify.utils import ShopifyRateLimiter as limiter
 
 TEST_DATA_FIELD = "some_data_field"
 TEST_RATE_LIMIT_HEADER = "X-Shopify-Shop-Api-Call-Limit"
@@ -41,9 +41,9 @@ def test_with_unknown_load(requests_mock):
     requests_mock.get("https://test.myshopify.com/", headers=test_response_header)
     test_response = requests.get("https://test.myshopify.com/")
 
-    actual_sleep_time = RateLimiter.get_wait_time(test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER)
+    actual_sleep_time = limiter.get_wait_time(test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER)
 
-    assert RateLimitTimings.on_unknown_load == actual_sleep_time
+    assert limiter.on_unknown_load == actual_sleep_time
 
 
 def test_with_low_load(requests_mock):
@@ -56,9 +56,9 @@ def test_with_low_load(requests_mock):
     requests_mock.get("https://test.myshopify.com/", headers=test_response_header)
     test_response = requests.get("https://test.myshopify.com/")
 
-    actual_sleep_time = RateLimiter.get_wait_time(test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER)
+    actual_sleep_time = limiter.get_wait_time(test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER)
 
-    assert RateLimitTimings.on_low_load == actual_sleep_time
+    assert limiter.on_low_load == actual_sleep_time
 
 
 def test_with_mid_load(requests_mock):
@@ -71,9 +71,9 @@ def test_with_mid_load(requests_mock):
     requests_mock.get("https://test.myshopify.com/", headers=test_response_header)
     test_response = requests.get("https://test.myshopify.com/")
 
-    actual_sleep_time = RateLimiter.get_wait_time(test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER)
+    actual_sleep_time = limiter.get_wait_time(test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER)
 
-    assert RateLimitTimings.on_mid_load == actual_sleep_time
+    assert limiter.on_mid_load == actual_sleep_time
 
 
 def test_with_high_load(requests_mock):
@@ -86,6 +86,6 @@ def test_with_high_load(requests_mock):
     requests_mock.get("https://test.myshopify.com/", headers=test_response_header)
     test_response = requests.get("https://test.myshopify.com/")
 
-    actual_sleep_time = RateLimiter.get_wait_time(test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER)
+    actual_sleep_time = limiter.get_wait_time(test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER)
 
-    assert RateLimitTimings.on_high_load == actual_sleep_time
+    assert limiter.on_high_load == actual_sleep_time

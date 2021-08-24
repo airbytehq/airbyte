@@ -35,7 +35,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .utils import BalanceRateLimit as balancer
+from .utils import ShopifyRateLimiter as limiter
 
 
 class ShopifyStream(HttpStream, ABC):
@@ -75,7 +75,7 @@ class ShopifyStream(HttpStream, ABC):
             params[self.filter_field] = self.start_date
         return params
 
-    @balancer.balance_rate_limit()
+    @limiter.balance_rate_limit()
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
         records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
