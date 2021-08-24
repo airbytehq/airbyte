@@ -1,3 +1,6 @@
+# This file is necessary to install dbt-utils with dbt deps
+# the content will be overwritten by the transform function
+
 # Name your package! Package names should contain only lowercase characters
 # and underscores. A good package name should reflect your organization's
 # name or the intended use of these models
@@ -28,11 +31,11 @@ clean-targets:         # directories to be removed by `dbt clean`
     - "dbt_modules"
 
 quoting:
-  database: false
+  database: true
 # Temporarily disabling the behavior of the ExtendedNameTransformer on table/schema names, see (issue #1785)
 # all schemas should be unquoted
   schema: false
-  identifier: false
+  identifier: true
 
 # You can define configurations for models in the `source-paths` directory here.
 # Using these configurations, you can enable or disable models, change how they

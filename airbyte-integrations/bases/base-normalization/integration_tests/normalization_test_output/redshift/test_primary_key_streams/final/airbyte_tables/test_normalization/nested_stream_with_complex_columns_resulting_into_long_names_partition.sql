@@ -1,7 +1,7 @@
 
 
   create  table
-    integrationtests.test_normalization.nested_stream_with_complex_columns_resulting_into_long_names_partition__dbt_tmp
+    "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_partition__dbt_tmp"
     
     
   as (
@@ -15,7 +15,7 @@ select
     json_extract_path_text("partition", 'DATA', true) as data,
     json_extract_path_text("partition", 'column`_''with"_quotes', true) as "column`_'with""_quotes",
     _airbyte_emitted_at
-from integrationtests.test_normalization.nested_stream_with_complex_columns_resulting_into_long_names as table_alias
+from "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names" as table_alias
 where "partition" is not null
 -- partition at nested_stream_with_complex_columns_resulting_into_long_names/partition
 ),  __dbt__CTE__nested_stream_with_complex_columns_resulting_into_long_names_partition_ab2 as (
@@ -50,5 +50,5 @@ select
     _airbyte_emitted_at,
     _airbyte_partition_hashid
 from __dbt__CTE__nested_stream_with_complex_columns_resulting_into_long_names_partition_ab3
--- partition at nested_stream_with_complex_columns_resulting_into_long_names/partition from integrationtests.test_normalization.nested_stream_with_complex_columns_resulting_into_long_names
+-- partition at nested_stream_with_complex_columns_resulting_into_long_names/partition from "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names"
   );

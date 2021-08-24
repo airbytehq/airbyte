@@ -52,30 +52,18 @@
               "type": "integer"
             },
             "children": {
-              "type": [
-                "null",
-                "array"
-              ],
+              "type": ["null", "array"],
               "items": {
                 "type": "object",
                 "properties": {
                   "ab_id": {
-                    "type": [
-                      "null",
-                      "integer"
-                    ]
+                    "type": ["null", "integer"]
                   },
                   "owner": {
-                    "type": [
-                      "null",
-                      "object"
-                    ],
+                    "type": ["null", "object"],
                     "properties": {
                       "owner_id": {
-                        "type": [
-                          "null",
-                          "integer"
-                        ]
+                        "type": ["null", "integer"]
                       }
                     }
                   }
@@ -221,6 +209,7 @@
     {
       "stream": {
         "name": "simple_stream_with_namespace_resulting_into_long_names",
+        "namespace": "test_normalization_namespace",
         "json_schema": {
           "type": ["null", "object"],
           "properties": {

@@ -1,7 +1,7 @@
 
 
   create  table
-    integrationtests.test_normalization.conflict_stream_scalar__dbt_tmp
+    "integrationtests".test_normalization."conflict_stream_scalar__dbt_tmp"
     
     
   as (

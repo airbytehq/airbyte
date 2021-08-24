@@ -47,8 +47,12 @@ class TransformConfig:
         inputs = self.parse(args)
         original_config = self.read_json_config(inputs["config"])
         integration_type = inputs["integration_type"]
+
+        transformed_dbt_project = self.transform_dbt_project(integration_type)
+        self.write_yaml_config(inputs["output_path"], transformed_dbt_project, "dbt_project.yml")
+
         transformed_config = self.transform(integration_type, original_config)
-        self.write_yaml_config(inputs["output_path"], transformed_config)
+        self.write_yaml_config(inputs["output_path"], transformed_config, "profiles.yml")
 
     @staticmethod
     def parse(args):
@@ -67,6 +71,18 @@ class TransformConfig:
             "integration_type": parsed_args.integration_type,
             "output_path": parsed_args.out,
         }
+
+    def transform_dbt_project(self, integration_type: DestinationType):
+        data = pkgutil.get_data(self.__class__.__module__.split(".")[0], "transform_config/dbt_project_base.yml")
+        if not data:
+            raise FileExistsError("Failed to load profile_base.yml")
+        base_project = yaml.load(data, Loader=yaml.FullLoader)
+
+        if integration_type.value == DestinationType.oracle.value:
+            base_project["quoting"]["database"] = False
+            base_project["quoting"]["identifier"] = False
+
+        return base_project
 
     def transform(self, integration_type: DestinationType, config: Dict[str, Any]):
         data = pkgutil.get_data(self.__class__.__module__.split(".")[0], "transform_config/profile_base.yml")
@@ -203,10 +219,10 @@ class TransformConfig:
         return json.loads(contents)
 
     @staticmethod
-    def write_yaml_config(output_path: str, config: Dict[str, Any]):
+    def write_yaml_config(output_path: str, config: Dict[str, Any], filename: str):
         if not os.path.exists(output_path):
             os.makedirs(output_path)
-        with open(os.path.join(output_path, "profiles.yml"), "w") as fh:
+        with open(os.path.join(output_path, filename), "w") as fh:
             fh.write(yaml.dump(config))
 
 

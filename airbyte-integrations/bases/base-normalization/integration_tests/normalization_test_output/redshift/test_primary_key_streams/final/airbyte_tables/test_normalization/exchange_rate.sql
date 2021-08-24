@@ -1,7 +1,7 @@
 
 
   create  table
-    integrationtests.test_normalization.exchange_rate__dbt_tmp
+    "integrationtests".test_normalization."exchange_rate__dbt_tmp"
     
     
   as (

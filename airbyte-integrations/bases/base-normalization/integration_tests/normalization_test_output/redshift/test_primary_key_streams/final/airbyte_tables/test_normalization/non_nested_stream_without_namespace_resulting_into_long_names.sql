@@ -1,7 +1,7 @@
 
 
   create  table
-    integrationtests.test_normalization.non_nested_stream_without_namespace_resulting_into_long_names__dbt_tmp
+    "integrationtests".test_normalization."non_nested_stream_without_namespace_resulting_into_long_names__dbt_tmp"
     
     
   as (

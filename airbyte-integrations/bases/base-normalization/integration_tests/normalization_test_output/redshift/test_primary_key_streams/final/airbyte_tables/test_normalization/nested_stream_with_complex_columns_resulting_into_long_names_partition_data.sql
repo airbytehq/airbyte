@@ -1,7 +1,7 @@
 
 
   create  table
-    integrationtests.test_normalization.nested_stream_with_complex_columns_resulting_into_long_names_partition_data__dbt_tmp
+    "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_partition_data__dbt_tmp"
     
     
   as (
@@ -47,7 +47,7 @@ joined as (
     select
         _airbyte_partition_hashid as _airbyte_hashid,
         json_extract_array_element_text(data, numbers.generated_number::int - 1, true) as _airbyte_nested_data
-    from integrationtests.test_normalization.nested_stream_with_complex_columns_resulting_into_long_names_partition
+    from "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_partition"
     cross join numbers
     -- only generate the number of records in the cross join that corresponds
     -- to the number of items in nested_stream_with_complex_columns_resulting_into_long_names_partition.data
@@ -57,7 +57,7 @@ select
     _airbyte_partition_hashid,
     case when json_extract_path_text(_airbyte_nested_data, 'currency', true) != '' then json_extract_path_text(_airbyte_nested_data, 'currency', true) end as currency,
     _airbyte_emitted_at
-from integrationtests.test_normalization.nested_stream_with_complex_columns_resulting_into_long_names_partition as table_alias
+from "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_partition" as table_alias
 left join joined on _airbyte_partition_hashid = joined._airbyte_hashid
 where data is not null
 -- data at nested_stream_with_complex_columns_resulting_into_long_names/partition/DATA
@@ -89,5 +89,5 @@ select
     _airbyte_emitted_at,
     _airbyte_data_hashid
 from __dbt__CTE__nested_stream_with_complex_columns_resulting_into_long_names_partition_data_ab3
--- data at nested_stream_with_complex_columns_resulting_into_long_names/partition/DATA from integrationtests.test_normalization.nested_stream_with_complex_columns_resulting_into_long_names_partition
+-- data at nested_stream_with_complex_columns_resulting_into_long_names/partition/DATA from "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_partition"
   );

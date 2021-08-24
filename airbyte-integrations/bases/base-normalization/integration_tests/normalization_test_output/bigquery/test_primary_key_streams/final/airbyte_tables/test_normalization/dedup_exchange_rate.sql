@@ -1,6 +1,6 @@
 
 
-  create or replace table dataline-integration-testing.test_normalization.dedup_exchange_rate
+  create or replace table `dataline-integration-testing`.test_normalization.`dedup_exchange_rate`
   
   
   OPTIONS()
@@ -18,7 +18,7 @@ select
     USD,
     _airbyte_emitted_at,
     _airbyte_dedup_exchange_rate_hashid
-from dataline-integration-testing.test_normalization.dedup_exchange_rate_scd
+from `dataline-integration-testing`.test_normalization.`dedup_exchange_rate_scd`
 -- dedup_exchange_rate from `dataline-integration-testing`.test_normalization._airbyte_raw_dedup_exchange_rate
 where _airbyte_active_row = True
   );
