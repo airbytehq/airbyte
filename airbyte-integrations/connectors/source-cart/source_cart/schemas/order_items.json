@@ -17,10 +17,10 @@
       "type": ["string", "null"]
     },
     "price": {
-      "type": ["numeric", "null"]
+      "type": ["number", "null"]
     },
     "cost": {
-      "type": ["numeric", "null"]
+      "type": ["number", "null"]
     },
     "quantity": {
       "type": ["integer", "null"]
@@ -29,7 +29,7 @@
       "type": ["boolean", "null"]
     },
     "weight": {
-      "type": ["numeric", "null"]
+      "type": ["number", "null"]
     },
     "is_taxable": {
       "type": ["boolean", "null"]
@@ -50,13 +50,13 @@
       "type": ["string", "null"]
     },
     "height": {
-      "type": ["numeric", "null"]
+      "type": ["number", "null"]
     },
     "length": {
-      "type": ["numeric", "null"]
+      "type": ["number", "null"]
     },
     "width": {
-      "type": ["numeric", "null"]
+      "type": ["number", "null"]
     },
     "size_unit": {
       "type": ["string", "null"]
