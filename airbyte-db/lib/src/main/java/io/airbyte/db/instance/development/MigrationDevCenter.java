@@ -43,7 +43,14 @@ public abstract class MigrationDevCenter {
 
   private enum Command {
     CREATE,
-    MIGRATE
+    MIGRATE,
+    DUMP_SCHEMA
+  }
+
+  private final String schemaDumpFile;
+
+  protected MigrationDevCenter(String schemaDumpFile) {
+    this.schemaDumpFile = schemaDumpFile;
   }
 
   private static PostgreSQLContainer<?> createContainer() {
@@ -73,6 +80,19 @@ public abstract class MigrationDevCenter {
       FlywayDatabaseMigrator fullMigrator = getMigrator(database);
       DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(fullMigrator);
       MigrationDevHelper.runLastMigration(devDatabaseMigrator);
+      String schema = fullMigrator.dumpSchema();
+      MigrationDevHelper.dumpSchema(schema, schemaDumpFile, false);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void dumpSchema() {
+    try (PostgreSQLContainer<?> container = createContainer(); Database database = getDatabase(container)) {
+      FlywayDatabaseMigrator migrator = getMigrator(database);
+      migrator.migrate();
+      String schema = migrator.dumpSchema();
+      MigrationDevHelper.dumpSchema(schema, schemaDumpFile, true);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -92,6 +112,7 @@ public abstract class MigrationDevCenter {
     switch (command) {
       case CREATE -> devCenter.createMigration();
       case MIGRATE -> devCenter.runLastMigration();
+      case DUMP_SCHEMA -> devCenter.dumpSchema();
       default -> throw new IllegalArgumentException("Unexpected command: " + args[1]);
     }
   }

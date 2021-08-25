@@ -35,6 +35,10 @@ import org.testcontainers.containers.PostgreSQLContainer;
  */
 public class ConfigsDatabaseMigrationDevCenter extends MigrationDevCenter {
 
+  public ConfigsDatabaseMigrationDevCenter() {
+    super("src/main/resources/configs_database/schema_dump.txt");
+  }
+
   @Override
   protected FlywayDatabaseMigrator getMigrator(Database database) {
     return new ConfigsDatabaseMigrator(database, ConfigsDatabaseMigrationDevCenter.class.getSimpleName());

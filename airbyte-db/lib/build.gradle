@@ -37,6 +37,12 @@ task(runConfigsMigration, dependsOn: 'classes', type: JavaExec) {
     args 'configs', 'migrate'
 }
 
+task(dumpConfigsSchema, dependsOn: 'classes', type: JavaExec) {
+    main = 'io.airbyte.db.instance.development.MigrationDevCenter'
+    classpath = sourceSets.main.runtimeClasspath
+    args 'configs', 'dump_schema'
+}
+
 task(newJobsMigration, dependsOn: 'classes', type: JavaExec) {
     main = 'io.airbyte.db.instance.development.MigrationDevCenter'
     classpath = sourceSets.main.runtimeClasspath
@@ -47,4 +53,10 @@ task(runJobsMigration, dependsOn: 'classes', type: JavaExec) {
     main = 'io.airbyte.db.instance.development.MigrationDevCenter'
     classpath = sourceSets.main.runtimeClasspath
     args 'jobs', 'migrate'
+}
+
+task(dumpJobsSchema, dependsOn: 'classes', type: JavaExec) {
+    main = 'io.airbyte.db.instance.development.MigrationDevCenter'
+    classpath = sourceSets.main.runtimeClasspath
+    args 'jobs', 'dump_schema'
 }

@@ -20,9 +20,12 @@ Check `io.airbyte.db.instance.configs` for example.
   - Configs database: `./gradlew :airbyte-db:lib:newConfigsMigration`.
   - Jobs database: `./gradlew :airbyte-db:lib:newJobsMigration`.
 - Write the migration using [`jOOQ`](https://www.jooq.org/).
-- Run the `runMigration` command to run the newly-created migration.
+- Run the `runMigration` command to run the last migration.
   - Configs database: `./gradlew :airbyte-db:lib:runConfigsMigration`.
   - Jobs database: `./gradlew :airbyte-db:lib:runJobsMigration`.
+- Run the `dumpSchema` command to update the database schema.
+  - Configs database: `./gradlew :airbyte-db:lib:dumpConfigsSchema`
+  - Jobs database: `./gradlew :airbyte-db:lib:dumpJobsSchema`
 
 ## Migration Filename
 - The name of the file should follow this pattern: `V(version)__(migration_description_in_snake_case).java`.
@@ -56,10 +59,10 @@ public class V0_29_9_001__Add_active_column extends BaseJavaMigration {
 ```
 
 # Schema Dump
-- Once everything looks correct, run the `integrateMigration` method to:
-  - Update the schema dump in `resources/<db-name>_databases/schema_dump.txt`.
-  - Update the jOOQ-generated code in `src/main/java/io.airbyte.db.instance.<db-name>.jooq`.
-  - Please remember to check in all the above changes in the schema dump.
+- The database schema is checked in to the codebase to ensure that we don't accidentally make any schema change.
+- The schema dump can be done manually and automatically.
+- To dump the schema manually, run the `dumpSchema` command, as mentioned above.
+- The `<db-name>DatabaseMigratorTest` dumps the schema automatically for each database. Please remember to check in any change in the schema dump.
 
 # How to Run a Migration
 - Automatic. Migrations will be run automatically in the server. If you prefer to manually run the migration, change `RUN_DATABASE_MIGRATION_ON_STARTUP` to `false` in `.env`.
