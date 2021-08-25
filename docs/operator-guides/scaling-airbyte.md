@@ -24,11 +24,11 @@ Thus, scaling Airbyte is a matter of ensuring that the Docker container or Kuber
 Jobs-wise, we are mainly concerned with Sync jobs when thinking about scale. Sync jobs sync data from sources to destinations and are the majority of jobs run. Sync jobs use two workers.
 One worker reads from the source; the other worker writes to the destination.
 
-There are two resources to be aware of:
+**In general, we recommend starting out with a mid-sized cloud instance (e.g. 4 or 8 cores) and gradually tuning instance size to your workload.** 
+
+There are two resources to be aware of when thinking of scale:
 1) Memory
 2) Disk space
-
-In general, we recommend starting out with a mid-sized cloud instance (e.g. 4 or 8 cores) and tuning according to your workload.
 
 ### Memory
 As mentioned above, we are mainly concerned with scaling Sync jobs. Within a Sync job, the main memory culprit is the Source worker.
