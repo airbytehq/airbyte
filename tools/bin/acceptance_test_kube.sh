@@ -19,6 +19,7 @@ echo "Starting app..."
 echo "Applying dev-testing manifests to kubernetes..."
 kubectl apply -k kube/overlays/dev-testing
 
+echo "Waiting for server and scheduler to be ready..."
 kubectl wait --for=condition=Available deployment/airbyte-server --timeout=300s || (kubectl describe pods && exit 1)
 kubectl wait --for=condition=Available deployment/airbyte-scheduler --timeout=300s || (kubectl describe pods && exit 1)
 
