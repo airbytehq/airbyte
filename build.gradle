@@ -300,7 +300,7 @@ tasks.withType(AbstractArchiveTask) {
 //        ':airbyte-config:init',
 //        ':airbyte-config:models',
 //        ':airbyte-config:persistence',
-//        ':airbyte-db',
+//        ':airbyte-db:lib',
 //        ':airbyte-json-validation',
 //        ':airbyte-migration',
 //        ':airbyte-notification',
