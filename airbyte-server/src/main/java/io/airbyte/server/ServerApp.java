@@ -305,7 +305,7 @@ public class ServerApp implements ServerRunnable {
       LOGGER.info("Migrating jobs database");
       jobDbMigrator.migrate();
     } else {
-      LOGGER.info("Auto Flyway migration is skipped");
+      LOGGER.info("Auto database migration is skipped");
     }
   }
 
