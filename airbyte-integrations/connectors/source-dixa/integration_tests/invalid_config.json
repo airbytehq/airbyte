@@ -1,4 +1,5 @@
 {
-  "start_timestamp": 1625263200000,
-  "batch_size": 1
+  "api_token": "TOKEN",
+  "start_date": "2020-01-01",
+  "batch_size": "31"
 }

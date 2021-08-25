@@ -22,6 +22,9 @@
 # SOFTWARE.
 #
 
+from enum import Enum
+from typing import Union
+
 import pendulum
 import pytest
 from airbyte_cdk.models import (
@@ -33,7 +36,9 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+from pydantic import BaseModel
 from source_acceptance_test.tests.test_incremental import records_with_state
+from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper
 
 
 @pytest.fixture(name="simple_state")
@@ -135,3 +140,50 @@ def test_absolute_path(records, stream_mapping, singer_state):
 
     assert record_value == pendulum.datetime(2015, 11, 1, 22, 3, 11), "record value must be correctly found"
     assert state_value == pendulum.datetime(2014, 1, 1, 22, 3, 11), "state value must be correctly found"
+
+
+def test_json_schema_helper_mssql(mssql_spec_schema):
+    js_helper = JsonSchemaHelper(mssql_spec_schema)
+    variant_paths = js_helper.find_variant_paths()
+    assert variant_paths == [["properties", "ssl_method", "oneOf"]]
+    js_helper.validate_variant_paths(variant_paths)
+
+
+def test_json_schema_helper_postgres(postgres_source_spec_schema):
+    js_helper = JsonSchemaHelper(postgres_source_spec_schema)
+    variant_paths = js_helper.find_variant_paths()
+    assert variant_paths == [["properties", "replication_method", "oneOf"]]
+    js_helper.validate_variant_paths(variant_paths)
+
+
+def test_json_schema_helper_pydantic_generated():
+    class E(str, Enum):
+        A = "dda"
+        B = "dds"
+        C = "ddf"
+
+    class E2(BaseModel):
+        e2: str
+
+    class C(BaseModel):
+        aaa: int
+        e: Union[E, E2]
+
+    class A(BaseModel):
+        sdf: str
+        sss: str
+        c: C
+
+    class B(BaseModel):
+        name: str
+        surname: str
+
+    class Root(BaseModel):
+        f: Union[A, B]
+
+    js_helper = JsonSchemaHelper(Root.schema())
+    variant_paths = js_helper.find_variant_paths()
+    assert len(variant_paths) == 2
+    assert variant_paths == [["properties", "f", "anyOf"], ["definitions", "C", "properties", "e", "anyOf"]]
+    # TODO: implement validation for pydantic generated objects as well
+    # js_helper.validate_variant_paths(variant_paths)

@@ -34,10 +34,16 @@ import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.persistence.ConfigPersistence;
-import io.airbyte.config.persistence.ConfigPersistenceBuilder;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.ConfigSeedProvider;
+import io.airbyte.config.persistence.DatabaseConfigPersistence;
+import io.airbyte.config.persistence.YamlSeedConfigPersistence;
 import io.airbyte.db.Database;
+import io.airbyte.db.instance.DatabaseMigrator;
+import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
+import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
 import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
@@ -52,7 +58,6 @@ import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
 import io.airbyte.server.errors.KnownExceptionMapper;
 import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
-import io.airbyte.server.handlers.ArchiveHandler;
 import io.airbyte.server.version_mismatch.VersionMismatchServer;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.TemporalClient;
@@ -168,7 +173,14 @@ public class ServerApp implements ServerRunnable {
     MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, LogClientSingleton.getServerLogsRoot(configs).toString());
 
     LOGGER.info("Creating config repository...");
-    final ConfigPersistence configPersistence = ConfigPersistenceBuilder.getAndInitializeDbPersistence(configs);
+    final Database configDatabase = new ConfigsDatabaseInstance(
+        configs.getConfigDatabaseUser(),
+        configs.getConfigDatabasePassword(),
+        configs.getConfigDatabaseUrl())
+            .getAndInitialize();
+    final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase)
+        .loadData(ConfigSeedProvider.get(configs))
+        .withValidation();
     final ConfigRepository configRepository = new ConfigRepository(configPersistence);
 
     LOGGER.info("Creating Scheduler persistence...");
@@ -213,6 +225,8 @@ public class ServerApp implements ServerRunnable {
       }
     }
 
+    runFlywayMigration(configs, configDatabase, jobDatabase);
+
     if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
       LOGGER.info("Starting server...");
 
@@ -229,6 +243,8 @@ public class ServerApp implements ServerRunnable {
           temporalService,
           configRepository,
           jobPersistence,
+          configDatabase,
+          jobDatabase,
           configs);
     } else {
       LOGGER.info("Start serving version mismatch errors. Automatic migration either failed or didn't run");
@@ -249,12 +265,11 @@ public class ServerApp implements ServerRunnable {
                                             String airbyteVersion,
                                             String airbyteDatabaseVersion) {
     LOGGER.info("Running Automatic Migration from version : " + airbyteDatabaseVersion + " to version : " + airbyteVersion);
-    LOGGER.info("Last seeds dir: {}", ArchiveHandler.SEEDS_PATH);
     try (final RunMigration runMigration = new RunMigration(
         jobPersistence,
         configRepository,
         airbyteVersion,
-        ArchiveHandler.SEEDS_PATH)) {
+        YamlSeedConfigPersistence.get())) {
       runMigration.run();
     } catch (Exception e) {
       LOGGER.error("Automatic Migration failed ", e);
@@ -275,6 +290,23 @@ public class ServerApp implements ServerRunnable {
     }
 
     return databaseVersion.getMinorVersion().compareTo(serverVersion.getMinorVersion()) < 0;
+  }
+
+  private static void runFlywayMigration(Configs configs, Database configDatabase, Database jobDatabase) {
+    DatabaseMigrator configDbMigrator = new ConfigsDatabaseMigrator(configDatabase, ServerApp.class.getSimpleName());
+    DatabaseMigrator jobDbMigrator = new JobsDatabaseMigrator(jobDatabase, ServerApp.class.getSimpleName());
+
+    configDbMigrator.createBaseline();
+    jobDbMigrator.createBaseline();
+
+    if (configs.runDatabaseMigrationOnStartup()) {
+      LOGGER.info("Migrating configs database");
+      configDbMigrator.migrate();
+      LOGGER.info("Migrating jobs database");
+      jobDbMigrator.migrate();
+    } else {
+      LOGGER.info("Auto database migration is skipped");
+    }
   }
 
 }

@@ -52,6 +52,7 @@ public class AirbyteApiClient {
   private final SourceDefinitionSpecificationApi sourceDefinitionSpecificationApi;
   private final WorkspaceApi workspaceApi;
   private final HealthApi healthApi;
+  private final DbMigrationApi dbMigrationApi;
 
   public AirbyteApiClient(ApiClient apiClient) {
     connectionApi = new ConnectionApi(apiClient);
@@ -66,6 +67,7 @@ public class AirbyteApiClient {
     sourceDefinitionSpecificationApi = new SourceDefinitionSpecificationApi(apiClient);
     workspaceApi = new WorkspaceApi(apiClient);
     healthApi = new HealthApi(apiClient);
+    dbMigrationApi = new DbMigrationApi(apiClient);
   }
 
   public ConnectionApi getConnectionApi() {
@@ -114,6 +116,10 @@ public class AirbyteApiClient {
 
   public HealthApi getHealthApi() {
     return healthApi;
+  }
+
+  public DbMigrationApi getDbMigrationApi() {
+    return dbMigrationApi;
   }
 
 }
