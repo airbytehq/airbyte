@@ -27,7 +27,7 @@ import calendar
 import time
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl, urlparse
 
 import pytz
@@ -69,7 +69,7 @@ class SourceZendeskSupportStream(HttpStream, ABC):
             return dict(parse_qsl(urlparse(next_page).query)).get("page")
         return None
 
-    def backoff_time(self, response: requests.Response) -> int:
+    def backoff_time(self, response: requests.Response) -> Union[int, float]:
         """
         The rate limit is 700 requests per minute
         # monitoring-your-request-activity
@@ -83,7 +83,7 @@ class SourceZendeskSupportStream(HttpStream, ABC):
         # we try to wait twice as long
         rate_limit = float(response.headers.get("X-Rate-Limit") or 0)
         if rate_limit:
-            return (60.0 / rate_limit) * 2
+            return max((60.0 / rate_limit) * 2, 60)  # This is a guarantee that no negative value will be returned.
         # default value if there is not any headers
         return 60
 
