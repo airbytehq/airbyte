@@ -247,7 +247,7 @@ class CustomQuery(IncrementalGoogleAdsStream):
         fields = [i.strip() for i in fields]
         fields = list(dict.fromkeys(fields))
 
-        google_schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(f"v8_{google_resource_name}")
+        google_schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(f"shared/v8_{google_resource_name}")
         for field in fields:
             node = google_schema.get("fields").get(field).get("field_details")
             google_data_type = node.get("data_type")
@@ -262,3 +262,10 @@ class CustomQuery(IncrementalGoogleAdsStream):
             local_json_schema["properties"][field] = field_value
 
         return local_json_schema
+
+
+class UserLocationReport(IncrementalGoogleAdsStream):
+    """
+    UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v8/user_location_view
+    Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#geo_performance
+    """

@@ -5,7 +5,7 @@
     "title": "Google Ads Spec",
     "type": "object",
     "required": ["credentials", "start_date", "customer_id"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "credentials": {
         "type": "object",
@@ -71,25 +71,29 @@
       "custom_queries": {
         "type": "array",
         "items": {
-          "type": ["object", "null"],
+          "type": "object",
           "properties": {
             "query": {
               "type": "string",
-              "title": "User defined query to build a report by wish",
+              "title": "Custom query",
+              "description": "A custom defined GAQL query for building the report.",
               "examples": ["SELECT segments.ad_destination_type, campaign.advertising_channel_sub_type FROM campaign"],
-              "pattern": "(?i)^select(\\s)+[a-zA-Z0-9._,(\\s)-]*(\\s+)from(\\s+)(campaign|customer|ad_group|ad_group_ad)$"
+              "pattern": "(?i)^select(\\s)+[a-zA-Z0-9._,(\\s)-]*(\\s+)from(\\s+)[a-zA-Z0-9._]*$"
             },
             "primary_key": {
               "type": ["string", "null"],
-              "title": "The unique field to be used as primary key in destination database (if provided)"
+              "title": "Primary key",
+              "description": "The unique field to be used as primary key in destination database (if provided)"
             },
             "cursor_field": {
               "type": ["string", "null"],
-              "title": "Field that will be used to track changes during Incremental sync (if provided). Otherwise only Full Refresh sync will be available."
+              "title": "Cursor field",
+              "description": "Field that will be used to track changes during Incremental sync (if provided). Otherwise only Full Refresh sync will be available."
             },
             "table_name": {
               "type": "string",
-              "title": "The table name in your destination database for choosen query."
+              "title": "Destination table name",
+              "description": "The table name in your destination database for choosen query."
             }
           }
         }

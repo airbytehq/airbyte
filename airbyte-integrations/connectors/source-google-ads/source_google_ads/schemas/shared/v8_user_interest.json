@@ -1,0 +1,159 @@
+{
+    "attributes": [
+        "user_interest.availabilities",
+        "user_interest.launched_to_all",
+        "user_interest.name",
+        "user_interest.resource_name",
+        "user_interest.taxonomy_type",
+        "user_interest.user_interest_id",
+        "user_interest.user_interest_parent"
+    ],
+    "description": "A user interest: a particular interest-based vertical to be targeted.",
+    "display_name": "User Interest",
+    "fields": {
+        "user_interest.availabilities": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "MESSAGE",
+                "description": "Output only. Availability information of the user interest.",
+                "enum_values": [],
+                "filterable": false,
+                "is_repeated": true,
+                "metrics": [],
+                "name": "user_interest.availabilities",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": "google.ads.googleads.v8.common.CriterionCategoryAvailability"
+            },
+            "incompatible_fields": []
+        },
+        "user_interest.launched_to_all": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Output only. True if the user interest is launched to all channels and locales.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "user_interest.launched_to_all",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "user_interest.name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Output only. The name of the user interest.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "user_interest.name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "user_interest.resource_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Output only. The resource name of the user interest. User interest resource names have the form: `customers/{customer_id}/userInterests/{user_interest_id}`",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "user_interest.resource_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "user_interest.taxonomy_type": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "Output only. Taxonomy type of the user interest.",
+                "enum_values": [
+                    "AFFINITY",
+                    "IN_MARKET",
+                    "MOBILE_APP_INSTALL_USER",
+                    "NEW_SMART_PHONE_USER",
+                    "UNKNOWN",
+                    "UNSPECIFIED",
+                    "VERTICAL_GEO"
+                ],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "user_interest.taxonomy_type",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": "google.ads.googleads.v8.enums.UserInterestTaxonomyTypeEnum.UserInterestTaxonomyType"
+            },
+            "incompatible_fields": []
+        },
+        "user_interest.user_interest_id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The ID of the user interest.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "user_interest.user_interest_id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "user_interest.user_interest_parent": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Output only. The parent of the user interest.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "user_interest.user_interest_parent",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        }
+    },
+    "metrics": [],
+    "name": "user_interest",
+    "segments": []
+}

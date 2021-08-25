@@ -1,0 +1,71 @@
+{
+    "attributes": [
+        "mobile_app_category_constant.id",
+        "mobile_app_category_constant.name",
+        "mobile_app_category_constant.resource_name"
+    ],
+    "description": "A mobile application category constant.",
+    "display_name": "Mobile App Category Constant",
+    "fields": {
+        "mobile_app_category_constant.id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT32",
+                "description": "Output only. The ID of the mobile app category constant.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "mobile_app_category_constant.id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "mobile_app_category_constant.name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Output only. Mobile app category name.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "mobile_app_category_constant.name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "mobile_app_category_constant.resource_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Output only. The resource name of the mobile app category constant. Mobile app category constant resource names have the form: `mobileAppCategoryConstants/{mobile_app_category_id}`",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "mobile_app_category_constant.resource_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        }
+    },
+    "metrics": [],
+    "name": "mobile_app_category_constant",
+    "segments": []
+}

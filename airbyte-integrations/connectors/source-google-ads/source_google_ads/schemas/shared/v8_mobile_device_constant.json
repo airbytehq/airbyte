@@ -1,0 +1,136 @@
+{
+    "attributes": [
+        "mobile_device_constant.id",
+        "mobile_device_constant.manufacturer_name",
+        "mobile_device_constant.name",
+        "mobile_device_constant.operating_system_name",
+        "mobile_device_constant.resource_name",
+        "mobile_device_constant.type"
+    ],
+    "description": "A mobile device constant.",
+    "display_name": "Mobile Device Constant",
+    "fields": {
+        "mobile_device_constant.id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The ID of the mobile device constant.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "mobile_device_constant.id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "mobile_device_constant.manufacturer_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Output only. The manufacturer of the mobile device.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "mobile_device_constant.manufacturer_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "mobile_device_constant.name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Output only. The name of the mobile device.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "mobile_device_constant.name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "mobile_device_constant.operating_system_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Output only. The operating system of the mobile device.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "mobile_device_constant.operating_system_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "mobile_device_constant.resource_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Output only. The resource name of the mobile device constant. Mobile device constant resource names have the form: `mobileDeviceConstants/{criterion_id}`",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "mobile_device_constant.resource_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "mobile_device_constant.type": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "Output only. The type of mobile device.",
+                "enum_values": [
+                    "MOBILE",
+                    "TABLET",
+                    "UNKNOWN",
+                    "UNSPECIFIED"
+                ],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "mobile_device_constant.type",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": "google.ads.googleads.v8.enums.MobileDeviceTypeEnum.MobileDeviceType"
+            },
+            "incompatible_fields": []
+        }
+    },
+    "metrics": [],
+    "name": "mobile_device_constant",
+    "segments": []
+}

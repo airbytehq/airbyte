@@ -43,6 +43,7 @@ from .streams import (
     DisplayKeywordPerformanceReport,
     DisplayTopicsPerformanceReport,
     ShoppingPerformanceReport,
+    UserLocationReport,
 )
 
 
@@ -76,6 +77,7 @@ class SourceGoogleAds(AbstractSource):
             for single_query_config in config.get("custom_queries", [])
         ]
         return [
+            UserLocationReport(**incremental_stream_config),
             AccountPerformanceReport(**incremental_stream_config),
             DisplayTopicsPerformanceReport(**incremental_stream_config),
             DisplayKeywordPerformanceReport(**incremental_stream_config),

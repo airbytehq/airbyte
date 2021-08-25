@@ -1,0 +1,913 @@
+{
+    "attributes": [
+        "shared_criterion.criterion_id",
+        "shared_criterion.keyword.match_type",
+        "shared_criterion.keyword.text",
+        "shared_criterion.mobile_app_category.mobile_app_category_constant",
+        "shared_criterion.mobile_application.app_id",
+        "shared_criterion.mobile_application.name",
+        "shared_criterion.placement.url",
+        "shared_criterion.resource_name",
+        "shared_criterion.shared_set",
+        "shared_criterion.type",
+        "shared_criterion.youtube_channel.channel_id",
+        "shared_criterion.youtube_video.video_id",
+        "customer.auto_tagging_enabled",
+        "customer.call_reporting_setting.call_conversion_action",
+        "customer.call_reporting_setting.call_conversion_reporting_enabled",
+        "customer.call_reporting_setting.call_reporting_enabled",
+        "customer.conversion_tracking_setting.conversion_tracking_id",
+        "customer.conversion_tracking_setting.cross_account_conversion_tracking_id",
+        "customer.currency_code",
+        "customer.descriptive_name",
+        "customer.final_url_suffix",
+        "customer.has_partners_badge",
+        "customer.id",
+        "customer.manager",
+        "customer.optimization_score",
+        "customer.optimization_score_weight",
+        "customer.pay_per_conversion_eligibility_failure_reasons",
+        "customer.remarketing_setting.google_global_site_tag",
+        "customer.resource_name",
+        "customer.test_account",
+        "customer.time_zone",
+        "customer.tracking_url_template",
+        "mobile_app_category_constant.id",
+        "mobile_app_category_constant.name",
+        "mobile_app_category_constant.resource_name",
+        "shared_set.id",
+        "shared_set.member_count",
+        "shared_set.name",
+        "shared_set.reference_count",
+        "shared_set.resource_name",
+        "shared_set.status",
+        "shared_set.type"
+    ],
+    "description": "A criterion belonging to a shared set.",
+    "display_name": "Shared Criterion",
+    "fields": {
+        "customer.auto_tagging_enabled": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Whether auto-tagging is enabled for the customer.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.auto_tagging_enabled",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.call_reporting_setting.call_conversion_action": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Customer-level call conversion action to attribute a call conversion to. If not set a default conversion action is used. Only in effect when call_conversion_reporting_enabled is set to true.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.call_reporting_setting.call_conversion_action",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.call_reporting_setting.call_conversion_reporting_enabled": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Whether to enable call conversion reporting.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.call_reporting_setting.call_conversion_reporting_enabled",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.call_reporting_setting.call_reporting_enabled": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Enable reporting of phone call events by redirecting them via Google System.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.call_reporting_setting.call_reporting_enabled",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.conversion_tracking_setting.conversion_tracking_id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The conversion tracking id used for this account. This id is automatically assigned after any conversion tracking feature is used. If the customer doesn't use conversion tracking, this is 0. This field is read-only.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.conversion_tracking_setting.conversion_tracking_id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.conversion_tracking_setting.cross_account_conversion_tracking_id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The conversion tracking id of the customer's manager. This is set when the customer is opted into cross account conversion tracking, and it overrides conversion_tracking_id. This field can only be managed through the Google Ads UI. This field is read-only.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.conversion_tracking_setting.cross_account_conversion_tracking_id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.currency_code": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Immutable. The currency in which the account operates. A subset of the currency codes from the ISO 4217 standard is supported.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.currency_code",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.descriptive_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Optional, non-unique descriptive name of the customer.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.descriptive_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.final_url_suffix": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "The URL template for appending params to the final URL",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.final_url_suffix",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.has_partners_badge": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Output only. Whether the Customer has a Partners program badge. If the Customer is not associated with the Partners program, this will be false. For more information, see <a href=\"https://support.google.com/partners/answer/3125774\">https://support.google.com/partners/answer/3125774</a>.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.has_partners_badge",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The ID of the customer.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.manager": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Output only. Whether the customer is a manager.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.manager",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.optimization_score": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "DOUBLE",
+                "description": "Output only. Optimization score of the customer. Optimization score is an estimate of how well a customer's campaigns are set to perform. It ranges from 0% (0.0) to 100% (1.0). This field is null for all manager customers, and for unscored non-manager customers. See \"About optimization score\" at <a href=\"https://support.google.com/google-ads/answer/9061546\">https://support.google.com/google-ads/answer/9061546</a>. This field is read-only.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.optimization_score",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.optimization_score_weight": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "DOUBLE",
+                "description": "Output only. Optimization score weight of the customer. Optimization score weight can be used to compare/aggregate optimization scores across multiple non-manager customers. The aggregate optimization score of a manager is computed as the sum over all of their customers of `Customer.optimization_score * Customer.optimization_score_weight`. This field is 0 for all manager customers, and for unscored non-manager customers. This field is read-only.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.optimization_score_weight",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.pay_per_conversion_eligibility_failure_reasons": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "Output only. Reasons why the customer is not eligible to use PaymentMode.CONVERSIONS. If the list is empty, the customer is eligible. This field is read-only.",
+                "enum_values": [
+                    "ANALYSIS_NOT_COMPLETE",
+                    "AVERAGE_DAILY_SPEND_TOO_HIGH",
+                    "CONVERSION_LAG_TOO_HIGH",
+                    "HAS_CAMPAIGN_WITH_SHARED_BUDGET",
+                    "HAS_UPLOAD_CLICKS_CONVERSION",
+                    "NOT_ENOUGH_CONVERSIONS",
+                    "OTHER",
+                    "UNKNOWN",
+                    "UNSPECIFIED"
+                ],
+                "filterable": true,
+                "is_repeated": true,
+                "metrics": [],
+                "name": "customer.pay_per_conversion_eligibility_failure_reasons",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": "google.ads.googleads.v8.enums.CustomerPayPerConversionEligibilityFailureReasonEnum.CustomerPayPerConversionEligibilityFailureReason"
+            },
+            "incompatible_fields": []
+        },
+        "customer.remarketing_setting.google_global_site_tag": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Output only. The Google global site tag.",
+                "enum_values": [],
+                "filterable": false,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.remarketing_setting.google_global_site_tag",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.resource_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Immutable. The resource name of the customer. Customer resource names have the form: `customers/{customer_id}`",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.resource_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.test_account": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Output only. Whether the customer is a test account.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.test_account",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.time_zone": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Immutable. The local timezone ID of the customer.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.time_zone",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.tracking_url_template": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "The URL template for constructing a tracking URL out of parameters.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.tracking_url_template",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "mobile_app_category_constant.id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT32",
+                "description": "Output only. The ID of the mobile app category constant.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "mobile_app_category_constant.id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "mobile_app_category_constant.name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Output only. Mobile app category name.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "mobile_app_category_constant.name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "mobile_app_category_constant.resource_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Output only. The resource name of the mobile app category constant. Mobile app category constant resource names have the form: `mobileAppCategoryConstants/{mobile_app_category_id}`",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "mobile_app_category_constant.resource_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "shared_criterion.criterion_id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The ID of the criterion. This field is ignored for mutates.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "shared_criterion.criterion_id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "shared_criterion.keyword.match_type": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "The match type of the keyword.",
+                "enum_values": [
+                    "BROAD",
+                    "EXACT",
+                    "PHRASE",
+                    "UNKNOWN",
+                    "UNSPECIFIED"
+                ],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "shared_criterion.keyword.match_type",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": "google.ads.googleads.v8.enums.KeywordMatchTypeEnum.KeywordMatchType"
+            },
+            "incompatible_fields": []
+        },
+        "shared_criterion.keyword.text": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "The text of the keyword (at most 80 characters and 10 words).",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "shared_criterion.keyword.text",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "shared_criterion.mobile_app_category.mobile_app_category_constant": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "The mobile app category constant resource name.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "shared_criterion.mobile_app_category.mobile_app_category_constant",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "shared_criterion.mobile_application.app_id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "A string that uniquely identifies a mobile application to Google Ads API. The format of this string is \"{platform}-{platform_native_id}\", where platform is \"1\" for iOS apps and \"2\" for Android apps, and where platform_native_id is the mobile application identifier native to the corresponding platform. For iOS, this native identifier is the 9 digit string that appears at the end of an App Store URL (e.g., \"476943146\" for \"Flood-It! 2\" whose App Store link is \"http://itunes.apple.com/us/app/flood-it!-2/id476943146\"). For Android, this native identifier is the application's package name (e.g., \"com.labpixies.colordrips\" for \"Color Drips\" given Google Play link \"https://play.google.com/store/apps/details?id=com.labpixies.colordrips\"). A well formed app id for Google Ads API would thus be \"1-476943146\" for iOS and \"2-com.labpixies.colordrips\" for Android. This field is required and must be set in CREATE operations.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "shared_criterion.mobile_application.app_id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "shared_criterion.mobile_application.name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Name of this mobile application.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "shared_criterion.mobile_application.name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "shared_criterion.placement.url": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "URL of the placement. For example, \"http://www.domain.com\".",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "shared_criterion.placement.url",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "shared_criterion.resource_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Immutable. The resource name of the shared criterion. Shared set resource names have the form: `customers/{customer_id}/sharedCriteria/{shared_set_id}~{criterion_id}`",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "shared_criterion.resource_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "shared_criterion.shared_set": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Immutable. The shared set to which the shared criterion belongs.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "shared_criterion.shared_set",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "shared_criterion.type": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "Output only. The type of the criterion.",
+                "enum_values": [
+                    "AD_SCHEDULE",
+                    "AGE_RANGE",
+                    "APP_PAYMENT_MODEL",
+                    "CARRIER",
+                    "COMBINED_AUDIENCE",
+                    "CONTENT_LABEL",
+                    "CUSTOM_AFFINITY",
+                    "CUSTOM_AUDIENCE",
+                    "CUSTOM_INTENT",
+                    "DEVICE",
+                    "GENDER",
+                    "INCOME_RANGE",
+                    "IP_BLOCK",
+                    "KEYWORD",
+                    "KEYWORD_THEME",
+                    "LANGUAGE",
+                    "LISTING_GROUP",
+                    "LISTING_SCOPE",
+                    "LOCATION",
+                    "LOCATION_GROUP",
+                    "MOBILE_APPLICATION",
+                    "MOBILE_APP_CATEGORY",
+                    "MOBILE_DEVICE",
+                    "OPERATING_SYSTEM_VERSION",
+                    "PARENTAL_STATUS",
+                    "PLACEMENT",
+                    "PROXIMITY",
+                    "TOPIC",
+                    "UNKNOWN",
+                    "UNSPECIFIED",
+                    "USER_INTEREST",
+                    "USER_LIST",
+                    "WEBPAGE",
+                    "YOUTUBE_CHANNEL",
+                    "YOUTUBE_VIDEO"
+                ],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "shared_criterion.type",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": "google.ads.googleads.v8.enums.CriterionTypeEnum.CriterionType"
+            },
+            "incompatible_fields": []
+        },
+        "shared_criterion.youtube_channel.channel_id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "The YouTube uploader channel id or the channel code of a YouTube channel.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "shared_criterion.youtube_channel.channel_id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "shared_criterion.youtube_video.video_id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "YouTube video id as it appears on the YouTube watch page.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "shared_criterion.youtube_video.video_id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "shared_set.id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The ID of this shared set. Read only.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "shared_set.id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "shared_set.member_count": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The number of shared criteria within this shared set. Read only.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "shared_set.member_count",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "shared_set.name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "The name of this shared set. Required. Shared Sets must have names that are unique among active shared sets of the same type. The length of this string should be between 1 and 255 UTF-8 bytes, inclusive.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "shared_set.name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "shared_set.reference_count": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The number of campaigns associated with this shared set. Read only.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "shared_set.reference_count",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "shared_set.resource_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Immutable. The resource name of the shared set. Shared set resource names have the form: `customers/{customer_id}/sharedSets/{shared_set_id}`",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "shared_set.resource_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "shared_set.status": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "Output only. The status of this shared set. Read only.",
+                "enum_values": [
+                    "ENABLED",
+                    "REMOVED",
+                    "UNKNOWN",
+                    "UNSPECIFIED"
+                ],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "shared_set.status",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": "google.ads.googleads.v8.enums.SharedSetStatusEnum.SharedSetStatus"
+            },
+            "incompatible_fields": []
+        },
+        "shared_set.type": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "Immutable. The type of this shared set: each shared set holds only a single kind of resource. Required. Immutable.",
+                "enum_values": [
+                    "NEGATIVE_KEYWORDS",
+                    "NEGATIVE_PLACEMENTS",
+                    "UNKNOWN",
+                    "UNSPECIFIED"
+                ],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "shared_set.type",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": "google.ads.googleads.v8.enums.SharedSetTypeEnum.SharedSetType"
+            },
+            "incompatible_fields": []
+        }
+    },
+    "metrics": [],
+    "name": "shared_criterion",
+    "segments": []
+}

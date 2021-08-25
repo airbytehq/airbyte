@@ -1,0 +1,111 @@
+{
+    "attributes": [
+        "language_constant.code",
+        "language_constant.id",
+        "language_constant.name",
+        "language_constant.resource_name",
+        "language_constant.targetable"
+    ],
+    "description": "A language.",
+    "display_name": "Language Constant",
+    "fields": {
+        "language_constant.code": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Output only. The language code, e.g. \"en_US\", \"en_AU\", \"es\", \"fr\", etc.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "language_constant.code",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "language_constant.id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The ID of the language constant.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "language_constant.id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "language_constant.name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Output only. The full name of the language in English, e.g., \"English (US)\", \"Spanish\", etc.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "language_constant.name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "language_constant.resource_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Output only. The resource name of the language constant. Language constant resource names have the form: `languageConstants/{criterion_id}`",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "language_constant.resource_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "language_constant.targetable": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Output only. Whether the language is targetable.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "language_constant.targetable",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        }
+    },
+    "metrics": [],
+    "name": "language_constant",
+    "segments": []
+}

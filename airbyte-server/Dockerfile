@@ -8,9 +8,6 @@ WORKDIR /app
 
 COPY build/distributions/${APPLICATION}-0*.tar ${APPLICATION}.tar
 
-RUN mkdir latest_seeds
-COPY build/config_init/resources/main/config latest_seeds
-
 RUN tar xf ${APPLICATION}.tar --strip-components=1
 
 # wait for upstream dependencies to become available before starting server

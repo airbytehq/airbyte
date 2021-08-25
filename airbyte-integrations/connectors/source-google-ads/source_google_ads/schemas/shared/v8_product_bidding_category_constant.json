@@ -1,0 +1,184 @@
+{
+    "attributes": [
+        "product_bidding_category_constant.country_code",
+        "product_bidding_category_constant.id",
+        "product_bidding_category_constant.language_code",
+        "product_bidding_category_constant.level",
+        "product_bidding_category_constant.localized_name",
+        "product_bidding_category_constant.product_bidding_category_constant_parent",
+        "product_bidding_category_constant.resource_name",
+        "product_bidding_category_constant.status"
+    ],
+    "description": "A Product Bidding Category.",
+    "display_name": "Product Bidding Category Constant",
+    "fields": {
+        "product_bidding_category_constant.country_code": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Output only. Two-letter upper-case country code of the product bidding category.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "product_bidding_category_constant.country_code",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "product_bidding_category_constant.id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. ID of the product bidding category. This ID is equivalent to the google_product_category ID as described in this article: <a href=\"https://support.google.com/merchants/answer/6324436\">https://support.google.com/merchants/answer/6324436</a>.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "product_bidding_category_constant.id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "product_bidding_category_constant.language_code": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Output only. Language code of the product bidding category.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "product_bidding_category_constant.language_code",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "product_bidding_category_constant.level": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "Output only. Level of the product bidding category.",
+                "enum_values": [
+                    "LEVEL1",
+                    "LEVEL2",
+                    "LEVEL3",
+                    "LEVEL4",
+                    "LEVEL5",
+                    "UNKNOWN",
+                    "UNSPECIFIED"
+                ],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "product_bidding_category_constant.level",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": "google.ads.googleads.v8.enums.ProductBiddingCategoryLevelEnum.ProductBiddingCategoryLevel"
+            },
+            "incompatible_fields": []
+        },
+        "product_bidding_category_constant.localized_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Output only. Display value of the product bidding category localized according to language_code.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "product_bidding_category_constant.localized_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "product_bidding_category_constant.product_bidding_category_constant_parent": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Output only. Resource name of the parent product bidding category.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "product_bidding_category_constant.product_bidding_category_constant_parent",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "product_bidding_category_constant.resource_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Output only. The resource name of the product bidding category. Product bidding category resource names have the form: `productBiddingCategoryConstants/{country_code}~{level}~{id}`",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "product_bidding_category_constant.resource_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "product_bidding_category_constant.status": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "Output only. Status of the product bidding category.",
+                "enum_values": [
+                    "ACTIVE",
+                    "OBSOLETE",
+                    "UNKNOWN",
+                    "UNSPECIFIED"
+                ],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "product_bidding_category_constant.status",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": "google.ads.googleads.v8.enums.ProductBiddingCategoryStatusEnum.ProductBiddingCategoryStatus"
+            },
+            "incompatible_fields": []
+        }
+    },
+    "metrics": [],
+    "name": "product_bidding_category_constant",
+    "segments": []
+}

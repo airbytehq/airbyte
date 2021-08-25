@@ -1,0 +1,131 @@
+{
+    "attributes": [
+        "life_event.availabilities",
+        "life_event.id",
+        "life_event.launched_to_all",
+        "life_event.name",
+        "life_event.parent",
+        "life_event.resource_name"
+    ],
+    "description": "A life event: a particular interest-based vertical to be targeted to reach users when they are in the midst of important life milestones.",
+    "display_name": "Life Event",
+    "fields": {
+        "life_event.availabilities": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "MESSAGE",
+                "description": "Output only. Availability information of the life event.",
+                "enum_values": [],
+                "filterable": false,
+                "is_repeated": true,
+                "metrics": [],
+                "name": "life_event.availabilities",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": "google.ads.googleads.v8.common.CriterionCategoryAvailability"
+            },
+            "incompatible_fields": []
+        },
+        "life_event.id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The ID of the life event.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "life_event.id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "life_event.launched_to_all": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Output only. True if the life event is launched to all channels and locales.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "life_event.launched_to_all",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "life_event.name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Output only. The name of the life event. E.g.,\"Recently Moved\"",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "life_event.name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "life_event.parent": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Output only. The parent of the life_event.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "life_event.parent",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "life_event.resource_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Output only. The resource name of the life event. Life event resource names have the form: `customers/{customer_id}/lifeEvents/{life_event_id}`",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "life_event.resource_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        }
+    },
+    "metrics": [],
+    "name": "life_event",
+    "segments": []
+}

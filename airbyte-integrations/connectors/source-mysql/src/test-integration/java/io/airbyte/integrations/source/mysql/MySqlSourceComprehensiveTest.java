@@ -234,6 +234,14 @@ public class MySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             // .addInsertValues("'0000-00-00 00:00:00'")
             .build());
 
+    // addDataTypeTestData(
+    // TestDataHolder.builder()
+    // .sourceType("datetime")
+    // .airbyteType(JsonSchemaPrimitive.STRING)
+    // .addInsertValues("'2013-09-05T10:10:02'")
+    // .addExpectedValues("2013-09-05T10:10:02")
+    // .build());
+
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("timestamp")

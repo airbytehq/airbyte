@@ -1,0 +1,745 @@
+{
+    "attributes": [
+        "media_file.audio.ad_duration_millis",
+        "media_file.file_size",
+        "media_file.id",
+        "media_file.image.full_size_image_url",
+        "media_file.image.preview_size_image_url",
+        "media_file.media_bundle.url",
+        "media_file.mime_type",
+        "media_file.name",
+        "media_file.resource_name",
+        "media_file.source_url",
+        "media_file.type",
+        "media_file.video.ad_duration_millis",
+        "media_file.video.advertising_id_code",
+        "media_file.video.isci_code",
+        "media_file.video.youtube_video_id",
+        "customer.auto_tagging_enabled",
+        "customer.call_reporting_setting.call_conversion_action",
+        "customer.call_reporting_setting.call_conversion_reporting_enabled",
+        "customer.call_reporting_setting.call_reporting_enabled",
+        "customer.conversion_tracking_setting.conversion_tracking_id",
+        "customer.conversion_tracking_setting.cross_account_conversion_tracking_id",
+        "customer.currency_code",
+        "customer.descriptive_name",
+        "customer.final_url_suffix",
+        "customer.has_partners_badge",
+        "customer.id",
+        "customer.manager",
+        "customer.optimization_score",
+        "customer.optimization_score_weight",
+        "customer.pay_per_conversion_eligibility_failure_reasons",
+        "customer.remarketing_setting.google_global_site_tag",
+        "customer.resource_name",
+        "customer.test_account",
+        "customer.time_zone",
+        "customer.tracking_url_template"
+    ],
+    "description": "A media file.",
+    "display_name": "Media File",
+    "fields": {
+        "customer.auto_tagging_enabled": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Whether auto-tagging is enabled for the customer.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.auto_tagging_enabled",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.call_reporting_setting.call_conversion_action": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Customer-level call conversion action to attribute a call conversion to. If not set a default conversion action is used. Only in effect when call_conversion_reporting_enabled is set to true.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.call_reporting_setting.call_conversion_action",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.call_reporting_setting.call_conversion_reporting_enabled": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Whether to enable call conversion reporting.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.call_reporting_setting.call_conversion_reporting_enabled",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.call_reporting_setting.call_reporting_enabled": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Enable reporting of phone call events by redirecting them via Google System.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.call_reporting_setting.call_reporting_enabled",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.conversion_tracking_setting.conversion_tracking_id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The conversion tracking id used for this account. This id is automatically assigned after any conversion tracking feature is used. If the customer doesn't use conversion tracking, this is 0. This field is read-only.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.conversion_tracking_setting.conversion_tracking_id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.conversion_tracking_setting.cross_account_conversion_tracking_id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The conversion tracking id of the customer's manager. This is set when the customer is opted into cross account conversion tracking, and it overrides conversion_tracking_id. This field can only be managed through the Google Ads UI. This field is read-only.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.conversion_tracking_setting.cross_account_conversion_tracking_id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.currency_code": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Immutable. The currency in which the account operates. A subset of the currency codes from the ISO 4217 standard is supported.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.currency_code",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.descriptive_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Optional, non-unique descriptive name of the customer.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.descriptive_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.final_url_suffix": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "The URL template for appending params to the final URL",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.final_url_suffix",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.has_partners_badge": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Output only. Whether the Customer has a Partners program badge. If the Customer is not associated with the Partners program, this will be false. For more information, see <a href=\"https://support.google.com/partners/answer/3125774\">https://support.google.com/partners/answer/3125774</a>.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.has_partners_badge",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The ID of the customer.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.manager": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Output only. Whether the customer is a manager.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.manager",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.optimization_score": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "DOUBLE",
+                "description": "Output only. Optimization score of the customer. Optimization score is an estimate of how well a customer's campaigns are set to perform. It ranges from 0% (0.0) to 100% (1.0). This field is null for all manager customers, and for unscored non-manager customers. See \"About optimization score\" at <a href=\"https://support.google.com/google-ads/answer/9061546\">https://support.google.com/google-ads/answer/9061546</a>. This field is read-only.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.optimization_score",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.optimization_score_weight": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "DOUBLE",
+                "description": "Output only. Optimization score weight of the customer. Optimization score weight can be used to compare/aggregate optimization scores across multiple non-manager customers. The aggregate optimization score of a manager is computed as the sum over all of their customers of `Customer.optimization_score * Customer.optimization_score_weight`. This field is 0 for all manager customers, and for unscored non-manager customers. This field is read-only.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.optimization_score_weight",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.pay_per_conversion_eligibility_failure_reasons": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "Output only. Reasons why the customer is not eligible to use PaymentMode.CONVERSIONS. If the list is empty, the customer is eligible. This field is read-only.",
+                "enum_values": [
+                    "ANALYSIS_NOT_COMPLETE",
+                    "AVERAGE_DAILY_SPEND_TOO_HIGH",
+                    "CONVERSION_LAG_TOO_HIGH",
+                    "HAS_CAMPAIGN_WITH_SHARED_BUDGET",
+                    "HAS_UPLOAD_CLICKS_CONVERSION",
+                    "NOT_ENOUGH_CONVERSIONS",
+                    "OTHER",
+                    "UNKNOWN",
+                    "UNSPECIFIED"
+                ],
+                "filterable": true,
+                "is_repeated": true,
+                "metrics": [],
+                "name": "customer.pay_per_conversion_eligibility_failure_reasons",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": "google.ads.googleads.v8.enums.CustomerPayPerConversionEligibilityFailureReasonEnum.CustomerPayPerConversionEligibilityFailureReason"
+            },
+            "incompatible_fields": []
+        },
+        "customer.remarketing_setting.google_global_site_tag": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Output only. The Google global site tag.",
+                "enum_values": [],
+                "filterable": false,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.remarketing_setting.google_global_site_tag",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.resource_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Immutable. The resource name of the customer. Customer resource names have the form: `customers/{customer_id}`",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.resource_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.test_account": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Output only. Whether the customer is a test account.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.test_account",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.time_zone": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Immutable. The local timezone ID of the customer.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.time_zone",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.tracking_url_template": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "The URL template for constructing a tracking URL out of parameters.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.tracking_url_template",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "media_file.audio.ad_duration_millis": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The duration of the Audio in milliseconds.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "media_file.audio.ad_duration_millis",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "media_file.file_size": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The size of the media file in bytes.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "media_file.file_size",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "media_file.id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The ID of the media file.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "media_file.id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "media_file.image.full_size_image_url": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Output only. The url to the full size version of the image.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "media_file.image.full_size_image_url",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "media_file.image.preview_size_image_url": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Output only. The url to the preview size version of the image.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "media_file.image.preview_size_image_url",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "media_file.media_bundle.url": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Output only. The url to access the uploaded zipped data. E.g. <a href=\"https://tpc.googlesyndication.com/simgad/123\">https://tpc.googlesyndication.com/simgad/123</a> This field is read-only.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "media_file.media_bundle.url",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "media_file.mime_type": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "Output only. The mime type of the media file.",
+                "enum_values": [
+                    "AUDIO_MP3",
+                    "AUDIO_WAV",
+                    "FLASH",
+                    "HTML5_AD_ZIP",
+                    "IMAGE_GIF",
+                    "IMAGE_JPEG",
+                    "IMAGE_PNG",
+                    "MSEXCEL",
+                    "MSWORD",
+                    "PDF",
+                    "RTF",
+                    "TEXT_HTML",
+                    "UNKNOWN",
+                    "UNSPECIFIED"
+                ],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "media_file.mime_type",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": "google.ads.googleads.v8.enums.MimeTypeEnum.MimeType"
+            },
+            "incompatible_fields": []
+        },
+        "media_file.name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Immutable. The name of the media file. The name can be used by clients to help identify previously uploaded media.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "media_file.name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "media_file.resource_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Immutable. The resource name of the media file. Media file resource names have the form: `customers/{customer_id}/mediaFiles/{media_file_id}`",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "media_file.resource_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "media_file.source_url": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Immutable. The URL of where the original media file was downloaded from (or a file name). Only used for media of type AUDIO and IMAGE.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "media_file.source_url",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "media_file.type": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "Immutable. Type of the media file.",
+                "enum_values": [
+                    "AUDIO",
+                    "DYNAMIC_IMAGE",
+                    "ICON",
+                    "IMAGE",
+                    "MEDIA_BUNDLE",
+                    "UNKNOWN",
+                    "UNSPECIFIED",
+                    "VIDEO"
+                ],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "media_file.type",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": "google.ads.googleads.v8.enums.MediaTypeEnum.MediaType"
+            },
+            "incompatible_fields": []
+        },
+        "media_file.video.ad_duration_millis": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The duration of the Video in milliseconds.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "media_file.video.ad_duration_millis",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "media_file.video.advertising_id_code": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Output only. The Advertising Digital Identification code for this video, as defined by the American Association of Advertising Agencies, used mainly for television commercials.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "media_file.video.advertising_id_code",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "media_file.video.isci_code": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Output only. The Industry Standard Commercial Identifier code for this video, used mainly for television commercials.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "media_file.video.isci_code",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "media_file.video.youtube_video_id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Immutable. The YouTube video ID (as seen in YouTube URLs). Adding prefix \"https://www.youtube.com/watch?v=\" to this ID will get the YouTube streaming URL for this video.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "media_file.video.youtube_video_id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        }
+    },
+    "metrics": [],
+    "name": "media_file",
+    "segments": []
+}

@@ -27,6 +27,7 @@ package io.airbyte.config;
 import static org.mockito.Mockito.when;
 
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.function.Function;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -177,6 +178,30 @@ class EnvConfigsTest {
 
     when(function.apply(EnvConfigs.TRACKING_STRATEGY)).thenReturn("LOGGING");
     Assertions.assertEquals(Configs.TrackingStrategy.LOGGING, config.getTrackingStrategy());
+  }
+
+  @Test
+  void testWorkerPodTolerations() {
+    when(function.apply(EnvConfigs.WORKER_POD_TOLERATIONS)).thenReturn(null);
+    Assertions.assertEquals(config.getWorkerPodTolerations(), List.of());
+
+    when(function.apply(EnvConfigs.WORKER_POD_TOLERATIONS)).thenReturn(";;;");
+    Assertions.assertEquals(config.getWorkerPodTolerations(), List.of());
+
+    when(function.apply(EnvConfigs.WORKER_POD_TOLERATIONS)).thenReturn("key=k,value=v;");
+    Assertions.assertEquals(config.getWorkerPodTolerations(), List.of());
+
+    when(function.apply(EnvConfigs.WORKER_POD_TOLERATIONS)).thenReturn("key=airbyte-server,operator=Exists,effect=NoSchedule");
+    Assertions.assertEquals(config.getWorkerPodTolerations(), List.of(new WorkerPodToleration("airbyte-server", "NoSchedule", null, "Exists")));
+
+    when(function.apply(EnvConfigs.WORKER_POD_TOLERATIONS)).thenReturn("key=airbyte-server,operator=Equals,value=true,effect=NoSchedule");
+    Assertions.assertEquals(config.getWorkerPodTolerations(), List.of(new WorkerPodToleration("airbyte-server", "NoSchedule", "true", "Equals")));
+
+    when(function.apply(EnvConfigs.WORKER_POD_TOLERATIONS))
+        .thenReturn("key=airbyte-server,operator=Exists,effect=NoSchedule;key=airbyte-server,operator=Equals,value=true,effect=NoSchedule");
+    Assertions.assertEquals(config.getWorkerPodTolerations(), List.of(
+        new WorkerPodToleration("airbyte-server", "NoSchedule", null, "Exists"),
+        new WorkerPodToleration("airbyte-server", "NoSchedule", "true", "Equals")));
   }
 
 }

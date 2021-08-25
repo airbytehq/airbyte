@@ -1,0 +1,1050 @@
+{
+    "attributes": [
+        "conversion_action.app_id",
+        "conversion_action.attribution_model_settings.attribution_model",
+        "conversion_action.attribution_model_settings.data_driven_model_status",
+        "conversion_action.category",
+        "conversion_action.click_through_lookback_window_days",
+        "conversion_action.counting_type",
+        "conversion_action.firebase_settings.event_name",
+        "conversion_action.firebase_settings.project_id",
+        "conversion_action.id",
+        "conversion_action.include_in_conversions_metric",
+        "conversion_action.mobile_app_vendor",
+        "conversion_action.name",
+        "conversion_action.owner_customer",
+        "conversion_action.phone_call_duration_seconds",
+        "conversion_action.resource_name",
+        "conversion_action.status",
+        "conversion_action.tag_snippets",
+        "conversion_action.third_party_app_analytics_settings.event_name",
+        "conversion_action.third_party_app_analytics_settings.provider_name",
+        "conversion_action.type",
+        "conversion_action.value_settings.always_use_default_value",
+        "conversion_action.value_settings.default_currency_code",
+        "conversion_action.value_settings.default_value",
+        "conversion_action.view_through_lookback_window_days",
+        "customer.auto_tagging_enabled",
+        "customer.call_reporting_setting.call_conversion_action",
+        "customer.call_reporting_setting.call_conversion_reporting_enabled",
+        "customer.call_reporting_setting.call_reporting_enabled",
+        "customer.conversion_tracking_setting.conversion_tracking_id",
+        "customer.conversion_tracking_setting.cross_account_conversion_tracking_id",
+        "customer.currency_code",
+        "customer.descriptive_name",
+        "customer.final_url_suffix",
+        "customer.has_partners_badge",
+        "customer.id",
+        "customer.manager",
+        "customer.optimization_score",
+        "customer.optimization_score_weight",
+        "customer.pay_per_conversion_eligibility_failure_reasons",
+        "customer.remarketing_setting.google_global_site_tag",
+        "customer.resource_name",
+        "customer.test_account",
+        "customer.time_zone",
+        "customer.tracking_url_template"
+    ],
+    "description": "A conversion action.",
+    "display_name": "Conversion Action",
+    "fields": {
+        "conversion_action.app_id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "App ID for an app conversion action.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "conversion_action.app_id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "conversion_action.attribution_model_settings.attribution_model": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "The attribution model type of this conversion action.",
+                "enum_values": [
+                    "EXTERNAL",
+                    "GOOGLE_ADS_LAST_CLICK",
+                    "GOOGLE_SEARCH_ATTRIBUTION_DATA_DRIVEN",
+                    "GOOGLE_SEARCH_ATTRIBUTION_FIRST_CLICK",
+                    "GOOGLE_SEARCH_ATTRIBUTION_LINEAR",
+                    "GOOGLE_SEARCH_ATTRIBUTION_POSITION_BASED",
+                    "GOOGLE_SEARCH_ATTRIBUTION_TIME_DECAY",
+                    "UNKNOWN",
+                    "UNSPECIFIED"
+                ],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "conversion_action.attribution_model_settings.attribution_model",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": "google.ads.googleads.v8.enums.AttributionModelEnum.AttributionModel"
+            },
+            "incompatible_fields": []
+        },
+        "conversion_action.attribution_model_settings.data_driven_model_status": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "Output only. The status of the data-driven attribution model for the conversion action.",
+                "enum_values": [
+                    "AVAILABLE",
+                    "EXPIRED",
+                    "NEVER_GENERATED",
+                    "STALE",
+                    "UNKNOWN",
+                    "UNSPECIFIED"
+                ],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "conversion_action.attribution_model_settings.data_driven_model_status",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": "google.ads.googleads.v8.enums.DataDrivenModelStatusEnum.DataDrivenModelStatus"
+            },
+            "incompatible_fields": []
+        },
+        "conversion_action.category": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "The category of conversions reported for this conversion action.",
+                "enum_values": [
+                    "ADD_TO_CART",
+                    "BEGIN_CHECKOUT",
+                    "BOOK_APPOINTMENT",
+                    "CONTACT",
+                    "DEFAULT",
+                    "DOWNLOAD",
+                    "ENGAGEMENT",
+                    "GET_DIRECTIONS",
+                    "IMPORTED_LEAD",
+                    "LEAD",
+                    "OUTBOUND_CLICK",
+                    "PAGE_VIEW",
+                    "PHONE_CALL_LEAD",
+                    "PURCHASE",
+                    "REQUEST_QUOTE",
+                    "SIGNUP",
+                    "STORE_SALE",
+                    "STORE_VISIT",
+                    "SUBMIT_LEAD_FORM",
+                    "SUBSCRIBE_PAID",
+                    "UNKNOWN",
+                    "UNSPECIFIED"
+                ],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "conversion_action.category",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": "google.ads.googleads.v8.enums.ConversionActionCategoryEnum.ConversionActionCategory"
+            },
+            "incompatible_fields": []
+        },
+        "conversion_action.click_through_lookback_window_days": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "The maximum number of days that may elapse between an interaction (e.g., a click) and a conversion event.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "conversion_action.click_through_lookback_window_days",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "conversion_action.counting_type": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "How to count conversion events for the conversion action.",
+                "enum_values": [
+                    "MANY_PER_CLICK",
+                    "ONE_PER_CLICK",
+                    "UNKNOWN",
+                    "UNSPECIFIED"
+                ],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "conversion_action.counting_type",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": "google.ads.googleads.v8.enums.ConversionActionCountingTypeEnum.ConversionActionCountingType"
+            },
+            "incompatible_fields": []
+        },
+        "conversion_action.firebase_settings.event_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Output only. The event name of a Firebase conversion.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "conversion_action.firebase_settings.event_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "conversion_action.firebase_settings.project_id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Output only. The Firebase project ID of the conversion.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "conversion_action.firebase_settings.project_id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "conversion_action.id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The ID of the conversion action.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "conversion_action.id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "conversion_action.include_in_conversions_metric": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Whether this conversion action should be included in the \"conversions\" metric.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "conversion_action.include_in_conversions_metric",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "conversion_action.mobile_app_vendor": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "Output only. Mobile app vendor for an app conversion action.",
+                "enum_values": [
+                    "APPLE_APP_STORE",
+                    "GOOGLE_APP_STORE",
+                    "UNKNOWN",
+                    "UNSPECIFIED"
+                ],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "conversion_action.mobile_app_vendor",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": "google.ads.googleads.v8.enums.MobileAppVendorEnum.MobileAppVendor"
+            },
+            "incompatible_fields": []
+        },
+        "conversion_action.name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "The name of the conversion action. This field is required and should not be empty when creating new conversion actions.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "conversion_action.name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "conversion_action.owner_customer": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Output only. The resource name of the conversion action owner customer, or null if this is a system-defined conversion action.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "conversion_action.owner_customer",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "conversion_action.phone_call_duration_seconds": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "The phone call duration in seconds after which a conversion should be reported for this conversion action. The value must be between 0 and 10000, inclusive.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "conversion_action.phone_call_duration_seconds",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "conversion_action.resource_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Immutable. The resource name of the conversion action. Conversion action resource names have the form: `customers/{customer_id}/conversionActions/{conversion_action_id}`",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "conversion_action.resource_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "conversion_action.status": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "The status of this conversion action for conversion event accrual.",
+                "enum_values": [
+                    "ENABLED",
+                    "HIDDEN",
+                    "REMOVED",
+                    "UNKNOWN",
+                    "UNSPECIFIED"
+                ],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "conversion_action.status",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": "google.ads.googleads.v8.enums.ConversionActionStatusEnum.ConversionActionStatus"
+            },
+            "incompatible_fields": []
+        },
+        "conversion_action.tag_snippets": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "MESSAGE",
+                "description": "Output only. The snippets used for tracking conversions.",
+                "enum_values": [],
+                "filterable": false,
+                "is_repeated": true,
+                "metrics": [],
+                "name": "conversion_action.tag_snippets",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": "google.ads.googleads.v8.common.TagSnippet"
+            },
+            "incompatible_fields": []
+        },
+        "conversion_action.third_party_app_analytics_settings.event_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Output only. The event name of a third-party app analytics conversion.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "conversion_action.third_party_app_analytics_settings.event_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "conversion_action.third_party_app_analytics_settings.provider_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Output only. Name of the third-party app analytics provider.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "conversion_action.third_party_app_analytics_settings.provider_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "conversion_action.type": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "Immutable. The type of this conversion action.",
+                "enum_values": [
+                    "AD_CALL",
+                    "ANDROID_APP_PRE_REGISTRATION",
+                    "ANDROID_INSTALLS_ALL_OTHER_APPS",
+                    "CLICK_TO_CALL",
+                    "FIREBASE_ANDROID_CUSTOM",
+                    "FIREBASE_ANDROID_FIRST_OPEN",
+                    "FIREBASE_ANDROID_IN_APP_PURCHASE",
+                    "FIREBASE_IOS_CUSTOM",
+                    "FIREBASE_IOS_FIRST_OPEN",
+                    "FIREBASE_IOS_IN_APP_PURCHASE",
+                    "FLOODLIGHT_ACTION",
+                    "FLOODLIGHT_TRANSACTION",
+                    "GOOGLE_HOSTED",
+                    "GOOGLE_PLAY_DOWNLOAD",
+                    "GOOGLE_PLAY_IN_APP_PURCHASE",
+                    "LEAD_FORM_SUBMIT",
+                    "SALESFORCE",
+                    "SEARCH_ADS_360",
+                    "SMART_CAMPAIGN_AD_CLICKS_TO_CALL",
+                    "SMART_CAMPAIGN_MAP_CLICKS_TO_CALL",
+                    "SMART_CAMPAIGN_MAP_DIRECTIONS",
+                    "SMART_CAMPAIGN_TRACKED_CALLS",
+                    "STORE_SALES",
+                    "STORE_SALES_DIRECT_UPLOAD",
+                    "STORE_VISITS",
+                    "THIRD_PARTY_APP_ANALYTICS_ANDROID_CUSTOM",
+                    "THIRD_PARTY_APP_ANALYTICS_ANDROID_FIRST_OPEN",
+                    "THIRD_PARTY_APP_ANALYTICS_ANDROID_IN_APP_PURCHASE",
+                    "THIRD_PARTY_APP_ANALYTICS_IOS_CUSTOM",
+                    "THIRD_PARTY_APP_ANALYTICS_IOS_FIRST_OPEN",
+                    "THIRD_PARTY_APP_ANALYTICS_IOS_IN_APP_PURCHASE",
+                    "UNKNOWN",
+                    "UNSPECIFIED",
+                    "UPLOAD_CALLS",
+                    "UPLOAD_CLICKS",
+                    "WEBPAGE",
+                    "WEBSITE_CALL"
+                ],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "conversion_action.type",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": "google.ads.googleads.v8.enums.ConversionActionTypeEnum.ConversionActionType"
+            },
+            "incompatible_fields": []
+        },
+        "conversion_action.value_settings.always_use_default_value": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Controls whether the default value and default currency code are used in place of the value and currency code specified in conversion events for this conversion action.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "conversion_action.value_settings.always_use_default_value",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "conversion_action.value_settings.default_currency_code": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "The currency code to use when conversion events for this conversion action are sent with an invalid or missing currency code, or when this conversion action is configured to always use the default value.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "conversion_action.value_settings.default_currency_code",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "conversion_action.value_settings.default_value": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "DOUBLE",
+                "description": "The value to use when conversion events for this conversion action are sent with an invalid, disallowed or missing value, or when this conversion action is configured to always use the default value.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "conversion_action.value_settings.default_value",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "conversion_action.view_through_lookback_window_days": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "The maximum number of days which may elapse between an impression and a conversion without an interaction.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "conversion_action.view_through_lookback_window_days",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.auto_tagging_enabled": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Whether auto-tagging is enabled for the customer.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.auto_tagging_enabled",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.call_reporting_setting.call_conversion_action": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Customer-level call conversion action to attribute a call conversion to. If not set a default conversion action is used. Only in effect when call_conversion_reporting_enabled is set to true.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.call_reporting_setting.call_conversion_action",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.call_reporting_setting.call_conversion_reporting_enabled": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Whether to enable call conversion reporting.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.call_reporting_setting.call_conversion_reporting_enabled",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.call_reporting_setting.call_reporting_enabled": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Enable reporting of phone call events by redirecting them via Google System.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.call_reporting_setting.call_reporting_enabled",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.conversion_tracking_setting.conversion_tracking_id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The conversion tracking id used for this account. This id is automatically assigned after any conversion tracking feature is used. If the customer doesn't use conversion tracking, this is 0. This field is read-only.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.conversion_tracking_setting.conversion_tracking_id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.conversion_tracking_setting.cross_account_conversion_tracking_id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The conversion tracking id of the customer's manager. This is set when the customer is opted into cross account conversion tracking, and it overrides conversion_tracking_id. This field can only be managed through the Google Ads UI. This field is read-only.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.conversion_tracking_setting.cross_account_conversion_tracking_id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.currency_code": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Immutable. The currency in which the account operates. A subset of the currency codes from the ISO 4217 standard is supported.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.currency_code",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.descriptive_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Optional, non-unique descriptive name of the customer.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.descriptive_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.final_url_suffix": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "The URL template for appending params to the final URL",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.final_url_suffix",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.has_partners_badge": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Output only. Whether the Customer has a Partners program badge. If the Customer is not associated with the Partners program, this will be false. For more information, see <a href=\"https://support.google.com/partners/answer/3125774\">https://support.google.com/partners/answer/3125774</a>.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.has_partners_badge",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The ID of the customer.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.manager": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Output only. Whether the customer is a manager.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.manager",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.optimization_score": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "DOUBLE",
+                "description": "Output only. Optimization score of the customer. Optimization score is an estimate of how well a customer's campaigns are set to perform. It ranges from 0% (0.0) to 100% (1.0). This field is null for all manager customers, and for unscored non-manager customers. See \"About optimization score\" at <a href=\"https://support.google.com/google-ads/answer/9061546\">https://support.google.com/google-ads/answer/9061546</a>. This field is read-only.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.optimization_score",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.optimization_score_weight": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "DOUBLE",
+                "description": "Output only. Optimization score weight of the customer. Optimization score weight can be used to compare/aggregate optimization scores across multiple non-manager customers. The aggregate optimization score of a manager is computed as the sum over all of their customers of `Customer.optimization_score * Customer.optimization_score_weight`. This field is 0 for all manager customers, and for unscored non-manager customers. This field is read-only.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.optimization_score_weight",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.pay_per_conversion_eligibility_failure_reasons": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "Output only. Reasons why the customer is not eligible to use PaymentMode.CONVERSIONS. If the list is empty, the customer is eligible. This field is read-only.",
+                "enum_values": [
+                    "ANALYSIS_NOT_COMPLETE",
+                    "AVERAGE_DAILY_SPEND_TOO_HIGH",
+                    "CONVERSION_LAG_TOO_HIGH",
+                    "HAS_CAMPAIGN_WITH_SHARED_BUDGET",
+                    "HAS_UPLOAD_CLICKS_CONVERSION",
+                    "NOT_ENOUGH_CONVERSIONS",
+                    "OTHER",
+                    "UNKNOWN",
+                    "UNSPECIFIED"
+                ],
+                "filterable": true,
+                "is_repeated": true,
+                "metrics": [],
+                "name": "customer.pay_per_conversion_eligibility_failure_reasons",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": "google.ads.googleads.v8.enums.CustomerPayPerConversionEligibilityFailureReasonEnum.CustomerPayPerConversionEligibilityFailureReason"
+            },
+            "incompatible_fields": []
+        },
+        "customer.remarketing_setting.google_global_site_tag": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Output only. The Google global site tag.",
+                "enum_values": [],
+                "filterable": false,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.remarketing_setting.google_global_site_tag",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.resource_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Immutable. The resource name of the customer. Customer resource names have the form: `customers/{customer_id}`",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.resource_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.test_account": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Output only. Whether the customer is a test account.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.test_account",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.time_zone": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Immutable. The local timezone ID of the customer.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.time_zone",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.tracking_url_template": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "The URL template for constructing a tracking URL out of parameters.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.tracking_url_template",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "metrics.conversion_last_conversion_date": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "METRIC",
+                "data_type": "DATE",
+                "description": "The date of the most recent conversion for this conversion action. The date is in the customer's time zone.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "metrics.conversion_last_conversion_date",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [
+                    "conversion_action",
+                    "customer",
+                    "segments.month",
+                    "segments.quarter",
+                    "segments.week",
+                    "segments.year"
+                ],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "metrics.conversion_last_received_request_date_time": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "METRIC",
+                "data_type": "DATE",
+                "description": "The last date/time a conversion tag for this conversion action successfully fired and was seen by Google Ads. This firing event may not have been the result of an attributable conversion (e.g. because the tag was fired from a browser that did not previously click an ad from an appropriate advertiser). The date/time is in the customer's time zone.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "metrics.conversion_last_received_request_date_time",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [
+                    "conversion_action",
+                    "customer",
+                    "segments.month",
+                    "segments.quarter",
+                    "segments.week",
+                    "segments.year"
+                ],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        }
+    },
+    "metrics": [
+        "metrics.conversion_last_conversion_date",
+        "metrics.conversion_last_received_request_date_time"
+    ],
+    "name": "conversion_action",
+    "segments": []
+}

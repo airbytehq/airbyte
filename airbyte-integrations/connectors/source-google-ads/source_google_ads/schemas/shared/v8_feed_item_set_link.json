@@ -1,0 +1,1133 @@
+{
+    "attributes": [
+        "feed_item_set_link.feed_item",
+        "feed_item_set_link.feed_item_set",
+        "feed_item_set_link.resource_name",
+        "customer.auto_tagging_enabled",
+        "customer.call_reporting_setting.call_conversion_action",
+        "customer.call_reporting_setting.call_conversion_reporting_enabled",
+        "customer.call_reporting_setting.call_reporting_enabled",
+        "customer.conversion_tracking_setting.conversion_tracking_id",
+        "customer.conversion_tracking_setting.cross_account_conversion_tracking_id",
+        "customer.currency_code",
+        "customer.descriptive_name",
+        "customer.final_url_suffix",
+        "customer.has_partners_badge",
+        "customer.id",
+        "customer.manager",
+        "customer.optimization_score",
+        "customer.optimization_score_weight",
+        "customer.pay_per_conversion_eligibility_failure_reasons",
+        "customer.remarketing_setting.google_global_site_tag",
+        "customer.resource_name",
+        "customer.test_account",
+        "customer.time_zone",
+        "customer.tracking_url_template",
+        "feed.affiliate_location_feed_data.chain_ids",
+        "feed.affiliate_location_feed_data.relationship_type",
+        "feed.attributes",
+        "feed.id",
+        "feed.name",
+        "feed.origin",
+        "feed.places_location_feed_data.business_name_filter",
+        "feed.places_location_feed_data.category_filters",
+        "feed.places_location_feed_data.email_address",
+        "feed.places_location_feed_data.label_filters",
+        "feed.resource_name",
+        "feed.status",
+        "feed_item.attribute_values",
+        "feed_item.end_date_time",
+        "feed_item.feed",
+        "feed_item.geo_targeting_restriction",
+        "feed_item.id",
+        "feed_item.policy_infos",
+        "feed_item.resource_name",
+        "feed_item.start_date_time",
+        "feed_item.status",
+        "feed_item.url_custom_parameters",
+        "feed_item_set.display_name",
+        "feed_item_set.dynamic_affiliate_location_set_filter.chain_ids",
+        "feed_item_set.dynamic_location_set_filter.business_name_filter.business_name",
+        "feed_item_set.dynamic_location_set_filter.business_name_filter.filter_type",
+        "feed_item_set.dynamic_location_set_filter.labels",
+        "feed_item_set.feed",
+        "feed_item_set.feed_item_set_id",
+        "feed_item_set.resource_name",
+        "feed_item_set.status"
+    ],
+    "description": "Represents a link between a FeedItem and a FeedItemSet.",
+    "display_name": "Feed Item Set Link",
+    "fields": {
+        "customer.auto_tagging_enabled": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Whether auto-tagging is enabled for the customer.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.auto_tagging_enabled",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.call_reporting_setting.call_conversion_action": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Customer-level call conversion action to attribute a call conversion to. If not set a default conversion action is used. Only in effect when call_conversion_reporting_enabled is set to true.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.call_reporting_setting.call_conversion_action",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.call_reporting_setting.call_conversion_reporting_enabled": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Whether to enable call conversion reporting.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.call_reporting_setting.call_conversion_reporting_enabled",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.call_reporting_setting.call_reporting_enabled": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Enable reporting of phone call events by redirecting them via Google System.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.call_reporting_setting.call_reporting_enabled",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.conversion_tracking_setting.conversion_tracking_id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The conversion tracking id used for this account. This id is automatically assigned after any conversion tracking feature is used. If the customer doesn't use conversion tracking, this is 0. This field is read-only.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.conversion_tracking_setting.conversion_tracking_id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.conversion_tracking_setting.cross_account_conversion_tracking_id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The conversion tracking id of the customer's manager. This is set when the customer is opted into cross account conversion tracking, and it overrides conversion_tracking_id. This field can only be managed through the Google Ads UI. This field is read-only.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.conversion_tracking_setting.cross_account_conversion_tracking_id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.currency_code": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Immutable. The currency in which the account operates. A subset of the currency codes from the ISO 4217 standard is supported.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.currency_code",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.descriptive_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Optional, non-unique descriptive name of the customer.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.descriptive_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.final_url_suffix": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "The URL template for appending params to the final URL",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.final_url_suffix",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.has_partners_badge": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Output only. Whether the Customer has a Partners program badge. If the Customer is not associated with the Partners program, this will be false. For more information, see <a href=\"https://support.google.com/partners/answer/3125774\">https://support.google.com/partners/answer/3125774</a>.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.has_partners_badge",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The ID of the customer.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.manager": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Output only. Whether the customer is a manager.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.manager",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.optimization_score": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "DOUBLE",
+                "description": "Output only. Optimization score of the customer. Optimization score is an estimate of how well a customer's campaigns are set to perform. It ranges from 0% (0.0) to 100% (1.0). This field is null for all manager customers, and for unscored non-manager customers. See \"About optimization score\" at <a href=\"https://support.google.com/google-ads/answer/9061546\">https://support.google.com/google-ads/answer/9061546</a>. This field is read-only.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.optimization_score",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.optimization_score_weight": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "DOUBLE",
+                "description": "Output only. Optimization score weight of the customer. Optimization score weight can be used to compare/aggregate optimization scores across multiple non-manager customers. The aggregate optimization score of a manager is computed as the sum over all of their customers of `Customer.optimization_score * Customer.optimization_score_weight`. This field is 0 for all manager customers, and for unscored non-manager customers. This field is read-only.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.optimization_score_weight",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.pay_per_conversion_eligibility_failure_reasons": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "Output only. Reasons why the customer is not eligible to use PaymentMode.CONVERSIONS. If the list is empty, the customer is eligible. This field is read-only.",
+                "enum_values": [
+                    "ANALYSIS_NOT_COMPLETE",
+                    "AVERAGE_DAILY_SPEND_TOO_HIGH",
+                    "CONVERSION_LAG_TOO_HIGH",
+                    "HAS_CAMPAIGN_WITH_SHARED_BUDGET",
+                    "HAS_UPLOAD_CLICKS_CONVERSION",
+                    "NOT_ENOUGH_CONVERSIONS",
+                    "OTHER",
+                    "UNKNOWN",
+                    "UNSPECIFIED"
+                ],
+                "filterable": true,
+                "is_repeated": true,
+                "metrics": [],
+                "name": "customer.pay_per_conversion_eligibility_failure_reasons",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": "google.ads.googleads.v8.enums.CustomerPayPerConversionEligibilityFailureReasonEnum.CustomerPayPerConversionEligibilityFailureReason"
+            },
+            "incompatible_fields": []
+        },
+        "customer.remarketing_setting.google_global_site_tag": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Output only. The Google global site tag.",
+                "enum_values": [],
+                "filterable": false,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.remarketing_setting.google_global_site_tag",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.resource_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Immutable. The resource name of the customer. Customer resource names have the form: `customers/{customer_id}`",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.resource_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.test_account": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "BOOLEAN",
+                "description": "Output only. Whether the customer is a test account.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.test_account",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.time_zone": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Immutable. The local timezone ID of the customer.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.time_zone",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "customer.tracking_url_template": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "The URL template for constructing a tracking URL out of parameters.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "customer.tracking_url_template",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "feed.affiliate_location_feed_data.chain_ids": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "The list of chains that the affiliate location feed will sync the locations from.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": true,
+                "metrics": [],
+                "name": "feed.affiliate_location_feed_data.chain_ids",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "feed.affiliate_location_feed_data.relationship_type": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "The relationship the chains have with the advertiser.",
+                "enum_values": [
+                    "GENERAL_RETAILER",
+                    "UNKNOWN",
+                    "UNSPECIFIED"
+                ],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "feed.affiliate_location_feed_data.relationship_type",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": "google.ads.googleads.v8.enums.AffiliateLocationFeedRelationshipTypeEnum.AffiliateLocationFeedRelationshipType"
+            },
+            "incompatible_fields": []
+        },
+        "feed.attributes": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "MESSAGE",
+                "description": "The Feed's attributes. Required on CREATE, unless system_feed_generation_data is provided, in which case Google Ads will update the feed with the correct attributes. Disallowed on UPDATE. Use attribute_operations to add new attributes.",
+                "enum_values": [],
+                "filterable": false,
+                "is_repeated": true,
+                "metrics": [],
+                "name": "feed.attributes",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": "google.ads.googleads.v8.resources.FeedAttribute"
+            },
+            "incompatible_fields": []
+        },
+        "feed.id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The ID of the feed. This field is read-only.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "feed.id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "feed.name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Immutable. Name of the feed. Required.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "feed.name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "feed.origin": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "Immutable. Specifies who manages the FeedAttributes for the Feed.",
+                "enum_values": [
+                    "GOOGLE",
+                    "UNKNOWN",
+                    "UNSPECIFIED",
+                    "USER"
+                ],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "feed.origin",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": "google.ads.googleads.v8.enums.FeedOriginEnum.FeedOrigin"
+            },
+            "incompatible_fields": []
+        },
+        "feed.places_location_feed_data.business_name_filter": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Used to filter Google My Business listings by business name. If business_name_filter is set, only listings with a matching business name are candidates to be sync'd into FeedItems.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "feed.places_location_feed_data.business_name_filter",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "feed.places_location_feed_data.category_filters": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Used to filter Google My Business listings by categories. If entries exist in category_filters, only listings that belong to any of the categories are candidates to be sync'd into FeedItems. If no entries exist in category_filters, then all listings are candidates for syncing.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": true,
+                "metrics": [],
+                "name": "feed.places_location_feed_data.category_filters",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "feed.places_location_feed_data.email_address": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Email address of a Google My Business account or email address of a manager of the Google My Business account. Required.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "feed.places_location_feed_data.email_address",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "feed.places_location_feed_data.label_filters": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Used to filter Google My Business listings by labels. If entries exist in label_filters, only listings that has any of the labels set are candidates to be synchronized into FeedItems. If no entries exist in label_filters, then all listings are candidates for syncing.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": true,
+                "metrics": [],
+                "name": "feed.places_location_feed_data.label_filters",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "feed.resource_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Immutable. The resource name of the feed. Feed resource names have the form: `customers/{customer_id}/feeds/{feed_id}`",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "feed.resource_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "feed.status": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "Output only. Status of the feed. This field is read-only.",
+                "enum_values": [
+                    "ENABLED",
+                    "REMOVED",
+                    "UNKNOWN",
+                    "UNSPECIFIED"
+                ],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "feed.status",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": "google.ads.googleads.v8.enums.FeedStatusEnum.FeedStatus"
+            },
+            "incompatible_fields": []
+        },
+        "feed_item.attribute_values": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "MESSAGE",
+                "description": "The feed item's attribute values.",
+                "enum_values": [],
+                "filterable": false,
+                "is_repeated": true,
+                "metrics": [],
+                "name": "feed_item.attribute_values",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": "google.ads.googleads.v8.resources.FeedItemAttributeValue"
+            },
+            "incompatible_fields": []
+        },
+        "feed_item.end_date_time": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "DATE",
+                "description": "End time in which this feed item is no longer effective and will stop serving. The time is in the customer's time zone. The format is \"YYYY-MM-DD HH:MM:SS\". Examples: \"2018-03-05 09:15:00\" or \"2018-02-01 14:34:30\"",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "feed_item.end_date_time",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "feed_item.feed": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Immutable. The feed to which this feed item belongs.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "feed_item.feed",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "feed_item.geo_targeting_restriction": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "Geo targeting restriction specifies the type of location that can be used for targeting.",
+                "enum_values": [
+                    "LOCATION_OF_PRESENCE",
+                    "UNKNOWN",
+                    "UNSPECIFIED"
+                ],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "feed_item.geo_targeting_restriction",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": "google.ads.googleads.v8.enums.GeoTargetingRestrictionEnum.GeoTargetingRestriction"
+            },
+            "incompatible_fields": []
+        },
+        "feed_item.id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. The ID of this feed item.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "feed_item.id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "feed_item.policy_infos": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "MESSAGE",
+                "description": "Output only. List of info about a feed item's validation and approval state for active feed mappings. There will be an entry in the list for each type of feed mapping associated with the feed, e.g. a feed with a sitelink and a call feed mapping would cause every feed item associated with that feed to have an entry in this list for both sitelink and call. This field is read-only.",
+                "enum_values": [],
+                "filterable": false,
+                "is_repeated": true,
+                "metrics": [],
+                "name": "feed_item.policy_infos",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": "google.ads.googleads.v8.resources.FeedItemPlaceholderPolicyInfo"
+            },
+            "incompatible_fields": []
+        },
+        "feed_item.resource_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Immutable. The resource name of the feed item. Feed item resource names have the form: `customers/{customer_id}/feedItems/{feed_id}~{feed_item_id}`",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "feed_item.resource_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "feed_item.start_date_time": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "DATE",
+                "description": "Start time in which this feed item is effective and can begin serving. The time is in the customer's time zone. The format is \"YYYY-MM-DD HH:MM:SS\". Examples: \"2018-03-05 09:15:00\" or \"2018-02-01 14:34:30\"",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "feed_item.start_date_time",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "feed_item.status": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "Output only. Status of the feed item. This field is read-only.",
+                "enum_values": [
+                    "ENABLED",
+                    "REMOVED",
+                    "UNKNOWN",
+                    "UNSPECIFIED"
+                ],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "feed_item.status",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": "google.ads.googleads.v8.enums.FeedItemStatusEnum.FeedItemStatus"
+            },
+            "incompatible_fields": []
+        },
+        "feed_item.url_custom_parameters": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "MESSAGE",
+                "description": "The list of mappings used to substitute custom parameter tags in a `tracking_url_template`, `final_urls`, or `mobile_final_urls`.",
+                "enum_values": [],
+                "filterable": false,
+                "is_repeated": true,
+                "metrics": [],
+                "name": "feed_item.url_custom_parameters",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": "google.ads.googleads.v8.common.CustomParameter"
+            },
+            "incompatible_fields": []
+        },
+        "feed_item_set.display_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Name of the set. Must be unique within the account.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "feed_item_set.display_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "feed_item_set.dynamic_affiliate_location_set_filter.chain_ids": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Used to filter affiliate locations by chain ids. Only affiliate locations that belong to the specified chain(s) will be added to the FeedItemSet.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": true,
+                "metrics": [],
+                "name": "feed_item_set.dynamic_affiliate_location_set_filter.chain_ids",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "feed_item_set.dynamic_location_set_filter.business_name_filter.business_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "Business name string to use for filtering.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "feed_item_set.dynamic_location_set_filter.business_name_filter.business_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "feed_item_set.dynamic_location_set_filter.business_name_filter.filter_type": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "The type of string matching to use when filtering with business_name.",
+                "enum_values": [
+                    "EXACT",
+                    "UNKNOWN",
+                    "UNSPECIFIED"
+                ],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "feed_item_set.dynamic_location_set_filter.business_name_filter.filter_type",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": "google.ads.googleads.v8.enums.FeedItemSetStringFilterTypeEnum.FeedItemSetStringFilterType"
+            },
+            "incompatible_fields": []
+        },
+        "feed_item_set.dynamic_location_set_filter.labels": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "STRING",
+                "description": "If multiple labels are set, then only feeditems marked with all the labels will be added to the FeedItemSet.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": true,
+                "metrics": [],
+                "name": "feed_item_set.dynamic_location_set_filter.labels",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "feed_item_set.feed": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Immutable. The resource name of the feed containing the feed items in the set. Immutable. Required.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "feed_item_set.feed",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "feed_item_set.feed_item_set_id": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "INT64",
+                "description": "Output only. ID of the set.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "feed_item_set.feed_item_set_id",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "feed_item_set.resource_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Immutable. The resource name of the feed item set. Feed item set resource names have the form: `customers/{customer_id}/feedItemSets/{feed_id}~{feed_item_set_id}`",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "feed_item_set.resource_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "feed_item_set.status": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "ENUM",
+                "description": "Output only. Status of the feed item set. This field is read-only.",
+                "enum_values": [
+                    "ENABLED",
+                    "REMOVED",
+                    "UNKNOWN",
+                    "UNSPECIFIED"
+                ],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "feed_item_set.status",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": true,
+                "type_url": "google.ads.googleads.v8.enums.FeedItemSetStatusEnum.FeedItemSetStatus"
+            },
+            "incompatible_fields": []
+        },
+        "feed_item_set_link.feed_item": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Immutable. The linked FeedItem.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "feed_item_set_link.feed_item",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "feed_item_set_link.feed_item_set": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Immutable. The linked FeedItemSet.",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "feed_item_set_link.feed_item_set",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        },
+        "feed_item_set_link.resource_name": {
+            "field_details": {
+                "attribute_resources": [],
+                "category": "ATTRIBUTE",
+                "data_type": "RESOURCE_NAME",
+                "description": "Immutable. The resource name of the feed item set link. Feed item set link resource names have the form: `customers/{customer_id}/feedItemSetLinks/{feed_id}~{feed_item_set_id}~{feed_item_id}`",
+                "enum_values": [],
+                "filterable": true,
+                "is_repeated": false,
+                "metrics": [],
+                "name": "feed_item_set_link.resource_name",
+                "segments": [],
+                "selectable": true,
+                "selectable_with": [],
+                "sortable": false,
+                "type_url": ""
+            },
+            "incompatible_fields": []
+        }
+    },
+    "metrics": [],
+    "name": "feed_item_set_link",
+    "segments": []
+}
