@@ -30,6 +30,7 @@ import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.WorkerDestinationConfig;
+import io.airbyte.config.WorkerPodToleration;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.scheduler.models.JobRunConfig;
@@ -37,6 +38,7 @@ import io.airbyte.workers.protocols.airbyte.HeartbeatMonitor;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import org.slf4j.Logger;
@@ -45,6 +47,7 @@ import org.slf4j.LoggerFactory;
 // TODO:(Issue-4824): Figure out how to log Docker process information.
 public class WorkerUtils {
 
+  public static final List<WorkerPodToleration> DEFAULT_WORKER_POD_TOLERATIONS = initWorkerPodTolerations();
   public static final ResourceRequirements DEFAULT_RESOURCE_REQUIREMENTS = initResourceRequirements();
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkerUtils.class);
@@ -223,6 +226,11 @@ public class WorkerUtils {
     return workspaceRoot
         .resolve(String.valueOf(jobId))
         .resolve(String.valueOf(attemptId));
+  }
+
+  private static List<WorkerPodToleration> initWorkerPodTolerations() {
+    final EnvConfigs configs = new EnvConfigs();
+    return configs.getWorkerPodTolerations();
   }
 
   private static ResourceRequirements initResourceRequirements() {

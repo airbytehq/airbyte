@@ -10,7 +10,7 @@ It depends on your source and destination. Check our setup guides to see the tas
 
 ## **What data sources does Airbyte offer connectors for?**
 
-We already offer 50+ connectors, and will focus all our effort in ramping up the number of connectors and strengthening them. View the [full list here](../project-overview/changelog/connectors.md). If you don’t see a source you need, you can file a [connector request here](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=area%2Fintegration%2C+new-integration&template=new-integration-request.md&title=).
+We already offer 100+ connectors, and will focus all our effort in ramping up the number of connectors and strengthening them. View the [full list here](../project-overview/changelog/connectors.md). If you don’t see a source you need, you can file a [connector request here](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=area%2Fintegration%2C+new-integration&template=new-integration-request.md&title=).
 
 ## **Where can I see my data in Airbyte?**
 
