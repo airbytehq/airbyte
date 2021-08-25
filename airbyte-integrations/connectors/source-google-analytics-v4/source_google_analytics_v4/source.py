@@ -88,6 +88,8 @@ class GoogleAnalyticsV4TypesList(HttpStream):
                 metrics[column_name] = column_data_type
             elif column_type == "DIMENSION":
                 dimensions[column_name] = column_data_type
+            else:
+                raise Exception(f"Unsupported column type {column_type}.")
 
         return dimensions, metrics
 
@@ -95,7 +97,11 @@ class GoogleAnalyticsV4TypesList(HttpStream):
 class GoogleAnalyticsV4Stream(HttpStream, ABC):
     primary_key = None
     http_method = "POST"
+
+    # The Analytics Core Reporting API returns a maximum of 100,000 rows per request.
+    # https://developers.google.com/analytics/devguides/reporting/core/v4/rest/v4/reports/batchGet?hl=en
     page_size = 100000
+
     url_base = "https://analyticsreporting.googleapis.com/v4/"
     report_field = "reports"
     data_fields = ["data", "rows"]
@@ -134,7 +140,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             return {"pageToken": next_page}
 
     def request_body_json(
-        self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+            self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> Optional[Mapping]:
 
         metrics = [{"expression": metric} for metric in self.metrics]
@@ -174,7 +180,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         }
 
         # Add the dimensions to the schema
-        for dimension in self.report["dimensions"]:
+        for dimension in self.dimensions:
             data_type = self.lookup_data_type("dimension", dimension)
             dimension = dimension.replace("ga:", "ga_")
 
@@ -183,7 +189,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             }
 
         # Add the metrics to the schema
-        for metric in self.report["metrics"]:
+        for metric in self.metrics:
             data_type = self.lookup_data_type("metric", metric)
             metric = metric.replace("ga:", "ga_")
 
@@ -253,7 +259,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
                 # Custom Google Analytics Metrics {ga:goalXXStarts, ga:metricXX, ... }
                 # We always treat them as as strings as we can not be sure of their data type
                 if attribute.startswith("ga:goal") and attribute.endswith(
-                    ("Starts", "Completions", "Value", "ConversionRate", "Abandons", "AbandonRate")
+                        ("Starts", "Completions", "Value", "ConversionRate", "Abandons", "AbandonRate")
                 ):
                     return "string"
                 elif attribute.startswith("ga:searchGoal") and attribute.endswith("ConversionRate"):
@@ -391,11 +397,15 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
 
 
 class GoogleAnalyticsV4IncrementalObjectsBase(GoogleAnalyticsV4Stream):
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    cursor_field = "ga_date"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
+    Mapping[str, Any]:
         """
         Update the state value, default CDK method.
         """
-        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""),
+                                       current_stream_state.get(self.cursor_field, ""))}
 
 
 class GoogleAnalyticsOauth2Authenticator(Oauth2Authenticator):
@@ -423,7 +433,8 @@ class GoogleAnalyticsOauth2Authenticator(Oauth2Authenticator):
         """
         response_json = None
         try:
-            response = requests.request(method="POST", url=self.token_refresh_endpoint, params=self.get_refresh_request_params())
+            response = requests.request(method="POST", url=self.token_refresh_endpoint,
+                                        params=self.get_refresh_request_params())
 
             response_json = response.json()
             response.raise_for_status()
@@ -490,7 +501,8 @@ class SourceGoogleAnalyticsV4(AbstractSource):
         authenticator = GoogleAnalyticsOauth2Authenticator(config)
 
         config["authenticator"] = authenticator
-        config["ga_streams"] = json.loads(pkgutil.get_data("source_google_analytics_v4", "defaults/default_reports.json")) + json.loads(
+        config["ga_streams"] = json.loads(
+            pkgutil.get_data("source_google_analytics_v4", "defaults/default_reports.json")) + json.loads(
             config["custom_reports"]
         )
 
@@ -501,13 +513,11 @@ class SourceGoogleAnalyticsV4(AbstractSource):
             # construct GAReadStreams sub-class for each stream
             stream_name = stream["name"]
             stream_bases = (GoogleAnalyticsV4Stream,)
-            stream_attributes = {"report": stream}
 
             if "ga:date" in stream["dimensions"]:
                 stream_bases = (GoogleAnalyticsV4IncrementalObjectsBase,)
-                stream_attributes["cursor_field"] = "ga_date"
 
-            stream_class = type(stream_name, stream_bases, stream_attributes)
+            stream_class = type(stream_name, stream_bases, {})
 
             # instantiate a stream with config
             stream_instance = stream_class(config)
