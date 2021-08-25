@@ -31,7 +31,7 @@ import pytest
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.exceptions import RequestBodyException, UserDefinedBackoffException
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 
 
 class StubBasicReadHttpStream(HttpStream):
@@ -171,7 +171,7 @@ def test_4xx_error_codes_http_stream(mocker, http_code):
 class AutoFailFalseHttpStream(StubBasicReadHttpStream):
     raise_on_http_errors = False
     max_retries = 3
-    retry_factor = 1
+    retry_factor = 0.01
 
 
 def test_raise_on_http_errors_off_429(mocker):
@@ -180,18 +180,30 @@ def test_raise_on_http_errors_off_429(mocker):
     req.status_code = 429
 
     mocker.patch.object(requests.Session, "send", return_value=req)
-    response = stream._send_request(req, {})
-    assert response.status_code == 429
+    with pytest.raises(DefaultBackoffException):
+        list(stream.read_records(SyncMode.full_refresh))
 
 
-def test_raise_on_http_errors_off_501(mocker):
+@pytest.mark.parametrize("status_code", [500, 501, 503, 504])
+def test_raise_on_http_errors_off_5xx(mocker, status_code):
     stream = AutoFailFalseHttpStream()
     req = requests.Response()
-    req.status_code = 501
+    req.status_code = status_code
+
+    mocker.patch.object(requests.Session, "send", return_value=req)
+    with pytest.raises(DefaultBackoffException):
+        list(stream.read_records(SyncMode.full_refresh))
+
+
+@pytest.mark.parametrize("status_code", [400, 401, 402, 403, 416])
+def test_raise_on_http_errors_off_non_retryable_4xx(mocker, status_code):
+    stream = AutoFailFalseHttpStream()
+    req = requests.Response()
+    req.status_code = status_code
 
     mocker.patch.object(requests.Session, "send", return_value=req)
     response = stream._send_request(req, {})
-    assert response.status_code == 501
+    assert response.status_code == status_code
 
 
 def test_raise_on_http_errors_off_timeout(requests_mock):

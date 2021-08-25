@@ -248,9 +248,6 @@ class HttpStream(Stream, ABC):
         Unexpected persistent exceptions are not handled and will cause the sync to fail.
         """
         response: requests.Response = self._session.send(request, **request_kwargs)
-        if not self.raise_on_http_errors:
-            # ignore HTTP status code errors and retry logic
-            return response
 
         if self.should_retry(response):
             custom_backoff_time = self.backoff_time(response)
@@ -258,7 +255,7 @@ class HttpStream(Stream, ABC):
                 raise UserDefinedBackoffException(backoff=custom_backoff_time, request=request, response=response)
             else:
                 raise DefaultBackoffException(request=request, response=response)
-        else:
+        elif self.raise_on_http_errors:
             # Raise any HTTP exceptions that happened in case there were unexpected ones
             response.raise_for_status()
 
