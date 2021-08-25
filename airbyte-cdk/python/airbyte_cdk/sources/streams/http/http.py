@@ -64,6 +64,27 @@ class HttpStream(Stream, ABC):
         return "GET"
 
     @property
+    def raise_on_http_errors(self) -> bool:
+        """
+        Override if needed. If set to False, allows opting-out of raising HTTP code exception.
+        """
+        return True
+
+    @property
+    def max_retries(self) -> int:
+        """
+        Override if needed. Specifies maximum amount of retries for backoff policy.
+        """
+        return 5
+
+    @property
+    def retry_factor(self) -> int:
+        """
+        Override if needed. Specifies factor for backoff policy.
+        """
+        return 5
+
+    @property
     def authenticator(self) -> HttpAuthenticator:
         return self._authenticator
 
@@ -207,13 +228,10 @@ class HttpStream(Stream, ABC):
 
         return self._session.prepare_request(requests.Request(**args))
 
-    # TODO allow configuring these parameters. If we can get this into the requests library, then we can do it without the ugly exception hacks
-    #  see https://github.com/litl/backoff/pull/122
-    @default_backoff_handler(max_tries=5, factor=5)
-    @user_defined_backoff_handler(max_tries=5)
-    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
+    def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
         """
         Wraps sending the request in rate limit and error handlers.
+        Please note that error handling for HTTP status codes will be ignored if raise_on_http_errors is set to False
 
         This method handles two types of exceptions:
             1. Expected transient exceptions e.g: 429 status code.
@@ -230,18 +248,26 @@ class HttpStream(Stream, ABC):
         Unexpected persistent exceptions are not handled and will cause the sync to fail.
         """
         response: requests.Response = self._session.send(request, **request_kwargs)
+
         if self.should_retry(response):
             custom_backoff_time = self.backoff_time(response)
             if custom_backoff_time:
                 raise UserDefinedBackoffException(backoff=custom_backoff_time, request=request, response=response)
             else:
                 raise DefaultBackoffException(request=request, response=response)
-        else:
+        elif self.raise_on_http_errors:
             # Raise any HTTP exceptions that happened in case there were unexpected ones
-            # TODO handle ignoring errors
             response.raise_for_status()
 
         return response
+
+    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
+        """
+        Creates backoff wrappers which are responsible for retry logic
+        """
+        backoff_handler = default_backoff_handler(max_tries=self.max_retries, factor=self.retry_factor)
+        user_backoff_handler = user_defined_backoff_handler(max_tries=self.max_retries)(backoff_handler)
+        return user_backoff_handler(self._send)(request, request_kwargs)
 
     def read_records(
         self,
