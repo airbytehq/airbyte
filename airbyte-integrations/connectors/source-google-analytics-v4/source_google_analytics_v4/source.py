@@ -140,7 +140,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             return {"pageToken": next_page}
 
     def request_body_json(
-            self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> Optional[Mapping]:
 
         metrics = [{"expression": metric} for metric in self.metrics]
@@ -173,9 +173,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             "type": ["null", "object"],
             "additionalProperties": False,
             "properties": {
-                "view_id": {
-                    "type": ["string"]
-                },
+                "view_id": {"type": ["string"]},
             },
         }
 
@@ -227,8 +225,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
 
         while start_date <= end_date:
             end_date_slice = start_date.add(days=self.window_in_days)
-            date_slices.append(
-                {"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date_slice)})
+            date_slices.append({"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date_slice)})
             # add 1 day for start next slice from next day and not duplicate data from previous slice end date.
             start_date = end_date_slice.add(days=1)
 
@@ -259,7 +256,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
                 # Custom Google Analytics Metrics {ga:goalXXStarts, ga:metricXX, ... }
                 # We always treat them as as strings as we can not be sure of their data type
                 if attribute.startswith("ga:goal") and attribute.endswith(
-                        ("Starts", "Completions", "Value", "ConversionRate", "Abandons", "AbandonRate")
+                    ("Starts", "Completions", "Value", "ConversionRate", "Abandons", "AbandonRate")
                 ):
                     return "string"
                 elif attribute.startswith("ga:searchGoal") and attribute.endswith("ConversionRate"):
@@ -399,13 +396,11 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
 class GoogleAnalyticsV4IncrementalObjectsBase(GoogleAnalyticsV4Stream):
     cursor_field = "ga_date"
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
-    Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Update the state value, default CDK method.
         """
-        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""),
-                                       current_stream_state.get(self.cursor_field, ""))}
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
 
 class GoogleAnalyticsOauth2Authenticator(Oauth2Authenticator):
@@ -433,8 +428,7 @@ class GoogleAnalyticsOauth2Authenticator(Oauth2Authenticator):
         """
         response_json = None
         try:
-            response = requests.request(method="POST", url=self.token_refresh_endpoint,
-                                        params=self.get_refresh_request_params())
+            response = requests.request(method="POST", url=self.token_refresh_endpoint, params=self.get_refresh_request_params())
 
             response_json = response.json()
             response.raise_for_status()
@@ -492,7 +486,7 @@ class SourceGoogleAnalyticsV4(AbstractSource):
             return True, None
         except (requests.exceptions.RequestException, ValueError) as e:
             if e == ValueError:
-                logger.error(f"Invalid custom reports json structure.")
+                logger.error("Invalid custom reports json structure.")
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -501,8 +495,7 @@ class SourceGoogleAnalyticsV4(AbstractSource):
         authenticator = GoogleAnalyticsOauth2Authenticator(config)
 
         config["authenticator"] = authenticator
-        config["ga_streams"] = json.loads(
-            pkgutil.get_data("source_google_analytics_v4", "defaults/default_reports.json")) + json.loads(
+        config["ga_streams"] = json.loads(pkgutil.get_data("source_google_analytics_v4", "defaults/default_reports.json")) + json.loads(
             config["custom_reports"]
         )
 

@@ -1,5 +1,5 @@
-{"items":
-[
+{
+  "items": [
     {
       "id": "ga:users",
       "kind": "analytics#column",
@@ -54,5 +54,5 @@
         "addedInApiVersion": "3"
       }
     }
-]
+  ]
 }
