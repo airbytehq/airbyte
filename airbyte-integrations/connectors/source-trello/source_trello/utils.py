@@ -51,8 +51,10 @@ class TrelloRequestRateLimits:
 
         # Define standard timings in seconds
         if rate_limits_headers is None:
-            rate_limits_headers = [("x-rate-limit-api-key-remaining", "x-rate-limit-api-key-max"),
-                                   ("x-rate-limit-api-token-remaining", "x-rate-limit-api-token-max")]
+            rate_limits_headers = [
+                ("x-rate-limit-api-key-remaining", "x-rate-limit-api-key-max"),
+                ("x-rate-limit-api-token-remaining", "x-rate-limit-api-token-max"),
+            ]
 
         sleep_on_high_load: float = 9.0
 
@@ -60,15 +62,20 @@ class TrelloRequestRateLimits:
             @wraps(func)
             def wrapper_balance_rate_limit(*args, **kwargs):
                 sleep_time = 0
-                free_load = float('inf')
+                free_load = float("inf")
                 # find the Response inside args list
                 for arg in args:
                     response = arg if type(arg) is requests.models.Response else None
 
                 # Get the rate_limits from response
-                rate_limits = [
-                    (response.headers.get(rate_remaining_limit_header), response.headers.get(rate_max_limit_header))
-                    for rate_remaining_limit_header, rate_max_limit_header in rate_limits_headers] if response else None
+                rate_limits = (
+                    [
+                        (response.headers.get(rate_remaining_limit_header), response.headers.get(rate_max_limit_header))
+                        for rate_remaining_limit_header, rate_max_limit_header in rate_limits_headers
+                    ]
+                    if response
+                    else None
+                )
 
                 # define current load from rate_limits
                 if rate_limits:
