@@ -94,4 +94,4 @@ spec:
           resources:
             limits:
               cpu: 1
-              memory: 512Mi
+              memory: 128Mi
