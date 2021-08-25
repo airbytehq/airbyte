@@ -369,7 +369,7 @@
         "amount": {
           "type": [
             "null",
-            "number"
+            "string"
           ]
         },
         "currencyCode": {
@@ -389,7 +389,7 @@
         "amount": {
           "type": [
             "null",
-            "number"
+            "string"
           ]
         },
         "currencyCode": {
