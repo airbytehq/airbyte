@@ -42,6 +42,8 @@ run {
     environment "DATABASE_URL", "jdbc:postgresql://localhost:5433/${env.DATABASE_DB}"
     environment "CONFIG_DATABASE_URL", "jdbc:postgresql://localhost:5433/${env.CONFIG_DATABASE_DB}"
 
+    environment "RUN_DATABASE_MIGRATION_ON_STARTUP", env.RUN_DATABASE_MIGRATION_ON_STARTUP
+
     environment "WORKSPACE_ROOT", env.WORKSPACE_ROOT
     environment "WORKSPACE_DOCKER_MOUNT", env.WORKSPACE_DOCKER_MOUNT
     environment "LOCAL_DOCKER_MOUNT", env.LOCAL_DOCKER_MOUNT

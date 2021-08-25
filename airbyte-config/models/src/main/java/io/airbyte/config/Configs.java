@@ -58,6 +58,8 @@ public interface Configs {
 
   String getConfigDatabaseUrl();
 
+  boolean runDatabaseMigrationOnStartup();
+
   int getMaxSyncJobAttempts();
 
   int getMaxSyncTimeoutDays();
