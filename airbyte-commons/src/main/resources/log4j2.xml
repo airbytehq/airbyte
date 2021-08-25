@@ -3,10 +3,10 @@
     <Properties>
 
         <!-- The following patterns mask the string apikey=<string> to apikey=***** to prevent secrets leaking. -->
-        <Property name="default-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %highlight{%p} %C{1.}(%M):%L - %X - %replace{%m}{apikey=\w*}{apikey=*****}%n</Property>
-        <Property name="docker-worker-file-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %p (%X{job_root}) %C{1}(%M):%L - %replace{%m}{apikey=\w*}{apikey=*****}%n</Property>
+        <Property name="default-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %highlight{%p} %C{1.}(%M):%L - %X - %replace{%m}{apikey=[\w\-]*}{apikey=*****}%n</Property>
+        <Property name="docker-worker-file-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %p (%X{job_root}) %C{1}(%M):%L - %replace{%m}{apikey=[\w\-]*}{apikey=*****}%n</Property>
         <!-- Remove paths from logs on Cloud as users aren't able to access file paths and these end up being noise. -->
-        <Property name="cloud-worker-file-pattern">%d{yyyy-MM-dd HH:mm:ss} %-5p %replace{%m}{apikey=\w*}{apikey=*****}%n</Property>
+        <Property name="cloud-worker-file-pattern">%d{yyyy-MM-dd HH:mm:ss} %-5p %replace{%m}{apikey=[\w\-]*}{apikey=*****}%n</Property>
 
         <!-- Always log INFO by default. -->
         <Property name="log-level">$${env:LOG_LEVEL:-INFO}</Property>

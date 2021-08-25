@@ -250,13 +250,12 @@ public class KubePodProcess extends Process {
     if (tolerations == null || tolerations.isEmpty()) {
       return null;
     }
-    return tolerations.stream().map(workerPodToleration ->
-            new TolerationBuilder()
-                .withKey(workerPodToleration.getKey())
-                .withEffect(workerPodToleration.getEffect())
-                .withOperator(workerPodToleration.getOperator())
-                .withValue(workerPodToleration.getValue())
-                .build())
+    return tolerations.stream().map(workerPodToleration -> new TolerationBuilder()
+        .withKey(workerPodToleration.getKey())
+        .withEffect(workerPodToleration.getEffect())
+        .withOperator(workerPodToleration.getOperator())
+        .withValue(workerPodToleration.getValue())
+        .build())
         .toArray(Toleration[]::new);
   }
 
