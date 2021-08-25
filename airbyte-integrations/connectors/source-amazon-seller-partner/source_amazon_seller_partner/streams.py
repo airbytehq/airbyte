@@ -22,8 +22,10 @@
 # SOFTWARE.
 #
 
+import base64
 import json as json_lib
 import time
+import zlib
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
@@ -33,6 +35,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.exceptions import RequestBodyException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
+from Crypto.Cipher import AES
 from source_amazon_seller_partner.auth import AWSSignature
 
 REPORTS_API_VERSION = "2020-09-04"
@@ -151,11 +154,14 @@ class ReportsAmazonSPStream(AmazonSPStream, ABC):
         - create a new report;
         - wait until it's processed;
         - retrieve the report;
-        - retry the retrieval if the report is still not fully processed.
+        - retry the retrieval if the report is still not fully processed;
+        - retrieve the report document (if report processing status is done);
+        - decrypt the report document (if report processing status is done);
+        - yield the report document (if report processing status is done) or the report json (if report processing status is **not** done)
     """
 
-    primary_key = "reportId"
-    path_prefix = f"/reports/{REPORTS_API_VERSION}/reports"
+    primary_key = None
+    path_prefix = f"/reports/{REPORTS_API_VERSION}"
     wait_seconds = 30
 
     def should_retry(self, response: requests.Response) -> bool:
@@ -172,7 +178,7 @@ class ReportsAmazonSPStream(AmazonSPStream, ABC):
         report_data = {"reportType": self.name, "marketplaceIds": self.marketplace_ids}
         create_report_request = self._create_prepared_request(
             method="POST",
-            path=self.path_prefix,
+            path=f"{self.path_prefix}/reports",
             headers=dict(request_headers, **self.authenticator.get_auth_header()),
             data=json_lib.dumps(report_data),
         )
@@ -182,19 +188,104 @@ class ReportsAmazonSPStream(AmazonSPStream, ABC):
 
         return report_response.json()[self.data_field]
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        return self._create_report(current_stream_state)
-
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        return [self._create_report(stream_state)]
+        """
+        Get the report document id or report payload if retrieval of the document id is not possible
+        """
+        report_id = self._create_report(stream_state)["reportId"]
+        request_headers = self.request_headers(stream_state=stream_state)
+        retrieve_report_request = self._create_prepared_request(
+            path=f"{self.path_prefix}/reports/{report_id}",
+            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+        )
+        retrieve_report_response = self._send_request(retrieve_report_request, {})
+        report_payload = retrieve_report_response.json().get(self.data_field, {})
+        is_done = report_payload.get("processingStatus") == "DONE"
+        if is_done:
+            return [{"document_id": report_payload["reportDocumentId"]}]
+        return [report_payload]
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"{self.path_prefix}/{stream_slice[self.primary_key]}"
+        """
+        Code execution should not follow there if there are no `document_id` in the stream slice.
+        The necessary override is provided in the `read_records` method.
+        """
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        yield response.json().get(self.data_field, {})
+        return f"{self.path_prefix}/documents/{stream_slice['document_id']}"
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        payload = response.json().get(self.data_field, {})
+        if stream_slice.get("document_id"):
+            document = self.decrypt_report_document(
+                payload.get("url"),
+                payload.get("encryptionDetails", {}).get("initializationVector"),
+                payload.get("encryptionDetails", {}).get("key"),
+                payload.get("encryptionDetails", {}).get("standard"),
+                payload,
+            )
+            yield {"document": document}
+        else:
+            yield payload
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """
+        Override to avoid unnecessary requests.
+        If there are no `document_id` in stream slice, then we will yield the whole slice as a steam record
+        """
+
+        stream_state = stream_state or {}
+        pagination_complete = False
+
+        next_page_token = None
+        if stream_slice.get("document_id"):
+            while not pagination_complete:
+                request_headers = self.request_headers(
+                    stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+                )
+                request = self._create_prepared_request(
+                    path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                    headers=dict(request_headers, **self.authenticator.get_auth_header()),
+                    params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                    json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                    data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                )
+                request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+                response = self._send_request(request, request_kwargs)
+                yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
+
+                next_page_token = self.next_page_token(response)
+                if not next_page_token:
+                    pagination_complete = True
+        else:
+            yield stream_slice
+
+    @staticmethod
+    def decrypt_aes(content, key, iv):
+        key = base64.b64decode(key)
+        iv = base64.b64decode(iv)
+        decrypter = AES.new(key, AES.MODE_CBC, iv)
+        decrypted = decrypter.decrypt(content)
+        padding_bytes = decrypted[-1]
+        return decrypted[:-padding_bytes]
+
+    def decrypt_report_document(self, url, initialization_vector, key, encryption_standard, payload):
+        """
+        Decrypts and unpacks a report document, currently AES encryption is implemented
+        """
+        if encryption_standard == "AES":
+            decrypted = self.decrypt_aes(requests.get(url).content, key, initialization_vector)
+            if "compressionAlgorithm" in payload:
+                return zlib.decompress(bytearray(decrypted), 15 + 32).decode("iso-8859-1")
+            return decrypted.decode("iso-8859-1")
+        raise Exception([{"message": "Only AES decryption is implemented."}])
 
 
 class MerchantListingsReports(ReportsAmazonSPStream):

@@ -25,7 +25,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "boto3~=1.16", "pendulum~=2.1"]
+MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "boto3~=1.16", "pendulum~=2.1", "pycryptodome~=3.10"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
