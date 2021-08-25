@@ -44,7 +44,6 @@ import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.WriteChannelConfiguration;
 import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -96,7 +95,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   public AirbyteConnectionStatus check(JsonNode config) {
     try {
       final String datasetId = config.get(BigQueryConsts.CONFIG_DATASET_ID).asText();
-      final String datasetLocation = getDatasetLocation(config);
+      final String datasetLocation = BigQueryUtils.getDatasetLocation(config);
       final BigQuery bigquery = getBigQuery(config);
       final UploadingMethod uploadingMethod = getLoadingMethod(config);
 
@@ -109,7 +108,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       // GCS upload time re-uses destination-GCS for check and other uploading (CSV format writer)
       if (UploadingMethod.GCS.equals(uploadingMethod)) {
         GcsDestination gcsDestination = new GcsDestination();
-        AirbyteConnectionStatus airbyteConnectionStatus = gcsDestination.check(getGcsJsonNodeConfig(config));
+        AirbyteConnectionStatus airbyteConnectionStatus = gcsDestination.check(BigQueryUtils.getGcsJsonNodeConfig(config));
         if (Status.FAILED == airbyteConnectionStatus.getStatus()) {
           return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(airbyteConnectionStatus.getMessage());
         }
@@ -129,14 +128,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   protected BigQuerySQLNameTransformer getNamingResolver() {
     return namingResolver;
-  }
-
-  private static String getDatasetLocation(JsonNode config) {
-    if (config.has(BigQueryConsts.CONFIG_DATASET_LOCATION)) {
-      return config.get(BigQueryConsts.CONFIG_DATASET_LOCATION).asText();
-    } else {
-      return "US";
-    }
   }
 
   // https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html
@@ -220,7 +211,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       final String schemaName = getSchema(config, configStream);
       final String tableName = getTargetTableName(streamName);
       final String tmpTableName = namingResolver.getTmpTableName(streamName);
-      final String datasetLocation = getDatasetLocation(config);
+      final String datasetLocation = BigQueryUtils.getDatasetLocation(config);
       BigQueryUtils.createSchemaAndTableIfNeeded(bigquery, existingSchemas, schemaName, tmpTableName,
           datasetLocation, getBigQuerySchema(stream.getJsonSchema()));
       final Schema schema = getBigQuerySchema(stream.getJsonSchema());
@@ -267,7 +258,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
     GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
-        .getGcsDestinationConfig(getGcsJsonNodeConfig(config));
+        .getGcsDestinationConfig(BigQueryUtils.getGcsJsonNodeConfig(config));
     AmazonS3 s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
     return new GcsCsvWriter(gcsDestinationConfig, s3Client, configuredStream, uploadTimestamp);
   }
@@ -294,24 +285,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       return defaultSchema;
     }
     return srcNamespace;
-  }
-
-  // TODO move this to Utils class
-  public static JsonNode getGcsJsonNodeConfig(JsonNode config) {
-    JsonNode properties = config.get(BigQueryConsts.PROPERTIES);
-    JsonNode gcsJsonNode = Jsons.jsonNode(ImmutableMap.builder()
-        .put(BigQueryConsts.GCS_BUCKET_NAME, properties.get(BigQueryConsts.GCS_BUCKET_NAME))
-        .put(BigQueryConsts.GCS_BUCKET_PATH, properties.get(BigQueryConsts.GCS_BUCKET_PATH))
-        .put(BigQueryConsts.GCS_BUCKET_REGION, getDatasetLocation(config))
-        .put(BigQueryConsts.CREDENTIAL, properties.get(BigQueryConsts.CREDENTIAL))
-        .put(BigQueryConsts.FORMAT, Jsons.deserialize("{\n"
-            + "  \"format_type\": \"CSV\",\n"
-            + "  \"flattening\": \"No flattening\"\n"
-            + "}"))
-        .build());
-
-    LOGGER.debug("Composed GCS config is: \n" + gcsJsonNode.toPrettyString());
-    return gcsJsonNode;
   }
 
   private static WriteDisposition getWriteDisposition(DestinationSyncMode syncMode) {

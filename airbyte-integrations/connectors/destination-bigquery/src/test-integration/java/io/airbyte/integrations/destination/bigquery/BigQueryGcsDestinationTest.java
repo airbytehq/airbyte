@@ -187,7 +187,7 @@ class BigQueryGcsDestinationTest {
         .build());
 
     GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
-        .getGcsDestinationConfig(BigQueryDestination.getGcsJsonNodeConfig(config));
+        .getGcsDestinationConfig(BigQueryUtils.getGcsJsonNodeConfig(config));
     this.s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
 
     tornDown = false;

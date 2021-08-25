@@ -206,9 +206,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       LoadJobConfiguration configuration =
           LoadJobConfiguration.builder(tmpTable, csvFile)
               .setFormatOptions(csvOptions)
-              // Set the write disposition to overwrite existing table data
-              .setSchema(schema) // TODO why schema doesn't work for emitted_ar and timestampt, check for
-                                 // https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv#data_types
+              .setSchema(schema)
               .setWriteDisposition(bigQueryWriteConfig.getSyncMode())
               .build();
 

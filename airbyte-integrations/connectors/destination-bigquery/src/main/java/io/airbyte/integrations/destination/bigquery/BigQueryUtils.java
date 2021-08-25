@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Dataset;
@@ -37,6 +38,8 @@ import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
+import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.json.Jsons;
 import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -109,6 +112,31 @@ public class BigQueryUtils {
       LOGGER.info("Table: {} created successfully", tableId);
     } catch (BigQueryException e) {
       LOGGER.info("Table was not created. \n", e);
+    }
+  }
+
+  public static JsonNode getGcsJsonNodeConfig(JsonNode config) {
+    JsonNode properties = config.get(BigQueryConsts.PROPERTIES);
+    JsonNode gcsJsonNode = Jsons.jsonNode(ImmutableMap.builder()
+        .put(BigQueryConsts.GCS_BUCKET_NAME, properties.get(BigQueryConsts.GCS_BUCKET_NAME))
+        .put(BigQueryConsts.GCS_BUCKET_PATH, properties.get(BigQueryConsts.GCS_BUCKET_PATH))
+        .put(BigQueryConsts.GCS_BUCKET_REGION, getDatasetLocation(config))
+        .put(BigQueryConsts.CREDENTIAL, properties.get(BigQueryConsts.CREDENTIAL))
+        .put(BigQueryConsts.FORMAT, Jsons.deserialize("{\n"
+            + "  \"format_type\": \"CSV\",\n"
+            + "  \"flattening\": \"No flattening\"\n"
+            + "}"))
+        .build());
+
+    LOGGER.debug("Composed GCS config is: \n" + gcsJsonNode.toPrettyString());
+    return gcsJsonNode;
+  }
+
+  public static String getDatasetLocation(JsonNode config) {
+    if (config.has(BigQueryConsts.CONFIG_DATASET_LOCATION)) {
+      return config.get(BigQueryConsts.CONFIG_DATASET_LOCATION).asText();
+    } else {
+      return "US";
     }
   }
 
