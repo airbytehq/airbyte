@@ -474,7 +474,7 @@ class SourceGoogleAnalyticsV4(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
             url = f"{GoogleAnalyticsV4TypesList.url_base}"
-            print("ll")
+
             authenticator = GoogleAnalyticsOauth2Authenticator(config)
 
             session = requests.get(url, headers=authenticator.get_auth_header())
