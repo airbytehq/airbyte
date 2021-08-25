@@ -167,6 +167,13 @@
   "onboarding.fetchingSchema": "We are fetching the schema of your data source. \nThis should take less than a minute, but may take a few minutes on slow internet connections or data sources with a large amount of tables.",
   "onboarding.tutorial": "Check how you can sync PostgreSQL databases in minutes",
   "onboarding.skipOnboarding": "Skip Onboarding",
+  "onboarding.welcome": "Welcome to Airbyte!",
+  "onboarding.welcomeUser": "Welcome to Airbyte, {name}!",
+  "onboarding.welcomeUser.text": "<b>Your path to syncing your data starts here.</b>Connections are automated data pipelines that replicate data from a source to a destination.  ",
+  "onboarding.or": "or",
+  "onboarding.watchVideo": "Watch the 2-min demo video",
+  "onboarding.exploreDemo": "Explore our demo app with test data",
+  "onboarding.firstConnection": "Set up your first connection",
 
   "sources.searchIncremental": "Search cursor value for incremental",
   "sources.incrementalDefault": "{value} (default)",
