@@ -1,35 +1,21 @@
 plugins {
-    id 'java-library'
+    id 'java'
     id 'nu.studer.jooq' version '6.0.1'
 }
 
 dependencies {
-    api 'org.apache.commons:commons-dbcp2:2.7.0'
-    api 'org.jooq:jooq-meta:3.13.4'
-    api 'org.jooq:jooq:3.13.4'
-    api 'org.postgresql:postgresql:42.2.18'
-
-    implementation project(':airbyte-protocol:models')
-    implementation project(':airbyte-json-validation')
+    implementation 'org.jooq:jooq-meta:3.13.4'
+    implementation 'org.jooq:jooq:3.13.4'
+    implementation 'org.postgresql:postgresql:42.2.18'
     implementation "org.flywaydb:flyway-core:7.14.0"
+
+    implementation project(':airbyte-db:lib')
 
     // jOOQ code generation
     implementation 'org.jooq:jooq-codegen:3.13.4'
     implementation "org.testcontainers:postgresql:1.15.1"
     // The jOOQ code generator only has access to classes added to the jooqGenerator configuration
-    jooqGenerator project(':airbyte-db')
-
-    testImplementation project(':airbyte-test-utils')
-
-    testImplementation 'org.apache.commons:commons-lang3:3.11'
-
-    // Big Query
-    implementation platform('com.google.cloud:libraries-bom:20.6.0')
-    implementation('com.google.cloud:google-cloud-bigquery:1.133.1')
-
-    // Lombok
-    implementation 'org.projectlombok:lombok:1.18.20'
-    annotationProcessor('org.projectlombok:lombok:1.18.20')
+    jooqGenerator project(':airbyte-db:lib')
 }
 
 jooq {
@@ -49,7 +35,7 @@ jooq {
                     }
                     target {
                         packageName = 'io.airbyte.db.instance.configs.jooq'
-                        directory = 'build/generated/jooq/src/main/java'
+                        directory = 'build/generated/configsDatabase/src/main/java'
                     }
                 }
             }
@@ -67,7 +53,7 @@ jooq {
                     }
                     target {
                         packageName = 'io.airbyte.db.instance.jobs.jooq'
-                        directory = 'build/generated/jooq/src/main/java'
+                        directory = 'build/generated/jobsDatabase/src/main/java'
                     }
                 }
             }
@@ -75,16 +61,25 @@ jooq {
     }
 }
 
-build.dependsOn tasks.generateConfigsDatabaseJooq
-build.dependsOn tasks.generateJobsDatabaseJooq
+sourceSets.main.java.srcDirs (
+    tasks.named('generateConfigsDatabaseJooq').flatMap { it.outputDir },
+    tasks.named('generateJobsDatabaseJooq').flatMap { it.outputDir }
+)
 
 sourceSets {
     main {
         java {
-            srcDirs "$projectDir/src/main/java", "$buildDir/generated/jooq/src/main/java"
-        }
-        resources {
-            srcDir "$projectDir/src/main/resources"
+            srcDirs "$buildDir/generated/configsDatabase/src/main/java", "$buildDir/generated/jobsDatabase/src/main/java"
         }
     }
+}
+
+tasks.named('generateConfigsDatabaseJooq').configure {
+    allInputsDeclared = true
+    outputs.cacheIf { true }
+}
+
+tasks.named('generateJobsDatabaseJooq').configure {
+    allInputsDeclared = true
+    outputs.cacheIf { true }
 }

@@ -109,12 +109,12 @@ public abstract class FlywayMigrationDatabase extends PostgresDatabase {
   }
 
   public void dumpSchemaFile(DatabaseMigrator migrator) throws IOException {
-    String schema = migrator.dumpSchema();
-    try (PrintWriter writer = new PrintWriter(new File(Path.of(schemaDumpFile).toUri()))) {
-      writer.println(schema);
-    } catch (FileNotFoundException e) {
-      throw new IOException(e);
-    }
+//    String schema = migrator.dumpSchema();
+//    try (PrintWriter writer = new PrintWriter(new File(Path.of(schemaDumpFile).toUri()))) {
+//      writer.println(schema);
+//    } catch (FileNotFoundException e) {
+//      throw new IOException(e);
+//    }
   }
 
 }

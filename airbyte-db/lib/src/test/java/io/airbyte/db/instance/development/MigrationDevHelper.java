@@ -146,7 +146,7 @@ public class MigrationDevHelper {
 
   @VisibleForTesting
   static AirbyteVersion getCurrentAirbyteVersion() {
-    try (BufferedReader reader = new BufferedReader(new FileReader("../.env"))) {
+    try (BufferedReader reader = new BufferedReader(new FileReader("../../.env"))) {
       String line;
       while ((line = reader.readLine()) != null) {
         if (line.startsWith("VERSION")) {

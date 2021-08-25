@@ -41,18 +41,6 @@ public class ConfigsFlywayMigrationDatabase extends FlywayMigrationDatabase {
   @Override
   protected Database getAndInitializeDatabase(String username, String password, String connectionString) throws IOException {
     return new ConfigsDatabaseInstance(username, password, connectionString).getAndInitialize();
-
-    // The configs database is considered ready only if there are some seed records.
-    // So we need to create at least one record here.
-    // Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(System.currentTimeMillis()));
-    // new ExceptionWrappingDatabase(database).transaction(ctx -> ctx.insertInto(AIRBYTE_CONFIGS)
-    // .set(CONFIG_ID, UUID.randomUUID().toString())
-    // .set(CONFIG_TYPE, "STANDARD_SOURCE_DEFINITION")
-    // .set(CONFIG_BLOB, JSONB.valueOf("{}"))
-    // .set(CREATED_AT, timestamp)
-    // .set(UPDATED_AT, timestamp)
-    // .execute());
-    // return database;
   }
 
   @Override

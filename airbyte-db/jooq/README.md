@@ -1,0 +1,17 @@
+# jOOQ Code Generation
+
+## How to Use
+This module generates jOOQ code for the configs and jobs database. To use the generated code, add the following dependency:
+
+```gradle
+dependencies {
+  implementation project(':airbyte-db:jooq')
+}
+```
+
+The generated code exists under the package `io.airbyte.db.instance.<db-name>.jooq`.
+
+## Code Generation
+Gradle plugin `nu.studer.jooq` is used for jOOQ code generation. See [here](https://github.com/etiennestuder/gradle-jooq-plugin) for details.
+
+It is necessary to separate this module from the `lib` module, because we use a custom database (`FlywayMigrationDatabase`) that runs Flyway migration first for the code generator. This implementation needs to be compiled before it can be used.
