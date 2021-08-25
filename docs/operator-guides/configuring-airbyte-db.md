@@ -62,7 +62,7 @@ If you provide an empty database to Airbyte and start Airbyte up for the first t
 * The database exists in the server.
 * The user has both read and write permissions to the database.
 * The database is empty.
-  * If the database is not empty, and has a table that shares the same name as one of the Airbyte tables, the server will assume that the tables have been created, and data has been copied, which may result in server failure. To fix that, just wipe out the database, and launch the server again.
+  * If the database is not empty, and has a table that shares the same name as one of the Airbyte tables, the server will assume that the database has been initialized, and will not copy the data over, resulting in server failure. If you run into this issue, just wipe out the database, and launch the server again.
 
 ## Accessing the default database located in docker airbyte-db
 In extraordinary circumstances while using the default `airbyte-db` Postgres database, if a developer wants to access the data that tracks jobs, they can do so with the following instructions.
