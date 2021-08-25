@@ -25,6 +25,7 @@
     * [Transformations with SQL \(Part 1/3\)](operator-guides/transformation-and-normalization/transformations-with-sql.md)
     * [Transformations with dbt \(Part 2/3\)](operator-guides/transformation-and-normalization/transformations-with-dbt.md)
     * [Transformations with Airbyte \(Part 3/3\)](operator-guides/transformation-and-normalization/transformations-with-airbyte.md)
+  * [Scaling Airbyte](operator-guides/scaling-airbyte.md)
 * [Example Use Cases](examples/README.md)
   * [Postgres Replication](examples/postgres-replication.md)
   * [Build a Slack Activity Dashboard](examples/build-a-slack-activity-dashboard.md)

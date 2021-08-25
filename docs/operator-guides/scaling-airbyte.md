@@ -28,6 +28,8 @@ There are two resources to be aware of:
 1) Memory
 2) Disk space
 
+In general, we recommend starting out with a mid-sized cloud instance (e.g. 4 or 8 cores) and tuning according to your workload.
+
 ### Memory
 As mentioned above, we are mainly concerned with scaling Sync jobs. Within a Sync job, the main memory culprit is the Source worker.
 
@@ -56,10 +58,6 @@ Because of this, we recommend allocating a minimum of 30GBs of disk space per no
 ### On Kubernetes  
 Users running Airbyte Kubernetes also have to make sure the Kubernetes cluster can accommodate the number of pods Airbyte creates.
 
-Airbyte creates an additional setup pod for each worker Kubernetes pod it creates. This `command-fetcher` pod is responsible for retrieving a worker's entrypoint and helps Airbyte model Kubernetes pod as a local process.
-Although the `command-fetcher` pod is created before the worker pod, variable termination periods mean it can still be alive while the worker Kubernetes pod runs. This means every job requires at least **two** Kubernetes pods under the hood.
-This means Sync jobs can use up to **four** Kubernetes pod at one time.
-
 To be safe, make sure the Kubernetes cluster can schedule up to `2 x <number-of-possible-concurrent-connections>` pods at once. This is the worse case estimate, and most users should be fine with `2 x <number-of-possible-concurrent-connections>`
 as a rule of thumb.
 
@@ -69,4 +67,4 @@ This is a **non-issue** for users running Airbyte Docker.
 
 The advice here is best-effort and by no means comprehensive. Please reach out on Slack if anything doesn't make sense or if something can be improved.
 
-If you've been running Airbyte in production and have more tips up your sleeve, please welcome contributions!
+If you've been running Airbyte in production and have more tips up your sleeve, we welcome contributions!
