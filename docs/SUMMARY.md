@@ -111,6 +111,7 @@
     * [Sugar CRM](integrations/sources/sugar-crm.md)
     * [SurveyMonkey](integrations/sources/surveymonkey.md)
     * [Tempo](integrations/sources/tempo.md)
+    * [Trello](integrations/sources/trello.md)
     * [Twilio](integrations/sources/twilio.md)
     * [Typeform](integrations/sources/typeform.md)
     * [US Census API](integrations/sources/us-census.md)
