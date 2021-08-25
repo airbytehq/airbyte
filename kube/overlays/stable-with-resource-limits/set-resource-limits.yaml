@@ -93,5 +93,5 @@ spec:
         - name: airbyte-pod-sweeper
           resources:
             limits:
-              cpu: 1
+              cpu: 0.5
               memory: 128Mi
