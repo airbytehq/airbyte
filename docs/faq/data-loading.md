@@ -83,6 +83,14 @@ Yes, for more than 6000 thousand tables could be a problem to load the informati
 There are two Github issues about this limitation: [Issue #3942](https://github.com/airbytehq/airbyte/issues/3942) 
 and [Issue #3943](https://github.com/airbytehq/airbyte/issues/3943).
 
+## Help, Airbyte is hanging/taking a long time to discover my source's schema!
+
+This usually happens for database sources that contain a lot of tables. This should resolve itself in half an hour or so.
+
+If the source contains more than 6k tables, see the [above question](#there-is-a-limit-of-how-many-tables-one-connection-can-handle).
+
+There is a known issue with [Oracle databases](https://github.com/airbytehq/airbyte/issues/4944).
+
 ## **I see you support a lot of connectors – what about connectors Airbyte doesn’t support yet?**
 
 You can either:
