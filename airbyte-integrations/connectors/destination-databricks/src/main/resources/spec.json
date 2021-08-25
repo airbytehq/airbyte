@@ -1,0 +1,31 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/databricks",
+  "supportsIncremental": false,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": ["overwrite"],
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Databricks Destination Spec",
+    "type": "object",
+    "required": [
+      "jdbcUrl"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "jdbcUrl": {
+        "title": "JDBC URL",
+        "type": "string",
+        "description": "",
+        "examples": [""],
+        "airbyte_secret": true
+      },
+      "database": {
+        "title": "Database",
+        "type": "string",
+        "description": "",
+        "examples": [""]
+      }
+    }
+  }
+}
