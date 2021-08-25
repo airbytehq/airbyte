@@ -36,7 +36,6 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -50,12 +49,14 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
@@ -178,30 +179,66 @@ public class ConfigDumpExporter {
   }
 
   private void exportConfigsDatabase(Path parentFolder, UUID workspaceId) throws IOException, JsonValidationException, ConfigNotFoundException {
-    final List<SourceConnection> sourceConnections = configRepository.listSourceConnection()
-        .stream()
-        .filter(sourceConnection -> workspaceId.equals(sourceConnection.getWorkspaceId()))
-        .collect(Collectors.toList());
-    writeConfigsToArchive(parentFolder, ConfigSchema.SOURCE_CONNECTION.name(), sourceConnections.stream().map(Jsons::jsonNode));
+    final Collection<SourceConnection> sourceConnections = writeConfigsToArchive(
+        parentFolder,
+        ConfigSchema.SOURCE_CONNECTION.name(),
+        configRepository::listSourceConnection,
+        (sourceConnection) -> workspaceId.equals(sourceConnection.getWorkspaceId()));
+    writeConfigsToArchive(parentFolder, ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
+        () -> listSourceDefinition(sourceConnections),
+        null);
 
+    final Collection<DestinationConnection> destinationConnections = writeConfigsToArchive(
+        parentFolder,
+        ConfigSchema.DESTINATION_CONNECTION.name(),
+        configRepository::listDestinationConnection,
+        (destinationConnection) -> workspaceId.equals(destinationConnection.getWorkspaceId()));
+    writeConfigsToArchive(parentFolder, ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(),
+        () -> listDestinationDefinition(destinationConnections),
+        null);
+
+    writeConfigsToArchive(
+        parentFolder,
+        ConfigSchema.STANDARD_SYNC_OPERATION.name(),
+        configRepository::listStandardSyncOperations,
+        (operation) -> workspaceId.equals(operation.getWorkspaceId()));
+
+    final List<StandardSync> standardSyncs = new ArrayList<>();
+    for (StandardSync standardSync : configRepository.listStandardSyncs()) {
+      if (workspaceId.equals(workspaceHelper.getWorkspaceForConnection(standardSync.getSourceId(), standardSync.getDestinationId()))) {
+        standardSyncs.add(standardSync);
+      }
+    }
+    writeConfigsToArchive(parentFolder, ConfigSchema.STANDARD_SYNC.name(), standardSyncs.stream().map(Jsons::jsonNode));
+  }
+
+  private <T> Collection<T> writeConfigsToArchive(Path parentFolder,
+                                                  String configSchemaName,
+                                                  ListConfigCall<T> listConfigCall,
+                                                  Function<T, Boolean> filterConfigCall)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final Collection<T> configs = listConfigCall.apply();
+    final Collection<T> result = filterConfigCall != null ?
+        configs.stream().filter(filterConfigCall::apply).collect(Collectors.toList()) : configs;
+    writeConfigsToArchive(parentFolder, configSchemaName, result.stream().map(Jsons::jsonNode));
+    return result;
+  }
+
+  private Collection<StandardSourceDefinition> listSourceDefinition(Collection<SourceConnection> sourceConnections)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
     final Map<UUID, StandardSourceDefinition> sourceDefinitionMap = new HashMap<>();
     for (SourceConnection sourceConnection : sourceConnections) {
       if (!sourceDefinitionMap.containsKey(sourceConnection.getSourceDefinitionId())) {
         sourceDefinitionMap
-            .put(sourceConnection.getSourceDefinitionId(), configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId()));
+            .put(sourceConnection.getSourceDefinitionId(),
+                configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId()));
       }
     }
-    writeConfigsToArchive(parentFolder, ConfigSchema.STANDARD_SOURCE_DEFINITION.name(), sourceDefinitionMap
-        .values()
-        .stream()
-        .map(Jsons::jsonNode));
+    return sourceDefinitionMap.values();
+  }
 
-    final List<DestinationConnection> destinationConnections = configRepository.listDestinationConnection()
-        .stream()
-        .filter(destinationConnection -> workspaceId.equals(destinationConnection.getWorkspaceId()))
-        .collect(Collectors.toList());
-    writeConfigsToArchive(parentFolder, ConfigSchema.DESTINATION_CONNECTION.name(), destinationConnections.stream().map(Jsons::jsonNode));
-
+  private Collection<StandardDestinationDefinition> listDestinationDefinition(Collection<DestinationConnection> destinationConnections)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
     final Map<UUID, StandardDestinationDefinition> destinationDefinitionMap = new HashMap<>();
     for (DestinationConnection destinationConnection : destinationConnections) {
       if (!destinationDefinitionMap.containsKey(destinationConnection.getDestinationDefinitionId())) {
@@ -210,34 +247,16 @@ public class ConfigDumpExporter {
                 configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId()));
       }
     }
-    writeConfigsToArchive(parentFolder, ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(), destinationDefinitionMap
-        .values()
-        .stream()
-        .map(Jsons::jsonNode));
+    return destinationDefinitionMap.values();
+  }
 
-    final List<StandardSyncOperation> operations = configRepository.listStandardSyncOperations()
-        .stream()
-        .filter(operation -> workspaceId.equals(operation.getWorkspaceId()))
-        .collect(Collectors.toList());
-    final Map<UUID, StandardSyncOperation> operationMap = new HashMap<>();
-    operations.forEach(operation -> operationMap.put(operation.getOperationId(), operation));
+  /**
+   * List all configurations of type @param <T> that already exists
+   */
+  public interface ListConfigCall<T> {
 
-    final List<StandardSync> standardSyncs = new ArrayList<>();
-    for (StandardSync standardSync : configRepository.listStandardSyncs()) {
-      if (workspaceId.equals(workspaceHelper.getWorkspaceForConnection(standardSync.getSourceId(), standardSync.getDestinationId()))) {
-        standardSyncs.add(standardSync);
-        for (UUID operationId : standardSync.getOperationIds()) {
-          if (!operationMap.containsKey(operationId)) {
-            operationMap.put(operationId, configRepository.getStandardSyncOperation(operationId));
-          }
-        }
-      }
-    }
-    writeConfigsToArchive(parentFolder, ConfigSchema.STANDARD_SYNC.name(), standardSyncs.stream().map(Jsons::jsonNode));
-    writeConfigsToArchive(parentFolder, ConfigSchema.STANDARD_SYNC_OPERATION.name(), operationMap
-        .values()
-        .stream()
-        .map(Jsons::jsonNode));
+    Collection<T> apply() throws IOException, JsonValidationException, ConfigNotFoundException;
+
   }
 
 }

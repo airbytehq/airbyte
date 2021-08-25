@@ -61,6 +61,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -73,6 +74,7 @@ import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -458,7 +460,6 @@ public class ConfigDumpImporter {
     // Keep maps of any re-assigned ids
     final Map<UUID, UUID> sourceIdMap = new HashMap<>();
     final Map<UUID, UUID> destinationIdMap = new HashMap<>();
-    final Map<UUID, UUID> connectionIdMap = new HashMap<>();
     final Map<UUID, UUID> operationIdMap = new HashMap<>();
 
     final List<String> directories = listDirectories(sourceRoot);
@@ -474,136 +475,183 @@ public class ConfigDumpImporter {
       final Stream<T> configs = readConfigsFromArchive(sourceRoot, configSchema);
       if (!dryRun) {
         switch (configSchema) {
-          case STANDARD_SOURCE_DEFINITION -> importStandardSourceDefinitionsIntoWorkspace(configs);
-          case STANDARD_DESTINATION_DEFINITION -> importStandardDestinationDefinitionsIntoWorkspace(configs);
-          case SOURCE_CONNECTION -> importSourceConnectionIntoWorkspace(workspaceId, configs, sourceIdMap);
-          case DESTINATION_CONNECTION -> importDestinationConnectionIntoWorkspace(workspaceId, configs, destinationIdMap);
+          case STANDARD_SOURCE_DEFINITION -> importSourceDefinitionIntoWorkspace(configs);
+          case SOURCE_CONNECTION -> sourceIdMap.putAll(importIntoWorkspace(
+              ConfigSchema.SOURCE_CONNECTION,
+              configs.map(c -> (SourceConnection) c),
+              configRepository::listSourceConnection,
+              (sourceConnection) -> !workspaceId.equals(sourceConnection.getWorkspaceId()),
+              (sourceConnection, sourceId) -> {
+                sourceConnection.setSourceId(sourceId);
+                sourceConnection.setWorkspaceId(workspaceId);
+                return sourceConnection;
+              },
+              configRepository::writeSourceConnection));
+          case STANDARD_DESTINATION_DEFINITION -> importDestinationDefinitionIntoWorkspace(configs);
+          case DESTINATION_CONNECTION -> destinationIdMap.putAll(importIntoWorkspace(
+              ConfigSchema.DESTINATION_CONNECTION,
+              configs.map(c -> (DestinationConnection) c),
+              configRepository::listDestinationConnection,
+              (destinationConnection) -> !workspaceId.equals(destinationConnection.getWorkspaceId()),
+              (destinationConnection, destinationId) -> {
+                destinationConnection.setDestinationId(destinationId);
+                destinationConnection.setWorkspaceId(workspaceId);
+                return destinationConnection;
+              },
+              configRepository::writeDestinationConnection));
           case STANDARD_SYNC -> standardSyncs = configs;
-          case STANDARD_SYNC_OPERATION -> importOperationIntoWorkspace(workspaceId, configs, operationIdMap);
+          case STANDARD_SYNC_OPERATION -> operationIdMap.putAll(importIntoWorkspace(
+              ConfigSchema.STANDARD_SYNC_OPERATION,
+              configs.map(c -> (StandardSyncOperation) c),
+              configRepository::listStandardSyncOperations,
+              (operation) -> !workspaceId.equals(operation.getWorkspaceId()),
+              (operation, operationId) -> {
+                operation.setOperationId(operationId);
+                operation.setWorkspaceId(workspaceId);
+                return operation;
+              },
+              configRepository::writeStandardSyncOperation));
           default -> {}
         }
       }
     }
     if (standardSyncs != null) {
       // we import connections (standard sync) last to update reference to modified ids
-      importConnectionIntoWorkspace(workspaceId, standardSyncs, sourceIdMap, destinationIdMap, operationIdMap, connectionIdMap);
+      importIntoWorkspace(
+          ConfigSchema.STANDARD_SYNC,
+          standardSyncs.map(c -> (StandardSync) c),
+          configRepository::listStandardSyncs,
+          (standardSync) -> {
+            try {
+              return !workspaceId.equals(workspaceHelper.getWorkspaceForConnection(standardSync.getSourceId(), standardSync.getDestinationId()));
+            } catch (JsonValidationException | ConfigNotFoundException e) {
+              return true;
+            }
+          },
+          (standardSync, connectionId) -> {
+            standardSync.setConnectionId(connectionId);
+            standardSync.setSourceId(sourceIdMap.get(standardSync.getSourceId()));
+            standardSync.setDestinationId(destinationIdMap.get(standardSync.getDestinationId()));
+            standardSync.setOperationIds(standardSync.getOperationIds()
+                .stream()
+                .map(operationIdMap::get)
+                .collect(Collectors.toList()));
+            configRepository.writeStandardSync(standardSync);
+            return standardSync;
+          },
+          configRepository::writeStandardSync);
     }
   }
 
-  protected <T> void importStandardSourceDefinitionsIntoWorkspace(Stream<T> configs) throws JsonValidationException, IOException {
-    for (T config : configs.collect(Collectors.toList())) {
-      configRepository.writeStandardSource((StandardSourceDefinition) config);
-    }
-  }
-
-  protected <T> void importStandardDestinationDefinitionsIntoWorkspace(Stream<T> configs) throws JsonValidationException, IOException {
-    for (T config : configs.collect(Collectors.toList())) {
-      configRepository.writeStandardDestinationDefinition((StandardDestinationDefinition) config);
-    }
-  }
-
-  private <T> void importSourceConnectionIntoWorkspace(UUID workspaceId, Stream<T> configs, Map<UUID, UUID> sourceIdMap)
-      throws JsonValidationException, IOException {
-    final Set<UUID> sourceConnectionIdInUse = configRepository.listSourceConnection()
-        .stream()
-        .filter(sourceConnection -> !workspaceId.equals(sourceConnection.getWorkspaceId()))
-        .map(SourceConnection::getSourceId)
-        .collect(Collectors.toSet());
-    for (T config : configs.collect(Collectors.toList())) {
-      SourceConnection sourceConnection = (SourceConnection) config;
-      if (sourceConnectionIdInUse.contains(sourceConnection.getSourceId())) {
-        final UUID newSourceConnectionId = getNewRandomId(sourceConnectionIdInUse);
-        sourceIdMap.put(sourceConnection.getSourceId(), newSourceConnectionId);
-        sourceConnection.setSourceId(newSourceConnectionId);
-      } else {
-        sourceIdMap.put(sourceConnection.getSourceId(), sourceConnection.getSourceId());
-      }
-      sourceConnection.setWorkspaceId(workspaceId);
-      configRepository.writeSourceConnection(sourceConnection);
-    }
-  }
-
-  private <T> void importDestinationConnectionIntoWorkspace(UUID workspaceId,
-                                                            Stream<T> configs,
-                                                            Map<UUID, UUID> destinationIdMap)
-      throws JsonValidationException, IOException {
-    final Set<UUID> destinationConnectionIdInUse = configRepository.listDestinationConnection()
-        .stream()
-        .filter(destinationConnection -> !workspaceId.equals(destinationConnection.getWorkspaceId()))
-        .map(DestinationConnection::getDestinationId)
-        .collect(Collectors.toSet());
-    for (T config : configs.collect(Collectors.toList())) {
-      DestinationConnection destinationConnection = (DestinationConnection) config;
-      if (destinationConnectionIdInUse.contains(destinationConnection.getDestinationId())) {
-        final UUID newDestinationConnectionId = getNewRandomId(destinationConnectionIdInUse);
-        destinationIdMap.put(destinationConnection.getDestinationId(), newDestinationConnectionId);
-        destinationConnection.setDestinationId(newDestinationConnectionId);
-      } else {
-        destinationIdMap.put(destinationConnection.getDestinationId(), destinationConnection.getDestinationId());
-      }
-      destinationConnection.setWorkspaceId(workspaceId);
-      configRepository.writeDestinationConnection(destinationConnection);
-    }
-  }
-
-  private <T> void importOperationIntoWorkspace(UUID workspaceId,
-                                                Stream<T> configs,
-                                                Map<UUID, UUID> operationIdMap)
-      throws JsonValidationException, IOException {
-    final Set<UUID> operationIdInUse = configRepository.listStandardSyncOperations()
-        .stream()
-        .filter(standardSyncOperation -> !workspaceId.equals(standardSyncOperation.getWorkspaceId()))
-        .map(StandardSyncOperation::getOperationId)
-        .collect(Collectors.toSet());
-    for (T config : configs.collect(Collectors.toList())) {
-      StandardSyncOperation operation = (StandardSyncOperation) config;
-      if (operationIdInUse.contains(operation.getOperationId())) {
-        final UUID newOperationId = getNewRandomId(operationIdInUse);
-        operationIdMap.put(operation.getOperationId(), newOperationId);
-        operation.setOperationId(newOperationId);
-      } else {
-        operationIdMap.put(operation.getOperationId(), operation.getOperationId());
-      }
-      operation.setWorkspaceId(workspaceId);
-      configRepository.writeStandardSyncOperation(operation);
-    }
-  }
-
-  private <T> void importConnectionIntoWorkspace(UUID workspaceId,
-                                                 Stream<T> configs,
-                                                 Map<UUID, UUID> sourceIdMap,
-                                                 Map<UUID, UUID> destinationIdMap,
-                                                 Map<UUID, UUID> operationIdMap,
-                                                 Map<UUID, UUID> connectionIdMap)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
-    final Set<UUID> connectionIdInUse = configRepository.listStandardSyncs()
-        .stream()
-        .filter(standardSync -> {
-          try {
-            return !workspaceId.equals(workspaceHelper.getWorkspaceForConnection(standardSync.getSourceId(), standardSync.getDestinationId()));
-          } catch (JsonValidationException | ConfigNotFoundException e) {
-            return true;
+  protected <T> void importSourceDefinitionIntoWorkspace(Stream<T> configs)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    importIntoWorkspace(
+        ConfigSchema.STANDARD_SOURCE_DEFINITION,
+        configs.map(c -> (StandardSourceDefinition) c),
+        configRepository::listStandardSources,
+        null,
+        (config, id) -> {
+          if (id.equals(config.getSourceDefinitionId())) {
+            return config;
+          } else {
+            // a newId has been generated for this definition as it is in conflict with an existing one
+            // here we return null, so we don't do anything to the old definition
+            return null;
           }
-        })
-        .map(StandardSync::getConnectionId)
-        .collect(Collectors.toSet());
-    for (T config : configs.collect(Collectors.toList())) {
-      StandardSync standardSync = (StandardSync) config;
-      if (connectionIdInUse.contains(standardSync.getConnectionId())) {
-        final UUID newConnectionId = getNewRandomId(connectionIdInUse);
-        connectionIdMap.put(standardSync.getConnectionId(), newConnectionId);
-        standardSync.setConnectionId(newConnectionId);
-      } else {
-        connectionIdMap.put(standardSync.getConnectionId(), standardSync.getConnectionId());
-      }
-      standardSync.setSourceId(sourceIdMap.get(standardSync.getSourceId()));
-      standardSync.setDestinationId(destinationIdMap.get(standardSync.getDestinationId()));
-      standardSync.setOperationIds(standardSync.getOperationIds()
+        },
+        (config) -> {
+          if (config != null) {
+            configRepository.writeStandardSource(config);
+          }
+        });
+  }
+
+  protected <T> void importDestinationDefinitionIntoWorkspace(Stream<T> configs)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    importIntoWorkspace(
+        ConfigSchema.STANDARD_DESTINATION_DEFINITION,
+        configs.map(c -> (StandardDestinationDefinition) c),
+        configRepository::listStandardDestinationDefinitions,
+        null,
+        (config, id) -> {
+          if (id.equals(config.getDestinationDefinitionId())) {
+            return config;
+          } else {
+            // a newId has been generated for this definition as it is in conflict with an existing one
+            // here we return null, so we don't do anything to the old definition
+            return null;
+          }
+        },
+        (config) -> {
+          if (config != null) {
+            configRepository.writeStandardDestinationDefinition(config);
+          }
+        });
+  }
+
+  private <T> Map<UUID, UUID> importIntoWorkspace(ConfigSchema configSchema,
+                                                  Stream<T> configs,
+                                                  ListConfigCall<T> listConfigCall,
+                                                  Function<T, Boolean> filterConfigCall,
+                                                  MutateConfigCall<T> mutateConfig,
+                                                  PersistConfigCall<T> persistConfig)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final Map<UUID, UUID> idsMap = new HashMap<>();
+    // To detect conflicts, we retrieve ids already in use by others for this ConfigSchema (ids from the
+    // current workspace can be safely updated)
+    final Set<UUID> idsInUse;
+    if (listConfigCall != null) {
+      idsInUse = listConfigCall.apply()
           .stream()
-          .map(operationIdMap::get)
-          .collect(Collectors.toList()));
-      configRepository.writeStandardSync(standardSync);
+          .filter(filterConfigCall != null ? filterConfigCall::apply : ((T) -> true))
+          .map(configSchema::getId)
+          .map(UUID::fromString)
+          .collect(Collectors.toSet());
+    } else {
+      idsInUse = new HashSet<>();
     }
+    for (T config : configs.collect(Collectors.toList())) {
+      final UUID configId = UUID.fromString(configSchema.getId(config));
+      if (idsInUse.contains(configId)) {
+        // Some other workspace is already using the same id for this configSchema, we generate new ids and
+        // mutate config accordingly
+        final UUID newId = getNewRandomId(idsInUse);
+        config = mutateConfig.apply(config, newId);
+      } else {
+        config = mutateConfig.apply(config, configId);
+      }
+      idsMap.put(configId, config != null ? UUID.fromString(configSchema.getId(config)) : configId);
+      persistConfig.apply(config);
+    }
+    return idsMap;
+  }
+
+  /**
+   * List all configurations of type @param <T> that already exists (we'll be using this to know which
+   * ids are already in use)
+   */
+  public interface ListConfigCall<T> {
+
+    Collection<T> apply() throws IOException, JsonValidationException, ConfigNotFoundException;
+
+  }
+
+  /**
+   * Apply some modifications to the configuration with new ids
+   */
+  public interface MutateConfigCall<T> {
+
+    T apply(T config, UUID newId) throws IOException, JsonValidationException, ConfigNotFoundException;
+
+  }
+
+  /**
+   * Persist the configuration
+   */
+  public interface PersistConfigCall<T> {
+
+    void apply(T config) throws JsonValidationException, IOException;
+
   }
 
   /**
