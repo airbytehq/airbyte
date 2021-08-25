@@ -6,7 +6,7 @@ The Shopify source supports both Full Refresh and Incremental syncs. You can cho
 
 This source can sync data for the [Shopify API](https://help.shopify.com/en/api/reference).
 
-This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/contributing-to-airbyte/python).
+This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
 
 ### Output schema
 
@@ -45,6 +45,12 @@ This Source is capable of syncing the following core Streams:
 ### Performance considerations
 
 Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-apis/rate-limits).
+Typically, there should not be issues with throttling or exceeding the rate limits but in some edge cases, user can receive the warning message as follows:
+```
+"Caught retryable error '<some_error> or null' after <some_number> tries. Waiting <some_number> seconds then retrying..."
+```
+This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Error.
+With given error message the sync operation is still goes on, but will require more time to finish.
 
 ## Getting started
 
@@ -61,6 +67,10 @@ Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-ap
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.13  | 2021-08-17 | [5470](https://github.com/airbytehq/airbyte/pull/5470) | Fixed rate limits throttling |
+| 0.1.12  | 2021-08-09 | [5276](https://github.com/airbytehq/airbyte/pull/5276) | Add status property to product schema |
+| 0.1.11  | 2021-07-23 | [4943](https://github.com/airbytehq/airbyte/pull/4943) | Fix products schema up to API 2021-07 |
+| 0.1.10  | 2021-07-19 | [4830](https://github.com/airbytehq/airbyte/pull/4830) | Fix for streams json schemas, upgrade to API version 2021-07 |
 | 0.1.9   | 2021-07-04 | [4472](https://github.com/airbytehq/airbyte/pull/4472) | Incremental sync is now using updated_at instead of since_id by default |
 | 0.1.8   | 2021-06-29 | [4121](https://github.com/airbytehq/airbyte/pull/4121) | Add draft orders stream |
 | 0.1.7   | 2021-06-26 | [4290](https://github.com/airbytehq/airbyte/pull/4290) | Fixed the bug when limiting output records to 1 caused infinity loop |

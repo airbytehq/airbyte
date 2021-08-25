@@ -21,6 +21,7 @@ import { SourceDefinition } from "core/resources/SourceDefinition";
 import { equal } from "utils/objects";
 import EnabledControl from "./EnabledControl";
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
+import { useAsyncFn } from "react-use";
 
 type IProps = {
   onAfterSaveSchema: () => void;
@@ -31,7 +32,7 @@ type IProps = {
 };
 
 const Content = styled.div`
-  max-width: 1140px;
+  max-width: 1279px;
   overflow-x: hidden;
   margin: 18px auto;
 `;
@@ -86,16 +87,12 @@ const SettingsView: React.FC<IProps> = ({
     prefix: "",
     syncCatalog: { streams: [] },
   });
+
   const {
     updateConnection,
     deleteConnection,
     resetConnection,
   } = useConnection();
-
-  const { connection, isLoadingConnection } = useConnectionLoad(
-    connectionId,
-    activeUpdatingSchemaMode
-  );
 
   const onDelete = useCallback(() => deleteConnection({ connectionId }), [
     deleteConnection,
@@ -107,13 +104,27 @@ const SettingsView: React.FC<IProps> = ({
     connectionId,
   ]);
 
+  const {
+    connection: initialConnection,
+    refreshConnectionCatalog,
+  } = useConnectionLoad(connectionId);
+
+  const [
+    { value: connectionWithRefreshCatalog, loading: isRefreshingCatalog },
+    refreshCatalog,
+  ] = useAsyncFn(refreshConnectionCatalog, [connectionId]);
+
+  const connection = activeUpdatingSchemaMode
+    ? connectionWithRefreshCatalog
+    : initialConnection;
+
   const onSubmit = async (values: ValuesProps) => {
     const initialSyncSchema = connection?.syncCatalog;
 
     await updateConnection({
       ...values,
-      connectionId: connectionId,
-      status: connection?.status || "",
+      connectionId,
+      status: initialConnection.status || "",
       withRefreshedCatalog: activeUpdatingSchemaMode,
     });
 
@@ -141,10 +152,19 @@ const SettingsView: React.FC<IProps> = ({
     }
   };
 
-  const UpdateSchemaButton = () => {
+  const onEnterRefreshCatalogMode = async () => {
+    setActiveUpdatingSchemaMode(true);
+    await refreshCatalog();
+  };
+
+  const onExitRefreshCatalogMode = () => {
+    setActiveUpdatingSchemaMode(false);
+  };
+
+  const renderUpdateSchemaButton = () => {
     if (!activeUpdatingSchemaMode) {
       return (
-        <Button onClick={() => setActiveUpdatingSchemaMode(true)} type="button">
+        <Button onClick={onEnterRefreshCatalogMode} type="button">
           <TryArrow icon={faRedoAlt} />
           <FormattedMessage id="connection.updateSchema" />
         </Button>
@@ -168,16 +188,15 @@ const SettingsView: React.FC<IProps> = ({
             <TitleContainer hasButton={!activeUpdatingSchemaMode}>
               <FormattedMessage id="connection.connectionSettings" />{" "}
             </TitleContainer>
-            {connection && (
-              <EnabledControl
-                connection={connection}
-                frequencyText={frequencyText}
-              />
-            )}
+            <EnabledControl
+              disabled={isRefreshingCatalog}
+              connection={initialConnection}
+              frequencyText={frequencyText}
+            />
           </Title>
         }
       >
-        {!isLoadingConnection && connection ? (
+        {!isRefreshingCatalog && connection ? (
           <ConnectionForm
             isEditMode
             connection={connection}
@@ -186,9 +205,9 @@ const SettingsView: React.FC<IProps> = ({
             successMessage={
               saved && <FormattedMessage id="form.changesSaved" />
             }
-            onCancel={() => setActiveUpdatingSchemaMode(false)}
+            onCancel={onExitRefreshCatalogMode}
             editSchemeMode={activeUpdatingSchemaMode}
-            additionalSchemaControl={UpdateSchemaButton()}
+            additionalSchemaControl={renderUpdateSchemaButton()}
             destinationIcon={destinationDefinition?.icon}
             sourceIcon={sourceDefinition?.icon}
           />
