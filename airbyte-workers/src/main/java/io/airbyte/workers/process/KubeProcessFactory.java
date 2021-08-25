@@ -28,6 +28,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.WorkerUtils;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
 import java.net.InetAddress;
@@ -119,6 +120,7 @@ public class KubeProcessFactory implements ProcessFactory {
           files,
           entrypoint,
           resourceRequirements,
+          WorkerUtils.DEFAULT_WORKER_POD_TOLERATIONS,
           args);
     } catch (Exception e) {
       throw new WorkerException(e.getMessage(), e);

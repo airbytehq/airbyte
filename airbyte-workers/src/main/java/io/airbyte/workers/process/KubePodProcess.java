@@ -27,6 +27,7 @@ package io.airbyte.workers.process;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ResourceRequirements;
+import io.airbyte.config.WorkerPodToleration;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
@@ -34,6 +35,8 @@ import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.ResourceRequirementsBuilder;
+import io.fabric8.kubernetes.api.model.Toleration;
+import io.fabric8.kubernetes.api.model.TolerationBuilder;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
@@ -243,6 +246,20 @@ public class KubePodProcess extends Process {
     LOGGER.info("Init container ready..");
   }
 
+  private Toleration[] buildPodTolerations(List<WorkerPodToleration> tolerations) {
+    if (tolerations == null || tolerations.isEmpty()) {
+      return null;
+    }
+    return tolerations.stream().map(workerPodToleration ->
+            new TolerationBuilder()
+                .withKey(workerPodToleration.getKey())
+                .withEffect(workerPodToleration.getEffect())
+                .withOperator(workerPodToleration.getOperator())
+                .withValue(workerPodToleration.getValue())
+                .build())
+        .toArray(Toleration[]::new);
+  }
+
   public KubePodProcess(String processRunnerHost,
                         ApiClient officialClient,
                         KubernetesClient fabricClient,
@@ -256,6 +273,7 @@ public class KubePodProcess extends Process {
                         final Map<String, String> files,
                         final String entrypointOverride,
                         ResourceRequirements resourceRequirements,
+                        List<WorkerPodToleration> tolerations,
                         final String... args)
       throws IOException, InterruptedException {
     this.fabricClient = fabricClient;
@@ -360,6 +378,7 @@ public class KubePodProcess extends Process {
         .withLabels(AIRBYTE_POD_LABELS)
         .endMetadata()
         .withNewSpec()
+        .withTolerations(buildPodTolerations(tolerations))
         .withRestartPolicy("Never")
         .withInitContainers(init)
         .withContainers(containers)
