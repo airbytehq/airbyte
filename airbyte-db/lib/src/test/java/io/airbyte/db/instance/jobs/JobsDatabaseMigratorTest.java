@@ -22,20 +22,20 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db.instance.configs;
+package io.airbyte.db.instance.jobs;
 
 import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
-public class ConfigsDatabaseMigratorTest extends AbstractConfigsDatabaseTest {
+public class JobsDatabaseMigratorTest extends AbstractJobsDatabaseTest {
 
-  private static final String SCHEMA_DUMP_FILE = "src/main/resources/configs_database/schema_dump.txt";
+  private static final String SCHEMA_DUMP_FILE = "src/main/resources/jobs_database/schema_dump.txt";
 
   @Test
   public void dumpSchema() throws IOException {
-    DatabaseMigrator migrator = new ConfigsDatabaseMigrator(database, ConfigsDatabaseMigratorTest.class.getSimpleName());
+    DatabaseMigrator migrator = new JobsDatabaseMigrator(database, JobsDatabaseMigratorTest.class.getSimpleName());
     MigrationDevHelper.dumpSchema(migrator, SCHEMA_DUMP_FILE);
   }
 

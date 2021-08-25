@@ -27,6 +27,7 @@ package io.airbyte.db.instance.development;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.FlywayDatabaseMigrator;
 import java.io.BufferedReader;
 import java.io.File;
@@ -110,6 +111,16 @@ public class MigrationDevHelper {
       return Optional.empty();
     }
     return Optional.of(migrations.get(migrations.size() - 2).getVersion());
+  }
+
+  public static void dumpSchema(DatabaseMigrator migrator, String schemaDumpFile) throws IOException {
+    migrator.migrate();
+    String schema = migrator.dumpSchema();
+    try (PrintWriter writer = new PrintWriter(new File(Path.of(schemaDumpFile).toUri()))) {
+      writer.println(schema);
+    } catch (FileNotFoundException e) {
+      throw new IOException(e);
+    }
   }
 
   /**

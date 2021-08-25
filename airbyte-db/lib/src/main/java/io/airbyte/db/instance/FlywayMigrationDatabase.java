@@ -25,11 +25,7 @@
 package io.airbyte.db.instance;
 
 import io.airbyte.db.Database;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.file.Path;
 import java.sql.Connection;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -93,9 +89,7 @@ public abstract class FlywayMigrationDatabase extends PostgresDatabase {
 
     Database database = getAndInitializeDatabase(container.getUsername(), container.getPassword(), container.getJdbcUrl());
     DatabaseMigrator migrator = getDatabaseMigrator(database);
-
     migrator.migrate();
-    dumpSchemaFile(migrator);
 
     connection = database.getDataSource().getConnection();
     setConnection(connection);
@@ -106,15 +100,6 @@ public abstract class FlywayMigrationDatabase extends PostgresDatabase {
     JDBCUtils.safeClose(connection);
     connection = null;
     super.close();
-  }
-
-  public void dumpSchemaFile(DatabaseMigrator migrator) throws IOException {
-//    String schema = migrator.dumpSchema();
-//    try (PrintWriter writer = new PrintWriter(new File(Path.of(schemaDumpFile).toUri()))) {
-//      writer.println(schema);
-//    } catch (FileNotFoundException e) {
-//      throw new IOException(e);
-//    }
   }
 
 }
