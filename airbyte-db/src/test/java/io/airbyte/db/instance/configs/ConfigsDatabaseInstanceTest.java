@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db.instance;
+package io.airbyte.db.instance.configs;
 
 import static io.airbyte.db.instance.configs.AirbyteConfigsTable.AIRBYTE_CONFIGS;
 import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CONFIG_BLOB;
@@ -33,58 +33,13 @@ import static io.airbyte.db.instance.configs.AirbyteConfigsTable.UPDATED_AT;
 import static org.jooq.impl.DSL.select;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.airbyte.db.Database;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.UUID;
 import org.jooq.JSONB;
 import org.jooq.exception.DataAccessException;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
 
-class ConfigsDatabaseInstanceTest {
-
-  private static PostgreSQLContainer<?> container;
-
-  @BeforeAll
-  public static void dbSetup() {
-    container = new PostgreSQLContainer<>("postgres:13-alpine")
-        .withDatabaseName("airbyte")
-        .withUsername("docker")
-        .withPassword("docker");
-    container.start();
-  }
-
-  @AfterAll
-  public static void dbDown() {
-    container.close();
-  }
-
-  private Database database;
-
-  @BeforeEach
-  public void setup() throws Exception {
-    database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-
-    Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(System.currentTimeMillis()));
-    database.transaction(ctx -> ctx.insertInto(AIRBYTE_CONFIGS)
-        .set(CONFIG_ID, UUID.randomUUID().toString())
-        .set(CONFIG_TYPE, "STANDARD_SOURCE_DEFINITION")
-        .set(CONFIG_BLOB, JSONB.valueOf("{}"))
-        .set(CREATED_AT, timestamp)
-        .set(UPDATED_AT, timestamp)
-        .execute());
-  }
-
-  @AfterEach
-  void tearDown() throws Exception {
-    database.close();
-  }
+class ConfigsDatabaseInstanceTest extends AbstractConfigsDatabaseTest {
 
   @Test
   public void testGet() throws Exception {
