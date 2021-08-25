@@ -54,3 +54,22 @@ def transform_date_fields(
             record.pop(key)
         result.append(record)
     return result
+
+
+def make_slice(records: List, key_value_map: Dict) -> Dict:
+    """
+    Outputs the Dict with key:value slices for the stream.
+    EXAMPLE:
+        in: records = [{dict}, {dict}, ...], 
+            key_value_map = {<slice_key_name>: <key inside record>}
+        {
+            <slice_key_name> : records.<key inside record>.value,
+            ....
+        }
+    """
+    result = {}
+    for key in key_value_map:
+        value = records[key_value_map.get(key, None)]
+        if value:
+            result.update(**{key: value})
+    return result

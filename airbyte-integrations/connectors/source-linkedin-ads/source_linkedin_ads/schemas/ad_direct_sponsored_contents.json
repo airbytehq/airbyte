@@ -1,0 +1,56 @@
+{
+  "type": [
+    "null",
+    "object"
+  ],
+  "properties": {
+    "owner": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "contentReference": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "name": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "type": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "account": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "status": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "created": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "lastModified": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    }
+  }
+}

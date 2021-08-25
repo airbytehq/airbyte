@@ -6,7 +6,7 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["time"]
+        "default_cursor_field": ["lastModified"]
       },
       "sync_mode": "incremental",
       "cursor_field": ["lastModified"],
@@ -16,7 +16,7 @@
       "stream": {
         "name": "account_users",
         "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["lastModified"]
       },
@@ -28,7 +28,7 @@
       "stream": {
         "name": "campaign_groups",
         "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["lastModified"]
       },
@@ -40,7 +40,7 @@
       "stream": {
         "name": "campaigns",
         "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["lastModified"]
       },
@@ -52,7 +52,19 @@
       "stream": {
         "name": "creatives",
         "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"],
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["lastModified"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["lastModified"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ad_direct_sponsored_contents",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["lastModified"]
       },
