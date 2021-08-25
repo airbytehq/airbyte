@@ -33,8 +33,9 @@ public class BigQueryConsts {
   public static final String CONFIG_CREDS = "credentials_json";
   public static final String BIG_QUERY_CLIENT_CHUNK_SIZE = "big_query_client_buffer_size_mb";
 
-  public static final String PROPERTIES = "properties";
   public static final String LOADING_METHOD = "loading_method";
+  public static final String METHOD = "method";
+  public static final String GCS_STAGING = "GCS Staging";
   public static final String GCS_BUCKET_NAME = "gcs_bucket_name";
   public static final String GCS_BUCKET_PATH = "gcs_bucket_path";
   public static final String GCS_BUCKET_REGION = "gcs_bucket_region";
@@ -48,6 +49,5 @@ public class BigQueryConsts {
   public static final String CREDENTIAL_TYPE = "credential_type";
   public static final String HMAC_KEY_ACCESS_ID = "hmac_key_access_id";
   public static final String HMAC_KEY_ACCESS_SECRET = "hmac_key_secret";
-  public static final String HMAC_KEY = "HMAC_KEY";
 
 }

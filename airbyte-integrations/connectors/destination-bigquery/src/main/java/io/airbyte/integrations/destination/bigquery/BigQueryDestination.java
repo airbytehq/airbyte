@@ -108,7 +108,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       // GCS upload time re-uses destination-GCS for check and other uploading (CSV format writer)
       if (UploadingMethod.GCS.equals(uploadingMethod)) {
         GcsDestination gcsDestination = new GcsDestination();
-        AirbyteConnectionStatus airbyteConnectionStatus = gcsDestination.check(BigQueryUtils.getGcsJsonNodeConfig(config));
+        JsonNode gcsJsonNodeConfig = BigQueryUtils.getGcsJsonNodeConfig(config);
+        AirbyteConnectionStatus airbyteConnectionStatus = gcsDestination.check(gcsJsonNodeConfig);
         if (Status.FAILED == airbyteConnectionStatus.getStatus()) {
           return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(airbyteConnectionStatus.getMessage());
         }
@@ -303,9 +304,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   private UploadingMethod getLoadingMethod(JsonNode config) {
-    JsonNode properties = config.get("properties");
-    if (properties != null && properties.get(BigQueryConsts.LOADING_METHOD) != null
-        && "GCS Staging".equals(properties.get(BigQueryConsts.LOADING_METHOD).asText())) {
+    JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
+    if (loadingMethod != null && BigQueryConsts.GCS_STAGING.equals(loadingMethod.get(BigQueryConsts.METHOD).asText())) {
       LOGGER.info("Selected loading method is set to: " + UploadingMethod.GCS);
       return UploadingMethod.GCS;
     } else {

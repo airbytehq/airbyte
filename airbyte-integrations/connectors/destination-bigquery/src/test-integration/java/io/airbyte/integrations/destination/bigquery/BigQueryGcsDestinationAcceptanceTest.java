@@ -214,8 +214,8 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
         .put(BigQueryConsts.HMAC_KEY_ACCESS_SECRET, gcsCredentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_SECRET))
         .build());
 
-    JsonNode properties = Jsons.jsonNode(ImmutableMap.builder()
-        .put(BigQueryConsts.LOADING_METHOD, "GCS Staging")
+    JsonNode loadingMethod = Jsons.jsonNode(ImmutableMap.builder()
+        .put(BigQueryConsts.METHOD, BigQueryConsts.GCS_STAGING)
         .put(BigQueryConsts.GCS_BUCKET_NAME, gcsConfigFromSecretFile.get(BigQueryConsts.GCS_BUCKET_NAME))
         .put(BigQueryConsts.GCS_BUCKET_PATH, gcsConfigFromSecretFile.get(BigQueryConsts.GCS_BUCKET_PATH).asText() + System.currentTimeMillis())
         .put(BigQueryConsts.CREDENTIAL, credential)
@@ -226,7 +226,7 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
         .put(BigQueryConsts.CONFIG_CREDS, bigqueryConfigFromSecretFile.toString())
         .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
         .put(BigQueryConsts.CONFIG_DATASET_LOCATION, datasetLocation)
-        .put(BigQueryConsts.PROPERTIES, properties)
+        .put(BigQueryConsts.LOADING_METHOD, loadingMethod)
         .build());
 
     final ServiceAccountCredentials credentials = ServiceAccountCredentials
@@ -267,7 +267,7 @@ public class BigQueryGcsDestinationAcceptanceTest extends DestinationAcceptanceT
    * Remove all the GCS output from the tests.
    */
   protected void tearDownGcs() {
-    JsonNode properties = config.get(BigQueryConsts.PROPERTIES);
+    JsonNode properties = config.get(BigQueryConsts.LOADING_METHOD);
     String gcsBucketName = properties.get(BigQueryConsts.GCS_BUCKET_NAME).asText();
     String gcs_bucket_path = properties.get(BigQueryConsts.GCS_BUCKET_PATH).asText();
 

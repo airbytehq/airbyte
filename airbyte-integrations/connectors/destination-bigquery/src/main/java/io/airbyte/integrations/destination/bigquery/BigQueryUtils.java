@@ -116,12 +116,12 @@ public class BigQueryUtils {
   }
 
   public static JsonNode getGcsJsonNodeConfig(JsonNode config) {
-    JsonNode properties = config.get(BigQueryConsts.PROPERTIES);
+    JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
     JsonNode gcsJsonNode = Jsons.jsonNode(ImmutableMap.builder()
-        .put(BigQueryConsts.GCS_BUCKET_NAME, properties.get(BigQueryConsts.GCS_BUCKET_NAME))
-        .put(BigQueryConsts.GCS_BUCKET_PATH, properties.get(BigQueryConsts.GCS_BUCKET_PATH))
+        .put(BigQueryConsts.GCS_BUCKET_NAME, loadingMethod.get(BigQueryConsts.GCS_BUCKET_NAME))
+        .put(BigQueryConsts.GCS_BUCKET_PATH, loadingMethod.get(BigQueryConsts.GCS_BUCKET_PATH))
         .put(BigQueryConsts.GCS_BUCKET_REGION, getDatasetLocation(config))
-        .put(BigQueryConsts.CREDENTIAL, properties.get(BigQueryConsts.CREDENTIAL))
+        .put(BigQueryConsts.CREDENTIAL, loadingMethod.get(BigQueryConsts.CREDENTIAL))
         .put(BigQueryConsts.FORMAT, Jsons.deserialize("{\n"
             + "  \"format_type\": \"CSV\",\n"
             + "  \"flattening\": \"No flattening\"\n"

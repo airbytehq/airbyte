@@ -170,8 +170,8 @@ class BigQueryGcsDestinationTest {
         .put(BigQueryConsts.HMAC_KEY_ACCESS_SECRET, credentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_SECRET))
         .build());
 
-    JsonNode properties = Jsons.jsonNode(ImmutableMap.builder()
-        .put(BigQueryConsts.LOADING_METHOD, "GCS Staging")
+    JsonNode loadingMethod = Jsons.jsonNode(ImmutableMap.builder()
+        .put(BigQueryConsts.METHOD, BigQueryConsts.GCS_STAGING)
         .put(BigQueryConsts.GCS_BUCKET_NAME, credentialsGcsJson.get(BigQueryConsts.GCS_BUCKET_NAME))
         .put(BigQueryConsts.GCS_BUCKET_PATH, credentialsGcsJson.get(BigQueryConsts.GCS_BUCKET_PATH).asText() + System.currentTimeMillis())
         .put(BigQueryConsts.CREDENTIAL, credential)
@@ -182,7 +182,7 @@ class BigQueryGcsDestinationTest {
         .put(BigQueryConsts.CONFIG_CREDS, credentialsJson.toString())
         .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
         .put(BigQueryConsts.CONFIG_DATASET_LOCATION, datasetLocation)
-        .put(BigQueryConsts.PROPERTIES, properties)
+        .put(BigQueryConsts.LOADING_METHOD, loadingMethod)
         .put(BIG_QUERY_CLIENT_CHUNK_SIZE, 10)
         .build());
 
@@ -216,7 +216,7 @@ class BigQueryGcsDestinationTest {
    * Remove all the GCS output from the tests.
    */
   protected void tearDownGcs() {
-    JsonNode properties = config.get(BigQueryConsts.PROPERTIES);
+    JsonNode properties = config.get(BigQueryConsts.LOADING_METHOD);
     String gcsBucketName = properties.get(BigQueryConsts.GCS_BUCKET_NAME).asText();
     String gcs_bucket_path = properties.get(BigQueryConsts.GCS_BUCKET_PATH).asText();
 
