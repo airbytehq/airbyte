@@ -61,12 +61,15 @@ def setup_test_path(request):
 
 
 @pytest.mark.parametrize("column_count", [1500])
-@pytest.mark.parametrize("integration_type", list(DestinationType))
+# @pytest.mark.parametrize("integration_type", list(DestinationType))
+@pytest.mark.parametrize("integration_type", [DestinationType.ORACLE])
 def test_destination_supported_limits(integration_type: DestinationType, column_count: int):
     if integration_type == DestinationType.MYSQL:
         # In MySQL, the max number of columns is limited by row size (8KB),
         # not by absolute column count. It is way fewer than 1500.
         return
+    if integration_type == DestinationType.ORACLE:
+        column_count = 998
     run_test(integration_type, column_count)
 
 
@@ -86,6 +89,7 @@ def test_destination_supported_limits(integration_type: DestinationType, column_
         ),
         ("Redshift", 1665, "target lists can have at most 1664 entries"),
         ("MySQL", 250, "Row size too large"),
+        ("Oracle", 1001, "ORA-01792: maximum number of columns in a table or view is 1000"),
     ],
 )
 def test_destination_failure_over_limits(integration_type: str, column_count: int, expected_exception_message: str, setup_test_path):
@@ -106,6 +110,7 @@ def run_test(destination_type: DestinationType, column_count: int, expected_exce
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
     test_root_dir = setup_test_dir(integration_type)
     destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, test_root_dir)
+    dbt_test_utils.generate_project_yaml_file(destination_type, test_root_dir)
     # generate a catalog and associated dbt models files
     generate_dbt_models(destination_type, test_root_dir, column_count)
     # Use destination connector to create empty _airbyte_raw_* tables to use as input for the test
@@ -203,4 +208,7 @@ def generate_dbt_models(destination_type: DestinationType, test_root_dir: str, c
     catalog = os.path.join(test_root_dir, "catalog.json")
     with open(catalog, "w") as fh:
         fh.write(json.dumps(catalog_config))
-    catalog_processor.process(catalog, "_airbyte_data", dbt_test_utils.target_schema)
+    airbyte_data = "_airbyte_data"
+    if destination_type == DestinationType.ORACLE:
+        airbyte_data = airbyte_data[1:]
+    catalog_processor.process(catalog, airbyte_data, dbt_test_utils.target_schema)
