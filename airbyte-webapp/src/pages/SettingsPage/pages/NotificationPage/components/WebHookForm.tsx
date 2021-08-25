@@ -6,8 +6,8 @@ import * as yup from "yup";
 
 import { Label, Input, LoadingButton, LabeledToggle } from "components";
 import { Row, Cell } from "components/SimpleTableComponents";
-import { WebhookPayload } from "../../../../../components/hooks/services/useWorkspace";
-import { equal } from "../../../../../utils/objects";
+import { WebhookPayload } from "components/hooks/services/useWorkspace";
+import { equal } from "utils/objects";
 
 const Text = styled.div`
   font-style: normal;
@@ -162,13 +162,7 @@ const WebHookForm: React.FC<WebHookFormProps> = ({
                   <LabeledToggle
                     name={field.name}
                     checked={field.value}
-                    onChange={(event) => {
-                      onSubmit({
-                        webhook: webhook.webhook,
-                        sendOnFailure: event.target.checked,
-                        sendOnSuccess: webhook.sendOnSuccess,
-                      });
-                    }}
+                    onChange={field.onChange}
                     label={<FormattedMessage id="settings.sendOnFailure" />}
                   />
                 )}
@@ -180,13 +174,7 @@ const WebHookForm: React.FC<WebHookFormProps> = ({
                   <LabeledToggle
                     name={field.name}
                     checked={field.value}
-                    onChange={(event) => {
-                      onSubmit({
-                        webhook: webhook.webhook,
-                        sendOnFailure: webhook.sendOnFailure,
-                        sendOnSuccess: event.target.checked,
-                      });
-                    }}
+                    onChange={field.onChange}
                     label={<FormattedMessage id="settings.sendOnSuccess" />}
                   />
                 )}
