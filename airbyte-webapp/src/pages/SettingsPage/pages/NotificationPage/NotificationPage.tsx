@@ -1,6 +1,9 @@
-import React, { useCallback, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
-import useWorkspace from "hooks/services/useWorkspace";
+import NotificationsForm from "./components/NotificationsForm";
+import useWorkspace, {
+  WebhookPayload,
+} from "components/hooks/services/useWorkspace";
 import WebHookForm from "./components/WebHookForm";
 import HeadTitle from "components/HeadTitle";
 
@@ -49,23 +52,20 @@ const NotificationPage: React.FC = () => {
     updateWebhook(data)
   );
 
-  const onTestWebhook = async (data: {
-    webhook: string;
-    sendOnSuccess: boolean;
-    sendOnFailure: boolean;
-  }) => {
-    await testWebhook(data.webhook, data.sendOnSuccess, data.sendOnFailure);
+  const onTestWebhook = async (data: WebhookPayload) => {
+    await testWebhook(data);
   };
 
-  const initialWebhookUrl = workspace.notifications?.length
-      ? workspace.notifications[0].slackConfiguration.webhook
-      : "";
-  const initialSendOnSuccess = workspace.notifications?.length
-      ? workspace.notifications[0].slackConfiguration.sendOnSuccess
-      : false;
-  const initialSendOnFailure = workspace.notifications?.length
-      ? workspace.notifications[0].slackConfiguration.sendOnFailure
-      : false;
+  const firstNotification = workspace.notifications?.[0];
+
+  const initialValues = useMemo(
+    () => ({
+      webhook: firstNotification?.slackConfiguration?.webhook,
+      sendOnSuccess: firstNotification?.sendOnSuccess,
+      sendOnFailure: firstNotification?.sendOnFailure,
+    }),
+    [firstNotification]
+  );
 
   return (
     <>
@@ -77,11 +77,7 @@ const NotificationPage: React.FC = () => {
       >
         <Content>
           <WebHookForm
-            webhook={{
-              notificationUrl: initialWebhookUrl,
-              sendOnSuccess: initialSendOnSuccess,
-              sendOnFailure: initialSendOnFailure,
-            }}
+            webhook={initialValues}
             onSubmit={onSubmitWebhook}
             onTest={onTestWebhook}
             errorMessage={errorMessage}
