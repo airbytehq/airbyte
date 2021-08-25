@@ -319,9 +319,11 @@ class Ads(BingAdsStream):
 class BudgetSummaryReport(IncrementalReportStream, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
-    operation_name: str = "BudgetSummaryReport"
+    report_name: str = "BudgetSummaryReport"
+    operation_name: str = "download_report"
     additional_fields: str = ""
     cursor_field = 'Date'
+    cursor_aggregation = ['AccountId']
 
     report_columns = [
         "AccountName",
@@ -339,10 +341,12 @@ class BudgetSummaryReport(IncrementalReportStream, BingAdsStream):
 class CampaignPerformanceReport(IncrementalReportStream, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
-    operation_name: str = "CampaignPerformanceReport"
+    report_name: str = "CampaignPerformanceReport"
+    operation_name: str = "download_report"
     additional_fields: str = ""
     aggregation = "Daily"
     cursor_field = 'TimePeriod'
+    cursor_aggregation = ['AccountId', 'Network', 'DeviceType', 'CampaignId']
 
     report_columns = [
         "AccountName",
@@ -367,10 +371,12 @@ class CampaignPerformanceReport(IncrementalReportStream, BingAdsStream):
 class AdPerformanceReport(IncrementalReportStream, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
-    operation_name: str = "AdPerformanceReport"
+    report_name: str = "AdPerformanceReport"
+    operation_name: str = "download_report"
     additional_fields: str = ""
     aggregation = "Daily"
     cursor_field = 'TimePeriod'
+    cursor_aggregation = ['AccountId', 'Network', 'DeviceType', 'AdId']
 
     report_columns = [
         "AccountName",
@@ -400,10 +406,12 @@ class AdPerformanceReport(IncrementalReportStream, BingAdsStream):
 class AdGroupPerformanceReport(IncrementalReportStream, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
-    operation_name: str = "AdGroupPerformanceReport"
+    report_name: str = "AdGroupPerformanceReport"
+    operation_name: str = "download_report"
     additional_fields: str = ""
     aggregation = "Daily"
     cursor_field = 'TimePeriod'
+    cursor_aggregation = ['AccountId', 'Network', 'DeviceType', 'AdGroupId']
 
     report_columns = [
         "AccountName",
@@ -430,10 +438,12 @@ class AdGroupPerformanceReport(IncrementalReportStream, BingAdsStream):
 class KeywordPerformanceReport(IncrementalReportStream, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
-    operation_name: str = "KeywordPerformanceReport"
+    report_name: str = "KeywordPerformanceReport"
+    operation_name: str = "download_report"
     additional_fields: str = ""
     aggregation = "Daily"
     cursor_field = 'TimePeriod'
+    cursor_aggregation = ['AccountId', 'Network', 'DeviceType', 'KeywordId']
 
     report_columns = [
         "AccountName",
@@ -462,10 +472,12 @@ class KeywordPerformanceReport(IncrementalReportStream, BingAdsStream):
 class AccountPerformanceReport(IncrementalReportStream, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
-    operation_name: str = "AccountPerformanceReport"
+    report_name: str = "AccountPerformanceReport"
+    operation_name: str = "download_report"
     additional_fields: str = ""
     aggregation = "Daily"
     cursor_field = 'TimePeriod'
+    cursor_aggregation = ['AccountId', 'Network', 'DeviceType']
 
     report_columns = [
         "AccountName",

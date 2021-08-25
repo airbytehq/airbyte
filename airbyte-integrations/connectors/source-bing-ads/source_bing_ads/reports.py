@@ -25,20 +25,47 @@
 from datetime import datetime
 from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 import abc
+
 import source_bing_ads.source
 from airbyte_cdk.models import SyncMode
 from bingads.v13.reporting import ReportingDownloadParameters
+from bingads.v13.internal.reporting.row_report import _RowReport
 from suds import sudsobject
 import pendulum
 
 
 class IncrementalReportStream(abc.ABC):
-    file_directory = "/tmp"
-    timeout = 60000  # in milliseconds
-    report_file_format = "Csv"
-    # list of possible aggregations, if None aggregation is disabled
+    file_directory: str = "/tmp"
+    timeout: int = 60000  # in milliseconds
+    report_file_format: str = "Csv"
+    # list of possible aggregations
     # https://docs.microsoft.com/en-us/advertising/reporting-service/reportaggregation?view=bingads-13
-    aggregation = None
+    # if None aggregation is disabled
+    aggregation: Optional[str] = None
+
+    @property
+    @abc.abstractmethod
+    def report_name(self) -> str:
+        """
+        Specifies bing ads report naming
+        """
+        pass
+
+    @property
+    @abc.abstractmethod
+    def report_columns(self) -> Iterable[str]:
+        """
+        Specifies bing ads report naming
+        """
+        pass
+
+    @property
+    @abc.abstractmethod
+    def cursor_aggregation(self) -> Iterable[str]:
+        """
+        Specifies bing ads report naming
+        """
+        pass
 
     def get_request_date(self, reporting_service, date: datetime) -> sudsobject.Object:
         request_date = reporting_service.factory.create("Date")
@@ -76,34 +103,34 @@ class IncrementalReportStream(abc.ABC):
         return {
             "report_request": report_request,
             "result_file_directory": self.file_directory,
-            "result_file_name": self.operation_name,
+            "result_file_name": self.report_name,
             "overwrite_result_file": True,
             "timeout_in_milliseconds": self.timeout,
         }
 
-    def get_cursor_value(self, latest_record: Mapping[str, Any]) -> Union[str, int, None]:
-        for key in self.cursor:
-            try:
-                latest_record = latest_record[key]
-            except KeyError:
-                return None
-
-        return latest_record
+    def get_record_state_field(self, latest_record: Mapping[str, Any]) -> str:
+        return ":".join([latest_record[key] for key in self.cursor_aggregation])
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        account_id = latest_record['AccountId']
-        current_stream_state[account_id] = current_stream_state.get(account_id, {})
+        field_name = self.get_record_state_field(latest_record)
 
-        current_stream_state[account_id][self.cursor_field] = max(
+        current_stream_state[field_name] = max(
             pendulum.parse(latest_record[self.cursor_field]).int_timestamp,
-            current_stream_state[account_id].get(self.cursor_field, 1),
+            current_stream_state.get(field_name, 1),
         )
         return current_stream_state
 
-    def send_request(self, params: Mapping[str, Any], account_id: str):
-        reporting_service_manager = self.client.get_reporting_service(account_id)
-        reporting_download_parameters = ReportingDownloadParameters(**params)
-        return reporting_service_manager.download_report(reporting_download_parameters)
+    def send_request(self, params: Mapping[str, Any], account_id: str) -> _RowReport:
+        request_kwargs = {
+            "service_name": None,
+            "account_id": account_id,
+            "operation_name": self.operation_name,
+            "is_report_service": True,
+            "params": {
+                "download_parameters": ReportingDownloadParameters(**params)
+            },
+        }
+        return self.client.request(**request_kwargs)
 
     def get_report_request(
         self,
@@ -117,7 +144,7 @@ class IncrementalReportStream(abc.ABC):
         time: sudsobject.Object,
     ) -> sudsobject.Object:
         reporting_service = self.client.get_service(self.service_name)
-        report_request = reporting_service.factory.create(f"{self.operation_name}Request")
+        report_request = reporting_service.factory.create(f"{self.report_name}Request")
         if aggregation:
             report_request.Aggregation = aggregation
         report_request.ExcludeColumnHeaders = exclude_column_headers
@@ -126,14 +153,14 @@ class IncrementalReportStream(abc.ABC):
         report_request.Format = report_file_format
         report_request.ReturnOnlyCompleteData = return_only_complete_data
         report_request.Time = time
-        report_request.ReportName = self.operation_name
+        report_request.ReportName = self.report_name
         scope = reporting_service.factory.create("AccountThroughCampaignReportScope")
         scope.AccountIds = {"long": [account_id]}
         scope.Campaigns = None
         report_request.Scope = scope
 
-        columns = reporting_service.factory.create(f"ArrayOf{self.operation_name}Column")
-        getattr(columns, f"{self.operation_name}Column").append(self.report_columns)
+        columns = reporting_service.factory.create(f"ArrayOf{self.report_name}Column")
+        getattr(columns, f"{self.report_name}Column").append(self.report_columns)
         report_request.Columns = columns
         return report_request
 

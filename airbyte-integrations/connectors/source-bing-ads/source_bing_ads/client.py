@@ -49,6 +49,10 @@ class Client:
     # A backoff factor to apply between attempts after the second try
     # {retry_factor} * (2 ** ({number of total retries} - 1))
     retry_factor: int = 15
+    # environments supported by Microsoft Advertising: sandbox, production
+    environment: str = "production"
+    # The time interval in milliseconds between two status polling attempts.
+    report_poll_interval: int = 15000
 
     def __init__(
         self,
@@ -126,10 +130,11 @@ class Client:
 
     def _request(
         self,
-        service_name: str,
+        service_name: Optional[str],
         operation_name: str,
         account_id: Optional[str],
         params: Mapping[str, Any],
+        is_report_service: bool = False
     ) -> Mapping[str, Any]:
         """
         Executes appropriate Service Operation on Bing Ads API
@@ -137,7 +142,11 @@ class Client:
         if self.is_token_expiring():
             self.oauth = self._get_access_token()
 
-        service = self.get_service(service_name=service_name, account_id=account_id)
+        if is_report_service:
+            service = self._get_reporting_service(account_id=account_id)
+        else:
+            service = self.get_service(service_name=service_name, account_id=account_id)
+
         return getattr(service, operation_name)(**params)
 
     @lru_cache(maxsize=None)
@@ -150,19 +159,18 @@ class Client:
             service=service_name,
             version=self.api_version,
             authorization_data=self._get_auth_data(account_id),
-            # environments supported by Microsoft Advertising: sandbox, production
-            environment="production",
+            environment=self.environment,
         )
 
     @lru_cache(maxsize=None)
-    def get_reporting_service(
+    def _get_reporting_service(
         self,
         account_id: Optional[str] = None,
     ) -> ServiceClient:
         return ReportingServiceManager(
             authorization_data=self._get_auth_data(account_id),
-            poll_interval_in_milliseconds=5000,
-            environment="production",
+            poll_interval_in_milliseconds=self.report_poll_interval,
+            environment=self.environment,
         )
 
     @classmethod
