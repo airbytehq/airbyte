@@ -24,3 +24,27 @@ dependencies {
     implementation 'org.projectlombok:lombok:1.18.20'
     annotationProcessor('org.projectlombok:lombok:1.18.20')
 }
+
+task(newConfigsMigration, dependsOn: 'classes', type: JavaExec) {
+    main = 'io.airbyte.db.instance.development.MigrationDevCenter'
+    classpath = sourceSets.main.runtimeClasspath
+    args 'configs', 'create'
+}
+
+task(runConfigsMigration, dependsOn: 'classes', type: JavaExec) {
+    main = 'io.airbyte.db.instance.development.MigrationDevCenter'
+    classpath = sourceSets.main.runtimeClasspath
+    args 'configs', 'migrate'
+}
+
+task(newJobsMigration, dependsOn: 'classes', type: JavaExec) {
+    main = 'io.airbyte.db.instance.development.MigrationDevCenter'
+    classpath = sourceSets.main.runtimeClasspath
+    args 'jobs', 'create'
+}
+
+task(runJobsMigration, dependsOn: 'classes', type: JavaExec) {
+    main = 'io.airbyte.db.instance.development.MigrationDevCenter'
+    classpath = sourceSets.main.runtimeClasspath
+    args 'jobs', 'migrate'
+}

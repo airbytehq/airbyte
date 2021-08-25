@@ -93,7 +93,7 @@ public class MigrationDevHelper {
     String fileName = String.format("V%s__%s.java", versionId, description);
     String filePath = String.format("src/main/java/io/airbyte/db/instance/%s/migrations/%s", dbIdentifier, fileName);
 
-    LOGGER.info("New migration file: {}", filePath);
+    System.out.println("\n==== New Migration File ====\n" + filePath);
 
     File file = new File(Path.of(filePath).toUri());
     FileUtils.forceMkdirParent(file);
