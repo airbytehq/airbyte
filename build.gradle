@@ -114,7 +114,7 @@ allprojects {
     afterEvaluate { project ->
         def composeDeps = [
                 ":airbyte-config:init",
-                ":airbyte-db",
+                ":airbyte-db:lib",
                 ":airbyte-migration",
                 ":airbyte-scheduler:app",
                 ":airbyte-server",
