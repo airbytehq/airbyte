@@ -22,7 +22,10 @@ type AuthContextApi = {
   isLoading: boolean;
   login: (values: { email: string; password: string }) => Promise<User | null>;
   signUp: (form: { email: string; password: string }) => Promise<User | null>;
-  resetPassword: (email: string) => Promise<void>;
+  requirePasswordReset: (email: string) => Promise<void>;
+  confirmPasswordReset: (code: string, newPassword: string) => Promise<void>;
+  sendEmailVerification: () => Promise<void>;
+  verifyEmail: (code: string) => Promise<void>;
   logout: () => void;
 };
 
@@ -45,10 +48,14 @@ const userService = new UserService(
 );
 
 export const AuthenticationProvider: React.FC = ({ children }) => {
-  const [state, { loggedIn, authInited, loggedOut }] = useTypesafeReducer<
-    AuthServiceState,
-    typeof actions
-  >(authStateReducer, initialState, actions);
+  const [
+    state,
+    { loggedIn, emailVerified, authInited, loggedOut },
+  ] = useTypesafeReducer<AuthServiceState, typeof actions>(
+    authStateReducer,
+    initialState,
+    actions
+  );
 
   useEffect(() => {
     firebaseApp.auth().onAuthStateChanged(async (currentUser) => {
@@ -74,7 +81,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         }
 
         if (user) {
-          loggedIn(user);
+          loggedIn({ user, emailVerified: currentUser.emailVerified });
         }
       } else {
         authInited();
@@ -88,7 +95,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
     () => ({
       inited: state.inited,
       isLoading: state.loading,
-      emailVerified: !!firebaseApp.auth().currentUser?.emailVerified,
+      emailVerified: state.emailVerified,
       async login(values: {
         email: string;
         password: string;
@@ -102,11 +109,18 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         loggedOut();
         await queryClient.invalidateQueries();
       },
-      async resetPassword(email: string): Promise<void> {
+      async requirePasswordReset(email: string): Promise<void> {
         await authService.resetPassword(email);
       },
-      async confirmPasswordReset(_email: string, _code: string): Promise<void> {
-        throw new Error("not yet implemented");
+      async sendEmailVerification(): Promise<void> {
+        await authService.getCurrentUser()?.sendEmailVerification();
+      },
+      async verifyEmail(code: string): Promise<void> {
+        await firebaseApp.auth().applyActionCode(code);
+        emailVerified(true);
+      },
+      async confirmPasswordReset(code: string, email: string): Promise<void> {
+        await firebaseApp.auth().confirmPasswordReset(code, email);
       },
       async signUp(form: {
         email: string;

@@ -1,22 +1,24 @@
 import React from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Field, FieldProps, Formik } from "formik";
 import * as yup from "yup";
-import { FormattedMessage, useIntl } from "react-intl";
 
-import { BottomBlock, FieldItem, Form } from "../components/FormComponents";
-import { LoadingButton, LabeledInput, Link } from "components";
-import { FormTitle } from "../components/FormTitle";
-import { Routes } from "../../../routes";
-import { useAuthService } from "packages/cloud/services/auth/AuthService";
+import { LabeledInput, Link, LoadingButton } from "components";
 import useRouterHook from "hooks/useRouter";
 
+import { Routes } from "packages/cloud/routes";
+import { useAuthService } from "packages/cloud/services/auth/AuthService";
+import { FormTitle } from "../components/FormTitle";
+
+import { BottomBlock, FieldItem, Form } from "../components/FormComponents";
+
 const ResetPasswordPageValidationSchema = yup.object().shape({
-  email: yup.string().email("form.email.error").required("form.empty.error"),
+  newPassword: yup.string().required("form.empty.error"),
 });
 
-const ResetPasswordPage: React.FC = () => {
-  const { requirePasswordReset } = useAuthService();
-  const { push } = useRouterHook();
+const ResetPasswordConfirmPage: React.FC = () => {
+  const { confirmPasswordReset } = useAuthService();
+  const { push, query } = useRouterHook<{ oobCode: string }>();
   const formatMessage = useIntl().formatMessage;
 
   return (
@@ -27,12 +29,12 @@ const ResetPasswordPage: React.FC = () => {
 
       <Formik
         initialValues={{
-          email: "",
+          newPassword: "",
         }}
         validationSchema={ResetPasswordPageValidationSchema}
-        onSubmit={async ({ email }) => {
-          await requirePasswordReset(email);
-          push(Routes.ConfirmPasswordReset);
+        onSubmit={async ({ newPassword }) => {
+          await confirmPasswordReset(query.oobCode, newPassword);
+          push(Routes.Login);
         }}
         validateOnBlur={true}
         validateOnChange={false}
@@ -40,15 +42,17 @@ const ResetPasswordPage: React.FC = () => {
         {({ isSubmitting }) => (
           <Form>
             <FieldItem>
-              <Field name="email">
+              <Field name="newPassword">
                 {({ field, meta }: FieldProps<string>) => (
                   <LabeledInput
                     {...field}
-                    label={<FormattedMessage id="login.yourEmail" />}
+                    label={
+                      <FormattedMessage id="confirmRestPassword.yourNewPassword" />
+                    }
                     placeholder={formatMessage({
-                      id: "login.yourEmail.placeholder",
+                      id: "confirmRestPassword.yourNewPassword.placeholder",
                     })}
-                    type="text"
+                    type="password"
                     error={!!meta.error && meta.touched}
                     message={
                       meta.touched &&
@@ -74,4 +78,4 @@ const ResetPasswordPage: React.FC = () => {
   );
 };
 
-export default ResetPasswordPage;
+export { ResetPasswordConfirmPage };

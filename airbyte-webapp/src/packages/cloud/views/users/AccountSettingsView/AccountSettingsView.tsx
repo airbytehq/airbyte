@@ -80,40 +80,10 @@ const AccountSettingsView: React.FC = () => {
                       />
                     )}
                   </Field>
-                  {/*<Field name="lastName">*/}
-                  {/*  {({ field, meta }: FieldProps<string>) => (*/}
-                  {/*    <LabeledInput*/}
-                  {/*      {...field}*/}
-                  {/*      label={*/}
-                  {/*        <FormattedMessage id="settings.accountSettings.lastName" />*/}
-                  {/*      }*/}
-                  {/*      placeholder={formatMessage({*/}
-                  {/*        id: "settings.accountSettings.lastName.placeholder",*/}
-                  {/*      })}*/}
-                  {/*      type="text"*/}
-                  {/*      error={!!meta.error && meta.touched}*/}
-                  {/*      message={*/}
-                  {/*        meta.touched &&*/}
-                  {/*        meta.error &&*/}
-                  {/*        formatMessage({ id: meta.error })*/}
-                  {/*      }*/}
-                  {/*    />*/}
-                  {/*  )}*/}
-                  {/*</Field>*/}
                 </RowFieldItem>
               </Form>
             )}
           </Formik>
-          <NotificationsForm
-            isLoading={loading}
-            errorMessage={errorMessage}
-            successMessage={successMessage}
-            onChange={onChange}
-            preferencesValues={{
-              news: workspace.news,
-              securityUpdates: workspace.securityUpdates,
-            }}
-          />
         </Content>
       </SettingsCard>
       <SettingsCard title={<FormattedMessage id="settings.account" />}>
@@ -169,8 +139,8 @@ const AccountSettingsView: React.FC = () => {
         <Content>
           <Formik
             initialValues={{
-              name: user.name,
-              email: user.email,
+              currentPassword: "",
+              repeatPassword: "",
               password: "",
             }}
             onSubmit={() => {
@@ -179,60 +149,18 @@ const AccountSettingsView: React.FC = () => {
           >
             {() => (
               <Form>
-                <RowFieldItem>
-                  <Field name="name">
-                    {({ field, meta }: FieldProps<string>) => (
-                      <LabeledInput
-                        {...field}
-                        label={
-                          <FormattedMessage id="settings.accountSettings.fullName" />
-                        }
-                        placeholder={formatMessage({
-                          id: "settings.accountSettings.fullName.placeholder",
-                        })}
-                        type="text"
-                        error={!!meta.error && meta.touched}
-                        message={
-                          meta.touched &&
-                          meta.error &&
-                          formatMessage({ id: meta.error })
-                        }
-                      />
-                    )}
-                  </Field>
-                  {/*<Field name="lastName">*/}
-                  {/*  {({ field, meta }: FieldProps<string>) => (*/}
-                  {/*    <LabeledInput*/}
-                  {/*      {...field}*/}
-                  {/*      label={*/}
-                  {/*        <FormattedMessage id="settings.accountSettings.lastName" />*/}
-                  {/*      }*/}
-                  {/*      placeholder={formatMessage({*/}
-                  {/*        id: "settings.accountSettings.lastName.placeholder",*/}
-                  {/*      })}*/}
-                  {/*      type="text"*/}
-                  {/*      error={!!meta.error && meta.touched}*/}
-                  {/*      message={*/}
-                  {/*        meta.touched &&*/}
-                  {/*        meta.error &&*/}
-                  {/*        formatMessage({ id: meta.error })*/}
-                  {/*      }*/}
-                  {/*    />*/}
-                  {/*  )}*/}
-                  {/*</Field>*/}
-                </RowFieldItem>
                 <FieldItem>
-                  <Field name="email">
+                  <Field name="currentPassword">
                     {({ field, meta }: FieldProps<string>) => (
                       <LabeledInput
                         {...field}
                         label={
-                          <FormattedMessage id="settings.accountSettings.email" />
+                          <FormattedMessage id="settings.accountSettings.currentPassword" />
                         }
                         placeholder={formatMessage({
-                          id: "login.yourEmail.placeholder",
+                          id: "login.password.placeholder",
                         })}
-                        type="text"
+                        type="password"
                         error={!!meta.error && meta.touched}
                         message={
                           meta.touched &&
@@ -265,19 +193,31 @@ const AccountSettingsView: React.FC = () => {
                     )}
                   </Field>
                 </FieldItem>
+                <FieldItem>
+                  <Field name="repeatPassword">
+                    {({ field, meta }: FieldProps<string>) => (
+                      <LabeledInput
+                        {...field}
+                        label={
+                          <FormattedMessage id="settings.accountSettings.password" />
+                        }
+                        placeholder={formatMessage({
+                          id: "login.password.placeholder",
+                        })}
+                        type="password"
+                        error={!!meta.error && meta.touched}
+                        message={
+                          meta.touched &&
+                          meta.error &&
+                          formatMessage({ id: meta.error })
+                        }
+                      />
+                    )}
+                  </Field>
+                </FieldItem>
               </Form>
             )}
           </Formik>
-          <NotificationsForm
-            isLoading={loading}
-            errorMessage={errorMessage}
-            successMessage={successMessage}
-            onChange={onChange}
-            preferencesValues={{
-              news: workspace.news,
-              securityUpdates: workspace.securityUpdates,
-            }}
-          />
         </Content>
       </SettingsCard>
 

@@ -40,6 +40,8 @@ import { WorkspaceSettingsView } from "./views/workspaces/WorkspaceSettingsView"
 import { UsersSettingsView } from "packages/cloud/views/users/UsersSettingsView/UsersSettingsView";
 import { AccountSettingsView } from "packages/cloud/views/users/AccountSettingsView/AccountSettingsView";
 import { ConfirmEmailPage } from "./views/auth/ConfirmEmailPage";
+import useRouter from "hooks/useRouter";
+import { useAsync } from "react-use";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -56,14 +58,19 @@ export enum Routes {
   Settings = "/settings",
   Metrics = "/metrics",
   Account = "/account",
-  Signup = "/signup",
-  Login = "/login",
-  ResetPassword = "/reset-password",
   Root = "/",
   SelectWorkspace = "/workspaces",
   Configuration = "/configuration",
   AccessManagement = "/access-management",
   Notifications = "/notifications",
+
+  // Auth routes
+  Signup = "/signup",
+  Login = "/login",
+  ResetPassword = "/reset-password",
+  ConfirmPasswordReset = "/confirm-password-reset",
+  VerifyEmail = "/verify-email",
+  ConfirmVerifyEmail = "/confirm-verify-email",
 }
 
 const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
@@ -178,6 +185,17 @@ const MainViewRoutes = () => {
   );
 };
 
+const VerifyEmailRoute: React.FC = () => {
+  const { query } = useRouter<{ oobCode: string }>();
+  const { verifyEmail } = useAuthService();
+
+  useAsync(async () => {
+    await verifyEmail(query.oobCode);
+  }, []);
+
+  return <LoadingPage />;
+};
+
 export const Routing: React.FC = () => {
   const { user, inited, emailVerified } = useAuthService();
 
@@ -191,8 +209,18 @@ export const Routing: React.FC = () => {
                 <MainViewRoutes />
               </WorkspaceServiceProvider>
             )}
-            {user && !emailVerified && <ConfirmEmailPage email={user.email} />}
-            {!user || <Auth />}
+            {user && !emailVerified && (
+              <Switch>
+                <Route path={Routes.VerifyEmail}>
+                  <VerifyEmailRoute />
+                </Route>
+                <Route path={Routes.ConfirmVerifyEmail}>
+                  <ConfirmEmailPage />
+                </Route>
+                <Redirect to={Routes.ConfirmVerifyEmail} />
+              </Switch>
+            )}
+            {!user && <Auth />}
           </>
         ) : (
           <LoadingPage />

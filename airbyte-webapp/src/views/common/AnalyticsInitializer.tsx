@@ -13,7 +13,7 @@ function WithAnalytics({
   customerId: string;
   workspaceId?: string;
 }) {
-  useSegment(config.segment.token);
+  useSegment(config.segment.enabled ? config.segment.token : "");
   const analyticsService = useAnalytics();
 
   useEffect(() => {

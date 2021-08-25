@@ -2,15 +2,14 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedHTMLMessage, FormattedMessage } from "react-intl";
 
+import { H5, Link } from "components";
 import { FormTitle } from "../components/FormTitle";
-import { H5 } from "components/base/Titles";
-import { Link } from "components/Link";
 import FormContent from "../components/FormContent";
 import News from "../components/News";
-
-type ConfirmEmailPageProps = {
-  email: string;
-};
+import {
+  useAuthService,
+  useCurrentUser,
+} from "packages/cloud/services/auth/AuthService";
 
 const Text = styled(H5)`
   padding: 27px 0 30px;
@@ -54,7 +53,10 @@ const NewsPart = styled(Part)`
   justify-content: space-between;
 `;
 
-const ConfirmEmailPage: React.FC<ConfirmEmailPageProps> = ({ email }) => {
+const ConfirmEmailPage: React.FC = () => {
+  const { sendEmailVerification } = useAuthService();
+  const { email } = useCurrentUser();
+
   return (
     <Content>
       <Part>
@@ -77,7 +79,7 @@ const ConfirmEmailPage: React.FC<ConfirmEmailPageProps> = ({ email }) => {
                 values={{ email }}
               />
             </Text>
-            <Resend $light as="div">
+            <Resend $light as="div" onClick={sendEmailVerification}>
               <FormattedMessage id="login.resendEmail" />
             </Resend>
           </div>
