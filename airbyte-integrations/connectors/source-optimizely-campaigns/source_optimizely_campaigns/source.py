@@ -164,10 +164,10 @@ class Recipients(IncrementalOptimizelyStream):
 
     def request_params(self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(**kwargs)
-        params = {
+        params.update({
             "limit": self.API_RECIPIENT_LIMIT, 
             "attributeNames": stream_slice["attributes"]
-        }
+        })
 
         if next_page_token:
             params.update(next_page_token)
