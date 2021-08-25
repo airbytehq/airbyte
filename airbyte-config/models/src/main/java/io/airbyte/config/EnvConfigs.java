@@ -46,10 +46,12 @@ public class EnvConfigs implements Configs {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EnvConfigs.class);
 
+  // env variable names
   public static final String AIRBYTE_ROLE = "AIRBYTE_ROLE";
   public static final String AIRBYTE_VERSION = "AIRBYTE_VERSION";
   public static final String INTERNAL_API_HOST = "INTERNAL_API_HOST";
   public static final String WORKER_ENVIRONMENT = "WORKER_ENVIRONMENT";
+  public static final String SPEC_CACHE_BUCKET = "SPEC_CACHE_BUCKET";
   public static final String WORKSPACE_ROOT = "WORKSPACE_ROOT";
   public static final String WORKSPACE_DOCKER_MOUNT = "WORKSPACE_DOCKER_MOUNT";
   public static final String LOCAL_ROOT = "LOCAL_ROOT";
@@ -84,6 +86,9 @@ public class EnvConfigs implements Configs {
   private static final String RESOURCE_CPU_LIMIT = "RESOURCE_CPU_LIMIT";
   private static final String RESOURCE_MEMORY_REQUEST = "RESOURCE_MEMORY_REQUEST";
   private static final String RESOURCE_MEMORY_LIMIT = "RESOURCE_MEMORY_LIMIT";
+
+  // defaults
+  private static final String DEFAULT_SPEC_CACHE_BUCKET = "airbyte-cloud-spec-cache";
   private static final String DEFAULT_KUBE_NAMESPACE = "default";
   private static final String DEFAULT_RESOURCE_REQUIREMENT_CPU = null;
   private static final String DEFAULT_RESOURCE_REQUIREMENT_MEMORY = null;
@@ -243,6 +248,11 @@ public class EnvConfigs implements Configs {
   @Override
   public WorkerEnvironment getWorkerEnvironment() {
     return getEnvOrDefault(WORKER_ENVIRONMENT, WorkerEnvironment.DOCKER, s -> WorkerEnvironment.valueOf(s.toUpperCase()));
+  }
+
+  @Override
+  public String getSpecCacheBucket() {
+    return getEnvOrDefault(SPEC_CACHE_BUCKET, DEFAULT_SPEC_CACHE_BUCKET);
   }
 
   @Override

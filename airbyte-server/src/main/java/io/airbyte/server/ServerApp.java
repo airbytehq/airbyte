@@ -43,10 +43,12 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
+import io.airbyte.scheduler.client.BucketSpecCacheSchedulerClient;
 import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
 import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
+import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.DefaultJobCreator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -236,7 +238,9 @@ public class ServerApp implements ServerRunnable {
       final SchedulerJobClient schedulerJobClient = new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence));
       final DefaultSynchronousSchedulerClient syncSchedulerClient =
           new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
-      final SpecCachingSynchronousSchedulerClient cachingSchedulerClient = new SpecCachingSynchronousSchedulerClient(syncSchedulerClient);
+      final SynchronousSchedulerClient bucketSpecCacheSchedulerClient =
+          new BucketSpecCacheSchedulerClient(syncSchedulerClient, configs.getSpecCacheBucket());
+      final SpecCachingSynchronousSchedulerClient cachingSchedulerClient = new SpecCachingSynchronousSchedulerClient(bucketSpecCacheSchedulerClient);
 
       return apiFactory.create(
           schedulerJobClient,
@@ -293,9 +297,9 @@ public class ServerApp implements ServerRunnable {
     return databaseVersion.getMinorVersion().compareTo(serverVersion.getMinorVersion()) < 0;
   }
 
-  private static void runFlywayMigration(Configs configs, Database configDatabase, Database jobDatabase) {
-    DatabaseMigrator configDbMigrator = new ConfigsDatabaseMigrator(configDatabase, ServerApp.class.getSimpleName());
-    DatabaseMigrator jobDbMigrator = new JobsDatabaseMigrator(jobDatabase, ServerApp.class.getSimpleName());
+  private static void runFlywayMigration(final Configs configs, final Database configDatabase, final Database jobDatabase) {
+    final DatabaseMigrator configDbMigrator = new ConfigsDatabaseMigrator(configDatabase, ServerApp.class.getSimpleName());
+    final DatabaseMigrator jobDbMigrator = new JobsDatabaseMigrator(jobDatabase, ServerApp.class.getSimpleName());
 
     configDbMigrator.createBaseline();
     jobDbMigrator.createBaseline();
