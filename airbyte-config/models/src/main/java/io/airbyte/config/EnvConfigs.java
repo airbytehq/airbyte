@@ -247,15 +247,15 @@ public class EnvConfigs implements Configs {
 
   @Override
   public WorkspaceRetentionConfig getWorkspaceRetentionConfig() {
-    long minDays = getEnvOrDefault(MINIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS);
-    long maxDays = getEnvOrDefault(MAXIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS);
-    long maxSizeMb = getEnvOrDefault(MAXIMUM_WORKSPACE_SIZE_MB, DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB);
+    final long minDays = getEnvOrDefault(MINIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS);
+    final long maxDays = getEnvOrDefault(MAXIMUM_WORKSPACE_RETENTION_DAYS, DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS);
+    final long maxSizeMb = getEnvOrDefault(MAXIMUM_WORKSPACE_SIZE_MB, DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB);
 
     return new WorkspaceRetentionConfig(minDays, maxDays, maxSizeMb);
   }
 
-  private WorkerPodToleration workerPodToleration(String tolerationStr) {
-    Map<String, String> tolerationMap = Splitter.on(",")
+  private WorkerPodToleration workerPodToleration(final String tolerationStr) {
+    final Map<String, String> tolerationMap = Splitter.on(",")
         .splitToStream(tolerationStr)
         .map(s -> s.split("="))
         .collect(Collectors.toMap(s -> s[0], s -> s[1]));
@@ -288,9 +288,9 @@ public class EnvConfigs implements Configs {
    */
   @Override
   public List<WorkerPodToleration> getWorkerPodTolerations() {
-    String tolerationsStr = getEnvOrDefault(WORKER_POD_TOLERATIONS, "");
+    final String tolerationsStr = getEnvOrDefault(WORKER_POD_TOLERATIONS, "");
 
-    Stream<String> tolerations = Strings.isNullOrEmpty(tolerationsStr) ? Stream.of()
+    final Stream<String> tolerations = Strings.isNullOrEmpty(tolerationsStr) ? Stream.of()
         : Splitter.on(";")
             .splitToStream(tolerationsStr)
             .filter(tolerationStr -> !Strings.isNullOrEmpty(tolerationStr));
@@ -317,7 +317,7 @@ public class EnvConfigs implements Configs {
 
   @Override
   public Set<Integer> getTemporalWorkerPorts() {
-    var ports = getEnvOrDefault(TEMPORAL_WORKER_PORTS, "");
+    final var ports = getEnvOrDefault(TEMPORAL_WORKER_PORTS, "");
     if (ports.isEmpty()) {
       return new HashSet<>();
     }
@@ -389,27 +389,27 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, "");
   }
 
-  private String getEnvOrDefault(String key, String defaultValue) {
+  private String getEnvOrDefault(final String key, final String defaultValue) {
     return getEnvOrDefault(key, defaultValue, Function.identity(), false);
   }
 
-  private String getEnvOrDefault(String key, String defaultValue, boolean isSecret) {
+  private String getEnvOrDefault(final String key, final String defaultValue, final boolean isSecret) {
     return getEnvOrDefault(key, defaultValue, Function.identity(), isSecret);
   }
 
-  private long getEnvOrDefault(String key, long defaultValue) {
+  private long getEnvOrDefault(final String key, final long defaultValue) {
     return getEnvOrDefault(key, defaultValue, Long::parseLong, false);
   }
 
-  private boolean getEnvOrDefault(String key, boolean defaultValue) {
+  private boolean getEnvOrDefault(final String key, final boolean defaultValue) {
     return getEnvOrDefault(key, defaultValue, Boolean::parseBoolean);
   }
 
-  private <T> T getEnvOrDefault(String key, T defaultValue, Function<String, T> parser) {
+  private <T> T getEnvOrDefault(final String key, final T defaultValue, final Function<String, T> parser) {
     return getEnvOrDefault(key, defaultValue, parser, false);
   }
 
-  private <T> T getEnvOrDefault(String key, T defaultValue, Function<String, T> parser, boolean isSecret) {
+  private <T> T getEnvOrDefault(final String key, final T defaultValue, final Function<String, T> parser, final boolean isSecret) {
     final String value = getEnv.apply(key);
     if (value != null && !value.isEmpty()) {
       return parser.apply(value);
