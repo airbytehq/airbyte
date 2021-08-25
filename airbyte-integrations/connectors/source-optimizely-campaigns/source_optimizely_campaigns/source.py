@@ -47,10 +47,28 @@ class OptimizelyStream(HttpStream, ABC):
         super().__init__(**kwargs)
         self.client_id = client_id
         self.url_base += self.client_id
-        self.API_RECIPIENT_LIMIT = 100000
+
+        """
+        A maximum of 500.000 recipients can be queried per call with the Optimizely Campaigns API. 
+        All other endpoints have a limit of 10.000 per call.
+        """
+        self.API_RECIPIENT_LIMIT = 500000
         self.API_LIMIT = 10000
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        If there are more records after the current query, this is indicated by the property 'rel' 
+        with the value 'next'. We can now use this link to retrieve the next records according to 
+        the limit and offset.
+
+        e.g.
+        "links": [
+            {
+            "rel": "next",
+            "href": "https://api.campaign.episerver.net/rest/<client_id>/recipients/<recipient_list_id>?offset=100&limit=100"
+            }
+        ]
+        """
         decoded_response = response.json()
         for link in decoded_response.get("links", []):
             if link.get("rel", None) == "next":
@@ -60,6 +78,8 @@ class OptimizelyStream(HttpStream, ABC):
         if decoded_response.get("has_more", False) and decoded_response.get("elements", []):
             parsed = urlparse.urlparse(decoded_response.get("next"))
             return parse_qs(parsed.query)
+        
+        return None
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -97,12 +117,6 @@ class IncrementalOptimizelyStream(OptimizelyStream, ABC):
 
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
-    def request_params(self, stream_state=None, **kwargs):
-        stream_state = stream_state or {}
-        params = super().request_params(stream_state=stream_state, **kwargs)
-        params["modified[gte]"] = stream_state.get(self.cursor_field)
-        return params
-
 
 class RecipientLists(IncrementalOptimizelyStream):
     primary_key = ["id"]
@@ -130,15 +144,16 @@ class Recipients(IncrementalOptimizelyStream):
         recipient_list = stream_slice["list_id"]
         return f"/recipients/{recipient_list}"
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def stream_slices(
+        self,
+        **kwargs: Mapping[str, Any],
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         attribute_names_stream = AttributeNames(authenticator=self.authenticator, client_id=self.client_id)
-        for attribute_name in attribute_names_stream.read_records(sync_mode=SyncMode.full_refresh):
-            attribute_name_string = ",".join(attribute_name["attributeNames"])
-            slices = {"list_id": attribute_name["recipient_list"], "attributes": attribute_name_string}
-            yield from super().read_records(stream_slice=slices, **kwargs)
+        for attribute_name_record in attribute_names_stream.read_records(sync_mode=SyncMode.full_refresh):
+            attribute_name_string = ",".join(attribute_name_record["attributeNames"])
+            yield {"list_id": attribute_name_record["recipient_list"], "attributes": attribute_name_string}
 
     def request_params(self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
-        params = super().request_params(stream_slice=stream_slice, **kwargs)
         params = {"limit": self.API_RECIPIENT_LIMIT, "attributeNames": stream_slice["attributes"]}
 
         if next_page_token:
@@ -163,7 +178,7 @@ class Recipients(IncrementalOptimizelyStream):
 
 
 class AttributeNames(OptimizelyStream):
-    primary_key = ""
+    primary_key = None
 
     def path(
         self,
@@ -174,10 +189,14 @@ class AttributeNames(OptimizelyStream):
         recipient_list = stream_slice["list_id"]
         return f"/recipientlists/{recipient_list}/attributeNames"
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+
+    def stream_slices(
+        self,
+        **kwargs: Mapping[str, Any],
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         recipient_lists_stream = RecipientLists(authenticator=self.authenticator, client_id=self.client_id)
-        for recipient_list in recipient_lists_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"list_id": recipient_list["id"]}, **kwargs)
+        for recipient_list_record in recipient_lists_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"list_id": recipient_list_record["id"]}
 
     def parse_response(
         self,
@@ -215,13 +234,6 @@ class Unsubscribes(IncrementalOptimizelyStream):
     ) -> str:
         return "/unsubscribes"
 
-    def request_params(self, stream_state=None, **kwargs):
-        stream_state = stream_state or {}
-        params = super().request_params(stream_state=stream_state, **kwargs)
-        # params["created[gte]"] = stream_state.get(self.cursor_field)
-        return params
-
-
 class SmartCampaigns(IncrementalOptimizelyStream):
     primary_key = ["id", "mailingGroupId"]
     cursor_field = "modified"
@@ -235,7 +247,6 @@ class SmartCampaigns(IncrementalOptimizelyStream):
         return "/smartcampaigns"
 
     def request_params(self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
-        params = super().request_params(stream_slice=stream_slice, **kwargs)
         params = {"resultView": "DETAILED"}
 
         if next_page_token:
@@ -256,11 +267,13 @@ class SmartCampaignReports(OptimizelyStream):
         campaign_id = stream_slice["campaign_id"]
         return f"/smartcampaigns/{campaign_id}/report"
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def stream_slices(
+        self,
+        **kwargs: Mapping[str, Any],
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         smart_campaigns_stream = SmartCampaigns(authenticator=self.authenticator, client_id=self.client_id)
-        for smart_campaign in smart_campaigns_stream.read_records(sync_mode=SyncMode.full_refresh):
-            slices = {"campaign_id": smart_campaign["id"]}
-            yield from super().read_records(stream_slice=slices, **kwargs)
+        for smart_campaign_record in smart_campaigns_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"campaign_id": smart_campaign_record["id"]}
 
     def parse_response(
         self,
@@ -286,7 +299,6 @@ class TransactionalMails(IncrementalOptimizelyStream):
         return "/transactionalmail"
 
     def request_params(self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
-        params = super().request_params(stream_slice=stream_slice, **kwargs)
         params = {"resultView": "DETAILED"}
 
         if next_page_token:
@@ -307,11 +319,13 @@ class TransactionalMailReports(OptimizelyStream):
         campaign_id = stream_slice["campaign_id"]
         return f"/transactionalmail/{campaign_id}/report"
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def stream_slices(
+        self,
+        **kwargs: Mapping[str, Any],
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         transactional_mails_stream = TransactionalMails(authenticator=self.authenticator, client_id=self.client_id)
-        for transactional_mail in transactional_mails_stream.read_records(sync_mode=SyncMode.full_refresh):
-            slices = {"campaign_id": transactional_mail["id"]}
-            yield from super().read_records(stream_slice=slices, **kwargs)
+        for transactional_mail_record in transactional_mails_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"campaign_id": transactional_mail_record["id"]}
 
     def parse_response(
         self,
