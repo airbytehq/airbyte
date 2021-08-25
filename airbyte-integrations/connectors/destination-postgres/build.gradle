@@ -16,6 +16,9 @@ dependencies {
 
     testImplementation project(':airbyte-test-utils')
 
+    implementation project(':airbyte-workers')
+    implementation project(':airbyte-config:models')
+
     testImplementation "org.testcontainers:postgresql:1.15.1"
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')

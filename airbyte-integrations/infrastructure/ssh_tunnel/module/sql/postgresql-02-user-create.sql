@@ -9,3 +9,7 @@ GRANT USAGE ON
 SCHEMA public TO testcaseuser;
 
 GRANT integrationtest_rw TO testcaseuser;
+
+-- picking a default schema means it can log in without a schema named to connect to, helping test case setup.
+ALTER ROLE testcaseuser SET search_path TO public;
+
