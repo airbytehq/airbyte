@@ -23,10 +23,10 @@
 #
 
 from source_amazon_ads.schemas import DisplayAdGroup, DisplayCampaign, DisplayProductAds, DisplayTargeting
-from source_amazon_ads.streams.common import PaginationStream
+from source_amazon_ads.streams.common import SubProfilesStream
 
 
-class SponsoredDisplayCampaigns(PaginationStream):
+class SponsoredDisplayCampaigns(SubProfilesStream):
     """
     This stream corresponds to Amazon Advertising API - Sponsored Displays Campaigns
     https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Campaigns
@@ -39,7 +39,7 @@ class SponsoredDisplayCampaigns(PaginationStream):
         return "sd/campaigns"
 
 
-class SponsoredDisplayAdGroups(PaginationStream):
+class SponsoredDisplayAdGroups(SubProfilesStream):
     """
     This stream corresponds to Amazon Advertising API - Sponsored Displays Ad groups
     https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Ad%20groups
@@ -52,7 +52,7 @@ class SponsoredDisplayAdGroups(PaginationStream):
         return "sd/adGroups"
 
 
-class SponsoredDisplayProductAds(PaginationStream):
+class SponsoredDisplayProductAds(SubProfilesStream):
     """
     This stream corresponds to Amazon Advertising API - Sponsored Displays Product Ads
     https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Product%20ads
@@ -65,7 +65,7 @@ class SponsoredDisplayProductAds(PaginationStream):
         return "sd/productAds"
 
 
-class SponsoredDisplayTargetings(PaginationStream):
+class SponsoredDisplayTargetings(SubProfilesStream):
     """
     This stream corresponds to Amazon Advertising API - Sponsored Displays Targetings
     https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Targeting
@@ -73,7 +73,6 @@ class SponsoredDisplayTargetings(PaginationStream):
 
     primary_key = "targetId"
     model = DisplayTargeting
-    flatten_properties = ["expression", "resolvedExpression"]
 
     def path(self, **kvargs) -> str:
         return "sd/targets"

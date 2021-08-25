@@ -40,11 +40,9 @@ class BrandsCampaign(CatalogModel):
     servingStatus: str
     brandEntityId: str
     portfolioId: Decimal
-    landingPage: str
     bidOptimization: bool = None
     bidMultiplier: Decimal = None
     adFormat: str
-    creative: str
 
 
 class BrandsAdGroup(CatalogModel):

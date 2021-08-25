@@ -92,7 +92,10 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     primary_key = None
     CHECK_INTERVAL_SECONDS = 30
-    REPORT_WAIT_TIMEOUT = timedelta(hours=1)
+    # Async report generation time is 15 minutes according to docs:
+    # https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes
+    # (Service limits section)
+    REPORT_WAIT_TIMEOUT = timedelta(minutes=20)
     # Format used to specify metric generation date over Amazon Ads API.
     REPORT_DATE_FORMAT = "%Y%m%d"
     cursor_field = "reportDate"
@@ -146,8 +149,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             for report_info in report_infos:
                 report_status, download_url = self._check_status(report_info)
                 if report_status == Status.FAILURE:
-                    logger.warn(f"Report for {report_info.profile_id} with {report_info.record_type} type generation failed")
-                    completed_reports.append(report_info)
+                    raise Exception(f"Report for {report_info.profile_id} with {report_info.record_type} type generation failed")
                 elif report_status == Status.SUCCESS:
                     metric_objects = self._download_report(report_info, download_url)
                     for metric_object in metric_objects:
@@ -166,7 +168,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         if not report_infos:
             logger.info("All reports have been processed")
         else:
-            logger.error("Not all reports has been processed due to timeout")
+            raise Exception("Not all reports has been processed due to timeout")
 
     def _generate_model(self):
         """

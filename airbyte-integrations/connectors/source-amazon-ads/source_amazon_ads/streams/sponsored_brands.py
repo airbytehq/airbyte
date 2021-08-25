@@ -23,10 +23,10 @@
 #
 
 from source_amazon_ads.schemas import BrandsAdGroup, BrandsCampaign
-from source_amazon_ads.streams.common import PaginationStream
+from source_amazon_ads.streams.common import SubProfilesStream
 
 
-class SponsoredBrandsCampaigns(PaginationStream):
+class SponsoredBrandsCampaigns(SubProfilesStream):
     """
     This stream corresponds to Amazon Advertising API - Sponsored Brands Campaigns
     https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Campaigns
@@ -34,13 +34,12 @@ class SponsoredBrandsCampaigns(PaginationStream):
 
     primary_key = "campaignId"
     model = BrandsCampaign
-    flatten_properties = ["landingPage", "creative"]
 
     def path(self, **kvargs) -> str:
         return "sb/campaigns"
 
 
-class SponsoredBrandsAdGroups(PaginationStream):
+class SponsoredBrandsAdGroups(SubProfilesStream):
     """
     This stream corresponds to Amazon Advertising API - Sponsored Brands Ad groups
     https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Ad%20groups
@@ -53,7 +52,7 @@ class SponsoredBrandsAdGroups(PaginationStream):
         return "sb/adGroups"
 
 
-class SponsoredBrandsKeywords(PaginationStream):
+class SponsoredBrandsKeywords(SubProfilesStream):
     """
     This stream corresponds to Amazon Advertising API - Sponsored Brands Keywords
     https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Keywords

@@ -57,9 +57,6 @@ TOKEN_URL = "https://api.amazon.com/auth/o2/token"
 
 
 class SourceAmazonAds(AbstractSource):
-    def __init__(self):
-        super().__init__()
-
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         :param config:  the user-input config object conforming to the connector's spec.json

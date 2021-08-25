@@ -39,12 +39,13 @@ class AmazonAdsConfig(BaseModel):
         airbyte_secret=True,
     )
     scope: str = Field(
+        "advertising::campaign_management",
         name="Client scope",
         examples=[
             "advertising::campaign_management",
             "cpc_advertising:campaign_management",
         ],
-        description="Usually its advertising::campaign_management, but customers may need to set scope to cpc_advertising:campaign_management",
+        description="By default its advertising::campaign_management, but customers may need to set scope to cpc_advertising:campaign_management.",
     )
     refresh_token: str = Field(
         name="Oauth refresh token",

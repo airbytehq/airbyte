@@ -65,9 +65,4 @@ class Profiles(AmazonAdsStream):
         require profile id to be passed.
         :return List of profile object
         """
-        # Call this list comprehension to iterate through responses and
-        # populate self._profiles variable. We cant just return this list cause
-        # it would contain raw dicts and we need list of Profile models.
-        _ = [_ for _ in self.read_records(SyncMode.full_refresh)]
-        # This list was populated with parse_response method.
-        return self._profiles
+        return [self.model.parse_obj(profile) for profile in self.read_records(SyncMode.full_refresh)]

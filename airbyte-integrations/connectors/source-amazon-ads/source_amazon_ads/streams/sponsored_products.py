@@ -23,10 +23,10 @@
 #
 
 from source_amazon_ads.schemas import Keywords, NegativeKeywords, ProductAd, ProductAdGroups, ProductCampaign, ProductTargeting
-from source_amazon_ads.streams.common import PaginationStream
+from source_amazon_ads.streams.common import SubProfilesStream
 
 
-class SponsoredProductCampaigns(PaginationStream):
+class SponsoredProductCampaigns(SubProfilesStream):
     """
     This stream corresponds to Amazon Advertising API - Sponsored Products Campaigns
     https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Campaigns
@@ -39,7 +39,7 @@ class SponsoredProductCampaigns(PaginationStream):
         return "v2/sp/campaigns"
 
 
-class SponsoredProductAdGroups(PaginationStream):
+class SponsoredProductAdGroups(SubProfilesStream):
     """
     This stream corresponds to Amazon Advertising API - Sponsored Products Ad groups
     https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Ad%20groups
@@ -52,7 +52,7 @@ class SponsoredProductAdGroups(PaginationStream):
         return "v2/sp/adGroups"
 
 
-class SponsoredProductKeywords(PaginationStream):
+class SponsoredProductKeywords(SubProfilesStream):
     """
     This stream corresponds to Amazon Advertising API - Sponsored Products Keywords
     https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Keywords
@@ -65,7 +65,7 @@ class SponsoredProductKeywords(PaginationStream):
         return "v2/sp/keywords"
 
 
-class SponsoredProductNegativeKeywords(PaginationStream):
+class SponsoredProductNegativeKeywords(SubProfilesStream):
     """
     This stream corresponds to Amazon Advertising API - Sponsored Products Negative Keywords
     https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Negative%20keywords
@@ -78,7 +78,7 @@ class SponsoredProductNegativeKeywords(PaginationStream):
         return "v2/sp/negativeKeywords"
 
 
-class SponsoredProductAds(PaginationStream):
+class SponsoredProductAds(SubProfilesStream):
     """
     This stream corresponds to Amazon Advertising API - Sponsored Products Ads
     https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Product%20ads
@@ -91,7 +91,7 @@ class SponsoredProductAds(PaginationStream):
         return "v2/sp/productAds"
 
 
-class SponsoredProductTargetings(PaginationStream):
+class SponsoredProductTargetings(SubProfilesStream):
     """
     This stream corresponds to Amazon Advertising API - Sponsored Products Targetings
     https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Product%20targeting
@@ -99,7 +99,6 @@ class SponsoredProductTargetings(PaginationStream):
 
     primary_key = "targetId"
     model = ProductTargeting
-    flatten_properties = ["expression", "resolvedExpression"]
 
     def path(self, **kvargs) -> str:
         return "v2/sp/targets"

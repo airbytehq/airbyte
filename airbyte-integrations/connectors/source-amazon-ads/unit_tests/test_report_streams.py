@@ -26,6 +26,7 @@ import re
 from base64 import b64decode
 from unittest import mock
 
+import pytest
 import responses
 from airbyte_cdk.models import SyncMode
 from freezegun import freeze_time
@@ -190,8 +191,8 @@ def test_display_report_stream_report_generation_failure(test_config):
 
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
     stream_slice = {"reportDate": "20210725"}
-    metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
-    assert metrics == []
+    with pytest.raises(Exception):
+        _ = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
 
 
 @responses.activate
@@ -265,8 +266,8 @@ def test_display_report_stream_timeout(mocker, test_config):
         stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
         stream_slice = {"reportDate": "20210725"}
 
-        metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
-        assert len(metrics) == success_cnt * len(stream.metrics_map)
+        with pytest.raises(Exception):
+            _ = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
         time_mock.assert_called_with(30)
 
 

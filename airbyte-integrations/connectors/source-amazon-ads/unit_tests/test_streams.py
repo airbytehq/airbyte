@@ -139,7 +139,7 @@ def test_streams_campaigns_4_vendors(test_config, profiles_response, campaigns_r
 )
 @responses.activate
 def test_streams_campaigns_pagination(mocker, test_config, profiles_response, campaigns_response, page_size):
-    mocker.patch("source_amazon_ads.streams.common.PaginationStream.page_size", page_size)
+    mocker.patch("source_amazon_ads.streams.common.SubProfilesStream.page_size", page_size)
     profiles_response = json.loads(profiles_response)
     for profile in profiles_response:
         profile["accountInfo"]["type"] = "vendor"
