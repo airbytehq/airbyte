@@ -218,8 +218,7 @@ public class ConfigDumpExporter {
                                                   Function<T, Boolean> filterConfigCall)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final Collection<T> configs = listConfigCall.apply();
-    final Collection<T> result = filterConfigCall != null ?
-        configs.stream().filter(filterConfigCall::apply).collect(Collectors.toList()) : configs;
+    final Collection<T> result = filterConfigCall != null ? configs.stream().filter(filterConfigCall::apply).collect(Collectors.toList()) : configs;
     writeConfigsToArchive(parentFolder, configSchemaName, result.stream().map(Jsons::jsonNode));
     return result;
   }
