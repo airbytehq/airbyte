@@ -1,0 +1,17 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "organization_id": {
+      "type": ["null", "string"]
+    },
+    "allowed_user_id": {
+      "type": ["null", "string"]
+    },
+    "allowing_user_id": {
+      "type": ["null", "string"]
+    }
+  }
+}

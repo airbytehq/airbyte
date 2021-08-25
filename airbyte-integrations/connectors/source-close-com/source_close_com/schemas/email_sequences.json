@@ -1,0 +1,38 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "organization_id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "schedule_id": {
+      "type": ["null", "string"]
+    },
+    "timezone": {
+      "type": ["null", "string"]
+    },
+    "steps": {
+      "type": ["null", "array"]
+    },
+    "date_created": {
+      "type": ["null", "string"]
+    },
+    "date_updated": {
+      "type": ["null", "string"]
+    },
+    "created_by_id": {
+      "type": ["null", "string"]
+    },
+    "updated_by_id": {
+      "type": ["null", "string"]
+    }
+  }
+}

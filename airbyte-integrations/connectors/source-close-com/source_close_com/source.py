@@ -399,6 +399,235 @@ class Users(CloseComStream):
         return "user"
 
 
+class Contacts(CloseComStream):
+    """
+    Get contacts for Close.com account organization
+    API Docs: https://developer.close.com/#contacts
+    """
+
+    def path(self, **kwargs) -> str:
+        return "contact"
+
+
+class Opportunities(IncrementalCloseComStream):
+    """
+    Get opportunities on a specific date
+    API Docs: https://developer.close.com/#opportunities
+    """
+
+    def path(self, **kwargs) -> str:
+        return "opportunity"
+
+    def request_params(self, stream_state=None, **kwargs):
+        stream_state = stream_state or {}
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        if stream_state.get(self.cursor_field):
+            params["date_created__gt"] = stream_state.get(self.cursor_field)
+        return params
+
+
+class Roles(CloseComStream):
+    """
+    Get roles for Close.com account organization
+    API Docs: https://developer.close.com/#roles
+    """
+
+    def path(self, **kwargs) -> str:
+        return "role"
+
+
+class LeadStatuses(CloseComStream):
+    """
+    Get lead statuses for Close.com account organization
+    API Docs: https://developer.close.com/#lead-statuses
+    """
+
+    def path(self, **kwargs) -> str:
+        return "status/lead"
+
+
+class OpportunityStatuses(CloseComStream):
+    """
+    Get opportunity statuses for Close.com account organization
+    API Docs: https://developer.close.com/#opportunity-statuses
+    """
+
+    def path(self, **kwargs) -> str:
+        return "status/opportunity"
+
+
+class Pipelines(CloseComStream):
+    """
+    Get pipelines for Close.com account organization
+    API Docs: https://developer.close.com/#pipelines
+    """
+
+    def path(self, **kwargs) -> str:
+        return "pipeline"
+
+
+class EmailTemplates(CloseComStream):
+    """
+    Get email templates for Close.com account organization
+    API Docs: https://developer.close.com/#email-templates
+    """
+
+    def path(self, **kwargs) -> str:
+        return "email_template"
+
+
+class CloseComConnectedAccountsMixin(CloseComStream):
+    """
+    General class for connected accounts. Define request params based on _type value.
+    """
+
+    def request_params(self, stream_state=None, **kwargs):
+        stream_state = stream_state or {}
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        params["_type"] = self._type
+        return params
+
+    def path(self, **kwargs) -> str:
+        return "connected_account"
+
+
+class GoogleConnectedAccounts(CloseComConnectedAccountsMixin):
+    """
+    Get google connected accounts for Close.com account
+    API Docs: https://developer.close.com/#connected-accounts
+    """
+
+    _type = "google"
+
+
+class CustomEmailConnectedAccounts(CloseComConnectedAccountsMixin):
+    """
+    Get custom email connected accounts for Close.com account
+    API Docs: https://developer.close.com/#connected-accounts
+    """
+
+    _type = "custom_email"
+
+
+class ZoomConnectedAccounts(CloseComConnectedAccountsMixin):
+    """
+    Get zoom connected accounts for Close.com account
+    API Docs: https://developer.close.com/#connected-accounts
+    """
+
+    _type = "zoom"
+
+
+class SendAs(CloseComStream):
+    """
+    Get Send As Associations by allowing or allowed user for Close.com
+    API Docs: https://developer.close.com/#send-as
+    """
+
+    def path(self, **kwargs) -> str:
+        return "send_as"
+
+
+class EmailSequences(CloseComStream):
+    """
+    Get Email Sequences - series of emails to be sent, one by one, in specified time gaps to specific subscribers until
+    they reply.
+    API Docs: https://developer.close.com/#email-sequences
+    """
+
+    def path(self, **kwargs) -> str:
+        return "sequence"
+
+
+class Dialer(CloseComStream):
+    """
+    Get dialer sessions for Close.com account organization
+    API Docs: https://developer.close.com/#dialer
+    """
+
+    def path(self, **kwargs) -> str:
+        return "dialer"
+
+
+class SmartViews(CloseComStream):
+    """
+    Get smart view. Smart Views are "saved search queries" in Close and show up in the sidebar in the UI.
+    They can be private for a user or shared with an entire Organization.
+    API Docs: https://developer.close.com/#dialer
+    """
+
+    def path(self, **kwargs) -> str:
+        return "saved_search"
+
+
+class CloseComBulkActionsMixin(CloseComStream):
+    """
+    General class for Bulk Actions. Define path based on _type value.
+    Bulk actions are used to perform an "action" (send an email, update a lead status, etc.) on a number of leads
+    all at once based on a Lead search query.
+    API Docs: https://developer.close.com/#bulk-actions
+    """
+
+    def path(self, **kwargs) -> str:
+        return f"bulk_action/{self._type}"
+
+
+class EmailBulkActions(CloseComBulkActionsMixin):
+    """
+    Get all email bulk actions of Close.com organization.
+    API Docs: https://developer.close.com/#bulk-actions-list-bulk-emails
+    """
+
+    _type = "email"
+
+
+class SequenceSubscriptionBulkActions(CloseComBulkActionsMixin):
+    """
+    Get all sequence subscription bulk actions of Close.com organization.
+    API Docs: https://developer.close.com/#bulk-actions-list-bulk-sequence-subscriptions
+    """
+
+    _type = "sequence_subscription"
+
+
+class DeleteBulkActions(CloseComBulkActionsMixin):
+    """
+    Get all bulk deletes actions of Close.com organization.
+    API Docs: https://developer.close.com/#bulk-actions-list-bulk-deletes
+    """
+
+    _type = "delete"
+
+
+class EditBulkActions(CloseComBulkActionsMixin):
+    """
+    Get all bulk edits actions of Close.com organization.
+    API Docs: https://developer.close.com/#bulk-actions-list-bulk-edits
+    """
+
+    _type = "edit"
+
+
+class IntegrationLinks(CloseComStream):
+    """
+    Get all integration links of Close.com organization.
+    API Docs: https://developer.close.com/#integration-links
+    """
+
+    def path(self, **kwargs) -> str:
+        return "integration_link"
+
+
+class CustomActivities(CloseComStream):
+    """
+    Get all Custom Activities of Close.com organization.
+    API Docs: https://developer.close.com/#custom-activities
+    """
+
+    def path(self, **kwargs) -> str:
+        return "custom_activity"
+
+
 class Base64HttpAuthenticator(TokenAuthenticator):
     """
     :auth - tuple with (api_key as username, password string). Password should be empty.
@@ -451,4 +680,24 @@ class SourceCloseCom(AbstractSource):
             OpportunityCustomFields(**args),
             ActivityCustomFields(**args),
             Users(**args),
+            Contacts(**args),
+            Opportunities(**args),
+            Roles(**args),
+            LeadStatuses(**args),
+            OpportunityStatuses(**args),
+            Pipelines(**args),
+            EmailTemplates(**args),
+            GoogleConnectedAccounts(**args),
+            CustomEmailConnectedAccounts(**args),
+            ZoomConnectedAccounts(**args),
+            SendAs(**args),
+            EmailSequences(**args),
+            Dialer(**args),
+            SmartViews(**args),
+            EmailBulkActions(**args),
+            SequenceSubscriptionBulkActions(**args),
+            DeleteBulkActions(**args),
+            EditBulkActions(**args),
+            IntegrationLinks(**args),
+            CustomActivities(**args),
         ]

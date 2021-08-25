@@ -1,0 +1,26 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "date_created": {
+      "type": ["null", "string"]
+    },
+    "date_updated": {
+      "type": ["null", "string"]
+    },
+    "editable": {
+      "type": ["null", "boolean"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "organization_id": {
+      "type": ["null", "string"]
+    },
+    "permissions": {
+      "type": ["null", "array"]
+    }
+  }
+}
