@@ -184,12 +184,12 @@ class DefaultReplicationWorkerTest {
     MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, jobRoot.toString());
 
     LOGGER.info(
-        "500 Server Error: Internal Server Error for url: https://api.hubapi.com/crm/v3/objects/contact?limit=100&archived=false&hapikey=secret_key&after=5315621");
+        "500 Server Error: Internal Server Error for url: https://api.hubapi.com/crm/v3/objects/contact?limit=100&archived=false&hapikey=secret-key_1&after=5315621");
 
     final Path logPath = jobRoot.resolve("logs.log");
     final String logs = IOs.readFile(logPath);
     assertTrue(logs.contains("apikey"));
-    assertFalse(logs.contains("secret_key"));
+    assertFalse(logs.contains("secret-key_1"));
   }
 
   @SuppressWarnings({"BusyWait"})

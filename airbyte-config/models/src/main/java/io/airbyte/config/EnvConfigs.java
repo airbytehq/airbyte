@@ -258,10 +258,11 @@ public class EnvConfigs implements Configs {
   }
 
   /**
-   * Returns worker pod tolerations parsed from its own environment variable. The value of the env
-   * is a string that represents one or more tolerations.
-   * <li> Tolerations are separated by a `;`
-   * <li> Each toleration contains k=v pairs mentioning some/all of key, effect, operator and value and separated by `,`
+   * Returns worker pod tolerations parsed from its own environment variable. The value of the env is
+   * a string that represents one or more tolerations.
+   * <li>Tolerations are separated by a `;`
+   * <li>Each toleration contains k=v pairs mentioning some/all of key, effect, operator and value and
+   * separated by `,`
    * <p>
    * For example:- The following represents two tolerations, one checking existence and another
    * matching a value
@@ -274,9 +275,10 @@ public class EnvConfigs implements Configs {
   public List<WorkerPodToleration> getWorkerPodTolerations() {
     String tolerationsStr = getEnvOrDefault(WORKER_POD_TOLERATIONS, "");
 
-    Stream<String> tolerations = Strings.isNullOrEmpty(tolerationsStr) ? Stream.of() : Splitter.on(";")
-        .splitToStream(tolerationsStr)
-        .filter(tolerationStr -> !Strings.isNullOrEmpty(tolerationStr));
+    Stream<String> tolerations = Strings.isNullOrEmpty(tolerationsStr) ? Stream.of()
+        : Splitter.on(";")
+            .splitToStream(tolerationsStr)
+            .filter(tolerationStr -> !Strings.isNullOrEmpty(tolerationStr));
 
     return tolerations
         .map(this::workerPodToleration)
