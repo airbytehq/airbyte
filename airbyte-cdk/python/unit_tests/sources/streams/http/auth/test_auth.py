@@ -26,7 +26,7 @@
 import logging
 
 import requests
-from airbyte_cdk.sources.streams.http.auth import NoAuth, Oauth2Authenticator, TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import MultipleTokenAuthenticator, NoAuth, Oauth2Authenticator, TokenAuthenticator
 from requests import Response
 
 LOGGER = logging.getLogger(__name__)
@@ -41,6 +41,16 @@ def test_token_authenticator():
     assert {"Authorization": "Bearer test-token"} == header
     header = token.get_auth_header()
     assert {"Authorization": "Bearer test-token"} == header
+
+
+def test_multiple_token_authenticator():
+    token = MultipleTokenAuthenticator(["token1", "token2"])
+    header1 = token.get_auth_header()
+    assert {"Authorization": "Bearer token1"} == header1
+    header2 = token.get_auth_header()
+    assert {"Authorization": "Bearer token2"} == header2
+    header3 = token.get_auth_header()
+    assert {"Authorization": "Bearer token1"} == header3
 
 
 def test_no_auth():

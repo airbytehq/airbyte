@@ -4,7 +4,7 @@ select
     *,
     {{ dbt_utils.surrogate_key([
         'id',
-        'conflict_stream_array',
+        array_to_string('conflict_stream_array'),
     ]) }} as _airbyte_conflict_stream_array_hashid
 from {{ ref('conflict_stream_array_ab2') }}
 -- conflict_stream_array

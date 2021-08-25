@@ -28,13 +28,14 @@ from functools import reduce
 from logging import Logger
 from typing import Any, Dict, List, Mapping, MutableMapping
 
+import dpath.util
 import pytest
 from airbyte_cdk.models import AirbyteMessage, ConnectorSpecification, Status, Type
 from docker.errors import ContainerError
 from jsonschema import validate
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
-from source_acceptance_test.utils import ConnectorRunner, SecretDict, serialize, verify_records_schema
+from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, serialize, verify_records_schema
 from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper
 
 
@@ -42,7 +43,7 @@ from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper
 class TestSpec(BaseTest):
     def test_match_expected(self, connector_spec: ConnectorSpecification, connector_config: SecretDict, docker_runner: ConnectorRunner):
         output = docker_runner.call_spec()
-        spec_messages = [message for message in output if message.type == Type.SPEC]
+        spec_messages = filter_output(output, Type.SPEC)
 
         assert len(spec_messages) == 1, "Spec message should be emitted exactly once"
         if connector_spec:
@@ -81,13 +82,13 @@ class TestConnection(BaseTest):
     def test_check(self, connector_config, inputs: ConnectionTestConfig, docker_runner: ConnectorRunner):
         if inputs.status == ConnectionTestConfig.Status.Succeed:
             output = docker_runner.call_check(config=connector_config)
-            con_messages = [message for message in output if message.type == Type.CONNECTION_STATUS]
+            con_messages = filter_output(output, Type.CONNECTION_STATUS)
 
             assert len(con_messages) == 1, "Connection status message should be emitted exactly once"
             assert con_messages[0].connectionStatus.status == Status.SUCCEEDED
         elif inputs.status == ConnectionTestConfig.Status.Failed:
             output = docker_runner.call_check(config=connector_config)
-            con_messages = [message for message in output if message.type == Type.CONNECTION_STATUS]
+            con_messages = filter_output(output, Type.CONNECTION_STATUS)
 
             assert len(con_messages) == 1, "Connection status message should be emitted exactly once"
             assert con_messages[0].connectionStatus.status == Status.FAILED
@@ -103,7 +104,7 @@ class TestConnection(BaseTest):
 class TestDiscovery(BaseTest):
     def test_discover(self, connector_config, docker_runner: ConnectorRunner):
         output = docker_runner.call_discover(config=connector_config)
-        catalog_messages = [message for message in output if message.type == Type.CATALOG]
+        catalog_messages = filter_output(output, Type.CATALOG)
 
         assert len(catalog_messages) == 1, "Catalog message should be emitted exactly once"
         # TODO(sherifnada) return this once an input bug is fixed (test suite currently fails if this file is not provided)
@@ -113,6 +114,20 @@ class TestDiscovery(BaseTest):
         #         stream1.json_schema = None
         #         stream2.json_schema = None
         #         assert stream1.dict() == stream2.dict(), f"Streams {stream1.name} and {stream2.name}, stream configs should match"
+
+    def test_defined_cursors_exist_in_schema(self, connector_config, discovered_catalog):
+        """
+        Check if all of the source defined cursor fields are exists on stream's json schema.
+        """
+        for stream_name, stream in discovered_catalog.items():
+            if stream.default_cursor_field:
+                schema = stream.json_schema
+                assert "properties" in schema, "Top level item should have an 'object' type for {stream_name} stream schema"
+                properties = schema["properties"]
+                cursor_path = "/properties/".join(stream.default_cursor_field)
+                assert dpath.util.search(
+                    properties, cursor_path
+                ), f"Some of defined cursor fields {stream.default_cursor_field} are not specified in discover schema properties for {stream_name} stream"
 
 
 def primary_keys_for_records(streams, records):
@@ -193,7 +208,7 @@ class TestBasicRead(BaseTest):
         detailed_logger,
     ):
         output = docker_runner.call_read(connector_config, configured_catalog)
-        records = [message.record for message in output if message.type == Type.RECORD]
+        records = [message.record for message in filter_output(output, Type.RECORD)]
 
         assert records, "At least one record should be read using provided catalog"
 

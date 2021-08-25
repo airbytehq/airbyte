@@ -25,6 +25,7 @@
 package io.airbyte.config;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Set;
 
 public interface Configs {
@@ -57,9 +58,11 @@ public interface Configs {
 
   String getConfigDatabaseUrl();
 
-  int getMaxRetriesPerAttempt();
+  boolean runDatabaseMigrationOnStartup();
 
   int getMaxSyncJobAttempts();
+
+  int getMaxSyncTimeoutDays();
 
   String getWebappUrl();
 
@@ -76,6 +79,8 @@ public interface Configs {
   WorkerEnvironment getWorkerEnvironment();
 
   WorkspaceRetentionConfig getWorkspaceRetentionConfig();
+
+  List<WorkerPodToleration> getWorkerPodTolerations();
 
   String getTemporalHost();
 
