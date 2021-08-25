@@ -24,10 +24,11 @@
 
 import json
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 import pytest
 from airbyte_cdk.sources.streams.http.auth import NoAuth
-from source_google_analytics_v4.source import GoogleAnalyticsV4Stream, GoogleAnalyticsV4TypesList
+from source_google_analytics_v4.source import GoogleAnalyticsV4Stream, GoogleAnalyticsV4TypesList, SourceGoogleAnalyticsV4
 
 
 def read_file(file_name):
@@ -76,3 +77,24 @@ def test_lookup_metrics_dimensions_data_type(metrics_dimensions_mapping, mock_me
     test = g.lookup_data_type(field_type, attribute)
 
     assert test == expected
+
+
+class GoogleAnalyticsOauth2AuthenticatorMock:
+    def refresh_access_token(self):
+        return MagicMock(), 0
+
+
+@patch(
+    "source_google_analytics_v4.source.GoogleAnalyticsOauth2Authenticator.refresh_access_token",
+    new=GoogleAnalyticsOauth2AuthenticatorMock.refresh_access_token,
+)
+def test_check_connection(mocker, mock_metrics_dimensions_type_list_link):
+    test_config = json.loads(read_file("../integration_tests/sample_config.json"))
+    test_config["credentials_json"] = '{"client_email": "", "private_key": "", "private_key_id": ""}'
+
+    del test_config["custom_reports"]
+
+    source = SourceGoogleAnalyticsV4()
+    logger_mock, config_mock = MagicMock(), test_config
+
+    assert source.check_connection(logger_mock, config_mock) == (True, None)
