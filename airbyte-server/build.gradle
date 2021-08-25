@@ -56,7 +56,7 @@ dependencies {
     implementation 'org.glassfish.jersey.inject:jersey-hk2'
     implementation 'org.glassfish.jersey.media:jersey-media-json-jackson'
     implementation 'org.glassfish.jersey.ext:jersey-bean-validation'
-
+    implementation "org.flywaydb:flyway-core:7.14.0"
 
     implementation 'com.github.slugify:slugify:2.4'
 
@@ -114,6 +114,8 @@ run {
     // we map the docker pg db to port 5433 so it does not conflict with other pg instances.
     environment "DATABASE_URL", "jdbc:postgresql://localhost:5433/${env.DATABASE_DB}"
     environment "CONFIG_DATABASE_URL", "jdbc:postgresql://localhost:5433/${env.CONFIG_DATABASE_DB}"
+
+    environment "RUN_DATABASE_MIGRATION_ON_STARTUP", "true"
 
     environment "WORKSPACE_ROOT", env.WORKSPACE_ROOT
     environment "CONFIG_ROOT", "/tmp/airbyte_config"

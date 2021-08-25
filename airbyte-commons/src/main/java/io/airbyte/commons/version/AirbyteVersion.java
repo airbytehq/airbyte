@@ -56,6 +56,13 @@ public class AirbyteVersion {
     }
   }
 
+  public AirbyteVersion(final String major, final String minor, final String patch) {
+    this.version = String.format("%s.%s.%s", major, minor, patch);
+    this.major = major;
+    this.minor = minor;
+    this.patch = patch;
+  }
+
   public String getVersion() {
     return version;
   }
