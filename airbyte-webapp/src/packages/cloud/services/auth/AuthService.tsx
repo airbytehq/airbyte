@@ -18,6 +18,7 @@ import { api } from "packages/cloud/config/api";
 type AuthContextApi = {
   user: User | null;
   inited: boolean;
+  emailVerified: boolean;
   isLoading: boolean;
   login: (values: { email: string; password: string }) => Promise<User | null>;
   signUp: (form: { email: string; password: string }) => Promise<User | null>;
@@ -28,7 +29,7 @@ type AuthContextApi = {
 export const AuthContext = React.createContext<AuthContextApi | null>(null);
 
 // TODO: place token into right place
-export let token = "";
+let token = "";
 
 // TODO: add proper DI service
 const authService = new GoogleAuthService();
@@ -87,6 +88,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
     () => ({
       inited: state.inited,
       isLoading: state.loading,
+      emailVerified: !!firebaseApp.auth().currentUser?.emailVerified,
       async login(values: {
         email: string;
         password: string;
@@ -110,7 +112,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         email: string;
         password: string;
       }): Promise<User | null> {
-        await authService.signUp(form.email, form.password);
+        const user = await authService.signUp(form.email, form.password);
         // const user = await userService.create({
         //   authProvider: AuthProviders.GoogleIdentityPlatform,
         //   authUserId: fbUser.user!.uid,
@@ -118,6 +120,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         //   name: form.email,
         // });
 
+        await user.sendEmailVerification();
         return null;
       },
       user: state.currentUser,

@@ -51,8 +51,125 @@ const AccountSettingsView: React.FC = () => {
         <Content>
           <Formik
             initialValues={{
-              firstName: "",
-              lastName: "",
+              name: user.name,
+            }}
+            onSubmit={() => {
+              throw new Error("Not implemented");
+            }}
+          >
+            {() => (
+              <Form>
+                <RowFieldItem>
+                  <Field name="name">
+                    {({ field, meta }: FieldProps<string>) => (
+                      <LabeledInput
+                        {...field}
+                        label={
+                          <FormattedMessage id="settings.accountSettings.fullName" />
+                        }
+                        placeholder={formatMessage({
+                          id: "settings.accountSettings.fullName.placeholder",
+                        })}
+                        type="text"
+                        error={!!meta.error && meta.touched}
+                        message={
+                          meta.touched &&
+                          meta.error &&
+                          formatMessage({ id: meta.error })
+                        }
+                      />
+                    )}
+                  </Field>
+                  {/*<Field name="lastName">*/}
+                  {/*  {({ field, meta }: FieldProps<string>) => (*/}
+                  {/*    <LabeledInput*/}
+                  {/*      {...field}*/}
+                  {/*      label={*/}
+                  {/*        <FormattedMessage id="settings.accountSettings.lastName" />*/}
+                  {/*      }*/}
+                  {/*      placeholder={formatMessage({*/}
+                  {/*        id: "settings.accountSettings.lastName.placeholder",*/}
+                  {/*      })}*/}
+                  {/*      type="text"*/}
+                  {/*      error={!!meta.error && meta.touched}*/}
+                  {/*      message={*/}
+                  {/*        meta.touched &&*/}
+                  {/*        meta.error &&*/}
+                  {/*        formatMessage({ id: meta.error })*/}
+                  {/*      }*/}
+                  {/*    />*/}
+                  {/*  )}*/}
+                  {/*</Field>*/}
+                </RowFieldItem>
+              </Form>
+            )}
+          </Formik>
+          <NotificationsForm
+            isLoading={loading}
+            errorMessage={errorMessage}
+            successMessage={successMessage}
+            onChange={onChange}
+            preferencesValues={{
+              news: workspace.news,
+              securityUpdates: workspace.securityUpdates,
+            }}
+          />
+        </Content>
+      </SettingsCard>
+      <SettingsCard title={<FormattedMessage id="settings.account" />}>
+        <Content>
+          <Formik
+            initialValues={{
+              email: user.email,
+            }}
+            onSubmit={() => {
+              throw new Error("Not implemented");
+            }}
+          >
+            {() => (
+              <Form>
+                <FieldItem>
+                  <Field name="email">
+                    {({ field, meta }: FieldProps<string>) => (
+                      <LabeledInput
+                        {...field}
+                        label={
+                          <FormattedMessage id="settings.accountSettings.email" />
+                        }
+                        placeholder={formatMessage({
+                          id: "login.yourEmail.placeholder",
+                        })}
+                        type="text"
+                        error={!!meta.error && meta.touched}
+                        message={
+                          meta.touched &&
+                          meta.error &&
+                          formatMessage({ id: meta.error })
+                        }
+                      />
+                    )}
+                  </Field>
+                </FieldItem>
+              </Form>
+            )}
+          </Formik>
+          <NotificationsForm
+            isLoading={loading}
+            errorMessage={errorMessage}
+            successMessage={successMessage}
+            onChange={onChange}
+            preferencesValues={{
+              news: workspace.news,
+              securityUpdates: workspace.securityUpdates,
+            }}
+          />
+        </Content>
+      </SettingsCard>
+      <SettingsCard title={<FormattedMessage id="settings.account" />}>
+        <Content>
+          <Formik
+            initialValues={{
+              name: user.name,
               email: user.email,
               password: "",
             }}
@@ -63,15 +180,15 @@ const AccountSettingsView: React.FC = () => {
             {() => (
               <Form>
                 <RowFieldItem>
-                  <Field name="firstName">
+                  <Field name="name">
                     {({ field, meta }: FieldProps<string>) => (
                       <LabeledInput
                         {...field}
                         label={
-                          <FormattedMessage id="settings.accountSettings.firstName" />
+                          <FormattedMessage id="settings.accountSettings.fullName" />
                         }
                         placeholder={formatMessage({
-                          id: "settings.accountSettings.firstName.placeholder",
+                          id: "settings.accountSettings.fullName.placeholder",
                         })}
                         type="text"
                         error={!!meta.error && meta.touched}
@@ -83,26 +200,26 @@ const AccountSettingsView: React.FC = () => {
                       />
                     )}
                   </Field>
-                  <Field name="lastName">
-                    {({ field, meta }: FieldProps<string>) => (
-                      <LabeledInput
-                        {...field}
-                        label={
-                          <FormattedMessage id="settings.accountSettings.lastName" />
-                        }
-                        placeholder={formatMessage({
-                          id: "settings.accountSettings.lastName.placeholder",
-                        })}
-                        type="text"
-                        error={!!meta.error && meta.touched}
-                        message={
-                          meta.touched &&
-                          meta.error &&
-                          formatMessage({ id: meta.error })
-                        }
-                      />
-                    )}
-                  </Field>
+                  {/*<Field name="lastName">*/}
+                  {/*  {({ field, meta }: FieldProps<string>) => (*/}
+                  {/*    <LabeledInput*/}
+                  {/*      {...field}*/}
+                  {/*      label={*/}
+                  {/*        <FormattedMessage id="settings.accountSettings.lastName" />*/}
+                  {/*      }*/}
+                  {/*      placeholder={formatMessage({*/}
+                  {/*        id: "settings.accountSettings.lastName.placeholder",*/}
+                  {/*      })}*/}
+                  {/*      type="text"*/}
+                  {/*      error={!!meta.error && meta.touched}*/}
+                  {/*      message={*/}
+                  {/*        meta.touched &&*/}
+                  {/*        meta.error &&*/}
+                  {/*        formatMessage({ id: meta.error })*/}
+                  {/*      }*/}
+                  {/*    />*/}
+                  {/*  )}*/}
+                  {/*</Field>*/}
                 </RowFieldItem>
                 <FieldItem>
                   <Field name="email">
@@ -163,6 +280,7 @@ const AccountSettingsView: React.FC = () => {
           />
         </Content>
       </SettingsCard>
+
       <SettingsCard
         title={
           <Header>

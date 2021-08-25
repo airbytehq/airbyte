@@ -16,8 +16,8 @@ import LoadingPage from "components/LoadingPage";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 import NotificationServiceProvider from "hooks/services/Notification";
 import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
-import { AuthenticationProvider } from "./services/auth/AuthService";
 import { FeatureService } from "hooks/services/Feature";
+import { AuthenticationProvider } from "./services/auth/AuthService";
 import { useCustomerIdProvider } from "./services";
 
 const queryClient = new QueryClient();
@@ -33,8 +33,8 @@ const App: React.FC = () => {
           <QueryClientProvider client={queryClient}>
             <CacheProvider>
               <Suspense fallback={<LoadingPage />}>
-                <FeatureService>
-                  <ApiErrorBoundary>
+                <ApiErrorBoundary>
+                  <FeatureService>
                     <NotificationServiceProvider>
                       <AuthenticationProvider>
                         <AnalyticsInitializer
@@ -44,8 +44,8 @@ const App: React.FC = () => {
                         </AnalyticsInitializer>
                       </AuthenticationProvider>
                     </NotificationServiceProvider>
-                  </ApiErrorBoundary>
-                </FeatureService>
+                  </FeatureService>
+                </ApiErrorBoundary>
               </Suspense>
             </CacheProvider>
           </QueryClientProvider>

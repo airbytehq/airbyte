@@ -37,6 +37,8 @@
   "settings.accountSettings.logoutText": "Sign out",
   "settings.accountSettings.firstName": "First name",
   "settings.accountSettings.firstName.placeholder": "Christopher",
+  "settings.accountSettings.fullName": "Full name",
+  "settings.accountSettings.fullName.placeholder": "Christopher Smith",
   "settings.accountSettings.lastName": "Last name",
   "settings.accountSettings.lastName.placeholder": "Smith",
   "settings.accountSettings.email": "Email",

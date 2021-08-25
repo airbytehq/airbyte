@@ -39,6 +39,7 @@ import { PageConfig } from "pages/SettingsPage/SettingsPage";
 import { WorkspaceSettingsView } from "./views/workspaces/WorkspaceSettingsView";
 import { UsersSettingsView } from "packages/cloud/views/users/UsersSettingsView/UsersSettingsView";
 import { AccountSettingsView } from "packages/cloud/views/users/AccountSettingsView/AccountSettingsView";
+import { ConfirmEmailPage } from "./views/auth/ConfirmEmailPage";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -178,18 +179,20 @@ const MainViewRoutes = () => {
 };
 
 export const Routing: React.FC = () => {
-  const { user, inited } = useAuthService();
+  const { user, inited, emailVerified } = useAuthService();
+
   return (
     <Router>
       <Suspense fallback={<LoadingPage />}>
         {inited ? (
           <>
-            {user && (
+            {user && emailVerified && (
               <WorkspaceServiceProvider>
                 <MainViewRoutes />
               </WorkspaceServiceProvider>
             )}
-            {!user && <Auth />}
+            {user && !emailVerified && <ConfirmEmailPage email={user.email} />}
+            {!user || <Auth />}
           </>
         ) : (
           <LoadingPage />

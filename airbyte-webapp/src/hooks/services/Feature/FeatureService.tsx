@@ -22,11 +22,9 @@ export function FeatureService({
   );
 
   return (
-    <>
-      <featureServiceContext.Provider value={featureService}>
-        {children}
-      </featureServiceContext.Provider>
-    </>
+    <featureServiceContext.Provider value={featureService}>
+      {children}
+    </featureServiceContext.Provider>
   );
 }
 
