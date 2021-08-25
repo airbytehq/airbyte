@@ -55,6 +55,7 @@ public class DynamodbWriter {
   private final long uploadTimestamp;
   private TableWriteItems tableWriteItems;
   private final String outputTableName;
+  private final int batchSize = 25;
 
   public DynamodbWriter(DynamodbDestinationConfig config,
                         AmazonDynamoDB amazonDynamodb,
@@ -116,9 +117,6 @@ public class DynamodbWriter {
     KeySchemaElement sortKeySchema = new KeySchemaElement()
         .withAttributeName("sync_time")
         .withKeyType(KeyType.RANGE);
-    ProvisionedThroughput throughput = new ProvisionedThroughput()
-        .withReadCapacityUnits(10L)
-        .withWriteCapacityUnits(10L);
 
     TableUtils.createTableIfNotExists(amazonDynamodb, new CreateTableRequest()
         .withTableName(tableName)
@@ -126,7 +124,7 @@ public class DynamodbWriter {
         .withKeySchema(partitionKeySchema)
         .withAttributeDefinitions(sortKeyDefinition)
         .withKeySchema(sortKeySchema)
-        .withProvisionedThroughput(throughput));
+        .withBillingMode(BillingMode.PAY_PER_REQUEST));
     return new DynamoDB(amazonDynamodb).getTable(tableName);
   }
 
@@ -141,7 +139,7 @@ public class DynamodbWriter {
         .withLong(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
     tableWriteItems.addItemToPut(item);
     BatchWriteItemOutcome outcome;
-    if (tableWriteItems.getItemsToPut().size() >= 25) {
+    if (tableWriteItems.getItemsToPut().size() >= batchSize) {
       try {
         int maxRetries = 5;
         outcome = dynamodb.batchWriteItem(tableWriteItems);

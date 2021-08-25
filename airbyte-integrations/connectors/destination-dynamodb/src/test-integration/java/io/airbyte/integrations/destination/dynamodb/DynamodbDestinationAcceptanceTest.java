@@ -107,7 +107,6 @@ public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest
     }
 
     Long finalMaxSyncTime = maxSyncTime;
-    LOGGER.error(finalMaxSyncTime.toString());
     items.sort(Comparator.comparingLong(o -> ((BigDecimal) o.get(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)).longValue()));
 
     return items;
@@ -124,7 +123,6 @@ public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest
 
     for (var item : items) {
       var itemJson = item.toJSON();
-      LOGGER.error(itemJson);
       jsonRecords.add(Jsons.deserialize(itemJson).get(JavaBaseConstants.COLUMN_NAME_DATA));
     }
 
