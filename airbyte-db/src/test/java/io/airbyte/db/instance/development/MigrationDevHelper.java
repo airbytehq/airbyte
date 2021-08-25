@@ -27,7 +27,6 @@ package io.airbyte.db.instance.development;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
-import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.FlywayDatabaseMigrator;
 import java.io.BufferedReader;
 import java.io.File;
@@ -52,22 +51,12 @@ import org.flywaydb.core.internal.resolver.java.ScanningJavaMigrationResolver;
 import org.flywaydb.core.internal.scanner.LocationScannerCache;
 import org.flywaydb.core.internal.scanner.ResourceNameCache;
 import org.flywaydb.core.internal.scanner.Scanner;
-import org.jooq.codegen.GenerationTool;
-import org.jooq.meta.jaxb.Database;
-import org.jooq.meta.jaxb.Generator;
-import org.jooq.meta.jaxb.Jdbc;
-import org.jooq.meta.jaxb.Target;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.PostgreSQLContainer;
 
 public class MigrationDevHelper {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MigrationDevHelper.class);
-
-  public static String getDefaultSchemaDumpFile(String dbIdentifier) {
-    return String.format("src/main/resources/%s_database/schema_dump.txt", dbIdentifier);
-  }
 
   /**
    * This method is used for migration development. Run it to see how your migration changes the
@@ -86,34 +75,6 @@ public class MigrationDevHelper {
     List<MigrationInfo> postMigrationInfoList = migrator.list();
     System.out.println("\n==== Post Migration Info ====\n" + FlywayFormatter.formatMigrationInfoList(postMigrationInfoList));
     System.out.println("\n==== Post Migration Schema ====\n" + migrator.dumpSchema() + "\n");
-  }
-
-  public static void integrateMigration(PostgreSQLContainer<?> container, DatabaseMigrator migrator, String dbIdentifier, String schemaDumpFile)
-      throws Exception {
-    migrator.migrate();
-    String schema = migrator.dumpSchema();
-    try (PrintWriter writer = new PrintWriter(new File(Path.of(schemaDumpFile).toUri()))) {
-      writer.println(schema);
-    } catch (FileNotFoundException e) {
-      throw new IOException(e);
-    }
-
-    org.jooq.meta.jaxb.Configuration configuration = new org.jooq.meta.jaxb.Configuration()
-        .withJdbc(new Jdbc()
-            .withDriver("org.postgresql.Driver")
-            .withUrl(container.getJdbcUrl())
-            .withUser(container.getUsername())
-            .withPassword(container.getPassword()))
-        .withGenerator(new Generator()
-            .withDatabase(new Database()
-                .withName("org.jooq.meta.postgres.PostgresDatabase")
-                .withIncludes(".*")
-                .withExcludes(String.format("airbyte_%s_migrations", dbIdentifier))
-                .withInputSchema("public"))
-            .withTarget(new Target()
-                .withPackageName(String.format("io.airbyte.db.instance.%s.jooq", dbIdentifier))
-                .withDirectory("build/generated/jooq/src/main/java")));
-    GenerationTool.generate(configuration);
   }
 
   public static void createNextMigrationFile(String dbIdentifier, FlywayDatabaseMigrator migrator) throws IOException {

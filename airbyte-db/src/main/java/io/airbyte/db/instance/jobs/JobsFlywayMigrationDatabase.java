@@ -22,32 +22,30 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db.instance.development;
+package io.airbyte.db.instance.jobs;
 
+import io.airbyte.db.Database;
+import io.airbyte.db.instance.DatabaseMigrator;
+import io.airbyte.db.instance.FlywayMigrationDatabase;
 import java.io.IOException;
 
 /**
- * This interface defines all the methods needed for migration development.
+ * Jobs database for jOOQ code generation.
  */
-public interface MigrationDevCenter {
+public class JobsFlywayMigrationDatabase extends FlywayMigrationDatabase {
 
-  /**
-   * 1. Run this method to create a new migration file.
-   */
-  void createMigration() throws IOException;
+  public JobsFlywayMigrationDatabase() {
+    super("src/main/resources/jobs_database/schema_dump.txt");
+  }
 
-  /**
-   * 2. Run this method to test the new migration.
-   */
-  void runLastMigration() throws IOException;
+  @Override
+  protected Database getAndInitializeDatabase(String username, String password, String connectionString) throws IOException {
+    return new JobsDatabaseInstance(username, password, connectionString).getAndInitialize();
+  }
 
-  /**
-   * 3. This method performs the following to integration the latest migration changes:
-   * <li>Update the schema dump.</li>
-   * <li>Update jOOQ-generated code.</li>
-   *
-   * Please make sure to check in the changes after running this method.
-   */
-  void integrateMigration() throws Exception;
+  @Override
+  protected DatabaseMigrator getDatabaseMigrator(Database database) {
+    return new JobsDatabaseMigrator(database, JobsFlywayMigrationDatabase.class.getSimpleName());
+  }
 
 }
