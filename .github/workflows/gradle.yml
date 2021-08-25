@@ -455,7 +455,6 @@ jobs:
           - role: control-plane
           - role: worker
           - role: worker
-          - role: worker
           EOF
 
       - name: KIND Kubernetes Cluster Setup
