@@ -1,29 +1,53 @@
 {
-  "type": ["null", "object"],
+  "type": [
+    "null",
+    "object"
+  ],
   "properties": {
     "targeting": {
-      "type": ["null","object"],
+      "type": [
+        "null",
+        "object"
+      ],
       "properties": {
-        "included_targeting_facets": {
+        "includedTargetingFacets": {
           "anyOf": [
             {
-              "type": ["null", "array"],
+              "type": [
+                "null",
+                "array"
+              ],
               "items": {
-                "type": ["null", "object"],
+                "type": [
+                  "null",
+                  "object"
+                ],
                 "properties": {
                   "type": {
-                    "type": ["null","string"]
+                    "type": [
+                      "null",
+                      "string"
+                    ]
                   },
                   "values": {
                     "anyOf": [
                       {
-                        "type": ["null", "array"],
+                        "type": [
+                          "null",
+                          "array"
+                        ],
                         "items": {
-                          "type": ["null", "string"]
+                          "type": [
+                            "null",
+                            "string"
+                          ]
                         }
                       },
                       {
-                        "type": ["null", "string"]
+                        "type": [
+                          "null",
+                          "string"
+                        ]
                       }
                     ]
                   }
@@ -31,30 +55,51 @@
               }
             },
             {
-              "type": ["null", "string"]
+              "type": [
+                "null",
+                "string"
+              ]
             }
           ]
         },
-        "excluded_targeting_facets": {
+        "excludedTargetingFacets": {
           "anyOf": [
             {
-              "type": ["null", "array"],
+              "type": [
+                "null",
+                "array"
+              ],
               "items": {
-                "type": ["null", "object"],
+                "type": [
+                  "null",
+                  "object"
+                ],
                 "properties": {
                   "type": {
-                    "type": ["null","string"]
+                    "type": [
+                      "null",
+                      "string"
+                    ]
                   },
                   "values": {
                     "anyOf": [
                       {
-                        "type": ["null", "array"],
+                        "type": [
+                          "null",
+                          "array"
+                        ],
                         "items": {
-                          "type": ["null", "string"]
+                          "type": [
+                            "null",
+                            "string"
+                          ]
                         }
                       },
                       {
-                        "type": ["null", "string"]
+                        "type": [
+                          "null",
+                          "string"
+                        ]
                       }
                     ]
                   }
@@ -62,13 +107,16 @@
               }
             },
             {
-              "type": ["null", "string"]
+              "type": [
+                "null",
+                "string"
+              ]
             }
           ]
         }
       }
     },
-    "targeting_criteria": {
+    "targetingCriteria": {
       "type": [
         "null",
         "object"
@@ -83,9 +131,15 @@
             "and": {
               "anyOf": [
                 {
-                  "type": ["null", "array"],
+                  "type": [
+                    "null",
+                    "array"
+                  ],
                   "items": {
-                    "type": ["null", "object"],
+                    "type": [
+                      "null",
+                      "object"
+                    ],
                     "properties": {
                       "type": {
                         "type": [
@@ -96,13 +150,22 @@
                       "values": {
                         "anyOf": [
                           {
-                            "type": ["null", "array"],
+                            "type": [
+                              "null",
+                              "array"
+                            ],
                             "items": {
-                              "type": ["null", "string"]
+                              "type": [
+                                "null",
+                                "string"
+                              ]
                             }
                           },
                           {
-                            "type": ["null", "string"]
+                            "type": [
+                              "null",
+                              "string"
+                            ]
                           }
                         ]
                       }
@@ -110,7 +173,10 @@
                   }
                 },
                 {
-                  "type": ["null", "string"]
+                  "type": [
+                    "null",
+                    "string"
+                  ]
                 }
               ]
             }
@@ -128,7 +194,7 @@
                 "object"
               ],
               "properties": {
-                "urn:li:ad_targeting_facet:titles": {
+                "urn:li:adTargetingFacet:titles": {
                   "type": [
                     "null",
                     "array"
@@ -140,7 +206,7 @@
                     ]
                   }
                 },
-                "urn:li:ad_targeting_facet:staff_count_ranges": {
+                "urn:li:adTargetingFacet:staffCountRanges": {
                   "type": [
                     "null",
                     "array"
@@ -152,7 +218,7 @@
                     ]
                   }
                 },
-                "urn:li:ad_targeting_facet:followed_companies": {
+                "urn:li:adTargetingFacet:followedCompanies": {
                   "type": [
                     "null",
                     "array"
@@ -164,7 +230,7 @@
                     ]
                   }
                 },
-                "urn:li:ad_targeting_facet:seniorities": {
+                "urn:li:adTargetingFacet:seniorities": {
                   "type": [
                     "null",
                     "array"
@@ -182,16 +248,25 @@
         }
       }
     },
-    "serving_statuses": {
+    "servingStatuses": {
       "anyOf": [
         {
-          "type": ["null", "array"],
+          "type": [
+            "null",
+            "array"
+          ],
           "items": {
-            "type": ["null", "string"]
+            "type": [
+              "null",
+              "string"
+            ]
           }
         },
         {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         }
       ]
     },
@@ -227,7 +302,7 @@
         "object"
       ],
       "properties": {
-        "version_tag": {
+        "versionTag": {
           "type": [
             "null",
             "string"
@@ -235,25 +310,13 @@
         }
       }
     },
-    "associated_entity": {
+    "associatedEntity": {
       "type": [
         "null",
         "string"
       ]
     },
-    "associated_entity_organization_id": {
-      "type": [
-        "null",
-        "integer"
-      ]
-    },
-    "associated_entity_person_id": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "run_schedule": {
+    "runSchedule": {
       "type": [
         "null",
         "object"
@@ -273,7 +336,7 @@
         }
       }
     },
-    "optimization_target_type": {
+    "optimizationTargetType": {
       "type": [
         "null",
         "string"
@@ -291,19 +354,13 @@
         "integer"
       ]
     },
-    "campaign_group": {
+    "campaignGroup": {
       "type": [
         "null",
         "string"
       ]
     },
-    "campaign_group_id": {
-      "type": [
-        "null",
-        "integer"
-      ]
-    },
-    "daily_budget": {
+    "dailyBudget": {
       "type": [
         "null",
         "object"
@@ -315,7 +372,7 @@
             "number"
           ]
         },
-        "currency_code": {
+        "currencyCode": {
           "type": [
             "null",
             "string"
@@ -323,7 +380,7 @@
         }
       }
     },
-    "unit_cost": {
+    "unitCost": {
       "type": [
         "null",
         "object"
@@ -335,7 +392,7 @@
             "number"
           ]
         },
-        "currency_code": {
+        "currencyCode": {
           "type": [
             "null",
             "string"
@@ -343,13 +400,13 @@
         }
       }
     },
-    "creative_selection": {
+    "creativeSelection": {
       "type": [
         "null",
         "string"
       ]
     },
-    "cost_type": {
+    "costType": {
       "type": [
         "null",
         "string"
@@ -361,7 +418,7 @@
         "string"
       ]
     },
-    "offsite_delivery_enabled": {
+    "offsiteDeliveryEnabled": {
       "type": [
         "null",
         "boolean"
@@ -373,7 +430,7 @@
         "integer"
       ]
     },
-    "audience_expansion_enabled": {
+    "audienceExpansionEnabled": {
       "type": [
         "null",
         "boolean"
@@ -385,13 +442,31 @@
         "string"
       ]
     },
-    "account_id": {
+    "status": {
       "type": [
         "null",
-        "integer"
+        "string"
       ]
     },
-    "status": {
+    "storyDeliveryEnabled": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "pacingStrategy": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "format": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "objectiveType": {
       "type": [
         "null",
         "string"

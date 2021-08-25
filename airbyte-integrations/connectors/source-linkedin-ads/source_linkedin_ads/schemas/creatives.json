@@ -1,0 +1,118 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "campaign": {
+      "type": ["null","string"]
+    },
+    "created": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "lastModified": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "id": {
+      "type": ["null","integer"]
+    },
+    "reference": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "review": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "properties": {
+        "reviewStatus": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    },
+    "status": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "type": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "variables": {
+      "type": ["null","object"],
+      "properties": {
+        "clickUri": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null","string"]
+        },
+        "values": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "key": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "value": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "version": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "versionTag": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    },
+    "test": {
+      "type": ["null", "boolean"]
+    },
+    "servingStatuses": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    }
+  }
+}

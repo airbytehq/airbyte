@@ -1,11 +1,14 @@
 {
-  "account_users": {
-      "lastModified": 2682374400000
-  },
-  "campaign_groups": {
-      "lastModified": 2682374400000
-  },
-  "campaigns": {
-      "lastModified": 2682374400000
-  }
+    "account_users": {
+        "lastModified": 2682374400000
+    },
+    "campaign_groups": {
+        "lastModified": 2682374400000
+    },
+    "campaigns": {
+        "lastModified": 2682374400000
+    },
+    "creatives": {
+        "lastModified": 2682374400000
+    }
 }
