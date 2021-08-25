@@ -117,6 +117,15 @@ class IncrementalOptimizelyStream(OptimizelyStream, ABC):
 
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
+    def request_params(self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
+        params = super().request_params(**kwargs)
+        params.update({
+            "sort": "modified",
+            "direction": "ASC"
+        })
+
+        return params
+
 
 class RecipientLists(IncrementalOptimizelyStream):
     primary_key = ["id"]
@@ -154,7 +163,11 @@ class Recipients(IncrementalOptimizelyStream):
             yield {"list_id": attribute_name_record["recipient_list"], "attributes": attribute_name_string}
 
     def request_params(self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
-        params = {"limit": self.API_RECIPIENT_LIMIT, "attributeNames": stream_slice["attributes"]}
+        params = super().request_params(**kwargs)
+        params = {
+            "limit": self.API_RECIPIENT_LIMIT, 
+            "attributeNames": stream_slice["attributes"]
+        }
 
         if next_page_token:
             params.update(next_page_token)
@@ -234,6 +247,15 @@ class Unsubscribes(IncrementalOptimizelyStream):
     ) -> str:
         return "/unsubscribes"
 
+    def request_params(self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
+        params = super().request_params(**kwargs)
+        params.update({
+            "sort": "created"
+        })
+
+        return params
+
+
 class SmartCampaigns(IncrementalOptimizelyStream):
     primary_key = ["id", "mailingGroupId"]
     cursor_field = "modified"
@@ -247,7 +269,10 @@ class SmartCampaigns(IncrementalOptimizelyStream):
         return "/smartcampaigns"
 
     def request_params(self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
-        params = {"resultView": "DETAILED"}
+        params = super().request_params(**kwargs)
+        params.update({
+            "resultView": "DETAILED"
+        })
 
         if next_page_token:
             params.update(next_page_token)
@@ -299,7 +324,10 @@ class TransactionalMails(IncrementalOptimizelyStream):
         return "/transactionalmail"
 
     def request_params(self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
-        params = {"resultView": "DETAILED"}
+        params = super().request_params(**kwargs)
+        params.update({
+            "resultView": "DETAILED"
+        })
 
         if next_page_token:
             params.update(next_page_token)
