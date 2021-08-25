@@ -1,11 +1,11 @@
 # Scaling Airbyte
 
 As depicted in our [High-Level View](../understanding-airbyte/high-level-view.md), Airbyte is made up of several components under the hood:
-1) Scheduler
-2) Server
-3) Temporal
-4) Webapp
-5) Database
+1. Scheduler
+2. Server
+3. Temporal
+4. Webapp
+5. Database
 
 These components perform control plane operations that are low-scale, low-resource work. In addition to the work being low cost, these components are efficient and optimized for these jobs, meaning that only uncommonly large workloads will require deployments at scale. In general, you would only encounter scaling issues when running over a thousand connections.
 
@@ -27,19 +27,17 @@ One worker reads from the source; the other worker writes to the destination.
 **In general, we recommend starting out with a mid-sized cloud instance (e.g. 4 or 8 cores) and gradually tuning instance size to your workload.** 
 
 There are two resources to be aware of when thinking of scale:
-1) Memory
-2) Disk space
+1. Memory
+2. Disk space
 
 ### Memory
 As mentioned above, we are mainly concerned with scaling Sync jobs. Within a Sync job, the main memory culprit is the Source worker.
 
 This is because the Source worker reads up to 10,000 records in memory. This can present problems for database sources with tables that have large row sizes. e.g. a table with an average row size of 0.5MBs will require 0.5 * 10000 / 1000 = 5GBs of RAM. See [this issue](https://github.com/airbytehq/airbyte/issues/3439) for more information.
 
-Our Java connectors currently follow Java's default behaviour with container memory and will only use up to 1/4 of the host's allocated memory. On Docker agent with 8GBs of RAM configured, a Java connector limits itself to 2Gbs of RAM and will see Out-of-Memory exceptions if this goes higher.
+Our Java connectors currently follow Java's default behaviour with container memory and will only use up to 1/4 of the host's allocated memory. e.g. On a Docker agent with 8GBs of RAM configured, a Java connector limits itself to 2Gbs of RAM and will see Out-of-Memory exceptions if this goes higher. The same applies to Kubernetes pods.
 
 Note that all Source database connectors are Java connectors. This means that users currently need to over-specify memory resource for Java connectors.
-
-On Docker, this can be solved by giving the Docker agent more memory. See [here](https://stackoverflow.com/questions/44533319/how-to-assign-more-memory-to-docker-container) for instructions. You might need to switch to a node with more memory. On Kubernetes, this can be solved by using a node type with more memory.
 
 Improving this behaviour is on our roadmap. Please see [this issue](https://github.com/airbytehq/airbyte/issues/3440) for more information.
 
@@ -48,9 +46,9 @@ Airbyte uses backpressure to try to read the minimal amount of logs required. In
 
 However, disk space might become an issue for the following reasons:
 
-1) Long-running syncs can produce a fair amount of logs from the Docker agent and Airbyte on Docker deployments. Some work has been done to minimize accidental logging, so this should no longer be an acute problem, but is still an open issue.
+1. Long-running syncs can produce a fair amount of logs from the Docker agent and Airbyte on Docker deployments. Some work has been done to minimize accidental logging, so this should no longer be an acute problem, but is still an open issue.
    
-2) Although Airyte connector images aren't massive, they aren't exactly small either. The typical connector image is ~300MB. An Airbyte deployment with
+2. Although Airbyte connector images aren't massive, they aren't exactly small either. The typical connector image is ~300MB. An Airbyte deployment with
 multiple connectors can easily use up to 10GBs of disk space.
 
 Because of this, we recommend allocating a minimum of 30GBs of disk space per node. Since storage is on the cheaper side, we'd recommend you be safe than sorry, so err on the side of over-provisioning.
