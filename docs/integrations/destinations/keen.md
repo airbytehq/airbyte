@@ -1,6 +1,5 @@
 ---
-description: >-
-Keen is a fully managed event streaming and analytic platform.
+description: Keen is a fully managed event streaming and analytic platform.
 ---
 
 # Keen

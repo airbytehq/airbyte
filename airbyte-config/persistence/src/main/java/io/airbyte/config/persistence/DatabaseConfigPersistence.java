@@ -102,6 +102,10 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     return this;
   }
 
+  public ValidatingConfigPersistence withValidation() {
+    return new ValidatingConfigPersistence(this);
+  }
+
   @Override
   public <T> T getConfig(AirbyteConfig configType, String configId, Class<T> clazz)
       throws ConfigNotFoundException, JsonValidationException, IOException {

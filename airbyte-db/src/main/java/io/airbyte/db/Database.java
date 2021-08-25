@@ -51,6 +51,10 @@ public class Database implements AutoCloseable {
     return DSL.using(ds, dialect).transactionResult(configuration -> transform.query(DSL.using(configuration)));
   }
 
+  public DataSource getDataSource() {
+    return ds;
+  }
+
   @Override
   public void close() throws Exception {
     // Just a safety in case we are using a datasource implementation that requires closing.
