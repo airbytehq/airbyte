@@ -17,7 +17,6 @@ import MetricsPage from "./pages/MetricsPage";
 import AccountPage from "./pages/AccountPage";
 import { DestinationsPage, SourcesPage } from "./pages/ConnectorsPage";
 import { CategoryItem } from "components/SideMenu/SideMenu";
-import { DbMigrationsPage } from "./pages/DbMigrationPage";
 
 const Content = styled.div`
   margin: 0 33px 0 27px;
@@ -76,11 +75,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
           path: `${Routes.Settings}${Routes.Metrics}`,
           name: <FormattedMessage id="settings.metrics" />,
           component: MetricsPage,
-        },
-        {
-          path: `${Routes.Settings}${Routes.DbMigrations}`,
-          name: <FormattedMessage id="settings.dbMigrations" />,
-          component: DbMigrationsPage,
         },
       ],
     },

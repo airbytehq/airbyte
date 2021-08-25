@@ -333,7 +333,6 @@
   "admin.downloadSchedulerLogs": "Download Scheduler Logs",
   "admin.upgradeAll": "Upgrade all",
   "admin.upgraded": "Upgraded!",
-  "admin.runMigration": "Run Migration",
 
   "settings.accountSettings": "Account Settings",
   "settings.changeSaved": "change saved!",
@@ -351,7 +350,6 @@
   "settings.securityUpdates": "Security updates (recommended)",
   "settings.newsletter": "Newsletter with feature updates.",
   "settings.account": "Account",
-  "settings.dbMigrations": "Database Migrations",
 
   "connector.requestConnectorBlock": "+ Request a new connector",
   "connector.requestConnector": "Request a new connector",
@@ -369,15 +367,6 @@
   "connector.email.placeholder": "richard@piedpiper.com",
   "connector.source": "Source",
   "connector.destination": "Destination",
-
-  "dbMigration.titleSuffix": " Database Migrations",
-  "dbMigration.type": "Type",
-  "dbMigration.version": "Version",
-  "dbMigration.description": "Description",
-  "dbMigration.state": "State",
-  "dbMigration.migratedBy": "Executor",
-  "dbMigration.migratedAt": "Time",
-  "dbMigration.script": "Script",
 
   "demo.message.title": "This Airbyte demo is read-only",
   "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so."
