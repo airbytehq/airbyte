@@ -64,6 +64,7 @@ public class EnvConfigs implements Configs {
   public static final String CONFIG_DATABASE_USER = "CONFIG_DATABASE_USER";
   public static final String CONFIG_DATABASE_PASSWORD = "CONFIG_DATABASE_PASSWORD";
   public static final String CONFIG_DATABASE_URL = "CONFIG_DATABASE_URL";
+  public static final String RUN_DATABASE_MIGRATION_ON_STARTUP = "RUN_DATABASE_MIGRATION_ON_STARTUP";
   public static final String WEBAPP_URL = "WEBAPP_URL";
   public static final String WORKER_POD_TOLERATIONS = "WORKER_POD_TOLERATIONS";
   public static final String MAX_SYNC_JOB_ATTEMPTS = "MAX_SYNC_JOB_ATTEMPTS";
@@ -179,6 +180,11 @@ public class EnvConfigs implements Configs {
   public String getConfigDatabaseUrl() {
     // Default to reuse the job database
     return getEnvOrDefault(CONFIG_DATABASE_URL, getDatabaseUrl());
+  }
+
+  @Override
+  public boolean runDatabaseMigrationOnStartup() {
+    return getEnvOrDefault(RUN_DATABASE_MIGRATION_ON_STARTUP, true);
   }
 
   @Override
@@ -375,6 +381,10 @@ public class EnvConfigs implements Configs {
 
   private long getEnvOrDefault(String key, long defaultValue) {
     return getEnvOrDefault(key, defaultValue, Long::parseLong, false);
+  }
+
+  private boolean getEnvOrDefault(String key, boolean defaultValue) {
+    return getEnvOrDefault(key, defaultValue, Boolean::parseBoolean);
   }
 
   private <T> T getEnvOrDefault(String key, T defaultValue, Function<String, T> parser) {
