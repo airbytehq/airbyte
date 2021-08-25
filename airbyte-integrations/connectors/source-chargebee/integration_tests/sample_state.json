@@ -1,5 +1,26 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "value"
+  "subscription": {
+    "updated_at": 1624345058
+  },
+  "customer": {
+    "updated_at": 1624345056
+  },
+  "invoice": {
+    "updated_at": 1624345059
+  },
+  "order": {
+    "updated_at": 1625596058
+  },
+  "addon": {
+    "updated_at": 1625596058
+  },
+  "plan": {
+    "updated_at": 1625596058
+  },
+  "item": {
+    "updated_at": 2147483647
+  },
+  "item_price": {
+    "updated_at": 2147483647
   }
 }

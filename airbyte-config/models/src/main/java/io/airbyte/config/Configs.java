@@ -33,6 +33,10 @@ public interface Configs {
 
   String getAirbyteVersion();
 
+  String getAirbyteApiUrl();
+
+  int getAirbyteApiPort();
+
   String getAirbyteVersionOrWarning();
 
   Path getConfigRoot();
@@ -47,6 +51,16 @@ public interface Configs {
 
   String getDatabaseUrl();
 
+  String getConfigDatabaseUser();
+
+  String getConfigDatabasePassword();
+
+  String getConfigDatabaseUrl();
+
+  int getMaxSyncJobAttempts();
+
+  int getMaxSyncTimeoutDays();
+
   String getWebappUrl();
 
   String getWorkspaceDockerMount();
@@ -57,6 +71,8 @@ public interface Configs {
 
   TrackingStrategy getTrackingStrategy();
 
+  DeploymentMode getDeploymentMode();
+
   WorkerEnvironment getWorkerEnvironment();
 
   WorkspaceRetentionConfig getWorkspaceRetentionConfig();
@@ -66,6 +82,8 @@ public interface Configs {
   Set<Integer> getTemporalWorkerPorts();
 
   String getKubeNamespace();
+
+  String getSubmitterNumThreads();
 
   // Resources
   String getCpuRequest();
@@ -99,6 +117,11 @@ public interface Configs {
   enum WorkerEnvironment {
     DOCKER,
     KUBERNETES
+  }
+
+  enum DeploymentMode {
+    OSS,
+    CLOUD
   }
 
 }

@@ -226,6 +226,28 @@ public abstract class DestinationAcceptanceTest {
     }
   }
 
+  /**
+   * Detects if a destination implements overwrite mode from the spec.json that should include
+   * 'supportedDestinationSyncMode'
+   *
+   * @return - a boolean.
+   */
+  protected boolean implementsOverwrite() throws WorkerException {
+    final ConnectorSpecification spec = runSpec();
+    assertNotNull(spec);
+    if (spec.getSupportedDestinationSyncModes() != null) {
+      return spec.getSupportedDestinationSyncModes().contains(DestinationSyncMode.OVERWRITE);
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Override to return true to if the destination implements basic normalization and it should be
+   * tested here.
+   *
+   * @return - a boolean.
+   */
   protected boolean supportsNormalization() {
     return false;
   }
@@ -350,10 +372,34 @@ public abstract class DestinationAcceptanceTest {
   }
 
   /**
+   * This serves to test MSSQL 2100 limit parameters in a single query. this means that for Airbyte
+   * insert data need to limit to ~ 700 records (3 columns for the raw tables) = 2100 params
+   */
+  @ParameterizedTest
+  @ArgumentsSource(DataArgumentsProvider.class)
+  public void testSyncWithLargeRecordBatch(String messagesFilename, String catalogFilename) throws Exception {
+    final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+
+    final List<AirbyteMessage> largeNumberRecords = Collections.nCopies(1000, messages).stream().flatMap(List::stream).collect(Collectors.toList());
+
+    final JsonNode config = getConfig();
+    final String defaultSchema = getDefaultSchema(config);
+    runSyncAndVerifyStateOutput(config, largeNumberRecords, configuredCatalog, false);
+  }
+
+  /**
    * Verify that the integration overwrites the first sync with the second sync.
    */
   @Test
   public void testSecondSync() throws Exception {
+    if (!implementsOverwrite()) {
+      LOGGER.info("Destination's spec.json does not support overwrite sync mode.");
+      return;
+    }
+
     final AirbyteCatalog catalog =
         Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
@@ -372,8 +418,10 @@ public abstract class DestinationAcceptanceTest {
                     .put("id", 1)
                     .put("currency", "USD")
                     .put("date", "2020-03-31T00:00:00Z")
-                    .put("HKD", 10.0)
-                    .put("NZD", 700.0)
+                    // TODO(sherifnada) hack: write decimals with sigfigs because Snowflake stores 10.1 as "10" which
+                    // fails destination tests
+                    .put("HKD", 10.1)
+                    .put("NZD", 700.1)
                     .build()))),
         new AirbyteMessage()
             .withType(Type.STATE)
@@ -405,8 +453,10 @@ public abstract class DestinationAcceptanceTest {
                     .put("id", 1)
                     .put("currency", "USD\u2028")
                     .put("date", "2020-03-\n31T00:00:00Z\r")
-                    .put("HKD", 10.0)
-                    .put("NZD", 700.0)
+                    // TODO(sherifnada) hack: write decimals with sigfigs because Snowflake stores 10.1 as "10" which
+                    // fails destination tests
+                    .put("HKD", 10.1)
+                    .put("NZD", 700.1)
                     .build()))),
         new AirbyteMessage()
             .withType(Type.STATE)
@@ -419,7 +469,16 @@ public abstract class DestinationAcceptanceTest {
 
   @Test
   public void specNormalizationValueShouldBeCorrect() throws Exception {
-    assertEquals(normalizationFromSpec(), supportsNormalization());
+    final boolean normalizationFromSpec = normalizationFromSpec();
+    assertEquals(normalizationFromSpec, supportsNormalization());
+    boolean normalizationRunnerFactorySupportsDestinationImage;
+    try {
+      NormalizationRunnerFactory.create(getImageName(), processFactory);
+      normalizationRunnerFactorySupportsDestinationImage = true;
+    } catch (IllegalStateException e) {
+      normalizationRunnerFactorySupportsDestinationImage = false;
+    }
+    assertEquals(normalizationFromSpec, normalizationRunnerFactorySupportsDestinationImage);
   }
 
   @Test
@@ -461,8 +520,10 @@ public abstract class DestinationAcceptanceTest {
                     .put("id", 1)
                     .put("currency", "USD")
                     .put("date", "2020-03-31T00:00:00Z")
-                    .put("HKD", 10.0)
-                    .put("NZD", 700.0)
+                    // TODO(sherifnada) hack: write decimals with sigfigs because Snowflake stores 10.1 as "10" which
+                    // fails destination tests
+                    .put("HKD", 10.1)
+                    .put("NZD", 700.1)
                     .build()))),
         new AirbyteMessage()
             .withType(Type.STATE)
@@ -666,11 +727,11 @@ public abstract class DestinationAcceptanceTest {
   }
 
   @Test
-  void testCustomDbtTransformations() throws Exception {
+  public void testCustomDbtTransformations() throws Exception {
     if (!normalizationFromSpec() || !dbtFromSpec()) {
-      // TODO : Fix this, this test should not be restricted to destinations that support normalization
-      // to do so, we need to inject extra packages for dbt to run with dbt community adapters depending
-      // on the destination
+      // we require normalization implementation for this destination, because we make sure to install
+      // required dbt dependency in the normalization docker image in order to run this test successfully
+      // (we don't actually rely on normalization running anything here though)
       return;
     }
 
@@ -684,7 +745,7 @@ public abstract class DestinationAcceptanceTest {
     final OperatorDbt dbtConfig = new OperatorDbt()
         .withGitRepoUrl("https://github.com/fishtown-analytics/jaffle_shop.git")
         .withGitRepoBranch("main")
-        .withDockerImage("fishtownanalytics/dbt:0.19.1");
+        .withDockerImage("airbyte/normalization:dev");
     //
     // jaffle_shop is a fictional ecommerce store maintained by fishtownanalytics/dbt.
     //
@@ -733,13 +794,10 @@ public abstract class DestinationAcceptanceTest {
 
   @Test
   void testCustomDbtTransformationsFailure() throws Exception {
-    if (!normalizationFromSpec()) {
-      // TODO : Fix this, this test should not be restricted to destinations that support normalization
-      // to do so, we need to inject extra packages for dbt to run with dbt community adapters depending
-      // on the destination
-      return;
-    }
-    if (!dbtFromSpec()) {
+    if (!normalizationFromSpec() || !dbtFromSpec()) {
+      // we require normalization implementation for this destination, because we make sure to install
+      // required dbt dependency in the normalization docker image in order to run this test successfully
+      // (we don't actually rely on normalization running anything here though)
       return;
     }
 
@@ -1002,9 +1060,14 @@ public abstract class DestinationAcceptanceTest {
         }
         LOGGER.info("For {} Expected {} vs Actual {}", key, expectedValue, actualValue);
         assertTrue(actualData.has(key));
-        assertEquals(expectedValue, actualValue);
+        assertSameValue(expectedValue, actualValue);
       }
     }
+  }
+
+  // Allows subclasses to implement custom comparison asserts
+  protected void assertSameValue(JsonNode expectedValue, JsonNode actualValue) {
+    assertEquals(expectedValue, actualValue);
   }
 
   protected List<AirbyteRecordMessage> retrieveNormalizedRecords(AirbyteCatalog catalog, String defaultSchema) throws Exception {

@@ -86,7 +86,7 @@
       "type": ["null", "string"]
     },
     "lastUpdatedTime": {
-      "type": "string"
+      "type": ["null", "integer"]
     }
   }
 }

@@ -3,5 +3,5 @@
   "name": "Asana",
   "dockerRepository": "airbyte/source-asana",
   "dockerImageTag": "0.1.1",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-asana"
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/asana"
 }

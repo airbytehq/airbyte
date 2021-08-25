@@ -10,22 +10,44 @@ The MySQL source does not alter the schema present in your database. Depending o
 
 ### Data type mapping
 
-MySQL data types are mapped to the following data types when synchronizing data:
+MySQL data types are mapped to the following data types when synchronizing data.
+You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mysql/src/test-integration/java/io/airbyte/integrations/source/mysql/MySqlSourceComprehensiveTest.java).
+If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
 | MySQL Type | Resulting Type | Notes |
 | :--- | :--- | :--- |
 | `array` | array |  |
+| `bigint` | number |  |
 | `binary` | string |  |
+| `blob` | string |  |
 | `date` | string |  |
 | `datetime` | string |  |
+| `decimal` | number |  |
+| `decimal(19, 2)` | number |  |
+| `double` | number |  |
 | `enum` | string |  |
-| `tinyint` | number |  |
-| `smallint` | number |  |
-| `mediumint` | number |  |
+| `float` | number |  |
 | `int` | number |  |
-| `bigint` | number |  |
+| `int unsigned` | number |  |
+| `int zerofill` | number |  |
+| `json` | text |  |
+| `mediumint` | number |  |
+| `mediumint zerofill` | number |  |
+| `mediumint` | number |  |
 | `numeric` | number |  |
+| `point` | object |  |
+| `smallint` | number |  |
+| `smallint zerofill` | number |  |
 | `string` | string |  |
+| `tinyint` | number |  |
+| `text` | string |  |
+| `time` | string |  |
+| `timestamp` | string |  |
+| `tinytext` | string |  |
+| `varbinary(256)` | string |  |
+| `varchar` | string |  |
+| `varchar(256) character set cp1251` | string |  |
+| `varchar(256) character set utf16` | string |  |
 
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
 
@@ -87,6 +109,7 @@ For `STANDARD` replication method this is not applicable. If you select the `CDC
 
 Your database user should now be ready for use with Airbyte.
 
+
 ## Change Data Capture \(CDC\)
 
 * If you need a record of deletions and can accept the limitations posted below, you should be able to use CDC for MySQL.
@@ -133,11 +156,15 @@ When a sync runs for the first time using CDC, Airbyte performs an initial consi
 Airbyte doesn't acquire any table locks (for tables defined with MyISAM engine, the tables would still be locked) while creating the snapshot to allow writes by other database clients. 
 But in order for the sync to work without any error/unexpected behaviour, it is assumed that no schema changes are happening while the snapshot is running.
 
+## Troubleshooting
+
+There may be problems with mapping values in MySQL's datetime field to other relational data stores. MySQL permits zero values for date/time instead of NULL which may not be accepted by other data stores. To work around this problem, you can pass the following key value pair in the JDBC connector of the source setting `zerodatetimebehavior=Converttonull`.
 
 ## Changelog
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.4.1   | 2021-07-23 | [4956](https://github.com/airbytehq/airbyte/pull/4956) | Fix log link |
 | 0.3.7   | 2021-06-09 | [3179](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE_ENTRYPOINT for Kubernetes support |
 | 0.3.6   | 2021-06-09 | [3966](https://github.com/airbytehq/airbyte/pull/3966) | Fix excessive logging for CDC method |
 | 0.3.5   | 2021-06-07 | [3890](https://github.com/airbytehq/airbyte/pull/3890) | Fix CDC handle tinyint(1) and boolean types |

@@ -5,7 +5,7 @@
     "title": "Google Ads Spec",
     "type": "object",
     "required": ["credentials", "start_date", "customer_id"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "credentials": {
         "type": "object",
@@ -45,7 +45,12 @@
       "customer_id": {
         "title": "Customer Id",
         "type": "string",
-        "description": "Customer id must be specified  as a 10-digit number without dashes. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\">docs</a>"
+        "description": "Customer id must be specified as a 10-digit number without dashes. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\">docs</a>"
+      },
+      "login_customer_id": {
+        "type": "string",
+        "title": "Login Customer ID",
+        "description": "If your access to the customer account is through a manager account, this field is required and must be set to the customer ID of the manager account (10-digit number without dashes). More information about this field you can see <a href=\"https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid\">here</a>"
       },
       "start_date": {
         "type": "string",

@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector/source-acceptance-tests.md)
+# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-instagram:dev
 tests:
@@ -14,7 +14,6 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog_without_stories.json"
-      validate_output_from_all_streams: yes
 # disabled because the only incremental stream is user_insights and its state is nested
 #  incremental:
 #    - config_path: "secrets/config.json"
