@@ -10,6 +10,56 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on.
 
+## 8/18/2021
+
+New source:
+* [**Bing Ads**](https://docs.airbyte.io/integrations/sources/bing-ads)
+
+New destination:
+* [**Keen**](https://docs.airbyte.io/integrations/destinations/keen)
+
+New features:
+* **Chargebee** source: Adds support for the `items`, `item prices` and  `attached items` endpoints.
+
+Bug fixes:
+* **Quickbooks** source: Now uses the number data type for decimal fields.
+* **Hubspot** source: Fixed `empty string` inside of the `number` and `float` datatypes.
+* **GitHub** source: Validation fixed on non-required fields.
+* **BigQuery** destination: Now supports processing of arrays of records properly.
+* **Oracle** destination: Fixed destination check for users without DBA role.
+
+## 8/9/2021
+
+New sources:
+* [**S3/Abstract Files**](https://docs.airbyte.io/integrations/sources/s3)
+* [**Zuora**](https://docs.airbyte.io/integrations/sources/zuora)
+* [**Kustomer**](https://docs.airbyte.io/integrations/sources/kustomer)
+* [**Apify**](https://docs.airbyte.io/integrations/sources/apify-dataset)
+* [**Chargebee**](https://docs.airbyte.io/integrations/sources/chargebee)
+
+
+New features:
+* **Shopify** source: The `status` property is now in the `Products` stream.
+* **Amazon Seller Partner** source: Added support for `GET_MERCHANT_LISTINGS_ALL_DATA` and `GET_FBA_INVENTORY_AGED_DATA` stream endpoints.
+* **GitHub** source: Existing streams now don't minify the `user` property.
+* **Hubspot** source: Updated user-defined custom field schema generation.
+* **Zendesk** source: Migrated from Singer to the Airbyte CDK.
+* **Amazon Seller Partner** source: Migrated to the Airbyte CDK.
+
+
+Bug fixes:
+* **Hubspot** source: Casting exceptions are now logged correctly.
+* **S3** source: Fixed bug where syncs could hang indefinitely.
+* **Shopify** source: Fixed the `products` schema to be in accordance with the API.
+* **PayPal Transactions** source: Fixed the start date minimum to be 3 years rather than 45 days.
+* **Google Ads** source: Added the `login-customer-id` setting.
+* **Intercom** source: Rate limit corrected from 1000 requests/minute from 1000 requests/hour.
+* **S3** source: Fixed bug in spec to properly display the `format` field in the UI.
+
+New CDK features:
+* Now allows for setting request data in non-JSON formats.
+
+
 ## 7/30/2021
 
 New sources:

@@ -10,6 +10,8 @@ select
     json_value(_airbyte_data, 
     '$."date"') as `date`,
     json_value(_airbyte_data, 
+    '$."timestamp_col"') as timestamp_col,
+    json_value(_airbyte_data, 
     '$."HKD@spéçiäl & characters"') as `HKD@spéçiäl & characters`,
     json_value(_airbyte_data, 
     '$."HKD_special___characters"') as hkd_special___characters,
@@ -18,6 +20,6 @@ select
     json_value(_airbyte_data, 
     '$."USD"') as usd,
     _airbyte_emitted_at
-from test_normalization._airbyte_raw_exchange_rate
+from test_normalization._airbyte_raw_exchange_rate as table_alias
 -- exchange_rate
   );

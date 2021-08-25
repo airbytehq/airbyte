@@ -82,6 +82,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[SAP Business One](./sources/sap-business-one.md)| Beta |
 |[Sendgrid](./sources/sendgrid.md)| Certified |
 |[Shopify](./sources/shopify.md)| Certified |
+|[Short.io](./sources/shortio.md)| Beta |
 |[Slack](./sources/slack.md)| Beta |
 |[Spree Commerce](./sources/spree-commerce.md)| Beta |
 |[Smartsheets](./sources/smartsheets.md)| Beta |
@@ -91,6 +92,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Sugar CRM](./sources/sugar-crm.md)| Beta |
 |[SurveyMonkey](./sources/surveymonkey.md)| Beta |
 |[Tempo](./sources/tempo.md)| Beta |
+|[Trello](./sources/trello.md)| Beta |
 |[Twilio](./sources/twilio.md)| Beta |
 |[US Census](./sources/us-census.md)| Alpha |
 |[WooCommerce](./sources/woo-commerce.md)| Beta |
@@ -107,9 +109,11 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | Connector | Grade |
 |----|----|
 |[BigQuery](./destinations/bigquery.md)| Certified |
+|[Chargify (Keen)](./destinations/keen.md)| Alpha |
 |[Google Cloud Storage (GCS)](./destinations/gcs.md)| Alpha |
 |[Google Pubsub](./destinations/pubsub.md)| Alpha |
 |[Kafka](./destinations/kafka.md)| Alpha |
+|[Keen](./destinations/keen.md)| Alpha |
 |[Local CSV](./destinations/local-csv.md)| Certified |
 |[Local JSON](./destinations/local-json.md)| Certified |
 |[MeiliSearch](./destinations/meilisearch.md)| Beta |

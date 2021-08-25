@@ -30,6 +30,11 @@ import java.io.IOException;
 public interface DatabaseInstance {
 
   /**
+   * Check is a database has been initialized.
+   */
+  boolean isInitialized() throws IOException;
+
+  /**
    * Get a database that has been initialized and is ready to use.
    */
   Database getInitialized();

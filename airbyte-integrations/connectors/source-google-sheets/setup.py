@@ -25,6 +25,11 @@
 
 from setuptools import find_packages, setup
 
+TEST_REQUIREMENTS = [
+    "pytest~=6.1",
+    "source-acceptance-test",
+]
+
 setup(
     name="google_sheets_source",
     description="Source implementation for Google Sheets.",
@@ -40,10 +45,9 @@ setup(
         "google-api-python-client",
         "PyYAML==5.4",
         "pydantic==1.6.2",
-        "pytest==6.1.2",
     ],
-    package_data={"": ["*.json"]},
+    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
     extras_require={
-        "integration_tests": ["airbyte_python_test"],
+        "tests": TEST_REQUIREMENTS,
     },
 )
