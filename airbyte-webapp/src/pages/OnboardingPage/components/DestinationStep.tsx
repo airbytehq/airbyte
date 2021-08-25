@@ -1,13 +1,10 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { useResource } from "rest-hooks";
 
 import ContentCard from "components/ContentCard";
 import ServiceForm from "views/Connector/ServiceForm";
-import ConnectionBlock from "components/ConnectionBlock";
 import { JobsLogItem } from "components/JobItem";
 
-import SourceDefinitionResource from "core/resources/SourceDefinition";
 import { useDestinationDefinitionSpecificationLoad } from "components/hooks/services/useDestinationHook";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { JobInfo } from "core/resources/Scheduler";
@@ -16,10 +13,11 @@ import { DestinationDefinition } from "core/resources/DestinationDefinition";
 
 import SkipOnboardingButton from "./SkipOnboardingButton";
 import { useAnalytics } from "components/hooks/useAnalytics";
+import TitlesBlock from "./TitlesBlock";
+import HighlightedText from "./HighlightedText";
 
 type IProps = {
   availableServices: DestinationDefinition[];
-  currentSourceDefinitionId: string;
   onSubmit: (values: {
     name: string;
     serviceType: string;
@@ -35,7 +33,6 @@ type IProps = {
 const DestinationStep: React.FC<IProps> = ({
   onSubmit,
   availableServices,
-  currentSourceDefinitionId,
   hasSuccess,
   error,
   jobInfo,
@@ -46,9 +43,7 @@ const DestinationStep: React.FC<IProps> = ({
     destinationDefinitionSpecification,
     isLoading,
   } = useDestinationDefinitionSpecificationLoad(destinationDefinitionId);
-  const currentSource = useResource(SourceDefinitionResource.detailShape(), {
-    sourceDefinitionId: currentSourceDefinitionId,
-  });
+
   const analyticsService = useAnalytics();
 
   const onDropDownSelect = (destinationDefinition: string) => {
@@ -83,12 +78,21 @@ const DestinationStep: React.FC<IProps> = ({
 
   return (
     <>
-      <ConnectionBlock
-        itemFrom={{ name: currentSource.name, icon: currentSource.icon }}
-      />
-      <ContentCard
-        title={<FormattedMessage id="onboarding.destinationSetUp" />}
+      <TitlesBlock
+        title={
+          <FormattedMessage
+            id="onboarding.createFirstDestination"
+            values={{
+              name: (...name: React.ReactNode[]) => (
+                <HighlightedText>{name}</HighlightedText>
+              ),
+            }}
+          />
+        }
       >
+        <FormattedMessage id="onboarding.createFirstDestination.text" />
+      </TitlesBlock>
+      <ContentCard full>
         <ServiceForm
           formType="destination"
           additionBottomControls={

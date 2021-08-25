@@ -6,6 +6,9 @@ import { Destination } from "core/resources/Destination";
 import { Routes } from "../../routes";
 import useRouter from "components/hooks/useRouterHook";
 import SkipOnboardingButton from "./SkipOnboardingButton";
+import TitlesBlock from "./TitlesBlock";
+import { FormattedMessage } from "react-intl";
+import HighlightedText from "./HighlightedText";
 
 type IProps = {
   errorStatus?: number;
@@ -19,12 +22,29 @@ const ConnectionStep: React.FC<IProps> = ({ source, destination }) => {
   const afterSubmitConnection = () => push(Routes.Root);
 
   return (
-    <CreateConnectionContent
-      additionBottomControls={<SkipOnboardingButton step="connection" />}
-      source={source}
-      destination={destination}
-      afterSubmitConnection={afterSubmitConnection}
-    />
+    <>
+      <TitlesBlock
+        title={
+          <FormattedMessage
+            id="onboarding.createConnection"
+            values={{
+              name: (...name: React.ReactNode[]) => (
+                <HighlightedText>{name}</HighlightedText>
+              ),
+            }}
+          />
+        }
+      >
+        <FormattedMessage id="onboarding.createConnection.text" />
+      </TitlesBlock>
+      <CreateConnectionContent
+        noTitles
+        additionBottomControls={<SkipOnboardingButton step="connection" />}
+        source={source}
+        destination={destination}
+        afterSubmitConnection={afterSubmitConnection}
+      />
+    </>
   );
 };
 

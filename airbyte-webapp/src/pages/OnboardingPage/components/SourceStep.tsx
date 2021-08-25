@@ -14,6 +14,8 @@ import { useSourceDefinitionSpecificationLoad } from "components/hooks/services/
 import SkipOnboardingButton from "./SkipOnboardingButton";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { useAnalytics } from "components/hooks/useAnalytics";
+import HighlightedText from "./HighlightedText";
+import TitlesBlock from "./TitlesBlock";
 
 type IProps = {
   onSubmit: (values: {
@@ -72,24 +74,42 @@ const SourceStep: React.FC<IProps> = ({
   const errorMessage = error ? createFormErrorMessage(error) : "";
 
   return (
-    <ContentCard title={<FormattedMessage id="onboarding.sourceSetUp" />}>
-      <ServiceForm
-        additionBottomControls={
-          <SkipOnboardingButton step="source connection" />
+    <>
+      <TitlesBlock
+        title={
+          <FormattedMessage
+            id="onboarding.createFirstSource"
+            values={{
+              name: (...name: React.ReactNode[]) => (
+                <HighlightedText>{name}</HighlightedText>
+              ),
+            }}
+          />
         }
-        allowChangeConnector
-        onServiceSelect={onServiceSelect}
-        onSubmit={onSubmitForm}
-        formType="source"
-        availableServices={availableServices}
-        hasSuccess={hasSuccess}
-        errorMessage={errorMessage}
-        specifications={sourceDefinitionSpecification?.connectionSpecification}
-        documentationUrl={sourceDefinitionSpecification?.documentationUrl}
-        isLoading={isLoading}
-      />
-      <JobsLogItem jobInfo={jobInfo} />
-    </ContentCard>
+      >
+        <FormattedMessage id="onboarding.createFirstSource.text" />
+      </TitlesBlock>
+      <ContentCard full>
+        <ServiceForm
+          additionBottomControls={
+            <SkipOnboardingButton step="source connection" />
+          }
+          allowChangeConnector
+          onServiceSelect={onServiceSelect}
+          onSubmit={onSubmitForm}
+          formType="source"
+          availableServices={availableServices}
+          hasSuccess={hasSuccess}
+          errorMessage={errorMessage}
+          specifications={
+            sourceDefinitionSpecification?.connectionSpecification
+          }
+          documentationUrl={sourceDefinitionSpecification?.documentationUrl}
+          isLoading={isLoading}
+        />
+        <JobsLogItem jobInfo={jobInfo} />
+      </ContentCard>
+    </>
   );
 };
 

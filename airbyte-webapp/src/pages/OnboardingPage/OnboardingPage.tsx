@@ -169,7 +169,6 @@ const OnboardingPage: React.FC = () => {
           availableServices={destinationDefinitions}
           hasSuccess={successRequest}
           error={errorStatusRequest}
-          currentSourceDefinitionId={sources[0].sourceDefinitionId}
           // destination={
           //   destinations.length && !successRequest ? destinations[0] : undefined
           // }
