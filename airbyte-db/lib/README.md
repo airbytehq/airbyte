@@ -8,9 +8,6 @@ Check `io.airbyte.db.instance.configs` for example.
 - Write a SQL script that initializes the database.
   - The default path for this file is `resource/<db-name>_database/schema.sql`.
 - Implement the `DatabaseInstance` interface that extends from `BaseDatabaseInstance`. This class initializes the database by executing the initialization script.
-- [Optional] For each table, create a constant class that defines the table and the columns in jooq.
-  - This is necessary only if you plan to use jooq to query the table.
-  - See `AirbyteConfigsTable` as an example.
 
 ## Database Migration
 - Implement the `DatabaseMigrator` interface that extends from `BaseDatabaseMigrator`. This class will handle the database migration.
@@ -20,6 +17,7 @@ Check `io.airbyte.db.instance.configs` for example.
 
 ## jOOQ Code Generation
 - To setup jOOQ code generation for the new database, refer to [`airbyte-db/jooq`](../jooq/README.md) for details.
+- Please do not use any jOOQ generated code in this `lib` module. This is because the `jooq` module that generates the code depends on this one.
 
 # How to Write a Migration
 - Run the `newMigration` command to create a new migration file in `io.airbyte.db.instance.<db-name>.migrations`.

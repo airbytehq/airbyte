@@ -24,17 +24,10 @@
 
 package io.airbyte.db.instance.configs;
 
-import static io.airbyte.db.instance.configs.AirbyteConfigsTable.AIRBYTE_CONFIGS;
-import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CONFIG_BLOB;
-import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CONFIG_ID;
-import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CONFIG_TYPE;
-import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CREATED_AT;
-import static io.airbyte.db.instance.configs.AirbyteConfigsTable.UPDATED_AT;
 import static org.jooq.impl.DSL.select;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.sql.Timestamp;
-import java.time.Instant;
+import java.time.OffsetDateTime;
 import org.jooq.JSONB;
 import org.jooq.exception.DataAccessException;
 import org.junit.jupiter.api.Test;
@@ -59,7 +52,7 @@ class ConfigsDatabaseInstanceTest extends AbstractConfigsDatabaseTest {
     database.query(ctx -> ctx.fetchExists(select().from(AIRBYTE_CONFIGS).where(CONFIG_ID.eq("ID"))));
     database.query(ctx -> ctx.fetchExists(select().from(AIRBYTE_CONFIGS).where(CONFIG_TYPE.eq("TYPE"))));
     database.query(ctx -> ctx.fetchExists(select().from(AIRBYTE_CONFIGS).where(CONFIG_BLOB.eq(JSONB.valueOf("{}")))));
-    Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(System.currentTimeMillis()));
+    OffsetDateTime timestamp = OffsetDateTime.now();
     database.query(ctx -> ctx.fetchExists(select().from(AIRBYTE_CONFIGS).where(CREATED_AT.eq(timestamp))));
     database.query(ctx -> ctx.fetchExists(select().from(AIRBYTE_CONFIGS).where(UPDATED_AT.eq(timestamp))));
 

@@ -24,9 +24,9 @@
 
 package io.airbyte.config.persistence;
 
-import static io.airbyte.db.instance.configs.AirbyteConfigsTable.AIRBYTE_CONFIGS;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.count;
+import static org.jooq.impl.DSL.table;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -170,7 +170,7 @@ public class DatabaseConfigPersistenceTest extends BaseTest {
   }
 
   private void assertRecordCount(int expectedCount) throws Exception {
-    Result<Record1<Integer>> recordCount = database.query(ctx -> ctx.select(count(asterisk())).from(AIRBYTE_CONFIGS).fetch());
+    Result<Record1<Integer>> recordCount = database.query(ctx -> ctx.select(count(asterisk())).from(table("airbyte_configs")).fetch());
     assertEquals(expectedCount, recordCount.get(0).value1());
   }
 
