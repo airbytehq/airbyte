@@ -7,30 +7,44 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
-            "0": {
-              "type": "number"
-            },
-            "First Name": {
+            "Tag #": {
               "type": "string"
-            },
-            "Last Name": {
-              "type": "string"
-            },
-            "Gender": {
-              "type": "string"
-            },
-            "Country": {
-              "type": "string"
-            },
-            "Age": {
-              "type": "number"
             },
             "Date": {
+              "type": "string", "format": "date"
+            },
+            "NOS#": {
               "type": "string"
             },
-            "Id": {
-              "type": "number"
-            }
+            "Customer #": {
+              "type": "string"
+            },
+            "Customer": {
+              "type": "string"
+            },
+            "Project Name": {
+              "type": "string"
+            },
+            "City": {
+              "type": "string"
+            },
+            "Overtime Fee": {
+              "type": "string"
+            },
+            "Plant Operational": {
+              "type": "string"
+            },
+            "Overtime Type": {
+              "type": "string"
+            },
+            "Fee Waived": {
+              "type": "string"
+            },
+            "Reason Waived": {
+              "type": "string"
+            },
+            "Comments": {
+              "type": "string"}
           }
         }
       },

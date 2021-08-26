@@ -25,7 +25,7 @@
 
 import json
 from datetime import datetime
-from typing import Dict, Generator
+from typing import Any, Dict, Generator
 
 import smartsheet
 from airbyte_cdk import AirbyteLogger
@@ -64,6 +64,11 @@ def get_json_schema(sheet: Dict) -> Dict:
         "properties": column_info,
     }
     return json_schema
+
+def catch(d: dict) -> Any:
+    if 'value' in d:
+        return d['value']
+    return ''
 
 
 # main class definition
@@ -135,9 +140,10 @@ class SourceSmartsheets(Source):
                 logger.info(f"Row count: {sheet['totalRowCount']}")
 
                 for row in sheet["rows"]:
-                    values = tuple(i["value"] if "value" in i else "" for i in row["cells"])
                     try:
-                        data = dict(zip(columns, values))
+                        id_name_map = {d['id']: d['title'] for d in sheet['columns']}
+                        assert set(id_name_map.values()) == set(columns)
+                        data = {id_name_map[i['columnId']]: catch(i) for i in row['cells']}
 
                         yield AirbyteMessage(
                             type=Type.RECORD,
