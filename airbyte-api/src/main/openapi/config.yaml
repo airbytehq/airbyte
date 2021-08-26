@@ -48,6 +48,8 @@ tags:
     description: Destination  related resources.
   - name: connection
     description: Connection between sources and destinations.
+  - name: db_migration
+    description: Database migration related resources.
   - name: web_backend
     description: Connection between sources and destinations.
   - name: health
@@ -1134,6 +1136,52 @@ paths:
                 $ref: "#/components/schemas/CheckConnectionRead"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/db_migrations/list:
+    post:
+      tags:
+        - db_migration
+      summary: List all database migrations
+      operationId: listMigrations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DbMigrationRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DbMigrationReadList"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/db_migrations/migrate:
+    post:
+      tags:
+        - db_migration
+      summary: Migrate the database to the latest version
+      operationId: executeMigrations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DbMigrationRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DbMigrationExecutionRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/web_backend/connections/list:
     post:
       tags:
@@ -1988,6 +2036,13 @@ components:
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
+    DbMigrationRequestBody:
+      type: object
+      required:
+        - database
+      properties:
+        database:
+          type: string
     WebBackendConnectionRequestBody:
       type: object
       required:
@@ -2698,6 +2753,68 @@ components:
           type: string
         memory_limit:
           type: string
+    # DB Migration
+    DbMigrationState:
+      type: string
+      # https://github.com/flyway/flyway/blob/master/flyway-core/src/main/java/org/flywaydb/core/api/MigrationState.java
+      enum:
+        - pending
+        - above_target
+        - below_baseline
+        - baseline
+        - ignored
+        - missing_success
+        - missing_failed
+        - success
+        - undone
+        - available
+        - failed
+        - out_of_order
+        - future_success
+        - future_failed
+        - outdated
+        - superseded
+        - deleted
+    DbMigrationRead:
+      type: object
+      required:
+        - migrationType
+        - migrationVersion
+        - migrationDescription
+      properties:
+        migrationType:
+          type: string
+        migrationVersion:
+          type: string
+        migrationDescription:
+          type: string
+        migrationState:
+          $ref: "#/components/schemas/DbMigrationState"
+        migratedBy:
+          type: string
+        migratedAt:
+          type: integer
+          format: int64
+        migrationScript:
+          type: string
+    DbMigrationReadList:
+      type: object
+      properties:
+        migrations:
+          type: array
+          items:
+            $ref: "#/components/schemas/DbMigrationRead"
+    DbMigrationExecutionRead:
+      type: object
+      properties:
+        initialVersion:
+          type: string
+        targetVersion:
+          type: string
+        executedMigrations:
+          type: array
+          items:
+            $ref: "#/components/schemas/DbMigrationRead"
     # Web Backend
     WebBackendConnectionRead:
       type: object

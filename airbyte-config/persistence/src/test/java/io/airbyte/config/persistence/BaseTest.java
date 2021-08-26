@@ -48,7 +48,7 @@ public abstract class BaseTest {
 
   static {
     try {
-      ConfigPersistence seedPersistence = new YamlSeedConfigPersistence();
+      ConfigPersistence seedPersistence = YamlSeedConfigPersistence.get();
       SOURCE_GITHUB = seedPersistence
           .getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, "ef69ef6e-aa7f-4af1-a01d-ef775033524e", StandardSourceDefinition.class);
       SOURCE_POSTGRES = seedPersistence

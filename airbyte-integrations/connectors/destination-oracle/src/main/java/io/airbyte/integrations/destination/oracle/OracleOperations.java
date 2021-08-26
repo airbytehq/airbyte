@@ -24,8 +24,10 @@
 
 package io.airbyte.integrations.destination.oracle;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.sql.PreparedStatement;
@@ -50,7 +52,8 @@ public class OracleOperations implements SqlOperations {
 
   @Override
   public void createSchemaIfNotExists(JdbcDatabase database, String schemaName) throws Exception {
-    if (database.queryInt("select count(*) from dba_users where upper(username) = upper(?)", schemaName) == 0) {
+    if (database.queryInt("select count(*) from all_users where upper(username) = upper(?)", schemaName) == 0) {
+      LOGGER.warn("Schema " + schemaName + " is not found! Trying to create a new one.");
       final String query = String.format("create user %s identified by %s quota unlimited on %s",
           schemaName, schemaName, tablespace);
       database.execute(query);
@@ -149,8 +152,9 @@ public class OracleOperations implements SqlOperations {
         int i = 1;
         for (final AirbyteRecordMessage message : records) {
           // 1-indexed
+          final JsonNode formattedData = StandardNameTransformer.formatJsonPath(message.getData());
           statement.setString(i, uuidSupplier.get().toString());
-          statement.setString(i + 1, Jsons.serialize(message.getData()));
+          statement.setString(i + 1, Jsons.serialize(formattedData));
           statement.setTimestamp(i + 2, Timestamp.from(Instant.ofEpochMilli(message.getEmittedAt())));
           i += 3;
         }

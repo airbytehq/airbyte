@@ -5,6 +5,29 @@ description: Be sure to not miss out on new features and improvements!
 # Platform
 
 This is the changelog for Airbyte Platform. For our connector changelog, please visit our [Connector Changelog](connectors.md) page.
+## [08-20-2021 - 0.29.9](https://github.com/airbytehq/airbyte/releases/tag/v0.29.9-alpha)
+* Nothing of note.
+
+## [08-17-2021 - 0.29.8](https://github.com/airbytehq/airbyte/releases/tag/v0.29.8-alpha)
+* Nothing of note.
+
+## [08-14-2021 - 0.29.7](https://github.com/airbytehq/airbyte/releases/tag/v0.29.7-alpha)
+* Re-release: Fixed errant ENV variable in `0.29.6`
+
+## [08-14-2021 - 0.29.6](https://github.com/airbytehq/airbyte/releases/tag/v0.29.6-alpha)
+* Connector pods no longer fail with edge case names for the associated Docker images.
+
+## [08-14-2021 - 0.29.5](https://github.com/airbytehq/airbyte/releases/tag/v0.29.5-alpha)
+* Nothing of note.
+
+## [08-12-2021 - 0.29.4](https://github.com/airbytehq/airbyte/releases/tag/v0.29.4-alpha)
+* Introduced implementation for date-time support in normalization.
+
+## [08-9-2021 - 0.29.3](https://github.com/airbytehq/airbyte/releases/tag/v0.29.3-alpha)
+* Importing configuration no longer removes available but unused connectors. 
+
+## [08-6-2021 - 0.29.2](https://github.com/airbytehq/airbyte/releases/tag/v0.29.2-alpha)
+* Fixed nil pointer exception in version migrations.
 
 ## [07-29-2021 - 0.29.1](https://github.com/airbytehq/airbyte/releases/tag/v0.29.1-alpha)
 * When migrating, types represented in the config archive need to be a subset of the types declared in the schema.

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<customers type="collection">
+    <current-page-number type="integer">1</current-page-number>
+    <page-size type="integer">50</page-size>
+    <total-items type="integer">1</total-items>
+    <customer>
+        <id>896865626</id>
+        <merchant-id>v4h2qqxh3krhq7p3</merchant-id>
+        <first-name>test</first-name>
+        <last-name>test</last-name>
+        <company>airbyte</company>
+        <email>customer@test.com</email>
+        <phone>1231231231</phone>
+        <fax></fax>
+        <website>airbyte.io</website>
+        <created-at type="datetime">2020-12-02T06:21:40Z</created-at>
+        <updated-at type="datetime">2020-12-02T06:29:56Z</updated-at>
+        <custom-fields/>
+        <global-id>Y3VzdG9tZXJfODk2ODY1NjI2</global-id>
+        <credit-cards type="array">
+            <credit-card>
+                <bin>411111</bin>
+                <card-type>Visa</card-type>
+                <cardholder-name>test guy</cardholder-name>
+                <commercial>Unknown</commercial>
+                <country-of-issuance>Unknown</country-of-issuance>
+                <created-at type="datetime">2020-12-02T06:29:56Z</created-at>
+                <customer-id>896865626</customer-id>
+                <customer-global-id>Y3VzdG9tZXJfODk2ODY1NjI2</customer-global-id>
+                <customer-location>US</customer-location>
+                <debit>Unknown</debit>
+                <default type="boolean">true</default>
+                <durbin-regulated>Unknown</durbin-regulated>
+                <expiration-month>11</expiration-month>
+                <expiration-year>2022</expiration-year>
+                <expired type="boolean">false</expired>
+                <global-id>cGF5bWVudG1ldGhvZF9jY183anQ1NG5y</global-id>
+                <healthcare>Unknown</healthcare>
+                <image-url>https://assets.braintreegateway.com/payment_method_logo/visa.png?environment=sandbox</image-url>
+                <issuing-bank>Unknown</issuing-bank>
+                <last-4>1111</last-4>
+                <payroll>Unknown</payroll>
+                <prepaid>Unknown</prepaid>
+                <product-id>Unknown</product-id>
+                <subscriptions type="array"/>
+                <token>7jt54nr</token>
+                <unique-number-identifier>7ae98b4956f624db53908bece7cb0a47</unique-number-identifier>
+                <updated-at type="datetime">2020-12-02T06:30:06Z</updated-at>
+                <venmo-sdk type="boolean">false</venmo-sdk>
+                <verifications type="array"/>
+                <is-network-tokenized type="boolean">false</is-network-tokenized>
+            </credit-card>
+        </credit-cards>
+        <addresses type="array"/>
+    </customer>
+</customers>
