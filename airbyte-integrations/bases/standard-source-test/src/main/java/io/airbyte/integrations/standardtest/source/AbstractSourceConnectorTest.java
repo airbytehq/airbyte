@@ -56,7 +56,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
 /**
- * This abstract class contains helpful functionality and boilerplate for testing a source connector.
+ * This abstract class contains helpful functionality and boilerplate for testing a source
+ * connector.
  */
 public abstract class AbstractSourceConnectorTest {
 
