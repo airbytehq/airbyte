@@ -39,6 +39,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.SSHTunnel;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -173,11 +174,9 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     // this check is used to ensure that have the pgoutput slot available so Debezium won't attempt to
     // create it.
     final AirbyteConnectionStatus check = check(config);
-
     if (check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {
       throw new RuntimeException("Unable establish a connection: " + check.getMessage());
     }
-
     return super.read(config, catalog, state);
   }
 
@@ -260,11 +259,16 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     return stream;
   }
 
-  public static void main(String[] args) throws Exception {
-    final Source source = new PostgresSource();
-    LOGGER.info("starting source: {}", PostgresSource.class);
-    new IntegrationRunner(source).run(args);
-    LOGGER.info("completed source: {}", PostgresSource.class);
+  public static void main(String[] args) {
+    try {
+      final Source source = new PostgresSource();
+      LOGGER.info("starting source: {}", PostgresSource.class);
+      new IntegrationRunner(source).run(args);
+      LOGGER.info("completed source: {}", PostgresSource.class);
+    } catch (Throwable t) {
+      LOGGER.error("Error in postgres source: ", t);
+      System.exit(1);
+    }
   }
 
 }

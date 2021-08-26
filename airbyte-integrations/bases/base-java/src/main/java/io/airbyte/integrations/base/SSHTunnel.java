@@ -116,7 +116,7 @@ public class SSHTunnel {
    *
    * @throws IOException
    */
-  public void openTunnelIfRequested() throws IOException {
+  public void openTunnelIfRequested() {
     if (shouldTunnel()) {
       if (tunnelSession != null || sshclient != null) {
         throw new RuntimeException("SSH Tunnel was requested to be opened while it was already open.  This is a coding error.");
@@ -232,28 +232,32 @@ public class SSHTunnel {
    * @throws NoSuchAlgorithmException
    * @throws URISyntaxException
    */
-  private ClientSession openTunnel(SshClient client) throws IOException {
-    validate();
-    client.start();
-    ClientSession session = client.connect(
-        getUser().trim(),
-        getHost().trim(),
-        Integer.parseInt(
-            getTunnelSshPort().trim()))
-        .verify(TIMEOUT_MILLIS)
-        .getSession();
-    if (getMethod().equals("SSH_KEY_AUTH")) {
-      session.addPublicKeyIdentity(getPrivateKeyPair());
+  private ClientSession openTunnel(SshClient client) {
+    try {
+      validate();
+      client.start();
+      ClientSession session = client.connect(
+          getUser().trim(),
+          getHost().trim(),
+          Integer.parseInt(
+              getTunnelSshPort().trim()))
+          .verify(TIMEOUT_MILLIS)
+          .getSession();
+      if (getMethod().equals("SSH_KEY_AUTH")) {
+        session.addPublicKeyIdentity(getPrivateKeyPair());
+      }
+      if (getMethod().equals("SSH_PASSWORD_AUTH")) {
+        session.addPasswordIdentity(getPassword());
+      }
+      session.auth().verify(TIMEOUT_MILLIS);
+      SshdSocketAddress address = session.startLocalPortForwarding(
+          new SshdSocketAddress(SshdSocketAddress.LOCALHOST_ADDRESS.getHostName(), Integer.parseInt(getTunnelDatabasePort().trim())),
+          new SshdSocketAddress(getRemoteDatabaseHost().trim(), Integer.parseInt(getRemoteDatabasePort().trim())));
+      LOGGER.info("Established tunneling session.  Port forwarding started on " + address.toInetSocketAddress());
+      return session;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
-    if (getMethod().equals("SSH_PASSWORD_AUTH")) {
-      session.addPasswordIdentity(getPassword());
-    }
-    session.auth().verify(TIMEOUT_MILLIS);
-    SshdSocketAddress address = session.startLocalPortForwarding(
-        new SshdSocketAddress(SshdSocketAddress.LOCALHOST_ADDRESS.getHostName(), Integer.parseInt(getTunnelDatabasePort().trim())),
-        new SshdSocketAddress(getRemoteDatabaseHost().trim(), Integer.parseInt(getRemoteDatabasePort().trim())));
-    LOGGER.info("Established tunneling session.  Port forwarding started on " + address.toInetSocketAddress());
-    return session;
   }
 
   @Override

@@ -31,6 +31,7 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.integrations.base.SSHTunnel;
 import io.airbyte.db.Databases;
 import io.airbyte.db.SqlDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -39,7 +40,11 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.CommonField;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -153,7 +158,8 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
                         f.get(INTERNAL_COLUMN_TYPE)));
                     jdbcType = JDBCType.VARCHAR;
                   }
-                  return new CommonField<JDBCType>(f.get(INTERNAL_COLUMN_NAME).asText(), jdbcType) {};
+                  return new CommonField<JDBCType>(f.get(INTERNAL_COLUMN_NAME).asText(), jdbcType) {
+                  };
                 })
                 .collect(Collectors.toList()))
             .build())
@@ -167,7 +173,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
 
   @Override
   protected Map<String, List<String>> discoverPrimaryKeys(JdbcDatabase database,
-                                                          List<TableInfo<CommonField<JDBCType>>> tableInfos) {
+      List<TableInfo<CommonField<JDBCType>>> tableInfos) {
     LOGGER.info("Discover primary keys for tables: " + tableInfos.stream().map(tab -> tab.getName()).collect(
         Collectors.toSet()));
     try {
@@ -214,12 +220,12 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
 
   @Override
   public AutoCloseableIterator<JsonNode> queryTableIncremental(JdbcDatabase database,
-                                                               List<String> columnNames,
-                                                               String schemaName,
-                                                               String tableName,
-                                                               String cursorField,
-                                                               JDBCType cursorFieldType,
-                                                               String cursor) {
+      List<String> columnNames,
+      String schemaName,
+      String tableName,
+      String cursorField,
+      JDBCType cursorFieldType,
+      String cursor) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
@@ -262,4 +268,39 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
     return database;
   }
 
+  @Override
+  public AirbyteConnectionStatus check(JsonNode config) {
+    SSHTunnel tunnel = null;
+    try {
+      tunnel = SSHTunnel.getInstance(config);
+      tunnel.openTunnelIfRequested();
+      return super.check(config);
+    } finally {
+      tunnel.closeTunnel();
+    }
+  }
+
+  @Override
+  public AirbyteCatalog discover(JsonNode config) throws Exception {
+    SSHTunnel tunnel = null;
+    try {
+      tunnel = SSHTunnel.getInstance(config);
+      tunnel.openTunnelIfRequested();
+      return super.discover(config);
+    } finally {
+      tunnel.closeTunnel();
+    }
+  }
+
+  @Override
+  public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
+    SSHTunnel tunnel = null;
+    try {
+      tunnel = SSHTunnel.getInstance(config);
+      tunnel.openTunnelIfRequested();
+      return super.read(config, catalog, state);
+    } finally {
+      tunnel.closeTunnel();
+    }
+  }
 }
