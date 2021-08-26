@@ -12,7 +12,7 @@ services:
     image: airbyte/db:${VERSION}
     build:
       dockerfile: Dockerfile
-      context: airbyte-db
+      context: airbyte-db/lib
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   scheduler:
