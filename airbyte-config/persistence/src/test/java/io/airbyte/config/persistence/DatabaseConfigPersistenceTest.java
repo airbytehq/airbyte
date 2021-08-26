@@ -38,7 +38,6 @@ import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.StandardWorkspace;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import java.util.List;
@@ -173,11 +172,6 @@ public class DatabaseConfigPersistenceTest extends BaseTest {
   private void assertRecordCount(int expectedCount) throws Exception {
     Result<Record1<Integer>> recordCount = database.query(ctx -> ctx.select(count(asterisk())).from(AIRBYTE_CONFIGS).fetch());
     assertEquals(expectedCount, recordCount.get(0).value1());
-  }
-
-  private void assertHasWorkspace(StandardWorkspace workspace) throws Exception {
-    assertEquals(workspace,
-        configPersistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), StandardWorkspace.class));
   }
 
   private void assertHasSource(StandardSourceDefinition source) throws Exception {
