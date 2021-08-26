@@ -49,7 +49,7 @@ cd airbyte-integrations/connector-templates/generator
 ./generate.sh
 ```
 
-and choose the relevant template. This will generate a new connector in the `airbyte-integrations/connectors/<your-connector>` directory.
+and choose the relevant template by using the arrow keys. This will generate a new connector in the `airbyte-integrations/connectors/<your-connector>` directory.
 
 Search the generated directory for "TODO"s and follow them to implement your connector. For more detailed walkthroughs and instructions, follow the relevant tutorial:
 

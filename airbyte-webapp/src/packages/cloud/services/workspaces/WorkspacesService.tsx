@@ -1,5 +1,7 @@
-import React, { useContext, useMemo, useState } from "react";
+import React, { useContext, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useLocalStorage } from "react-use";
+import { useResetter } from "rest-hooks";
 
 import { CloudWorkspacesService } from "packages/cloud/lib/domain/cloudWorkspaces/CloudWorkspacesService";
 import { api } from "packages/cloud/config/api";
@@ -8,19 +10,17 @@ import { useDefaultRequestMiddlewares } from "packages/cloud/services/useDefault
 import { CloudWorkspace } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 
 type Context = {
-  currentWorkspaceId?: string;
-  selectWorkspace: (workspaceId: string) => void;
-  createWorkspace: (name: string) => Promise<void>;
+  currentWorkspaceId?: string | null;
+  selectWorkspace: (workspaceId: string | null) => void;
+  createWorkspace: (name: string) => Promise<CloudWorkspace>;
   removeWorkspace: {
-    mutate: (workspaceId: string) => void;
+    mutateAsync: (workspaceId: string) => Promise<void>;
     isLoading: boolean;
   };
 };
 
-const defaultState: Context = {} as Context;
-
-export const WorkspaceServiceContext = React.createContext<Context>(
-  defaultState
+export const WorkspaceServiceContext = React.createContext<Context | null>(
+  null
 );
 
 function useGetWorkspaceService() {
@@ -56,7 +56,7 @@ export function useCreateWorkspace() {
         ]);
       },
     }
-  ).mutate;
+  ).mutateAsync;
 }
 
 export function useRemoveWorkspace() {
@@ -86,10 +86,15 @@ export function useGetWorkspace(workspaceId: string) {
 }
 
 export const WorkspaceServiceProvider: React.FC = ({ children }) => {
-  const [currentWorkspaceId, setCurrentWorkspaceId] = useState("");
+  const user = useCurrentUser();
+  const [currentWorkspaceId, setCurrentWorkspaceId] = useLocalStorage<
+    string | null
+  >(`${user.userId}/workspaceId`, null);
   const createWorkspace = useCreateWorkspace();
   const removeWorkspace = useRemoveWorkspace();
-  const user = useCurrentUser();
+
+  const queryClient = useQueryClient();
+  const resetCache = useResetter();
 
   const ctx = useMemo<Context>(
     () => ({
@@ -100,7 +105,11 @@ export const WorkspaceServiceProvider: React.FC = ({ children }) => {
           userId: user.userId,
         }),
       removeWorkspace,
-      selectWorkspace: setCurrentWorkspaceId,
+      selectWorkspace: async (workspaceId) => {
+        setCurrentWorkspaceId(workspaceId);
+        await queryClient.resetQueries();
+        resetCache();
+      },
     }),
     [currentWorkspaceId, user, createWorkspace, removeWorkspace]
   );

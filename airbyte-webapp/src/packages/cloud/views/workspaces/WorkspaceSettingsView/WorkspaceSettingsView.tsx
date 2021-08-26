@@ -49,6 +49,8 @@ export const WorkspaceSettingsView: React.FC = () => {
                       label={
                         <FormattedMessage id="settings.generalSettings.form.name.label" />
                       }
+                      // TODO: add edit
+                      disabled={true}
                       placeholder={formatMessage({
                         id: "settings.generalSettings.form.name.placeholder",
                       })}
@@ -74,7 +76,7 @@ export const WorkspaceSettingsView: React.FC = () => {
             <LoadingButton
               isLoading={removeWorkspace.isLoading}
               danger
-              onClick={() => removeWorkspace.mutate(workspaceId)}
+              onClick={() => removeWorkspace.mutateAsync(workspaceId)}
             >
               <FormattedMessage id="settings.generalSettings.deleteText" />
             </LoadingButton>

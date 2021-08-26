@@ -4,6 +4,7 @@ select
     ID,
     CURRENCY,
     DATE,
+    TIMESTAMP_COL,
     {{ adapter.quote('HKD@spéçiäl & characters') }},
     HKD_SPECIAL___CHARACTERS,
     NZD,

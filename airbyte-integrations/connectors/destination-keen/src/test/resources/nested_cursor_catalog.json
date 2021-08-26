@@ -1,0 +1,21 @@
+{
+  "streams": [
+    {
+      "name": "NumberTypeStream",
+      "source_defined_cursor": true,
+      "default_cursor_field": ["cursorProperty", "nestedProperty"],
+      "json_schema": {
+        "properties": {
+          "cursorProperty": {
+            "nestedProperty": {
+              "type": "number"
+            }
+          },
+          "otherProperty": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  ]
+}
