@@ -50,7 +50,6 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   private static final Logger LOGGER = LoggerFactory.getLogger(FileSystemConfigPersistence.class);
   public static final String CONFIG_DIR = "config";
   private static final String TMP_DIR = "tmp_storage";
-  private static final int INTERVAL_WAITING_SECONDS = 3;
 
   private static final Object lock = new Object();
 
