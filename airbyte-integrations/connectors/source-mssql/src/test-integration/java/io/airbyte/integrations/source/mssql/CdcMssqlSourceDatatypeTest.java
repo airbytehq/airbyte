@@ -29,13 +29,13 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.standardtest.source.SourceComprehensiveTest;
+import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import org.testcontainers.containers.MSSQLServerContainer;
 
-public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
+public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private MSSQLServerContainer<?> container;
   private JsonNode config;

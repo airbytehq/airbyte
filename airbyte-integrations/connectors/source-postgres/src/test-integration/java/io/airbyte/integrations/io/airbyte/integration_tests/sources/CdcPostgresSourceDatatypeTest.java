@@ -29,7 +29,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.standardtest.source.SourceComprehensiveTest;
+import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
@@ -41,7 +41,7 @@ import org.testcontainers.utility.MountableFile;
  * None of the tests in this class use the cdc path (run the tests and search for `using CDC: false`
  * in logs). This is exact same as {@link PostgresSourceAcceptanceTest}
  */
-public class CdcPostgresSourceComprehensiveTest extends SourceComprehensiveTest {
+public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private static final String SLOT_NAME_BASE = "debezium_slot";
   private static final String PUBLICATION = "publication";

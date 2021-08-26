@@ -29,7 +29,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.standardtest.source.SourceComprehensiveTest;
+import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
@@ -39,12 +39,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.CockroachContainer;
 
-public class CockroachDbSourceComprehensiveTest extends SourceComprehensiveTest {
+public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private CockroachContainer container;
   private JsonNode config;
   private static final Logger LOGGER = LoggerFactory
-      .getLogger(CockroachDbSourceComprehensiveTest.class);
+      .getLogger(CockroachDbSourceDatatypeTest.class);
 
   @Override
   protected Database setupDatabase() throws SQLException {
