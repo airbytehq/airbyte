@@ -81,7 +81,7 @@
           {
             "title": "Standard Inserts",
             "additionalProperties": false,
-            "description": "Direct uploading using streams. !!!!!!!!!! TODO add why may fail !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+            "description": "Direct uploading using streams.",
             "required": ["method"],
             "properties": {
               "method": {
