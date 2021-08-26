@@ -76,7 +76,7 @@
       "loading_method": {
         "type": "object",
         "title": "Loading Method",
-        "description": "Loading method used to send data to Snowflake.",
+        "description": "Loading method used to send select the way data will be uploaded to BigQuery.",
         "oneOf": [
           {
             "title": "Standard Inserts",
