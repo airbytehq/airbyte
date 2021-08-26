@@ -89,7 +89,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
   );
 
   const dropdownFields = primitiveFields.map((field) => ({
-    value: field.split("."),
+    value: field,
     label: field,
   }));
 
