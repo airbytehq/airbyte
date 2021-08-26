@@ -17,7 +17,6 @@ dependencies {
     testImplementation 'org.apache.commons:commons-lang3:3.11'
 
     // Big Query
-    implementation platform('com.google.cloud:libraries-bom:20.6.0')
     implementation('com.google.cloud:google-cloud-bigquery:1.133.1')
 
     // Lombok
