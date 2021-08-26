@@ -88,5 +88,10 @@ class SourceCart(AbstractSource):
     @validate_config_values
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = CustomHeaderAuthenticator(access_token=config["access_token"])
-        args = {"authenticator": authenticator, "start_date": config["start_date"], "store_name": config["store_name"]}
+        args = {
+            "authenticator": authenticator,
+            "start_date": config["start_date"],
+            "store_name": config["store_name"],
+            "end_date": config.get("end_date"),
+        }
         return [CustomersCart(**args), Orders(**args), OrderPayments(**args), OrderItems(**args), Products(**args)]

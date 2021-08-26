@@ -105,6 +105,7 @@ class IncrementalCartStream(CartStream, ABC):
         query = f"gt:{start_date}"
         if self._end_date and self._end_date > start_date:
             query += f" AND lt:{self._end_date}"
+
         params[self.cursor_field] = query
         return params
 
