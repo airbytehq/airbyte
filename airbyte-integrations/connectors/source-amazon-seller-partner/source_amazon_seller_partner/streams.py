@@ -23,10 +23,12 @@
 #
 
 import base64
+import csv
 import json as json_lib
 import time
 import zlib
 from abc import ABC, abstractmethod
+from io import StringIO
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
@@ -225,7 +227,9 @@ class ReportsAmazonSPStream(AmazonSPStream, ABC):
                 payload.get("encryptionDetails", {}).get("standard"),
                 payload,
             )
-            yield {"document": document}
+
+            document_records = csv.DictReader(StringIO(document), delimiter="\t")
+            yield from document_records
         else:
             yield payload
 

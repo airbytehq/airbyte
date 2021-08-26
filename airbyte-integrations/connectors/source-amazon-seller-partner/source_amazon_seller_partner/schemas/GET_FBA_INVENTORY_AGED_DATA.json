@@ -46,8 +46,74 @@
         }
       },
       {
-        "document": {
+        "sku": {
           "type": ["null", "string"]
+        },
+        "asin": {
+          "type": ["null", "string"]
+        },
+        "price": {
+          "type": ["null", "number"]
+        },
+        "quantity": {
+          "type": ["null", "number"]
+        },
+        "Business Price": {
+          "type": ["null", "number"]
+        },
+        "Quantity Price Type": {
+          "type": ["null", "string"]
+        },
+        "Quantity Lower Bound 1": {
+          "type": ["null", "number"]
+        },
+        "Quantity Price 1": {
+          "type": ["null", "number"]
+        },
+        "Quantity Lower Bound 2": {
+          "type": ["null", "number"]
+        },
+        "Quantity Price 2": {
+          "type": ["null", "number"]
+        },
+        "Quantity Lower Bound 3": {
+          "type": ["null", "number"]
+        },
+        "Quantity Price 3": {
+          "type": ["null", "number"]
+        },
+        "Quantity Lower Bound 4": {
+          "type": ["null", "number"]
+        },
+        "Quantity Price 4": {
+          "type": ["null", "number"]
+        },
+        "Quantity Lower Bound 5": {
+          "type": ["null", "number"]
+        },
+        "Quantity Price 5": {
+          "type": ["null", "number"]
+        },
+        "Progressive Price Type": {
+          "type": ["null", "string"]
+        },
+        "Progressive Lower Bound 1": {
+          "type": ["null", "number"]
+        },
+        "Progressive Price 1": {
+          "type": ["null", "number"]
+        },
+        "Progressive Lower Bound 2": {
+          "type": ["null", "number"]
+        },
+        "Progressive Price 2": {
+          "type": ["null", "number"]
+        },
+        "Progressive Lower Bound 3": {
+          "type": ["null", "number"]
+        },
+        "Progressive Price 3": {
+          "type": ["null", "number"]
         }
       }
     ]
