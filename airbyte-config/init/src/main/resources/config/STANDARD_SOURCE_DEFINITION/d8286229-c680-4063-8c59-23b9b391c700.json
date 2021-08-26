@@ -2,6 +2,6 @@
   "sourceDefinitionId": "d8286229-c680-4063-8c59-23b9b391c700",
   "name": "Pipedrive",
   "dockerRepository": "airbyte/source-pipedrive",
-  "dockerImageTag": "0.1.2",
+  "dockerImageTag": "0.1.3",
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/pipedrive"
 }
