@@ -31,10 +31,10 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
 from requests import codes, exceptions
 
 from .api import UNSUPPORTED_FILTERING_STREAMS
+from .rate_limiting import default_backoff_handler
 
 
 class SalesforceStream(HttpStream, ABC):
@@ -74,10 +74,12 @@ class SalesforceStream(HttpStream, ABC):
     ) -> MutableMapping[str, Any]:
         selected_properties = self.get_json_schema().get("properties", {})
 
-        # Salesforce BULK API currently does not support loading fields with data type base64
+        # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
         if self.sf_api.api_type == "BULK":
             selected_properties = {
-                key: value for key, value in selected_properties.items() if not ("format" in value and value["format"] == "base64")
+                key: value
+                for key, value in selected_properties.items()
+                if not (("format" in value and value["format"] == "base64") or "object" in value["type"])
             }
 
         query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
@@ -118,8 +120,7 @@ class BulkSalesforceStream(SalesforceStream):
     def path(self, **kwargs) -> str:
         return f"/services/data/{self.version}/jobs/query"
 
-    # TODO: need to update
-    @default_backoff_handler(max_tries=5, factor=5)
+    @default_backoff_handler(max_tries=5, factor=15)
     def _send_http_request(self, method: str, url: str, json: dict = None):
         headers = self.authenticator.get_auth_header()
         response = self._session.request(method, url=url, headers=headers, json=json)
@@ -184,6 +185,36 @@ class BulkSalesforceStream(SalesforceStream):
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
             return f"WHERE {self.primary_key} > '{last_record[self.primary_key]}' "
 
+    def transform(self, record: dict, schema: dict = None):
+        if not schema:
+            schema = self.get_json_schema().get("properties", {})
+
+        def transform_types(field_types: list = None):
+            convert_types_map = {
+                "boolean": bool,
+                "string": str,
+                "number": float,
+                "integer": int,
+                "object": dict,
+            }
+            return [convert_types_map[field_type] for field_type in field_types if field_type != "null"]
+
+        for key, value in record.items():
+            if key not in schema:
+                continue
+
+            if value is None or isinstance(value, str) and value.strip() == "":
+                record[key] = None
+            else:
+                types = transform_types(schema[key]["type"])
+                if len(types) != 1:
+                    continue
+
+                record[key] = types[0](value)
+                if isinstance(record[key], dict):
+                    self.transform(record[key], schema[key].get("properties", {}))
+        return record
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -207,7 +238,7 @@ class BulkSalesforceStream(SalesforceStream):
             if job_status == "JobComplete":
                 count = 0
                 for count, record in self.download_data(url=job_full_url):
-                    yield record
+                    yield self.transform(record)
 
                 if count == self.limit:
                     next_page_token = self.next_page_token(record)
@@ -243,10 +274,12 @@ class IncrementalSalesforceStream(SalesforceStream, ABC):
     ) -> MutableMapping[str, Any]:
         selected_properties = self.get_json_schema().get("properties", {})
 
-        # Salesforce BULK API currently does not support loading fields with data type base64
+        # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
         if self.sf_api.api_type == "BULK":
             selected_properties = {
-                key: value for key, value in selected_properties.items() if not ("format" in value and value["format"] == "base64")
+                key: value
+                for key, value in selected_properties.items()
+                if not (("format" in value and value["format"] == "base64") or "object" in value["type"])
             }
 
         stream_date = stream_state.get(self.cursor_field)

@@ -32,14 +32,12 @@ from .rate_limiting import default_backoff_handler
 
 STRING_TYPES = [
     "byte",
-    "boolean",
     "combobox",
     "complexvalue",
     "datacategorygroupreference",
     "email",
     "encryptedstring",
     "id",
-    "int",
     "json",
     "masterrecord",
     "multipicklist",
@@ -245,7 +243,6 @@ class Salesforce:
 
         return validated_streams
 
-    # TODO: need to update
     @default_backoff_handler(max_tries=5, factor=15)
     def _make_request(self, http_method, url, headers=None, body=None, stream=False, params=None) -> requests.models.Response:
         if http_method == "GET":
@@ -332,6 +329,10 @@ class Salesforce:
             }
         elif sf_type == "base64":
             property_schema = {"type": ["string", "null"], "format": "base64"}
+        elif sf_type == "int":
+            property_schema["type"] = ["integer", "null"]
+        elif sf_type == "boolean":
+            property_schema["type"] = ["boolean", "null"]
         elif sf_type in LOOSE_TYPES:
             property_schema["type"] = ["array", "boolean", "integer", "number", "object", "string", "null"]
         elif sf_type == "location":
