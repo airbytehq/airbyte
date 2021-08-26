@@ -12,6 +12,7 @@ dependencies {
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-config:persistence')
+    implementation project(':airbyte-api')
     implementation project(':airbyte-db:lib')
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-protocol:models')

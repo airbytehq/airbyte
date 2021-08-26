@@ -1,0 +1,26 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: default
+
+bases:
+  - ../../resources
+
+images:
+  - name: airbyte/db
+    newTag: dev
+  - name: airbyte/scheduler
+    newTag: dev
+  - name: airbyte/server
+    newTag: dev
+  - name: airbyte/webapp
+    newTag: dev
+  - name: temporalio/auto-setup
+    newTag: 1.7.0
+
+configMapGenerator:
+  - name: airbyte-env
+    env: .env
+
+patchesStrategicMerge:
+  - pod-antiaffinity.yaml
