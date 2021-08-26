@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.12
+Add raise_on_http_errors, max_retries, retry_factor properties to be able to ignore http status errors and modify retry time in HTTP stream
+
 ## 0.1.11
 Add checking specified config againt spec for read, write, check and discover commands
 

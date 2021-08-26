@@ -109,7 +109,6 @@ class StreamProcessor(object):
         self.sql_outputs: Dict[str, str] = {}
         self.parent: Optional["StreamProcessor"] = None
         self.is_nested_array: bool = False
-        self.table_alias: str = "table_alias"
 
     @staticmethod
     def create_from_parent(
@@ -342,9 +341,7 @@ from {{ from_table }} as table_alias
 
     def extract_json_columns(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
         return [
-            StreamProcessor.extract_json_column(
-                field, self.json_column_name, self.properties[field], column_names[field][0], self.table_alias
-            )
+            StreamProcessor.extract_json_column(field, self.json_column_name, self.properties[field], column_names[field][0], "table_alias")
             for field in column_names
         ]
 
@@ -355,6 +352,8 @@ from {{ from_table }} as table_alias
         # we make their life easier by using a pre-populated and sanitized column name instead...
         normalized_json_path = [transform_json_naming(property_name)]
         table_alias = f"{table_alias}"
+        if "unnested_column_value" in json_column_name:
+            table_alias = ""
         json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path})")
         if "type" in definition:
             if is_array(definition["type"]):
@@ -592,7 +591,6 @@ from {{ from_table }}
             hash_id=self.hash_id(),
             from_table=jinja_call(from_table),
             sql_table_comment=self.sql_table_comment(include_from_table=True),
-            table_alias=self.table_alias,
         )
         return sql
 
