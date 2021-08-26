@@ -29,7 +29,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.standardtest.source.SourceComprehensiveTest;
+import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
@@ -44,12 +44,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.OracleContainer;
 
-public class OracleSourceComprehensiveTest extends SourceComprehensiveTest {
+public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private OracleContainer container;
   private JsonNode config;
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(OracleSourceComprehensiveTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(OracleSourceDatatypeTest.class);
 
   @Override
   protected Database setupDatabase() throws Exception {

@@ -53,7 +53,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class SourceAcceptanceTest extends SourceAbstractTest {
+public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
 
   public static final String CDC_LSN = "_ab_cdc_lsn";
   public static final String CDC_UPDATED_AT = "_ab_cdc_updated_at";

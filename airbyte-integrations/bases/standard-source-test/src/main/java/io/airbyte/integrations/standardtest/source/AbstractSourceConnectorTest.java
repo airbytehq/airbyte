@@ -55,7 +55,11 @@ import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
-public abstract class SourceAbstractTest {
+/**
+ * This abstract class contains helpful functionality and boilerplate for testing a source
+ * connector.
+ */
+public abstract class AbstractSourceConnectorTest {
 
   private TestDestinationEnv environment;
   private Path jobRoot;

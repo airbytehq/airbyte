@@ -48,9 +48,14 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class SourceComprehensiveTest extends SourceAbstractTest {
+/**
+ * This abstract class contains common helpers and boilerplate for comprehensively testing that all
+ * data types in a source can be read and handled correctly by the connector and within Airbyte's
+ * type system.
+ */
+public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConnectorTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SourceComprehensiveTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSourceDatabaseTypeTest.class);
 
   private final List<TestDataHolder> testDataHolders = new ArrayList<>();
 
