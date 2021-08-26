@@ -104,7 +104,7 @@
       "type": ["null", "boolean"]
     },
     "parent_id": {
-      "type": ["null", "object"]
+      "type": ["null", "string"]
     },
     "permalink_url": {
       "type": ["null", "string"]

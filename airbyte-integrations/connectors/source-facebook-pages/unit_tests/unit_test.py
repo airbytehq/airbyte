@@ -22,6 +22,33 @@
 # SOFTWARE.
 #
 
+import json
 
-def test_func():
-    assert True
+from source_facebook_pages.streams import Post
+
+
+class MockResponse:
+    def __init__(self, value):
+        self.value = value
+
+    def json(self):
+        return json.loads(self.value)
+
+
+def test_pagination():
+    stream = Post()
+
+    data = """{
+        "data": [1, 2, 3],
+        "paging": {
+            "cursors": {
+                "after": "next"
+            }
+        }
+    }"""
+    assert stream.next_page_token(MockResponse(data)).get("after") == "next"
+
+    data = """{
+            "data": []
+        }"""
+    assert stream.next_page_token(MockResponse(data)) is None

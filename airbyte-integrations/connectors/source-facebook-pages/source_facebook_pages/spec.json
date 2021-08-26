@@ -7,12 +7,6 @@
     "required": ["access_token", "page_id"],
     "additionalProperties": false,
     "properties": {
-      "start_date": {
-        "type": "string",
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
-        "examples": ["2017-01-25T00:00:00Z"]
-      },
       "access_token": {
         "type": "string",
         "description": "Facebook Page Access Token",

@@ -53,9 +53,6 @@ class SourceFacebookPages(AbstractSource):
             "page_id": config["page_id"],
         }
 
-        if config.get("start_date"):
-            stream_kwargs["start_date"] = pendulum.parse(config["start_date"])
-
         streams = [
             Post(**stream_kwargs),
             Page(**stream_kwargs),

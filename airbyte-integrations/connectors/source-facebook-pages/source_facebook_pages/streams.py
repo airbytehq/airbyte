@@ -40,12 +40,10 @@ class FacebookPagesStream(HttpStream, ABC):
         self,
         access_token: str = None,
         page_id: str = None,
-        start_date: pendulum.datetime = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
         self._access_token = access_token
-        self._start_date = start_date
         self._page_id = page_id
 
     @property
@@ -53,7 +51,15 @@ class FacebookPagesStream(HttpStream, ABC):
         return self.name[:-1]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
+        data = response.json()
+
+        if not data.get("data"):
+            return None
+
+        return {
+            "limit": 100,
+            "after": data.get("paging", {}).get("cursors", {}).get("after"),
+        }
 
     def request_params(
         self,
@@ -66,14 +72,33 @@ class FacebookPagesStream(HttpStream, ABC):
 
         return params
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if not self.data_field:
+            yield response.json()
+
+        else:
+            data_fields = self.data_field.split("_")
+            records = response.json()
+
+            while data_fields:
+                records = records.get(data_fields.pop(0))
+
+            for record in records:
+                yield record
+
 
 class Page(FacebookPagesStream):
     """
     API docs: https://developers.facebook.com/docs/graph-api/reference/page/,
     """
 
+    data_field = ""
+
     def path(self, **kwargs) -> str:
         return self._page_id
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
 
     def request_params(
         self,
@@ -89,22 +114,16 @@ class Page(FacebookPagesStream):
 
         return params
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield response.json()
-
 
 class Post(FacebookPagesStream):
     """
-    API docs: https://developers.facebook.com/docs/graph-api/reference/post/,
+    https://developers.facebook.com/docs/graph-api/reference/v11.0/page/feed,
     """
+
+    data_field = "data"
 
     def path(self, **kwargs) -> str:
         return f"{self._page_id}/posts"
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        records = response.json().get(self.data_field, []) or []
-        for record in records:
-            yield record
 
     def request_params(
         self,
@@ -123,8 +142,13 @@ class PageInsights(FacebookPagesStream):
     API docs: https://developers.facebook.com/docs/graph-api/reference/page/insights/,
     """
 
+    data_field = "insights_data"
+
     def path(self, **kwargs) -> str:
-        return f'{self._page_id}/?fields=insights.metric({",".join(PAGE_METRICS)})'
+        return f"{self._page_id}"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
 
     def request_params(
         self,
@@ -132,14 +156,10 @@ class PageInsights(FacebookPagesStream):
         stream_slice: Mapping[str, any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        return {"access_token": self._access_token}
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params["fields"] = f'insights.metric({",".join(PAGE_METRICS)})'
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        data = response.json().get("insights")
-        records = data.get(self.data_field) or []
-
-        for record in records:
-            yield record
+        return params
 
 
 class PostInsights(FacebookPagesStream):
@@ -156,9 +176,13 @@ class PostInsights(FacebookPagesStream):
         stream_slice: Mapping[str, any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        return {"access_token": self._access_token}
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params["fields"] = f'insights.metric({",".join(POST_METRICS)})'
+
+        return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        # unique case so we override this method
         records = response.json().get(self.data_field) or []
 
         for insights in records:
