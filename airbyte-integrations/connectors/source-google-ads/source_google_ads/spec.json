@@ -80,16 +80,6 @@
               "examples": ["SELECT segments.ad_destination_type, campaign.advertising_channel_sub_type FROM campaign"],
               "pattern": "(?i)^select(\\s)+[a-zA-Z0-9._,(\\s)-]*(\\s+)from(\\s+)[a-zA-Z0-9._]*$"
             },
-            "primary_key": {
-              "type": ["string", "null"],
-              "title": "Primary key",
-              "description": "The unique field to be used as primary key in destination database (if provided)"
-            },
-            "cursor_field": {
-              "type": ["string", "null"],
-              "title": "Cursor field",
-              "description": "Field that will be used to track changes during Incremental sync (if provided). Otherwise only Full Refresh sync will be available."
-            },
             "table_name": {
               "type": "string",
               "title": "Destination table name",

@@ -205,7 +205,13 @@ class CustomQuery(IncrementalGoogleAdsStream):
 
     @property
     def primary_key(self) -> str:
-        return self.custom_query_config.get("primary_key") or None
+        """
+        The primary_key option is disabled. Config should not provide the primary key.
+        It will be ignored if provided.
+        If you need to enable it, uncomment the next line instead of `return None` and modify your config
+        """
+        # return self.custom_query_config.get("primary_key") or None
+        return None
 
     @property
     def name(self):
@@ -213,7 +219,19 @@ class CustomQuery(IncrementalGoogleAdsStream):
 
     @property
     def cursor_field(self) -> str:
-        return self.custom_query_config.get("cursor_field") or []
+        """
+        The incremental is disabled. Config / spec should not provide the cursor_field.
+        It will be ignored if provided.
+        However, this return should be kept for case we wanna support it.
+        Disabled cursor_field should be always empty array or string, to keep the internal logic
+            (get length of cursor_field).
+        Since it is not provided, the stream will be full refresh anyway.
+        The inheritance from the Incremental stream is made for supporting both types,
+            and need to be kept.
+        If you need to enable this option, uncomment the first return and modify your config
+        """
+        # return self.custom_query_config.get("cursor_field") or []
+        return []
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         if not self.cursor_field:
