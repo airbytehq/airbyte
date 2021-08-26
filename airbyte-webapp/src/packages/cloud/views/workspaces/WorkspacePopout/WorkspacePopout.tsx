@@ -10,6 +10,7 @@ import {
   useListWorkspaces,
   useWorkspaceService,
 } from "packages/cloud/services/workspaces/WorkspacesService";
+import ExitIcon from "./components/ExitIcon";
 
 import { useCurrentWorkspace } from "components/hooks/services/useWorkspace";
 
@@ -24,11 +25,20 @@ const BottomElement = styled.div`
 
 const Block = styled.div`
   cursor: pointer;
-  color: ${({ theme }) => theme.textColor};
+  color: ${({ theme }) => theme.primaryColor};
+  font-size: 11px;
+  line-height: 13px;
+  vertical-align: center;
 
   &:hover {
-    color: ${({ theme }) => theme.primaryColor};
+    opacity: 0.7;
   }
+`;
+
+const TextBlock = styled.div`
+  margin-left: 10px;
+  vertical-align: text-top;
+  display: inline-block;
 `;
 
 type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>;
@@ -43,7 +53,10 @@ const WorkspacesList: React.FC<MenuWithRequestButtonProps> = ({
       <components.MenuList {...props}>{children}</components.MenuList>
       <BottomElement>
         <Block onClick={() => selectWorkspace("")}>
-          <FormattedMessage id="workspaces.viewAllWorkspaces" />
+          <ExitIcon />
+          <TextBlock>
+            <FormattedMessage id="workspaces.viewAllWorkspaces" />
+          </TextBlock>
         </Block>
       </BottomElement>
     </>
