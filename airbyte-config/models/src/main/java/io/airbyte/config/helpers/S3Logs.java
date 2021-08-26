@@ -58,8 +58,15 @@ public class S3Logs implements CloudLogs {
   private static void assertValidS3Configuration(LogConfigs configs) {
     Preconditions.checkNotNull(configs.getAwsAccessKey());
     Preconditions.checkNotNull(configs.getAwsSecretAccessKey());
-    Preconditions.checkNotNull(configs.getS3LogBucketRegion());
     Preconditions.checkNotNull(configs.getS3LogBucket());
+
+    if (configs.getS3LogBucketRegion().isBlank()) {
+      Preconditions.checkNotNull(configs.getS3MinioEndpoint(), "Either S3 region or endpoint needs to be configured.");
+    }
+
+    if (configs.getS3MinioEndpoint().isBlank()) {
+      Preconditions.checkNotNull(configs.getS3LogBucketRegion(), "Either S3 region or endpoint needs to be configured.");
+    }
   }
 
   @Override
@@ -151,14 +158,23 @@ public class S3Logs implements CloudLogs {
   private static void createS3ClientIfNotExist(LogConfigs configs) {
     if (S3 == null) {
       assertValidS3Configuration(configs);
-      var s3Region = configs.getS3LogBucketRegion();
-      var builder = S3Client.builder().region(Region.of(s3Region));
 
+      var builder = S3Client.builder();
+
+      // The V2 S3 client requires region.
+      var s3Region = configs.getS3LogBucketRegion();
+      if (!s3Region.isBlank()) {
+        builder.region(Region.of(s3Region));
+      }
+
+      // The minio client is still on the older client, which uses endpoints. This is
+      // incompatible with regions.
       var minioEndpoint = configs.getS3MinioEndpoint();
       if (!minioEndpoint.isBlank()) {
         try {
           var minioUri = new URI(minioEndpoint);
           builder.endpointOverride(minioUri);
+          builder.region(Region.US_EAST_1);
         } catch (URISyntaxException e) {
           throw new RuntimeException("Error creating S3 log client to Minio", e);
         }
