@@ -45,7 +45,8 @@ public class PostgresSqlOperations extends JdbcSqlOperations {
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSqlOperations.class);
 
   @Override
-  public void insertRecordsInternal(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tmpTableName) throws SQLException {
+  public void insertRecordsInternal(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tmpTableName)
+      throws SQLException {
     if (records.isEmpty()) {
       return;
     }

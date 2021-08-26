@@ -135,16 +135,23 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   }
 
   @Override
-  public final void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records,
-      String schemaName, String tableName) throws Exception {
+  public final void insertRecords(JdbcDatabase database,
+                                  List<AirbyteRecordMessage> records,
+                                  String schemaName,
+                                  String tableName)
+      throws Exception {
     records.forEach(airbyteRecordMessage -> getDataAdapter().adapt(airbyteRecordMessage.getData()));
     insertRecordsInternal(database, records, schemaName, tableName);
   }
 
-  protected abstract void insertRecordsInternal(JdbcDatabase database, List<AirbyteRecordMessage> records,
-      String schemaName, String tableName) throws Exception;
+  protected abstract void insertRecordsInternal(JdbcDatabase database,
+                                                List<AirbyteRecordMessage> records,
+                                                String schemaName,
+                                                String tableName)
+      throws Exception;
 
   protected DataAdapter getDataAdapter() {
     return new DataAdapter(j -> false, c -> c);
   }
+
 }

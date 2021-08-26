@@ -1,3 +1,27 @@
+ /*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.airbyte.integrations.destination.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -15,16 +39,16 @@ public class DataAdapter {
   private final Function<JsonNode, JsonNode> valueNodeAdapter;
 
   /**
-   * Data adapter allows applying destination data rules.
-   * For example, Postgres destination can't process text value with \u0000 unicode.
-   * You can describe filter condition for a value node and function which adapts filtered value nodes.
+   * Data adapter allows applying destination data rules. For example, Postgres destination can't
+   * process text value with \u0000 unicode. You can describe filter condition for a value node and
+   * function which adapts filtered value nodes.
    *
-   * @param filterValueNode  - filter condition which decide which value node should be adapted
+   * @param filterValueNode - filter condition which decide which value node should be adapted
    * @param valueNodeAdapter - transformation function which returns adapted value node
    */
   public DataAdapter(
-      Predicate<JsonNode> filterValueNode,
-      Function<JsonNode, JsonNode> valueNodeAdapter) {
+                     Predicate<JsonNode> filterValueNode,
+                     Function<JsonNode, JsonNode> valueNodeAdapter) {
     this.filterValueNode = filterValueNode;
     this.valueNodeAdapter = valueNodeAdapter;
   }
@@ -49,8 +73,8 @@ public class DataAdapter {
     } else if (node.isArray()) {
       node.elements().forEachRemaining(arrayNode -> adaptValueNodes(null, arrayNode, node));
     } else {
-        node.fields().forEachRemaining(stringJsonNodeEntry -> adaptValueNodes(stringJsonNodeEntry.getKey(), stringJsonNodeEntry.getValue(), node));
-      }
+      node.fields().forEachRemaining(stringJsonNodeEntry -> adaptValueNodes(stringJsonNodeEntry.getKey(), stringJsonNodeEntry.getValue(), node));
     }
   }
 
+}

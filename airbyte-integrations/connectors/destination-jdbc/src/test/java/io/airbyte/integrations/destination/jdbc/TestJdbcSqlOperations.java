@@ -32,9 +32,9 @@ public class TestJdbcSqlOperations extends JdbcSqlOperations {
 
   @Override
   public void insertRecordsInternal(JdbcDatabase database,
-                            List<AirbyteRecordMessage> records,
-                            String schemaName,
-                            String tableName)
+                                    List<AirbyteRecordMessage> records,
+                                    String schemaName,
+                                    String tableName)
       throws Exception {
     // Not required for the testing
   }

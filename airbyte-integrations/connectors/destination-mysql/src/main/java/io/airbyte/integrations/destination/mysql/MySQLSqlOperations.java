@@ -49,9 +49,9 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
 
   @Override
   public void insertRecordsInternal(JdbcDatabase database,
-                            List<AirbyteRecordMessage> records,
-                            String schemaName,
-                            String tmpTableName)
+                                    List<AirbyteRecordMessage> records,
+                                    String schemaName,
+                                    String tmpTableName)
       throws SQLException {
     if (records.isEmpty()) {
       return;
