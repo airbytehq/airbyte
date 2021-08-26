@@ -51,7 +51,7 @@
 - sourceDefinitionId: d8286229-c680-4063-8c59-23b9b391c700
   name: Pipedrive
   dockerRepository: airbyte/source-pipedrive
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/pipedrive
 - sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   name: Postgres
@@ -131,7 +131,7 @@
 - sourceDefinitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
   name: Google Analytics v4
   dockerRepository: airbyte/source-google-analytics-v4
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/source-google-analytics-v4
   icon: google-analytics.svg
 - sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
@@ -400,7 +400,7 @@
 - sourceDefinitionId: bb1a6d31-6879-4819-a2bd-3eed299ea8e2
   name: Cart.com
   dockerRepository: airbyte/source-cart
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/cart
 - sourceDefinitionId: d60a46d4-709f-4092-a6b7-2457f7d455f5
   name: Prestashop
@@ -443,3 +443,8 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/braintree
   icon: braintree.svg
+- sourceDefinitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
+  name: Amazon Ads
+  dockerRepository: airbyte/source-amazon-ads
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/amazon-ads
