@@ -20,7 +20,7 @@ Check `io.airbyte.db.instance.configs` for example.
   - Configs database: `./gradlew :airbyte-db:lib:newConfigsMigration`.
   - Jobs database: `./gradlew :airbyte-db:lib:newJobsMigration`.
 - Write the migration using [`jOOQ`](https://www.jooq.org/).
-- Run the `runMigration` command to run the last migration.
+- Use the `runMigration` command to apply your newly written migration if you want to test it.
   - Configs database: `./gradlew :airbyte-db:lib:runConfigsMigration`.
   - Jobs database: `./gradlew :airbyte-db:lib:runJobsMigration`.
 - Run the `dumpSchema` command to update the database schema.
