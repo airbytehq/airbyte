@@ -41,6 +41,7 @@ from source_hubspot.api import (
     OwnerStream,
     SubscriptionChangeStream,
     WorkflowStream,
+    DealAssociationsStream,
 )
 
 
@@ -69,6 +70,7 @@ class Client(BaseClient):
             "subscription_changes": SubscriptionChangeStream(**common_params),
             "tickets": CRMObjectStream(entity="ticket", **common_params),
             "workflows": WorkflowStream(**common_params),
+            "deal_associations": DealAssociationsStream(deals_stream=DealStream(**common_params), **common_params),
         }
 
         super().__init__(**kwargs)
