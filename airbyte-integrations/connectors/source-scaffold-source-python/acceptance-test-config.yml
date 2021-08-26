@@ -8,19 +8,19 @@ tests:
     - config_path: "secrets/config.json"
       status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
-      status: "exception"
+      status: "failed"
   discovery:
     - config_path: "secrets/config.json"
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       empty_streams: []
-# TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
-#      expect_records:
-#        path: "integration_tests/expected_records.txt"
-#        extra_fields: no
-#        exact_order: no
-#        extra_records: yes
+  # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
+  #      expect_records:
+  #        path: "integration_tests/expected_records.txt"
+  #        extra_fields: no
+  #        exact_order: no
+  #        extra_records: yes
   incremental: # TODO if your connector does not implement incremental sync, remove this block
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

@@ -29,6 +29,7 @@
 * [Connector Catalog](integrations/README.md)
   * [Sources](integrations/sources/README.md)
     * [Amazon Seller Partner](integrations/sources/amazon-seller-partner.md)
+    * [Amazon Ads](integrations/sources/amazon-ads.md)
     * [Amplitude](integrations/sources/amplitude.md)
     * [Apify Dataset](integrations/sources/apify-dataset.md)
     * [Appstore](integrations/sources/appstore.md)
