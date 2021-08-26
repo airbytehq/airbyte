@@ -3,5 +3,20 @@
     "180278106": {
       "TimePeriod": 1627820152
     }
+  },
+  "budget_summary_report": {
+    "180278106": {
+      "Date": 1627800152
+    }
+  },
+  "ad_performance_report": {
+    "180278106": {
+      "TimePeriod": 1627795152
+    }
+  },
+  "campaign_performance_report": {
+    "180278106": {
+      "TimePeriod": 1627810152
+    }
   }
 }

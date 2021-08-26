@@ -22,16 +22,90 @@
 # SOFTWARE.
 #
 
+import abc
 from datetime import datetime
 from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
-import abc
 
+import pendulum
 import source_bing_ads.source
 from airbyte_cdk.models import SyncMode
-from bingads.v13.reporting import ReportingDownloadParameters
 from bingads.v13.internal.reporting.row_report import _RowReport
+from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord
+from bingads.v13.reporting import ReportingDownloadParameters
 from suds import sudsobject
-import pendulum
+
+REPORT_FIELD_TYPES = {
+    "AccountId": "integer",
+    "AdId": "integer",
+    "AdGroupCriterionId": "integer",
+    "AdGroupId": "integer",
+    "AdRelevance": "number",
+    "Assists": "integer",
+    "AverageCpc": "number",
+    "AverageCpp": "number",
+    "AveragePosition": "number",
+    "BusinessCategoryId": "integer",
+    "BusinessListingId": "integer",
+    "CampaignId": "integer",
+    "ClickCalls": "integer",
+    "Clicks": "integer",
+    "ConversionRate": "number",
+    "Conversions": "number",
+    "CostPerAssist": "number",
+    "CostPerConversion": "number",
+    "Ctr": "number",
+    "CurrentMaxCpc": "number",
+    "EstimatedClickPercent": "number",
+    "EstimatedClicks": "integer",
+    "EstimatedConversionRate": "number",
+    "EstimatedConversions": "integer",
+    "EstimatedCtr": "number",
+    "EstimatedImpressionPercent": "number",
+    "EstimatedImpressions": "integer",
+    "ExactMatchImpressionSharePercent": "number",
+    "ExpectedCtr": "number",
+    "GoalId": "integer",
+    "HistoricAdRelevance": "number",
+    "HistoricExpectedCtr": "number",
+    "HistoricLandingPageExperience": "number",
+    "HistoricQualityScore": "number",
+    "ImpressionLostToAdRelevancePercent": "number",
+    "ImpressionLostToBidPercent": "number",
+    "ImpressionLostToBudgetPercent": "number",
+    "ImpressionLostToExpectedCtrPercent": "number",
+    "ImpressionLostToRankPercent": "number",
+    "Impressions": "integer",
+    "ImpressionSharePercent": "number",
+    "KeywordId": "integer",
+    "LandingPageExperience": "number",
+    "LocationId": "integer",
+    "LowQualityClicks": "integer",
+    "LowQualityClicksPercent": "number",
+    "LowQualityConversionRate": "number",
+    "LowQualityConversions": "integer",
+    "LowQualityGeneralClicks": "integer",
+    "LowQualityImpressions": "integer",
+    "LowQualityImpressionsPercent": "number",
+    "LowQualitySophisticatedClicks": "integer",
+    "Mainline1Bid": "number",
+    "MainlineBid": "number",
+    "ManualCalls": "integer",
+    "PhoneCalls": "integer",
+    "PhoneImpressions": "integer",
+    "Ptr": "number",
+    "QualityImpact": "number",
+    "QualityScore": "number",
+    "Radius": "number",
+    "ReturnOnAdSpend": "number",
+    "Revenue": "number",
+    "RevenuePerAssist": "number",
+    "RevenuePerConversion": "number",
+    "SidebarBid": "number",
+    "Spend": "number",
+    "MonthlyBudget": "number",
+    "DailySpend": "number",
+    "MonthToDateSpend": "number",
+}
 
 
 class IncrementalReportStream(abc.ABC):
@@ -61,9 +135,9 @@ class IncrementalReportStream(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def cursor_aggregation(self) -> Iterable[str]:
+    def date_format(self) -> Iterable[str]:
         """
-        Specifies bing ads report naming
+        Specifies format for cursor field
         """
         pass
 
@@ -75,14 +149,12 @@ class IncrementalReportStream(abc.ABC):
         return request_date
 
     def request_params(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        account_id: str = None,
-        **kwargs: Mapping[str, Any]
+        self, stream_state: Mapping[str, Any] = None, account_id: str = None, **kwargs: Mapping[str, Any]
     ) -> Mapping[str, Any]:
         if not stream_state or not account_id or not stream_state.get(account_id, {}).get(self.cursor_field):
             start_date = self.client.reports_start_date
         else:
+            # gets starting point for a stream and account
             start_date = pendulum.from_timestamp(stream_state[account_id][self.cursor_field])
 
         reporting_service = self.client.get_service("ReportingService")
@@ -108,15 +180,16 @@ class IncrementalReportStream(abc.ABC):
             "timeout_in_milliseconds": self.timeout,
         }
 
-    def get_record_state_field(self, latest_record: Mapping[str, Any]) -> str:
-        return ":".join([latest_record[key] for key in self.cursor_aggregation])
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        field_name = self.get_record_state_field(latest_record)
-
-        current_stream_state[field_name] = max(
-            pendulum.parse(latest_record[self.cursor_field]).int_timestamp,
-            current_stream_state.get(field_name, 1),
+    def get_updated_state(
+        self,
+        current_stream_state: MutableMapping[str, Any],
+        latest_record: Mapping[str, Any],
+    ) -> Mapping[str, Any]:
+        account_id = latest_record["AccountId"]
+        current_stream_state[account_id] = current_stream_state.get(account_id, {})
+        current_stream_state[account_id][self.cursor_field] = max(
+            pendulum.from_format(latest_record[self.cursor_field], self.date_format).int_timestamp,
+            current_stream_state.get(account_id, {}).get(self.cursor_field, 1),
         )
         return current_stream_state
 
@@ -126,9 +199,7 @@ class IncrementalReportStream(abc.ABC):
             "account_id": account_id,
             "operation_name": self.operation_name,
             "is_report_service": True,
-            "params": {
-                "download_parameters": ReportingDownloadParameters(**params)
-            },
+            "params": {"download_parameters": ReportingDownloadParameters(**params)},
         }
         return self.client.request(**request_kwargs)
 
@@ -147,6 +218,7 @@ class IncrementalReportStream(abc.ABC):
         report_request = reporting_service.factory.create(f"{self.report_name}Request")
         if aggregation:
             report_request.Aggregation = aggregation
+
         report_request.ExcludeColumnHeaders = exclude_column_headers
         report_request.ExcludeReportFooter = exclude_report_footer
         report_request.ExcludeReportHeader = exclude_report_header
@@ -167,9 +239,26 @@ class IncrementalReportStream(abc.ABC):
     def parse_response(self, response: sudsobject.Object, **kwargs: Mapping[str, Any]) -> Iterable[Mapping]:
         if response is not None:
             for row in response.report_records:
-                yield {column: row.value(column) for column in self.report_columns}
+                yield {column: self.get_column_value(row, column) for column in self.report_columns}
 
         yield from []
+
+    def get_column_value(self, row: _RowReportRecord, column: str) -> Union[str, None, int, float]:
+        """
+        Reads field value from row and transforms string type field to numeric if possible
+        """
+        value = row.value(column)
+        if value == "":
+            value = None
+
+        if value is not None and column in REPORT_FIELD_TYPES:
+            _type = REPORT_FIELD_TYPES[column]
+            if _type == "integer":
+                value = 0 if value == "--" else int(value.replace(",", ""))
+            elif _type == "number":
+                value = 0.0 if value == "--" else float(value.replace("%", "").replace(",", ""))
+
+        return value
 
     def stream_slices(
         self,

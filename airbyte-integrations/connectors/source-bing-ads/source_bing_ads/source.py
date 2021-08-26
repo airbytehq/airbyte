@@ -125,10 +125,7 @@ class BingAdsStream(Stream, ABC):
 
         while True:
             params = self.request_params(
-                stream_state=stream_state,
-                stream_slice=stream_slice,
-                next_page_token=next_page_token,
-                account_id=account_id
+                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token, account_id=account_id
             )
 
             response = self.send_request(params, account_id=account_id)
@@ -322,8 +319,8 @@ class BudgetSummaryReport(IncrementalReportStream, BingAdsStream):
     report_name: str = "BudgetSummaryReport"
     operation_name: str = "download_report"
     additional_fields: str = ""
-    cursor_field = 'Date'
-    cursor_aggregation = ['AccountId']
+    cursor_field = "Date"
+    date_format = "M/D/YYYY"
 
     report_columns = [
         "AccountName",
@@ -345,8 +342,8 @@ class CampaignPerformanceReport(IncrementalReportStream, BingAdsStream):
     operation_name: str = "download_report"
     additional_fields: str = ""
     aggregation = "Daily"
-    cursor_field = 'TimePeriod'
-    cursor_aggregation = ['AccountId', 'Network', 'DeviceType', 'CampaignId']
+    cursor_field = "TimePeriod"
+    date_format = "YYYY-MM-DD"
 
     report_columns = [
         "AccountName",
@@ -375,8 +372,8 @@ class AdPerformanceReport(IncrementalReportStream, BingAdsStream):
     operation_name: str = "download_report"
     additional_fields: str = ""
     aggregation = "Daily"
-    cursor_field = 'TimePeriod'
-    cursor_aggregation = ['AccountId', 'Network', 'DeviceType', 'AdId']
+    cursor_field = "TimePeriod"
+    date_format = "YYYY-MM-DD"
 
     report_columns = [
         "AccountName",
@@ -410,8 +407,8 @@ class AdGroupPerformanceReport(IncrementalReportStream, BingAdsStream):
     operation_name: str = "download_report"
     additional_fields: str = ""
     aggregation = "Daily"
-    cursor_field = 'TimePeriod'
-    cursor_aggregation = ['AccountId', 'Network', 'DeviceType', 'AdGroupId']
+    cursor_field = "TimePeriod"
+    date_format = "YYYY-MM-DD"
 
     report_columns = [
         "AccountName",
@@ -442,8 +439,8 @@ class KeywordPerformanceReport(IncrementalReportStream, BingAdsStream):
     operation_name: str = "download_report"
     additional_fields: str = ""
     aggregation = "Daily"
-    cursor_field = 'TimePeriod'
-    cursor_aggregation = ['AccountId', 'Network', 'DeviceType', 'KeywordId']
+    cursor_field = "TimePeriod"
+    date_format = "YYYY-MM-DD"
 
     report_columns = [
         "AccountName",
@@ -451,21 +448,25 @@ class KeywordPerformanceReport(IncrementalReportStream, BingAdsStream):
         "AccountId",
         "TimePeriod",
         "CampaignId",
-        "Keyword",
-        "KeywordId",
+        "CampaignName",
         "DeviceType",
         "Network",
         "Impressions",
         "Clicks",
-        "Spend",
-        "BidMatchType",
         "Ctr",
         "AverageCpc",
-        "QualityScore",
+        "Spend",
+        "ReturnOnAdSpend",
+        "RevenuePerConversion",
+        "ConversionRate",
         "AdGroupName",
         "AdGroupId",
         "AdId",
         "AdType",
+        "Keyword",
+        "KeywordId",
+        "QualityScore",
+        "BidMatchType",
     ]
 
 
@@ -476,8 +477,8 @@ class AccountPerformanceReport(IncrementalReportStream, BingAdsStream):
     operation_name: str = "download_report"
     additional_fields: str = ""
     aggregation = "Daily"
-    cursor_field = 'TimePeriod'
-    cursor_aggregation = ['AccountId', 'Network', 'DeviceType']
+    cursor_field = "TimePeriod"
+    date_format = "YYYY-MM-DD"
 
     report_columns = [
         "AccountName",
