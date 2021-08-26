@@ -72,7 +72,6 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   }
 
   protected void writeBatchToFile(File tmpFile, List<AirbyteRecordMessage> records) throws Exception {
-    LOGGER.warn("writeBatchToFile : " + records);
     PrintWriter writer = null;
     try {
       writer = new PrintWriter(tmpFile, StandardCharsets.UTF_8);
@@ -146,6 +145,6 @@ public abstract class JdbcSqlOperations implements SqlOperations {
       String schemaName, String tableName) throws Exception;
 
   protected DataAdapter getDataAdapter() {
-    return new DataAdapter(j -> false, c -> null);
+    return new DataAdapter(j -> false, c -> c);
   }
 }

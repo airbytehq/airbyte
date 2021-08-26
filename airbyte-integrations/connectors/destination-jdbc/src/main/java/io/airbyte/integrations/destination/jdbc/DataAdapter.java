@@ -30,11 +30,9 @@ public class DataAdapter {
   }
 
   public void adapt(JsonNode messageData) {
-    LOGGER.debug("Data before adapt: " + messageData);
     if (messageData != null) {
       adaptAllValueNodes(messageData);
     }
-    LOGGER.debug("Data after adapt: " + messageData);
   }
 
   private void adaptAllValueNodes(JsonNode rootNode) {
@@ -43,8 +41,11 @@ public class DataAdapter {
 
   private void adaptValueNodes(String fieldName, JsonNode node, JsonNode parentNode) {
     if (node.isValueNode() && filterValueNode.test(node)) {
-      var adaptedNode = valueNodeAdapter.apply(node);
-      ((ObjectNode)parentNode).set(fieldName, adaptedNode);
+      if (fieldName != null) {
+        var adaptedNode = valueNodeAdapter.apply(node);
+        ((ObjectNode) parentNode).set(fieldName, adaptedNode);
+      } else
+        throw new RuntimeException("Unexpected value node without fieldName. Node: " + node);
     } else if (node.isArray()) {
       node.elements().forEachRemaining(arrayNode -> adaptValueNodes(null, arrayNode, node));
     } else {
