@@ -205,8 +205,8 @@ def test_display_report_stream_init_failure(mocker, test_config):
         responses.POST, re.compile(r"https://advertising-api.amazon.com/sd/[a-zA-Z]+/report"), json={"error": "some error"}, status=400
     )
 
-    metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
-    assert metrics == []
+    with pytest.raises(Exception):
+        [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
 
 
 @responses.activate

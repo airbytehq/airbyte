@@ -305,8 +305,9 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                     report_init_body,
                 )
                 if response.status_code != HTTPStatus.ACCEPTED:
-                    logger.warn(f"Unexpected error when registering {record_type} for {profile.profileId} profile: {response.text}")
-                    continue
+                    raise Exception(
+                        f"Unexpected error when registering {record_type}, {self.__class__.__name__} for {profile.profileId} profile: {response.text}"
+                    )
 
                 response = ReportInitResponse.parse_raw(response.text)
                 report_infos.append(

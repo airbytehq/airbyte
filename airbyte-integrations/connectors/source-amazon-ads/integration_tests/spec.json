@@ -22,10 +22,7 @@
         "description": "By default its advertising::campaign_management, but customers may need to set scope to cpc_advertising:campaign_management.",
         "default": "advertising::campaign_management",
         "name": "Client scope",
-        "examples": [
-          "advertising::campaign_management",
-          "cpc_advertising:campaign_management"
-        ],
+        "examples": ["cpc_advertising:campaign_management"],
         "type": "string"
       },
       "refresh_token": {
