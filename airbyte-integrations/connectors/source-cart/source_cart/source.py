@@ -32,6 +32,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
+from pendulum.parsing.exceptions import ParserError
 
 from .streams import CustomersCart, OrderPayments, Orders, Products
 
@@ -52,11 +53,15 @@ class SourceCart(AbstractSource):
         def decorator(self_, *args, **kwargs):
             for arg in args:
                 if isinstance(arg, Mapping):
-                    pendulum.parse(arg["start_date"])
-                    # try to check an end_date value. It can be ussed for different CI tests
-                    end_date = arg.get("end_date")
-                    if end_date:
-                        pendulum.parse(end_date)
+                    try:
+                        # parse date strings by the pendulum library. It will raise the exception ParserError if it is some format mistakes.
+                        pendulum.parse(arg["start_date"])
+                        # try to check an end_date value. It can be ussed for different CI tests
+                        end_date = arg.get("end_date")
+                        if end_date:
+                            pendulum.parse(end_date)
+                    except ParserError as e:
+                        raise Exception(f"{str(e)}. Example: 2021-01-01T00:00:00Z")
                     break
 
             return func(self_, *args, **kwargs)
