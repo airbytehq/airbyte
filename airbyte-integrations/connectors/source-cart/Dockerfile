@@ -1,16 +1,25 @@
-FROM python:3.7-slim
+FROM python:3.7.11-alpine3.14 as base
+FROM base as builder
 
-# Bash is installed for more convenient debugging.
-RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
+
+RUN apk --no-cache upgrade \
+    && pip install --upgrade pip
 
 WORKDIR /airbyte/integration_code
-COPY source_cart ./source_cart
-COPY main.py ./
 COPY setup.py ./
-RUN pip install .
+RUN pip install --prefix=/install .
+
+
+FROM base
+COPY --from=builder /install /usr/local
+
+WORKDIR /airbyte/integration_code
+COPY main.py ./
+COPY source_cart ./source_cart
+
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.1.2
+LABEL io.airbyte.version=0.1.3
 LABEL io.airbyte.name=airbyte/source-cart

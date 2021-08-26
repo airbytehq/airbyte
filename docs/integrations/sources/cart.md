@@ -51,5 +51,6 @@ Please follow these [steps](https://developers.cart.com/docs/rest-api/docs/READM
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.3   | 2021-08-26 | [5465](https://github.com/airbytehq/airbyte/pull/5465) | Add the end_date option for limitation of the amount of synced data|
 | 0.1.2   | 2021-08-23 | [1111](https://github.com/airbytehq/airbyte/pull/1111) | Add `order_items` stream |
 | 0.1.0   | 2021-06-08 | [4574](https://github.com/airbytehq/airbyte/pull/4574) | Initial Release |
