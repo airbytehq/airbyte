@@ -142,7 +142,6 @@ class SourceSmartsheets(Source):
                 for row in sheet["rows"]:
                     try:
                         id_name_map = {d['id']: d['title'] for d in sheet['columns']}
-                        assert set(id_name_map.values()) == set(columns)
                         data = {id_name_map[i['columnId']]: catch(i) for i in row['cells']}
 
                         yield AirbyteMessage(
@@ -151,6 +150,7 @@ class SourceSmartsheets(Source):
                         )
                     except Exception as e:
                         logger.error(f"Unable to encode row into an AirbyteMessage with the following error: {e}")
+                        raise
 
             except Exception as e:
                 logger.error(f"Could not read smartsheet: {name}")
