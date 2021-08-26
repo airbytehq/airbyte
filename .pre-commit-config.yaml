@@ -29,3 +29,9 @@ repos:
     hooks:
       - id: flake8
         args: ["--config=tools/python/.flake8"]
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v0.812
+    hooks:
+      - id: mypy
+        args: ["--config-file=tools/python/.mypy.ini"]
