@@ -27,6 +27,9 @@ package io.airbyte.scheduler.app;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.invoker.ApiException;
+import io.airbyte.api.client.model.HealthCheckRead;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
@@ -65,7 +68,6 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -247,20 +249,24 @@ public class SchedulerApp {
           });
     }
 
-    Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
-    int loopCount = 0;
-    while ((airbyteDatabaseVersion.isEmpty() || !AirbyteVersion.isCompatible(configs.getAirbyteVersion(), airbyteDatabaseVersion.get()))
-        && loopCount < 300) {
-      LOGGER.warn("Waiting for Server to start...");
-      TimeUnit.SECONDS.sleep(1);
-      airbyteDatabaseVersion = jobPersistence.getVersion();
-      loopCount++;
+    final AirbyteApiClient apiClient = new AirbyteApiClient(
+        new io.airbyte.api.client.invoker.ApiClient().setScheme("http")
+            .setHost(configs.getAirbyteApiHost())
+            .setPort(configs.getAirbyteApiPort())
+            .setBasePath("/api"));
+
+    boolean isHealthy = false;
+    while (!isHealthy) {
+      try {
+        HealthCheckRead healthCheck = apiClient.getHealthApi().getHealthCheck();
+        isHealthy = healthCheck.getDb();
+      } catch (ApiException e) {
+        LOGGER.info("Waiting for server to become available...");
+        Thread.sleep(2000);
+      }
     }
-    if (airbyteDatabaseVersion.isPresent()) {
-      AirbyteVersion.assertIsCompatible(configs.getAirbyteVersion(), airbyteDatabaseVersion.get());
-    } else {
-      throw new IllegalStateException("Unable to retrieve Airbyte Version, aborting...");
-    }
+
+    AirbyteVersion.assertIsCompatible(configs.getAirbyteVersion(), jobPersistence.getVersion().get());
 
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
