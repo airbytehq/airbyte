@@ -27,7 +27,7 @@ from collections import defaultdict
 from typing import List, Mapping
 
 from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog
-from jsonschema import Draft4Validator, ValidationError
+from jsonschema import Draft7Validator, FormatChecker, ValidationError
 
 
 def verify_records_schema(
@@ -38,7 +38,7 @@ def verify_records_schema(
     """
     validators = {}
     for stream in catalog.streams:
-        validators[stream.stream.name] = Draft4Validator(stream.stream.json_schema)
+        validators[stream.stream.name] = Draft7Validator(stream.stream.json_schema, format_checker=FormatChecker())
 
     stream_errors = defaultdict(dict)
 
