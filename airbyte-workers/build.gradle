@@ -23,7 +23,7 @@ dependencies {
     implementation 'org.eclipse.jetty:jetty-servlet:9.4.31.v20200723'
 
     implementation project(':airbyte-config:models')
-    implementation project(':airbyte-db')
+    implementation project(':airbyte-db:lib')
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-protocol:models')
 
