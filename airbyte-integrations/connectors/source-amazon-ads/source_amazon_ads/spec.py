@@ -42,7 +42,9 @@ class AmazonAdsConfig(BaseModel):
         "advertising::campaign_management",
         name="Client scope",
         examples=[
-            "advertising::campaign_management",
+    # Amazon docs don't describe which of the below scopes to use under what circumstances so 
+    # we default to the first but allow the user to override it
+    scope: str = Field(
             "cpc_advertising:campaign_management",
         ],
         description="By default its advertising::campaign_management, but customers may need to set scope to cpc_advertising:campaign_management.",
