@@ -31,3 +31,56 @@ SUB_BUILD=PLATFORM ./gradlew :airbyte-db:jooq:generateConfigsDatabaseJooq
 # for jobs database
 SUB_BUILD=PLATFORM ./gradlew :airbyte-db:jooq:generateJobsDatabaseJooq
 ```
+
+## How to Setup
+- In `build.gradle`, do the following.
+- Add a new jOOQ configuration under `jooq.configuration`.
+  - This step will automatically create a `generate<db-name>DatabaseJooq` task.
+- Register the output of the code generation task in the main sourceSet.
+- Setup caching for the code generation task.
+
+Template:
+
+```build.gradle
+// add jooq configuration
+jooq {
+  configurations {
+    <db-name>Database {
+      generateSchemaSourceOnCompilation = true
+      generationTool {
+        generator {
+          name = 'org.jooq.codegen.DefaultGenerator'
+          database {
+            name = 'io.airbyte.db.instance.configs.ConfigsFlywayMigrationDatabase'
+            inputSchema = 'public'
+            excludes = 'airbyte_configs_migrations'
+          }
+          target {
+            packageName = 'io.airbyte.db.instance.configs.jooq'
+            directory = 'build/generated/configsDatabase/src/main/java'
+          }
+        }
+      }
+    }
+  }
+}
+
+// register output as source set
+sourceSets.main.java.srcDirs (
+  tasks.named('generate<db-name>DatabaseJooq').flatMap { it.outputDir }
+)
+
+sourceSets {
+  main {
+    java {
+      srcDirs "$buildDir/generated/<db-name>Database/src/main/java"
+    }
+  }
+}
+
+// setup caching
+tasks.named('generate<db-name>DatabaseJooq').configure {
+  allInputsDeclared = true
+  outputs.cacheIf { true }
+}
+```

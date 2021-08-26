@@ -10,10 +10,16 @@ Check `io.airbyte.db.instance.configs` for example.
 - Implement the `DatabaseInstance` interface that extends from `BaseDatabaseInstance`. This class initializes the database by executing the initialization script.
 - [Optional] For each table, create a constant class that defines the table and the columns in jooq.
   - This is necessary only if you plan to use jooq to query the table.
+  - See `AirbyteConfigsTable` as an example.
 
 ## Database Migration
 - Implement the `DatabaseMigrator` interface that extends from `BaseDatabaseMigrator`. This class will handle the database migration.
 - Create a new package `migrations` under the database package. Put all migrations files there.
+- Add the migration commands in `build.gradle` for the new database.
+  - The three commands are `new<db-name>Migration`, `run<db-name>Migration`, and `dump<db-name>Schema`.
+
+## jOOQ Code Generation
+- To setup jOOQ code generation for the new database, refer to [`airbyte-db/jooq`](../jooq/README.md) for details.
 
 # How to Write a Migration
 - Run the `newMigration` command to create a new migration file in `io.airbyte.db.instance.<db-name>.migrations`.
@@ -58,12 +64,12 @@ public class V0_29_9_001__Add_active_column extends BaseJavaMigration {
 }
 ```
 
+# How to Run a Migration
+- Automatic. Migrations will be run automatically in the server. If you prefer to manually run the migration, change `RUN_DATABASE_MIGRATION_ON_STARTUP` to `false` in `.env`.
+- API. Call `api/v1/db_migrations/list` to retrieve the current migration status, and call `api/v1/db_migrations/migrate` to run the migrations. Check the API [documentation](https://airbyte-public-api-docs.s3.us-east-2.amazonaws.com/rapidoc-api-docs.html#tag--db_migration) for more details.
+
 # Schema Dump
 - The database schema is checked in to the codebase to ensure that we don't accidentally make any schema change.
 - The schema dump can be done manually and automatically.
 - To dump the schema manually, run the `dumpSchema` command, as mentioned above.
 - The `<db-name>DatabaseMigratorTest` dumps the schema automatically for each database. Please remember to check in any change in the schema dump.
-
-# How to Run a Migration
-- Automatic. Migrations will be run automatically in the server. If you prefer to manually run the migration, change `RUN_DATABASE_MIGRATION_ON_STARTUP` to `false` in `.env`.
-- API. Call `api/v1/db_migrations/list` to retrieve the current migration status, and call `api/v1/db_migrations/migrate` to run the migrations. Check the API [documentation](https://airbyte-public-api-docs.s3.us-east-2.amazonaws.com/rapidoc-api-docs.html#tag--db_migration) for more details.
