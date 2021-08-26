@@ -16,8 +16,8 @@ kind load docker-image airbyte/db:dev --name chart-testing
 
 echo "Starting app..."
 
-echo "Applying dev-testing manifests to kubernetes..."
-kubectl apply -k kube/overlays/dev-testing
+echo "Applying dev-integration-test manifests to kubernetes..."
+kubectl apply -k kube/overlays/dev-integration-test
 
 echo "Waiting for server and scheduler to be ready..."
 kubectl wait --for=condition=Available deployment/airbyte-server --timeout=300s || (kubectl describe pods && exit 1)
