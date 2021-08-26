@@ -60,6 +60,7 @@ public class S3Logs implements CloudLogs {
     Preconditions.checkNotNull(configs.getAwsSecretAccessKey());
     Preconditions.checkNotNull(configs.getS3LogBucket());
 
+    // When region is set, endpoint cannot be set and vice versa.
     if (configs.getS3LogBucketRegion().isBlank()) {
       Preconditions.checkNotNull(configs.getS3MinioEndpoint(), "Either S3 region or endpoint needs to be configured.");
     }
@@ -161,20 +162,19 @@ public class S3Logs implements CloudLogs {
 
       var builder = S3Client.builder();
 
-      // The V2 S3 client requires region.
+      // Pure S3 Client
       var s3Region = configs.getS3LogBucketRegion();
       if (!s3Region.isBlank()) {
         builder.region(Region.of(s3Region));
       }
 
-      // The minio client is still on the older client, which uses endpoints. This is
-      // incompatible with regions.
+      // The Minio S3 client.
       var minioEndpoint = configs.getS3MinioEndpoint();
       if (!minioEndpoint.isBlank()) {
         try {
           var minioUri = new URI(minioEndpoint);
           builder.endpointOverride(minioUri);
-          builder.region(Region.US_EAST_1);
+          builder.region(Region.US_EAST_1); // Although this is not used, the S3 client will error out if this is not set. Set a stub value.
         } catch (URISyntaxException e) {
           throw new RuntimeException("Error creating S3 log client to Minio", e);
         }

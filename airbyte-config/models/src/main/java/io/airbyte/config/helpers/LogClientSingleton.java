@@ -152,9 +152,6 @@ public class LogClientSingleton {
   }
 
   public static void setWorkspaceMdc(Path path) {
-    LOGGER.info("Worker env: {}", new EnvConfigs().getWorkerEnvironment());
-    LOGGER.info("env is docker: {}", new EnvConfigs().getWorkerEnvironment().equals(WorkerEnvironment.DOCKER));
-    LOGGER.info("empty cloud log config: {}", CloudLogs.hasEmptyConfigs(new LogConfigDelegator(new EnvConfigs())));
     if (shouldUseLocalLogs(new EnvConfigs())) {
       LOGGER.info("Setting docker workspace mdc");
       MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, path.resolve(LogClientSingleton.LOG_FILENAME).toString());

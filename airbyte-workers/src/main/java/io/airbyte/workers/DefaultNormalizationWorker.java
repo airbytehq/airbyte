@@ -64,6 +64,7 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
       normalizationRunner.start();
 
       Path normalizationRoot = null;
+      // There are no shared volumes on Kube; only create this for Docker.
       if (new EnvConfigs().getWorkerEnvironment().equals(WorkerEnvironment.DOCKER)) {
         normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
       }

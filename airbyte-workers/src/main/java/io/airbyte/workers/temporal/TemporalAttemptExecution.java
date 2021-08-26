@@ -110,6 +110,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
 
       LOGGER.info("Executing worker wrapper. Airbyte version: {}", new EnvConfigs().getAirbyteVersionOrWarning());
 
+      // There are no shared volumes on Kube; only do this for Docker.
       if (new EnvConfigs().getWorkerEnvironment().equals(WorkerEnvironment.DOCKER)) {
         LOGGER.debug("Creating local workspace directory..");
         jobRootDirCreator.accept(jobRoot);
