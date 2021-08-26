@@ -24,12 +24,7 @@
 
 package io.airbyte.config.persistence;
 
-import static io.airbyte.db.instance.configs.AirbyteConfigsTable.AIRBYTE_CONFIGS;
-import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CONFIG_BLOB;
-import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CONFIG_ID;
-import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CONFIG_TYPE;
-import static io.airbyte.db.instance.configs.AirbyteConfigsTable.CREATED_AT;
-import static io.airbyte.db.instance.configs.AirbyteConfigsTable.UPDATED_AT;
+import static io.airbyte.db.instance.configs.jooq.Tables.AIRBYTE_CONFIGS;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.select;
 
@@ -42,8 +37,7 @@ import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -73,7 +67,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    */
   public DatabaseConfigPersistence loadData(ConfigPersistence seedConfigPersistence) throws IOException {
     database.transaction(ctx -> {
-      boolean isInitialized = ctx.fetchExists(select().from(AIRBYTE_CONFIGS));
+      boolean isInitialized = ctx.fetchExists(select().from(AIRBYTE_CONFIGS).where());
       if (isInitialized) {
         LOGGER.info("Config database is not empty; skipping config seeding and copying");
         return null;
@@ -86,7 +80,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       } catch (IOException e) {
         throw new SQLException(e);
       }
-      Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(System.currentTimeMillis()));
+      OffsetDateTime timestamp = OffsetDateTime.now();
 
       int insertionCount = seedConfigs.entrySet().stream().map(entry -> {
         String configType = entry.getKey();
@@ -111,7 +105,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       throws ConfigNotFoundException, JsonValidationException, IOException {
     Result<Record> result = database.query(ctx -> ctx.select(asterisk())
         .from(AIRBYTE_CONFIGS)
-        .where(CONFIG_TYPE.eq(configType.name()), CONFIG_ID.eq(configId))
+        .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(configType.name()), AIRBYTE_CONFIGS.CONFIG_ID.eq(configId))
         .fetch());
 
     if (result.isEmpty()) {
@@ -120,18 +114,18 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       throw new IllegalStateException(String.format("Multiple %s configs found for ID %s: %s", configType, configId, result));
     }
 
-    return Jsons.deserialize(result.get(0).get(CONFIG_BLOB).data(), clazz);
+    return Jsons.deserialize(result.get(0).get(AIRBYTE_CONFIGS.CONFIG_BLOB).data(), clazz);
   }
 
   @Override
   public <T> List<T> listConfigs(AirbyteConfig configType, Class<T> clazz) throws IOException {
     Result<Record> results = database.query(ctx -> ctx.select(asterisk())
         .from(AIRBYTE_CONFIGS)
-        .where(CONFIG_TYPE.eq(configType.name()))
-        .orderBy(CONFIG_TYPE, CONFIG_ID)
+        .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(configType.name()))
+        .orderBy(AIRBYTE_CONFIGS.CONFIG_TYPE, AIRBYTE_CONFIGS.CONFIG_ID)
         .fetch());
     return results.stream()
-        .map(record -> Jsons.deserialize(record.get(CONFIG_BLOB).data(), clazz))
+        .map(record -> Jsons.deserialize(record.get(AIRBYTE_CONFIGS.CONFIG_BLOB).data(), clazz))
         .collect(Collectors.toList());
   }
 
@@ -142,15 +136,15 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     database.transaction(ctx -> {
       boolean isExistingConfig = ctx.fetchExists(select()
           .from(AIRBYTE_CONFIGS)
-          .where(CONFIG_TYPE.eq(configType.name()), CONFIG_ID.eq(configId)));
+          .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(configType.name()), AIRBYTE_CONFIGS.CONFIG_ID.eq(configId)));
 
-      Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(System.currentTimeMillis()));
+      OffsetDateTime timestamp = OffsetDateTime.now();
 
       if (isExistingConfig) {
         int updateCount = ctx.update(AIRBYTE_CONFIGS)
-            .set(CONFIG_BLOB, JSONB.valueOf(Jsons.serialize(config)))
-            .set(UPDATED_AT, timestamp)
-            .where(CONFIG_TYPE.eq(configType.name()), CONFIG_ID.eq(configId))
+            .set(AIRBYTE_CONFIGS.CONFIG_BLOB, JSONB.valueOf(Jsons.serialize(config)))
+            .set(AIRBYTE_CONFIGS.UPDATED_AT, timestamp)
+            .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(configType.name()), AIRBYTE_CONFIGS.CONFIG_ID.eq(configId))
             .execute();
         if (updateCount != 0 && updateCount != 1) {
           LOGGER.warn("{} config {} has been updated; updated record count: {}", configType, configId, updateCount);
@@ -160,11 +154,11 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       }
 
       int insertionCount = ctx.insertInto(AIRBYTE_CONFIGS)
-          .set(CONFIG_ID, configId)
-          .set(CONFIG_TYPE, configType.name())
-          .set(CONFIG_BLOB, JSONB.valueOf(Jsons.serialize(config)))
-          .set(CREATED_AT, timestamp)
-          .set(UPDATED_AT, timestamp)
+          .set(AIRBYTE_CONFIGS.CONFIG_ID, configId)
+          .set(AIRBYTE_CONFIGS.CONFIG_TYPE, configType.name())
+          .set(AIRBYTE_CONFIGS.CONFIG_BLOB, JSONB.valueOf(Jsons.serialize(config)))
+          .set(AIRBYTE_CONFIGS.CREATED_AT, timestamp)
+          .set(AIRBYTE_CONFIGS.UPDATED_AT, timestamp)
           .execute();
       if (insertionCount != 1) {
         LOGGER.warn("{} config {} has been inserted; insertion record count: {}", configType, configId, insertionCount);
@@ -179,11 +173,11 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     database.transaction(ctx -> {
       boolean isExistingConfig = ctx.fetchExists(select()
           .from(AIRBYTE_CONFIGS)
-          .where(CONFIG_TYPE.eq(configType.name()), CONFIG_ID.eq(configId)));
+          .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(configType.name()), AIRBYTE_CONFIGS.CONFIG_ID.eq(configId)));
 
       if (isExistingConfig) {
         ctx.deleteFrom(AIRBYTE_CONFIGS)
-            .where(CONFIG_TYPE.eq(configType.name()), CONFIG_ID.eq(configId))
+            .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(configType.name()), AIRBYTE_CONFIGS.CONFIG_ID.eq(configId))
             .execute();
         return null;
       }
@@ -199,7 +193,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
     LOGGER.info("Replacing all configs");
 
-    Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(System.currentTimeMillis()));
+    OffsetDateTime timestamp = OffsetDateTime.now();
     int insertionCount = database.transaction(ctx -> {
       ctx.truncate(AIRBYTE_CONFIGS).restartIdentity().execute();
 
@@ -217,18 +211,18 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   /**
    * @return the number of inserted records for convenience, which is always 1.
    */
-  private int insertConfigRecord(DSLContext ctx, Timestamp timestamp, String configType, JsonNode configJson, String idFieldName) {
+  private int insertConfigRecord(DSLContext ctx, OffsetDateTime timestamp, String configType, JsonNode configJson, String idFieldName) {
     String configId = idFieldName == null
         ? UUID.randomUUID().toString()
         : configJson.get(idFieldName).asText();
     LOGGER.info("Inserting {} record {}", configType, configId);
 
     ctx.insertInto(AIRBYTE_CONFIGS)
-        .set(CONFIG_ID, configId)
-        .set(CONFIG_TYPE, configType)
-        .set(CONFIG_BLOB, JSONB.valueOf(Jsons.serialize(configJson)))
-        .set(CREATED_AT, timestamp)
-        .set(UPDATED_AT, timestamp)
+        .set(AIRBYTE_CONFIGS.CONFIG_ID, configId)
+        .set(AIRBYTE_CONFIGS.CONFIG_TYPE, configType)
+        .set(AIRBYTE_CONFIGS.CONFIG_BLOB, JSONB.valueOf(Jsons.serialize(configJson)))
+        .set(AIRBYTE_CONFIGS.CREATED_AT, timestamp)
+        .set(AIRBYTE_CONFIGS.UPDATED_AT, timestamp)
         .execute();
     return 1;
   }
@@ -239,11 +233,11 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
     Map<String, Result<Record>> results = database.query(ctx -> ctx.select(asterisk())
         .from(AIRBYTE_CONFIGS)
-        .orderBy(CONFIG_TYPE, CONFIG_ID)
-        .fetchGroups(CONFIG_TYPE));
+        .orderBy(AIRBYTE_CONFIGS.CONFIG_TYPE, AIRBYTE_CONFIGS.CONFIG_ID)
+        .fetchGroups(AIRBYTE_CONFIGS.CONFIG_TYPE));
     return results.entrySet().stream().collect(Collectors.toMap(
         Entry::getKey,
-        e -> e.getValue().stream().map(r -> Jsons.deserialize(r.get(CONFIG_BLOB).data()))));
+        e -> e.getValue().stream().map(r -> Jsons.deserialize(r.get(AIRBYTE_CONFIGS.CONFIG_BLOB).data()))));
   }
 
 }

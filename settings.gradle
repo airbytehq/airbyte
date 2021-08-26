@@ -32,7 +32,7 @@ include ':airbyte-protocol:models'
 include ':airbyte-queue'
 include ':airbyte-workers' // reused by acceptance tests in connector base.
 include ':airbyte-config:models' // reused by acceptance tests in connector base.
-include ':airbyte-db' // reused by acceptance tests in connector base.
+include ':airbyte-db:lib' // reused by acceptance tests in connector base.
 include ':airbyte-test-utils'
 
 // platform
@@ -40,6 +40,7 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
     include ':airbyte-analytics'
     include ':airbyte-api'
     include ':airbyte-cli'
+    include ':airbyte-db:jooq'
     include ':airbyte-config:init'
     include ':airbyte-config:persistence'
     include ':airbyte-e2e-testing'

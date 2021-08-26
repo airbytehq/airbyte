@@ -18,7 +18,7 @@ project.configurations {
 
 dependencies {
     implementation project(':airbyte-commons')
-    implementation project(':airbyte-db')
+    implementation project(':airbyte-db:lib')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-integrations:connectors:source-relational-db')
@@ -35,7 +35,7 @@ dependencies {
 
     testFixturesImplementation "org.hamcrest:hamcrest-all:1.3"
     testFixturesImplementation project(':airbyte-protocol:models')
-    testFixturesImplementation project(':airbyte-db')
+    testFixturesImplementation project(':airbyte-db:lib')
     testFixturesImplementation project(':airbyte-integrations:bases:base-java')
 
     // todo (cgardens) - the java-test-fixtures plugin doesn't by default extend from test.

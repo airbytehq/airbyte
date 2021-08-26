@@ -7,7 +7,7 @@ plugins {
 
 dependencies {
     implementation project(':airbyte-commons')
-    implementation project(':airbyte-db')
+    implementation project(':airbyte-db:lib')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-json-validation')
