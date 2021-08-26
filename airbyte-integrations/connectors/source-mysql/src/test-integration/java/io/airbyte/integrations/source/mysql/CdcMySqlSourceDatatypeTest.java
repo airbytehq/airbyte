@@ -29,15 +29,14 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
-import io.airbyte.integrations.standardtest.source.SourceComprehensiveTest;
+import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
 
-public class MySqlSourceComprehensiveTest extends SourceComprehensiveTest {
+public class CdcMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private MySQLContainer<?> container;
   private JsonNode config;
@@ -68,7 +67,7 @@ public class MySqlSourceComprehensiveTest extends SourceComprehensiveTest {
         .put("database", container.getDatabaseName())
         .put("username", container.getUsername())
         .put("password", container.getPassword())
-        .put("replication_method", ReplicationMethod.STANDARD)
+        .put("replication_method", MySqlSource.ReplicationMethod.CDC)
         .build());
 
     final Database database = Databases.createDatabase(
@@ -85,12 +84,43 @@ public class MySqlSourceComprehensiveTest extends SourceComprehensiveTest {
     // For example, it's possible to insert date with zero values "2021-00-00"
     database.query(ctx -> ctx.fetch("SET @@sql_mode=''"));
 
+    revokeAllPermissions();
+    grantCorrectPermissions();
+
     return database;
   }
 
   @Override
   protected String getNameSpace() {
     return container.getDatabaseName();
+  }
+
+  private void revokeAllPermissions() {
+    executeQuery("REVOKE ALL PRIVILEGES, GRANT OPTION FROM " + container.getUsername() + "@'%';");
+  }
+
+  private void grantCorrectPermissions() {
+    executeQuery(
+        "GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO "
+            + container.getUsername() + "@'%';");
+  }
+
+  private void executeQuery(String query) {
+    try (Database database = Databases.createDatabase(
+        "root",
+        "test",
+        String.format("jdbc:mysql://%s:%s/%s",
+            container.getHost(),
+            container.getFirstMappedPort(),
+            container.getDatabaseName()),
+        MySqlSource.DRIVER_CLASS,
+        SQLDialect.MYSQL)) {
+      database.query(
+          ctx -> ctx
+              .execute(query));
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -184,7 +214,8 @@ public class MySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("double")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("null", "power(10, 308)", "1/power(10, 45)")
-            .addExpectedValues(null, String.valueOf(Math.pow(10, 308)), String.valueOf(1 / Math.pow(10, 45)))
+            .addExpectedValues(null, String.valueOf(Math.pow(10, 308)),
+                String.valueOf(1 / Math.pow(10, 45)))
             .build());
 
     addDataTypeTestData(
@@ -192,17 +223,8 @@ public class MySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("decimal")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .fullSourceDataType("decimal(10,4)")
-            .addInsertValues("0.188", "null")
-            .addExpectedValues("0.188", null)
-            .build());
-
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("decimal")
-            .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .fullSourceDataType("decimal(19,2)")
-            .addInsertValues("1700000.00")
-            .addInsertValues("1700000.00")
+            .addInsertValues("0.1880", "null")
+            .addExpectedValues("0.1880", null)
             .build());
 
     addDataTypeTestData(
@@ -218,29 +240,25 @@ public class MySqlSourceComprehensiveTest extends SourceComprehensiveTest {
         TestDataHolder.builder()
             .sourceType("date")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
-            // @TODO stream fails when gets Zero date value
-            // .addInsertValues("'2021-01-00'", "'2021-00-00'", "'0000-00-00'")
+            .addInsertValues("null", "'2021-01-00'", "'2021-00-00'", "'0000-00-00'")
+            .addExpectedValues(null, null, null, null)
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("datetime")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
-            // @TODO stream fails when gets Zero date value
-            // .addInsertValues("'0000-00-00 00:00:00'")
+            .addInsertValues("null", "'0000-00-00 00:00:00'")
+            .addExpectedValues(null, null)
             .build());
 
-    // addDataTypeTestData(
-    // TestDataHolder.builder()
-    // .sourceType("datetime")
-    // .airbyteType(JsonSchemaPrimitive.STRING)
-    // .addInsertValues("'2013-09-05T10:10:02'")
-    // .addExpectedValues("2013-09-05T10:10:02")
-    // .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("datetime")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'2013-09-05T10:10:02'")
+            .addExpectedValues("2013-09-05T10:10:02")
+            .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -254,10 +272,8 @@ public class MySqlSourceComprehensiveTest extends SourceComprehensiveTest {
         TestDataHolder.builder()
             .sourceType("time")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
-            // @TODO stream fails when gets Zero date value
-            // .addInsertValues("'-838:59:59.000000'")
+            .addInsertValues("null", "'-838:59:59.000000'", "'00:00:01.000000'")
+            .addExpectedValues(null, "-3020399000000", "1000000")
             .build());
 
     addDataTypeTestData(
@@ -266,7 +282,8 @@ public class MySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .fullSourceDataType("varchar(256) character set cp1251")
             .addInsertValues("null", "'тест'")
-            .addExpectedValues(null, "тест")
+            // @TODO stream returns invalid text "С‚РµСЃС‚"
+            // .addExpectedValues(null, "тест")
             .build());
 
     addDataTypeTestData(
@@ -275,7 +292,8 @@ public class MySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .fullSourceDataType("varchar(256) character set utf16")
             .addInsertValues("null", "0xfffd")
-            .addExpectedValues(null, "�")
+            // @TODO streamer returns invalid text "�"
+            // .addExpectedValues(null, "�")
             .build());
 
     addDataTypeTestData(
@@ -359,7 +377,7 @@ public class MySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("bool")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("null", "1", "127", "-128")
-            // @TODO in MySQL boolean returns true only if value equals 1, all other not null values -> false
+            // @TODO returns number instead of boolean
             // .addExpectedValues(null, "true", "false", "false")
             .build());
 

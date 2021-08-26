@@ -30,14 +30,14 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.source.db2.Db2Source;
-import io.airbyte.integrations.standardtest.source.SourceComprehensiveTest;
+import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.Db2Container;
 
-public class Db2SourceComprehensiveTest extends SourceComprehensiveTest {
+public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private static final String CREATE_TABLE_SQL = "CREATE TABLE %1$s(%2$s INTEGER NOT NULL PRIMARY KEY, %3$s %4$s)";
   private static final String CREATE_TABLE_SQL_UNICODE = CREATE_TABLE_SQL + " CCSID UNICODE";
