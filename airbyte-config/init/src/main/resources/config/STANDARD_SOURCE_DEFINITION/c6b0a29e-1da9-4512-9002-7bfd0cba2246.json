@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "c6b0a29e-1da9-4512-9002-7bfd0cba2246",
+  "name": "Amazon Ads",
+  "dockerRepository": "airbyte/source-amazon-ads",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/amazon-ads"
+}
