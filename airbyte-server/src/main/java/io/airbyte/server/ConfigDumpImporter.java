@@ -93,20 +93,20 @@ public class ConfigDumpImporter {
   private final ConfigRepository configRepository;
   private final WorkspaceHelper workspaceHelper;
   private final JsonSchemaValidator jsonSchemaValidator;
-  private final JobPersistence postgresPersistence;
+  private final JobPersistence jobPersistence;
   private final Path stagedResourceRoot;
 
-  public ConfigDumpImporter(ConfigRepository configRepository, JobPersistence postgresPersistence, WorkspaceHelper workspaceHelper) {
-    this(configRepository, postgresPersistence, workspaceHelper, new JsonSchemaValidator());
+  public ConfigDumpImporter(ConfigRepository configRepository, JobPersistence jobPersistence, WorkspaceHelper workspaceHelper) {
+    this(configRepository, jobPersistence, workspaceHelper, new JsonSchemaValidator());
   }
 
   @VisibleForTesting
   public ConfigDumpImporter(ConfigRepository configRepository,
-                            JobPersistence postgresPersistence,
+                            JobPersistence jobPersistence,
                             WorkspaceHelper workspaceHelper,
                             JsonSchemaValidator jsonSchemaValidator) {
     this.jsonSchemaValidator = jsonSchemaValidator;
-    this.postgresPersistence = postgresPersistence;
+    this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
     this.workspaceHelper = workspaceHelper;
     try {
@@ -144,7 +144,7 @@ public class ConfigDumpImporter {
 
       // 5. Set DB version
       LOGGER.info("Setting the DB Airbyte version to : " + targetVersion);
-      postgresPersistence.setVersion(targetVersion);
+      jobPersistence.setVersion(targetVersion);
 
       // 6. check db version
       checkDBVersion(targetVersion);
@@ -329,12 +329,12 @@ public class ConfigDumpImporter {
         Stream<JsonNode> tableStream = readTableFromArchive(tableType, tablePath);
 
         if (tableType == JobsDatabaseSchema.AIRBYTE_METADATA) {
-          tableStream = replaceDeploymentMetadata(postgresPersistence, tableStream);
+          tableStream = replaceDeploymentMetadata(jobPersistence, tableStream);
         }
 
         data.put(tableType, tableStream);
       }
-      postgresPersistence.importDatabase(airbyteVersion, data);
+      jobPersistence.importDatabase(airbyteVersion, data);
       LOGGER.info("Successful upgrade of airbyte postgres database from archive");
     } catch (Exception e) {
       LOGGER.warn("Postgres database version upgrade failed, reverting to state previous to migration.");
@@ -399,7 +399,7 @@ public class ConfigDumpImporter {
   }
 
   private void checkDBVersion(final String airbyteVersion) throws IOException {
-    final Optional<String> airbyteDatabaseVersion = postgresPersistence.getVersion();
+    final Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
     airbyteDatabaseVersion
         .ifPresent(dbversion -> AirbyteVersion.assertIsCompatible(airbyteVersion, dbversion));
   }
@@ -536,7 +536,6 @@ public class ConfigDumpImporter {
                 .stream()
                 .map(operationIdMap::get)
                 .collect(Collectors.toList()));
-            configRepository.writeStandardSync(standardSync);
             return standardSync;
           },
           configRepository::writeStandardSync);
