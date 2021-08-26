@@ -30,14 +30,14 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.source.snowflake.SnowflakeSource;
-import io.airbyte.integrations.standardtest.source.SourceComprehensiveTest;
+import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.nio.file.Path;
 import org.jooq.SQLDialect;
 
-public class SnowflakeSourceComprehensiveTest extends SourceComprehensiveTest {
+public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private static final String SCHEMA_NAME = "TEST";
   private static final String INSERT_SEMI_STRUCTURED_SQL = "INSERT INTO %1$s (ID, TEST_COLUMN) SELECT %2$s, %3$s";
