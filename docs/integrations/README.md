@@ -20,6 +20,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[AWS CloudTrail](./sources/aws-cloudtrail.md)| Beta |
 |[Braintree](./sources/braintree.md)| Alpha |
 |[BigQuery](./sources/bigquery.md)| Beta |
+|[Bing Ads](./sources/bing-ads.md)| Beta |
 |[Cart](./sources/cart.md)| Beta |
 |[Chargebee](./sources/chargebee.md)| Alpha |
 |[ClickHouse](./sources/clickhouse.md)| Beta |
