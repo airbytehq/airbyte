@@ -16,7 +16,7 @@ Gradle plugin `nu.studer.jooq` is used for jOOQ code generation. See [here](http
 
 It is necessary to separate this module from the `lib` module, because we use a custom database (`FlywayMigrationDatabase`) that runs Flyway migration first for the code generator. This implementation needs to be compiled before it can be used.
 
-To manually update the generated code, run the `compileJava` task:
+The code will be automatically generated when this module is compiled. To manually update the generated code, run the `compileJava` task:
 
 ```sh
 SUB_BUILD=PLATFORM ./gradlew :airbyte-db:jooq:compileJava
@@ -32,7 +32,7 @@ SUB_BUILD=PLATFORM ./gradlew :airbyte-db:jooq:generateConfigsDatabaseJooq
 SUB_BUILD=PLATFORM ./gradlew :airbyte-db:jooq:generateJobsDatabaseJooq
 ```
 
-## How to Setup
+## How to Setup Code Generation for New Database
 - In `build.gradle`, do the following.
 - Add a new jOOQ configuration under `jooq.configuration`.
   - This step will automatically create a `generate<db-name>DatabaseJooq` task.
