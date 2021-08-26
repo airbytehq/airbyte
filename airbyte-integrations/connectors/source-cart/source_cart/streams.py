@@ -152,9 +152,6 @@ class OrderItems(IncrementalCartStream):
 
     data_field = "items"
 
-    def path(self, **kwargs) -> str:
-        return "order_items"
-
 
 class Products(IncrementalCartStream):
     """
