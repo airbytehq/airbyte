@@ -71,6 +71,7 @@ class BambooHrClient(object):
         response.raise_for_status()
         return response
 
+
 class SourceBambooHr(Source):
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         """

@@ -18,6 +18,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Appstore](./sources/appstore.md)| Alpha |
 |[Asana](./sources/asana.md) | Beta |
 |[AWS CloudTrail](./sources/aws-cloudtrail.md)| Beta |
+|[BambooHR](./sources/bamboo-hr.md)| Alpha |
 |[Braintree](./sources/braintree.md)| Alpha |
 |[BigQuery](./sources/bigquery.md)| Beta |
 |[Cart](./sources/cart.md)| Beta |
