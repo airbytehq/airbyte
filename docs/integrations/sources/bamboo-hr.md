@@ -2,7 +2,7 @@
 
 ## Overview
 
-The BambooHr source supports Full Refres sync. You can choose if this connector will overwrite the old records or duplicate old ones.
+The BambooHr source supports Full Refresh sync. You can choose if this connector will overwrite the old records or duplicate old ones.
 
 ### Output schema
 
@@ -30,4 +30,8 @@ BambooHR has the [rate limits](https://documentation.bamboohr.com/docs/api-detai
 * BambooHr Account
 * BambooHr [Api key](https://documentation.bamboohr.com/docs)
 
+## Changelog
 
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.1.0   | 2021-08-27 | [5054](https://github.com/airbytehq/airbyte/pull/5054) | Initial release with Employees API |
