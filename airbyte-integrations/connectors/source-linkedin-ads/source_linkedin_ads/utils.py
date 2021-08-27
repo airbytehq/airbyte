@@ -23,13 +23,15 @@
 #
 
 from typing import Dict, Iterable, List, Mapping
+
 import pendulum as pdm
 
+
 def transform_date_fields(
-    records: List, 
-    dict_key: str = "changeAuditStamps", 
-    props: List = ["created", "lastModified"], 
-    fields: List = ["time"], 
+    records: List,
+    dict_key: str = "changeAuditStamps",
+    props: List = ["created", "lastModified"],
+    fields: List = ["time"],
     analytics: bool = False,
 ) -> Iterable[Mapping]:
     """
@@ -50,7 +52,7 @@ def transform_date_fields(
                 }
             }
         }
-    
+
     :: For Other Streams:
         {
             "changeAuditStamps": {
@@ -73,18 +75,19 @@ def transform_date_fields(
                 for field in fields:
                     # For analytics streams
                     if analytics:
-                        record.update(**{f'{prop}.{field}': target_dict.get(prop).get(field, None)})
+                        record.update(**{f"{prop}.{field}": target_dict.get(prop).get(field, None)})
                     # for All other streams
-                    record.update(**{prop: pdm.from_timestamp(target_dict.get(prop).get(field, None)/1000).to_datetime_string()})
+                    record.update(**{prop: pdm.from_timestamp(target_dict.get(prop).get(field, None) / 1000).to_datetime_string()})
             # For Analytics streams we build `start_date` & `end_date` fields from nested structure.
             if analytics:
-                record.update(**{
-                    "start_date": pdm.date(record["start.year"],record["start.month"],record["start.day"]).to_date_string(),
-                    "end_date": pdm.date(record["end.year"],record["end.month"],record["end.day"]).to_date_string(),
+                record.update(
+                    **{
+                        "start_date": pdm.date(record["start.year"], record["start.month"], record["start.day"]).to_date_string(),
+                        "end_date": pdm.date(record["end.year"], record["end.month"], record["end.day"]).to_date_string(),
                     }
                 )
             # Cleanup the nested structures
-            for key in [dict_key,'start.day','start.month','start.year','end.day','end.month','end.year','start','end']:
+            for key in [dict_key, "start.day", "start.month", "start.year", "end.day", "end.month", "end.year", "start", "end"]:
                 if key in record.keys():
                     record.pop(key)
         result.append(record)
@@ -95,7 +98,7 @@ def make_slice(records: List, key_value_map: Dict) -> Dict:
     """
     Outputs the Dict with key:value slices for the stream.
     EXAMPLE:
-        in: records = [{dict}, {dict}, ...], 
+        in: records = [{dict}, {dict}, ...],
             key_value_map = {<slice_key_name>: <key inside record>}
         {
             <slice_key_name> : records.<key inside record>.value,

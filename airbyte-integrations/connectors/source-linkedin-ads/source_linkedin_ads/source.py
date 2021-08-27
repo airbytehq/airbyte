@@ -28,7 +28,6 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 from urllib.parse import urlencode
 
 import requests
-import pendulum
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -36,8 +35,8 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .utils import transform_date_fields, make_slice
-from .analytics import make_analytics_slices, update_analytics_params, merge_chunks
+from .analytics import make_analytics_slices, merge_chunks, update_analytics_params
+from .utils import make_slice, transform_date_fields
 
 
 class LinkedinAdsStream(HttpStream, ABC):
@@ -54,7 +53,7 @@ class LinkedinAdsStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
-        To paginate through results, begin with a start value of 0 and a count value of N. 
+        To paginate through results, begin with a start value of 0 and a count value of N.
         To get the next page, set start value to N, while the count value stays the same.
         We have reached the end of the dataset when the response contains fewer elements than the `count` parameter request.
         https://docs.microsoft.com/en-us/linkedin/shared/api-guide/concepts/pagination?context=linkedin/marketing/context
@@ -115,7 +114,7 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
 
     @property
     def primary_slice_key(self) -> str:
-        """ 
+        """
         Define the main slice_key from `slice_key_value_map`. Always the first element.
         EXAMPLE:
             in : {"k1": "v1", "k2": "v2", ...}
@@ -152,7 +151,7 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
 class StreamMixin(IncrementalLinkedinAdsStream):
     """
     This class stands for provide stream slicing.
-    :: `slice_from_stream` - the reference to the parrent stream class, 
+    :: `slice_from_stream` - the reference to the parrent stream class,
         by default it's referenced to the Accounts stream class, as far as majority of streams are using it.
     :: `slice_key_value_map` - key_value map for stream slices in a format: {<slice_key_name>: <key inside record>}
     :: `search_param` - the query param to pass with request_params
@@ -165,13 +164,15 @@ class StreamMixin(IncrementalLinkedinAdsStream):
     # define default additional request params
     search_param = "search.account.values[0]"
     search_param_value = "urn:li:sponsoredAccount:"
-    
+
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
         params[self.search_param] = f"{self.search_param_value}{stream_slice.get(self.primary_slice_key)}"
         return params
 
-    def read_records(self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         slice_stream = self.slice_from_stream(config=self.config)
         for records in slice_stream.read_records(sync_mode=SyncMode.full_refresh):
@@ -184,6 +185,7 @@ class AccountUsers(StreamMixin):
     Get AccountUsers data using `account_id` slicing. More info about LinkedIn Ads / AccountUsers:
     https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-account-users?tabs=http
     """
+
     # Account_users stream doesn't have `id` property, so the "account" is used instead.
     primary_key = "account"
 
@@ -228,12 +230,13 @@ class Creatives(StreamMixin):
     More info about LinkedIn Ads / Creatives:
     https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-creatives?tabs=http
     """
+
     slice_from_stream = Campaigns
     slice_key_value_map = {"campaign_id": "id"}
 
     search_param = "search.campaign.values[0]"
     search_param_value = "urn:li:sponsoredCampaign:"
-    
+
     def path(self, **kwargs) -> str:
         return "adCreativesV2"
 
@@ -244,6 +247,7 @@ class AdDirectSponsoredContents(StreamMixin):
     More info about LinkedIn Ads / adDirectSponsoredContents:
     https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/advertising-targeting/create-and-manage-video?tabs=http#finders
     """
+
     # AdDirectSponsoredContents stream doesn't have `id` property, so the "account" is used instead.
     primary_key = "account"
 
@@ -263,18 +267,19 @@ class AdDirectSponsoredContents(StreamMixin):
 
 
 class AnalyticsStreamMixin(IncrementalLinkedinAdsStream):
-    """ 
-    AdAnalytics Streams more info:
-    https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl#ad-analytics 
     """
+    AdAnalytics Streams more info:
+    https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl#ad-analytics
+    """
+
     # For Analytics streams the primary_key is the entity of the pivot [Campaign URN, Creative URN, etc]
-    primary_key = 'pivotValue'
+    primary_key = "pivotValue"
     cursor_field = "end_date"
 
     @property
     def base_analytics_params(self) -> MutableMapping[str, Any]:
         """ Define the base parameters for analytics streams """
-        return {"q": "analytics", "pivot": self.pivot_by, "timeGranularity" : "DAILY"}
+        return {"q": "analytics", "pivot": self.pivot_by, "timeGranularity": "DAILY"}
 
     def path(self, **kwargs) -> str:
         """ Analytics Endpoint. """
@@ -292,10 +297,11 @@ class AnalyticsStreamMixin(IncrementalLinkedinAdsStream):
         So the transform_date_fields method with `analytics`=True is applied before output.
         """
         records = response.json().get("elements")
-        yield from transform_date_fields(records, "dateRange", ["start","end"], ["year","month","day"], True)
+        yield from transform_date_fields(records, "dateRange", ["start", "end"], ["year", "month", "day"], True)
 
-
-    def read_records(self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {self.cursor_field: self.start_date}
         parent_stream = self.slice_from_stream(config=self.config)
         result_chunks = []
@@ -313,12 +319,12 @@ class AdCampaignAnalytics(AnalyticsStreamMixin):
 
     slice_from_stream = Campaigns
     slice_key_value_map = {"campaign_id": "id"}
-    search_param =  "campaigns[0]"
+    search_param = "campaigns[0]"
     search_param_value = "urn:li:sponsoredCampaign:"
     pivot_by = "CAMPAIGN"
 
-    #TODO: create the schema) using shared $ref: {"ad_analytics.json"}
-    
+    # TODO: create the schema) using shared $ref: {"ad_analytics.json"}
+
 
 class AdCreativeAnalytics(AnalyticsStreamMixin):
     """
@@ -327,13 +333,13 @@ class AdCreativeAnalytics(AnalyticsStreamMixin):
 
     slice_from_stream = Creatives
     slice_key_value_map = {"creative_id": "id"}
-    search_param =  "creatives[0]"
+    search_param = "creatives[0]"
     search_param_value = "urn:li:sponsoredCreative:"
     pivot_by = "CREATIVE"
 
-    #TODO: create the schema) using shared $ref: {"ad_analytics.json"}
-    
-    
+    # TODO: create the schema) using shared $ref: {"ad_analytics.json"}
+
+
 class SourceLinkedinAds(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """

@@ -1,7 +1,32 @@
+#
+# MIT License
+#
+# Copyright (c) 2020 Airbyte
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 
 
-from typing import Any, Iterable, List, Dict, Mapping
+from typing import Any, Dict, Iterable, List, Mapping
+
 import pendulum as pdm
+
 from .utils import make_slice
 
 # LinkedIn has a max of 20 fields per request. We make chunks by 17
@@ -11,80 +36,76 @@ WINDOW_IN_DAYS = 30
 
 # List of adAnalyticsV2 fields available for fetch
 ANALYTICS_FIELDS_V2: Dict = [
-    'actionClicks',
-    'adUnitClicks',
-    'approximateUniqueImpressions',
-    'cardClicks',
-    'cardImpressions',
-    'clicks',
-    'commentLikes',
-    'comments',
-    'companyPageClicks',
-    'conversionValueInLocalCurrency',
-    'costInLocalCurrency',
-    'costInUsd',
-    'dateRange',
-    'externalWebsiteConversions',
-    'externalWebsitePostClickConversions',
-    'externalWebsitePostViewConversions',
-    'follows',
-    'fullScreenPlays',
-    'impressions',
-    'landingPageClicks',
-    'leadGenerationMailContactInfoShares',
-    'leadGenerationMailInterestedClicks',
-    'likes',
-    'oneClickLeadFormOpens',
-    'oneClickLeads',
-    'opens',
-    'otherEngagements',
-    'pivot',
-    'pivotValue',
-    'pivotValues',
-    'reactions',
-    'sends',
-    'shares',
-    'textUrlClicks',
-    'totalEngagements',
-    'videoCompletions',
-    'videoFirstQuartileCompletions',
-    'videoMidpointCompletions',
-    'videoStarts',
-    'videoThirdQuartileCompletions',
-    'videoViews',
-    'viralCardClicks',
-    'viralCardImpressions',
-    'viralClicks',
-    'viralCommentLikes',
-    'viralComments',
-    'viralCompanyPageClicks',
-    'viralExternalWebsiteConversions',
-    'viralExternalWebsitePostClickConversions',
-    'viralExternalWebsitePostViewConversions',
-    'viralFollows',
-    'viralFullScreenPlays',
-    'viralImpressions',
-    'viralLandingPageClicks',
-    'viralLikes',
-    'viralOneClickLeadFormOpens',
-    'viralOneClickLeads',
-    'viralOtherEngagements',
-    'viralReactions',
-    'viralShares',
-    'viralTotalEngagements',
-    'viralVideoCompletions',
-    'viralVideoFirstQuartileCompletions',
-    'viralVideoMidpointCompletions',
-    'viralVideoStarts',
-    'viralVideoThirdQuartileCompletions',
-    'viralVideoViews',
+    "actionClicks",
+    "adUnitClicks",
+    "approximateUniqueImpressions",
+    "cardClicks",
+    "cardImpressions",
+    "clicks",
+    "commentLikes",
+    "comments",
+    "companyPageClicks",
+    "conversionValueInLocalCurrency",
+    "costInLocalCurrency",
+    "costInUsd",
+    "dateRange",
+    "externalWebsiteConversions",
+    "externalWebsitePostClickConversions",
+    "externalWebsitePostViewConversions",
+    "follows",
+    "fullScreenPlays",
+    "impressions",
+    "landingPageClicks",
+    "leadGenerationMailContactInfoShares",
+    "leadGenerationMailInterestedClicks",
+    "likes",
+    "oneClickLeadFormOpens",
+    "oneClickLeads",
+    "opens",
+    "otherEngagements",
+    "pivot",
+    "pivotValue",
+    "pivotValues",
+    "reactions",
+    "sends",
+    "shares",
+    "textUrlClicks",
+    "totalEngagements",
+    "videoCompletions",
+    "videoFirstQuartileCompletions",
+    "videoMidpointCompletions",
+    "videoStarts",
+    "videoThirdQuartileCompletions",
+    "videoViews",
+    "viralCardClicks",
+    "viralCardImpressions",
+    "viralClicks",
+    "viralCommentLikes",
+    "viralComments",
+    "viralCompanyPageClicks",
+    "viralExternalWebsiteConversions",
+    "viralExternalWebsitePostClickConversions",
+    "viralExternalWebsitePostViewConversions",
+    "viralFollows",
+    "viralFullScreenPlays",
+    "viralImpressions",
+    "viralLandingPageClicks",
+    "viralLikes",
+    "viralOneClickLeadFormOpens",
+    "viralOneClickLeads",
+    "viralOtherEngagements",
+    "viralReactions",
+    "viralShares",
+    "viralTotalEngagements",
+    "viralVideoCompletions",
+    "viralVideoFirstQuartileCompletions",
+    "viralVideoMidpointCompletions",
+    "viralVideoStarts",
+    "viralVideoThirdQuartileCompletions",
+    "viralVideoViews",
 ]
 
-BASE_ANALLYTICS_FIELDS = [
-    'dateRange',
-    'pivot',
-    'pivotValue'
-    ]
+BASE_ANALLYTICS_FIELDS = ["dateRange", "pivot", "pivotValue"]
 
 
 def chunk_analytics_fields(fields: List = ANALYTICS_FIELDS_V2, fields_chunk_size: int = FIELDS_CHUNK_SIZE) -> Iterable[Mapping]:
@@ -95,7 +116,7 @@ def chunk_analytics_fields(fields: List = ANALYTICS_FIELDS_V2, fields_chunk_size
     # Define base fields that should be present by default
     base_fields = BASE_ANALLYTICS_FIELDS
     # Make chunks
-    chunks = list((fields[f:f+fields_chunk_size] for f in range(0, len(fields), fields_chunk_size)))
+    chunks = list((fields[f : f + fields_chunk_size] for f in range(0, len(fields), fields_chunk_size)))
     # Make sure base_fields are within the chunks
     for chunk in chunks:
         for field in base_fields:
@@ -114,8 +135,13 @@ def make_date_slices(start_date: str, window_in_days: int = WINDOW_IN_DAYS, end_
     while start < end:
         slice_end_date = start.add(days=window_in_days)
         date_slice = {
-            "start.day": start.day, "start.month": start.month, "start.year": start.year,
-            "end.day": slice_end_date.day, "end.month": slice_end_date.month, "end.year": slice_end_date.year}
+            "start.day": start.day,
+            "start.month": start.month,
+            "start.year": start.year,
+            "end.day": slice_end_date.day,
+            "end.month": slice_end_date.month,
+            "end.year": slice_end_date.year,
+        }
         date_slices.append({"dateRange": date_slice})
         start = slice_end_date if slice_end_date <= end else end
     return date_slices
@@ -152,8 +178,9 @@ def update_analytics_params(stream_slice: Dict) -> Mapping[str, Any]:
         "dateRange.end.month": stream_slice["dateRange"]["end.month"],
         "dateRange.end.year": stream_slice["dateRange"]["end.year"],
         # Chunk of fields
-        "fields": stream_slice["fields"]
-        }
+        "fields": stream_slice["fields"],
+    }
+
 
 def merge_chunks(chunked_result: Iterable[Mapping[str, Any]], merge_by_key: str) -> Iterable[Mapping]:
     """

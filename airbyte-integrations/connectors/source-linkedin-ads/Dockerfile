@@ -22,6 +22,8 @@ COPY --from=builder /install /usr/local
 COPY main.py ./
 COPY source_linkedin_ads ./source_linkedin_ads
 
+# set the default Timezone, for use with dependent libraries like: datetime, pendullum, etc.
+ENV TZ "UTC"
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
