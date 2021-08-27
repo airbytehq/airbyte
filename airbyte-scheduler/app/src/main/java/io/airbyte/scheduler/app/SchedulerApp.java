@@ -194,18 +194,7 @@ public class SchedulerApp {
     }
   }
 
-  public static void main(String[] args) throws IOException, InterruptedException {
-
-    final Configs configs = new EnvConfigs();
-
-    MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, LogClientSingleton.getSchedulerLogsRoot(configs).toString());
-
-    final Path workspaceRoot = configs.getWorkspaceRoot();
-    LOGGER.info("workspaceRoot = " + workspaceRoot);
-
-    final String temporalHost = configs.getTemporalHost();
-    LOGGER.info("temporalHost = " + temporalHost);
-
+  private static void waitForServer(Configs configs) throws InterruptedException {
     final AirbyteApiClient apiClient = new AirbyteApiClient(
         new io.airbyte.api.client.invoker.ApiClient().setScheme("http")
             .setHost(configs.getAirbyteApiHost())
@@ -222,6 +211,22 @@ public class SchedulerApp {
         Thread.sleep(2000);
       }
     }
+  }
+
+  public static void main(String[] args) throws IOException, InterruptedException {
+
+    final Configs configs = new EnvConfigs();
+
+    MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, LogClientSingleton.getSchedulerLogsRoot(configs).toString());
+
+    final Path workspaceRoot = configs.getWorkspaceRoot();
+    LOGGER.info("workspaceRoot = " + workspaceRoot);
+
+    final String temporalHost = configs.getTemporalHost();
+    LOGGER.info("temporalHost = " + temporalHost);
+
+    // Wait for the server to initialize the database and run migration
+    waitForServer(configs);
 
     LOGGER.info("Creating Job DB connection pool...");
     final Database jobDatabase = new JobsDatabaseInstance(
