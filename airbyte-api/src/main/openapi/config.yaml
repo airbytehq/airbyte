@@ -45,9 +45,11 @@ tags:
   - name: destination_definition_specification
     description: DestinationDefinitionSpecification related resources.
   - name: destination
-    description: Destination  related resources.
+    description: Destination related resources.
   - name: connection
     description: Connection between sources and destinations.
+  - name: oauth
+    description: OAuth related resources to delegate access from user.
   - name: db_migration
     description: Database migration related resources.
   - name: web_backend
@@ -1178,6 +1180,52 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DbMigrationExecutionRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/source_oauths/get_oauth_consent:
+    post:
+      tags:
+        - oauth
+      summary: Given a source connector definition ID, return the URL to the consent screen where to redirect the user to.
+      operationId: getSourceOAuthConsent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceDefinitionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthConsentRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destination_oauths/get_oauth_consent:
+    post:
+      tags:
+        - oauth
+      summary: Given a destination connector definition ID, return the URL to the consent screen where to redirect the user to.
+      operationId: getDestinationOAuthConsent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationDefinitionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthConsentRead"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -2815,6 +2863,14 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/DbMigrationRead"
+    # OAuth
+    OAuthConsentRead:
+      type: object
+      required:
+        - consentUrl
+      properties:
+        consentUrl:
+          type: string
     # Web Backend
     WebBackendConnectionRead:
       type: object

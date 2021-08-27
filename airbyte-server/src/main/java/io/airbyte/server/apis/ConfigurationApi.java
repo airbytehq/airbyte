@@ -57,6 +57,8 @@ import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.LogsRequestBody;
 import io.airbyte.api.model.Notification;
 import io.airbyte.api.model.NotificationRead;
+import io.airbyte.api.model.OAuthConsentRead;
+import io.airbyte.api.model.OAuthRequestRead;
 import io.airbyte.api.model.OperationCreate;
 import io.airbyte.api.model.OperationIdRequestBody;
 import io.airbyte.api.model.OperationRead;
@@ -109,6 +111,7 @@ import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.HealthCheckHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
 import io.airbyte.server.handlers.LogsHandler;
+import io.airbyte.server.handlers.OAuthHandler;
 import io.airbyte.server.handlers.OpenApiConfigHandler;
 import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
@@ -145,6 +148,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final LogsHandler logsHandler;
   private final OpenApiConfigHandler openApiConfigHandler;
   private final DbMigrationHandler dbMigrationHandler;
+  private final OAuthHandler oAuthHandler;
   private final Configs configs;
 
   public ConfigurationApi(final ConfigRepository configRepository,
@@ -191,6 +195,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
     dbMigrationHandler = new DbMigrationHandler(configsDatabase, jobsDatabase);
+    oAuthHandler = new OAuthHandler();
     this.configs = configs;
   }
 
@@ -266,6 +271,13 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public SourceDefinitionSpecificationRead getSourceDefinitionSpecification(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody) {
     return execute(() -> schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdRequestBody));
+  }
+
+  // SOURCE OAUTH
+
+  @Override
+  public OAuthConsentRead getSourceOAuthConsent(SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody) {
+    return execute(() -> oAuthHandler.getSourceOAuthConsent(sourceDefinitionIdRequestBody));
   }
 
   // SOURCE IMPLEMENTATION
@@ -357,6 +369,12 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public DestinationDefinitionSpecificationRead getDestinationDefinitionSpecification(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
     return execute(() -> schedulerHandler.getDestinationSpecification(destinationDefinitionIdRequestBody));
+  }
+
+  // DESTINATION OAUTH
+  @Override
+  public OAuthConsentRead getDestinationOAuthConsent(DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
+    return execute(() -> oAuthHandler.getDestinationOAuthConsent(destinationDefinitionIdRequestBody));
   }
 
   // DESTINATION IMPLEMENTATION
