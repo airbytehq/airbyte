@@ -23,5 +23,7 @@
 #
 
 
-class TapSalesforceException(Exception):
-    pass
+class TypeSalesforceException(Exception):
+    """
+    We use this exception for unknown input data types for Salesforce.
+    """

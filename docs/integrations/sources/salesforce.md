@@ -43,7 +43,7 @@ If you log in using at [https://login.salesforce.com](https://login.salesforce.c
 
 ## Streams
 
-List of available streams.
+List of available streams:
 
 * AIApplication
 * AIApplicationConfig
@@ -731,4 +731,4 @@ List of available streams.
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.0   | 2021-08-26 | [5237](https://github.com/airbytehq/airbyte/pull/5237) | Salesforce Aitbyte-Native Connector |
+| 0.1.0   | 2021-08-26 | [5619](https://github.com/airbytehq/airbyte/pull/5619) | Salesforce Aitbyte-Native Connector |

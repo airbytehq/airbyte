@@ -23,6 +23,7 @@
 #
 
 import csv
+import json
 import time
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -33,7 +34,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from requests import codes, exceptions
 
-from .api import UNSUPPORTED_FILTERING_STREAMS
+from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .rate_limiting import default_backoff_handler
 
 
@@ -42,7 +43,7 @@ class SalesforceStream(HttpStream, ABC):
     version = "v52.0"
     limit = 2000
 
-    def __init__(self, sf_api, pk, stream_name, schema=None, **kwargs):
+    def __init__(self, sf_api: Salesforce, pk: str, stream_name: str, schema: dict = None, **kwargs):
         super().__init__(**kwargs)
         self.sf_api = sf_api
         self.pk = pk
@@ -92,8 +93,7 @@ class SalesforceStream(HttpStream, ABC):
         return {"q": query}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        response_data = response.json()
-        yield from response_data["records"]
+        yield from response.json()["records"]
 
     def get_json_schema(self) -> Mapping[str, Any]:
         if not self.schema:
@@ -127,7 +127,7 @@ class BulkSalesforceStream(SalesforceStream):
         response.raise_for_status()
         return response
 
-    def create_stream_job(self, query, url) -> Optional[str]:
+    def create_stream_job(self, query: str, url: str) -> Optional[str]:
         json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
         try:
             response = self._send_http_request("POST", f"{self.url_base}/{url}", json=json)
@@ -181,7 +181,7 @@ class BulkSalesforceStream(SalesforceStream):
     def delete_job(self, url: str):
         self._send_http_request("DELETE", url=url)
 
-    def next_page_token(self, last_record) -> str:
+    def next_page_token(self, last_record: dict) -> str:
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
             return f"WHERE {self.primary_key} > '{last_record[self.primary_key]}' "
 
@@ -210,7 +210,17 @@ class BulkSalesforceStream(SalesforceStream):
                 if len(types) != 1:
                     continue
 
-                record[key] = types[0](value)
+                if types[0] == bool:
+                    record[key] = True if isinstance(value, str) and value.lower() == "true" else False
+                elif types[0] == dict:
+                    try:
+                        record[key] = json.loads(value)
+                    except Exception:
+                        record[key] = None
+                        continue
+                else:
+                    record[key] = types[0](value)
+
                 if isinstance(record[key], dict):
                     self.transform(record[key], schema[key].get("properties", {}))
         return record

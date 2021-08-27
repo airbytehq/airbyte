@@ -27,7 +27,7 @@ from typing import Any, List, Mapping, Optional, Tuple
 import requests
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 
-from .exceptions import TapSalesforceException
+from .exceptions import TypeSalesforceException
 from .rate_limiting import default_backoff_handler
 
 STRING_TYPES = [
@@ -194,13 +194,13 @@ class Salesforce:
 
     def __init__(
         self,
-        refresh_token=None,
-        token=None,
-        client_id=None,
-        client_secret=None,
-        is_sandbox=None,
-        start_date=None,
-        api_type=None,
+        refresh_token: str = None,
+        token: str = None,
+        client_id: str = None,
+        client_secret: str = None,
+        is_sandbox: bool = None,
+        start_date: str = None,
+        api_type: str = None,
     ):
         self.api_type = api_type.upper() if api_type else None
         self.refresh_token = refresh_token
@@ -244,7 +244,9 @@ class Salesforce:
         return validated_streams
 
     @default_backoff_handler(max_tries=5, factor=15)
-    def _make_request(self, http_method, url, headers=None, body=None, stream=False, params=None) -> requests.models.Response:
+    def _make_request(
+        self, http_method: str, url: str, headers: dict = None, body: dict = None, stream: bool = False, params: dict = None
+    ) -> requests.models.Response:
         if http_method == "GET":
             resp = self.session.get(url, headers=headers, stream=stream, params=params)
         elif http_method == "POST":
@@ -341,6 +343,6 @@ class Salesforce:
                 "properties": {"longitude": {"type": ["null", "number"]}, "latitude": {"type": ["null", "number"]}},
             }
         else:
-            raise TapSalesforceException("Found unsupported type: {}".format(sf_type))
+            raise TypeSalesforceException("Found unsupported type: {}".format(sf_type))
 
         return property_schema
