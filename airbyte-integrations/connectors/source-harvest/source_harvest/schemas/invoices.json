@@ -21,13 +21,13 @@
       "type": ["null", "number"]
     },
     "tax": {
-      "type": ["null", "integer", "number"]
+      "type": ["null", "number"]
     },
     "tax_amount": {
       "type": ["null", "number"]
     },
     "tax2": {
-      "type": ["null", "integer", "number"]
+      "type": ["null", "number"]
     },
     "tax2_amount": {
       "type": ["null", "number"]
