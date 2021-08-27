@@ -1,4 +1,4 @@
 {
   "api_key": "awesome-api-key",
-  "invalid_subdomain": "company"
+  "subdomain": "invalid"
 }
