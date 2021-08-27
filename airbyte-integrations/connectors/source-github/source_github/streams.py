@@ -94,7 +94,7 @@ class GithubStream(HttpStream, ABC):
             requests.codes.BAD_GATEWAY,
         )
 
-    def backoff_time(self, response: requests.Response) -> Optional[Union[int, float]]:
+    def backoff_time(self, response: requests.Response) -> Union[int, float]:
         # This method is called if we run into the rate limit. GitHub limits requests to 5000 per hour and provides
         # `X-RateLimit-Reset` header which contains time when this hour will be finished and limits will be reset so
         # we again could have 5000 per another hour.
@@ -103,7 +103,9 @@ class GithubStream(HttpStream, ABC):
             return 0.5
 
         reset_time = response.headers.get("X-RateLimit-Reset")
-        return float(reset_time) - time.time() if reset_time else 60
+        backoff_time = float(reset_time) - time.time() if reset_time else 60
+
+        return max(backoff_time, 60)  # This is a guarantee that no negative value will be returned.
 
     def read_records(self, stream_slice: Mapping[str, any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         try:
