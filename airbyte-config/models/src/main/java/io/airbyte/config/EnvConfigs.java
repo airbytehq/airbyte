@@ -25,14 +25,20 @@
 package io.airbyte.config;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import io.airbyte.config.helpers.LogClientSingleton;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,13 +57,18 @@ public class EnvConfigs implements Configs {
   public static final String CONFIG_ROOT = "CONFIG_ROOT";
   public static final String DOCKER_NETWORK = "DOCKER_NETWORK";
   public static final String TRACKING_STRATEGY = "TRACKING_STRATEGY";
+  public static final String DEPLOYMENT_MODE = "DEPLOYMENT_MODE";
   public static final String DATABASE_USER = "DATABASE_USER";
   public static final String DATABASE_PASSWORD = "DATABASE_PASSWORD";
   public static final String DATABASE_URL = "DATABASE_URL";
   public static final String CONFIG_DATABASE_USER = "CONFIG_DATABASE_USER";
   public static final String CONFIG_DATABASE_PASSWORD = "CONFIG_DATABASE_PASSWORD";
   public static final String CONFIG_DATABASE_URL = "CONFIG_DATABASE_URL";
+  public static final String RUN_DATABASE_MIGRATION_ON_STARTUP = "RUN_DATABASE_MIGRATION_ON_STARTUP";
   public static final String WEBAPP_URL = "WEBAPP_URL";
+  public static final String WORKER_POD_TOLERATIONS = "WORKER_POD_TOLERATIONS";
+  public static final String MAX_SYNC_JOB_ATTEMPTS = "MAX_SYNC_JOB_ATTEMPTS";
+  public static final String MAX_SYNC_TIMEOUT_DAYS = "MAX_SYNC_TIMEOUT_DAYS";
   private static final String MINIMUM_WORKSPACE_RETENTION_DAYS = "MINIMUM_WORKSPACE_RETENTION_DAYS";
   private static final String MAXIMUM_WORKSPACE_RETENTION_DAYS = "MAXIMUM_WORKSPACE_RETENTION_DAYS";
   private static final String MAXIMUM_WORKSPACE_SIZE_MB = "MAXIMUM_WORKSPACE_SIZE_MB";
@@ -94,7 +105,7 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public String getAirbyteApiUrl() {
+  public String getAirbyteApiHost() {
     return getEnsureEnv(INTERNAL_API_HOST).split(":")[0];
   }
 
@@ -144,6 +155,16 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public int getMaxSyncJobAttempts() {
+    return Integer.parseInt(getEnvOrDefault(MAX_SYNC_JOB_ATTEMPTS, "3"));
+  }
+
+  @Override
+  public int getMaxSyncTimeoutDays() {
+    return Integer.parseInt(getEnvOrDefault(MAX_SYNC_TIMEOUT_DAYS, "3"));
+  }
+
+  @Override
   public String getConfigDatabaseUser() {
     // Default to reuse the job database
     return getEnvOrDefault(CONFIG_DATABASE_USER, getDatabaseUser());
@@ -152,13 +173,18 @@ public class EnvConfigs implements Configs {
   @Override
   public String getConfigDatabasePassword() {
     // Default to reuse the job database
-    return getEnvOrDefault(CONFIG_DATABASE_PASSWORD, getDatabasePassword());
+    return getEnvOrDefault(CONFIG_DATABASE_PASSWORD, getDatabasePassword(), true);
   }
 
   @Override
   public String getConfigDatabaseUrl() {
     // Default to reuse the job database
     return getEnvOrDefault(CONFIG_DATABASE_URL, getDatabaseUrl());
+  }
+
+  @Override
+  public boolean runDatabaseMigrationOnStartup() {
+    return getEnvOrDefault(RUN_DATABASE_MIGRATION_ON_STARTUP, true);
   }
 
   @Override
@@ -186,9 +212,21 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(TRACKING_STRATEGY, TrackingStrategy.LOGGING, s -> {
       try {
         return TrackingStrategy.valueOf(s.toUpperCase());
-      } catch (IllegalArgumentException e) {
+      } catch (final IllegalArgumentException e) {
         LOGGER.info(s + " not recognized, defaulting to " + TrackingStrategy.LOGGING);
         return TrackingStrategy.LOGGING;
+      }
+    });
+  }
+
+  @Override
+  public DeploymentMode getDeploymentMode() {
+    return getEnvOrDefault(DEPLOYMENT_MODE, DeploymentMode.OSS, s -> {
+      try {
+        return DeploymentMode.valueOf(s);
+      } catch (final IllegalArgumentException e) {
+        LOGGER.info(s + " not recognized, defaulting to " + DeploymentMode.OSS);
+        return DeploymentMode.OSS;
       }
     });
   }
@@ -205,6 +243,53 @@ public class EnvConfigs implements Configs {
     long maxSizeMb = getEnvOrDefault(MAXIMUM_WORKSPACE_SIZE_MB, DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB);
 
     return new WorkspaceRetentionConfig(minDays, maxDays, maxSizeMb);
+  }
+
+  private WorkerPodToleration workerPodToleration(String tolerationStr) {
+    Map<String, String> tolerationMap = Splitter.on(",")
+        .splitToStream(tolerationStr)
+        .map(s -> s.split("="))
+        .collect(Collectors.toMap(s -> s[0], s -> s[1]));
+
+    if (tolerationMap.containsKey("key") && tolerationMap.containsKey("effect") && tolerationMap.containsKey("operator")) {
+      return new WorkerPodToleration(tolerationMap.get("key"),
+          tolerationMap.get("effect"),
+          tolerationMap.get("value"),
+          tolerationMap.get("operator"));
+    } else {
+      LOGGER.warn("Ignoring toleration {}, missing one of key,effect or operator",
+          tolerationStr);
+      return null;
+    }
+  }
+
+  /**
+   * Returns worker pod tolerations parsed from its own environment variable. The value of the env is
+   * a string that represents one or more tolerations.
+   * <li>Tolerations are separated by a `;`
+   * <li>Each toleration contains k=v pairs mentioning some/all of key, effect, operator and value and
+   * separated by `,`
+   * <p>
+   * For example:- The following represents two tolerations, one checking existence and another
+   * matching a value
+   * <p>
+   * key=airbyte-server,operator=Exists,effect=NoSchedule;key=airbyte-server,operator=Equals,value=true,effect=NoSchedule
+   *
+   * @return list of WorkerPodToleration parsed from env
+   */
+  @Override
+  public List<WorkerPodToleration> getWorkerPodTolerations() {
+    String tolerationsStr = getEnvOrDefault(WORKER_POD_TOLERATIONS, "");
+
+    Stream<String> tolerations = Strings.isNullOrEmpty(tolerationsStr) ? Stream.of()
+        : Splitter.on(";")
+            .splitToStream(tolerationsStr)
+            .filter(tolerationStr -> !Strings.isNullOrEmpty(tolerationStr));
+
+    return tolerations
+        .map(this::workerPodToleration)
+        .filter(Objects::nonNull)
+        .collect(Collectors.toList());
   }
 
   @Override
@@ -287,19 +372,31 @@ public class EnvConfigs implements Configs {
   }
 
   private String getEnvOrDefault(String key, String defaultValue) {
-    return getEnvOrDefault(key, defaultValue, Function.identity());
+    return getEnvOrDefault(key, defaultValue, Function.identity(), false);
+  }
+
+  private String getEnvOrDefault(String key, String defaultValue, boolean isSecret) {
+    return getEnvOrDefault(key, defaultValue, Function.identity(), isSecret);
   }
 
   private long getEnvOrDefault(String key, long defaultValue) {
-    return getEnvOrDefault(key, defaultValue, Long::parseLong);
+    return getEnvOrDefault(key, defaultValue, Long::parseLong, false);
+  }
+
+  private boolean getEnvOrDefault(String key, boolean defaultValue) {
+    return getEnvOrDefault(key, defaultValue, Boolean::parseBoolean);
   }
 
   private <T> T getEnvOrDefault(String key, T defaultValue, Function<String, T> parser) {
+    return getEnvOrDefault(key, defaultValue, parser, false);
+  }
+
+  private <T> T getEnvOrDefault(String key, T defaultValue, Function<String, T> parser, boolean isSecret) {
     final String value = getEnv.apply(key);
     if (value != null && !value.isEmpty()) {
       return parser.apply(value);
     } else {
-      LOGGER.info(key + " not found or empty, defaulting to " + defaultValue);
+      LOGGER.info("{} not found or empty, defaulting to {}", key, isSecret ? "*****" : defaultValue);
       return defaultValue;
     }
   }

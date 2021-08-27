@@ -26,7 +26,6 @@ package io.airbyte.server;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import io.airbyte.analytics.TrackingClientSingleton;
@@ -43,8 +42,8 @@ import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
+import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -56,14 +55,15 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.UUID;
@@ -74,7 +74,6 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class ConfigDumpImporter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigDumpImporter.class);
@@ -96,31 +95,7 @@ public class ConfigDumpImporter {
     this.configRepository = configRepository;
   }
 
-  @VisibleForTesting
-  public Optional<UUID> getCurrentCustomerId() {
-    try {
-      return Optional.of(configRepository
-          .getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true).getCustomerId());
-    } catch (Exception e) {
-      // because this is used for tracking we prefer to log instead of killing the import.
-      LOGGER.error("failed to fetch current customerId.", e);
-      return Optional.empty();
-    }
-  }
-
-  public ImportRead importData(String targetVersion, File archive) {
-    return importDataInternal(targetVersion, archive, Optional.empty());
-  }
-
-  public ImportRead importDataWithSeed(String targetVersion, File archive, Path seedPath) {
-    return importDataInternal(targetVersion, archive, Optional.of(seedPath));
-  }
-
-  // seedPath - if present, merge with the import. otherwise just use the data in the import.
-  private ImportRead importDataInternal(String targetVersion, File archive, Optional<Path> seedPath) {
-    Preconditions.checkNotNull(seedPath);
-
-    final Optional<UUID> previousCustomerIdOptional = getCurrentCustomerId();
+  public ImportRead importDataWithSeed(String targetVersion, File archive, ConfigPersistence seedPersistence) {
     ImportRead result;
     try {
       final Path sourceRoot = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive");
@@ -130,7 +105,7 @@ public class ConfigDumpImporter {
 
         // 2. dry run
         try {
-          checkImport(targetVersion, sourceRoot, seedPath);
+          checkImport(targetVersion, sourceRoot, seedPersistence);
         } catch (Exception e) {
           LOGGER.error("Dry run failed.", e);
           throw e;
@@ -140,7 +115,7 @@ public class ConfigDumpImporter {
         importDatabaseFromArchive(sourceRoot, targetVersion);
 
         // 4. Import Configs
-        importConfigsFromArchive(sourceRoot, seedPath, false);
+        importConfigsFromArchive(sourceRoot, seedPersistence, false);
 
         // 5. Set DB version
         LOGGER.info("Setting the DB Airbyte version to : " + targetVersion);
@@ -155,9 +130,7 @@ public class ConfigDumpImporter {
       }
 
       // identify this instance as the new customer id.
-      TrackingClientSingleton.get().identify();
-      // report that the previous customer id is now superseded by the imported one.
-      previousCustomerIdOptional.ifPresent(previousCustomerId -> TrackingClientSingleton.get().alias(previousCustomerId.toString()));
+      configRepository.listStandardWorkspaces(true).forEach(workspace -> TrackingClientSingleton.get().identify(workspace.getWorkspaceId()));
     } catch (IOException | JsonValidationException | RuntimeException e) {
       LOGGER.error("Import failed", e);
       result = new ImportRead().status(StatusEnum.FAILED).reason(e.getMessage());
@@ -166,7 +139,7 @@ public class ConfigDumpImporter {
     return result;
   }
 
-  private void checkImport(String targetVersion, Path tempFolder, Optional<Path> seed) throws IOException, JsonValidationException {
+  private void checkImport(String targetVersion, Path tempFolder, ConfigPersistence seedPersistence) throws IOException, JsonValidationException {
     final Path versionFile = tempFolder.resolve(VERSION_FILE_NAME);
     final String importVersion = Files.readString(versionFile, Charset.defaultCharset())
         .replace("\n", "").strip();
@@ -177,7 +150,7 @@ public class ConfigDumpImporter {
               "Please upgrade your Airbyte Archive, see more at https://docs.airbyte.io/tutorials/upgrading-airbyte\n",
               importVersion, targetVersion));
     }
-    importConfigsFromArchive(tempFolder, seed, true);
+    importConfigsFromArchive(tempFolder, seedPersistence, true);
   }
 
   // Config
@@ -188,10 +161,10 @@ public class ConfigDumpImporter {
     }
   }
 
-  private <T> void importConfigsFromArchive(final Path sourceRoot, Optional<Path> seedPath, final boolean dryRun)
+  private <T> void importConfigsFromArchive(final Path sourceRoot, ConfigPersistence seedPersistence, final boolean dryRun)
       throws IOException, JsonValidationException {
-    final List<String> sourceDefinitionsToMigrate = new ArrayList<>();
-    final List<String> destinationDefinitionsToMigrate = new ArrayList<>();
+    final Set<String> sourceDefinitionsInUse = new HashSet<>();
+    final Set<String> destinationDefinitionsInUse = new HashSet<>();
     final boolean[] sourceProcessed = {false};
     final boolean[] destinationProcessed = {false};
     final List<String> directories = listDirectories(sourceRoot);
@@ -201,13 +174,9 @@ public class ConfigDumpImporter {
     Collections.sort(directories);
     final Map<AirbyteConfig, Stream<T>> data = new LinkedHashMap<>();
 
-    final Map<ConfigSchema, Map<String, T>> seed;
-    if (seedPath.isPresent()) {
-      seed = getSeed(seedPath.get());
-    } else {
-      seed = new HashMap<>();
-    }
-    for (String directory : directories) {
+    final Map<ConfigSchema, Map<String, T>> seeds = getSeeds(seedPersistence);
+
+    for (final String directory : directories) {
       final Optional<ConfigSchema> configSchemaOptional = Enums.toEnum(directory.replace(".yaml", ""), ConfigSchema.class);
 
       if (configSchemaOptional.isEmpty()) {
@@ -216,57 +185,47 @@ public class ConfigDumpImporter {
 
       final ConfigSchema configSchema = configSchemaOptional.get();
       Stream<T> configs = readConfigsFromArchive(sourceRoot, configSchema);
+
+      // If there is no source or destination connection, mark them as processed respectively.
+      if (configSchema == ConfigSchema.STANDARD_SOURCE_DEFINITION && !data.containsKey(ConfigSchema.SOURCE_CONNECTION)) {
+        sourceProcessed[0] = true;
+      } else if (configSchema == ConfigSchema.STANDARD_DESTINATION_DEFINITION && !data.containsKey(ConfigSchema.DESTINATION_CONNECTION)) {
+        destinationProcessed[0] = true;
+      }
+
       configs = streamWithAdditionalOperation(
-          sourceDefinitionsToMigrate,
-          destinationDefinitionsToMigrate,
+          sourceDefinitionsInUse,
+          destinationDefinitionsInUse,
           sourceProcessed,
           destinationProcessed,
           configSchema,
           configs,
-          seed);
+          seeds);
       data.put(configSchema, configs);
     }
     configRepository.replaceAllConfigs(data, dryRun);
   }
 
-  private <T> Map<ConfigSchema, Map<String, T>> getSeed(Path seed) throws IOException {
-    final List<ConfigSchema> configSchemas = Files.list(seed).map(c -> ConfigSchema.valueOf(c.getFileName().toString())).collect(Collectors.toList());
-    final Map<ConfigSchema, Map<String, T>> allData = new HashMap<>();
-    for (ConfigSchema configSchema : configSchemas) {
-      final Map<String, T> data = readLatestSeed(seed, configSchema);
-      allData.put(configSchema, data);
+  /**
+   * Convert config dumps from {@link ConfigPersistence#dumpConfigs} to the desired format.
+   */
+  @SuppressWarnings("unchecked")
+  private static <T> Map<ConfigSchema, Map<String, T>> getSeeds(ConfigPersistence configSeedPersistence) throws IOException {
+    Map<ConfigSchema, Map<String, T>> allData = new HashMap<>(2);
+    for (Map.Entry<String, Stream<JsonNode>> configStream : configSeedPersistence.dumpConfigs().entrySet()) {
+      ConfigSchema configSchema = ConfigSchema.valueOf(configStream.getKey());
+      Map<String, T> configSeeds = configStream.getValue()
+          .map(node -> Jsons.object(node, configSchema.getClassName()))
+          .collect(Collectors.toMap(
+              configSchema::getId,
+              object -> (T) object));
+      allData.put(configSchema, configSeeds);
     }
     return allData;
   }
 
-  private <T> Map<String, T> readLatestSeed(Path latestSeed, ConfigSchema configSchema) throws IOException {
-    try (Stream<Path> files = Files.list(latestSeed.resolve(configSchema.toString()))) {
-      final List<String> ids = files
-          .filter(p -> !p.endsWith(".json"))
-          .map(p -> p.getFileName().toString().replace(".json", ""))
-          .collect(Collectors.toList());
-
-      final Map<String, T> configData = new HashMap<>();
-      for (String id : ids) {
-        try {
-          final Path configPath = latestSeed.resolve(configSchema.toString()).resolve(String.format("%s.json", id));
-          if (!Files.exists(configPath)) {
-            throw new RuntimeException("Config NotFound");
-          }
-
-          T config = Jsons.deserialize(Files.readString(configPath), configSchema.getClassName());
-          configData.put(id, config);
-        } catch (RuntimeException e) {
-          throw new IOException(e);
-        }
-      }
-
-      return configData;
-    }
-  }
-
-  private <T> Stream<T> streamWithAdditionalOperation(List<String> sourceDefinitionsToMigrate,
-                                                      List<String> destinationDefinitionsToMigrate,
+  private <T> Stream<T> streamWithAdditionalOperation(Set<String> sourceDefinitionsInUse,
+                                                      Set<String> destinationDefinitionsInUse,
                                                       boolean[] sourceProcessed,
                                                       boolean[] destinationProcessed,
                                                       ConfigSchema configSchema,
@@ -274,35 +233,39 @@ public class ConfigDumpImporter {
                                                       Map<ConfigSchema, Map<String, T>> latestSeeds) {
     if (configSchema == ConfigSchema.SOURCE_CONNECTION) {
       sourceProcessed[0] = true;
-      configs = configs.peek(config -> sourceDefinitionsToMigrate.add(((SourceConnection) config).getSourceDefinitionId().toString()));
+      configs = configs.peek(config -> sourceDefinitionsInUse.add(((SourceConnection) config).getSourceDefinitionId().toString()));
     } else if (configSchema == ConfigSchema.DESTINATION_CONNECTION) {
       destinationProcessed[0] = true;
-      configs = configs.peek(config -> destinationDefinitionsToMigrate.add(((DestinationConnection) config).getDestinationDefinitionId().toString()));
+      configs = configs.peek(config -> destinationDefinitionsInUse.add(((DestinationConnection) config).getDestinationDefinitionId().toString()));
     } else if (configSchema == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
-      configs = getDefinitionStream(sourceDefinitionsToMigrate, sourceProcessed[0], configSchema, configs, latestSeeds);
+      Map<String, T> sourceDefinitionSeeds = latestSeeds.get(configSchema);
+      configs = getDefinitionStream(sourceDefinitionsInUse, sourceProcessed[0], configSchema, configs, sourceDefinitionSeeds);
     } else if (configSchema == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
-      configs = getDefinitionStream(destinationDefinitionsToMigrate, destinationProcessed[0], configSchema, configs, latestSeeds);
+      Map<String, T> destinationDefinitionSeeds = latestSeeds.get(configSchema);
+      configs = getDefinitionStream(destinationDefinitionsInUse, destinationProcessed[0], configSchema, configs, destinationDefinitionSeeds);
     }
     return configs;
   }
 
   /**
-   * This method combines latest definitions, with existing definition. If a connector is being used
-   * by user, it will continue to be at the same version, otherwise it will be migrated to the latest
+   * This method combines the latest definitions with existing ones. If a connector is being used by
+   * user, it will continue to be at the same version, otherwise it will be migrated to the latest
    * version
    */
-  private <T> Stream<T> getDefinitionStream(List<String> definitionsToMigrate,
+  private <T> Stream<T> getDefinitionStream(Set<String> definitionsInUse,
                                             boolean definitionsPopulated,
                                             ConfigSchema configSchema,
-                                            Stream<T> configs,
-                                            Map<ConfigSchema, Map<String, T>> latestSeeds) {
+                                            Stream<T> currentDefinitions,
+                                            Map<String, T> latestDefinitions) {
     if (!definitionsPopulated) {
-      throw new RuntimeException("Trying to process " + configSchema + " without populating the definitions to migrate");
+      throw new RuntimeException("Trying to process " + configSchema + " without populating the definitions in use");
     }
 
-    return Streams.concat(configs.filter(c -> definitionsToMigrate.contains(configSchema.getId(c))),
-        latestSeeds.getOrDefault(configSchema, new HashMap<>()).entrySet().stream().filter(c -> !definitionsToMigrate.contains(c.getKey()))
-            .map(Entry::getValue));
+    return Streams.concat(
+        // Keep all the definitions in use
+        currentDefinitions.filter(c -> definitionsInUse.contains(configSchema.getId(c))),
+        // Upgrade all the definitions not in use
+        latestDefinitions.entrySet().stream().filter(c -> !definitionsInUse.contains(c.getKey())).map(Entry::getValue));
   }
 
   private <T> Stream<T> readConfigsFromArchive(final Path storageRoot, final ConfigSchema schemaType)

@@ -3,6 +3,6 @@
   "name": "Google Analytics",
   "dockerRepository": "airbyte/source-googleanalytics-singer",
   "dockerImageTag": "0.2.6",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-googleanalytics-singer",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/googleanalytics",
   "icon": "google-analytics.svg"
 }

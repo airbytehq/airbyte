@@ -33,8 +33,8 @@ import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationRecreate;
 import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.errors.ConnectFailureKnownException;
-import io.airbyte.server.helpers.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import org.slf4j.Logger;
@@ -60,7 +60,8 @@ public class WebBackendDestinationHandler {
   public DestinationRead webBackendRecreateDestinationAndCheck(DestinationRecreate destinationRecreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     Preconditions.checkArgument(
-        workspaceHelper.getWorkspaceForDestinationId(destinationRecreate.getDestinationId()).equals(destinationRecreate.getWorkspaceId()));
+        workspaceHelper.getWorkspaceForDestinationIdIgnoreExceptions(destinationRecreate.getDestinationId())
+            .equals(destinationRecreate.getWorkspaceId()));
 
     final DestinationCreate destinationCreate = new DestinationCreate();
     destinationCreate.setConnectionConfiguration(destinationRecreate.getConnectionConfiguration());

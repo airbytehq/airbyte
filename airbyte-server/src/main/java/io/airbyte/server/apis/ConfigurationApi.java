@@ -32,6 +32,9 @@ import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.ConnectionState;
 import io.airbyte.api.model.ConnectionUpdate;
+import io.airbyte.api.model.DbMigrationExecutionRead;
+import io.airbyte.api.model.DbMigrationReadList;
+import io.airbyte.api.model.DbMigrationRequestBody;
 import io.airbyte.api.model.DestinationCoreConfig;
 import io.airbyte.api.model.DestinationCreate;
 import io.airbyte.api.model.DestinationDefinitionCreate;
@@ -89,15 +92,18 @@ import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.BadObjectSchemaKnownException;
 import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.handlers.ArchiveHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
+import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.HealthCheckHandler;
@@ -112,7 +118,6 @@ import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WebBackendDestinationHandler;
 import io.airbyte.server.handlers.WebBackendSourceHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
-import io.airbyte.server.helpers.WorkspaceHelper;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -139,8 +144,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final ArchiveHandler archiveHandler;
   private final LogsHandler logsHandler;
   private final OpenApiConfigHandler openApiConfigHandler;
+  private final DbMigrationHandler dbMigrationHandler;
   private final Configs configs;
-  private final WorkflowServiceStubs temporalService;
 
   public ConfigurationApi(final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
@@ -148,11 +153,12 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
                           final CachingSynchronousSchedulerClient synchronousSchedulerClient,
                           final Configs configs,
                           final FileTtlManager archiveTtlManager,
-                          final WorkflowServiceStubs temporalService) {
-    this.temporalService = temporalService;
+                          final WorkflowServiceStubs temporalService,
+                          final Database configsDatabase,
+                          final Database jobsDatabase) {
     final SpecFetcher specFetcher = new SpecFetcher(synchronousSchedulerClient);
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
-    final JobNotifier jobNotifier = new JobNotifier(configs.getWebappUrl(), configRepository);
+    final JobNotifier jobNotifier = new JobNotifier(configs.getWebappUrl(), configRepository, new WorkspaceHelper(configRepository, jobPersistence));
     schedulerHandler = new SchedulerHandler(
         configRepository,
         schedulerJobClient,
@@ -184,6 +190,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     archiveHandler = new ArchiveHandler(configs.getAirbyteVersion(), configRepository, jobPersistence, archiveTtlManager);
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
+    dbMigrationHandler = new DbMigrationHandler(configsDatabase, jobsDatabase);
     this.configs = configs;
   }
 
@@ -304,6 +311,18 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public SourceDiscoverSchemaRead discoverSchemaForSource(final SourceIdRequestBody sourceIdRequestBody) {
     return execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceId(sourceIdRequestBody));
+  }
+
+  // DB MIGRATION
+
+  @Override
+  public DbMigrationReadList listMigrations(DbMigrationRequestBody request) {
+    return execute(() -> dbMigrationHandler.list(request));
+  }
+
+  @Override
+  public DbMigrationExecutionRead executeMigrations(DbMigrationRequestBody request) {
+    return execute(() -> dbMigrationHandler.migrate(request));
   }
 
   // DESTINATION

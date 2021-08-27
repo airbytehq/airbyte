@@ -53,7 +53,7 @@ public class MigrationV0_14_3 extends BaseMigration implements Migration {
 
   private static final ResourceId STANDARD_SYNC_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
 
-  public MigrationV0_14_3(MigrationV0_14_0 previousMigration) {
+  public MigrationV0_14_3(Migration previousMigration) {
     super(previousMigration);
   }
 

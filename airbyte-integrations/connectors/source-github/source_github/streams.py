@@ -67,12 +67,16 @@ class GithubStream(HttpStream, ABC):
     #   - lists `[]`, like `labels`, `assignees` etc.
     fields_to_minimize = ()
 
-    def __init__(self, repository: str, **kwargs):
+    def __init__(self, repositories: List[str], **kwargs):
         super().__init__(**kwargs)
-        self.repository = repository
+        self.repositories = repositories
 
-    def path(self, **kwargs) -> str:
-        return f"repos/{self.repository}/{self.name}"
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/{self.name}"
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        for repository in self.repositories:
+            yield {"repository": repository}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         links = response.links
@@ -101,9 +105,9 @@ class GithubStream(HttpStream, ABC):
         reset_time = response.headers.get("X-RateLimit-Reset")
         return float(reset_time) - time.time() if reset_time else 60
 
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_slice: Mapping[str, any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         try:
-            yield from super().read_records(**kwargs)
+            yield from super().read_records(stream_slice=stream_slice, **kwargs)
         except HTTPError as e:
             error_msg = str(e)
 
@@ -111,15 +115,21 @@ class GithubStream(HttpStream, ABC):
             # function we have `response.raise_for_status()` so we don't have much choice on how to handle errors.
             # Bocked on https://github.com/airbytehq/airbyte/issues/3514.
             if e.response.status_code == requests.codes.FORBIDDEN:
+                # When using the `check` method, we should raise an error if we do not have access to the repository.
+                if isinstance(self, Repositories):
+                    raise e
                 error_msg = (
                     f"Syncing `{self.name}` stream isn't available for repository "
-                    f"`{self.repository}` and your `access_token`, seems like you don't have permissions for "
+                    f"`{stream_slice['repository']}` and your `access_token`, seems like you don't have permissions for "
                     f"this stream."
                 )
             elif e.response.status_code == requests.codes.NOT_FOUND and "/teams?" in error_msg:
                 # For private repositories `Teams` stream is not available and we get "404 Client Error: Not Found for
                 # url: https://api.github.com/orgs/sherifnada/teams?per_page=100" error.
-                error_msg = f"Syncing `Team` stream isn't available for repository `{self.repository}`."
+                error_msg = f"Syncing `Team` stream isn't available for repository `{stream_slice['repository']}`."
+            else:
+                self.logger.error(f"Undefined error while reading records: {error_msg}")
+                raise e
 
             self.logger.warn(error_msg)
 
@@ -150,9 +160,9 @@ class GithubStream(HttpStream, ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         for record in response.json():  # GitHub puts records in an array.
-            yield self.transform(record=record)
+            yield self.transform(record=record, repository=stream_slice["repository"])
 
-    def transform(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def transform(self, record: MutableMapping[str, Any], repository: str) -> MutableMapping[str, Any]:
         """
         Use this method to:
             - remove excessive fields from record;
@@ -181,14 +191,7 @@ class GithubStream(HttpStream, ABC):
                 record[f"{field}_id"] = field_value.get("id") if field_value else None
             elif isinstance(field_value, list):
                 record[field] = [value.get("id") for value in field_value]
-
-        # TODO In the future when we will add support for multiple repositories we will need an additional field in
-        #  each stream that will tell which repository the record belongs to. In singer it was `_sdc_repository` field.
-        #  You may see an example here:
-        #  https://github.com/airbytehq/tap-github/blob/a0530b80d299864a9a106398b74d87c31ecc8a7a/tap_github/__init__.py#L253
-        #  We decided to leave this field (and rename it) for future usage when support for multiple repositories
-        #  will be added.
-        record["_ab_github_repository"] = self.repository
+        record["repository"] = repository
 
         return record
 
@@ -228,17 +231,18 @@ class SemiIncrementalGithubStream(GithubStream):
         object and returning an updated state object.
         """
         state_value = latest_cursor_value = latest_record.get(self.cursor_field)
+        current_repository = latest_record["repository"]
 
-        if current_stream_state.get(self.repository, {}).get(self.cursor_field):
-            state_value = max(latest_cursor_value, current_stream_state[self.repository][self.cursor_field])
+        if current_stream_state.get(current_repository, {}).get(self.cursor_field):
+            state_value = max(latest_cursor_value, current_stream_state[current_repository][self.cursor_field])
+        current_stream_state[current_repository] = {self.cursor_field: state_value}
+        return current_stream_state
 
-        return {self.repository: {self.cursor_field: state_value}}
-
-    def get_starting_point(self, stream_state: Mapping[str, Any]) -> str:
+    def get_starting_point(self, stream_state: Mapping[str, Any], repository: str) -> str:
         start_point = self._start_date
 
-        if stream_state and stream_state.get(self.repository, {}).get(self.cursor_field):
-            start_point = max(start_point, stream_state[self.repository][self.cursor_field])
+        if stream_state and stream_state.get(repository, {}).get(self.cursor_field):
+            start_point = max(start_point, stream_state[repository][self.cursor_field])
 
         return start_point
 
@@ -249,21 +253,42 @@ class SemiIncrementalGithubStream(GithubStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        start_point = self.get_starting_point(stream_state=stream_state)
+        start_point_map = {repo: self.get_starting_point(stream_state=stream_state, repository=repo) for repo in self.repositories}
         for record in super().read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
-            if record.get(self.cursor_field) > start_point:
+            if record.get(self.cursor_field) > start_point_map[stream_slice["repository"]]:
                 yield record
-            elif self.is_sorted_descending and record.get(self.cursor_field) < start_point:
+            elif self.is_sorted_descending and record.get(self.cursor_field) < start_point_map[stream_slice["repository"]]:
                 break
 
 
 class IncrementalGithubStream(SemiIncrementalGithubStream):
-    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
-        params["since"] = self.get_starting_point(stream_state=stream_state)
+        params["since"] = self.get_starting_point(stream_state=stream_state, repository=stream_slice["repository"])
         return params
+
+
+class Repositories(GithubStream):
+    """
+    This stream is technical and not intended for the user, it is used only to obtain repositories for organizations.
+    API docs: https://docs.github.com/en/rest/reference/repos#list-organization-repositories
+    """
+
+    def __init__(self, organizations: List[str], **kwargs):
+        super(GithubStream, self).__init__(**kwargs)
+        self.organizations = organizations
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        for organization in self.organizations:
+            yield {"organization": organization}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"orgs/{stream_slice['organization']}/repos"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield from response.json()
 
 
 # Below are full refresh streams
@@ -280,18 +305,16 @@ class Reviews(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request
     """
 
-    fields_to_minimize = ("user",)
-
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        pull_request_number = stream_slice["pull_request_number"]
-        return f"repos/{self.repository}/pulls/{pull_request_number}/reviews"
+        return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_request_number']}/reviews"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        pull_requests_stream = PullRequests(authenticator=self.authenticator, repository=self.repository, start_date="")
-        for pull_request in pull_requests_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield {"pull_request_number": pull_request["number"]}
+        for stream_slice in super().stream_slices(**kwargs):
+            pull_requests_stream = PullRequests(authenticator=self.authenticator, repositories=[stream_slice["repository"]], start_date="")
+            for pull_request in pull_requests_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+                yield {"pull_request_number": pull_request["number"], "repository": stream_slice["repository"]}
 
 
 class Collaborators(GithubStream):
@@ -305,8 +328,8 @@ class IssueLabels(GithubStream):
     API docs: https://docs.github.com/en/free-pro-team@latest/rest/reference/issues#list-labels-for-a-repository
     """
 
-    def path(self, **kwargs) -> str:
-        return f"repos/{self.repository}/labels"
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/labels"
 
 
 class Teams(GithubStream):
@@ -314,8 +337,8 @@ class Teams(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/teams#list-teams
     """
 
-    def path(self, **kwargs) -> str:
-        owner, _ = self.repository.split("/")
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        owner, _ = stream_slice["repository"].split("/")
         return f"orgs/{owner}/teams"
 
 
@@ -330,8 +353,8 @@ class Releases(SemiIncrementalGithubStream):
     cursor_field = "created_at"
     fields_to_minimize = ("author",)
 
-    def transform(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        record = super().transform(record=record)
+    def transform(self, record: MutableMapping[str, Any], repository: str = None) -> MutableMapping[str, Any]:
+        record = super().transform(record=record, repository=repository)
 
         assets = record.get("assets", [])
         for asset in assets:
@@ -361,7 +384,6 @@ class PullRequests(SemiIncrementalGithubStream):
 
     page_size = 50
     fields_to_minimize = (
-        "user",
         "milestone",
         "assignee",
         "labels",
@@ -382,15 +404,14 @@ class PullRequests(SemiIncrementalGithubStream):
         with self.cache:
             yield from super().read_records(stream_state=stream_state, **kwargs)
 
-    def path(self, **kwargs) -> str:
-        return f"repos/{self.repository}/pulls"
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/pulls"
 
-    def transform(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        record = super().transform(record=record)
+    def transform(self, record: MutableMapping[str, Any], repository: str) -> MutableMapping[str, Any]:
+        record = super().transform(record=record, repository=repository)
 
         for nested in ("head", "base"):
             entry = record.get(nested, {})
-            entry["user_id"] = (record.get("head", {}).pop("user", {}) or {}).get("id")
             entry["repo_id"] = (record.get("head", {}).pop("repo", {}) or {}).get("id")
 
         return record
@@ -416,10 +437,8 @@ class CommitComments(SemiIncrementalGithubStream):
     API docs: https://docs.github.com/en/rest/reference/repos#list-commit-comments-for-a-repository
     """
 
-    fields_to_minimize = ("user",)
-
-    def path(self, **kwargs) -> str:
-        return f"repos/{self.repository}/comments"
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/comments"
 
 
 class IssueMilestones(SemiIncrementalGithubStream):
@@ -435,8 +454,8 @@ class IssueMilestones(SemiIncrementalGithubStream):
         "direction": "desc",
     }
 
-    def path(self, **kwargs) -> str:
-        return f"repos/{self.repository}/milestones"
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/milestones"
 
 
 class Stargazers(SemiIncrementalGithubStream):
@@ -446,7 +465,6 @@ class Stargazers(SemiIncrementalGithubStream):
 
     primary_key = "user_id"
     cursor_field = "starred_at"
-    fields_to_minimize = ("user",)
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         base_headers = super().request_headers(**kwargs)
@@ -455,6 +473,15 @@ class Stargazers(SemiIncrementalGithubStream):
         headers = {"Accept": "application/vnd.github.v3.star+json"}
 
         return {**base_headers, **headers}
+
+    def transform(self, record: MutableMapping[str, Any], repository: str) -> MutableMapping[str, Any]:
+        """
+        We need to provide the "user_id" for the primary_key attribute
+        and don't remove the whole "user" block from the record.
+        """
+        record = super().transform(record=record, repository=repository)
+        record["user_id"] = record.get("user").get("id")
+        return record
 
 
 class Projects(SemiIncrementalGithubStream):
@@ -487,8 +514,8 @@ class IssueEvents(SemiIncrementalGithubStream):
         "issue",
     )
 
-    def path(self, **kwargs) -> str:
-        return f"repos/{self.repository}/issues/events"
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/issues/events"
 
 
 # Below are incremental streams
@@ -499,11 +526,10 @@ class Comments(IncrementalGithubStream):
     API docs: https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository
     """
 
-    fields_to_minimize = ("user",)
     page_size = 30  # `comments` is a large stream so it's better to set smaller page size.
 
-    def path(self, **kwargs) -> str:
-        return f"repos/{self.repository}/issues/comments"
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/issues/comments"
 
 
 class Commits(IncrementalGithubStream):
@@ -518,8 +544,8 @@ class Commits(IncrementalGithubStream):
         "committer",
     )
 
-    def transform(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        record = super().transform(record=record)
+    def transform(self, record: MutableMapping[str, Any], repository: str = None) -> MutableMapping[str, Any]:
+        record = super().transform(record=record, repository=repository)
 
         # Record of the `commits` stream doesn't have an updated_at/created_at field at the top level (so we could
         # just write `record["updated_at"]` or `record["created_at"]`). Instead each record has such value in
@@ -538,7 +564,6 @@ class Issues(IncrementalGithubStream):
     page_size = 50  # `issues` is a large stream so it's better to set smaller page size.
 
     fields_to_minimize = (
-        "user",
         "assignee",
         "milestone",
         "labels",

@@ -9,8 +9,17 @@
     "title": "BigQuery Destination Spec",
     "type": "object",
     "required": ["project_id", "dataset_id"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
+      "big_query_client_buffer_size_mb": {
+        "title": "Google BigQuery client chunk size",
+        "description": "Google BigQuery client's chunk(buffer) size (MIN=1, MAX = 15) for each table. The default 15MiB value is used if not set explicitly. It's recommended to decrease value for big data sets migration for less HEAP memory consumption and avoiding crashes. For more details refer to https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html",
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 15,
+        "default": 15,
+        "examples": ["15"]
+      },
       "project_id": {
         "type": "string",
         "description": "The GCP project ID for the project containing the target BigQuery dataset.",
