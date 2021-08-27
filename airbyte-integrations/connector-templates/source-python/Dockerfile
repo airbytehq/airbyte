@@ -1,6 +1,6 @@
 FROM python:3.7.11-alpine3.14 as base
 
-# build and load all requirements 
+# build and load all requirements
 FROM base as builder
 WORKDIR /airbyte/integration_code
 
@@ -9,10 +9,10 @@ RUN apk --no-cache upgrade \
     && pip install --upgrade pip
 
 COPY setup.py ./
-# install necessary packages to a temporary folder 
+# install necessary packages to a temporary folder
 RUN pip install --prefix=/install .
 
-# build a clean environment  
+# build a clean environment
 FROM base
 WORKDIR /airbyte/integration_code
 

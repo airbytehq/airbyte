@@ -50,7 +50,6 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   private static final Logger LOGGER = LoggerFactory.getLogger(FileSystemConfigPersistence.class);
   public static final String CONFIG_DIR = "config";
   private static final String TMP_DIR = "tmp_storage";
-  private static final int INTERVAL_WAITING_SECONDS = 3;
 
   private static final Object lock = new Object();
 
@@ -68,9 +67,6 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
    * that uses this file system config persistence.
    */
   public static boolean hasExistingConfigs(final Path storageRoot) {
-    if (!Files.exists(storageRoot)) {
-      throw new RuntimeException("Storage root does not exist: " + storageRoot);
-    }
     return Files.exists(storageRoot.resolve(CONFIG_DIR));
   }
 

@@ -18,6 +18,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Appstore](./sources/appstore.md)| Alpha |
 |[Asana](./sources/asana.md) | Beta |
 |[AWS CloudTrail](./sources/aws-cloudtrail.md)| Beta |
+|[BambooHR](./sources/bamboo-hr.md)| Alpha |
 |[Braintree](./sources/braintree.md)| Alpha |
 |[BigQuery](./sources/bigquery.md)| Beta |
 |[Cart](./sources/cart.md)| Beta |
@@ -37,6 +38,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Google Ads](./sources/google-ads.md)| Beta |
 |[Google Adwords](./sources/google-adwords.md)| Beta |
 |[Google Analytics](./sources/googleanalytics.md)| Beta |
+|[Google Analytics v4](./sources/google-analytics-v4.md)| Beta |
 |[Google Directory](./sources/google-directory.md)| Certified |
 |[Google Search Console](./sources/google-search-console.md)| Beta |
 |[Google Sheets](./sources/google-sheets.md)| Certified |
