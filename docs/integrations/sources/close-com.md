@@ -34,7 +34,7 @@ This Source is capable of syncing the following core Streams:
 * [Activity Custom Fields](https://developer.close.com/#custom-fields-list-all-the-activity-custom-fields-for-your-organization) 
 * [Users](https://developer.close.com/#users) 
 * [Contacts](https://developer.close.com/#contacts) 
-* [Opportunities](https://developer.close.com/#opportunities) 
+* [Opportunities](https://developer.close.com/#opportunities) \(Incremental\)
 * [Roles](https://developer.close.com/#roles) 
 * [Lead Statuses](https://developer.close.com/#lead-statuses) 
 * [Opportunity Statuses](https://developer.close.com/#opportunity-statuses) 

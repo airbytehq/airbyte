@@ -50,5 +50,8 @@
   },
   "events": {
     "date_updated": "2021-01-01"
+  },
+  "opportunities": {
+    "date_created": "2021-01-01"
   }
 }

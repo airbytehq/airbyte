@@ -58,5 +58,8 @@
   },
   "events": {
     "date_updated": "2050-07-16T00:00:12.701000"
+  },
+  "opportunities": {
+    "date_created": "2050-07-16T00:00:12.701000"
   }
 }

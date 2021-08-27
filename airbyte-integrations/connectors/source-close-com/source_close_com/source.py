@@ -415,6 +415,8 @@ class Opportunities(IncrementalCloseComStream):
     API Docs: https://developer.close.com/#opportunities
     """
 
+    cursor_field = "date_created"
+
     def path(self, **kwargs) -> str:
         return "opportunity"
 
