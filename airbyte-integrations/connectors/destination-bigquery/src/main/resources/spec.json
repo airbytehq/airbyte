@@ -116,6 +116,16 @@
                 "type": "string",
                 "examples": ["data_sync/test"]
               },
+              "keep_files_in_gcs-bucket": {
+                "type": "string",
+                "description": "This upload method is supposed to temporary store records in GCS bucket. What do you want to do with data in GCS bucket when migration has finished?",
+                "title": "GCS tmp files afterward processing",
+                "default": "Delete all tmp files from GCS",
+                "enum": [
+                  "Delete all tmp files from GCS",
+                  "Keep all tmp files in GCS"
+                ]
+              },
               "credential": {
                 "title": "Credential",
                 "type": "object",

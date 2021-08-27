@@ -204,6 +204,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final BigQuery bigquery = getBigQuery(config);
     Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs = new HashMap<>();
     Set<String> existingSchemas = new HashSet<>();
+    boolean isGcsUploadingMode = UploadingMethod.GCS.equals(getLoadingMethod(config));
+    final boolean isKeepFilesInGcs = isKeepFilesInGcs(config);
 
     // create tmp tables if not exist
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
@@ -238,28 +240,32 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       }
       final WriteDisposition syncMode = getWriteDisposition(configStream.getDestinationSyncMode());
 
-      if (UploadingMethod.GCS.equals(getLoadingMethod(config))) {
-        GcsCsvWriter gcsCsvWriter = initGcsWriter(config, configStream);
+      if (isGcsUploadingMode) {
+        GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
+            .getGcsDestinationConfig(BigQueryUtils.getGcsJsonNodeConfig(config));
+        GcsCsvWriter gcsCsvWriter = initGcsWriter(gcsDestinationConfig, configStream);
         gcsCsvWriter.initialize();
 
         writeConfigs.put(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
-            new BigQueryWriteConfig(TableId.of(schemaName, tableName), TableId.of(schemaName, tmpTableName), writer, syncMode, schema, gcsCsvWriter));
+            new BigQueryWriteConfig(TableId.of(schemaName, tableName), TableId.of(schemaName, tmpTableName),
+                writer, syncMode, schema, gcsCsvWriter, gcsDestinationConfig));
       } else {
         writeConfigs.put(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
-            new BigQueryWriteConfig(TableId.of(schemaName, tableName), TableId.of(schemaName, tmpTableName), writer, syncMode, schema, null));
+            new BigQueryWriteConfig(TableId.of(schemaName, tableName), TableId.of(schemaName, tmpTableName),
+                writer, syncMode, schema, null, null));
       }
 
     }
     // write to tmp tables
     // if success copy delete main table if exists. rename tmp tables to real tables.
-    return getRecordConsumer(bigquery, writeConfigs, catalog, outputRecordCollector);
+    return getRecordConsumer(bigquery, writeConfigs, catalog, outputRecordCollector, isGcsUploadingMode, isKeepFilesInGcs);
   }
 
-  private GcsCsvWriter initGcsWriter(JsonNode config, ConfiguredAirbyteStream configuredStream) throws IOException {
+  private GcsCsvWriter initGcsWriter(GcsDestinationConfig gcsDestinationConfig,
+                                     ConfiguredAirbyteStream configuredStream)
+      throws IOException {
     Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
-    GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
-        .getGcsDestinationConfig(BigQueryUtils.getGcsJsonNodeConfig(config));
     AmazonS3 s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
     return new GcsCsvWriter(gcsDestinationConfig, s3Client, configuredStream, uploadTimestamp);
   }
@@ -271,8 +277,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   protected AirbyteMessageConsumer getRecordConsumer(BigQuery bigquery,
                                                      Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
                                                      ConfiguredAirbyteCatalog catalog,
-                                                     Consumer<AirbyteMessage> outputRecordCollector) {
-    return new BigQueryRecordConsumer(bigquery, writeConfigs, catalog, outputRecordCollector);
+                                                     Consumer<AirbyteMessage> outputRecordCollector,
+                                                     boolean isGcsUploadingMode,
+                                                     boolean isKeepFilesInGcs) {
+    return new BigQueryRecordConsumer(bigquery, writeConfigs, catalog, outputRecordCollector, isGcsUploadingMode, isKeepFilesInGcs);
   }
 
   protected Schema getBigQuerySchema(JsonNode jsonSchema) {
@@ -311,6 +319,19 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     } else {
       LOGGER.info("Selected loading method is set to: " + UploadingMethod.STANDARD);
       return UploadingMethod.STANDARD;
+    }
+  }
+
+  private boolean isKeepFilesInGcs(JsonNode config) {
+    JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
+    if (loadingMethod != null && loadingMethod.get(BigQueryConsts.KEEP_GCS_FILES) != null
+        && BigQueryConsts.KEEP_GCS_FILES_VAL
+            .equals(loadingMethod.get(BigQueryConsts.KEEP_GCS_FILES).asText())) {
+      LOGGER.info("All tmp files GCS will be kept in bucket when migration is finished");
+      return true;
+    } else {
+      LOGGER.info("All tmp files will be removed from GCS when migration is finished");
+      return false;
     }
   }
 

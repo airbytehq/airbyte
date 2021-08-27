@@ -172,6 +172,7 @@ class BigQueryGcsDestinationTest {
 
     JsonNode loadingMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put(BigQueryConsts.METHOD, BigQueryConsts.GCS_STAGING)
+        .put(BigQueryConsts.KEEP_GCS_FILES, BigQueryConsts.KEEP_GCS_FILES_VAL)
         .put(BigQueryConsts.GCS_BUCKET_NAME, credentialsGcsJson.get(BigQueryConsts.GCS_BUCKET_NAME))
         .put(BigQueryConsts.GCS_BUCKET_PATH, credentialsGcsJson.get(BigQueryConsts.GCS_BUCKET_PATH).asText() + System.currentTimeMillis())
         .put(BigQueryConsts.CREDENTIAL, credential)
@@ -318,7 +319,7 @@ class BigQueryGcsDestinationTest {
 
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
     consumer.accept(MESSAGE_USERS2);
-    consumer.close();
+    assertThrows(RuntimeException.class, () -> consumer.close()); // check if fails when data was not loaded to GCS bucket by some reason
 
     final List<String> tableNames = catalog.getStreams()
         .stream()

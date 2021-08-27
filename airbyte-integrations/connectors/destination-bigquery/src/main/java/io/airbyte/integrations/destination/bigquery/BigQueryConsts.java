@@ -41,6 +41,8 @@ public class BigQueryConsts {
   public static final String GCS_BUCKET_REGION = "gcs_bucket_region";
   public static final String CREDENTIAL = "credential";
   public static final String FORMAT = "format";
+  public static final String KEEP_GCS_FILES = "keep_files_in_gcs-bucket";
+  public static final String KEEP_GCS_FILES_VAL = "Keep all tmp files in GCS";
 
   // tests
   public static final String BIGQUERY_BASIC_CONFIG = "basic_bigquery_config";

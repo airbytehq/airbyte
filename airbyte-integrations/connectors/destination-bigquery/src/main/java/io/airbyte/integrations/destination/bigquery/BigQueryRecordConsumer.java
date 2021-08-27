@@ -26,6 +26,9 @@ package io.airbyte.integrations.destination.bigquery;
 
 import static com.amazonaws.util.StringUtils.UTF8;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
@@ -49,6 +52,8 @@ import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.integrations.destination.gcs.GcsS3Helper;
 import io.airbyte.integrations.destination.gcs.csv.GcsCsvWriter;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -58,6 +63,7 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.nio.ByteBuffer;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -76,17 +82,23 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   private final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs;
   private final ConfiguredAirbyteCatalog catalog;
   private final Consumer<AirbyteMessage> outputRecordCollector;
+  private final boolean isGcsUploadingMode;
+  private final boolean isKeepFilesInGcs;
 
   private AirbyteMessage lastStateMessage = null;
 
   public BigQueryRecordConsumer(BigQuery bigquery,
                                 Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
                                 ConfiguredAirbyteCatalog catalog,
-                                Consumer<AirbyteMessage> outputRecordCollector) {
+                                Consumer<AirbyteMessage> outputRecordCollector,
+                                boolean isGcsUploadingMode,
+                                boolean isKeepFilesInGcs) {
     this.bigquery = bigquery;
     this.writeConfigs = writeConfigs;
     this.catalog = catalog;
     this.outputRecordCollector = outputRecordCollector;
+    this.isGcsUploadingMode = isGcsUploadingMode;
+    this.isKeepFilesInGcs = isKeepFilesInGcs;
   }
 
   @Override
@@ -150,8 +162,15 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   public void close(boolean hasFailed) {
     LOGGER.info("Started closing all connections");
     // process gcs streams
-    closeGcsStreamsAndCopyDataToBigQuery(hasFailed);
+    if (isGcsUploadingMode) {
+      closeGcsStreamsAndCopyDataToBigQuery(hasFailed);
+    }
+
     closeNormalBigqueryStreams(hasFailed);
+
+    if (isGcsUploadingMode && !isKeepFilesInGcs) {
+      deleteDataFromGcsBucket();
+    }
   }
 
   private void closeGcsStreamsAndCopyDataToBigQuery(boolean hasFailed) {
@@ -182,7 +201,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
           try {
             loadCsvFromGcsTruncate(pair);
           } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Failed to load data from GCS CSV file to BibQuery tmp table with reason: " + e.getMessage());
+            throw new RuntimeException(e);
           }
         });
   }
@@ -288,6 +308,34 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       writeConfigs.values().forEach(bigQueryWriteConfig -> bigquery.delete(bigQueryWriteConfig.getTmpTable()));
       LOGGER.info("Finishing destination process...completed");
     }
+  }
+
+  private void deleteDataFromGcsBucket() {
+    writeConfigs.values().forEach(writeConfig -> {
+      GcsDestinationConfig gcsDestinationConfig = writeConfig.getGcsDestinationConfig();
+      AmazonS3 s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
+
+      String gcsBucketName = gcsDestinationConfig.getBucketName();
+      String gcs_bucket_path = gcsDestinationConfig.getBucketPath();
+
+      List<KeyVersion> keysToDelete = new LinkedList<>();
+      List<S3ObjectSummary> objects = s3Client
+          .listObjects(gcsBucketName, gcs_bucket_path)
+          .getObjectSummaries();
+      for (S3ObjectSummary object : objects) {
+        keysToDelete.add(new KeyVersion(object.getKey()));
+      }
+
+      if (keysToDelete.size() > 0) {
+        LOGGER.info("Tearing down test bucket path: {}/{}", gcsBucketName, gcs_bucket_path);
+        // Google Cloud Storage doesn't accept request to delete multiple objects
+        for (KeyVersion keyToDelete : keysToDelete) {
+          s3Client.deleteObject(gcsBucketName, keyToDelete.getKey());
+        }
+        LOGGER.info("Deleted {} file(s).", keysToDelete.size());
+      }
+      s3Client.shutdown();
+    });
   }
 
   // https://cloud.google.com/bigquery/docs/managing-tables#copying_a_single_source_table
