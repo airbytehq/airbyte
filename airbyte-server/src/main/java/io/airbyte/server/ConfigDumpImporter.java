@@ -473,48 +473,52 @@ public class ConfigDumpImporter {
       }
       final ConfigSchema configSchema = configSchemaOptional.get();
       final Stream<T> configs = readConfigsFromArchive(sourceRoot, configSchema);
-      if (!dryRun) {
-        switch (configSchema) {
-          case STANDARD_SOURCE_DEFINITION -> importSourceDefinitionIntoWorkspace(configs);
-          case SOURCE_CONNECTION -> sourceIdMap.putAll(importIntoWorkspace(
-              ConfigSchema.SOURCE_CONNECTION,
-              configs.map(c -> (SourceConnection) c),
-              configRepository::listSourceConnection,
-              (sourceConnection) -> !workspaceId.equals(sourceConnection.getWorkspaceId()),
-              (sourceConnection, sourceId) -> {
-                sourceConnection.setSourceId(sourceId);
-                sourceConnection.setWorkspaceId(workspaceId);
-                return sourceConnection;
-              },
-              configRepository::writeSourceConnection));
-          case STANDARD_DESTINATION_DEFINITION -> importDestinationDefinitionIntoWorkspace(configs);
-          case DESTINATION_CONNECTION -> destinationIdMap.putAll(importIntoWorkspace(
-              ConfigSchema.DESTINATION_CONNECTION,
-              configs.map(c -> (DestinationConnection) c),
-              configRepository::listDestinationConnection,
-              (destinationConnection) -> !workspaceId.equals(destinationConnection.getWorkspaceId()),
-              (destinationConnection, destinationId) -> {
-                destinationConnection.setDestinationId(destinationId);
-                destinationConnection.setWorkspaceId(workspaceId);
-                return destinationConnection;
-              },
-              configRepository::writeDestinationConnection));
-          case STANDARD_SYNC -> standardSyncs = configs;
-          case STANDARD_SYNC_OPERATION -> operationIdMap.putAll(importIntoWorkspace(
-              ConfigSchema.STANDARD_SYNC_OPERATION,
-              configs.map(c -> (StandardSyncOperation) c),
-              configRepository::listStandardSyncOperations,
-              (operation) -> !workspaceId.equals(operation.getWorkspaceId()),
-              (operation, operationId) -> {
-                operation.setOperationId(operationId);
-                operation.setWorkspaceId(workspaceId);
-                return operation;
-              },
-              configRepository::writeStandardSyncOperation));
-          default -> {}
-        }
+
+      if (dryRun) {
+        continue;
+      }
+
+      switch (configSchema) {
+        case STANDARD_SOURCE_DEFINITION -> importSourceDefinitionIntoWorkspace(configs);
+        case SOURCE_CONNECTION -> sourceIdMap.putAll(importIntoWorkspace(
+            ConfigSchema.SOURCE_CONNECTION,
+            configs.map(c -> (SourceConnection) c),
+            configRepository::listSourceConnection,
+            (sourceConnection) -> !workspaceId.equals(sourceConnection.getWorkspaceId()),
+            (sourceConnection, sourceId) -> {
+              sourceConnection.setSourceId(sourceId);
+              sourceConnection.setWorkspaceId(workspaceId);
+              return sourceConnection;
+            },
+            configRepository::writeSourceConnection));
+        case STANDARD_DESTINATION_DEFINITION -> importDestinationDefinitionIntoWorkspace(configs);
+        case DESTINATION_CONNECTION -> destinationIdMap.putAll(importIntoWorkspace(
+            ConfigSchema.DESTINATION_CONNECTION,
+            configs.map(c -> (DestinationConnection) c),
+            configRepository::listDestinationConnection,
+            (destinationConnection) -> !workspaceId.equals(destinationConnection.getWorkspaceId()),
+            (destinationConnection, destinationId) -> {
+              destinationConnection.setDestinationId(destinationId);
+              destinationConnection.setWorkspaceId(workspaceId);
+              return destinationConnection;
+            },
+            configRepository::writeDestinationConnection));
+        case STANDARD_SYNC -> standardSyncs = configs;
+        case STANDARD_SYNC_OPERATION -> operationIdMap.putAll(importIntoWorkspace(
+            ConfigSchema.STANDARD_SYNC_OPERATION,
+            configs.map(c -> (StandardSyncOperation) c),
+            configRepository::listStandardSyncOperations,
+            (operation) -> !workspaceId.equals(operation.getWorkspaceId()),
+            (operation, operationId) -> {
+              operation.setOperationId(operationId);
+              operation.setWorkspaceId(workspaceId);
+              return operation;
+            },
+            configRepository::writeStandardSyncOperation));
+        default -> {}
       }
     }
+
     if (standardSyncs != null) {
       // we import connections (standard sync) last to update reference to modified ids
       importIntoWorkspace(
@@ -548,7 +552,7 @@ public class ConfigDumpImporter {
         ConfigSchema.STANDARD_SOURCE_DEFINITION,
         configs.map(c -> (StandardSourceDefinition) c),
         configRepository::listStandardSources,
-        null,
+        (config) -> true,
         (config, id) -> {
           if (id.equals(config.getSourceDefinitionId())) {
             return config;
@@ -571,7 +575,7 @@ public class ConfigDumpImporter {
         ConfigSchema.STANDARD_DESTINATION_DEFINITION,
         configs.map(c -> (StandardDestinationDefinition) c),
         configRepository::listStandardDestinationDefinitions,
-        null,
+        (config) -> true,
         (config, id) -> {
           if (id.equals(config.getDestinationDefinitionId())) {
             return config;
@@ -598,29 +602,22 @@ public class ConfigDumpImporter {
     final Map<UUID, UUID> idsMap = new HashMap<>();
     // To detect conflicts, we retrieve ids already in use by others for this ConfigSchema (ids from the
     // current workspace can be safely updated)
-    final Set<UUID> idsInUse;
-    if (listConfigCall != null) {
-      idsInUse = listConfigCall.apply()
-          .stream()
-          .filter(filterConfigCall != null ? filterConfigCall::apply : ((T) -> true))
-          .map(configSchema::getId)
-          .map(UUID::fromString)
-          .collect(Collectors.toSet());
-    } else {
-      idsInUse = new HashSet<>();
-    }
+    final Set<UUID> idsInUse = listConfigCall.apply()
+        .stream()
+        .filter(filterConfigCall::apply)
+        .map(configSchema::getId)
+        .map(UUID::fromString)
+        .collect(Collectors.toSet());
     for (T config : configs.collect(Collectors.toList())) {
       final UUID configId = UUID.fromString(configSchema.getId(config));
-      if (idsInUse.contains(configId)) {
-        // Some other workspace is already using the same id for this configSchema, we generate new ids and
-        // mutate config accordingly
-        final UUID newId = getNewRandomId(idsInUse);
-        config = mutateConfig.apply(config, newId);
+      final UUID configIdToPersist = idsInUse.contains(configId) ? UUID.randomUUID() : configId;
+      config = mutateConfig.apply(config, configIdToPersist);
+      if (config != null) {
+        idsMap.put(configId, UUID.fromString(configSchema.getId(config)));
+        persistConfig.apply(config);
       } else {
-        config = mutateConfig.apply(config, configId);
+        idsMap.put(configId, configId);
       }
-      idsMap.put(configId, config != null ? UUID.fromString(configSchema.getId(config)) : configId);
-      persistConfig.apply(config);
     }
     return idsMap;
   }
@@ -651,17 +648,6 @@ public class ConfigDumpImporter {
 
     void apply(T config) throws JsonValidationException, IOException;
 
-  }
-
-  /**
-   * @return a new UUID that is not already in use (in @param idsInUse)
-   */
-  private static UUID getNewRandomId(Set<UUID> idsInUse) {
-    UUID newId = UUID.randomUUID();
-    while (idsInUse.contains(newId)) {
-      newId = UUID.randomUUID();
-    }
-    return newId;
   }
 
 }

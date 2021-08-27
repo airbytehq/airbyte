@@ -186,7 +186,7 @@ public class ConfigDumpExporter {
         (sourceConnection) -> workspaceId.equals(sourceConnection.getWorkspaceId()));
     writeConfigsToArchive(parentFolder, ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
         () -> listSourceDefinition(sourceConnections),
-        null);
+        (config) -> true);
 
     final Collection<DestinationConnection> destinationConnections = writeConfigsToArchive(
         parentFolder,
@@ -195,7 +195,7 @@ public class ConfigDumpExporter {
         (destinationConnection) -> workspaceId.equals(destinationConnection.getWorkspaceId()));
     writeConfigsToArchive(parentFolder, ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(),
         () -> listDestinationDefinition(destinationConnections),
-        null);
+        (config) -> true);
 
     writeConfigsToArchive(
         parentFolder,
@@ -205,7 +205,8 @@ public class ConfigDumpExporter {
 
     final List<StandardSync> standardSyncs = new ArrayList<>();
     for (StandardSync standardSync : configRepository.listStandardSyncs()) {
-      if (workspaceId.equals(workspaceHelper.getWorkspaceForConnection(standardSync.getSourceId(), standardSync.getDestinationId()))) {
+      if (workspaceHelper != null &&
+          workspaceId.equals(workspaceHelper.getWorkspaceForConnection(standardSync.getSourceId(), standardSync.getDestinationId()))) {
         standardSyncs.add(standardSync);
       }
     }
@@ -217,10 +218,9 @@ public class ConfigDumpExporter {
                                                   ListConfigCall<T> listConfigCall,
                                                   Function<T, Boolean> filterConfigCall)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final Collection<T> configs = listConfigCall.apply();
-    final Collection<T> result = filterConfigCall != null ? configs.stream().filter(filterConfigCall::apply).collect(Collectors.toList()) : configs;
-    writeConfigsToArchive(parentFolder, configSchemaName, result.stream().map(Jsons::jsonNode));
-    return result;
+    final Collection<T> configs = listConfigCall.apply().stream().filter(filterConfigCall::apply).collect(Collectors.toList());
+    writeConfigsToArchive(parentFolder, configSchemaName, configs.stream().map(Jsons::jsonNode));
+    return configs;
   }
 
   private Collection<StandardSourceDefinition> listSourceDefinition(Collection<SourceConnection> sourceConnections)
