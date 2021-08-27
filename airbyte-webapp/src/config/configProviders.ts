@@ -1,17 +1,8 @@
-import { Config } from "./types";
-
-type DeepPartial<T> = {
-  [P in keyof T]+?: DeepPartial<T[P]>;
-};
-
-export interface Provider<T> {
-  (): Promise<T>;
-}
-
-export type ConfigProvider = Provider<DeepPartial<Config>>;
+import merge from "lodash.merge";
+import { ConfigProvider, DeepPartial, ValueProvider } from "./types";
 
 const fileConfigProvider: ConfigProvider = async () => {
-  const response = await fetch("./config.json");
+  const response = await fetch("/config.json");
 
   if (response.ok) {
     try {
@@ -56,4 +47,24 @@ const envConfigProvider: ConfigProvider = async () => {
   };
 };
 
-export { fileConfigProvider, windowConfigProvider, envConfigProvider };
+async function applyProviders<T>(providers: ValueProvider<T>): Promise<T> {
+  const [defaultProvider, ...pv] = providers;
+  let value: DeepPartial<T> = {};
+
+  for (const provider of pv) {
+    const partialConfig = await provider();
+
+    value = merge(value, partialConfig);
+  }
+
+  const defaultValue = await defaultProvider();
+
+  return merge(defaultValue, value);
+}
+
+export {
+  fileConfigProvider,
+  windowConfigProvider,
+  envConfigProvider,
+  applyProviders,
+};

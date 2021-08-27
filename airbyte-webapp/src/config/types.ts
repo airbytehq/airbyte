@@ -33,3 +33,15 @@ export type Config = {
   isDemo: boolean;
   version?: string;
 };
+
+export type DeepPartial<T> = {
+  [P in keyof T]+?: DeepPartial<T[P]>;
+};
+
+export type Provider<T> = () => Promise<T>;
+
+export type ValueProvider<T> = [Provider<T>, ...Provider<DeepPartial<T>>[]];
+
+export type ConfigProvider<T extends Config = Config> = Provider<
+  DeepPartial<T>
+>;

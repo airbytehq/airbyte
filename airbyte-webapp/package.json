@@ -85,7 +85,7 @@
     "prettier": "^2.2.1",
     "react-scripts": "4.0.2",
     "storybook-addon-styled-component-theme": "^2.0.0",
-    "typescript": "4.1.5"
+    "typescript": "4.2.4"
   },
   "husky": {
     "hooks": {
