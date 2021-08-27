@@ -22,36 +22,71 @@
 # SOFTWARE.
 #
 
-from typing import Dict, List
-
+from typing import Dict, Iterable, List, Mapping
+import pendulum as pdm
 
 def transform_date_fields(
-    records: List, key: str = "changeAuditStamps", prop: List = ["created", "lastModified"], field: str = "time"
-) -> List:
+    records: List, 
+    dict_key: str = "changeAuditStamps", 
+    props: List = ["created", "lastModified"], 
+    fields: List = ["time"], 
+    analytics: bool = False,
+) -> Iterable[Mapping]:
     """
     The cursor_field has the nested structure as:
     EXAMPLE:
-    :: {
-        "changeAuditStamps": {
-            "created": {
-                "time": 1629581275000
-            },
-            "lastModified": {
-                "time": 1629664544760
+    :: For Analytics Streams :
+        {
+            "dateRange": {
+                "start": {
+                    "month": 8,
+                    "day": 13,
+                    "year": 2021
+                },
+                "end": {
+                    "month": 8,
+                    "day": 13,
+                    "year": 2021
                 }
             }
         }
+    
+    :: For Other Streams:
+        {
+            "changeAuditStamps": {
+                "created": {
+                    "time": 1629581275000
+                },
+                "lastModified": {
+                    "time": 1629664544760
+                    }
+                }
+            }
     We need to unnest this structure based on `dict_key` and `dict_prop` values.
     """
     result = []
     for record in records:
-        target_dict: Dict = record.get(key, None)
+        target_dict: Dict = record.get(dict_key, None)
         if target_dict:
-            for p in prop:
+            for prop in props:
                 # Update dict with flatten key:value
-                record.update(**{p: target_dict.get(p).get(field, None)})
-            # Remove nested structure from the data
-            record.pop(key)
+                for field in fields:
+                    # For analytics streams
+                    if analytics:
+                        record.update(**{f'{prop}.{field}': target_dict.get(prop).get(field, None)})
+                    # for All other streams
+                    record.update(**{prop: pdm.from_timestamp(target_dict.get(prop).get(field, None)/1000).to_datetime_string()})
+            # For Analytics streams we build `start_date` & `end_date` fields from nested structure.
+            if analytics:
+                record.update(**{
+                    "start_date": pdm.date(record["start.year"],record["start.month"],record["start.day"]).to_date_string(),
+                    "end_date": pdm.date(record["end.year"],record["end.month"],record["end.day"]).to_date_string(),
+                    }
+                )
+            # Cleanup the nested structures
+            for key in [dict_key,'start.day','start.month','start.year','end.day','end.month','end.year','start','end']:
+                if key in record.keys():
+                    record.pop(key)
         result.append(record)
     return result
 

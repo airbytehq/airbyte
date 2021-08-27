@@ -10,9 +10,9 @@
       "start_date": {
         "type": "string",
         "title": "Start Date",
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        "description": "UTC date and time in the format 2020-09-17T00:00:00Z. Any data before this date will not be replicated.",
-        "examples": ["2021-05-17T00:00:00Z"]
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "description": "Date in the format 2020-09-17. Any data before this date will not be replicated.",
+        "examples": ["2021-05-17"]
       },
       "access_token": {
         "type": "string",
@@ -23,7 +23,7 @@
       "account_ids": {
         "title": "Account IDs",
         "type": "array",
-        "description": "The account ids, from which you would like to fetch the data, separated by space. Leave empty to fetch from all accounts.",
+        "description": "Specify the Account IDs separated by space, from which to pull the data. Leave empty to pull from all associated accounts.",
         "items": {
           "type": "integer"
         },

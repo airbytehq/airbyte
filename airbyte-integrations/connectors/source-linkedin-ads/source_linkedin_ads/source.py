@@ -27,8 +27,8 @@ from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import urlencode
 
-import pendulum
 import requests
+import pendulum
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -37,6 +37,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 from .utils import transform_date_fields, make_slice
+from .analytics import make_analytics_slices, update_analytics_params, merge_chunks
 
 
 class LinkedinAdsStream(HttpStream, ABC):
@@ -46,10 +47,10 @@ class LinkedinAdsStream(HttpStream, ABC):
     limit = 500
 
     def __init__(self, config: Dict):
-        super().__init__(authenticator=config["authenticator"])
-        self.config = config
-        self.start_date = pendulum.parse(config.get("start_date")).timestamp() * 1000
+        super().__init__(authenticator=config.get("authenticator"))
+        self.start_date = config.get("start_date")
         self.accounts = config.get("account_ids", None)
+        self.config = config
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -74,8 +75,7 @@ class LinkedinAdsStream(HttpStream, ABC):
         """
         We need to get out the nested `created` and `lastModified` date fields, so the transform_date_fields method is applied before output.
         """
-        records = response.json().get("elements")
-        yield from transform_date_fields(records)
+        yield from transform_date_fields(response.json().get("elements"))
 
 
 class Accounts(LinkedinAdsStream):
@@ -114,7 +114,23 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
     cursor_field = "lastModified"
 
     @property
-    def limit(self):
+    def primary_slice_key(self) -> str:
+        """ 
+        Define the main slice_key from `slice_key_value_map`. Always the first element.
+        EXAMPLE:
+            in : {"k1": "v1", "k2": "v2", ...}
+            out : "k1"
+        """
+        return list(self.slice_key_value_map.keys())[0]
+
+    @property
+    def slice_from_stream(self) -> object:
+        """ Defines the parrent stream for slicing, the class object should be provided. """
+        return self.slice_from_stream
+
+    @property
+    def limit(self) -> str:
+        """ Define the checkpoint from the size of the records output limit. """
         return super().limit
 
     state_checkpoint_interval = limit
@@ -123,9 +139,8 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
         current_stream_state = {self.cursor_field: self.start_date} if not current_stream_state else current_stream_state
         return {self.cursor_field: max(latest_record.get(self.cursor_field, None), current_stream_state.get(self.cursor_field, None))}
 
-    # Parse the stream_slice with respect to stream_state for Incremental refresh
     def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
-        # Getting records >= state
+        """ For the streams that provide the cursor_field like `Timestamp` or `lastModified`, we filter out the old records. """
         if stream_state:
             for record in records_slice:
                 if record[self.cursor_field] >= stream_state.get(self.cursor_field):
@@ -150,16 +165,6 @@ class StreamMixin(IncrementalLinkedinAdsStream):
     # define default additional request params
     search_param = "search.account.values[0]"
     search_param_value = "urn:li:sponsoredAccount:"
-
-    @property
-    def primary_slice_key(self) -> str:
-        """ 
-        Define the main slice_key from `slice_key_value_map`. Always the first element.
-        EXAMPLE:
-            in : {"k1": "v1", "k2": "v2", ...}
-            out : "k1"
-        """
-        return list(self.slice_key_value_map.keys())[0]
     
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
@@ -201,6 +206,7 @@ class CampaignGroups(StreamMixin):
     """
 
     def path(self, **kwargs) -> str:
+        """ CampaignGroups Endpoint """
         return "adCampaignGroupsV2"
 
 
@@ -212,6 +218,7 @@ class Campaigns(StreamMixin):
     """
 
     def path(self, **kwargs) -> str:
+        """ Campaigns Endpoint """
         return "adCampaignsV2"
 
 
@@ -240,11 +247,12 @@ class AdDirectSponsoredContents(StreamMixin):
     # AdDirectSponsoredContents stream doesn't have `id` property, so the "account" is used instead.
     primary_key = "account"
 
-    slice_from_stream = Accounts
+    # slice_from_stream = Accounts
     slice_key_value_map = {"account_id": "id", "reference_id": "reference"}
     search_param = "account"
 
     def path(self, **kwargs) -> str:
+        """ AdDirectSponsoredContents Endpoint """
         return "adDirectSponsoredContents"
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
@@ -254,6 +262,78 @@ class AdDirectSponsoredContents(StreamMixin):
         return params
 
 
+class AnalyticsStreamMixin(IncrementalLinkedinAdsStream):
+    """ 
+    AdAnalytics Streams more info:
+    https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl#ad-analytics 
+    """
+    # For Analytics streams the primary_key is the entity of the pivot [Campaign URN, Creative URN, etc]
+    primary_key = 'pivotValue'
+    cursor_field = "end_date"
+
+    @property
+    def base_analytics_params(self) -> MutableMapping[str, Any]:
+        """ Define the base parameters for analytics streams """
+        return {"q": "analytics", "pivot": self.pivot_by, "timeGranularity" : "DAILY"}
+
+    def path(self, **kwargs) -> str:
+        """ Analytics Endpoint. """
+        return "adAnalyticsV2"
+
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = self.base_analytics_params
+        params[self.search_param] = f"{self.search_param_value}{stream_slice.get(self.primary_slice_key)}"
+        params.update(**update_analytics_params(stream_slice))
+        return params
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        We need to get out the nested `start` and `end` date fields,
+        So the transform_date_fields method with `analytics`=True is applied before output.
+        """
+        records = response.json().get("elements")
+        yield from transform_date_fields(records, "dateRange", ["start","end"], ["year","month","day"], True)
+
+
+    def read_records(self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        stream_state = stream_state or {self.cursor_field: self.start_date}
+        parent_stream = self.slice_from_stream(config=self.config)
+        result_chunks = []
+        for records in parent_stream.read_records(sync_mode=SyncMode.full_refresh):
+            for analytics_slice in make_analytics_slices(records, self.slice_key_value_map, stream_state.get(self.cursor_field)):
+                slice = super().read_records(stream_slice=analytics_slice, **kwargs)
+                result_chunks.append(slice)
+            yield from merge_chunks(result_chunks, self.cursor_field)
+
+
+class AdCampaignAnalytics(AnalyticsStreamMixin):
+    """
+    See the AnalyticsStreamMixin class for more information.
+    """
+
+    slice_from_stream = Campaigns
+    slice_key_value_map = {"campaign_id": "id"}
+    search_param =  "campaigns[0]"
+    search_param_value = "urn:li:sponsoredCampaign:"
+    pivot_by = "CAMPAIGN"
+
+    #TODO: create the schema) using shared $ref: {"ad_analytics.json"}
+    
+
+class AdCreativeAnalytics(AnalyticsStreamMixin):
+    """
+    See the AnalyticsStreamMixin class for more information.
+    """
+
+    slice_from_stream = Creatives
+    slice_key_value_map = {"creative_id": "id"}
+    search_param =  "creatives[0]"
+    search_param_value = "urn:li:sponsoredCreative:"
+    pivot_by = "CREATIVE"
+
+    #TODO: create the schema) using shared $ref: {"ad_analytics.json"}
+    
+    
 class SourceLinkedinAds(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
@@ -287,4 +367,6 @@ class SourceLinkedinAds(AbstractSource):
             Campaigns(config),
             Creatives(config),
             AdDirectSponsoredContents(config),
+            AdCampaignAnalytics(config),
+            AdCreativeAnalytics(config),
         ]
