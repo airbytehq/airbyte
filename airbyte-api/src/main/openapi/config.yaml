@@ -1207,6 +1207,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/source_oauths/complete_oauth:
+    post:
+      tags:
+        - oauth
+      summary:
+      operationId: completeSourceOAuth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OAuthSourceRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/destination_oauths/get_oauth_consent:
     post:
       tags:
@@ -1226,6 +1249,29 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/OAuthConsentRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destination_oauths/complete_oauth:
+    post:
+      tags:
+        - oauth
+      summary:
+      operationId: completeDestinationOAuth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OAuthDestinationRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthRead"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -2870,6 +2916,33 @@ components:
         - consentUrl
       properties:
         consentUrl:
+          type: string
+    OAuthSourceRequestBody:
+      type: object
+      required:
+        - authCode
+        - sourceDefinitionId
+      properties:
+        authCode:
+          type: string
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+    OAuthDestinationRequestBody:
+      type: object
+      required:
+        - authCode
+        - destinationDefinitionId
+      properties:
+        authCode:
+          type: string
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
+    OAuthRead:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
           type: string
     # Web Backend
     WebBackendConnectionRead:
