@@ -71,7 +71,7 @@ class HttpStream(Stream, ABC):
         return True
 
     @property
-    def max_retries(self) -> int:
+    def max_retries(self) -> Union[int, None]:
         """
         Override if needed. Specifies maximum amount of retries for backoff policy. Return None for no limit.
         """
