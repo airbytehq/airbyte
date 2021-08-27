@@ -667,12 +667,12 @@ class CRMAssociationStream(Stream):
             yield record
 
 
-class DealAssociationsStream(CRMAssociationStream):
-    def __init__(self, deals_stream, **kwargs):
+class DealToContactAssociationsStream(CRMAssociationStream):
+    def __init__(self, deal_stream, **kwargs):
         super().__init__(relationship_from="Deals", relationship_to="Contacts", endpoint="batch/read", **kwargs)
-        self._deals_stream = deals_stream
+        self._deal_stream = deal_stream
 
-    def prepare_payload_deal_associations(self, ids: Iterable) -> Mapping[str, Any]:
+    def prepare_payload(self, ids: Iterable) -> Mapping[str, Any]:
         payload = {"inputs": []}
 
         for deal_id in ids:
@@ -682,13 +682,13 @@ class DealAssociationsStream(CRMAssociationStream):
 
     def list(self, fields) -> Iterable:
 
-        deals = self._deals_stream.list(fields)
+        deals = self._deal_stream.list(fields)
         ids = []
 
         for deal in deals:
             ids.append(deal.get('id'))
             if len(ids) == self.limit:
-                payload = self.prepare_payload_deal_associations(ids=ids)
+                payload = self.prepare_payload(ids=ids)
                 yield from self.read(partial(self._api.post, url=self.url, data=payload))
                 ids = []
 
