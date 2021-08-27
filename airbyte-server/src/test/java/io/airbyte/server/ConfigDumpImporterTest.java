@@ -26,6 +26,7 @@ package io.airbyte.server;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.AdditionalMatchers.not;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -105,6 +106,8 @@ class ConfigDumpImporterTest {
         .thenReturn(List.of(standardSourceDefinition));
     when(configRepository.getStandardSourceDefinition(standardSourceDefinition.getSourceDefinitionId()))
         .thenReturn(standardSourceDefinition);
+    when(configRepository.getSourceConnection(any()))
+        .thenReturn(sourceConnection);
 
     standardDestinationDefinition = new StandardDestinationDefinition()
         .withDestinationDefinitionId(UUID.randomUUID())
@@ -124,6 +127,8 @@ class ConfigDumpImporterTest {
         .thenReturn(List.of(standardDestinationDefinition));
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
         .thenReturn(standardDestinationDefinition);
+    when(configRepository.getDestinationConnection(any()))
+        .thenReturn(destinationConnection);
 
     operation = new StandardSyncOperation()
         .withOperationId(UUID.randomUUID())
@@ -131,6 +136,8 @@ class ConfigDumpImporterTest {
         .withWorkspaceId(workspaceId)
         .withTombstone(false)
         .withOperatorType(OperatorType.DBT);
+    when(configRepository.getStandardSyncOperation(any()))
+        .thenReturn(operation);
 
     connection = new StandardSync()
         .withConnectionId(UUID.randomUUID())

@@ -63,6 +63,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -463,6 +464,10 @@ public class ConfigDumpImporter {
     final Map<UUID, UUID> operationIdMap = new HashMap<>();
 
     final List<String> directories = listDirectories(sourceRoot);
+    // We sort the directories because we want to process SOURCE_CONNECTION after
+    // STANDARD_SOURCE_DEFINITION and DESTINATION_CONNECTION after STANDARD_DESTINATION_DEFINITION
+    // so that we can identify which definitions should not be upgraded to the latest version
+    directories.sort(Comparator.reverseOrder());
     Stream<T> standardSyncs = null;
 
     for (final String directory : directories) {
@@ -490,7 +495,17 @@ public class ConfigDumpImporter {
               sourceConnection.setWorkspaceId(workspaceId);
               return sourceConnection;
             },
-            configRepository::writeSourceConnection));
+            (sourceConnection) -> {
+              // make sure connector definition exists
+              try {
+                if (configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId()) == null) {
+                  return;
+                }
+              } catch (ConfigNotFoundException e) {
+                return;
+              }
+              configRepository.writeSourceConnection(sourceConnection);
+            }));
         case STANDARD_DESTINATION_DEFINITION -> importDestinationDefinitionIntoWorkspace(configs);
         case DESTINATION_CONNECTION -> destinationIdMap.putAll(importIntoWorkspace(
             ConfigSchema.DESTINATION_CONNECTION,
@@ -502,7 +517,17 @@ public class ConfigDumpImporter {
               destinationConnection.setWorkspaceId(workspaceId);
               return destinationConnection;
             },
-            configRepository::writeDestinationConnection));
+            (destinationConnection) -> {
+              // make sure connector definition exists
+              try {
+                if (configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId()) == null) {
+                  return;
+                }
+              } catch (ConfigNotFoundException e) {
+                return;
+              }
+              configRepository.writeDestinationConnection(destinationConnection);
+            }));
         case STANDARD_SYNC -> standardSyncs = configs;
         case STANDARD_SYNC_OPERATION -> operationIdMap.putAll(importIntoWorkspace(
             ConfigSchema.STANDARD_SYNC_OPERATION,
@@ -542,7 +567,23 @@ public class ConfigDumpImporter {
                 .collect(Collectors.toList()));
             return standardSync;
           },
-          configRepository::writeStandardSync);
+          (standardSync) -> {
+            // make sure connectors definition exists
+            try {
+              if (configRepository.getSourceConnection(standardSync.getSourceId()) == null ||
+                  configRepository.getDestinationConnection(standardSync.getDestinationId()) == null) {
+                return;
+              }
+              for (UUID operationId : standardSync.getOperationIds()) {
+                if (configRepository.getStandardSyncOperation(operationId) == null) {
+                  return;
+                }
+              }
+            } catch (ConfigNotFoundException e) {
+              return;
+            }
+            configRepository.writeStandardSync(standardSync);
+          });
     }
   }
 
