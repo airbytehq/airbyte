@@ -70,6 +70,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - workspace:${WORKSPACE_ROOT}
       - ${LOCAL_ROOT}:${LOCAL_ROOT}
+      - data:${CONFIG_ROOT}
   server:
     image: airbyte/server:${VERSION}
     logging: *default-logging
