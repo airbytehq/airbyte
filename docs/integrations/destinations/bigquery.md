@@ -107,6 +107,8 @@ Once you've configured BigQuery as a destination, delete the Service Account Key
 For the GCS Staging upload type additional params must be configured:
 
   * **GCS Bucket Name**
+  * **GCS Bucket Path**
+  * **GCS Bucket Keep files after migration**
     * See [this](https://cloud.google.com/storage/docs/creating-buckets) to create an S3 bucket.
   * **HMAC Key Access ID**
     * See [this](https://cloud.google.com/storage/docs/authentication/hmackeys) on how to generate an access key.
