@@ -24,7 +24,8 @@
 
 import copy
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from http import HTTPStatus
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import pendulum
 import requests
@@ -42,6 +43,31 @@ class SlackStream(HttpStream, ABC):
     url_base = "https://slack.com/api/"
     primary_key = "id"
     page_size = 100
+    # We need different retry behaviour for different response types, implement
+    # own retry counter.
+    retry_attempts = 0
+    max_retry_attempts = 5
+
+    @property
+    def max_retries(self) -> Union[int, None]:
+        self.retry_attempts = 0
+        # Return None for unlimited retry attempts. This stream implements its
+        # own retry counter based on response type.
+        return None
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
+            """
+            According to this https://api.slack.com/docs/rate-limits#headers
+            Slack has no any limitation / restriction on API usage (except of
+            posting message over API when app can be blocked), we should only
+            follow the rules and evaluate delay given by "Retry-After" header.
+            Do not give up retry attempts in case of 429 error.
+            """
+            return True
+        self.retry_attempts += 1
+        # In case response is not 429 follow standrad retry logic but implement own retry counter.
+        return self.retry_attempts <= self.max_retry_attempts and super().should_retry(response)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """Slack uses a cursor-based pagination strategy.
