@@ -381,6 +381,7 @@ class ExpensesClients(IncrementalReportsBase):
     """
 
     report_path = "expenses/clients"
+    primary_key = None
 
 
 class ExpensesProjects(IncrementalReportsBase):
@@ -389,6 +390,7 @@ class ExpensesProjects(IncrementalReportsBase):
     """
 
     report_path = "expenses/projects"
+    primary_key = None
 
 
 class ExpensesCategories(IncrementalReportsBase):
@@ -397,6 +399,7 @@ class ExpensesCategories(IncrementalReportsBase):
     """
 
     report_path = "expenses/categories"
+    primary_key = None
 
 
 class ExpensesTeam(IncrementalReportsBase):
@@ -405,6 +408,7 @@ class ExpensesTeam(IncrementalReportsBase):
     """
 
     report_path = "expenses/team"
+    primary_key = None
 
 
 class Uninvoiced(ReportsBase):
