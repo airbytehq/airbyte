@@ -58,8 +58,10 @@ import io.airbyte.api.model.LogsRequestBody;
 import io.airbyte.api.model.Notification;
 import io.airbyte.api.model.NotificationRead;
 import io.airbyte.api.model.OAuthConsentRead;
+import io.airbyte.api.model.OAuthDestinationConsentRequestBody;
 import io.airbyte.api.model.OAuthDestinationRequestBody;
 import io.airbyte.api.model.OAuthRead;
+import io.airbyte.api.model.OAuthSourceConsentRequestBody;
 import io.airbyte.api.model.OAuthSourceRequestBody;
 import io.airbyte.api.model.OperationCreate;
 import io.airbyte.api.model.OperationIdRequestBody;
@@ -278,8 +280,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   // SOURCE OAUTH
 
   @Override
-  public OAuthConsentRead getSourceOAuthConsent(SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody) {
-    return execute(() -> oAuthHandler.getSourceOAuthConsent(sourceDefinitionIdRequestBody));
+  public OAuthConsentRead getSourceOAuthConsent(OAuthSourceConsentRequestBody oauthSourceConsentRequestBody) {
+    return execute(() -> oAuthHandler.getSourceOAuthConsent(oauthSourceConsentRequestBody));
   }
 
   @Override
@@ -380,8 +382,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   // DESTINATION OAUTH
   @Override
-  public OAuthConsentRead getDestinationOAuthConsent(DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
-    return execute(() -> oAuthHandler.getDestinationOAuthConsent(destinationDefinitionIdRequestBody));
+  public OAuthConsentRead getDestinationOAuthConsent(OAuthDestinationConsentRequestBody oAuthDestinationConsentRequestBody) {
+    return execute(() -> oAuthHandler.getDestinationOAuthConsent(oAuthDestinationConsentRequestBody));
   }
 
   @Override

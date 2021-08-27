@@ -1194,7 +1194,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SourceDefinitionIdRequestBody"
+              $ref: "#/components/schemas/OAuthSourceConsentRequestBody"
         required: true
       responses:
         "200":
@@ -1240,7 +1240,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DestinationDefinitionIdRequestBody"
+              $ref: "#/components/schemas/OAuthDestinationConsentRequestBody"
         required: true
       responses:
         "200":
@@ -2910,12 +2910,34 @@ components:
           items:
             $ref: "#/components/schemas/DbMigrationRead"
     # OAuth
+    OAuthSourceConsentRequestBody:
+      type: object
+      required:
+        - workspaceId
+        - sourceDefinitionId
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+    OAuthDestinationConsentRequestBody:
+      type: object
+      required:
+        - workspaceId
+        - destinationDefinitionId
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
     OAuthConsentRead:
       type: object
       required:
         - consentUrl
       properties:
         consentUrl:
+          type: string
+        refreshToken:
           type: string
     OAuthSourceRequestBody:
       type: object

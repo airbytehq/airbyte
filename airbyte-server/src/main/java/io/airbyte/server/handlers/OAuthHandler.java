@@ -24,22 +24,22 @@
 
 package io.airbyte.server.handlers;
 
-import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.OAuthConsentRead;
+import io.airbyte.api.model.OAuthDestinationConsentRequestBody;
 import io.airbyte.api.model.OAuthDestinationRequestBody;
 import io.airbyte.api.model.OAuthRead;
+import io.airbyte.api.model.OAuthSourceConsentRequestBody;
 import io.airbyte.api.model.OAuthSourceRequestBody;
-import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.server.errors.ApplicationErrorKnownException;
 
 public class OAuthHandler {
 
-  public OAuthConsentRead getSourceOAuthConsent(SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody) {
+  public OAuthConsentRead getSourceOAuthConsent(OAuthSourceConsentRequestBody oAuthSourceConsentRequestBody) {
     // TODO: Implement OAuth module to be called here https://github.com/airbytehq/airbyte/issues/5641
     throw new ApplicationErrorKnownException("Source connector does not supports OAuth yet.");
   }
 
-  public OAuthConsentRead getDestinationOAuthConsent(DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
+  public OAuthConsentRead getDestinationOAuthConsent(OAuthDestinationConsentRequestBody oAuthDestinationConsentRequestBody) {
     // TODO: Implement OAuth module to be called here https://github.com/airbytehq/airbyte/issues/5641
     throw new ApplicationErrorKnownException("Destination connector does not supports OAuth yet.");
   }
