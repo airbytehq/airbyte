@@ -152,15 +152,17 @@
           },
           "project": {
             "type": ["null", "object"],
-            "code": {
+            "properties": {
+              "code": {
                 "type": ["null", "string"]
               },
               "id": {
-                "type": ["null", "integer"]
+                "type": ["integer", "null"]
               },
               "name": {
                 "type": ["null", "string"]
               }
+            }
           }
         }
       }
