@@ -124,10 +124,10 @@
           "type": ["null", "string"]
         },
         "unit_price": {
-          "type": ["null", "string", "number"]
+          "type": ["null", "number"]
         },
         "unit_name": {
-          "type": ["null", "string", "number"]
+          "type": ["null", "string"]
         }
       }
     },
