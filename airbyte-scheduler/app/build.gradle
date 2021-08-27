@@ -12,7 +12,8 @@ dependencies {
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-config:persistence')
-    implementation project(':airbyte-db')
+    implementation project(':airbyte-api')
+    implementation project(':airbyte-db:lib')
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-scheduler:models')
@@ -41,6 +42,8 @@ run {
     // we map the docker pg db to port 5433 so it does not conflict with other pg instances.
     environment "DATABASE_URL", "jdbc:postgresql://localhost:5433/${env.DATABASE_DB}"
     environment "CONFIG_DATABASE_URL", "jdbc:postgresql://localhost:5433/${env.CONFIG_DATABASE_DB}"
+
+    environment "RUN_DATABASE_MIGRATION_ON_STARTUP", env.RUN_DATABASE_MIGRATION_ON_STARTUP
 
     environment "WORKSPACE_ROOT", env.WORKSPACE_ROOT
     environment "WORKSPACE_DOCKER_MOUNT", env.WORKSPACE_DOCKER_MOUNT
