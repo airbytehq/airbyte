@@ -21,10 +21,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-from source_bamboo_hr.source import SourceBambooHr
+
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import Status
+from source_bamboo_hr.source import SourceBambooHr
+
 
 def test_client_wrong_credentials():
     source = SourceBambooHr()
-    status, error = source.check_connection(logger=AirbyteLogger, config={"subdomain": "test", "api_key": "blah-blah"})
-    assert not status
+    result = source.check(logger=AirbyteLogger, config={"subdomain": "test", "api_key": "blah-blah"})
+    assert result.status == Status.FAILED

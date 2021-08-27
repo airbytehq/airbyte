@@ -23,10 +23,12 @@
 #
 
 
+import base64
 import json
 from datetime import datetime
 from typing import Dict, Generator
-import base64
+
+import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
@@ -40,8 +42,6 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode
 from airbyte_cdk.sources import Source
-from PyBambooHR.PyBambooHR import PyBambooHR
-import requests
 from requests.models import Response
 
 
@@ -51,20 +51,22 @@ class BambooHrClient(object):
         self.subdomain = config["subdomain"]
 
     def _prepare_request_auth(self):
-        return base64.b64encode("{}:x".format(self.api_key).encode('utf-8')).decode('utf-8')
+        return base64.b64encode("{}:x".format(self.api_key).encode("utf-8")).decode("utf-8")
 
-    def request(self, uri: str, method: str = "GET", data = {}, **kwargs) -> Response:
-        url = 'https://api.bamboohr.com/api/gateway.php/{}/v1/{}'.format(self.subdomain, uri)
-        headers = kwargs.get('headers', {})
-        headers.update({
-            'Authorization': 'Basic {}'.format(self._prepare_request_auth()),
-            'Accept': 'application/json',
-            'Content-Type': kwargs.get('content_type') or 'application/json'
-        })
+    def request(self, uri: str, method: str = "GET", data={}, **kwargs) -> Response:
+        url = "https://api.bamboohr.com/api/gateway.php/{}/v1/{}".format(self.subdomain, uri)
+        headers = kwargs.get("headers", {})
+        headers.update(
+            {
+                "Authorization": "Basic {}".format(self._prepare_request_auth()),
+                "Accept": "application/json",
+                "Content-Type": kwargs.get("content_type") or "application/json",
+            }
+        )
 
-        if data and not isinstance(data, str) and headers['Content-Type'] == 'application/json':
+        if data and not isinstance(data, str) and headers["Content-Type"] == "application/json":
             data = json.dumps(data)
-        
+
         response = requests.request(method=method, url=url, headers=headers)
         response.raise_for_status()
         return response
@@ -106,21 +108,30 @@ class SourceBambooHr(Source):
             by their names and types)
         """
         streams = []
-        
+
         bamboo = BambooHrClient(config)
         fields = bamboo.request("meta/fields").json()
         properties = {}
-        
-        for field in fields:
-            properties[field.get("alias", field["name"])] = {"type": field["type"]}
 
-        stream_name = "employee" 
-        json_schema = { 
+        for field in fields:
+            # All fields are nullable strings
+            # https://documentation.bamboohr.com/docs/field-types
+            properties[field.get("alias", field["name"])] = {"type": ["null", "string"]}
+
+        stream_name = "employee"
+        json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": properties,
         }
-        streams.append(AirbyteStream(name=stream_name, json_schema=json_schema, supported_sync_modes=[SyncMode.full_refresh], supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append_dedup]))
+        streams.append(
+            AirbyteStream(
+                name=stream_name,
+                json_schema=json_schema,
+                supported_sync_modes=[SyncMode.full_refresh],
+                supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append_dedup],
+            )
+        )
         return AirbyteCatalog(streams=streams)
 
     def read(
@@ -146,7 +157,7 @@ class SourceBambooHr(Source):
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
         stream_name = "employee"
-        
+
         bamboo = BambooHrClient(config)
         data = bamboo.request("employees/directory").json()
         employees = data["employees"]
