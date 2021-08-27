@@ -102,11 +102,17 @@ def test_verify_records_schema(configured_catalog: ConfiguredAirbyteCatalog):
 @pytest.mark.parametrize(
     "record, configured_catalog, valid",
     [
+        # Send null data
+        ({"a": None}, {"type": "object", "properties": {"a": {"type": "string", "format": "time"}}}, False),
         # time
         ({"a": "sdf"}, {"type": "object", "properties": {"a": {"type": "string", "format": "time"}}}, False),
         ({"a": "12:00"}, {"type": "object", "properties": {"a": {"type": "string", "format": "time"}}}, False),
         ({"a": "12:00:90"}, {"type": "object", "properties": {"a": {"type": "string", "format": "time"}}}, False),
         ({"a": "12:00:22"}, {"type": "object", "properties": {"a": {"type": "string", "format": "time"}}}, True),
+        # date
+        ({"a": "12:00:90"}, {"type": "object", "properties": {"a": {"type": "string", "format": "date"}}}, False),
+        ({"a": "2020-12-20"}, {"type": "object", "properties": {"a": {"type": "string", "format": "date"}}}, True),
+        ({"a": "2020-20-20"}, {"type": "object", "properties": {"a": {"type": "string", "format": "date"}}}, False),
         # date-time
         # full date-time format with timezone only valid, according to https://datatracker.ietf.org/doc/html/rfc3339#section-5.6
         ({"a": "12:11:00"}, {"type": "object", "properties": {"a": {"type": "string", "format": "date-time"}}}, False),
