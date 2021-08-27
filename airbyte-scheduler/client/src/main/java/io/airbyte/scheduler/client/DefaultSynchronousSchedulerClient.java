@@ -87,7 +87,6 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         .withConnectionConfiguration(source.getConfiguration())
         .withDockerImage(dockerImage);
 
-
     return execute(
         ConfigType.DISCOVER_SCHEMA,
         source.getSourceDefinitionId(),
