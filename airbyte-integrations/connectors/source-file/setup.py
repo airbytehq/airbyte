@@ -41,6 +41,7 @@ MAIN_REQUIREMENTS = [
     "pyarrow==3.0.0",
     "xlrd==2.0.1",
     "openpyxl==3.0.6",
+    "pyxlsb==1.0.8",
 ]
 
 TEST_REQUIREMENTS = [
