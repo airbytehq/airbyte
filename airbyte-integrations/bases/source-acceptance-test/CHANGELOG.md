@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.15
+Add detailed logging for acceptance tests: https://github.com/airbytehq/airbyte/pull/5392
+
 ## 0.1.14
 Fix for NULL datetime in MySQL format (i.e. 0000-00-00): https://github.com/airbytehq/airbyte/pull/4465
 
