@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.function.Function;
+import javax.annotation.Nullable;
 
 public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerClient {
 
@@ -61,9 +62,8 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
 
     return execute(
         ConfigType.CHECK_CONNECTION_SOURCE,
-        source.getSourceId(),
-        jobId -> temporalClient.submitCheckConnection(UUID.randomUUID(), 0, jobCheckConnectionConfig),
         source.getSourceDefinitionId(),
+        jobId -> temporalClient.submitCheckConnection(UUID.randomUUID(), 0, jobCheckConnectionConfig),
         source.getWorkspaceId());
   }
 
@@ -76,9 +76,8 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
 
     return execute(
         ConfigType.CHECK_CONNECTION_DESTINATION,
-        destination.getDestinationId(),
-        jobId -> temporalClient.submitCheckConnection(UUID.randomUUID(), 0, jobCheckConnectionConfig),
         destination.getDestinationDefinitionId(),
+        jobId -> temporalClient.submitCheckConnection(UUID.randomUUID(), 0, jobCheckConnectionConfig),
         destination.getWorkspaceId());
   }
 
@@ -90,9 +89,8 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
 
     return execute(
         ConfigType.DISCOVER_SCHEMA,
-        source.getSourceId(),
-        jobId -> temporalClient.submitDiscoverSchema(UUID.randomUUID(), 0, jobDiscoverCatalogConfig),
         source.getSourceDefinitionId(),
+        jobId -> temporalClient.submitDiscoverSchema(UUID.randomUUID(), 0, jobDiscoverCatalogConfig),
         source.getWorkspaceId());
   }
 
@@ -104,54 +102,54 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         ConfigType.GET_SPEC,
         null,
         jobId -> temporalClient.submitGetSpec(UUID.randomUUID(), 0, jobSpecConfig),
-        null,
         null);
   }
 
-  // config id can be empty
   @VisibleForTesting
   <T> SynchronousResponse<T> execute(ConfigType configType,
-                                     UUID configId,
+                                     @Nullable UUID connectorDefinitionId,
                                      Function<UUID, TemporalResponse<T>> executor,
-                                     UUID jobTrackerId,
                                      UUID workspaceId) {
     final long createdAt = Instant.now().toEpochMilli();
     final UUID jobId = UUID.randomUUID();
     try {
-      track(jobId, configType, jobTrackerId, workspaceId, JobState.STARTED, null);
+      track(jobId, configType, connectorDefinitionId, workspaceId, JobState.STARTED, null);
       final TemporalResponse<T> operationOutput = executor.apply(jobId);
       JobState outputState = operationOutput.getMetadata().isSucceeded() ? JobState.SUCCEEDED : JobState.FAILED;
-      track(jobId, configType, jobTrackerId, workspaceId, outputState, operationOutput.getOutput().orElse(null));
+      track(jobId, configType, connectorDefinitionId, workspaceId, outputState, operationOutput.getOutput().orElse(null));
       final long endedAt = Instant.now().toEpochMilli();
 
       return SynchronousResponse.fromTemporalResponse(
           operationOutput,
           jobId,
           configType,
-          configId,
+          connectorDefinitionId,
           createdAt,
           endedAt);
     } catch (RuntimeException e) {
-      track(jobId, configType, jobTrackerId, workspaceId, JobState.FAILED, null);
+      track(jobId, configType, connectorDefinitionId, workspaceId, JobState.FAILED, null);
       throw e;
     }
   }
 
-  private <T> void track(UUID jobId, ConfigType configType, UUID jobTrackerId, UUID workspaceId, JobState jobState, T value) {
+  /**
+   * @param connectorDefinitionId either source or destination definition id
+   */
+  private <T> void track(UUID jobId, ConfigType configType, UUID connectorDefinitionId, UUID workspaceId, JobState jobState, T value) {
     switch (configType) {
       case CHECK_CONNECTION_SOURCE -> jobTracker.trackCheckConnectionSource(
           jobId,
-          jobTrackerId,
+          connectorDefinitionId,
           workspaceId,
           jobState,
           (StandardCheckConnectionOutput) value);
       case CHECK_CONNECTION_DESTINATION -> jobTracker.trackCheckConnectionDestination(
           jobId,
+          connectorDefinitionId,
           workspaceId,
-          jobTrackerId,
           jobState,
           (StandardCheckConnectionOutput) value);
-      case DISCOVER_SCHEMA -> jobTracker.trackDiscover(jobId, jobTrackerId, workspaceId, jobState);
+      case DISCOVER_SCHEMA -> jobTracker.trackDiscover(jobId, connectorDefinitionId, workspaceId, jobState);
       case GET_SPEC -> {
         // skip tracking for get spec to avoid noise.
       }

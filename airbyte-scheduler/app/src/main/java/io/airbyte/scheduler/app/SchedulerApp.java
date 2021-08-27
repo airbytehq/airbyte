@@ -194,6 +194,25 @@ public class SchedulerApp {
     }
   }
 
+  private static void waitForServer(Configs configs) throws InterruptedException {
+    final AirbyteApiClient apiClient = new AirbyteApiClient(
+        new io.airbyte.api.client.invoker.ApiClient().setScheme("http")
+            .setHost(configs.getAirbyteApiHost())
+            .setPort(configs.getAirbyteApiPort())
+            .setBasePath("/api"));
+
+    boolean isHealthy = false;
+    while (!isHealthy) {
+      try {
+        HealthCheckRead healthCheck = apiClient.getHealthApi().getHealthCheck();
+        isHealthy = healthCheck.getDb();
+      } catch (ApiException e) {
+        LOGGER.info("Waiting for server to become available...");
+        Thread.sleep(2000);
+      }
+    }
+  }
+
   public static void main(String[] args) throws IOException, InterruptedException {
 
     final Configs configs = new EnvConfigs();
@@ -205,6 +224,9 @@ public class SchedulerApp {
 
     final String temporalHost = configs.getTemporalHost();
     LOGGER.info("temporalHost = " + temporalHost);
+
+    // Wait for the server to initialize the database and run migration
+    waitForServer(configs);
 
     LOGGER.info("Creating Job DB connection pool...");
     final Database jobDatabase = new JobsDatabaseInstance(
@@ -247,23 +269,6 @@ public class SchedulerApp {
               throw new RuntimeException(e);
             }
           });
-    }
-
-    final AirbyteApiClient apiClient = new AirbyteApiClient(
-        new io.airbyte.api.client.invoker.ApiClient().setScheme("http")
-            .setHost(configs.getAirbyteApiHost())
-            .setPort(configs.getAirbyteApiPort())
-            .setBasePath("/api"));
-
-    boolean isHealthy = false;
-    while (!isHealthy) {
-      try {
-        HealthCheckRead healthCheck = apiClient.getHealthApi().getHealthCheck();
-        isHealthy = healthCheck.getDb();
-      } catch (ApiException e) {
-        LOGGER.info("Waiting for server to become available...");
-        Thread.sleep(2000);
-      }
     }
 
     AirbyteVersion.assertIsCompatible(configs.getAirbyteVersion(), jobPersistence.getVersion().get());
