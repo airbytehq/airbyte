@@ -466,7 +466,7 @@ public class ConfigDumpImporter {
     final List<String> directories = listDirectories(sourceRoot);
     // We sort the directories because we want to process SOURCE_CONNECTION after
     // STANDARD_SOURCE_DEFINITION and DESTINATION_CONNECTION after STANDARD_DESTINATION_DEFINITION
-    // so that we can identify which definitions should not be upgraded to the latest version
+    // so that we can identify which connectors should not be imported because the definitions are not existing
     directories.sort(Comparator.reverseOrder());
     Stream<T> standardSyncs = null;
 
