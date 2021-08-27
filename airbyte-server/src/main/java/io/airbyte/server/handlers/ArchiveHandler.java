@@ -24,7 +24,6 @@
 
 package io.airbyte.server.handlers;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.model.ImportRead;
 import io.airbyte.api.model.ImportRead.StatusEnum;
 import io.airbyte.api.model.ImportRequestBody;
@@ -67,11 +66,10 @@ public class ArchiveHandler {
         new ConfigDumpImporter(configRepository, jobPersistence, workspaceHelper));
   }
 
-  @VisibleForTesting
-  ArchiveHandler(final String version,
-                 final FileTtlManager fileTtlManager,
-                 final ConfigDumpExporter configDumpExporter,
-                 final ConfigDumpImporter configDumpImporter) {
+  public ArchiveHandler(final String version,
+                        final FileTtlManager fileTtlManager,
+                        final ConfigDumpExporter configDumpExporter,
+                        final ConfigDumpImporter configDumpImporter) {
     this.version = version;
     this.configDumpExporter = configDumpExporter;
     this.configDumpImporter = configDumpImporter;
