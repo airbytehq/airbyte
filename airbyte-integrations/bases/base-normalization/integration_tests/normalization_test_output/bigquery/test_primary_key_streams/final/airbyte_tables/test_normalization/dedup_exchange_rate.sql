@@ -11,6 +11,7 @@ select
     id,
     currency,
     date,
+    timestamp_col,
     HKD_special___characters,
     HKD_special___characters_1,
     NZD,

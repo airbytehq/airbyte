@@ -31,7 +31,9 @@ const PaperCupsConfig: {
 } = {
   accountId: "74560291-451e-4ceb-a802-56706ece528b",
   baseUrl: "https://app.papercups.io",
-  enableStorytime: window.PAPERCUPS_STORYTIME !== "disabled",
+  enableStorytime:
+    !process.env.REACT_APP_PAPERCUPS_DISABLE_STORYTIME &&
+    window.PAPERCUPS_STORYTIME !== "disabled",
 };
 
 const FullStoryConfig: Fullstory.SnippetOptions = {
@@ -42,6 +44,9 @@ const FullStoryConfig: Fullstory.SnippetOptions = {
 type Config = {
   ui: {
     helpLink: string;
+    gitLink: string;
+    termsLink: string;
+    privacyLink: string;
     updateLink: string;
     slackLink: string;
     docsLink: string;
@@ -70,7 +75,10 @@ const BASE_DOCS_LINK = "https://docs.airbyte.io";
 const config: Config = {
   ui: {
     technicalSupport: `${BASE_DOCS_LINK}/troubleshooting/on-deploying`,
+    termsLink: "https://airbyte.io/terms",
+    privacyLink: "https://airbyte.io/privacy-policy",
     helpLink: "https://airbyte.io/community",
+    gitLink: "https://github.com/airbytehq/airbyte",
     updateLink: `${BASE_DOCS_LINK}/upgrading-airbyte`,
     slackLink: "https://slack.airbyte.io",
     docsLink: BASE_DOCS_LINK,

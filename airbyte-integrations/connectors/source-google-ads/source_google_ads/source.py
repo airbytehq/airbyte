@@ -26,8 +26,10 @@
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from google.ads.googleads.errors import GoogleAdsException
 
 from .google_ads import GoogleAds
 from .streams import (
@@ -40,24 +42,36 @@ from .streams import (
     DisplayKeywordPerformanceReport,
     DisplayTopicsPerformanceReport,
     ShoppingPerformanceReport,
+    UserLocationReport,
 )
 
 
 class SourceGoogleAds(AbstractSource):
+    def get_credentials(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        credentials = config["credentials"]
+
+        # https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid
+        if "login_customer_id" in config and config["login_customer_id"].strip():
+            credentials["login_customer_id"] = config["login_customer_id"]
+        return credentials
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             logger.info("Checking the config")
-            GoogleAds(credentials=config["credentials"], customer_id=config["customer_id"])
+            google_api = GoogleAds(credentials=self.get_credentials(config), customer_id=config["customer_id"])
+            account_stream = Accounts(api=google_api)
+            list(account_stream.read_records(sync_mode=SyncMode.full_refresh))
             return True, None
-        except Exception as error:
-            return False, f"Unable to connect to Google Ads API with the provided credentials - {repr(error)}"
+        except GoogleAdsException as error:
+            return False, f"Unable to connect to Google Ads API with the provided credentials - {repr(error.failure)}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        google_api = GoogleAds(credentials=config["credentials"], customer_id=config["customer_id"])
+        google_api = GoogleAds(credentials=self.get_credentials(config), customer_id=config["customer_id"])
         incremental_stream_config = dict(
             api=google_api, conversion_window_days=config["conversion_window_days"], start_date=config["start_date"]
         )
         return [
+            UserLocationReport(**incremental_stream_config),
             AccountPerformanceReport(**incremental_stream_config),
             DisplayTopicsPerformanceReport(**incremental_stream_config),
             DisplayKeywordPerformanceReport(**incremental_stream_config),

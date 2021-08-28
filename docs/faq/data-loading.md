@@ -25,7 +25,7 @@ Until Airbyte has this system in place, here is what you can do:
   and file an issue with the detailed logs copied in the issue’s description. The team will be notified about your issue and will update
   it for any progress or comment on it.  
 * Fix the issue yourself: Airbyte is open source so you don’t need to wait for anybody to fix your issue if it is important to you.
-  To do so, just fork the [GitHub project](http://github.com/airbytehq/airbyte) and fix the piece of code that need fixing. If you’re okay
+  To do so, just fork the [GitHub project](https://github.com/airbytehq/airbyte) and fix the piece of code that need fixing. If you’re okay
   with contributing your fix to the community, you can submit a pull request. We will review it ASAP.
 * Ask on Slack: don’t hesitate to ping the team on [Slack](https://slack.airbyte.io).
 
@@ -83,13 +83,21 @@ Yes, for more than 6000 thousand tables could be a problem to load the informati
 There are two Github issues about this limitation: [Issue #3942](https://github.com/airbytehq/airbyte/issues/3942) 
 and [Issue #3943](https://github.com/airbytehq/airbyte/issues/3943).
 
+## Help, Airbyte is hanging/taking a long time to discover my source's schema!
+
+This usually happens for database sources that contain a lot of tables. This should resolve itself in half an hour or so.
+
+If the source contains more than 6k tables, see the [above question](#there-is-a-limit-of-how-many-tables-one-connection-can-handle).
+
+There is a known issue with [Oracle databases](https://github.com/airbytehq/airbyte/issues/4944).
+
 ## **I see you support a lot of connectors – what about connectors Airbyte doesn’t support yet?**
 
 You can either:
 
 * Submit a [connector request](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=area%2Fintegration%2C+new-integration&template=new-integration-request.md&title=) on our Github project, and be notified once we or the community build a connector for it. 
 * Build a connector yourself by forking our [GitHub project](https://github.com/airbytehq/airbyte) and submitting a pull request. Here
-  are the [instructions how to build a connector](../contributing-to-airbyte/building-new-connector/).
+  are the [instructions how to build a connector](../contributing-to-airbyte/README.md).
 * Ask on Slack: don’t hesitate to ping the team on [Slack](https://slack.airbyte.io).
 
 ## **What kind of notifications do I get?**

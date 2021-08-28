@@ -28,7 +28,7 @@ This source always outputs a single stream, `us_census_stream`. The output of th
 
 Visit the [US Census API page](https://api.census.gov/data/key_signup.html) to obtain an API key.
 
-In addition, to understand how to configure the dataset path and query parameters, follow the guide and examples in the [API documentation](https://www.census.gov/data/developers/guidance/). Some particularly helpful pages: 
+In addition, to understand how to configure the dataset path and query parameters, follow the guide and examples in the [API documentation](https://www.census.gov/data/developers/data-sets.html). Some particularly helpful pages: 
 
 * [Available Datasets](https://www.census.gov/data/developers/guidance/api-user-guide.Available_Data.html)
 * [Core Concepts](https://www.census.gov/data/developers/guidance/api-user-guide.Core_Concepts.html)
