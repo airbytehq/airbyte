@@ -86,7 +86,7 @@ def transform_date_fields(
                         "end_date": pdm.date(record["end.year"], record["end.month"], record["end.day"]).to_date_string(),
                     }
                 )
-            # Cleanup the nested structures
+            # Cleanup tmp fields & nested used parts
             for key in [dict_key, "start.day", "start.month", "start.year", "end.day", "end.month", "end.year", "start", "end"]:
                 if key in record.keys():
                     record.pop(key)

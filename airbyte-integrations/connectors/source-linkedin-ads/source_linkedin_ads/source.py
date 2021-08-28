@@ -51,6 +51,10 @@ class LinkedinAdsStream(HttpStream, ABC):
         self.accounts = config.get("account_ids", None)
         self.config = config
 
+    def path(self, **kwargs) -> str:
+        """ Returns the API endpoint path for stream, from `endpoint` class attribute. """
+        return self.endpoint
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
         To paginate through results, begin with a start value of 0 and a count value of N.
@@ -83,8 +87,7 @@ class Accounts(LinkedinAdsStream):
     https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-accounts?tabs=http
     """
 
-    def path(self, **kwargs) -> str:
-        return "adAccountsV2"
+    endpoint = "adAccountsV2"
 
     def request_headers(self, stream_state: Mapping[str, Any], **kwargs) -> Mapping[str, Any]:
         """
@@ -102,7 +105,7 @@ class Accounts(LinkedinAdsStream):
         """
         params = super().request_params(stream_state=stream_state, **kwargs)
         if self.accounts:
-            account_list = ",".join(map(str, self.config.get("account_ids")))
+            account_list = ",".join(map(str, self.accounts))
             params["search"] = f"(id:(values:List({account_list})))"
             return urlencode(params, safe=":(),")
         return params
@@ -139,7 +142,7 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
         return {self.cursor_field: max(latest_record.get(self.cursor_field, None), current_stream_state.get(self.cursor_field, None))}
 
     def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
-        """ For the streams that provide the cursor_field like `Timestamp` or `lastModified`, we filter out the old records. """
+        """ For the streams that provide the cursor_field `lastModified`, we filter out the old records. """
         if stream_state:
             for record in records_slice:
                 if record[self.cursor_field] >= stream_state.get(self.cursor_field):
@@ -150,17 +153,16 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
 
 class StreamMixin(IncrementalLinkedinAdsStream):
     """
-    This class stands for provide stream slicing.
+    This class stands for provide stream slicing for other dependent streams.
     :: `slice_from_stream` - the reference to the parrent stream class,
         by default it's referenced to the Accounts stream class, as far as majority of streams are using it.
     :: `slice_key_value_map` - key_value map for stream slices in a format: {<slice_key_name>: <key inside record>}
     :: `search_param` - the query param to pass with request_params
-    :: `search_value` - the value for `search_param` to pass with request_params
+    :: `search_param_value` - the value for `search_param` to pass with request_params
     """
 
     slice_from_stream = Accounts
     slice_key_value_map = {"account_id": "id"}
-
     # define default additional request params
     search_param = "search.account.values[0]"
     search_param_value = "urn:li:sponsoredAccount:"
@@ -186,13 +188,10 @@ class AccountUsers(StreamMixin):
     https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-account-users?tabs=http
     """
 
+    endpoint = "adAccountUsersV2"
     # Account_users stream doesn't have `id` property, so the "account" is used instead.
     primary_key = "account"
-
     search_param = "accounts"
-
-    def path(self, **kwargs) -> str:
-        return "adAccountUsersV2"
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
@@ -207,9 +206,7 @@ class CampaignGroups(StreamMixin):
     https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaign-groups?tabs=http
     """
 
-    def path(self, **kwargs) -> str:
-        """ CampaignGroups Endpoint """
-        return "adCampaignGroupsV2"
+    endpoint = "adCampaignGroupsV2"
 
 
 class Campaigns(StreamMixin):
@@ -219,9 +216,7 @@ class Campaigns(StreamMixin):
     https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaigns?tabs=http
     """
 
-    def path(self, **kwargs) -> str:
-        """ Campaigns Endpoint """
-        return "adCampaignsV2"
+    endpoint = "adCampaignsV2"
 
 
 class Creatives(StreamMixin):
@@ -231,14 +226,11 @@ class Creatives(StreamMixin):
     https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-creatives?tabs=http
     """
 
+    endpoint = "adCreativesV2"
     slice_from_stream = Campaigns
     slice_key_value_map = {"campaign_id": "id"}
-
     search_param = "search.campaign.values[0]"
     search_param_value = "urn:li:sponsoredCampaign:"
-
-    def path(self, **kwargs) -> str:
-        return "adCreativesV2"
 
 
 class AdDirectSponsoredContents(StreamMixin):
@@ -248,16 +240,11 @@ class AdDirectSponsoredContents(StreamMixin):
     https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/advertising-targeting/create-and-manage-video?tabs=http#finders
     """
 
+    endpoint = "adDirectSponsoredContents"
     # AdDirectSponsoredContents stream doesn't have `id` property, so the "account" is used instead.
     primary_key = "account"
-
-    # slice_from_stream = Accounts
     slice_key_value_map = {"account_id": "id", "reference_id": "reference"}
     search_param = "account"
-
-    def path(self, **kwargs) -> str:
-        """ AdDirectSponsoredContents Endpoint """
-        return "adDirectSponsoredContents"
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
@@ -272,6 +259,7 @@ class AnalyticsStreamMixin(IncrementalLinkedinAdsStream):
     https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl#ad-analytics
     """
 
+    endpoint = "adAnalyticsV2"
     # For Analytics streams the primary_key is the entity of the pivot [Campaign URN, Creative URN, etc]
     primary_key = "pivotValue"
     cursor_field = "end_date"
@@ -280,10 +268,6 @@ class AnalyticsStreamMixin(IncrementalLinkedinAdsStream):
     def base_analytics_params(self) -> MutableMapping[str, Any]:
         """ Define the base parameters for analytics streams """
         return {"q": "analytics", "pivot": self.pivot_by, "timeGranularity": "DAILY"}
-
-    def path(self, **kwargs) -> str:
-        """ Analytics Endpoint. """
-        return "adAnalyticsV2"
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = self.base_analytics_params
