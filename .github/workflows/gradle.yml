@@ -446,8 +446,21 @@ jobs:
           sudo apt-get update
           sudo apt-get install socat
 
+      - name: Create cluster config file
+        run: |
+          cat > /tmp/kind-config.yaml <<EOF
+          kind: Cluster
+          apiVersion: kind.x-k8s.io/v1alpha4
+          nodes:
+          - role: control-plane
+          - role: worker
+          - role: worker
+          EOF
+
       - name: KIND Kubernetes Cluster Setup
         uses: helm/kind-action@v1.2.0
+        with:
+          config: /tmp/kind-config.yaml
         # In case of self-hosted EC2 errors, remove this env block.
         env:
           USER: root
