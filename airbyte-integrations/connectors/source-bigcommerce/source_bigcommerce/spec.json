@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigCommerce Source CDK Specifications",
     "type": "object",
-    "required": ["start_date","store_hash","access_token"],
+    "required": ["start_date", "store_hash", "access_token"],
     "additionalProperties": false,
     "properties": {
       "start_date": {
@@ -25,4 +25,3 @@
     }
   }
 }
-

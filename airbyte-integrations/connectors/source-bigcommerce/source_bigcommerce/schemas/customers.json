@@ -113,8 +113,8 @@
                   "value": {
                     "oneOf": [
                       { "type": ["null", "string"] },
-                      { "type": ["null", "integer"]},
-                      { "type": ["null", "array"]}
+                      { "type": ["null", "integer"] },
+                      { "type": ["null", "array"] }
                     ]
                   },
                   "customer_id": {
@@ -131,8 +131,8 @@
                   "value": {
                     "oneOf": [
                       { "type": ["null", "string"] },
-                      { "type": ["null", "integer"]},
-                      { "type": ["null", "array"]}
+                      { "type": ["null", "integer"] },
+                      { "type": ["null", "array"] }
                     ]
                   },
                   "address_id": {
@@ -145,7 +145,7 @@
           "store_credit_amounts": {
             "type": ["null", "array"],
             "items": {
-              "type": ["null","object"],
+              "type": ["null", "object"],
               "properties": {
                 "amount": {
                   "type": ["null", "integer"]
@@ -164,4 +164,3 @@
     }
   }
 }
-
