@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "59c5501b-9f95-411e-9269-7143c939adbd",
+  "name": "Bigcommerce",
+  "dockerRepository": "airbyte/source-bigcommerce",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/bigcommerce"
+}
