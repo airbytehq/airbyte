@@ -1,33 +1,33 @@
 {
   "pagination": {
-    "type": ["null","object"],
+    "type": ["null", "object"],
     "properties": {
       "total": {
-        "type": ["null","integer"]
+        "type": ["null", "integer"]
       },
       "count": {
-        "type": ["null","integer"]
+        "type": ["null", "integer"]
       },
       "per_page": {
-        "type": ["null","integer"]
+        "type": ["null", "integer"]
       },
       "current_page": {
-        "type": ["null","integer"]
+        "type": ["null", "integer"]
       },
       "total_pages": {
-        "type": ["null","integer"]
+        "type": ["null", "integer"]
       },
       "links": {
-        "type": ["null","object"],
+        "type": ["null", "object"],
         "properties": {
           "previous": {
-            "type": ["null","string"]
+            "type": ["null", "string"]
           },
           "current": {
-            "type": ["null","string"]
+            "type": ["null", "string"]
           },
           "next": {
-            "type": ["null","string"]
+            "type": ["null", "string"]
           }
         }
       }

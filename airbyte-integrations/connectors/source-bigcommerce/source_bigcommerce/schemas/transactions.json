@@ -3,139 +3,139 @@
   "type": "object",
   "properties": {
     "event": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "method": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "amount": {
-      "type": ["null","integer"]
+      "type": ["null", "integer"]
     },
     "currency": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "gateway": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "gateway_transaction_id": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "date_created": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "test": {
-      "type": ["null","boolean"]
+      "type": ["null", "boolean"]
     },
     "status": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "fraud_review": {
-      "type": ["null","boolean"]
+      "type": ["null", "boolean"]
     },
     "reference_transaction_id": {
-      "type": ["null","integer"]
+      "type": ["null", "integer"]
     },
     "offline": {
-      "type": ["null","object"],
+      "type": ["null", "object"],
       "properties": {
         "display_name": {
-          "type": ["null","string"]
+          "type": ["null", "string"]
         }
       }
     },
     "custom": {
-      "type": ["null","object"],
+      "type": ["null", "object"],
       "properties": {
         "payment_method": {
-          "type": ["null","string"]
+          "type": ["null", "string"]
         }
       }
     },
     "payment_method_id": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "id": {
-      "type": ["null","integer"]
+      "type": ["null", "integer"]
     },
     "order_id": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "payment_instrument_token": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "avs_result": {
-      "type": ["null","object"],
+      "type": ["null", "object"],
       "properties": {
         "code": {
-          "type": ["null","string"]
+          "type": ["null", "string"]
         },
         "message": {
-          "type": ["null","string"]
+          "type": ["null", "string"]
         },
         "street_match": {
-          "type": ["null","string"]
+          "type": ["null", "string"]
         },
         "postal_match": {
-          "type": ["null","string"]
+          "type": ["null", "string"]
         }
       }
     },
     "cvv_result": {
-      "type": ["null","object"],
+      "type": ["null", "object"],
       "properties": {
         "code": {
-          "type": ["null","string"]
+          "type": ["null", "string"]
         },
         "message": {
-          "type": ["null","string"]
+          "type": ["null", "string"]
         }
       }
     },
     "credit_card": {
-      "type": ["null","object"],
+      "type": ["null", "object"],
       "properties": {
         "card_type": {
-          "type": ["null","string"]
+          "type": ["null", "string"]
         },
         "card_iin": {
-          "type": ["null","string"]
+          "type": ["null", "string"]
         },
         "card_last4": {
-          "type": ["null","string"]
+          "type": ["null", "string"]
         },
         "card_expiry_month": {
-          "type": ["null","integer"]
+          "type": ["null", "integer"]
         },
         "card_expiry_year": {
-          "type": ["null","integer"]
+          "type": ["null", "integer"]
         }
       }
     },
     "gift_certificate": {
-      "type": ["null","object"],
+      "type": ["null", "object"],
       "properties": {
         "code": {
-          "type": ["null","string"]
+          "type": ["null", "string"]
         },
         "original_balance": {
-          "type": ["null","integer"]
+          "type": ["null", "integer"]
         },
         "starting_balance": {
-          "type": ["null","integer"]
+          "type": ["null", "integer"]
         },
         "remaining_balance": {
-          "type": ["null","integer"]
+          "type": ["null", "integer"]
         },
         "status": {
-          "type": ["null","string"]
+          "type": ["null", "string"]
         }
       }
     },
     "store_credit": {
-      "type": ["null","object"],
+      "type": ["null", "object"],
       "properties": {
         "remaining_balance": {
-          "type": ["null","integer"]
+          "type": ["null", "integer"]
         }
       }
     }

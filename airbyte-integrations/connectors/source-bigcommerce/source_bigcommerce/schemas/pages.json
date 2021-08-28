@@ -3,61 +3,61 @@
   "type": "object",
   "properties": {
     "email": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "meta_title": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "body": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "feed": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "link": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "contact_fields": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "meta_keywords": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "meta_description": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "search_keywords": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "url": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "channel_id": {
-      "type": ["null","integer"]
+      "type": ["null", "integer"]
     },
     "name": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "is_visible": {
-      "type": ["null","boolean"]
+      "type": ["null", "boolean"]
     },
     "parent_id": {
-      "type": ["null","integer"]
+      "type": ["null", "integer"]
     },
     "sort_order": {
-      "type": ["null","integer"]
+      "type": ["null", "integer"]
     },
     "type": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "is_homepage": {
-      "type": ["null","boolean"]
+      "type": ["null", "boolean"]
     },
     "is_customers_only": {
-      "type": ["null","boolean"]
+      "type": ["null", "boolean"]
     },
     "id": {
-      "type": ["null","integer"]
+      "type": ["null", "integer"]
     }
   }
 }

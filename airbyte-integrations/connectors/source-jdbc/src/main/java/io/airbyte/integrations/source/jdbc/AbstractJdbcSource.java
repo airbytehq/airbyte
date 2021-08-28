@@ -60,8 +60,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * This class contains helper functions and boilerplate for implementing a source connector for a
- * relational DB source which can be accessed via JDBC driver. If you are implementing a connector for
- * a relational DB which has a JDBC driver, make an effort to use this class.
+ * relational DB source which can be accessed via JDBC driver. If you are implementing a connector
+ * for a relational DB which has a JDBC driver, make an effort to use this class.
  */
 public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBCType, JdbcDatabase> implements Source {
 
