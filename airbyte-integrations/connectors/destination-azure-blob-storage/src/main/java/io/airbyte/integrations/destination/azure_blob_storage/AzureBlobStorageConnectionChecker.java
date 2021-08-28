@@ -40,18 +40,14 @@ import org.slf4j.LoggerFactory;
 public class AzureBlobStorageConnectionChecker {
 
   private static final String TEST_BLOB_NAME_PREFIX = "testConnectionBlob";
-  private BlobContainerClient containerClient; // schema in SQL DBs controller
-  private final AppendBlobClient appendBlobClient; // aka "SQL Table" controller
-  private final boolean overwriteDataInStream;
+  private BlobContainerClient containerClient; // aka schema in SQL DBs
+  private final AppendBlobClient appendBlobClient; // aka "SQL Table"
 
   private static final Logger LOGGER = LoggerFactory.getLogger(
       AzureBlobStorageConnectionChecker.class);
 
   public AzureBlobStorageConnectionChecker(
-                                           AzureBlobStorageDestinationConfig azureBlobStorageConfig,
-                                           boolean overwriteDataInStream) {
-
-    this.overwriteDataInStream = overwriteDataInStream;
+                                           AzureBlobStorageDestinationConfig azureBlobStorageConfig) {
 
     StorageSharedKeyCredential credential = new StorageSharedKeyCredential(
         azureBlobStorageConfig.getAccountName(),
@@ -66,8 +62,10 @@ public class AzureBlobStorageConnectionChecker {
             .buildAppendBlobClient();
   }
 
-  // this a kinda test method that is used in CHECK operation to make sure all works fine with the
-  // current config
+  /*
+   * This a kinda test method that is used in CHECK operation to make sure all works fine with the
+   * current config
+   */
   public void attemptWriteAndDelete() {
     initTestContainerAndBlob();
     writeUsingAppendBlock("Some test data");
@@ -88,22 +86,19 @@ public class AzureBlobStorageConnectionChecker {
 
     // create a storage container if absent (aka Table is SQL BD)
     if (!appendBlobClient.exists()) {
-      appendBlobClient.create(overwriteDataInStream);
+      appendBlobClient.create();
       LOGGER.info("blobContainerClient created");
     } else {
       LOGGER.info("blobContainerClient already exists");
     }
   }
 
-  // this options may be used to write and flush right away. fails for empty lines, but those are not
-  // supposed to be written here
+  /*
+   * This options may be used to write and flush right away. Note: Azure SDK fails for empty lines,
+   * but those are not supposed to be written here
+   */
   public void writeUsingAppendBlock(String data) {
     LOGGER.info("Writing test data to Azure Blob storage: " + data);
-    if (overwriteDataInStream) {
-      LOGGER.info("Override option is enabled. Old data is will be removed");
-      appendBlobClient.delete();
-      appendBlobClient.create();
-    }
     InputStream dataStream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
 
     Integer blobCommittedBlockCount = appendBlobClient.appendBlock(dataStream, data.length())
@@ -130,7 +125,6 @@ public class AzureBlobStorageConnectionChecker {
   /*
    * Delete the Container. Be very careful when you ise ir. It removes thw whole bucket and supposed
    * to be used in check connection ony for writing tmp data
-   *
    */
   public void deleteContainer() {
     LOGGER.info("Deleting blob: " + containerClient.getBlobContainerName());

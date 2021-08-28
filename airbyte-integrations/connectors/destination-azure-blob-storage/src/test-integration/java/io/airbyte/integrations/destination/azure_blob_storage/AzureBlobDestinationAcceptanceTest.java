@@ -61,14 +61,6 @@ public class AzureBlobDestinationAcceptanceTest {
   }
 
   @Test
-  public void testParallelSWrite() {
-    final AzureBlobStorageDestination azureBlobStorageDestination = new AzureBlobStorageDestination();
-    final AirbyteConnectionStatus checkResult = azureBlobStorageDestination.check(config);
-
-    assertEquals(Status.SUCCEEDED, checkResult.getStatus());
-  }
-
-  @Test
   public void testCheckInvalidAccountName() {
     final JsonNode invalidConfig = Jsons.jsonNode(ImmutableMap.builder()
         .put("azure_blob_storage_account_name", "someInvalidName")

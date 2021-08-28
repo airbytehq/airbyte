@@ -148,8 +148,6 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
       return;
     }
 
-    LOGGER.info("Processing message on acceptTracked:" + airbyteMessage);
-
     AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
     AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair
         .fromRecordMessage(recordMessage);

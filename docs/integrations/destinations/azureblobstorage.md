@@ -21,7 +21,7 @@ The Airbyte Azure Blob Storage destination allows you to sync data to Azure Blob
 | Endpoint Domain Name | string | This is Azure Blob Storage endpoint domain name. Leave default value (or leave it empty if run container from command line) to use Microsoft native one. |
 | Azure blob storage container (Bucket) Name | string | A name of the Azure blob storage container. If not exists - will be created automatically. If leave empty, then will be created automatically airbytecontainer+timestamp. |
 | Azure Blob Storage account name | string | The account's name of the Azure Blob Storage. |
-| The Azure blob storage account key | string | Azure blob storage account key. (Ex. format: Z8ZkZpteggFx394vm+PJHnGTvdRncaYS+LKJh986JYNmD+iyGTnG+PV+POiuYNhBg/ACS+LKjd%4FG3FHGN12Nd==). |
+| The Azure blob storage account key | string | Azure blob storage account key. Example: `abcdefghijklmnopqrstuvwxyz/0123456789+ABCDEFGHIJKLMNOPQRSTUVWXYZ/0123456789%++sampleKey==`. |
 | Format | object | Format specific configuration. See below for details. |
 
 ⚠️ Please note that under "Full Refresh Sync" mode, data in the configured blob will be wiped out before each sync. We recommend you to provision a dedicated Azure Blob Storage Container resource for this sync to prevent unexpected data deletion from misconfiguration. ⚠️
@@ -139,4 +139,4 @@ They will be like this in the output file:
 
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
-| 0.1.0 | 2021-08-11 | [#5332](https://github.com/airbytehq/airbyte/pull/5332) | Initial release with JSONL and CSV output. |
+| 0.1.0 | 2021-08-30 | [#5332](https://github.com/airbytehq/airbyte/pull/5332) | Initial release with JSONL and CSV output. |

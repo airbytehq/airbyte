@@ -71,8 +71,6 @@ public class AzureBlobStorageJsonlWriter extends BaseAzureBlobStorageWriter impl
     json.put(JavaBaseConstants.COLUMN_NAME_AB_ID, id.toString());
     json.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
     json.set(JavaBaseConstants.COLUMN_NAME_DATA, recordMessage.getData());
-
-    LOGGER.debug("Writing msg in write method. SerializedMessage:" + Jsons.serialize(json));
     printWriter.println(Jsons.serialize(json));
   }
 

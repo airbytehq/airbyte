@@ -81,17 +81,18 @@ public class AzureBlobStorageCsvWriter extends BaseAzureBlobStorageWriter implem
 
   @Override
   public void write(UUID id, AirbyteRecordMessage recordMessage) throws IOException {
-    LOGGER.debug("Writing message: " + recordMessage);
     csvPrinter.printRecord(csvSheetGenerator.getDataRow(id, recordMessage));
   }
 
   @Override
   protected void closeWhenSucceed() throws IOException {
+    LOGGER.info("Closing csvPrinter when succeed");
     csvPrinter.close();
   }
 
   @Override
   protected void closeWhenFail() throws IOException {
+    LOGGER.info("Closing csvPrinter when failed");
     csvPrinter.close();
   }
 
