@@ -260,8 +260,8 @@ class AnalyticsStreamMixin(IncrementalLinkedinAdsStream):
     """
 
     endpoint = "adAnalyticsV2"
-    # For Analytics streams the primary_key is the entity of the pivot [Campaign URN, Creative URN, etc]
-    primary_key = "pivotValue"
+    # For Analytics streams the primary_key is the entity of the pivot [Campaign URN, Creative URN, etc] + `end_date`
+    primary_key = ["pivotValue", "end_date"]
     cursor_field = "end_date"
 
     @property
