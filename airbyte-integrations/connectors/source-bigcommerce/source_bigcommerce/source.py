@@ -31,7 +31,6 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 
 
@@ -58,11 +57,11 @@ class BigcommerceStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         json_response = response.json()
-        meta = json_response.get("meta",None)
+        meta = json_response.get("meta", None)
         if meta:
-            pagination = meta.get("pagination",None)
+            pagination = meta.get("pagination", None)
             if pagination and pagination.get("current_page") < pagination.get("total_pages"):
-                return dict(page = pagination.get("current_page")+1)
+                return dict(page=pagination.get("current_page") + 1)
             else:
                 return None
 
@@ -73,14 +72,14 @@ class BigcommerceStream(HttpStream, ABC):
         if next_page_token:
             params.update(**next_page_token)
         else:
-            params.update({"sort":self.order_field})
+            params.update({"sort": self.order_field})
         return params
 
     def request_headers(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-        ) -> Mapping[str, Any]:
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
         headers = super().request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        headers.update({"Accept":"application/json","Content-Type":"application/json"})
+        headers.update({"Accept": "application/json", "Content-Type": "application/json"})
         return headers
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -103,7 +102,6 @@ class IncrementalBigcommerceStream(BigcommerceStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
-
     def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         # If there is a next page token then we should only send pagination-related parameters.
@@ -113,7 +111,6 @@ class IncrementalBigcommerceStream(BigcommerceStream, ABC):
             if stream_state:
                 params[self.filter_field] = stream_state.get(self.cursor_field)
         return params
-
 
     def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
         if stream_state:
@@ -128,7 +125,9 @@ class OrderSubstream(IncrementalBigcommerceStream):
     def read_records(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
-        orders_stream = Orders(authenticator=self.authenticator, start_date=self.start_date, store_hash=self.store_hash, access_token=self.access_token)
+        orders_stream = Orders(
+            authenticator=self.authenticator, start_date=self.start_date, store_hash=self.store_hash, access_token=self.access_token
+        )
         for data in orders_stream.read_records(sync_mode=SyncMode.full_refresh):
             slice = super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
             yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
@@ -155,9 +154,9 @@ class Orders(IncrementalBigcommerceStream):
         return response.json() if len(response.content) > 0 else []
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if len(response.content) > 0 and len(response.json())==self.limit:
-            self.page = self.page+1
-            return dict(page = self.page)
+        if len(response.content) > 0 and len(response.json()) == self.limit:
+            self.page = self.page + 1
+            return dict(page=self.page)
         else:
             return None
 
@@ -181,7 +180,7 @@ class Pages(IncrementalBigcommerceStream):
     def read_records(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
-        slice = super().read_records(sync_mode = SyncMode.full_refresh, stream_slice = stream_slice,stream_state = stream_state)
+        slice = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, stream_state=stream_state)
         yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
 
 
@@ -204,7 +203,6 @@ class Transactions(OrderSubstream):
 
 
 class BigcommerceAuthenticator(HttpAuthenticator):
-
     def __init__(self, token: str):
         self.token = token
 
@@ -218,7 +216,7 @@ class SourceBigcommerce(AbstractSource):
         access_token = config["access_token"]
         api_version = "v3"
 
-        headers = {"X-Auth-Token": access_token,"Accept":"application/json","Content-Type":"application/json"}
+        headers = {"X-Auth-Token": access_token, "Accept": "application/json", "Content-Type": "application/json"}
         url = f"https://api.bigcommerce.com/stores/{store_hash}/{api_version}/channels"
 
         try:
@@ -231,7 +229,12 @@ class SourceBigcommerce(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
 
         auth = BigcommerceAuthenticator(token=config["access_token"])
-        args = {"authenticator": auth, "start_date": config["start_date"], "store_hash": config["store_hash"], "access_token": config["access_token"]}
+        args = {
+            "authenticator": auth,
+            "start_date": config["start_date"],
+            "store_hash": config["store_hash"],
+            "access_token": config["access_token"],
+        }
         return [
             Customers(**args),
             Pages(**args),
