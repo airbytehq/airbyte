@@ -30,7 +30,7 @@
               "selection_strategy": {
                 "type": "string",
                 "enum": ["all"],
-                "default": "all"
+                "const": "all"
               }
             }
           },
@@ -43,7 +43,7 @@
               "selection_strategy": {
                 "type": "string",
                 "enum": ["subset"],
-                "default": "subset"
+                "const": "subset"
               },
               "ids": {
                 "type": "array",

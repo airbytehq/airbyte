@@ -15,6 +15,15 @@ This Source is capable of syncing the following core Streams:
 * [Ads](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadsbyadgroupid?view=bingads-13)
 
 
+Supported report streams:
+* [AccountPerformanceReport](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+* [AdPerformanceReport](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
+* [AdGroupPerformanceReport](https://docs.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
+* [CampaignPerformanceReport](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+* [BudgetSummaryReport](https://docs.microsoft.com/en-us/advertising/reporting-service/budgetsummaryreportrequest?view=bingads-13)
+* [KeywordPerformanceReport](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
+
+
 ### Data type mapping
 
 | Integration Type | Airbyte Type | Notes |
@@ -65,4 +74,5 @@ Be aware that `refresh token` will expire in 90 days. You need to repeat auth pr
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.1   | 2021-08-31 | [](https://github.com/airbytehq/airbyte/pull/) | Added reporting streams) |
 | 0.1.0   | 2021-07-22 | [4911](https://github.com/airbytehq/airbyte/pull/4911) | Initial release supported core streams (Accounts, Campaigns, Ads, AdGroups) |

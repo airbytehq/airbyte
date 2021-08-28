@@ -39,7 +39,7 @@ CACHE: VcrCache = VcrCache()
 
 
 class BingAdsStream(Stream, ABC):
-    primary_key: str = "Id"
+    primary_key: Optional[str] = "Id"
     # indicates whether stream should cache incoming responses via VcrCache
     use_cache: bool = False
 
@@ -314,6 +314,7 @@ class Ads(BingAdsStream):
 
 
 class BudgetSummaryReport(IncrementalReportStream, BingAdsStream):
+    primary_key = None
     data_field: str = ""
     service_name: str = "ReportingService"
     report_name: str = "BudgetSummaryReport"
@@ -336,6 +337,7 @@ class BudgetSummaryReport(IncrementalReportStream, BingAdsStream):
 
 
 class CampaignPerformanceReport(IncrementalReportStream, BingAdsStream):
+    primary_key = None
     data_field: str = ""
     service_name: str = "ReportingService"
     report_name: str = "CampaignPerformanceReport"
@@ -366,6 +368,7 @@ class CampaignPerformanceReport(IncrementalReportStream, BingAdsStream):
 
 
 class AdPerformanceReport(IncrementalReportStream, BingAdsStream):
+    primary_key = None
     data_field: str = ""
     service_name: str = "ReportingService"
     report_name: str = "AdPerformanceReport"
@@ -401,6 +404,7 @@ class AdPerformanceReport(IncrementalReportStream, BingAdsStream):
 
 
 class AdGroupPerformanceReport(IncrementalReportStream, BingAdsStream):
+    primary_key = None
     data_field: str = ""
     service_name: str = "ReportingService"
     report_name: str = "AdGroupPerformanceReport"
@@ -433,6 +437,7 @@ class AdGroupPerformanceReport(IncrementalReportStream, BingAdsStream):
 
 
 class KeywordPerformanceReport(IncrementalReportStream, BingAdsStream):
+    primary_key = None
     data_field: str = ""
     service_name: str = "ReportingService"
     report_name: str = "KeywordPerformanceReport"
@@ -471,6 +476,7 @@ class KeywordPerformanceReport(IncrementalReportStream, BingAdsStream):
 
 
 class AccountPerformanceReport(IncrementalReportStream, BingAdsStream):
+    primary_key = None
     data_field: str = ""
     service_name: str = "ReportingService"
     report_name: str = "AccountPerformanceReport"

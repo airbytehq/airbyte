@@ -252,10 +252,9 @@ class IncrementalReportStream(abc.ABC):
             value = None
 
         if value is not None and column in REPORT_FIELD_TYPES:
-            _type = REPORT_FIELD_TYPES[column]
-            if _type == "integer":
+            if REPORT_FIELD_TYPES[column] == "integer":
                 value = 0 if value == "--" else int(value.replace(",", ""))
-            elif _type == "number":
+            elif REPORT_FIELD_TYPES[column] == "number":
                 value = 0.0 if value == "--" else float(value.replace("%", "").replace(",", ""))
 
         return value

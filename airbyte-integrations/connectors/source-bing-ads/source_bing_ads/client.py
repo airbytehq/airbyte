@@ -32,7 +32,7 @@ import pendulum
 from airbyte_cdk.logger import AirbyteLogger
 from bingads.authorization import AuthorizationData, OAuthTokens, OAuthWebAuthCodeGrant
 from bingads.service_client import ServiceClient
-from bingads.util import errorcode_of_exception
+from bingads.util import errorcode_of_exception, operation_errorcode_of_exception
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from suds import WebFault, sudsobject
 
@@ -103,18 +103,19 @@ class Client:
         return False if token_updated_expires_in > self.refresh_token_safe_delta else True
 
     def should_retry(self, error: WebFault) -> bool:
-        error_code = errorcode_of_exception(error)
+        error_code = str(errorcode_of_exception(error))
         give_up = error_code not in self.retry_on_codes
         if give_up:
-            self.logger.info(f"Giving up for returned error code: {error_code}")
+            self.logger.error(f"Giving up for returned error code: {error_code}. Error details: {self._get_error_message(error)}")
         return give_up
+
+    def _get_error_message(self, error: WebFault) -> str:
+        return str(self.asdict(error.fault)) if hasattr(error, "fault") else str(error)
 
     def log_retry_attempt(self, details: Mapping[str, Any]) -> None:
         _, exc, _ = sys.exc_info()
-        error = self.asdict(exc.fault) if hasattr(exc, "fault") else exc
-
         self.logger.info(
-            f"Caught retryable error: {str(error)} after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+            f"Caught retryable error: {self._get_error_message(exc)} after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
         )
 
     def request(self, **kwargs: Mapping[str, Any]) -> Mapping[str, Any]:
