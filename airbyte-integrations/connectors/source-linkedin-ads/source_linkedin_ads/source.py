@@ -314,6 +314,7 @@ class AnalyticsStreamMixin(IncrementalLinkedinAdsStream):
 
 class AdCampaignAnalytics(AnalyticsStreamMixin):
     """
+    Campaing Analytics stream.
     See the AnalyticsStreamMixin class for more information.
     """
 
@@ -323,11 +324,10 @@ class AdCampaignAnalytics(AnalyticsStreamMixin):
     search_param_value = "urn:li:sponsoredCampaign:"
     pivot_by = "CAMPAIGN"
 
-    # TODO: create the schema) using shared $ref: {"ad_analytics.json"}
-
 
 class AdCreativeAnalytics(AnalyticsStreamMixin):
     """
+    Creative Analytics stream.
     See the AnalyticsStreamMixin class for more information.
     """
 
@@ -336,8 +336,6 @@ class AdCreativeAnalytics(AnalyticsStreamMixin):
     search_param = "creatives[0]"
     search_param_value = "urn:li:sponsoredCreative:"
     pivot_by = "CREATIVE"
-
-    # TODO: create the schema) using shared $ref: {"ad_analytics.json"}
 
 
 class SourceLinkedinAds(AbstractSource):
