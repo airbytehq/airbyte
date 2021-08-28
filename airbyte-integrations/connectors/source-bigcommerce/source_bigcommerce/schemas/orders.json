@@ -115,10 +115,7 @@
       "type": ["null", "string"]
     },
     "base_wrapping_cost": {
-      "oneOf": [
-        {"type": ["null", "integer"]},
-        {"type": ["null", "string"]}
-      ]
+      "oneOf": [{ "type": ["null", "integer"] }, { "type": ["null", "string"] }]
     },
     "billing_address": {
       "type": ["null", "object"],
@@ -270,4 +267,3 @@
     }
   }
 }
-
