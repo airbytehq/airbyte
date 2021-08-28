@@ -6,9 +6,13 @@ To build a new connector in Java or Python, we provide templates so you don't ne
 
 **Note: you are not required to maintain the connectors you create.** The goal is that the Airbyte core team and the community help maintain the connector.
 
-## Connector-Development Kit (CDK)
+## Python Connector-Development Kit (CDK)
 
-You can build a connector very quickly with the [Airbyte CDK](cdk-python/README.md), which generates 75% of the code required for you.   
+You can build a connector very quickly in Python with the [Airbyte CDK](cdk-python/README.md), which generates 75% of the code required for you.   
+
+## TS/JS Connector-Development Kit (Faros AI Airbyte CDK)
+
+You can build a connector in TypeScript/JavaScript with the [Faros AI CDK](./cdk-faros-js/README.md), which generates and boostraps most of the code required for HTTP Airbyte sources. 
 
 ## The Airbyte specification
 
