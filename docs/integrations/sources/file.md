@@ -113,6 +113,10 @@ In case you select `JSON` format, then options from the [read\_json](https://pan
 
 For example, you can use the `{"orient" : "records"}` to change how orientation of data is loaded \(if data is `[{column -> value}, … , {column -> value}]`\)
 
+#### Changing data types of source columns
+
+Normally, Airbyte tries to infer the data type from the source, but you can use `reader_options` to force specific data types. If you input `{"dtype":"string"}`, all columns will be forced to be parsed as strings. If you only want a specific column to be parsed as a string, simply use `{"dtype" : {"column name": "string"}}`. 
+
 ### Examples
 
 Here are a list of examples of possible file inputs:
