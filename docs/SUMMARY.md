@@ -129,6 +129,7 @@
     * [Zoom](integrations/sources/zoom.md)
     * [Zuora](integrations/sources/zuora.md)
   * [Destinations](integrations/destinations/README.md)
+    * [AzureBlobStorage](integrations/destinations/azureblobstorage.md)
     * [BigQuery](integrations/destinations/bigquery.md)
     * [Chargify](integrations/destinations/keen.md)
     * [Google Cloud Storage (GCS)](integrations/destinations/gcs.md)
