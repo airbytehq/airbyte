@@ -70,8 +70,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   /**
-   * Populate the {@code airbyte_configs} table with configs from the seed persistence. Only do so if the table is empty. Otherwise, we assume that it
-   * has been populated.
+   * Load or update the configs from the seed.
    */
   public DatabaseConfigPersistence loadData(ConfigPersistence seedConfigPersistence) throws IOException {
     database.transaction(ctx -> {
