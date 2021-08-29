@@ -32,7 +32,7 @@ import pendulum
 from airbyte_cdk.logger import AirbyteLogger
 from bingads.authorization import AuthorizationData, OAuthTokens, OAuthWebAuthCodeGrant
 from bingads.service_client import ServiceClient
-from bingads.util import errorcode_of_exception, operation_errorcode_of_exception
+from bingads.util import errorcode_of_exception
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from suds import WebFault, sudsobject
 

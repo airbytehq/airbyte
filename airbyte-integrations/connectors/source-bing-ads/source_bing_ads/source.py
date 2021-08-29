@@ -32,7 +32,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from source_bing_ads.cache import VcrCache
 from source_bing_ads.client import Client
-from source_bing_ads.reports import IncrementalReportStream
+from source_bing_ads.reports import ReportsMixin
 from suds import sudsobject
 
 CACHE: VcrCache = VcrCache()
@@ -313,7 +313,7 @@ class Ads(BingAdsStream):
         yield from []
 
 
-class BudgetSummaryReport(IncrementalReportStream, BingAdsStream):
+class BudgetSummaryReport(ReportsMixin, BingAdsStream):
     primary_key = None
     data_field: str = ""
     service_name: str = "ReportingService"
@@ -336,7 +336,7 @@ class BudgetSummaryReport(IncrementalReportStream, BingAdsStream):
     ]
 
 
-class CampaignPerformanceReport(IncrementalReportStream, BingAdsStream):
+class CampaignPerformanceReport(ReportsMixin, BingAdsStream):
     primary_key = None
     data_field: str = ""
     service_name: str = "ReportingService"
@@ -367,7 +367,7 @@ class CampaignPerformanceReport(IncrementalReportStream, BingAdsStream):
     ]
 
 
-class AdPerformanceReport(IncrementalReportStream, BingAdsStream):
+class AdPerformanceReport(ReportsMixin, BingAdsStream):
     primary_key = None
     data_field: str = ""
     service_name: str = "ReportingService"
@@ -403,7 +403,7 @@ class AdPerformanceReport(IncrementalReportStream, BingAdsStream):
     ]
 
 
-class AdGroupPerformanceReport(IncrementalReportStream, BingAdsStream):
+class AdGroupPerformanceReport(ReportsMixin, BingAdsStream):
     primary_key = None
     data_field: str = ""
     service_name: str = "ReportingService"
@@ -436,7 +436,7 @@ class AdGroupPerformanceReport(IncrementalReportStream, BingAdsStream):
     ]
 
 
-class KeywordPerformanceReport(IncrementalReportStream, BingAdsStream):
+class KeywordPerformanceReport(ReportsMixin, BingAdsStream):
     primary_key = None
     data_field: str = ""
     service_name: str = "ReportingService"
@@ -475,7 +475,7 @@ class KeywordPerformanceReport(IncrementalReportStream, BingAdsStream):
     ]
 
 
-class AccountPerformanceReport(IncrementalReportStream, BingAdsStream):
+class AccountPerformanceReport(ReportsMixin, BingAdsStream):
     primary_key = None
     data_field: str = ""
     service_name: str = "ReportingService"

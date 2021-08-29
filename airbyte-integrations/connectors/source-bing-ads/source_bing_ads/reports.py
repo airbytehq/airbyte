@@ -42,7 +42,6 @@ REPORT_FIELD_TYPES = {
     "AdRelevance": "number",
     "Assists": "integer",
     "AverageCpc": "number",
-    "AverageCpp": "number",
     "AveragePosition": "number",
     "BusinessCategoryId": "integer",
     "BusinessListingId": "integer",
@@ -63,39 +62,19 @@ REPORT_FIELD_TYPES = {
     "EstimatedImpressionPercent": "number",
     "EstimatedImpressions": "integer",
     "ExactMatchImpressionSharePercent": "number",
-    "ExpectedCtr": "number",
-    "GoalId": "integer",
     "HistoricAdRelevance": "number",
-    "HistoricExpectedCtr": "number",
-    "HistoricLandingPageExperience": "number",
-    "HistoricQualityScore": "number",
-    "ImpressionLostToAdRelevancePercent": "number",
-    "ImpressionLostToBidPercent": "number",
-    "ImpressionLostToBudgetPercent": "number",
-    "ImpressionLostToExpectedCtrPercent": "number",
-    "ImpressionLostToRankPercent": "number",
     "Impressions": "integer",
     "ImpressionSharePercent": "number",
     "KeywordId": "integer",
     "LandingPageExperience": "number",
-    "LocationId": "integer",
     "LowQualityClicks": "integer",
     "LowQualityClicksPercent": "number",
-    "LowQualityConversionRate": "number",
-    "LowQualityConversions": "integer",
-    "LowQualityGeneralClicks": "integer",
     "LowQualityImpressions": "integer",
-    "LowQualityImpressionsPercent": "number",
     "LowQualitySophisticatedClicks": "integer",
-    "Mainline1Bid": "number",
-    "MainlineBid": "number",
-    "ManualCalls": "integer",
     "PhoneCalls": "integer",
     "PhoneImpressions": "integer",
-    "Ptr": "number",
     "QualityImpact": "number",
     "QualityScore": "number",
-    "Radius": "number",
     "ReturnOnAdSpend": "number",
     "Revenue": "number",
     "RevenuePerAssist": "number",
@@ -108,7 +87,7 @@ REPORT_FIELD_TYPES = {
 }
 
 
-class IncrementalReportStream(abc.ABC):
+class ReportsMixin(abc.ABC):
     file_directory: str = "/tmp"
     timeout: int = 60000  # in milliseconds
     report_file_format: str = "Csv"
@@ -226,6 +205,7 @@ class IncrementalReportStream(abc.ABC):
         report_request.ReturnOnlyCompleteData = return_only_complete_data
         report_request.Time = time
         report_request.ReportName = self.report_name
+        # Defines the set of accounts and campaigns to include in the report.
         scope = reporting_service.factory.create("AccountThroughCampaignReportScope")
         scope.AccountIds = {"long": [account_id]}
         scope.Campaigns = None
@@ -249,7 +229,7 @@ class IncrementalReportStream(abc.ABC):
         """
         value = row.value(column)
         if value == "":
-            value = None
+            return None
 
         if value is not None and column in REPORT_FIELD_TYPES:
             if REPORT_FIELD_TYPES[column] == "integer":
