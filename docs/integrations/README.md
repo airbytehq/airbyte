@@ -18,8 +18,11 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Appstore](./sources/appstore.md)| Alpha |
 |[Asana](./sources/asana.md) | Beta |
 |[AWS CloudTrail](./sources/aws-cloudtrail.md)| Beta |
+|[BambooHR](./sources/bamboo-hr.md)| Alpha |
 |[Braintree](./sources/braintree.md)| Alpha |
+|[BigCommerce](./sources/bigcommerce.md)| Alpha |
 |[BigQuery](./sources/bigquery.md)| Beta |
+|[Bing Ads](./sources/bing-ads.md)| Beta |
 |[Cart](./sources/cart.md)| Beta |
 |[Chargebee](./sources/chargebee.md)| Alpha |
 |[ClickHouse](./sources/clickhouse.md)| Beta |
@@ -37,6 +40,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Google Ads](./sources/google-ads.md)| Beta |
 |[Google Adwords](./sources/google-adwords.md)| Beta |
 |[Google Analytics](./sources/googleanalytics.md)| Beta |
+|[Google Analytics v4](./sources/google-analytics-v4.md)| Beta |
 |[Google Directory](./sources/google-directory.md)| Certified |
 |[Google Search Console](./sources/google-search-console.md)| Beta |
 |[Google Sheets](./sources/google-sheets.md)| Certified |
@@ -92,6 +96,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Sugar CRM](./sources/sugar-crm.md)| Beta |
 |[SurveyMonkey](./sources/surveymonkey.md)| Beta |
 |[Tempo](./sources/tempo.md)| Beta |
+|[Trello](./sources/trello.md)| Beta |
 |[Twilio](./sources/twilio.md)| Beta |
 |[US Census](./sources/us-census.md)| Alpha |
 |[WooCommerce](./sources/woo-commerce.md)| Beta |
