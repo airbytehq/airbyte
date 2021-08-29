@@ -19,7 +19,8 @@
         },
       "api_key": {
           "type": "string",
-          "description": "The CUSTOMER KEY for API in WooCommerce shop."
+          "description": "The CUSTOMER KEY for API in WooCommerce shop.",
+          "airbyte_secret": true
         },
       "api_secret": {
           "type": "string",

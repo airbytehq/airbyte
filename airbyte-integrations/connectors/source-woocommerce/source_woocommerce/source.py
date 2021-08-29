@@ -137,7 +137,6 @@ class NonFilteredStream(IncrementalWoocommerceStream):
 
 class Coupons(IncrementalWoocommerceStream):
     data_field = "coupons"
-    order_field = "date"
 
 
 class Customers(NonFilteredStream):
@@ -162,10 +161,6 @@ class SourceWoocommerce(AbstractSource):
         """
         Testing connection availability for the connector.
         """
-        shop = config["shop"]
-        api_version = "wc/v3"
-        api_key = config["api_key"]
-        api_password = config["api_secret"]
         headers = {"Accept": "application/json"}
         url =  f"https://{shop}.com/wp-json/{api_version}/"
 
@@ -179,12 +174,7 @@ class SourceWoocommerce(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        TODO: Replace the streams below with your own streams.
 
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
-        # TODO remove the authenticator if not required.
         auth = auth = TokenAuthenticator(token=self._convert_auth_to_token(config["api_key"], config["api_secret"]), auth_method="Basic")  # Oauth2Authenticator is also available if you need oauth support
         args = {"authenticator": auth, "shop": config["shop"], "start_date": config["start_date"], "api_key": config["api_key"], "api_secret": config["api_secret"]}
 
