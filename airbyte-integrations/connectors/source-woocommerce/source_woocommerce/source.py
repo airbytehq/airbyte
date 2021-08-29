@@ -29,6 +29,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
 import requests
+from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -57,6 +58,9 @@ class WoocommerceStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return f"https://{self.shop}.com/wp-json/{self.api_version}/"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page = response.links.get("next", None)
@@ -135,23 +139,15 @@ class Coupons(IncrementalWoocommerceStream):
     data_field = "coupons"
     order_field = "date"
 
-    def path(self, **kwargs) -> str:
-        return f"{self.data_field}"
 
 class Customers(NonFilteredStream):
     data_field = "customers"
     order_field = "registered_date"
 
-    def path(self, **kwargs) -> str:
-        return f"{self.data_field}"
-
 
 class Orders(IncrementalWoocommerceStream):
     data_field = "orders"
-    order_field = "date"
 
-    def path(self, **kwargs) -> str:
-        return f"{self.data_field}"
 
 # Source
 class SourceWoocommerce(AbstractSource):
@@ -162,7 +158,7 @@ class SourceWoocommerce(AbstractSource):
         token = b64encode(b":".join((username, password))).strip().decode("ascii")
         return token
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         Testing connection availability for the connector.
         """

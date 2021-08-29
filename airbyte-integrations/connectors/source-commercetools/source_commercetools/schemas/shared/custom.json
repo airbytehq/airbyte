@@ -1,0 +1,26 @@
+{
+  "type": ["null","object"],
+  "properties": {
+    "type": {
+      "$ref": "reference.json"
+    },
+    "fields": {
+      "type": ["null","object"],
+      "properties": {
+        "name": {
+          "type": ["null","string"]
+        },
+        "label": {
+          "type": ["null","string"]
+        },
+        "required": {
+          "type": ["null","boolean"]
+        },
+        "inputHint": {
+          "type": ["null","string"]
+        }
+      }
+    }
+  }
+}
+

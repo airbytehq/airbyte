@@ -5,7 +5,7 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_woocommerce'
+    moduleDirectory 'source_commercetools'
 }
 
 dependencies {
