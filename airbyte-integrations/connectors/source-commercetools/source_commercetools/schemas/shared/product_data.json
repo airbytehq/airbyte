@@ -1,0 +1,44 @@
+{
+  "type": ["null","object"],
+  "properties": {
+    "name": {
+      "type": ["null","string"]
+    },
+    "categories": {
+      "type": ["null","array"],
+      "items": {
+        "$ref": "shared/reference.json"
+      }
+    },
+    "categoryOrderHints": {
+      "type": ["null","string"]
+    },
+    "description": {
+      "type": ["null","string"]
+    },
+    "slug": {
+      "type": ["null","string"]
+    },
+    "metaTitle": {
+      "type": ["null","string"]
+    },
+    "metaDescription": {
+      "type": ["null","string"]
+    },
+    "metaKeywords": {
+      "type": ["null","string"]
+    },
+    "masterVariant": {
+      "$ref": "product_variant.json"
+    },
+    "variants": {
+      "type": ["null","array"],
+      "items": {
+        "$ref": "product_variant.json"
+      }
+    },
+    "searchKeywords": {
+      "type": ["null","string"]
+    }
+  }
+}
