@@ -636,61 +636,12 @@ class DealStream(CRMObjectStream):
             yield record
 
 
-class CRMAssociationStream(Stream):
-    """  see https://developers.hubspot.com/docs/api/crm/associations for more details
+class DealToContactAssociationsStream(CRMObjectStream):
     """
-
-    entity: Optional[str] = None
-    associations: List[str] = []
-    updated_at_field = None
-    created_at_field = None
-
-    @property
-    def url(self):
-        """Entity URL"""
-        return f"/crm/v3/associations/{self._relationship_from}/{self._relationship_to}/{self._endpoint}"
-
-    def __init__(self, relationship_from: str = None, relationship_to: str = None, endpoint: str = None, **kwargs):
-        super().__init__(**kwargs)
-        self._relationship_from = relationship_from
-        self._relationship_to = relationship_to
-        self._endpoint = endpoint
-
-    def _transform(self, records: Iterable) -> Iterable:
-        """Preprocess record """
-        for record in records:
-            yield record
-
-    def _filter_old_records(self, records: Iterable) -> Iterable:
-        """Skip """
-        for record in records:
-            yield record
-
-
-class DealToContactAssociationsStream(CRMAssociationStream):
-    def __init__(self, deal_stream, **kwargs):
-        super().__init__(relationship_from="Deals", relationship_to="Contacts", endpoint="batch/read", **kwargs)
-        self._deal_stream = deal_stream
-
-    def prepare_payload(self, ids: Iterable) -> Mapping[str, Any]:
-        payload = {"inputs": []}
-
-        for deal_id in ids:
-            payload['inputs'].append({"id": deal_id})
-
-        return payload
-
-    def list(self, fields) -> Iterable:
-
-        deals = self._deal_stream.list(fields)
-        ids = []
-
-        for deal in deals:
-            ids.append(deal.get('id'))
-            if len(ids) == self.limit:
-                payload = self.prepare_payload(ids=ids)
-                yield from self.read(partial(self._api.post, url=self.url, data=payload))
-                ids = []
+    Deals to Contacts associations
+    """
+    entity = "deal"
+    associations = ["contacts"]
 
 
 class DealPipelineStream(Stream):
