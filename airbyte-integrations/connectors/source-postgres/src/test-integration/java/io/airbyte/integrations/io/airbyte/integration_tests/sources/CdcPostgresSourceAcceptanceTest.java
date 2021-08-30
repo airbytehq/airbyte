@@ -25,6 +25,7 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
@@ -67,7 +68,7 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
   private JsonNode config;
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     container = new PostgreSQLContainer<>("postgres:13-alpine")
         .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"), "/etc/postgresql/postgresql.conf")
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
@@ -119,7 +120,7 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
   }
 
@@ -130,7 +131,10 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected ConnectorSpecification getSpec() throws Exception {
-    return Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
+    final ConnectorSpecification originalSpec = Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
+    final ObjectNode propNode = (ObjectNode) originalSpec.getConnectionSpecification().get("properties");
+    propNode.set("tunnel_method", Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json")));
+    return originalSpec;
   }
 
   @Override

@@ -30,7 +30,7 @@ public class SshKeyPostgresSourceAcceptanceTest extends AbstractSshPostgresSourc
 
   @Override
   public Path getConfigFilePath() {
-    return Path.of("secrets/password-key-config.json");
+    return Path.of("secrets/ssh-key-config.json");
   }
 
 }
