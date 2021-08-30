@@ -67,10 +67,10 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
         .put("tunnel_ssh_port", secretsConfig.get("tunnel_method").get("tunnel_ssh_port"))
         .put("tunnel_username", secretsConfig.get("tunnel_method").get("tunnel_username"))
         .put("tunnel_userpass", Jsons.getOptional(secretsConfig, "tunnel_method", "tunnel_userpass").map(JsonNode::asText).orElse(""))
-        .put("tunnel_usersshkey", Jsons.getOptional(secretsConfig, "tunnel_method", "tunnel_usersshkey").map(JsonNode::asText).orElse(""))
+        .put("tunnel_user_ssh_key", Jsons.getOptional(secretsConfig, "tunnel_method", "tunnel_user_ssh_key").map(JsonNode::asText).orElse(""))
         .put("tunnel_db_remote_host", secretsConfig.get("tunnel_method").get("tunnel_db_remote_host"))
         .put("tunnel_db_remote_port", secretsConfig.get("tunnel_method").get("tunnel_db_remote_port"))
-        .put("tunnel_localport", secretsConfig.get("tunnel_method").get("tunnel_localport"))
+        .put("tunnel_local_port", secretsConfig.get("tunnel_method").get("tunnel_local_port"))
         .build());
 
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()

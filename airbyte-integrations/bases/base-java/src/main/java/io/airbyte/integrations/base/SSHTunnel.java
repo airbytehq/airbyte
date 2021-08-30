@@ -130,11 +130,11 @@ public class SSHTunnel implements AutoCloseable {
         Jsons.getStringOrNull(sshConfig, "tunnel_host").trim(),
         Jsons.getStringOrNull(sshConfig, "tunnel_ssh_port").trim(),
         Jsons.getStringOrNull(sshConfig, "tunnel_username").trim(),
-        Jsons.getStringOrNull(sshConfig, "tunnel_usersshkey").trim(),
+        Jsons.getStringOrNull(sshConfig, "tunnel_user_ssh_key").trim(),
         Jsons.getStringOrNull(sshConfig, "tunnel_userpass").trim(),
         Jsons.getStringOrNull(sshConfig, "tunnel_db_remote_host").trim(),
         Jsons.getStringOrNull(sshConfig, "tunnel_db_remote_port").trim(),
-        Jsons.getStringOrNull(sshConfig, "tunnel_localport").trim());
+        Jsons.getStringOrNull(sshConfig, "tunnel_local_port").trim());
   }
 
   public static void sshWrap(final JsonNode config, final VoidCallable wrapped) throws Exception {
