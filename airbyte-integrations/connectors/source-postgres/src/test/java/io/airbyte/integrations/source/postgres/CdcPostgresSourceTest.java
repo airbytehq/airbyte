@@ -138,14 +138,14 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   @Test
-  void testCheckWithoutPublication() throws SQLException {
+  void testCheckWithoutPublication() throws Exception {
     database.query(ctx -> ctx.execute("DROP PUBLICATION " + PUBLICATION + ";"));
     final AirbyteConnectionStatus status = source.check(config);
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
   }
 
   @Test
-  void testCheckWithoutReplicationSlot() throws SQLException {
+  void testCheckWithoutReplicationSlot() throws Exception {
     final String fullReplicationSlot = SLOT_NAME_BASE + "_" + dbName;
     database.query(ctx -> ctx.execute("SELECT pg_drop_replication_slot('" + fullReplicationSlot + "');"));
 

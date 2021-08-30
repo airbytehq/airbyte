@@ -150,6 +150,23 @@ public class Jsons {
     }
   }
 
+  public static Optional<JsonNode> getOptional(JsonNode json, final String... keys) {
+    for (final String key : keys) {
+      if (json == null) {
+        return Optional.empty();
+      }
+
+      json = json.get(key);
+    }
+
+    return Optional.ofNullable(json);
+  }
+
+  public static String getStringOrNull(final JsonNode json, final String... keys) {
+    final Optional<JsonNode> optional = getOptional(json, keys);
+    return optional.map(JsonNode::asText).orElse(null);
+  }
+
   /**
    * By the Jackson DefaultPrettyPrinter prints objects with an extra space as follows: {"name" :
    * "airbyte"}. We prefer {"name": "airbyte"}.
