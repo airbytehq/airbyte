@@ -53,8 +53,8 @@ class FacebookPagesStream(HttpStream, ABC):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         data = response.json()
 
-        if not data.get("data"):
-            return None
+        if not data.get("data") or not data.get("paging"):
+            return {}
 
         return {
             "limit": 100,
@@ -77,11 +77,7 @@ class FacebookPagesStream(HttpStream, ABC):
             yield response.json()
 
         else:
-            data_fields = self.data_field.split("_")
-            records = response.json()
-
-            while data_fields:
-                records = records.get(data_fields.pop(0))
+            records = response.json().get(self.data_field)
 
             for record in records:
                 yield record
@@ -100,13 +96,8 @@ class Page(FacebookPagesStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, stream_slice, next_page_token)
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(**kwargs)
         # we have to define which fields will return from Facebook API
         # because FB API doesn't provide opportunity to get fields dynamically without delays
         # so in PAGE_FIELDS we define fields that user can get from API
@@ -120,18 +111,11 @@ class Post(FacebookPagesStream):
     https://developers.facebook.com/docs/graph-api/reference/v11.0/page/feed,
     """
 
-    data_field = "data"
-
     def path(self, **kwargs) -> str:
         return f"{self._page_id}/posts"
 
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, stream_slice, next_page_token)
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(**kwargs)
         params["fields"] = POST_FIELDS
 
         return params
@@ -142,10 +126,8 @@ class PageInsights(FacebookPagesStream):
     API docs: https://developers.facebook.com/docs/graph-api/reference/page/insights/,
     """
 
-    data_field = "insights_data"
-
     def path(self, **kwargs) -> str:
-        return f"{self._page_id}"
+        return f"{self._page_id}/insights"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -157,7 +139,7 @@ class PageInsights(FacebookPagesStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
-        params["fields"] = f'insights.metric({",".join(PAGE_METRICS)})'
+        params["metric"] = ",".join(PAGE_METRICS)
 
         return params
 
@@ -168,7 +150,7 @@ class PostInsights(FacebookPagesStream):
     """
 
     def path(self, **kwargs) -> str:
-        return f'{self._page_id}/posts/?fields=insights.metric({",".join(POST_METRICS)})'
+        return f"{self._page_id}/posts"
 
     def request_params(
         self,

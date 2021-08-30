@@ -4,48 +4,36 @@
       "stream": {
         "name": "page",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "default_cursor_field": ["lastUpdatedTime"]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
-      "cursor_field": null,
       "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
         "name": "post",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "default_cursor_field": ["updatedAt"]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
-      "cursor_field": null,
       "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
         "name": "page_insights",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "default_cursor_field": ["updatedAt"]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
-      "cursor_field": null,
       "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
         "name": "post_insights",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "default_cursor_field": ["updatedAt"]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
-      "cursor_field": null,
       "destination_sync_mode": "overwrite"
     }
   ]

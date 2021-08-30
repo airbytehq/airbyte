@@ -24,6 +24,7 @@
 
 import json
 
+import pytest
 from source_facebook_pages.streams import Post
 
 
@@ -35,20 +36,14 @@ class MockResponse:
         return json.loads(self.value)
 
 
-def test_pagination():
+@pytest.mark.parametrize(
+    "data, expected",
+    [
+        ('{"data":[1, 2, 3],"paging":{"cursors":{"after": "next"}}}', "next"),
+        ('{"data":[1, 2, 3]}', None),
+        ('{"data": []}', None),
+    ],
+)
+def test_pagination(data, expected):
     stream = Post()
-
-    data = """{
-        "data": [1, 2, 3],
-        "paging": {
-            "cursors": {
-                "after": "next"
-            }
-        }
-    }"""
-    assert stream.next_page_token(MockResponse(data)).get("after") == "next"
-
-    data = """{
-            "data": []
-        }"""
-    assert stream.next_page_token(MockResponse(data)) is None
+    assert stream.next_page_token(MockResponse(data)).get("after") == expected
