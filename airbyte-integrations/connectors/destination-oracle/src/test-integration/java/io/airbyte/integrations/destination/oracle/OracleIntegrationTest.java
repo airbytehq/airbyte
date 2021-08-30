@@ -111,10 +111,10 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
   }
 
   private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
-    List<org.jooq.Record> result = getDatabase().query(ctx ->
-            ctx.fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, OracleDestination.COLUMN_NAME_EMITTED_AT))
-        .stream()
-        .collect(Collectors.toList()));
+    List<org.jooq.Record> result = getDatabase()
+        .query(ctx -> ctx.fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, OracleDestination.COLUMN_NAME_EMITTED_AT))
+            .stream()
+            .collect(Collectors.toList()));
     return result
         .stream()
         .map(r -> r.formatJSON(JSON_FORMAT))
@@ -168,7 +168,7 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
     try {
       for (String table : tables) {
         database.query(ctx -> {
-          ctx.execute(String.format("drop table %s", table));
+          ctx.execute("drop table " + table);
           return null;
         });
       }
