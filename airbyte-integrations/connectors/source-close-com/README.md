@@ -95,6 +95,7 @@ Place custom tests inside `integration_tests/` folder, then, from the connector 
 python -m pytest integration_tests
 ```
 #### Acceptance Tests
+`Roles` stream removed from tests due to incorrect comparison of identical data in the array (`test_two_sequential_reads` test).
 Customize `acceptance-test-config.yml` file to configure tests. See [Source Acceptance Tests](source-acceptance-tests.md) for more information.
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
 To run your integration tests with acceptance tests, from the connector root, run

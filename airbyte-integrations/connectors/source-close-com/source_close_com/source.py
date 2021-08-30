@@ -94,6 +94,7 @@ class CloseComStream(HttpStream, ABC):
 class IncrementalCloseComStream(CloseComStream):
 
     cursor_field = "date_updated"
+    state_checkpoint_interval = 100
 
     def get_updated_state(
         self,
