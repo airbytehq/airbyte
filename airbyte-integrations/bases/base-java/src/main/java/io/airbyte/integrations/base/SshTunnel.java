@@ -50,9 +50,9 @@ import org.slf4j.LoggerFactory;
  * Encapsulates the connection configuration for an ssh tunnel port forward through a proxy/bastion
  * host plus the remote host and remote port to forward to a specified local port.
  */
-public class SSHTunnel implements AutoCloseable {
+public class SshTunnel implements AutoCloseable {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SSHTunnel.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SshTunnel.class);
 
   public enum Method {
     NO_TUNNEL,
@@ -74,7 +74,7 @@ public class SSHTunnel implements AutoCloseable {
   private SshClient sshclient;
   private ClientSession tunnelSession;
 
-  public SSHTunnel(final Method method,
+  public SshTunnel(final Method method,
                    final String host,
                    final String tunnelSshPort,
                    final String user,
@@ -120,12 +120,12 @@ public class SSHTunnel implements AutoCloseable {
     }
   }
 
-  public static SSHTunnel getInstance(final JsonNode config) {
+  public static SshTunnel getInstance(final JsonNode config) {
     final JsonNode sshConfig = config.get("tunnel_method");
     final Method tunnelMethod = Method.valueOf(Jsons.getStringOrNull(sshConfig, "tunnel_method").trim());
     LOGGER.info("Starting connection with method: {}", tunnelMethod);
 
-    return new SSHTunnel(
+    return new SshTunnel(
         tunnelMethod,
         Jsons.getStringOrNull(sshConfig, "tunnel_host").trim(),
         Jsons.getStringOrNull(sshConfig, "tunnel_ssh_port").trim(),
@@ -145,7 +145,7 @@ public class SSHTunnel implements AutoCloseable {
   }
 
   public static <T> T sshWrap(final JsonNode config, final CheckedSupplier<T, Exception> wrapped) throws Exception {
-    try (final SSHTunnel ignored = SSHTunnel.getInstance(config)) {
+    try (final SshTunnel ignored = SshTunnel.getInstance(config)) {
       return wrapped.get();
     }
   }
