@@ -10,8 +10,7 @@
         "tunnel_method": {
           "description": "No ssh tunnel needed to connect to database",
           "type": "string",
-          "enum": ["NO_TUNNEL"],
-          "default": "NO_TUNNEL",
+          "const": "NO_TUNNEL",
           "order": 0
         }
       }
@@ -30,8 +29,7 @@
         "tunnel_method": {
           "description": "Connect through a jump server tunnel host using username and ssh key",
           "type": "string",
-          "enum": ["SSH_KEY_AUTH"],
-          "default": "SSH_KEY_AUTH",
+          "const": "SSH_KEY_AUTH",
           "order": 0
         },
         "tunnel_host": {
@@ -104,8 +102,7 @@
         "tunnel_method": {
           "description": "Connect through a jump server tunnel host using username and password authentication",
           "type": "string",
-          "enum": ["SSH_PASSWORD_AUTH"],
-          "default": "SSH_PASSWORD_AUTH",
+          "const": "SSH_PASSWORD_AUTH",
           "order": 0
         },
         "tunnel_host": {
