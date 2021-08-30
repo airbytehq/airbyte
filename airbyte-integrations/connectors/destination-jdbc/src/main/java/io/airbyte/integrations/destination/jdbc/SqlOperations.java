@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.destination.jdbc;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.List;
@@ -115,7 +116,7 @@ public interface SqlOperations {
   /**
    * Check if the data record is valid and ok to be written to destination
    */
-  boolean isValidData(final String data);
+  boolean isValidData(final JsonNode data);
 
   /**
    * Denotes whether the destination has the concept of schema or not

@@ -113,12 +113,11 @@ public class CopyConsumerFactory {
     return (AirbyteStreamNameNamespacePair pair, List<AirbyteRecordMessage> records) -> {
       for (AirbyteRecordMessage recordMessage : records) {
         var id = UUID.randomUUID();
-        var data = Jsons.serialize(recordMessage.getData());
-        if (sqlOperations.isValidData(data)) {
+        if (sqlOperations.isValidData(recordMessage.getData())) {
           // TODO Truncate json data instead of throwing whole record away?
           // or should we upload it into a special rejected record folder in s3 instead?
           var emittedAt = Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt()));
-          pairToCopier.get(pair).write(id, data, emittedAt);
+          pairToCopier.get(pair).write(id, Jsons.serialize(recordMessage.getData()), emittedAt);
         } else {
           pairToIgnoredRecordCount.put(pair, pairToIgnoredRecordCount.getOrDefault(pair, 0L) + 1L);
         }

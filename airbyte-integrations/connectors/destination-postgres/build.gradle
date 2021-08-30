@@ -19,6 +19,7 @@ dependencies {
     testImplementation "org.testcontainers:postgresql:1.15.1"
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-postgres')
 
     integrationTestJavaImplementation "org.testcontainers:postgresql:1.15.1"
 
