@@ -237,7 +237,10 @@ font-style: italic;
   <h4><a href="#Deployment">Deployment</a></h4>
   <ul>
   <li><a href="#exportArchive"><code><span class="http-method">post</span> /v1/deployment/export</code></a></li>
+  <li><a href="#exportWorkspace"><code><span class="http-method">post</span> /v1/deployment/export_workspace</code></a></li>
   <li><a href="#importArchive"><code><span class="http-method">post</span> /v1/deployment/import</code></a></li>
+  <li><a href="#importIntoWorkspace"><code><span class="http-method">post</span> /v1/deployment/import_into_workspace</code></a></li>
+  <li><a href="#uploadArchiveResource"><code><span class="http-method">post</span> /v1/deployment/upload_archive_resource</code></a></li>
   </ul>
   <h4><a href="#Destination">Destination</a></h4>
   <ul>
@@ -1281,6 +1284,53 @@ font-style: italic;
         <a href="#File">File</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="exportWorkspace"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/deployment/export_workspace</code></pre></div>
+    <div class="method-summary">Export Airbyte Workspace Configuration (<span class="nickname">exportWorkspace</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">WorkspaceIdRequestBody <a href="#WorkspaceIdRequestBody">WorkspaceIdRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      
+      File
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/x-gzip</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#File">File</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="importArchive"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -1332,6 +1382,115 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     Successful operation
         <a href="#ImportRead">ImportRead</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="importIntoWorkspace"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/deployment/import_into_workspace</code></pre></div>
+    <div class="method-summary">Import Airbyte Configuration into Workspace (this operation might change ids of imported configurations). Note, in order to use this api endpoint, you might need to upload a temporary archive resource with 'deployment/upload_archive_resource' first (<span class="nickname">importIntoWorkspace</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">ImportRequestBody <a href="#ImportRequestBody">ImportRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#ImportRead">ImportRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "reason" : "reason",
+  "status" : "succeeded"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#ImportRead">ImportRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="uploadArchiveResource"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/deployment/upload_archive_resource</code></pre></div>
+    <div class="method-summary">Upload a GZIP archive tarball and stage it in the server's cache as a temporary resource (<span class="nickname">uploadArchiveResource</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/x-gzip</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body <a href="#file">file</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#UploadRead">UploadRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "resourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "status" : "succeeded"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#UploadRead">UploadRead</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="Destination">Destination</a></h1>
@@ -5525,6 +5684,7 @@ font-style: italic;
     <li><a href="#DestinationUpdate"><code>DestinationUpdate</code> - </a></li>
     <li><a href="#HealthCheckRead"><code>HealthCheckRead</code> - </a></li>
     <li><a href="#ImportRead"><code>ImportRead</code> - </a></li>
+    <li><a href="#ImportRequestBody"><code>ImportRequestBody</code> - </a></li>
     <li><a href="#InvalidInputExceptionInfo"><code>InvalidInputExceptionInfo</code> - </a></li>
     <li><a href="#InvalidInputProperty"><code>InvalidInputProperty</code> - </a></li>
     <li><a href="#JobConfigType"><code>JobConfigType</code> - </a></li>
@@ -5573,6 +5733,7 @@ font-style: italic;
     <li><a href="#SourceUpdate"><code>SourceUpdate</code> - </a></li>
     <li><a href="#SyncMode"><code>SyncMode</code> - </a></li>
     <li><a href="#SynchronousJobRead"><code>SynchronousJobRead</code> - </a></li>
+    <li><a href="#UploadRead"><code>UploadRead</code> - </a></li>
     <li><a href="#WebBackendConnectionCreate"><code>WebBackendConnectionCreate</code> - </a></li>
     <li><a href="#WebBackendConnectionRead"><code>WebBackendConnectionRead</code> - </a></li>
     <li><a href="#WebBackendConnectionReadList"><code>WebBackendConnectionReadList</code> - </a></li>
@@ -5953,6 +6114,14 @@ font-style: italic;
         <div class="param-enum-header">Enum:</div>
         <div class="param-enum">succeeded</div><div class="param-enum">failed</div>
 <div class="param">reason (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="ImportRequestBody"><code>ImportRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">resourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -6362,6 +6531,16 @@ font-style: italic;
 <div class="param">endedAt </div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
 <div class="param">succeeded </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">logs (optional)</div><div class="param-desc"><span class="param-type"><a href="#LogRead">LogRead</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="UploadRead"><code>UploadRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">succeeded</div><div class="param-enum">failed</div>
+<div class="param">resourceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
