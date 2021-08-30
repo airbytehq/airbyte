@@ -1,12 +1,14 @@
 package io.airbyte.server;
 
 import io.airbyte.server.services.BlotoutAuthentication;
+
 import java.io.IOException;
 import javax.annotation.security.PermitAll;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +27,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
             String authorizationHeader =
                     requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
             // Validate the Authorization header
-            if(requestContext.getMethod().equalsIgnoreCase("OPTIONS")){
+            if (requestContext.getMethod().equalsIgnoreCase("OPTIONS")) {
                 requestContext.abortWith(Response.ok().build());
                 return;
             }
@@ -45,9 +47,17 @@ public class AuthenticationFilter implements ContainerRequestFilter {
                     return;
                 }
             } catch (Exception e) {
-                LOGGER.error(" return from exception " + e.getCause());
-                e.printStackTrace();
-                abortWithUnauthorized(requestContext);
+                try {
+                    if (!validateToken(token)) {
+                        abortWithUnauthorized(requestContext);
+                        LOGGER.error(" return from validateToken ");
+                        return;
+                    }
+                } catch (Exception e1) {
+                    LOGGER.error(" return from inner exception " + e1.getCause());
+                    e1.printStackTrace();
+                    abortWithUnauthorized(requestContext);
+                }
             }
         }
     }
