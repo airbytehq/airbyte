@@ -41,7 +41,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.SSHTunnel;
+import io.airbyte.integrations.base.SshTunnel;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -119,12 +119,12 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
-    return SSHTunnel.sshWrap(config, () -> super.check(config));
+    return SshTunnel.sshWrap(config, () -> super.check(config));
   }
 
   @Override
   public AirbyteCatalog discover(final JsonNode config) throws Exception {
-    return SSHTunnel.sshWrap(config, () -> {
+    return SshTunnel.sshWrap(config, () -> {
       final AirbyteCatalog catalog = super.discover(config);
 
       if (isCdc(config)) {
@@ -190,7 +190,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   @Override
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
       throws Exception {
-    final SSHTunnel tunnel = SSHTunnel.getInstance(config);
+    final SshTunnel tunnel = SshTunnel.getInstance(config);
 
     try {
       // this check is used to ensure that have the pgoutput slot available so Debezium won't attempt to
