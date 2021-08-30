@@ -51,7 +51,7 @@ class ParquetFormat(BaseModel):
 
     columns: Optional[List[str]] = Field(
         default=None,
-        description="If not None, only these columns will be read from the file.",
+        description="If you only want to sync a subset of the columns from the file(s), add the columns you want here. Leave it empty to sync all columns.",
     )
 
     batch_size: int = Field(
