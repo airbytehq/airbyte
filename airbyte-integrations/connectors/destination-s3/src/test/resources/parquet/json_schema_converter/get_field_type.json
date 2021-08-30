@@ -28,9 +28,23 @@
     "avroFieldType": "null"
   },
   {
-    "fieldName": "union_field",
+    "fieldName": "union_field_1",
     "jsonFieldSchema": {
       "type": ["null", "number", "string"]
+    },
+    "avroFieldType": ["null", "double", "string"]
+  },
+  {
+    "fieldName": "union_field_2",
+    "jsonFieldSchema": {
+      "type": ["number", "null", "string"]
+    },
+    "avroFieldType": ["null", "double", "string"]
+  },
+  {
+    "fieldName": "union_field_3",
+    "jsonFieldSchema": {
+      "type": ["number", "string", "null"]
     },
     "avroFieldType": ["null", "double", "string"]
   },
@@ -38,6 +52,22 @@
     "fieldName": "array_field_single_type",
     "jsonFieldSchema": {
       "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "avroFieldType": [
+      "null",
+      {
+        "type": "array",
+        "items": ["null", "string"]
+      }
+    ]
+  },
+  {
+    "fieldName": "array_field_nullable_type",
+    "jsonFieldSchema": {
+      "type": ["null", "array"],
       "items": {
         "type": "string"
       }
