@@ -419,6 +419,7 @@ class Uninvoiced(ReportsBase):
     """
 
     report_path = "uninvoiced"
+    primary_key = None
 
 
 class TimeClients(IncrementalReportsBase):
@@ -427,6 +428,7 @@ class TimeClients(IncrementalReportsBase):
     """
 
     report_path = "time/clients"
+    primary_key = None
 
 
 class TimeProjects(IncrementalReportsBase):
@@ -435,6 +437,7 @@ class TimeProjects(IncrementalReportsBase):
     """
 
     report_path = "time/projects"
+    primary_key = None
 
 
 class TimeTasks(IncrementalReportsBase):
@@ -443,6 +446,7 @@ class TimeTasks(IncrementalReportsBase):
     """
 
     report_path = "time/tasks"
+    primary_key = None
 
 
 class TimeTeam(IncrementalReportsBase):
@@ -451,6 +455,7 @@ class TimeTeam(IncrementalReportsBase):
     """
 
     report_path = "time/team"
+    primary_key = None
 
 
 class ProjectBudget(ReportsBase):
@@ -459,3 +464,4 @@ class ProjectBudget(ReportsBase):
     """
 
     report_path = "project_budget"
+    primary_key = None
