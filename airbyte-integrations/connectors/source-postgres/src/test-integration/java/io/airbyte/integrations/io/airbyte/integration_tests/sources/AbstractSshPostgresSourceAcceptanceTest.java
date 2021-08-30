@@ -31,9 +31,6 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
-import io.airbyte.integrations.base.SSHTunnel;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -45,14 +42,9 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import java.nio.file.Path;
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import org.jooq.DSLContext;
-import org.jooq.Record;
-import org.jooq.Result;
-import org.jooq.SQLDialect;
 
 public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -63,7 +55,8 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
 
   public abstract Path getConfigFilePath();
 
-  // todo (cgardens) - dynamically create data by generating a database with a random name instead of requiring data to already be in place.
+  // todo (cgardens) - dynamically create data by generating a database with a random name instead of
+  // requiring data to already be in place.
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     final JsonNode secretsConfig = Jsons.deserialize(IOs.readFile(getConfigFilePath()));
@@ -93,71 +86,6 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
         .put("ssl", false)
         .put("replication_method", replicationMethod)
         .build());
-
-    SSHTunnel.sshWrap(config, () -> {
-      final Database database = createDatabaseFromConfig(config);
-
-      database.query(ctx -> {
-
-        // dropAllTablesInPublicSchema(ctx);
-
-        final Result<Record> fetch = ctx.fetch("SELECT *\n"
-            + "FROM pg_catalog.pg_tables\n"
-            + "WHERE schemaname != 'pg_catalog' AND \n"
-            + "    schemaname != 'information_schema';");
-
-        System.out.println("fetch = " + fetch);
-
-        // ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-        // ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'), (2, 'crusher'), (3,
-        // 'vash');");
-        // ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
-        // ctx.fetch("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'), (2, 'defiant'), (3,
-        // 'yamato');");
-        return null;
-      });
-
-      database.close();
-    });
-  }
-
-  private Database createDatabaseFromConfig(final JsonNode config) {
-    return Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "org.postgresql.Driver",
-        SQLDialect.POSTGRES);
-  }
-
-  private void dropAllTablesInPublicSchema(final DSLContext ctx) {
-    ctx.execute(""
-        + "DO $$ \n"
-        + "  DECLARE \n"
-        + "    r RECORD;\n"
-        + "BEGIN\n"
-        + "  FOR r IN \n"
-        + "    (\n"
-        + "      SELECT table_name \n"
-        + "      FROM information_schema.tables \n"
-        + "      WHERE public\n"
-        + "    ) \n"
-        + "  LOOP\n"
-        + "     EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.table_name) || ' CASCADE';\n"
-        + "  END LOOP;\n"
-        + "END $$ ;");
-  }
-
-  @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws SQLException {
-    // createDatabaseFromConfig(config).query(ctx -> {
-    // dropAllTablesInPublicSchema(ctx);
-    // return null;
-    // });
-    // container.close();
   }
 
   @Override
