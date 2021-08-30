@@ -164,12 +164,12 @@ def test_stub_custom_backoff_http_stream(mocker):
 def test_stub_custom_backoff_http_stream_retries(mocker, retries):
     mocker.patch("time.sleep", lambda x: None)
 
-    class StubCustomBackoffHttpStreamRetires(StubCustomBackoffHttpStream):
+    class StubCustomBackoffHttpStreamRetries(StubCustomBackoffHttpStream):
         @property
         def max_retries(self):
             return retries
 
-    stream = StubCustomBackoffHttpStreamRetires()
+    stream = StubCustomBackoffHttpStreamRetries()
     req = requests.Response()
     req.status_code = HTTPStatus.TOO_MANY_REQUESTS
     send_mock = mocker.patch.object(requests.Session, "send", return_value=req)
@@ -185,14 +185,14 @@ def test_stub_custom_backoff_http_stream_retries(mocker, retries):
 def test_stub_custom_backoff_http_stream_endless_retries(mocker):
     mocker.patch("time.sleep", lambda x: None)
 
-    class StubCustomBackoffHttpStreamRetires(StubCustomBackoffHttpStream):
+    class StubCustomBackoffHttpStreamRetries(StubCustomBackoffHttpStream):
         @property
         def max_retries(self):
             return None
 
     infinite_number = 20
 
-    stream = StubCustomBackoffHttpStreamRetires()
+    stream = StubCustomBackoffHttpStreamRetries()
     req = requests.Response()
     req.status_code = HTTPStatus.TOO_MANY_REQUESTS
     send_mock = mocker.patch.object(requests.Session, "send", side_effect=[req] * infinite_number)

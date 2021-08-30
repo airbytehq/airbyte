@@ -279,15 +279,15 @@ class HttpStream(Stream, ABC):
             max_tries: The maximum number of attempts to make before giving
                 up ...The default value of None means there is no limit to
                 the number of tries.
-        This implies that is max_tries is excplicitly set to None there is no
+        This implies that if max_tries is excplicitly set to None there is no
         limit to retry attempts, otherwise it is limited number of tries. But
         this is not true for current version of backoff packages (1.8.0). Setting
         max_tries to 0 or negative number would result in endless retry atempts.
-        Add this condition to avoid endless loop if it havent been set
+        Add this condition to avoid an endless loop if it hasnt been set
         explicitly (i.e. max_retries is not None).
         """
         if max_tries is not None:
-            max_tries = 1 if max_tries <= 0 else max_tries + 1
+            max_tries = max(0, max_tries) + 1
 
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries)(self._send)
         backoff_handler = default_backoff_handler(max_tries=max_tries, factor=self.retry_factor)
