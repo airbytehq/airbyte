@@ -204,6 +204,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
       // iterator to do it.
     } catch (final Exception e) {
       tunnel.close();
+      throw e;
     }
 
     return AutoCloseableIterators.appendOnClose(super.read(config, catalog, state), tunnel::close);
