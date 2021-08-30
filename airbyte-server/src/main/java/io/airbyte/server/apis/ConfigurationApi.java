@@ -58,7 +58,6 @@ import io.airbyte.api.model.LogsRequestBody;
 import io.airbyte.api.model.Notification;
 import io.airbyte.api.model.NotificationRead;
 import io.airbyte.api.model.OAuthConsentRead;
-import io.airbyte.api.model.OAuthRequestRead;
 import io.airbyte.api.model.OperationCreate;
 import io.airbyte.api.model.OperationIdRequestBody;
 import io.airbyte.api.model.OperationRead;
