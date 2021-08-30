@@ -50,6 +50,7 @@ import io.airbyte.api.model.DestinationRecreate;
 import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.HealthCheckRead;
 import io.airbyte.api.model.ImportRead;
+import io.airbyte.api.model.ImportRequestBody;
 import io.airbyte.api.model.JobIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
@@ -78,6 +79,7 @@ import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
 import io.airbyte.api.model.SourceRecreate;
 import io.airbyte.api.model.SourceUpdate;
+import io.airbyte.api.model.UploadRead;
 import io.airbyte.api.model.WebBackendConnectionCreate;
 import io.airbyte.api.model.WebBackendConnectionRead;
 import io.airbyte.api.model.WebBackendConnectionReadList;
@@ -187,7 +189,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     webBackendSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler, workspaceHelper);
     webBackendDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler, workspaceHelper);
     healthCheckHandler = new HealthCheckHandler(configRepository);
-    archiveHandler = new ArchiveHandler(configs.getAirbyteVersion(), configRepository, jobPersistence, archiveTtlManager);
+    archiveHandler = new ArchiveHandler(configs.getAirbyteVersion(), configRepository, jobPersistence, workspaceHelper, archiveTtlManager);
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
     dbMigrationHandler = new DbMigrationHandler(configsDatabase, jobsDatabase);
@@ -572,6 +574,21 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public ImportRead importArchive(final File archiveFile) {
     return execute(() -> archiveHandler.importData(archiveFile));
+  }
+
+  @Override
+  public File exportWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody) {
+    return execute(() -> archiveHandler.exportWorkspace(workspaceIdRequestBody));
+  }
+
+  @Override
+  public UploadRead uploadArchiveResource(File archiveFile) {
+    return execute(() -> archiveHandler.uploadArchiveResource(archiveFile));
+  }
+
+  @Override
+  public ImportRead importIntoWorkspace(ImportRequestBody importRequestBody) {
+    return execute(() -> archiveHandler.importIntoWorkspace(importRequestBody));
   }
 
   private <T> T execute(HandlerCall<T> call) {

@@ -1,4 +1,4 @@
-# Shortio
+# Short.io
 
 ## Sync overview
 
