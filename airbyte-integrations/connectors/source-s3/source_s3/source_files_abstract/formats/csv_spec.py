@@ -22,7 +22,6 @@
 # SOFTWARE.
 #
 
-from enum import Enum
 from typing import Optional
 
 from pydantic import BaseModel, Field
@@ -32,14 +31,11 @@ class CsvFormat(BaseModel):
     class Config:
         title = "csv"
 
-    class CsvFiletype(str, Enum):
-        """
-        This connector utilises <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html\" target=\"_blank\">PyArrow (Apache Arrow)</a> for CSV parsing.
-        """
-
-        csv = "csv"
-
-    filetype: CsvFiletype
+    filetype: str = Field(
+        Config.title,
+        const=True,
+        descriptions='This connector utilises <a href="https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html" target="_blank">PyArrow (Apache Arrow)</a> for CSV parsing.',
+    )
 
     delimiter: str = Field(
         default=",",

@@ -41,8 +41,7 @@ from .formats.csv_parser import CsvParser
 from .formats.parquet_parser import ParquetParser
 from .storagefile import StorageFile
 
-JSON_TYPES = ["string", "number", "integer",
-              "object", "array", "boolean", "null"]
+JSON_TYPES = ["string", "number", "integer", "object", "array", "boolean", "null"]
 
 
 class ConfigurationError(Exception):
@@ -106,12 +105,10 @@ class FileStream(Stream, ABC):
             raise ConfigurationError(error_msg) from err
         # enforce all keys and values are of type string as required (i.e. no nesting)
         if not all([isinstance(k, str) and isinstance(v, str) for k, v in py_schema.items()]):
-            raise ConfigurationError(
-                "Invalid schema provided, all column names and datatypes must be in string format")
+            raise ConfigurationError("Invalid schema provided, all column names and datatypes must be in string format")
         # enforce all values (datatypes) are valid JsonSchema datatypes
         if not all([datatype in JSON_TYPES for datatype in py_schema.values()]):
-            raise ConfigurationError(
-                f"Invalid schema provided, datatypes must each be one of {JSON_TYPES}")
+            raise ConfigurationError(f"Invalid schema provided, datatypes must each be one of {JSON_TYPES}")
 
         return py_schema
 
@@ -129,8 +126,7 @@ class FileStream(Stream, ABC):
         :return: reference to the relevant fileformatparser class e.g. CsvParser
         """
         filetype = self._format.get("filetype")
-        file_reader = self.fileformatparser_map.get(
-            self._format.get("filetype"))
+        file_reader = self.fileformatparser_map.get(self._format.get("filetype"))
         if not file_reader:
             raise RuntimeError(
                 f"Detected mismatched file format '{filetype}'. Available values: '{list( self.fileformatparser_map.keys())}''."
@@ -189,11 +185,9 @@ class FileStream(Stream, ABC):
             # TODO: don't hardcode max_workers like this
             with concurrent.futures.ThreadPoolExecutor(max_workers=64) as executor:
 
-                filepath_gen = self.pattern_matched_filepath_iterator(
-                    self.filepath_iterator(self.logger, self._provider))
+                filepath_gen = self.pattern_matched_filepath_iterator(self.filepath_iterator(self.logger, self._provider))
 
-                futures = [executor.submit(
-                    get_storagefile_with_lastmod, fp) for fp in filepath_gen]
+                futures = [executor.submit(get_storagefile_with_lastmod, fp) for fp in filepath_gen]
 
                 for future in concurrent.futures.as_completed(futures):
                     # this will failfast on any errors
@@ -223,8 +217,7 @@ class FileStream(Stream, ABC):
         # TODO: ensure this behaviour still makes sense as we add new file formats
         properties = {}
         for column, typ in self._get_schema_map().items():
-            properties[column] = {
-                "type": ["null", typ]} if column not in self.airbyte_columns else {"type": typ}
+            properties[column] = {"type": ["null", typ]} if column not in self.airbyte_columns else {"type": typ}
         properties[self.ab_last_mod_col]["format"] = "date-time"
         return {"type": "object", "properties": properties}
 
@@ -255,8 +248,7 @@ class FileStream(Stream, ABC):
                     continue  # exact schema match so go to next file
 
                 # creates a superset of columns retaining order of master_schema with any additional columns added to end
-                column_superset = list(master_schema.keys(
-                )) + [c for c in this_schema.keys() if c not in master_schema.keys()]
+                column_superset = list(master_schema.keys()) + [c for c in this_schema.keys() if c not in master_schema.keys()]
                 # this compares datatype of every column that the two schemas have in common
                 for col in column_superset:
                     if (col in master_schema.keys()) and (col in this_schema.keys()) and (master_schema[col] != this_schema[col]):
@@ -316,8 +308,7 @@ class FileStream(Stream, ABC):
         :param target_columns: list of column names to mutate this record into (obtained via self._get_schema_map().keys() as of now)
         :return: mutated record with columns lining up to target_columns
         """
-        compare_columns = [c for c in target_columns if c not in [
-            self.ab_last_mod_col, self.ab_file_name_col]]
+        compare_columns = [c for c in target_columns if c not in [self.ab_last_mod_col, self.ab_file_name_col]]
         # check if we're already matching to avoid unnecessary iteration
         if set(list(record.keys()) + [self.ab_additional_col]) == set(compare_columns):
             record[self.ab_additional_col] = {}
@@ -327,8 +318,7 @@ class FileStream(Stream, ABC):
             if c not in record.keys():
                 record[c] = None
         # additional columns
-        record[self.ab_additional_col] = {c: deepcopy(
-            record[c]) for c in record.keys() if c not in compare_columns}
+        record[self.ab_additional_col] = {c: deepcopy(record[c]) for c in record.keys() if c not in compare_columns}
         for c in record[self.ab_additional_col].keys():
             del record[c]
 
@@ -359,16 +349,14 @@ class FileStream(Stream, ABC):
         Since this is called per stream_slice, this method works for both full_refresh and incremental so sync_mode is ignored.
         """
         stream_slice = stream_slice if stream_slice is not None else []
-        file_reader = self.fileformatparser_class(
-            self._format, self._get_master_schema())
+        file_reader = self.fileformatparser_class(self._format, self._get_master_schema())
 
         # TODO: read all files in a stream_slice concurrently
         for file_info in stream_slice:
             with file_info["storagefile"].open(file_reader.is_binary) as f:
                 # TODO: make this more efficient than mutating every record one-by-one as they stream
                 for record in file_reader.stream_records(f):
-                    schema_matched_record = self._match_target_schema(
-                        record, list(self._get_schema_map().keys()))
+                    schema_matched_record = self._match_target_schema(record, list(self._get_schema_map().keys()))
                     complete_record = self._add_extra_fields_from_map(
                         schema_matched_record,
                         {
@@ -410,15 +398,12 @@ class IncrementalFileStream(FileStream, ABC):
         """
         state_dict = {}
         if current_stream_state is not None and self.cursor_field in current_stream_state.keys():
-            current_parsed_datetime = datetime.strptime(
-                current_stream_state[self.cursor_field], self.datetime_format_string)
+            current_parsed_datetime = datetime.strptime(current_stream_state[self.cursor_field], self.datetime_format_string)
             latest_record_datetime = datetime.strptime(
-                latest_record.get(
-                    self.cursor_field, "1970-01-01T00:00:00+0000"), self.datetime_format_string
+                latest_record.get(self.cursor_field, "1970-01-01T00:00:00+0000"), self.datetime_format_string
             )
             state_dict[self.cursor_field] = datetime.strftime(
-                max(current_parsed_datetime,
-                    latest_record_datetime), self.datetime_format_string
+                max(current_parsed_datetime, latest_record_datetime), self.datetime_format_string
             )
         else:
             state_dict[self.cursor_field] = "1970-01-01T00:00:00+0000"
@@ -465,8 +450,7 @@ class IncrementalFileStream(FileStream, ABC):
                     yield stream_slice
                     stream_slice.clear()
                 # now we either have an empty stream_slice or a stream_slice that this file shares a last modified with, so append it
-                stream_slice.append(
-                    {"unique_url": storagefile.url, "last_modified": last_mod, "storagefile": storagefile})
+                stream_slice.append({"unique_url": storagefile.url, "last_modified": last_mod, "storagefile": storagefile})
                 # update our prev_file_last_mod to the current one for next iteration
                 prev_file_last_mod = last_mod
 

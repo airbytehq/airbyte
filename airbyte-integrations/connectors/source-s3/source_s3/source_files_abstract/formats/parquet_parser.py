@@ -67,7 +67,9 @@ class ParquetParser(AbstractFileParser):
         Doc: https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html
 
         """
-        options = self._select_options("buffer_size",)
+        options = self._select_options(
+            "buffer_size",
+        )
         # Source is a file path and enabling memory_map can improve performance in some environments.
         options["memory_map"] = True
         return pq.ParquetFile(file, **options)
@@ -79,8 +81,7 @@ class ParquetParser(AbstractFileParser):
         A stored schema is a part of metadata and we can extract it without parsing of full file
         """
         reader = self._init_reader(file)
-        schema_dict = {
-            field.name: PARQUET_TYPES[field.physical_type] for field in reader.schema}
+        schema_dict = {field.name: PARQUET_TYPES[field.physical_type] for field in reader.schema}
         if not schema_dict:
             # pyarrow can parse empty parquet files but a connector can't generate dynamic schema
             raise OSError("empty Parquet file")
@@ -99,8 +100,7 @@ class ParquetParser(AbstractFileParser):
             # pyarrow can parse empty parquet files but a connector can't generate dynamic schema
             raise OSError("empty Parquet file")
 
-        args = self._select_options(
-            "columns", "batch_size")
+        args = self._select_options("columns", "batch_size")
         num_row_groups = list(range(reader.num_row_groups))
 
         # load batches per page
@@ -111,8 +111,7 @@ class ParquetParser(AbstractFileParser):
                 # {'number': [1.0, 2.0, 3.0], 'name': ['foo', None, 'bar'], 'flag': [True, False, True], 'delta': [-1.0, 2.5, 0.1]}
                 batch_columns = [col.name for col in batch.schema]
                 batch_dict = batch.to_pydict()
-                columnwise_record_values = [
-                    batch_dict[column] for column in batch_columns]
+                columnwise_record_values = [batch_dict[column] for column in batch_columns]
 
                 # we zip this to get row-by-row
                 for record_values in zip(*columnwise_record_values):

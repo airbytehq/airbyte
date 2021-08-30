@@ -22,7 +22,6 @@
 # SOFTWARE.
 #
 
-from enum import Enum
 from typing import List, Optional
 
 from pydantic import BaseModel, Field
@@ -32,14 +31,11 @@ class ParquetFormat(BaseModel):
     class Config:
         title = "parquet"
 
-    class ParquetFiletype(str, Enum):
-        """
-        This connector utilises <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html\" target=\"_blank\">PyArrow (Apache Arrow)</a> for CSV parsing.
-        """
-
-        parquet = "parquet"
-
-    filetype: ParquetFiletype
+    filetype: str = Field(
+        Config.title,
+        const=True,
+        description='This connector utilises <a href="https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html" target="_blank">PyArrow (Apache Arrow)</a> for Parquet parsing.',
+    )
 
     buffer_size: int = Field(
         default=0,

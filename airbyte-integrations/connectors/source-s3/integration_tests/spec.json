@@ -38,11 +38,9 @@
             "type": "object",
             "properties": {
               "filetype": {
-                "title": "CsvFiletype",
-                "description": "This connector utilises <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html\" target=\"_blank\">PyArrow (Apache Arrow)</a> for CSV parsing.",
-                "enum": [
-                  "csv"
-                ],
+                "title": "Filetype",
+                "const": "csv",
+                "descriptions": "This connector utilises <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html\" target=\"_blank\">PyArrow (Apache Arrow)</a> for CSV parsing.",
                 "type": "string"
               },
               "delimiter": {
@@ -95,21 +93,16 @@
                 ],
                 "type": "string"
               }
-            },
-            "required": [
-              "filetype"
-            ]
+            }
           },
           {
             "title": "parquet",
             "type": "object",
             "properties": {
               "filetype": {
-                "title": "ParquetFiletype",
-                "description": "This connector utilises <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html\" target=\"_blank\">PyArrow (Apache Arrow)</a> for CSV parsing.",
-                "enum": [
-                  "parquet"
-                ],
+                "title": "Filetype",
+                "description": "This connector utilises <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html\" target=\"_blank\">PyArrow (Apache Arrow)</a> for Parquet parsing.",
+                "const": "parquet",
                 "type": "string"
               },
               "buffer_size": {
@@ -132,10 +125,7 @@
                 "default": 65536,
                 "type": "integer"
               }
-            },
-            "required": [
-              "filetype"
-            ]
+            }
           }
         ],
         "type": "object"
@@ -168,15 +158,11 @@
             "type": "string"
           }
         },
-        "required": [
-          "bucket"
-        ]
+        "required": ["bucket"]
       }
     },
-    "required": [
-      "dataset",
-      "path_pattern",
-      "provider"
-    ]
-  }
+    "required": ["dataset", "path_pattern", "provider"]
+  },
+  "supportsIncremental": true,
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"]
 }
