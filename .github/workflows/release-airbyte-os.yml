@@ -9,6 +9,7 @@ on:
 jobs:
   releaseAirbyte:
     runs-on: ubuntu-latest
+    environment: more-secrets
     steps:
       - name: Checkout
         uses: actions/checkout@v2
