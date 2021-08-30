@@ -2,7 +2,7 @@
   "sourceDefinitionId": "ef69ef6e-aa7f-4af1-a01d-ef775033524e",
   "name": "GitHub",
   "dockerRepository": "airbyte/source-github",
-  "dockerImageTag": "0.1.6",
+  "dockerImageTag": "0.1.7",
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/github",
   "icon": "github.svg"
 }

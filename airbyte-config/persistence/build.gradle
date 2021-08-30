@@ -1,7 +1,8 @@
 dependencies {
     implementation group: 'commons-io', name: 'commons-io', version: '2.7'
 
-    implementation project(':airbyte-db')
+    implementation project(':airbyte-db:lib')
+    implementation project(':airbyte-db:jooq')
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-config:init')
     implementation project(':airbyte-json-validation')
