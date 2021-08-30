@@ -23,26 +23,24 @@
 #
 
 
-import json
-from datetime import datetime
-from typing import Dict, Generator
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import (
-    AirbyteCatalog,
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    AirbyteStream,
-    ConfiguredAirbyteCatalog,
-    Status,
-    Type,
-)
+from airbyte_cdk.models import SyncMode
+# from airbyte_cdk.models import (
+#     AirbyteCatalog,
+#     AirbyteMessage,
+#     AirbyteRecordMessage,
+#     AirbyteStream,
+#     ConfiguredAirbyteCatalog,
+#     Status,
+#     Type,
+# )
 from typing import Mapping, Any, Tuple, List
 from airbyte_cdk.sources import AbstractSource
 from .spec import SourceTikTokMarketingSpec
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from .streams import PermissionStream
+from .streams import (Advertisers, Campaigns)
 
 
 DOCUMENTATION_URL = "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
@@ -53,8 +51,12 @@ class TiktokTokenAuthenticator(TokenAuthenticator):
     Docs: https://ads.tiktok.com/marketing_api/docs?rid=sta6fe2yww&id=1701890922708994
     """
 
+    def __init__(self, token: str, **kwargs):
+        super().__init__(token, **kwargs)
+        self.token = token
+
     def get_auth_header(self) -> Mapping[str, Any]:
-        return {"Access-Token": self._token}
+        return {"Access-Token": self.token}
 
 
 class SourceTiktokMarketing(AbstractSource):
@@ -80,29 +82,24 @@ class SourceTiktokMarketing(AbstractSource):
         """Converts an input configure to stream arguments"""
         return {
             "authenticator": TiktokTokenAuthenticator(config["access_token"]),
-            "is_sandbox": config.get("is_sandbox") or False,
             "start_time": config.get("start_time") or "1970-01-01",
+
+            "advertiser_id": config['environment'].get("advertiser_id"),
+            "app_id": config['environment'].get("app_id"),
+            "secret": config['environment'].get("secret"),
         }
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         Tests if the input configuration can be used to successfully connect to the integration
         """
-        ddd = PermissionStream(
-            **self._prepare_stream_args(config)).get_settings()
-        # Define the endpoint from user's config
-        url_base = get_url_base(config["is_sandbox"])
         try:
-            ZuoraAuthenticator(
-                token_refresh_endpoint=f"{url_base}/oauth/token",
-                client_id=config["client_id"],
-                client_secret=config["client_secret"],
-                # Zuora doesn't have Refresh Token parameter.
-                refresh_token=None,
-            ).get_auth_header()
-            return True, None
-        except Exception as e:
-            return False, e
+            next(Advertisers(**self._prepare_stream_args(config)
+                             ).read_records(SyncMode.full_refresh))
+        except Exception as err:
+            return False, err
+        return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return []
+        args = self._prepare_stream_args(config)
+        return [Advertisers(**args), Campaigns(**args)]
