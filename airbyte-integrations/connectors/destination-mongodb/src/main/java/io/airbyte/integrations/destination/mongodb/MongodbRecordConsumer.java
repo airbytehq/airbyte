@@ -90,6 +90,8 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
       AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
 
       if (!writeConfigs.containsKey(pair)) {
+        LOGGER.error("Message contained record from a stream that was not in the catalog. catalog: {}, message: {}",
+            Jsons.serialize(catalog), Jsons.serialize(recordMessage));
         throw new IllegalArgumentException(
             String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
                 Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
