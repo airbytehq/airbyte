@@ -22,34 +22,19 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.jdbc;
+package io.airbyte.integrations.destination.postgres;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.jdbc.DataAdapter;
 
-public class JdbcDestination extends AbstractJdbcDestination implements Destination {
+public class PostgresDataAdapter extends DataAdapter {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(JdbcDestination.class);
-
-  public JdbcDestination() {
-    super("org.postgresql.Driver", new ExtendedNameTransformer(), new DefaultSqlOperations());
-  }
-
-  // no-op for JdbcIntegration since the config it receives is designed to be use for JDBC.
-  @Override
-  public JsonNode toJdbcConfig(JsonNode config) {
-    return config;
-  }
-
-  public static void main(String[] args) throws Exception {
-    final Destination destination = new JdbcDestination();
-    LOGGER.info("starting destination: {}", JdbcDestination.class);
-    new IntegrationRunner(destination).run(args);
-    LOGGER.info("completed destination: {}", JdbcDestination.class);
+  public PostgresDataAdapter() {
+    super(jsonNode -> jsonNode.isTextual() && jsonNode.textValue().contains("\u0000"),
+        jsonNode -> {
+          String textValue = jsonNode.textValue().replaceAll("\\u0000", "");
+          return Jsons.jsonNode(textValue);
+        });
   }
 
 }
