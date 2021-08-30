@@ -63,6 +63,14 @@ public class DataAdapter {
     adaptValueNodes(null, rootNode, null);
   }
 
+  /**
+   * The method inspects json node. In case, it's a value node we check the node by CheckFunction and apply ValueNodeAdapter.
+   * Filtered nodes will be updated by adapted version.
+   * If element is an array or an object, this we run the method recursively for them.
+   * @param fieldName  Name of a json node
+   * @param node       Json node
+   * @param parentNode Parent json node
+   */
   private void adaptValueNodes(String fieldName, JsonNode node, JsonNode parentNode) {
     if (node.isValueNode() && filterValueNode.test(node)) {
       if (fieldName != null) {
