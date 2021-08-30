@@ -294,6 +294,7 @@ class ProjectAssignments(HarvestSubStream, IncrementalHarvestStream):
 class ReportsBase(HarvestStream, ABC):
     data_field = "results"
     date_param_template = "%Y%m%d"
+    primary_key = None
 
     @property
     @abstractmethod
@@ -381,7 +382,6 @@ class ExpensesClients(IncrementalReportsBase):
     """
 
     report_path = "expenses/clients"
-    primary_key = None
 
 
 class ExpensesProjects(IncrementalReportsBase):
@@ -390,7 +390,6 @@ class ExpensesProjects(IncrementalReportsBase):
     """
 
     report_path = "expenses/projects"
-    primary_key = None
 
 
 class ExpensesCategories(IncrementalReportsBase):
@@ -399,7 +398,6 @@ class ExpensesCategories(IncrementalReportsBase):
     """
 
     report_path = "expenses/categories"
-    primary_key = None
 
 
 class ExpensesTeam(IncrementalReportsBase):
@@ -408,7 +406,6 @@ class ExpensesTeam(IncrementalReportsBase):
     """
 
     report_path = "expenses/team"
-    primary_key = None
 
 
 class Uninvoiced(ReportsBase):
@@ -419,7 +416,6 @@ class Uninvoiced(ReportsBase):
     """
 
     report_path = "uninvoiced"
-    primary_key = None
 
 
 class TimeClients(IncrementalReportsBase):
@@ -428,7 +424,6 @@ class TimeClients(IncrementalReportsBase):
     """
 
     report_path = "time/clients"
-    primary_key = None
 
 
 class TimeProjects(IncrementalReportsBase):
@@ -437,7 +432,6 @@ class TimeProjects(IncrementalReportsBase):
     """
 
     report_path = "time/projects"
-    primary_key = None
 
 
 class TimeTasks(IncrementalReportsBase):
@@ -446,7 +440,6 @@ class TimeTasks(IncrementalReportsBase):
     """
 
     report_path = "time/tasks"
-    primary_key = None
 
 
 class TimeTeam(IncrementalReportsBase):
@@ -455,7 +448,6 @@ class TimeTeam(IncrementalReportsBase):
     """
 
     report_path = "time/team"
-    primary_key = None
 
 
 class ProjectBudget(ReportsBase):
@@ -464,4 +456,3 @@ class ProjectBudget(ReportsBase):
     """
 
     report_path = "project_budget"
-    primary_key = None
