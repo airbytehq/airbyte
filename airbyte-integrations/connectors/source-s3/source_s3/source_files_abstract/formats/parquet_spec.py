@@ -27,8 +27,6 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
-# We need this in as a dummy for now so that format comes out correctly as a oneOf
-
 
 class ParquetFormat(BaseModel):
     class Config:
