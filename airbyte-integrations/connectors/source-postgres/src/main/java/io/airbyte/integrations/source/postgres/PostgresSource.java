@@ -34,11 +34,14 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.SSHTunnel;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -50,6 +53,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.SyncMode;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -73,9 +77,17 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public JsonNode toDatabaseConfig(JsonNode config) {
+  public ConnectorSpecification spec() throws Exception {
+    final ConnectorSpecification originalSpec = super.spec();
+    final ObjectNode propNode = (ObjectNode) originalSpec.getConnectionSpecification().get("properties");
+    propNode.set("tunnel_method", Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json")));
+    return originalSpec;
+  }
 
-    List<String> additionalParameters = new ArrayList<>();
+  @Override
+  public JsonNode toDatabaseConfig(final JsonNode config) {
+
+    final List<String> additionalParameters = new ArrayList<>();
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
         config.get("host").asText(),
@@ -106,20 +118,27 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public AirbyteCatalog discover(JsonNode config) throws Exception {
-    AirbyteCatalog catalog = super.discover(config);
+  public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
+    return SSHTunnel.sshWrap(config, () -> super.check(config));
+  }
 
-    if (isCdc(config)) {
-      final List<AirbyteStream> streams = catalog.getStreams().stream()
-          .map(PostgresSource::removeIncrementalWithoutPk)
-          .map(PostgresSource::setIncrementalToSourceDefined)
-          .map(PostgresSource::addCdcMetadataColumns)
-          .collect(toList());
+  @Override
+  public AirbyteCatalog discover(final JsonNode config) throws Exception {
+    return SSHTunnel.sshWrap(config, () -> {
+      final AirbyteCatalog catalog = super.discover(config);
 
-      catalog.setStreams(streams);
-    }
+      if (isCdc(config)) {
+        final List<AirbyteStream> streams = catalog.getStreams().stream()
+            .map(PostgresSource::removeIncrementalWithoutPk)
+            .map(PostgresSource::setIncrementalToSourceDefined)
+            .map(PostgresSource::addCdcMetadataColumns)
+            .collect(toList());
 
-    return catalog;
+        catalog.setStreams(streams);
+      }
+
+      return catalog;
+    });
   }
 
   @Override
@@ -172,13 +191,18 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
       throws Exception {
     final SSHTunnel tunnel = SSHTunnel.getInstance(config);
-    tunnel.openTunnelIfRequested();
-    // this check is used to ensure that have the pgoutput slot available so Debezium won't attempt to
-    // create it.
-    final AirbyteConnectionStatus check = super.check(config); // hack to get around double ssh problem.
 
-    if (check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {
-      throw new RuntimeException("Unable establish a connection: " + check.getMessage());
+    try {
+      // this check is used to ensure that have the pgoutput slot available so Debezium won't attempt to
+      // create it.
+      final AirbyteConnectionStatus check = super.check(config); // hack to get around double ssh problem.
+
+      if (check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {
+        throw new RuntimeException("Unable establish a connection: " + check.getMessage());
+      }
+    // if we fail while building the iterators, then we close the ssh tunnel. otherwise rely on the iterator to do it.
+    } catch (final Exception e) {
+      tunnel.close();
     }
 
     return AutoCloseableIterators.appendOnClose(super.read(config, catalog, state), tunnel::close);
