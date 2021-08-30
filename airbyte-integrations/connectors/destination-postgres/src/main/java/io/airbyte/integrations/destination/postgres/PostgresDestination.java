@@ -30,6 +30,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.integrations.destination.jdbc.SshWrappedJdbcDestination;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -47,10 +48,10 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   }
 
   @Override
-  public JsonNode toJdbcConfig(JsonNode config) {
+  public JsonNode toJdbcConfig(final JsonNode config) {
     final String schema = Optional.ofNullable(config.get("schema")).map(JsonNode::asText).orElse("public");
 
-    List<String> additionalParameters = new ArrayList<>();
+    final List<String> additionalParameters = new ArrayList<>();
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
         config.get("host").asText(),
@@ -77,8 +78,8 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  public static void main(String[] args) throws Exception {
-    final Destination destination = new PostgresDestination();
+  public static void main(final String[] args) throws Exception {
+    final Destination destination = new SshWrappedJdbcDestination(new PostgresDestination());
     LOGGER.info("starting destination: {}", PostgresDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", PostgresDestination.class);
