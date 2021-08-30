@@ -10,13 +10,30 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on.
 
-## 8/18/2021
+## 8/26/2021
 
-New sources:
-* [**Bing Ads**](https://docs.airbyte.io/integrations/sources/bing-ads)
+New source: 
+* [**Short.io**](https://docs.airbyte.io/integrations/sources/shortio)
 
 New features:
-* **Chargebee** source: Adds supoort for the `items`, `item prices` and  `attached items` endpoints.
+* **GitHub** source: Add support for rotating through multiple API tokens.
+* **Google Ads** source: Added `UserLocationReport` stream.
+* **Cart** source: Added the `order_items` stream.
+
+Bug fixes:
+* **Postgres** source: Fix out-of-memory issue with CDC interacting with large JSON blobs.
+* **Intercom** source: Pagination now works as expected.
+
+## 8/18/2021
+
+New source:
+* [**Bing Ads**](https://docs.airbyte.io/integrations/sources/bing-ads)
+
+New destination:
+* [**Keen**](https://docs.airbyte.io/integrations/destinations/keen)
+
+New features:
+* **Chargebee** source: Adds support for the `items`, `item prices` and  `attached items` endpoints.
 
 Bug fixes:
 * **Quickbooks** source: Now uses the number data type for decimal fields.

@@ -1,6 +1,12 @@
 # Full Refresh - Append
 
-This readme describes Airbyte conventions around the "full refresh - Append" concept.
+## Overview
+
+The **Full Refresh** modes are the simplest methods that Airbyte uses to sync data, as they always retrieve all available data requested from the source, regardless of whether it has been synced before. This contrasts with [**Incremental sync**](./incremental-append.md), which does not sync data that has already been synced before.
+
+In the **Append** variant, new syncs will take all data from the sync and append it to the destination table. Therefore, if syncing similar information multiple times, every sync will create duplicates of already existing data.
+
+## Example Behavior
 
 On the nth sync of a full refresh connection:
 
