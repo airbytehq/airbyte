@@ -200,7 +200,8 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
       if (check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {
         throw new RuntimeException("Unable establish a connection: " + check.getMessage());
       }
-    // if we fail while building the iterators, then we close the ssh tunnel. otherwise rely on the iterator to do it.
+      // if we fail while building the iterators, then we close the ssh tunnel. otherwise rely on the
+      // iterator to do it.
     } catch (final Exception e) {
       tunnel.close();
     }
