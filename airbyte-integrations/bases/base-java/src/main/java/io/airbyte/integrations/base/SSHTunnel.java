@@ -156,23 +156,17 @@ public class SSHTunnel implements AutoCloseable {
   @Override
   public void close() {
     try {
-      if (shouldTunnel()) {
-        if (tunnelSession != null) {
-          tunnelSession.close();
-          tunnelSession = null;
-        }
-        if (sshclient != null) {
-          sshclient.stop();
-          sshclient = null;
-        }
+      if (tunnelSession != null) {
+        tunnelSession.close();
+        tunnelSession = null;
+      }
+      if (sshclient != null) {
+        sshclient.stop();
+        sshclient = null;
       }
     } catch (final Throwable t) {
       throw new RuntimeException(t);
     }
-  }
-
-  public boolean shouldTunnel() {
-    return method != null && !"NO_TUNNEL".equals(method);
   }
 
   /**
@@ -201,26 +195,21 @@ public class SSHTunnel implements AutoCloseable {
     return client;
   }
 
-  private void validate() {
-    Preconditions.checkNotNull(host, "SSH Tunnel host is null - verify configuration before starting tunnel!");
-  }
-
   /**
    * Starts an ssh session; wrap this in a try-finally and use closeTunnel() to close it.
    */
   private ClientSession openTunnel(final SshClient client) {
     try {
-      validate();
       client.start();
       final ClientSession session = client.connect(
           user.trim(),
           host.trim(),
           Integer.parseInt(tunnelSshPort.trim())).verify(TIMEOUT_MILLIS)
           .getSession();
-      if (method.equals("SSH_KEY_AUTH")) {
+      if (method.equals(Method.SSH_KEY_AUTH)) {
         session.addPublicKeyIdentity(getPrivateKeyPair());
       }
-      if (method.equals("SSH_PASSWORD_AUTH")) {
+      if (method.equals(Method.SSH_PASSWORD_AUTH)) {
         session.addPasswordIdentity(password);
       }
       session.auth().verify(TIMEOUT_MILLIS);
@@ -237,13 +226,17 @@ public class SSHTunnel implements AutoCloseable {
   @Override
   public String toString() {
     return "SSHTunnel{" +
-        "method='" + method + '\'' +
+        "method=" + method +
         ", host='" + host + '\'' +
         ", tunnelSshPort='" + tunnelSshPort + '\'' +
         ", user='" + user + '\'' +
+        ", sshkey='" + sshkey + '\'' +
+        ", password='" + password + '\'' +
         ", remoteDatabaseHost='" + remoteDatabaseHost + '\'' +
         ", remoteDatabasePort='" + remoteDatabasePort + '\'' +
         ", tunnelDatabasePort='" + tunnelDatabasePort + '\'' +
+        ", sshclient=" + sshclient +
+        ", tunnelSession=" + tunnelSession +
         '}';
   }
 
