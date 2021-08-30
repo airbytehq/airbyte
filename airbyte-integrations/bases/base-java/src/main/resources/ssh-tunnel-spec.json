@@ -22,8 +22,8 @@
         "tunnel_host",
         "tunnel_ssh_port",
         "tunnel_username",
-        "tunnel_localport",
-        "tunnel_usersshkey"
+        "tunnel_local_port",
+        "tunnel_user_ssh_key"
       ],
       "properties": {
         "tunnel_method": {
@@ -54,7 +54,7 @@
           "type": "string",
           "order": 3
         },
-        "tunnel_usersshkey": {
+        "tunnel_user_ssh_key": {
           "title": "SSH Private Key",
           "description": "OS-level user account ssh key credentials for logging into the jump server host.",
           "type": "string",
@@ -77,7 +77,7 @@
           "examples": ["5432"],
           "order": 6
         },
-        "tunnel_localport": {
+        "tunnel_local_port": {
           "title": "SSH Tunnel Database Port",
           "description": "Port on the jump server host for the database's port to forward to. Do not share a port between database instances.",
           "type": "integer",
@@ -95,7 +95,7 @@
         "tunnel_host",
         "tunnel_ssh_port",
         "tunnel_username",
-        "tunnel_localport",
+        "tunnel_local_port",
         "tunnel_userpass"
       ],
       "properties": {
@@ -149,7 +149,7 @@
           "examples": ["5432"],
           "order": 6
         },
-        "tunnel_localport": {
+        "tunnel_local_port": {
           "title": "SSH Tunnel Database Port",
           "description": "Port on the jump server host for the database's port to forward to. Do not share a port between database instances.",
           "type": "integer",
