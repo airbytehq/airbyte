@@ -29,7 +29,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.integrations.destination.s3.S3NameTransformer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -62,7 +62,7 @@ public class JsonToAvroSchemaConverter {
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonToAvroSchemaConverter.class);
   private static final Schema TIMESTAMP_MILLIS_SCHEMA = LogicalTypes.timestampMillis()
       .addToSchema(Schema.create(Type.LONG));
-  private static final StandardNameTransformer NAME_TRANSFORMER = new StandardNameTransformer();
+  private static final S3NameTransformer NAME_TRANSFORMER = new S3NameTransformer();
 
   private final Map<String, String> standardizedNames = new HashMap<>();
 
