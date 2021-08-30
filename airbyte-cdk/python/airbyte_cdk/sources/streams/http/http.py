@@ -47,7 +47,7 @@ class HttpStream(Stream, ABC):
     source_defined_cursor = True  # Most HTTP streams use a source defined cursor (i.e: the user can't configure it like on a SQL table)
 
     # TODO: remove legacy HttpAuthenticator authenticator references
-    def __init__(self, authenticator: Any[AuthBase, HttpAuthenticator] = None):
+    def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None):
         self._session = requests.Session()
 
         if isinstance(authenticator, AuthBase):
