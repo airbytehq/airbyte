@@ -29,6 +29,7 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
 import java.io.IOException;
 import java.io.StringReader;
 import java.security.KeyPair;
@@ -121,20 +122,21 @@ public class SshTunnel implements AutoCloseable {
   }
 
   public static SshTunnel getInstance(final JsonNode config) {
-    final JsonNode sshConfig = config.get("tunnel_method");
-    final Method tunnelMethod = Method.valueOf(Jsons.getStringOrNull(sshConfig, "tunnel_method").trim());
+    final Method tunnelMethod = Jsons.getOptional(config, "tunnel_method", "tunnel_method")
+        .map(method -> Method.valueOf(method.asText().trim()))
+        .orElse(Method.NO_TUNNEL);
     LOGGER.info("Starting connection with method: {}", tunnelMethod);
 
     return new SshTunnel(
         tunnelMethod,
-        Jsons.getStringOrNull(sshConfig, "tunnel_host").trim(),
-        Jsons.getStringOrNull(sshConfig, "tunnel_ssh_port").trim(),
-        Jsons.getStringOrNull(sshConfig, "tunnel_username").trim(),
-        Jsons.getStringOrNull(sshConfig, "tunnel_user_ssh_key").trim(),
-        Jsons.getStringOrNull(sshConfig, "tunnel_userpass").trim(),
-        Jsons.getStringOrNull(sshConfig, "tunnel_db_remote_host").trim(),
-        Jsons.getStringOrNull(sshConfig, "tunnel_db_remote_port").trim(),
-        Jsons.getStringOrNull(sshConfig, "tunnel_local_port").trim());
+        Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_host")),
+        Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_ssh_port")),
+        Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_username")),
+        Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_user_ssh_key")),
+        Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_userpass")),
+        Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_db_remote_host")),
+        Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_db_remote_port")),
+        Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_local_port")));
   }
 
   public static void sshWrap(final JsonNode config, final VoidCallable wrapped) throws Exception {
