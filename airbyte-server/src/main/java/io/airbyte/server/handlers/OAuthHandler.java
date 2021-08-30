@@ -24,15 +24,31 @@
 
 package io.airbyte.server.handlers;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.api.model.CompleteDestinationOAuthRequest;
 import io.airbyte.api.model.CompleteSourceOauthRequest;
 import io.airbyte.api.model.DestinationOauthConsentRequest;
 import io.airbyte.api.model.OAuthConsentRead;
 import io.airbyte.api.model.SourceOauthConsentRequest;
+import io.airbyte.config.DestinationOAuthParameter;
+import io.airbyte.config.SourceOAuthParameter;
+import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.server.errors.ApplicationErrorKnownException;
+import io.airbyte.validation.json.JsonValidationException;
+import java.io.IOException;
+import java.util.Comparator;
 import java.util.Map;
+import java.util.UUID;
 
 public class OAuthHandler {
+
+  public static final String OAUTH_PROPERTY_NAME = "oauth";
+  private final ConfigRepository configRepository;
+
+  public OAuthHandler(final ConfigRepository configRepository) {
+    this.configRepository = configRepository;
+  }
 
   public OAuthConsentRead getSourceOAuthConsent(SourceOauthConsentRequest sourceDefinitionIdRequestBody) {
     // TODO: Implement OAuth module to be called here https://github.com/airbytehq/airbyte/issues/5641
@@ -52,6 +68,30 @@ public class OAuthHandler {
   public Map<String, Object> completeDestinationOAuth(CompleteDestinationOAuthRequest oauthDestinationRequestBody) {
     // TODO: Implement OAuth module to be called here https://github.com/airbytehq/airbyte/issues/5641
     throw new ApplicationErrorKnownException("Destination connector does not supports OAuth yet.");
+  }
+
+  public JsonNode injectSourceOAuthParameters(UUID sourceDefinitionId, UUID workspaceId, JsonNode sourceConnectorConfig)
+      throws JsonValidationException, IOException {
+    configRepository.listSourceOAuthParam().stream()
+        .filter(p -> sourceDefinitionId.equals(p.getSourceDefinitionId()))
+        .filter(p -> p.getWorkspaceId() == null || workspaceId.equals(p.getWorkspaceId()))
+        // we prefer params specific to a workspace before global ones
+        .min(Comparator.nullsLast(Comparator.comparing(SourceOAuthParameter::getWorkspaceId))
+            .thenComparing(SourceOAuthParameter::getOauthParameterId))
+        .ifPresent(oAuthParameter -> ((ObjectNode) sourceConnectorConfig).set(OAUTH_PROPERTY_NAME, oAuthParameter.getConfiguration()));
+    return sourceConnectorConfig;
+  }
+
+  public JsonNode injectDestinationOAuthParameters(UUID destinationDefinitionId, UUID workspaceId, JsonNode destinationConnectorConfig)
+      throws JsonValidationException, IOException {
+    configRepository.listDestinationOAuthParam().stream()
+        .filter(p -> destinationDefinitionId.equals(p.getDestinationDefinitionId()))
+        .filter(p -> p.getWorkspaceId() == null || workspaceId.equals(p.getWorkspaceId()))
+        // we prefer params specific to a workspace before global ones
+        .min(Comparator.nullsLast(Comparator.comparing(DestinationOAuthParameter::getWorkspaceId))
+            .thenComparing(DestinationOAuthParameter::getOauthParameterId))
+        .ifPresent(oAuthParameter -> ((ObjectNode) destinationConnectorConfig).set(OAUTH_PROPERTY_NAME, oAuthParameter.getConfiguration()));
+    return destinationConnectorConfig;
   }
 
 }

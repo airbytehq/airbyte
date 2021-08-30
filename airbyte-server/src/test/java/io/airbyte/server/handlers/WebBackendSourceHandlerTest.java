@@ -55,6 +55,7 @@ public class WebBackendSourceHandlerTest {
 
   private WebBackendSourceHandler wbSourceHandler;
 
+  private OAuthHandler oAuthHandler;
   private SourceHandler sourceHandler;
   private SchedulerHandler schedulerHandler;
   private WorkspaceHelper workspaceHelper;
@@ -63,10 +64,11 @@ public class WebBackendSourceHandlerTest {
 
   @BeforeEach
   public void setup() throws IOException {
+    oAuthHandler = mock(OAuthHandler.class);
     sourceHandler = mock(SourceHandler.class);
     schedulerHandler = mock(SchedulerHandler.class);
     workspaceHelper = mock(WorkspaceHelper.class);
-    wbSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler, workspaceHelper);
+    wbSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler, workspaceHelper, oAuthHandler);
 
     final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSource();
     SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());

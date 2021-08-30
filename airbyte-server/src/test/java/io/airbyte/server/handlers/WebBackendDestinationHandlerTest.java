@@ -56,6 +56,7 @@ public class WebBackendDestinationHandlerTest {
   private WebBackendDestinationHandler wbDestinationHandler;
 
   private DestinationHandler destinationHandler;
+  private OAuthHandler oAuthHandler;
   private SchedulerHandler schedulerHandler;
   private WorkspaceHelper workspaceHelper;
 
@@ -66,7 +67,8 @@ public class WebBackendDestinationHandlerTest {
     destinationHandler = mock(DestinationHandler.class);
     schedulerHandler = mock(SchedulerHandler.class);
     workspaceHelper = mock(WorkspaceHelper.class);
-    wbDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler, workspaceHelper);
+    oAuthHandler = mock(OAuthHandler.class);
+    wbDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler, workspaceHelper, oAuthHandler);
 
     final StandardDestinationDefinition standardDestinationDefinition = DestinationDefinitionHelpers.generateDestination();
     DestinationConnection destination =

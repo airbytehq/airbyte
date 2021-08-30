@@ -194,14 +194,14 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         jobHistoryHandler,
         schedulerHandler,
         operationsHandler);
-    webBackendSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler, workspaceHelper);
-    webBackendDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler, workspaceHelper);
+    oAuthHandler = new OAuthHandler(configRepository);
+    webBackendSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler, workspaceHelper, oAuthHandler);
+    webBackendDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler, workspaceHelper, oAuthHandler);
     healthCheckHandler = new HealthCheckHandler(configRepository);
     archiveHandler = new ArchiveHandler(configs.getAirbyteVersion(), configRepository, jobPersistence, workspaceHelper, archiveTtlManager);
     logsHandler = new LogsHandler();
     openApiConfigHandler = new OpenApiConfigHandler();
     dbMigrationHandler = new DbMigrationHandler(configsDatabase, jobsDatabase);
-    oAuthHandler = new OAuthHandler();
     this.configs = configs;
   }
 
@@ -568,6 +568,16 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return execute(() -> webBackendConnectionsHandler.webBackendListConnectionsForWorkspace(workspaceIdRequestBody));
+  }
+
+  @Override
+  public SourceRead webBackendCreateSource(SourceCreate sourceCreate) {
+    return execute(() -> webBackendSourceHandler.webBackendCreateSource(sourceCreate));
+  }
+
+  @Override
+  public DestinationRead webBackendCreateDestination(DestinationCreate destinationCreate) {
+    return execute(() -> webBackendDestinationHandler.webBackendCreateDestination(destinationCreate));
   }
 
   @Override
