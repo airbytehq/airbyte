@@ -34,7 +34,7 @@ public interface Configs {
 
   String getAirbyteVersion();
 
-  String getAirbyteApiUrl();
+  String getAirbyteApiHost();
 
   int getAirbyteApiPort();
 
@@ -57,6 +57,8 @@ public interface Configs {
   String getConfigDatabasePassword();
 
   String getConfigDatabaseUrl();
+
+  boolean runDatabaseMigrationOnStartup();
 
   int getMaxSyncJobAttempts();
 
