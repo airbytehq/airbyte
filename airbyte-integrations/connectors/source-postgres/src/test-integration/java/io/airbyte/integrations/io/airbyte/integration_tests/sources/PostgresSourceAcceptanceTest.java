@@ -56,7 +56,7 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
   private JsonNode config;
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     container = new PostgreSQLContainer<>("postgres:13-alpine");
     container.start();
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
@@ -94,7 +94,7 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
   }
 
