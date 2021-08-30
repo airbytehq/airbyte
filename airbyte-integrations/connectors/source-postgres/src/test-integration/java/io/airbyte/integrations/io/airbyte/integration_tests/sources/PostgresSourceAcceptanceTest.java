@@ -25,13 +25,12 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -106,10 +105,7 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected ConnectorSpecification getSpec() throws Exception {
-    final ConnectorSpecification originalSpec = Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
-    final ObjectNode propNode = (ObjectNode) originalSpec.getConnectionSpecification().get("properties");
-    propNode.set("tunnel_method", Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json")));
-    return originalSpec;
+    return SshHelpers.getSpecAndInjectSsh();
   }
 
   @Override

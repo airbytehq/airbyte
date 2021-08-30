@@ -34,7 +34,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -42,7 +41,8 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.base.SshTunnel;
+import io.airbyte.integrations.base.ssh.SshHelpers;
+import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.StateManager;
@@ -78,10 +78,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
   @Override
   public ConnectorSpecification spec() throws Exception {
-    final ConnectorSpecification originalSpec = super.spec();
-    final ObjectNode propNode = (ObjectNode) originalSpec.getConnectionSpecification().get("properties");
-    propNode.set("tunnel_method", Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json")));
-    return originalSpec;
+    return SshHelpers.injectSshIntoSpec(super.spec());
   }
 
   @Override

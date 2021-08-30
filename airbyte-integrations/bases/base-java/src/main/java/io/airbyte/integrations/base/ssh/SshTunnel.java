@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.base.ssh;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
@@ -232,8 +232,6 @@ public class SshTunnel implements AutoCloseable {
         ", host='" + host + '\'' +
         ", tunnelSshPort='" + tunnelSshPort + '\'' +
         ", user='" + user + '\'' +
-        ", sshkey='" + sshkey + '\'' +
-        ", password='" + password + '\'' +
         ", remoteDatabaseHost='" + remoteDatabaseHost + '\'' +
         ", remoteDatabasePort='" + remoteDatabasePort + '\'' +
         ", tunnelDatabasePort='" + tunnelDatabasePort + '\'' +
