@@ -40,7 +40,9 @@
               "filetype": {
                 "title": "CsvFiletype",
                 "description": "This connector utilises <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html\" target=\"_blank\">PyArrow (Apache Arrow)</a> for CSV parsing.",
-                "enum": ["csv"],
+                "enum": [
+                  "csv"
+                ],
                 "type": "string"
               },
               "delimiter": {
@@ -94,7 +96,9 @@
                 "type": "string"
               }
             },
-            "required": ["filetype"]
+            "required": [
+              "filetype"
+            ]
           },
           {
             "title": "parquet",
@@ -102,25 +106,21 @@
             "properties": {
               "filetype": {
                 "title": "ParquetFiletype",
-                "description": "An enumeration.",
-                "enum": ["parquet"],
+                "description": "This connector utilises <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html\" target=\"_blank\">PyArrow (Apache Arrow)</a> for CSV parsing.",
+                "enum": [
+                  "parquet"
+                ],
                 "type": "string"
               },
               "buffer_size": {
                 "title": "Buffer Size",
-                "description": "perform read buffering when deserializing individual  column chunks. Otherwise IO calls are unbuffered.",
+                "description": "Perform read buffering when deserializing individual column chunks. By default a file will be loaded fully to memory. This option can help to optimize a work with memory if your data is particularly wide or failing during detection of OOM errors.",
                 "default": 0,
                 "type": "integer"
               },
-              "memory_map": {
-                "title": "Memory Map",
-                "description": "If the source is a file path, use a memory map to read file, which can improve performance in some environments.",
-                "default": false,
-                "type": "boolean"
-              },
               "columns": {
                 "title": "Columns",
-                "description": "If not None, only these columns will be read from the file.",
+                "description": "If you only want to sync a subset of the columns from the file(s), add the columns you want here. Leave it empty to sync all columns.",
                 "type": "array",
                 "items": {
                   "type": "string"
@@ -128,26 +128,14 @@
               },
               "batch_size": {
                 "title": "Batch Size",
-                "description": "Maximum number of records per batch. Batches may be smaller if there aren’t enough rows in the file.",
+                "description": "Maximum number of records per batch. Batches may be smaller if there aren’t enough rows in the file. This option can help to optimize a work with memory if your data is particularly wide or failing during detection of OOM errors.",
                 "default": 65536,
                 "type": "integer"
-              },
-              "row_groups": {
-                "title": "Row Groups",
-                "description": "Only these row groups will be read from the file.",
-                "type": "array",
-                "items": {
-                  "type": "integer"
-                }
-              },
-              "use_threads": {
-                "title": "Use Threads",
-                "description": "Perform multi-threaded column reads.",
-                "default": true,
-                "type": "boolean"
               }
             },
-            "required": ["filetype"]
+            "required": [
+              "filetype"
+            ]
           }
         ],
         "type": "object"
@@ -180,11 +168,15 @@
             "type": "string"
           }
         },
-        "required": ["bucket"]
+        "required": [
+          "bucket"
+        ]
       }
     },
-    "required": ["dataset", "path_pattern", "provider"]
-  },
-  "supportsIncremental": true,
-  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"]
+    "required": [
+      "dataset",
+      "path_pattern",
+      "provider"
+    ]
+  }
 }

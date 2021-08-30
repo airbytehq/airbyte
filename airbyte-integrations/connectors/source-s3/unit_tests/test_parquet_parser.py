@@ -104,7 +104,8 @@ class TestParquetParser(AbstractTestParser):
         elif typ == "boolean":
             return random.choice([True, False, None])
         elif typ == "string":
-            random_length = random.randint(0, 10 * 1024)  # max size of bytes is 10k
+            random_length = random.randint(
+                0, 10 * 1024)  # max size of bytes is 10k
             return os.urandom(random_length)
 
         raise Exception(f"not supported type: {typ}")
@@ -159,15 +160,12 @@ class TestParquetParser(AbstractTestParser):
                 "fails": [],
             }
         )
-        # tests custom Parquet parameters (memory_map, batch_size etc)
+        # tests custom Parquet parameters (row_groups, batch_size etc)
         params = {
             "filetype": self.filetype,
             "buffer_size": 1024,
-            "memory_map": True,
             "columns": ["id", "name", "last_seen"],
             "batch_size": 10,
-            "row_groups": [0],
-            "use_threads": True,
         }
         num_records = 100
         suite.append(
@@ -305,7 +303,8 @@ class TestParquetParser(AbstractTestParser):
                     "test_alias": f"compression: {archive_type}",
                     "filepath": self.compress(
                         archive_type,
-                        self.generate_parquet_file("compression_test", schema, num_records, custom_rows={7: list(test_record.values())}),
+                        self.generate_parquet_file("compression_test", schema, num_records, custom_rows={
+                                                   7: list(test_record.values())}),
                     ),
                     "num_records": num_records,
                     "AbstractFileParser": ParquetParser(

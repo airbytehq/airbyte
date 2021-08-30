@@ -33,18 +33,17 @@ class ParquetFormat(BaseModel):
         title = "parquet"
 
     class ParquetFiletype(str, Enum):
+        """
+        This connector utilises <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html\" target=\"_blank\">PyArrow (Apache Arrow)</a> for CSV parsing.
+        """
+
         parquet = "parquet"
 
     filetype: ParquetFiletype
 
     buffer_size: int = Field(
         default=0,
-        description="perform read buffering when deserializing individual  column chunks. Otherwise IO calls are unbuffered.",
-    )
-
-    memory_map: bool = Field(
-        default=False,
-        description="If the source is a file path, use a memory map to read file, which can improve performance in some environments.",
+        description="Perform read buffering when deserializing individual column chunks. By default a file will be loaded fully to memory. This option can help to optimize a work with memory if your data is particularly wide or failing during detection of OOM errors.",
     )
 
     columns: Optional[List[str]] = Field(
@@ -54,15 +53,5 @@ class ParquetFormat(BaseModel):
 
     batch_size: int = Field(
         default=64 * 1024,  # 64K records
-        description="Maximum number of records per batch. Batches may be smaller if there aren’t enough rows in the file.",
-    )
-
-    row_groups: Optional[List[int]] = Field(
-        default=None,
-        description="Only these row groups will be read from the file.",
-    )
-
-    use_threads: bool = Field(
-        default=True,
-        description="Perform multi-threaded column reads.",
+        description="Maximum number of records per batch. Batches may be smaller if there aren’t enough rows in the file. This option can help to optimize a work with memory if your data is particularly wide or failing during detection of OOM errors.",
     )
