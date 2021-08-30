@@ -89,6 +89,11 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
   }
 
   @Override
+  protected void tearDown(final TestDestinationEnv testEnv) {
+
+  }
+
+  @Override
   protected String getImageName() {
     return "airbyte/source-postgres:dev";
   }
