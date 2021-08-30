@@ -5,7 +5,7 @@ dependencies {
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:models')
-    implementation project(':airbyte-workers')
+    implementation project(':airbyte-worker')
 
     implementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
     implementation 'org.junit.jupiter:junit-jupiter-params:5.4.2'

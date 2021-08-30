@@ -34,7 +34,7 @@ import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.workers.WorkerUtils;
+import io.airbyte.worker.WorkerUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

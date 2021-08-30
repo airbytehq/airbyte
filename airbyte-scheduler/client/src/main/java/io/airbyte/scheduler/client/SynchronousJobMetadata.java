@@ -25,7 +25,7 @@
 package io.airbyte.scheduler.client;
 
 import io.airbyte.config.JobConfig.ConfigType;
-import io.airbyte.workers.temporal.JobMetadata;
+import io.airbyte.worker.temporal.JobMetadata;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;

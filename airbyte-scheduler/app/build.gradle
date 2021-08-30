@@ -18,7 +18,7 @@ dependencies {
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-scheduler:models')
     implementation project(':airbyte-scheduler:persistence')
-    implementation project(':airbyte-workers')
+    implementation project(':airbyte-worker')
 
     testImplementation "org.testcontainers:postgresql:1.15.1"
 }

@@ -53,7 +53,7 @@ trap "echo 'kube logs:' && print_all_logs" EXIT
 kubectl port-forward svc/airbyte-server-svc 8001:8001 &
 
 echo "Running worker integration tests..."
-SUB_BUILD=PLATFORM  ./gradlew :airbyte-workers:integrationTest --scan
+SUB_BUILD=PLATFORM  ./gradlew :airbyte-worker:integrationTest --scan
 
 echo "Running e2e tests via gradle..."
 KUBE=true SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan

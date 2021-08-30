@@ -15,7 +15,7 @@ dependencies {
     implementation project(':airbyte-db:lib')
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-protocol:models')
-    implementation project(':airbyte-workers')
+    implementation project(':airbyte-worker')
 
     implementation 'net.sourceforge.argparse4j:argparse4j:0.8.1'
 
