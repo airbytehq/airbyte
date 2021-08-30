@@ -495,9 +495,14 @@ class SourceGoogleAnalyticsV4(AbstractSource):
         authenticator = GoogleAnalyticsOauth2Authenticator(config)
 
         config["authenticator"] = authenticator
-        config["ga_streams"] = json.loads(pkgutil.get_data("source_google_analytics_v4", "defaults/default_reports.json")) + json.loads(
-            config["custom_reports"]
-        )
+
+        reports = json.loads(pkgutil.get_data("source_google_analytics_v4", "defaults/default_reports.json"))
+
+        if config.get("custom_reports"):
+            custom_reports = json.loads(config["custom_reports"])
+            reports += custom_reports
+
+        config["ga_streams"] = reports
 
         for stream in config["ga_streams"]:
             config["metrics"] = stream["metrics"]

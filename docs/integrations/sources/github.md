@@ -86,6 +86,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.7   | 2021-08-27 | [5696](https://github.com/airbytehq/airbyte/pull/5696) | Handle negative backoff values |
 | 0.1.6   | 2021-08-18 | [5456](https://github.com/airbytehq/airbyte/pull/5223) | Add MultipleTokenAuthenticator |
 | 0.1.5   | 2021-08-18 | [5456](https://github.com/airbytehq/airbyte/pull/5456) | Fix set up validation |
 | 0.1.4   | 2021-08-13 | [5136](https://github.com/airbytehq/airbyte/pull/5136) | Support syncing multiple repositories/organizations |
