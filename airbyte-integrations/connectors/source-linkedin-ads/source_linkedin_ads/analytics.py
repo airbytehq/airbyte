@@ -29,11 +29,11 @@ import pendulum as pdm
 
 from .utils import make_slice
 
-# LinkedIn has a max of 20 fields per request. We make chunks by 17
-# to make sure there's always room for `dateRange`, `pivot`, and `pivotValue`
+# LinkedIn has a max of 20 fields per request. We make chunks by size of 17 fields
+# to have the `dateRange`, `pivot`, and `pivotValue` be included as well.
 FIELDS_CHUNK_SIZE = 17
+# Number of days ahead for date slices, from start date.
 WINDOW_IN_DAYS = 30
-
 # List of adAnalyticsV2 fields available for fetch
 ANALYTICS_FIELDS_V2: Dict = [
     "actionClicks",
@@ -105,21 +105,19 @@ ANALYTICS_FIELDS_V2: Dict = [
     "viralVideoViews",
 ]
 
+# Fields that are always present in fields_set chunks
 BASE_ANALLYTICS_FIELDS = ["dateRange", "pivot", "pivotValue"]
 
 
 def chunk_analytics_fields(fields: List = ANALYTICS_FIELDS_V2, fields_chunk_size: int = FIELDS_CHUNK_SIZE) -> Iterable[Mapping]:
     """
     Chunks the list of available fields into the chunks of equal size.
-    #TODO: make and example of the output.
     """
-    # Define base fields that should be present by default
-    base_fields = BASE_ANALLYTICS_FIELDS
     # Make chunks
     chunks = list((fields[f : f + fields_chunk_size] for f in range(0, len(fields), fields_chunk_size)))
     # Make sure base_fields are within the chunks
     for chunk in chunks:
-        for field in base_fields:
+        for field in BASE_ANALLYTICS_FIELDS:
             if field not in chunk:
                 chunk.append(field)
     return chunks

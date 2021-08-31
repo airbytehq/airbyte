@@ -53,6 +53,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Jira](./sources/jira.md)| Certified |
 |[Klaviyo](./sources/klaviyo.md)| Beta |
 |[Klaviyo](./sources/kustomer.md)| Alpha |
+|[LinkedIn Ads](./sources/linkedin-ads.md)| Beta |
 |[Looker](./sources/looker.md)| Beta |
 |[Magento](./sources/magento.md)| Beta |
 |[Mailchimp](./sources/mailchimp.md)| Certified |

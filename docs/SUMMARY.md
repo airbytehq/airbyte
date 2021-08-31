@@ -71,6 +71,7 @@
     * [Jira](integrations/sources/jira.md)
     * [Klaviyo](integrations/sources/klaviyo.md)
     * [Kustomer](integrations/sources/kustomer.md)
+    * [LinkedIn Ads](integrations/sources/linkedin-ads.md)
     * [Looker](integrations/sources/looker.md)
     * [Magento](integrations/sources/magento.md)
     * [Mailchimp](integrations/sources/mailchimp.md)

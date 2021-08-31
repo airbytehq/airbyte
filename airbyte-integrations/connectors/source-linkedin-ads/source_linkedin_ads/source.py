@@ -36,7 +36,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 from .analytics import make_analytics_slices, merge_chunks, update_analytics_params
-from .utils import make_slice, transform_date_fields
+from .utils import make_slice, transform_data
 
 
 class LinkedinAdsStream(HttpStream, ABC):
@@ -76,9 +76,9 @@ class LinkedinAdsStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
-        We need to get out the nested `created` and `lastModified` date fields, so the transform_date_fields method is applied before output.
+        We need to get out the nested complex data structures for further normalisation, so the transform_data method is applied.
         """
-        yield from transform_date_fields(response.json().get("elements"))
+        yield from transform_data(response.json().get("elements"))
 
 
 class Accounts(LinkedinAdsStream):
@@ -274,14 +274,6 @@ class AnalyticsStreamMixin(IncrementalLinkedinAdsStream):
         params[self.search_param] = f"{self.search_param_value}{stream_slice.get(self.primary_slice_key)}"
         params.update(**update_analytics_params(stream_slice))
         return params
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        We need to get out the nested `start` and `end` date fields,
-        So the transform_date_fields method with `analytics`=True is applied before output.
-        """
-        records = response.json().get("elements")
-        yield from transform_date_fields(records, "dateRange", ["start", "end"], ["year", "month", "day"], True)
 
     def read_records(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
