@@ -22,7 +22,6 @@
         "tunnel_host",
         "tunnel_ssh_port",
         "tunnel_username",
-        "tunnel_local_port",
         "tunnel_user_ssh_key"
       ],
       "properties": {
@@ -76,15 +75,6 @@
           "maximum": 65536,
           "examples": ["5432"],
           "order": 6
-        },
-        "tunnel_local_port": {
-          "title": "SSH Tunnel Database Port",
-          "description": "Port on the jump server host for the database's port to forward to. Do not share a port between database instances.",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 65536,
-          "examples": ["5000"],
-          "order": 7
         }
       }
     },
@@ -95,7 +85,6 @@
         "tunnel_host",
         "tunnel_ssh_port",
         "tunnel_username",
-        "tunnel_local_port",
         "tunnel_userpass"
       ],
       "properties": {
@@ -148,15 +137,6 @@
           "maximum": 65536,
           "examples": ["5432"],
           "order": 6
-        },
-        "tunnel_local_port": {
-          "title": "SSH Tunnel Database Port",
-          "description": "Port on the jump server host for the database's port to forward to. Do not share a port between database instances.",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 65536,
-          "examples": ["5000"],
-          "order": 7
         }
       }
     }

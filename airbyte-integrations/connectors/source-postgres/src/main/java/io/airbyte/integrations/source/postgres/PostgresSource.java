@@ -35,14 +35,12 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
-import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.base.ssh.SshHelpers;
-import io.airbyte.integrations.base.ssh.SshTunnel;
+import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.StateManager;
@@ -53,7 +51,6 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.SyncMode;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -74,11 +71,6 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
   public PostgresSource() {
     super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration());
-  }
-
-  @Override
-  public ConnectorSpecification spec() throws Exception {
-    return SshHelpers.injectSshIntoSpec(super.spec());
   }
 
   @Override
@@ -115,27 +107,20 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
-    return SshTunnel.sshWrap(config, () -> super.check(config));
-  }
-
-  @Override
   public AirbyteCatalog discover(final JsonNode config) throws Exception {
-    return SshTunnel.sshWrap(config, () -> {
-      final AirbyteCatalog catalog = super.discover(config);
+    final AirbyteCatalog catalog = super.discover(config);
 
-      if (isCdc(config)) {
-        final List<AirbyteStream> streams = catalog.getStreams().stream()
-            .map(PostgresSource::removeIncrementalWithoutPk)
-            .map(PostgresSource::setIncrementalToSourceDefined)
-            .map(PostgresSource::addCdcMetadataColumns)
-            .collect(toList());
+    if (isCdc(config)) {
+      final List<AirbyteStream> streams = catalog.getStreams().stream()
+          .map(PostgresSource::removeIncrementalWithoutPk)
+          .map(PostgresSource::setIncrementalToSourceDefined)
+          .map(PostgresSource::addCdcMetadataColumns)
+          .collect(toList());
 
-        catalog.setStreams(streams);
-      }
+      catalog.setStreams(streams);
+    }
 
-      return catalog;
-    });
+    return catalog;
   }
 
   @Override
@@ -187,24 +172,15 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   @Override
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
       throws Exception {
-    final SshTunnel tunnel = SshTunnel.getInstance(config);
+    // this check is used to ensure that have the pgoutput slot available so Debezium won't attempt to
+    // create it.
+    final AirbyteConnectionStatus check = check(config);
 
-    try {
-      // this check is used to ensure that have the pgoutput slot available so Debezium won't attempt to
-      // create it.
-      final AirbyteConnectionStatus check = super.check(config); // hack to get around double ssh problem.
-
-      if (check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {
-        throw new RuntimeException("Unable establish a connection: " + check.getMessage());
-      }
-      // if we fail while building the iterators, then we close the ssh tunnel. otherwise rely on the
-      // iterator to do it.
-    } catch (final Exception e) {
-      tunnel.close();
-      throw e;
+    if (check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {
+      throw new RuntimeException("Unable establish a connection: " + check.getMessage());
     }
 
-    return AutoCloseableIterators.appendOnClose(super.read(config, catalog, state), tunnel::close);
+    return super.read(config, catalog, state);
   }
 
   @Override
@@ -287,7 +263,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   public static void main(final String[] args) throws Exception {
-    final Source source = new PostgresSource();
+    final Source source = new SshWrappedSource(new PostgresSource(), List.of("host"), List.of("port"));
     LOGGER.info("starting source: {}", PostgresSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", PostgresSource.class);
