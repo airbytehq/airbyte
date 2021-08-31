@@ -439,45 +439,21 @@ class IssueWatchers(JiraStream):
             yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
 
 
-class IssueWorklogs(IncrementalJiraStream):
+class IssueWorklogs(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-rest-api-3-issue-issueidorkey-worklog-get
     """
 
-    cursor_field = "started"
     parse_response_root = "worklogs"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         key = stream_slice["key"]
         return f"issue/{key}/worklog"
 
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         issues_stream = Issues(authenticator=self.authenticator, domain=self._domain)
         for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield {"key": issue["key"]}
-
-    def request_params(self, stream_state=None, **kwargs):
-        stream_state = stream_state or {}
-        params = super().request_params(stream_state=stream_state, **kwargs)
-        if stream_state.get(self.cursor_field):
-            issue_worklogs_state = pendulum.parse(stream_state.get(self.cursor_field))
-            state_row = int(issue_worklogs_state.timestamp() * 1000)
-            params["startedAfter"] = state_row
-        return params
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        issue_id = latest_record.get("issueId")
-        latest_record_date = pendulum.parse(latest_record.get(self.cursor_field))
-        current_state = current_stream_state.get(issue_id)
-        if current_state:
-            current_state_date = current_state.get(self.cursor_field)
-            if current_state_date:
-                current_stream_state[issue_id] = {self.cursor_field: str(max(latest_record_date, pendulum.parse(current_state_date)))}
-        else:
-            current_stream_state[issue_id] = {self.cursor_field: str(latest_record_date)}
-        return current_stream_state
+            yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
 
 
 class JiraSettings(JiraStream):
