@@ -42,7 +42,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * The {@link DatabaseConfigPersistence#loadData} method is tested in {@link DatabaseConfigPersistenceLoadDataTest}.
+ * The {@link DatabaseConfigPersistence#loadData} method is tested in
+ * {@link DatabaseConfigPersistenceLoadDataTest}.
  */
 public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest {
 
