@@ -1,0 +1,37 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "airbyte.fullname" . }}-pod-sweeper
+  labels:
+    {{- include "airbyte.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      airbyte: pod-sweeper
+  template:
+    metadata:
+      labels:
+        airbyte: pod-sweeper
+    spec:
+      serviceAccountName: {{ include "airbyte.serviceAccountName" . }}
+      containers:
+      - name: airbyte-pod-sweeper
+        image: "{{ .Values.podSweeper.image.repository }}:{{ .Values.podSweeper.image.tag}}"
+        imagePullPolicy: "{{ .Values.podSweeper.image.pullPolicy }}"
+        env:
+        - name: KUBE_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        volumeMounts:
+        - mountPath: /script/sweep-pod.sh
+          subPath: sweep-pod.sh
+          name: sweep-pod-script
+        command: ["/bin/bash", "-c", /script/sweep-pod.sh]
+      volumes:
+      - name: sweep-pod-script
+        configMap:
+          name: {{ include "airbyte.fullname" . }}-sweep-pod-script
+          defaultMode: 0755

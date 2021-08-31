@@ -1,0 +1,84 @@
+name: Helm
+on:
+  push:
+    paths:
+    - '.github/workflows/helm.yaml'
+    - 'charts/**'
+  pull_request:
+    paths:
+    - '.github/workflows/helm.yaml'
+    - 'charts/**'
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Kubectl
+      uses: azure/setup-kubectl@v1
+    - name: Setup Helm
+      uses: azure/setup-helm@v1
+      with:
+        version: '3.6.3'
+    - name: Build Helm Dependencies
+      working-directory: ./charts/airbyte
+      run: |
+        helm repo add bitnami https://charts.bitnami.com/bitnami
+        helm dep build
+    - name: Lint Chart
+      working-directory: ./charts/airbyte
+      run: make lint
+
+  generate-docs:
+    name: Generate Docs Parameters
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v2
+    - name: Checkout bitnami-labs/readme-generator-for-helm
+      uses: actions/checkout@v2
+      with:
+        repository: 'bitnami-labs/readme-generator-for-helm'
+        ref: '55cab5dd2191c4ffa7245cfefa428d4d9bb12730'
+        path: readme-generator-for-helm
+    - name: Install readme-generator-for-helm dependencies
+      working-directory: readme-generator-for-helm  
+      run: npm install -g
+    - name: Test can update README with generated parameters
+      working-directory: charts/airbyte
+      run: readme-generator -v ./values.yaml -r README.md
+
+  install:
+    name: Install
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Kubectl
+      uses: azure/setup-kubectl@v1
+    - name: Setup Helm
+      uses: azure/setup-helm@v1
+      with:
+        version: '3.6.3'
+    - name: Build Helm Dependencies
+      working-directory: ./charts/airbyte
+      run: |
+        helm repo add bitnami https://charts.bitnami.com/bitnami
+        helm dep build
+    - name: Setup Kind Cluster
+      uses: engineerd/setup-kind@v0.5.0
+      with:
+        version: "v0.11.1"
+        image: "kindest/node:v1.21.1"
+    - name: Install airbyte chart
+      working-directory: ./charts/airbyte
+      run: make install
+    - if: always()
+      name: Print diagnostics
+      working-directory: ./charts/airbyte
+      run: make diagnostics
+    - if: success()
+      name: Test airbyte chart
+      working-directory: ./charts/airbyte
+      run: make test

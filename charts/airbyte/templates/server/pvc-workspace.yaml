@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "common.names.fullname" . }}-workspace
+  labels:
+    airbyte: volume-workspace
+spec:
+  accessModes:
+  - {{ .Values.server.workspace.persistence.accessMode | quote }}
+  storageClassName: {{ .Values.server.workspace.persistence.storageClass | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.server.workspace.persistence.size | quote }}

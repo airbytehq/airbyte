@@ -1,0 +1,28 @@
+RELEASE_NAME := airbyte
+NAMESPACE := airbyte-test
+
+lint:
+	helm lint .
+
+
+install:
+	helm upgrade --install \
+				--create-namespace \
+				--namespace $(NAMESPACE) \
+				--debug \
+				--wait \
+				--timeout 300s \
+				$(RELEASE_NAME) .
+
+
+test:
+	helm test $(RELEASE_NAME) --logs --debug --namespace $(NAMESPACE)
+
+
+diagnostics:
+	kubectl -n $(NAMESPACE) get pods -o wide
+	kubectl -n $(NAMESPACE) get pods --no-headers | grep -v "Running" | awk '{print $$1}' | xargs -L 1 -r kubectl -n $(NAMESPACE) logs
+
+
+template:
+	helm template --release-name $(RELEASE_NAME) .
