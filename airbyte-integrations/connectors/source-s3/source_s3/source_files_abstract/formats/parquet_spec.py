@@ -39,7 +39,7 @@ class ParquetFormat(BaseModel):
 
     buffer_size: int = Field(
         default=0,
-        description="Perform read buffering when deserializing individual column chunks. By default a file will be loaded fully to memory. This option can help to optimize a work with memory if your data is particularly wide or failing during detection of OOM errors.",
+        description="Perform read buffering when deserializing individual column chunks. By default every group column will be loaded fully to memory. This option can help to optimize a work with memory if your data is particularly wide or failing during detection of OOM errors.",
     )
 
     columns: Optional[List[str]] = Field(
