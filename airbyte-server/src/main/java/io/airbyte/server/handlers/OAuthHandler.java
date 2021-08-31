@@ -24,32 +24,33 @@
 
 package io.airbyte.server.handlers;
 
-import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.model.CompleteDestinationOAuthRequest;
+import io.airbyte.api.model.CompleteSourceOauthRequest;
+import io.airbyte.api.model.DestinationOauthConsentRequest;
 import io.airbyte.api.model.OAuthConsentRead;
-import io.airbyte.api.model.OAuthDestinationRequestBody;
-import io.airbyte.api.model.OAuthRead;
-import io.airbyte.api.model.OAuthSourceRequestBody;
-import io.airbyte.api.model.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.SourceOauthConsentRequest;
 import io.airbyte.server.errors.ApplicationErrorKnownException;
+
+import java.util.Map;
 
 public class OAuthHandler {
 
-  public OAuthConsentRead getSourceOAuthConsent(SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody) {
+  public OAuthConsentRead getSourceOAuthConsent(SourceOauthConsentRequest sourceDefinitionIdRequestBody) {
     // TODO: Implement OAuth module to be called here https://github.com/airbytehq/airbyte/issues/5641
     throw new ApplicationErrorKnownException("Source connector does not supports OAuth yet.");
   }
 
-  public OAuthConsentRead getDestinationOAuthConsent(DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
+  public OAuthConsentRead getDestinationOAuthConsent(DestinationOauthConsentRequest destinationDefinitionIdRequestBody) {
     // TODO: Implement OAuth module to be called here https://github.com/airbytehq/airbyte/issues/5641
     throw new ApplicationErrorKnownException("Destination connector does not supports OAuth yet.");
   }
 
-  public OAuthRead completeSourceOAuth(OAuthSourceRequestBody oauthSourceRequestBody) {
+  public Map<String, Object> completeSourceOAuth(CompleteSourceOauthRequest oauthSourceRequestBody) {
     // TODO: Implement OAuth module to be called here https://github.com/airbytehq/airbyte/issues/5641
     throw new ApplicationErrorKnownException("Source connector does not supports OAuth yet.");
   }
 
-  public OAuthRead completeDestinationOAuth(OAuthDestinationRequestBody oauthDestinationRequestBody) {
+  public Map<String, Object> completeDestinationOAuth(CompleteDestinationOAuthRequest oauthDestinationRequestBody) {
     // TODO: Implement OAuth module to be called here https://github.com/airbytehq/airbyte/issues/5641
     throw new ApplicationErrorKnownException("Destination connector does not supports OAuth yet.");
   }

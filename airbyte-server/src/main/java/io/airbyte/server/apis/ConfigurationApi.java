@@ -26,6 +26,8 @@ package io.airbyte.server.apis;
 
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.CheckOperationRead;
+import io.airbyte.api.model.CompleteDestinationOAuthRequest;
+import io.airbyte.api.model.CompleteSourceOauthRequest;
 import io.airbyte.api.model.ConnectionCreate;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
@@ -44,6 +46,7 @@ import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
 import io.airbyte.api.model.DestinationIdRequestBody;
+import io.airbyte.api.model.DestinationOauthConsentRequest;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.DestinationRecreate;
@@ -58,9 +61,6 @@ import io.airbyte.api.model.LogsRequestBody;
 import io.airbyte.api.model.Notification;
 import io.airbyte.api.model.NotificationRead;
 import io.airbyte.api.model.OAuthConsentRead;
-import io.airbyte.api.model.OAuthDestinationRequestBody;
-import io.airbyte.api.model.OAuthRead;
-import io.airbyte.api.model.OAuthSourceRequestBody;
 import io.airbyte.api.model.OperationCreate;
 import io.airbyte.api.model.OperationIdRequestBody;
 import io.airbyte.api.model.OperationRead;
@@ -78,6 +78,7 @@ import io.airbyte.api.model.SourceDefinitionSpecificationRead;
 import io.airbyte.api.model.SourceDefinitionUpdate;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.SourceIdRequestBody;
+import io.airbyte.api.model.SourceOauthConsentRequest;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
 import io.airbyte.api.model.SourceRecreate;
@@ -127,8 +128,12 @@ import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.temporal.serviceclient.WorkflowServiceStubs;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 @javax.ws.rs.Path("/v1")
 public class ConfigurationApi implements io.airbyte.api.V1Api {
@@ -277,14 +282,13 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   // SOURCE OAUTH
 
-  @Override
-  public OAuthConsentRead getSourceOAuthConsent(SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody) {
-    return execute(() -> oAuthHandler.getSourceOAuthConsent(sourceDefinitionIdRequestBody));
+  @Override public OAuthConsentRead getSourceOAuthConsent(@Valid @NotNull SourceOauthConsentRequest sourceOauthConsentRequest) {
+    return execute(() -> oAuthHandler.getSourceOAuthConsent(sourceOauthConsentRequest));
   }
 
-  @Override
-  public OAuthRead completeSourceOAuth(OAuthSourceRequestBody oauthSourceRequestBody) {
-    return execute(() -> oAuthHandler.completeSourceOAuth(oauthSourceRequestBody));
+
+  @Override public Map<String, Object> completeSourceOAuth(CompleteSourceOauthRequest completeSourceOauthRequest) {
+    return execute(() -> oAuthHandler.completeSourceOAuth(completeSourceOauthRequest));
   }
 
   // SOURCE IMPLEMENTATION
@@ -378,15 +382,16 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     return execute(() -> schedulerHandler.getDestinationSpecification(destinationDefinitionIdRequestBody));
   }
 
+
   // DESTINATION OAUTH
   @Override
-  public OAuthConsentRead getDestinationOAuthConsent(DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
-    return execute(() -> oAuthHandler.getDestinationOAuthConsent(destinationDefinitionIdRequestBody));
+  public OAuthConsentRead getDestinationOAuthConsent(DestinationOauthConsentRequest destinationOauthConsentRequest) {
+    return execute(() -> oAuthHandler.getDestinationOAuthConsent(destinationOauthConsentRequest));
   }
 
   @Override
-  public OAuthRead completeDestinationOAuth(OAuthDestinationRequestBody oauthDestinationRequestBody) {
-    return execute(() -> oAuthHandler.completeDestinationOAuth(oauthDestinationRequestBody));
+  public Map<String, Object> completeDestinationOAuth(CompleteDestinationOAuthRequest requestBody) {
+    return execute(() -> oAuthHandler.completeDestinationOAuth(requestBody));
   }
 
   // DESTINATION IMPLEMENTATION

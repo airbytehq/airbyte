@@ -1217,7 +1217,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/OAuthSourceRequestBody"
+              $ref: "#/components/schemas/CompleteSourceOauthRequest"
         required: true
       responses:
         "200":
@@ -1225,7 +1225,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OAuthRead"
+                $ref: "#/components/schemas/CompleteOauthResponse"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -1263,7 +1263,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/OAuthDestinationRequestBody"
+              $ref: "#/components/schemas/CompleteDestinationOAuthRequest"
         required: true
       responses:
         "200":
@@ -1271,7 +1271,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OAuthRead"
+                $ref: "#/components/schemas/CompleteOauthResponse"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -2935,29 +2935,35 @@ components:
       properties:
         consentUrl:
           type: string
-    OAuthSourceRequestBody:
+    CompleteSourceOauthRequest:
       type: object
       required:
         - sourceDefinitionId
-      additionalProperties: true # Oauth parameters like code, state, etc.. will be different per API so we don't specify them in advance
       properties:
         sourceDefinitionId:
           $ref: "#/components/schemas/SourceDefinitionId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
-    OAuthDestinationRequestBody:
+        queryParams:
+          description: The query parameters present in the redirect URL after a user granted consent e.g auth code
+          type: object
+          additionalProperties: true # Oauth parameters like code, state, etc.. will be different per API so we don't specify them in advance
+    CompleteDestinationOAuthRequest:
       type: object
       required:
         - destinationDefinitionId
-      additionalProperties: true # Oauth parameters like code, state, etc.. will be different per API so we don't specify them in advance
       properties:
         destinationDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
-    OAuthRead:
+        queryParams:
+          description: The query parameters present in the redirect URL after a user granted consent e.g auth code
+          type: object
+          additionalProperties: true # Oauth parameters like code, state, etc.. will be different per API so we don't specify them in advance
+    CompleteOauthResponse:
       type: object
-      additionalProperties: true # Oauth parameters like code, state, etc.. will be different per API so we don't specify them in advance
+      additionalProperties: true # Oauth parameters like refresh/access token etc.. will be different per API so we don't specify them in advance
     # Web Backend
     WebBackendConnectionRead:
       type: object
