@@ -45,9 +45,11 @@ tags:
   - name: destination_definition_specification
     description: DestinationDefinitionSpecification related resources.
   - name: destination
-    description: Destination  related resources.
+    description: Destination related resources.
   - name: connection
     description: Connection between sources and destinations.
+  - name: oauth
+    description: OAuth related resources to delegate access from user.
   - name: db_migration
     description: Database migration related resources.
   - name: web_backend
@@ -1178,6 +1180,98 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DbMigrationExecutionRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/source_oauths/get_consent_url:
+    post:
+      tags:
+        - oauth
+      summary: Given a source connector definition ID, return the URL to the consent screen where to redirect the user to.
+      operationId: getSourceOAuthConsent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceOauthConsentRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthConsentRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/source_oauths/complete_oauth:
+    post:
+      tags:
+        - oauth
+      summary: Given a source def ID and optional workspaceID generate an access/refresh token etc.
+      operationId: completeSourceOAuth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompleteSourceOauthRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompleteOauthResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destination_oauths/get_consent_url:
+    post:
+      tags:
+        - oauth
+      summary: Given a destination connector definition ID, return the URL to the consent screen where to redirect the user to.
+      operationId: getDestinationOAuthConsent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationOauthConsentRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthConsentRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destination_oauths/complete_oauth:
+    post:
+      tags:
+        - oauth
+      summary:
+      operationId: completeDestinationOAuth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompleteDestinationOAuthRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompleteOauthResponse"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -2876,6 +2970,61 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/DbMigrationRead"
+    # OAuth
+    SourceOauthConsentRequest:
+      type: object
+      required:
+        - sourceDefinitionId
+      properties:
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+    DestinationOauthConsentRequest:
+      type: object
+      required:
+        - destinationDefinitionId
+      properties:
+        sourceDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+    OAuthConsentRead:
+      type: object
+      required:
+        - consentUrl
+      properties:
+        consentUrl:
+          type: string
+    CompleteSourceOauthRequest:
+      type: object
+      required:
+        - sourceDefinitionId
+      properties:
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        queryParams:
+          description: The query parameters present in the redirect URL after a user granted consent e.g auth code
+          type: object
+          additionalProperties: true # Oauth parameters like code, state, etc.. will be different per API so we don't specify them in advance
+    CompleteDestinationOAuthRequest:
+      type: object
+      required:
+        - destinationDefinitionId
+      properties:
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        queryParams:
+          description: The query parameters present in the redirect URL after a user granted consent e.g auth code
+          type: object
+          additionalProperties: true # Oauth parameters like code, state, etc.. will be different per API so we don't specify them in advance
+    CompleteOauthResponse:
+      type: object
+      additionalProperties: true # Oauth parameters like refresh/access token etc.. will be different per API so we don't specify them in advance
     # Web Backend
     WebBackendConnectionRead:
       type: object
