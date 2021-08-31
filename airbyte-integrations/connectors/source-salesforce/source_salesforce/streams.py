@@ -40,7 +40,6 @@ from .rate_limiting import default_backoff_handler
 
 class SalesforceStream(HttpStream, ABC):
 
-    version = "v52.0"
     limit = 2000
 
     def __init__(self, sf_api: Salesforce, pk: str, stream_name: str, schema: dict = None, **kwargs):
@@ -63,7 +62,7 @@ class SalesforceStream(HttpStream, ABC):
         return self.sf_api.instance_url
 
     def path(self, **kwargs) -> str:
-        return f"/services/data/{self.version}/queryAll"
+        return f"/services/data/{self.sf_api.version}/queryAll"
 
     def next_page_token(self, response: requests.Response) -> str:
         response_data = response.json()
@@ -73,6 +72,10 @@ class SalesforceStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
+        """
+        Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
+        """
+
         selected_properties = self.get_json_schema().get("properties", {})
 
         # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
@@ -114,11 +117,11 @@ class SalesforceStream(HttpStream, ABC):
 class BulkSalesforceStream(SalesforceStream):
 
     limit = 10000
-    JOB_WAIT_TIMEOUT = 10
+    JOB_WAIT_TIMEOUT_MINS = 10
     CHECK_INTERVAL_SECONDS = 2
 
     def path(self, **kwargs) -> str:
-        return f"/services/data/{self.version}/jobs/query"
+        return f"/services/data/{self.sf_api.version}/jobs/query"
 
     @default_backoff_handler(max_tries=5, factor=15)
     def _send_http_request(self, method: str, url: str, json: dict = None):
@@ -158,7 +161,7 @@ class BulkSalesforceStream(SalesforceStream):
             if job_info.json()["state"] in ["JobComplete", "Aborted", "Failed"]:
                 return job_status
 
-            if pendulum.now() > start_time.add(minutes=self.JOB_WAIT_TIMEOUT):
+            if pendulum.now() > start_time.add(minutes=self.JOB_WAIT_TIMEOUT_MINS):
                 return job_status
 
             self.logger.info(f"Sleeping {self.CHECK_INTERVAL_SECONDS} seconds while waiting for Job: {job_id} to complete")
@@ -186,10 +189,16 @@ class BulkSalesforceStream(SalesforceStream):
             return f"WHERE {self.primary_key} > '{last_record[self.primary_key]}' "
 
     def transform(self, record: dict, schema: dict = None):
+        """
+        BULK API always returns a CSV file, where all values are string. This function changes the data type according to the schema.
+        """
         if not schema:
             schema = self.get_json_schema().get("properties", {})
 
         def transform_types(field_types: list = None):
+            """
+            Convert Jsonschema data types to Python data types.
+            """
             convert_types_map = {
                 "boolean": bool,
                 "string": str,

@@ -224,6 +224,7 @@ class Salesforce:
             return black_list + UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS
 
     def filter_streams(self, stream_name: str) -> bool:
+        # REST and BULK API do not support all entities that end with `ChangeEvent`.
         if stream_name.endswith("ChangeEvent") or stream_name in self.get_streams_black_list():
             return False
         return True

@@ -72,9 +72,8 @@ class SourceSalesforce(AbstractSource):
         self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
     ) -> Iterator[AirbyteMessage]:
         """
-        Overwrote to dynamically receive only those streams that are necessary for reading, this significantly speeds up
-        the code execution time and reduces the number of unnecessary requests to the API
-        (Salesforce has a strict API limit on requests)
+        Overwritten to dynamically receive only those streams that are necessary for reading for significant speed gains
+        (Salesforce has a strict API limit on requests).
         """
         connector_state = copy.deepcopy(state or {})
         # get the streams once in case the connector needs to make any queries to generate them
