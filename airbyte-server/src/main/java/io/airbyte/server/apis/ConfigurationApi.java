@@ -128,9 +128,6 @@ import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.temporal.serviceclient.WorkflowServiceStubs;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -282,12 +279,13 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   // SOURCE OAUTH
 
-  @Override public OAuthConsentRead getSourceOAuthConsent(@Valid @NotNull SourceOauthConsentRequest sourceOauthConsentRequest) {
+  @Override
+  public OAuthConsentRead getSourceOAuthConsent(SourceOauthConsentRequest sourceOauthConsentRequest) {
     return execute(() -> oAuthHandler.getSourceOAuthConsent(sourceOauthConsentRequest));
   }
 
-
-  @Override public Map<String, Object> completeSourceOAuth(CompleteSourceOauthRequest completeSourceOauthRequest) {
+  @Override
+  public Map<String, Object> completeSourceOAuth(CompleteSourceOauthRequest completeSourceOauthRequest) {
     return execute(() -> oAuthHandler.completeSourceOAuth(completeSourceOauthRequest));
   }
 
@@ -381,7 +379,6 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   public DestinationDefinitionSpecificationRead getDestinationDefinitionSpecification(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
     return execute(() -> schedulerHandler.getDestinationSpecification(destinationDefinitionIdRequestBody));
   }
-
 
   // DESTINATION OAUTH
   @Override
