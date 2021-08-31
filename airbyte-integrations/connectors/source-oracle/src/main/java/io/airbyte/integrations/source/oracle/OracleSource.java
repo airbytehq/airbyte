@@ -27,10 +27,15 @@ package io.airbyte.integrations.source.oracle;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.OracleJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.relationaldb.TableInfo;
+import io.airbyte.protocol.models.CommonField;
+import java.sql.JDBCType;
+import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +64,16 @@ public class OracleSource extends AbstractJdbcSource implements Source {
     }
 
     return Jsons.jsonNode(configBuilder.build());
+  }
+
+  @Override
+  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(JdbcDatabase database) throws Exception {
+    // if schemas is empty
+    // use the user's name
+    // check uniqueness
+
+    // otherwise iterate through all the schemas and return them.
+    return super.discoverInternal(database);
   }
 
   @Override
