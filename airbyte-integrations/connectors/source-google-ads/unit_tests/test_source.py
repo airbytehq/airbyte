@@ -78,7 +78,7 @@ def test_get_json_schema_parse_query(config):
 
     instance = get_instance_from_config(config=config, query=query)
     final_schema = instance.get_json_schema()
-    schema_keys = set(final_schema["properties"])
+    schema_keys = final_schema["properties"]
     assert set(schema_keys) == set(final_fields)  # test 1
 
 
