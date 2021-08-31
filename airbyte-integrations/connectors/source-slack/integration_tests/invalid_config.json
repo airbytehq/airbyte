@@ -1,3 +1,6 @@
 {
-  "api_token": "wrong.api.key123"
+  "api_token": "invalid_api_token",
+  "start_date": "2022-07-22T20:00:00Z",
+  "lookback_window": 2,
+  "join_channels": true
 }
