@@ -50,9 +50,10 @@ def remove_params_from_url(url, params):
     parsed_url = urlparse.urlparse(url)
     res_query = []
     for q in parsed_url.query.split("&"):
-        key, value = q.split("=")
-        if key not in params:
-            res_query.append(f"{key}={value}")
+        if len(q.split("=")) == 2:
+            key, value = q.split("=")
+            if key not in params:
+                res_query.append(f"{key}={value}")
 
     parse_result = parsed_url._replace(query="&".join(res_query))
     return urlparse.urlunparse(parse_result)
