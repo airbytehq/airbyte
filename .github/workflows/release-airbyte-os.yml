@@ -1,0 +1,58 @@
+name: Release Open Source Airbyte
+on:
+  workflow_dispatch:
+    inputs:
+      partToBump:
+        description: "Please choose the type of version upgrade : major|minor|patch"
+        required: true
+        default: "patch"
+jobs:
+  releaseAirbyte:
+    runs-on: ubuntu-latest
+    environment: more-secrets
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Save Old Version
+        id: old_version
+        run: |
+          echo ::set-output name=OLD_VERSION::$(grep VERSION .env | cut -d"=" -f2)
+      - name: Release Airbyte
+        id: release_airbyte
+        env:
+          PART_TO_BUMP: ${{ github.event.inputs.partToBump }}
+          CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
+          CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
+        run: |
+          docker login -u airbytebot -p ${{ secrets.DOCKER_PASSWORD }}
+          ./tools/bin/release_version.sh
+      - name: Save New Version
+        id: new_version
+        run: |
+          echo ::set-output name=NEW_VERSION::$(grep VERSION .env | cut -d"=" -f2)
+      - name: Get PR Body
+        id: pr_body
+        env:
+          PREV_VERSION: ${{ steps.old_version.outputs.OLD_VERSION }}
+        run: |
+          chmod +x tools/bin/pr_body.sh
+          body=$(./tools/bin/pr_body.sh)
+          body="${body//$'\n'/'%0A'}"
+          echo ::set-output name=PR_BODY::$body
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.SLASH_COMMAND_PAT }}
+          branch: bump-version
+          branch-suffix: random
+          delete-branch: true
+          title: Bump Airbyte version from ${{ steps.old_version.outputs.OLD_VERSION }} to ${{ steps.new_version.outputs.NEW_VERSION }}
+          body: ${{ steps.pr_body.outputs.PR_BODY }}
+          commit-message: Bump Airbyte version from ${{ steps.old_version.outputs.OLD_VERSION }} to ${{ steps.new_version.outputs.NEW_VERSION }}
+      - name: PR Details
+        run: |
+          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
