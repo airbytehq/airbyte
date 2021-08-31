@@ -4,7 +4,6 @@ import { useStatefulResource } from "@rest-hooks/legacy";
 
 import SourceResource, { Source } from "core/resources/Source";
 import { Routes } from "pages/routes";
-import useRouter from "../useRouter";
 import ConnectionResource, { Connection } from "core/resources/Connection";
 import SourceDefinitionSpecificationResource, {
   SourceDefinitionSpecification,
@@ -12,7 +11,9 @@ import SourceDefinitionSpecificationResource, {
 import SchedulerResource, { Scheduler } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import useWorkspace from "./useWorkspace";
-import { useAnalytics } from "../useAnalytics";
+
+import useRouter from "hooks/useRouter";
+import { useAnalytics } from "hooks/useAnalytics";
 
 type ValuesProps = {
   name: string;

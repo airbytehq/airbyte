@@ -9,11 +9,9 @@ import {
   schemas,
 } from "rest-hooks";
 
-import {
-  AirbyteRequestService,
-  parseResponse,
-} from "core/request/AirbyteRequestService";
+import { parseResponse } from "core/request/AirbyteRequestService";
 import { getMiddlewares } from "core/request/useRequestMiddlewareProvider";
+import { rootUrl } from "core/servicesProvider";
 
 // TODO: rename to crud resource after upgrade to rest-hook 5.0.0
 export default abstract class BaseResource extends Resource {
@@ -61,19 +59,16 @@ export default abstract class BaseResource extends Resource {
     return parseResponse(response);
   }
 
-  static listUrl<T extends typeof Resource>(this: T): string {
-    return `${AirbyteRequestService.rootUrl}${this.urlRoot}`;
+  static listUrl(_?: Readonly<Record<string, string | number>>): string {
+    return `${this.rootUrl()}${this.urlRoot}`;
   }
 
-  static url<T extends typeof Resource>(
-    this: T,
-    _: Readonly<Record<string, unknown>>
-  ): string {
-    return `${AirbyteRequestService.rootUrl}${this.urlRoot}`;
+  static url(_: Readonly<Record<string, unknown>>): string {
+    return `${this.rootUrl()}${this.urlRoot}`;
   }
 
   static rootUrl(): string {
-    return AirbyteRequestService.rootUrl;
+    return rootUrl;
   }
 
   static listShape<T extends typeof Resource>(

@@ -12,19 +12,23 @@ type ConfigContext<T extends Config = Config> = {
 const configContext = React.createContext<ConfigContext | null>(null);
 
 export function useConfig<T extends Config>(): T {
-  const config = useContext(configContext);
+  const configService = useContext(configContext);
 
-  if (!config) {
+  if (!configService) {
     throw new Error("useConfig must be used within a ConfigProvider");
   }
 
-  return (config as unknown) as T;
+  return (configService.config as unknown) as T;
 }
 
 export const ConfigService: React.FC<{
+  defaultConfig: Config;
   providers: ValueProvider<Config>;
-}> = ({ children, providers }) => {
-  const { loading, value } = useAsync(() => applyProviders(providers), []);
+}> = ({ children, defaultConfig, providers }) => {
+  const { loading, value } = useAsync(
+    async () => applyProviders(defaultConfig, providers),
+    [providers]
+  );
   const config: ConfigContext | null = useMemo(
     () => (value ? { config: value } : null),
     [value]

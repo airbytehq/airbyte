@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlay } from "@fortawesome/free-solid-svg-icons";
 import { useResource } from "rest-hooks";
 
-import config from "config";
+import { useConfig } from "config";
 
 import { Link } from "components";
 import { H2 } from "components";
@@ -83,6 +83,7 @@ const PlayIcon = styled(FontAwesomeIcon)`
 
 const OnboardingPage: React.FC = () => {
   const analyticsService = useAnalytics();
+  const config = useConfig();
 
   useEffect(() => {
     analyticsService.page("Onboarding Page");

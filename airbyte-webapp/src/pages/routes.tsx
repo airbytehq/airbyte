@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import { useIntl } from "react-intl";
 
-import config from "config";
+import { useConfig } from "config";
 
 import SourcesPage from "./SourcesPage";
 import DestinationPage from "./DestinationPage";
@@ -24,6 +24,8 @@ import { useNotificationService } from "hooks/services/Notification/Notification
 import { useApiHealthPoll } from "hooks/services/Health";
 import { WithPageAnalytics } from "./withPageAnalytics";
 import { HealthService } from "core/health/HealthService";
+import { useApiServices } from "../core/servicesProvider";
+import { getMiddlewares } from "../core/request/useRequestMiddlewareProvider";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -89,6 +91,7 @@ const OnboardingsRoutes = () => (
 
 function useDemo() {
   const { formatMessage } = useIntl();
+  const config = useConfig();
 
   const demoNotification = useMemo(
     () => ({
@@ -103,9 +106,13 @@ function useDemo() {
   useNotificationService(config.isDemo ? demoNotification : undefined);
 }
 
-const healthService = new HealthService();
-
 export const Routing: React.FC = () => {
+  const config = useConfig();
+  useApiServices();
+  const healthService = useMemo(
+    () => new HealthService(config.apiUrl, getMiddlewares()),
+    [config]
+  );
   useApiHealthPoll(config.healthCheckInterval, healthService);
   useDemo();
 

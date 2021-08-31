@@ -1,12 +1,13 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useFetcher, useResource } from "rest-hooks";
 
 import FrequencyConfig from "config/FrequencyConfig.json";
+import { useConfig } from "config";
 import {
   Connection,
   ConnectionConfiguration,
   ConnectionNamespaceDefinition,
-  connectionService,
+  ConnectionService,
 } from "core/domain/connection";
 
 import ConnectionResource, {
@@ -62,6 +63,12 @@ type UpdateStateConnection = {
   schedule: ScheduleProperties | null;
 };
 
+function useConnectionService(): ConnectionService {
+  const config = useConfig();
+
+  return useMemo(() => new ConnectionService(config.apiUrl), [config]);
+}
+
 export const useConnectionLoad = (
   connectionId: string
 ): {
@@ -71,6 +78,8 @@ export const useConnectionLoad = (
   const connection = useResource(ConnectionResource.detailShape(), {
     connectionId,
   });
+
+  const connectionService = useConnectionService();
 
   const refreshConnectionCatalog = async () =>
     await connectionService.getConnection(connectionId, true);

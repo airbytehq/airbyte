@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React, { Suspense, useMemo } from "react";
 import { ThemeProvider } from "styled-components";
 import { IntlProvider } from "react-intl";
 import { CacheProvider } from "rest-hooks";
@@ -17,9 +17,16 @@ import {
   usePickFirstWorkspace,
 } from "hooks/services/useWorkspace";
 import { Feature, FeatureService } from "hooks/services/Feature";
-import { registerService } from "./core/servicesProvider";
-
-registerService("currentWorkspaceProvider", usePickFirstWorkspace);
+import {
+  ServiceInject,
+  ServicesProvider,
+  WithService,
+} from "./core/servicesProvider";
+import {
+  envConfigProvider,
+  windowConfigProvider,
+} from "./config/configProviders";
+import { Config, ConfigService, defaultConfig, ValueProvider } from "./config";
 
 function useCustomerIdProvider() {
   const workspace = useCurrentWorkspace();
@@ -36,29 +43,68 @@ const Features: Feature[] = [
   },
 ];
 
+const StyleProvider: React.FC = ({ children }) => (
+  <ThemeProvider theme={theme}>
+    <GlobalStyle />
+    {children}
+  </ThemeProvider>
+);
+
+const I18NProvider: React.FC = ({ children }) => (
+  <IntlProvider locale="en" messages={en}>
+    {children}
+  </IntlProvider>
+);
+
+const StoreProvider: React.FC = ({ children }) => (
+  <CacheProvider>{children}</CacheProvider>
+);
+
+const configProviders: ValueProvider<Config> = [
+  envConfigProvider,
+  windowConfigProvider,
+];
+
+const AppServices: React.FC = ({ children }) => (
+  <ServicesProvider>
+    <ConfigService defaultConfig={defaultConfig} providers={configProviders}>
+      <ServiceOverrides />
+      <FeatureService features={Features}>{children}</FeatureService>
+    </ConfigService>
+  </ServicesProvider>
+);
+
+const ServiceOverrides: React.FC = () => {
+  const services = useMemo<ServiceInject[]>(
+    () => [
+      ["currentWorkspaceProvider", usePickFirstWorkspace],
+      ["useCustomerIdProvider", useCustomerIdProvider],
+    ],
+    []
+  );
+  return <WithService serviceInject={services} />;
+};
+
 const App: React.FC = () => {
   return (
     <React.StrictMode>
-      <ThemeProvider theme={theme}>
-        <GlobalStyle />
-        <IntlProvider locale="en" messages={en}>
-          <CacheProvider>
+      <StyleProvider>
+        <I18NProvider>
+          <StoreProvider>
             <Suspense fallback={<LoadingPage />}>
-              <FeatureService features={Features}>
+              <AppServices>
                 <ApiErrorBoundary>
                   <NotificationService>
-                    <AnalyticsInitializer
-                      customerIdProvider={useCustomerIdProvider}
-                    >
+                    <AnalyticsInitializer>
                       <Routing />
                     </AnalyticsInitializer>
                   </NotificationService>
                 </ApiErrorBoundary>
-              </FeatureService>
+              </AppServices>
             </Suspense>
-          </CacheProvider>
-        </IntlProvider>
-      </ThemeProvider>
+          </StoreProvider>
+        </I18NProvider>
+      </StyleProvider>
     </React.StrictMode>
   );
 };

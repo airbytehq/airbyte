@@ -7,7 +7,7 @@ import { useDefaultRequestMiddlewares } from "packages/cloud/services/useDefault
 export function useGetUserService() {
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
-  return useMemo(() => new UserService(requestAuthMiddleware, api.cloud), [
+  return useMemo(() => new UserService(api.cloud, requestAuthMiddleware), [
     requestAuthMiddleware,
   ]);
 }

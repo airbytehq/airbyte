@@ -27,7 +27,7 @@ function useGetWorkspaceService() {
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
   return useMemo(
-    () => new CloudWorkspacesService(requestAuthMiddleware, api.cloud),
+    () => new CloudWorkspacesService(api.cloud, requestAuthMiddleware),
     [requestAuthMiddleware]
   );
 }

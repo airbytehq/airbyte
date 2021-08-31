@@ -48,6 +48,7 @@ function useApiHealthPoll(
     formatMessage,
     unregisterNotificationById,
     registerNotification,
+    healthService,
   ]);
 }
 

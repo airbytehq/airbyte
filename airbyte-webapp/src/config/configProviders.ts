@@ -24,12 +24,14 @@ const windowConfigProvider: ConfigProvider = async () => {
     },
     openreplay: {
       projectID: window.OPENREPLAY === "disabled" ? -1 : undefined,
+      revID: window.AIRBYTE_VERSION,
     },
     fullstory: { devMode: window.FULLSTORY === "disabled" },
     segment: {
       enabled: window.TRACKING_STRATEGY === "segment",
     },
     apiUrl: window.API_URL,
+    version: window.AIRBYTE_VERSION,
     isDemo: window.IS_DEMO === "true",
   };
 };
@@ -47,17 +49,17 @@ const envConfigProvider: ConfigProvider = async () => {
   };
 };
 
-async function applyProviders<T>(providers: ValueProvider<T>): Promise<T> {
-  const [defaultProvider, ...pv] = providers;
+async function applyProviders<T>(
+  defaultValue: T,
+  providers: ValueProvider<T>
+): Promise<T> {
   let value: DeepPartial<T> = {};
 
-  for (const provider of pv) {
+  for (const provider of providers) {
     const partialConfig = await provider();
 
     value = merge(value, partialConfig);
   }
-
-  const defaultValue = await defaultProvider();
 
   return merge(defaultValue, value);
 }

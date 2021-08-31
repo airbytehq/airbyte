@@ -1,7 +1,8 @@
-import { SegmentAnalytics } from "core/analytics/types";
-import { UiConfig } from "./uiConfig";
 import { Options as OpenReplayOptions } from "@asayerio/tracker";
 import * as Fullstory from "@fullstory/browser";
+
+import { SegmentAnalytics } from "core/analytics/types";
+import { UiConfig } from "./uiConfig";
 
 declare global {
   interface Window {
@@ -40,7 +41,7 @@ export type DeepPartial<T> = {
 
 export type Provider<T> = () => Promise<T>;
 
-export type ValueProvider<T> = [Provider<T>, ...Provider<DeepPartial<T>>[]];
+export type ValueProvider<T> = Provider<DeepPartial<T>>[];
 
 export type ConfigProvider<T extends Config = Config> = Provider<
   DeepPartial<T>

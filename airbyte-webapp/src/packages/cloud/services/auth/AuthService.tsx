@@ -10,10 +10,9 @@ import {
   initialState,
 } from "./reducer";
 import { firebaseApp } from "packages/cloud/config/firebase";
-import { User, UserService } from "packages/cloud/lib/domain/users";
-import { RequestAuthMiddleware } from "packages/cloud/lib/auth/RequestAuthMiddleware";
+import { User } from "packages/cloud/lib/domain/users";
 import { AuthProviders } from "packages/cloud/lib/auth/AuthProviders";
-import { api } from "packages/cloud/config/api";
+import { useGetUserService } from "packages/cloud/services/users/UserService";
 
 type AuthContextApi = {
   user: User | null;
@@ -32,20 +31,17 @@ type AuthContextApi = {
 export const AuthContext = React.createContext<AuthContextApi | null>(null);
 
 // TODO: place token into right place
-let token = "";
+// let token = "";
 
 // TODO: add proper DI service
 const authService = new GoogleAuthService();
-const userService = new UserService(
-  [
-    RequestAuthMiddleware({
-      getValue(): string {
-        return token;
-      },
-    }),
-  ],
-  api.cloud
-);
+// const userService = new UserService(api.cloud, [
+//   RequestAuthMiddleware({
+//     getValue(): string {
+//       return token;
+//     },
+//   }),
+// ]);
 
 export const AuthenticationProvider: React.FC = ({ children }) => {
   const [
@@ -56,11 +52,12 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
     initialState,
     actions
   );
+  const userService = useGetUserService();
 
   useEffect(() => {
     firebaseApp.auth().onAuthStateChanged(async (currentUser) => {
       if (state.currentUser === null && currentUser) {
-        token = await currentUser.getIdToken();
+        // token = await currentUser.getIdToken();
 
         let user: User | undefined;
 
@@ -139,7 +136,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       },
       user: state.currentUser,
     }),
-    [state, queryClient]
+    [state, queryClient, userService]
   );
 
   return <AuthContext.Provider value={ctx}>{children}</AuthContext.Provider>;

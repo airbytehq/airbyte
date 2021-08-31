@@ -6,9 +6,9 @@ import { getIn, useFormik } from "formik";
 
 import { Button, ControlLabels, DropDown, Input } from "components";
 import { Transformation } from "core/domain/connection/operation";
-import { operationService } from "core/domain/connection/OperationService";
 import { equal } from "utils/objects";
 import { FormikErrors } from "formik/dist/types";
+import { useOperationService } from "core/servicesProvider";
 
 const Content = styled.div`
   display: flex;
@@ -80,6 +80,7 @@ const TransformationForm: React.FC<TransformationProps> = ({
   onDone,
 }) => {
   const formatMessage = useIntl().formatMessage;
+  const operationService = useOperationService();
 
   const formik = useFormik({
     initialValues: transformation,

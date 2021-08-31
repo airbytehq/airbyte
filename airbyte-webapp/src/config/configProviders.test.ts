@@ -29,8 +29,7 @@ describe("applyProviders", function () {
         innerProp: "1",
       },
     };
-    const providers: [Provider<Value>, ...Provider<DeepPartial<Value>>[]] = [
-      async () => defaultValue,
+    const providers: Provider<DeepPartial<Value>>[] = [
       async () => ({
         prop1: {
           innerProp: "John",
@@ -41,7 +40,7 @@ describe("applyProviders", function () {
       }),
     ];
 
-    const result = await applyProviders(providers);
+    const result = await applyProviders(defaultValue, providers);
     expect(result).toEqual({
       prop1: {
         innerProp: "John",

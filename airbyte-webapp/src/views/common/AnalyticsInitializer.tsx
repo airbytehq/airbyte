@@ -1,11 +1,12 @@
 import React, { useEffect } from "react";
 import * as FullStory from "@fullstory/browser";
 
-import config from "config";
+import { useConfig } from "config";
 import useFullStory from "hooks/useFullStory";
 import AnalyticsServiceProvider, { useAnalytics } from "hooks/useAnalytics";
 import useTracker from "hooks/useOpenReplay";
 import useSegment from "hooks/useSegment";
+import { useGetService } from "core/servicesProvider";
 
 function WithAnalytics({
   customerId,
@@ -13,6 +14,8 @@ function WithAnalytics({
   customerId: string;
   workspaceId?: string;
 }) {
+  const config = useConfig();
+  console.log(config);
   useSegment(config.segment.enabled ? config.segment.token : "");
   const analyticsService = useAnalytics();
 
@@ -37,9 +40,12 @@ function WithAnalytics({
 
 const AnalyticsInitializer: React.FC<{
   children: React.ReactNode;
-  customerIdProvider: () => string;
-}> = ({ children, customerIdProvider }) => {
+}> = ({ children }) => {
+  const customerIdProvider = useGetService<() => string>(
+    "useCustomerIdProvider"
+  );
   const customerId = customerIdProvider();
+  const config = useConfig();
 
   return (
     <AnalyticsServiceProvider userId={customerId} version={config.version}>

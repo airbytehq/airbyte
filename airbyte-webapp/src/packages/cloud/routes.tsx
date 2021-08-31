@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import { FormattedMessage } from "react-intl";
 
-import config from "config";
+import { useConfig } from "config";
 
 import SourcesPage from "pages/SourcesPage";
 import DestinationPage from "pages/DestinationPage";
@@ -157,10 +157,12 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
 };
 
 const MainViewRoutes = () => {
+  const config = useConfig();
   const middlewares = useDefaultRequestMiddlewares();
-  const healthService = useMemo(() => new HealthService(middlewares), [
-    middlewares,
-  ]);
+  const healthService = useMemo(
+    () => new HealthService(config.apiUrl, middlewares),
+    [config, middlewares]
+  );
 
   useApiHealthPoll(config.healthCheckInterval, healthService);
   const { currentWorkspaceId } = useWorkspaceService();
