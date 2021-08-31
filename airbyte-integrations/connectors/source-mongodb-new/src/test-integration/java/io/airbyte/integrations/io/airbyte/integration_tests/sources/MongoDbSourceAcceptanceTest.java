@@ -69,11 +69,6 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"));
     mongoDBContainer.start();
 
-    String connectionString = String.format("mongodb://%s:%s/?authSource=%s&tls=false",
-        mongoDBContainer.getHost(),
-        mongoDBContainer.getFirstMappedPort(),
-        "false");
-
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", mongoDBContainer.getHost())
         .put("port", mongoDBContainer.getFirstMappedPort())
@@ -81,9 +76,13 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("user", "")
         .put("password", "")
         .put("auth_source", "admin")
-        .put("tls", "false")
-        .put("connectionString", connectionString)
+        .put("tls", false)
+        .put("replica_set", "test")
         .build());
+
+    String connectionString = String.format("mongodb://%s:%s/?authSource=admin&tls=false",
+        mongoDBContainer.getHost(),
+        mongoDBContainer.getFirstMappedPort());
 
     database = new MongoDatabase(connectionString, "test");
 
@@ -110,7 +109,7 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("id"))
+            .withCursorField(Lists.newArrayList("_id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withCursorField(List.of("_id"))
             .withStream(CatalogHelpers.createAirbyteStream(

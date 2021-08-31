@@ -21,22 +21,22 @@
       "type": ["null", "number"]
     },
     "tax": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "tax_amount": {
       "type": ["null", "number"]
     },
     "tax2": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "tax2_amount": {
       "type": ["null", "number"]
     },
     "discount": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "discount_amount": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "subject": {
       "type": ["null", "string"]
@@ -94,7 +94,15 @@
       "type": ["null", "string"]
     },
     "client": {
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "estimate": {
       "type": ["null", "string"]
@@ -103,37 +111,59 @@
       "type": ["null", "string"]
     },
     "creator": {
-      "type": ["null", "string"]
-    },
-    "line_items": {
       "type": ["null", "object"],
       "properties": {
         "id": {
           "type": ["null", "integer"]
         },
-        "kind": {
+        "name": {
           "type": ["null", "string"]
-        },
-        "description": {
-          "type": ["null", "string"]
-        },
-        "quantity": {
-          "type": ["null", "integer"]
-        },
-        "unit_price": {
-          "type": ["null", "integer"]
-        },
-        "amount": {
-          "type": ["null", "integer"]
-        },
-        "taxed": {
-          "type": ["null", "boolean"]
-        },
-        "taxed2": {
-          "type": ["null", "boolean"]
-        },
-        "project": {
-          "type": ["null", "string"]
+        }
+      }
+    },
+    "line_items": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "kind": {
+            "type": ["null", "string"]
+          },
+          "description": {
+            "type": ["null", "string"]
+          },
+          "quantity": {
+            "type": ["null", "number"]
+          },
+          "unit_price": {
+            "type": ["null", "number"]
+          },
+          "amount": {
+            "type": ["null", "number"]
+          },
+          "taxed": {
+            "type": ["null", "boolean"]
+          },
+          "taxed2": {
+            "type": ["null", "boolean"]
+          },
+          "project": {
+            "type": ["null", "object"],
+            "properties": {
+              "code": {
+                "type": ["null", "string"]
+              },
+              "id": {
+                "type": ["integer", "null"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              }
+            }
+          }
         }
       }
     }

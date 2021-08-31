@@ -50,6 +50,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonType;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -73,15 +74,17 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
   @Override
   public JsonNode toDatabaseConfig(JsonNode config) {
-    String connectionString = String.format("mongodb://%s:%s@%s:%s/?authSource=%s",
-        config.get("user").asText(),
-        config.get("password").asText(),
+    String credentials = config.has("user") && config.has("password") && StringUtils.isNoneEmpty(config.get("user").asText()) ?
+        String.format("%s:%s@", config.get("user").asText(), config.get("password").asText()) : StringUtils.EMPTY;
+
+    String connectionString = String.format("mongodb://%s%s:%s/?authSource=%s",
+        credentials,
         config.get("host").asText(),
         config.get("port").asText(),
         config.get("auth_source").asText());
 
-    String options = config.has("replicaSet") ? String.format("&replicaSet=%s&tls=true",
-        config.get("replicaSet").asText()) : String.format("&tls=%s", config.get("tls").asText());
+    String options = config.has("replica_set") ? String.format("&replica_set=%s&tls=true",
+        config.get("replica_set").asText()) : String.format("&tls=%s", config.get("tls").asText());
 
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("connectionString", connectionString + options)
@@ -147,7 +150,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
   @Override
   protected Map<String, List<String>> discoverPrimaryKeys(MongoDatabase database,
-                                                          List<TableInfo<CommonField<BsonType>>> tableInfos) {
+      List<TableInfo<CommonField<BsonType>>> tableInfos) {
     return tableInfos.stream()
         .collect(Collectors.toMap(
             tableInfo -> tableInfo.getName(),
@@ -161,20 +164,20 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
   @Override
   public AutoCloseableIterator<JsonNode> queryTableFullRefresh(MongoDatabase database,
-                                                               List<String> columnNames,
-                                                               String schemaName,
-                                                               String tableName) {
+      List<String> columnNames,
+      String schemaName,
+      String tableName) {
     return queryTable(database, columnNames, tableName, null);
   }
 
   @Override
   public AutoCloseableIterator<JsonNode> queryTableIncremental(MongoDatabase database,
-                                                               List<String> columnNames,
-                                                               String schemaName,
-                                                               String tableName,
-                                                               String cursorField,
-                                                               BsonType cursorFieldType,
-                                                               String cursor) {
+      List<String> columnNames,
+      String schemaName,
+      String tableName,
+      String cursorField,
+      BsonType cursorFieldType,
+      String cursor) {
     Bson greaterComparison = gt(cursorField, cursor);
     return queryTable(database, columnNames, tableName, greaterComparison);
   }

@@ -33,8 +33,8 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.type.Types;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.db.AbstractDatabase;
 import io.airbyte.db.IncrementalUtils;
+import io.airbyte.db.NoSqlDatabase;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Source;
@@ -69,7 +69,11 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractDbSource<DataType, Database extends AbstractDatabase> extends
+/**
+ * This class contains helper functions and boilerplate for implementing a source connector for a
+ * NnSql DB source.
+ */
+public abstract class AbstractDbSource<DataType, Database extends NoSqlDatabase> extends
     BaseConnector implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDbSource.class);
