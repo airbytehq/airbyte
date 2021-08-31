@@ -25,7 +25,6 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
@@ -58,33 +57,7 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
   // requiring data to already be in place.
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    final JsonNode secretsConfig = Jsons.deserialize(IOs.readFile(getConfigFilePath()));
-    System.out.println("secretsConfig = " + secretsConfig);
-    final JsonNode tunnelMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("tunnel_method", secretsConfig.get("tunnel_method").get("tunnel_method"))
-        .put("tunnel_host", secretsConfig.get("tunnel_method").get("tunnel_host"))
-        .put("tunnel_ssh_port", secretsConfig.get("tunnel_method").get("tunnel_ssh_port"))
-        .put("tunnel_username", secretsConfig.get("tunnel_method").get("tunnel_username"))
-        .put("tunnel_userpass", Jsons.getOptional(secretsConfig, "tunnel_method", "tunnel_userpass").map(JsonNode::asText).orElse(""))
-        .put("tunnel_user_ssh_key", Jsons.getOptional(secretsConfig, "tunnel_method", "tunnel_user_ssh_key").map(JsonNode::asText).orElse(""))
-        .put("tunnel_db_remote_host", secretsConfig.get("tunnel_method").get("tunnel_db_remote_host"))
-        .put("tunnel_db_remote_port", secretsConfig.get("tunnel_method").get("tunnel_db_remote_port"))
-        .put("tunnel_local_port", secretsConfig.get("tunnel_method").get("tunnel_local_port"))
-        .build());
-
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "Standard")
-        .build());
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", secretsConfig.get("host"))
-        .put("port", secretsConfig.get("port"))
-        .put("username", secretsConfig.get("username"))
-        .put("password", secretsConfig.get("password"))
-        .put("database", secretsConfig.get("database"))
-        .put("tunnel_method", tunnelMethod)
-        .put("ssl", false)
-        .put("replication_method", replicationMethod)
-        .build());
+    config = Jsons.deserialize(IOs.readFile(getConfigFilePath()));
   }
 
   @Override
