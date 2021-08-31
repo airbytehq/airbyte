@@ -30,7 +30,6 @@ import io.airbyte.api.model.DestinationOauthConsentRequest;
 import io.airbyte.api.model.OAuthConsentRead;
 import io.airbyte.api.model.SourceOauthConsentRequest;
 import io.airbyte.server.errors.ApplicationErrorKnownException;
-
 import java.util.Map;
 
 public class OAuthHandler {
