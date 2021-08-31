@@ -156,6 +156,7 @@
     * [HTTP-API-based Connectors](connector-development/cdk-python/http-streams.md)
     * [Python Concepts](connector-development/cdk-python/python-concepts.md)
     * [Stream Slices](connector-development/cdk-python/stream-slices.md)
+  * [Connector Development Kit \(Javascript\)](connector-development/cdk-faros-js/README.md)  
   * [Airbyte 101 for Connector Development](connector-development/airbyte101.md)
   * [Testing Connectors](connector-development/testing-connectors/README.md)
     * [Source Acceptance Tests Reference](connector-development/testing-connectors/source-acceptance-tests-reference.md)
