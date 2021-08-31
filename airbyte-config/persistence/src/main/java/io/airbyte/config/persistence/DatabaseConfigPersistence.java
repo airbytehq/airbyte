@@ -30,6 +30,7 @@ import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.select;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
@@ -53,6 +54,7 @@ import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.Record;
+import org.jooq.Record1;
 import org.jooq.Record2;
 import org.jooq.Result;
 import org.jooq.impl.SQLDataType;
@@ -213,7 +215,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   /**
    * @return the number of inserted records for convenience, which is always 1.
    */
-  private int insertConfigRecord(DSLContext ctx, OffsetDateTime timestamp, String configType, JsonNode configJson, String idFieldName) {
+  @VisibleForTesting
+  int insertConfigRecord(DSLContext ctx, OffsetDateTime timestamp, String configType, JsonNode configJson, String idFieldName) {
     String configId = idFieldName == null
         ? UUID.randomUUID().toString()
         : configJson.get(idFieldName).asText();
@@ -232,7 +235,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   /**
    * @return the number of updated records.
    */
-  private int updateConfigRecord(DSLContext ctx, OffsetDateTime timestamp, String configType, JsonNode configJson, String configId) {
+  @VisibleForTesting
+  int updateConfigRecord(DSLContext ctx, OffsetDateTime timestamp, String configType, JsonNode configJson, String configId) {
     LOGGER.info("Updating {} record {}", configType, configId);
 
     return ctx.update(AIRBYTE_CONFIGS)
@@ -242,7 +246,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .execute();
   }
 
-  private void copyConfigsFromSeed(DSLContext ctx, ConfigPersistence seedConfigPersistence) throws SQLException {
+  @VisibleForTesting
+  void copyConfigsFromSeed(DSLContext ctx, ConfigPersistence seedConfigPersistence) throws SQLException {
     LOGGER.info("Loading data to config database...");
 
     Map<String, Stream<JsonNode>> seedConfigs;
@@ -264,7 +269,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     LOGGER.info("Config database data loading completed with {} records", insertionCount);
   }
 
-  private void updateConfigsFromSeed(DSLContext ctx, ConfigPersistence seedConfigPersistence) throws SQLException {
+  @VisibleForTesting
+  void updateConfigsFromSeed(DSLContext ctx, ConfigPersistence seedConfigPersistence) throws SQLException {
     LOGGER.info("Config database has been initialized; updating connector definitions from the seed if necessary...");
 
     try {
@@ -322,7 +328,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       }
     }
     return ctx
-        .newRecord(field("Insertion", SQLDataType.INTEGER), field("Update Count", SQLDataType.INTEGER))
+        .newRecord(field("Insertion Count", SQLDataType.INTEGER), field("Update Count", SQLDataType.INTEGER))
         .values(insertionCount, updatedCount);
   }
 
@@ -330,26 +336,36 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    * @return a map from docker repository to config id and versions
    */
   private Map<String, Record2<String, String>> getCurrentRepoToIdAndVersions(DSLContext ctx) {
-    Field<String> repoField = field("config_blob -> 'dockerRepository'", SQLDataType.VARCHAR).as("repository");
-    Field<String> versionField = field("config_blob -> 'dockerImageTag'", SQLDataType.VARCHAR).as("version");
+    Field<String> repoField = field("config_blob ->> 'dockerRepository'", SQLDataType.VARCHAR).as("repository");
+    Field<String> versionField = field("config_blob ->> 'dockerImageTag'", SQLDataType.VARCHAR).as("version");
     return ctx.select(AIRBYTE_CONFIGS.CONFIG_ID, repoField, versionField)
         .from(AIRBYTE_CONFIGS)
         .where(AIRBYTE_CONFIGS.CONFIG_TYPE.in(ConfigSchema.STANDARD_SOURCE_DEFINITION.name(), ConfigSchema.STANDARD_DESTINATION_DEFINITION.name()))
         .fetch().stream()
         .collect(Collectors.toMap(
             row -> row.getValue(repoField),
-            row -> ctx.newRecord(row.field(AIRBYTE_CONFIGS.CONFIG_ID), row.field(versionField))));
+            row -> ctx
+                .newRecord(row.field(AIRBYTE_CONFIGS.CONFIG_ID), row.field(versionField))
+                .values(row.getValue(AIRBYTE_CONFIGS.CONFIG_ID), row.getValue(versionField))));
   }
 
   private Set<String> getUsedConnectorRepos(DSLContext ctx) {
-    Field<String> sourceIdField = field("config_blob -> 'sourceId'", SQLDataType.VARCHAR).as("sourceId");
-    Field<String> destinationIdField = field("config_blob -> 'destinationId'", SQLDataType.VARCHAR).as("destinationId");
-    return ctx
+    Field<String> sourceIdField = field("config_blob ->> 'sourceId'", SQLDataType.VARCHAR).as("sourceId");
+    Field<String> destinationIdField = field("config_blob ->> 'destinationId'", SQLDataType.VARCHAR).as("destinationId");
+    Set<String> usedConfigIds = ctx
         .select(sourceIdField, destinationIdField)
         .from(AIRBYTE_CONFIGS)
         .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(ConfigSchema.STANDARD_SYNC.name()))
         .fetch().stream()
         .flatMap(row -> Stream.of(row.getValue(sourceIdField), row.getValue(destinationIdField)))
+        .collect(Collectors.toSet());
+
+    Field<String> repoField = field("config_blob ->> 'dockerRepository'", SQLDataType.VARCHAR).as("repository");
+    return ctx.select(repoField)
+        .from(AIRBYTE_CONFIGS)
+        .where(AIRBYTE_CONFIGS.CONFIG_ID.in(usedConfigIds))
+        .fetch().stream()
+        .map(Record1::value1)
         .collect(Collectors.toSet());
   }
 

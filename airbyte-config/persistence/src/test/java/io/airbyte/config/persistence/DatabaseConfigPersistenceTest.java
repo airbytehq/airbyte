@@ -29,20 +29,32 @@ import static org.jooq.impl.DSL.count;
 import static org.jooq.impl.DSL.table;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.StandardSync;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Stream;
+import org.jooq.DSLContext;
 import org.jooq.Record1;
 import org.jooq.Result;
 import org.junit.jupiter.api.AfterAll;
@@ -76,7 +88,7 @@ public class DatabaseConfigPersistenceTest extends BaseTest {
   @BeforeEach
   public void setup() throws Exception {
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-    configPersistence = new DatabaseConfigPersistence(database);
+    configPersistence = spy(new DatabaseConfigPersistence(database));
     database.query(ctx -> ctx.execute("TRUNCATE TABLE airbyte_configs"));
   }
 
@@ -87,25 +99,71 @@ public class DatabaseConfigPersistenceTest extends BaseTest {
 
   @Test
   public void testLoadData() throws Exception {
-    final ConfigPersistence seedPersistence = mock(ConfigPersistence.class);
-    final Map<String, Stream<JsonNode>> seeds1 = Map.of(
+    // 1. when the database is empty, seed will be copied into the database
+    ConfigPersistence seedPersistence = mock(ConfigPersistence.class);
+    Map<String, Stream<JsonNode>> initialSeeds = Map.of(
         ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(), Stream.of(Jsons.jsonNode(DESTINATION_SNOWFLAKE)),
         ConfigSchema.STANDARD_SOURCE_DEFINITION.name(), Stream.of(Jsons.jsonNode(SOURCE_GITHUB)));
-    when(seedPersistence.dumpConfigs()).thenReturn(seeds1);
+    when(seedPersistence.dumpConfigs()).thenReturn(initialSeeds);
 
     configPersistence.loadData(seedPersistence);
     assertRecordCount(2);
     assertHasSource(SOURCE_GITHUB);
     assertHasDestination(DESTINATION_SNOWFLAKE);
+    verify(configPersistence, times(1)).copyConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
+    verify(configPersistence, never()).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
 
-    final Map<String, Stream<JsonNode>> seeds2 = Map.of(
-        ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(), Stream.of(Jsons.jsonNode(DESTINATION_S3), Jsons.jsonNode(DESTINATION_SNOWFLAKE)));
-    when(seedPersistence.dumpConfigs()).thenReturn(seeds2);
+    // 2. when the database is not empty, configs will be updated
+    // the seed has two destinations, one of which (S3) is new
+    reset(seedPersistence);
+    when(seedPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
+        .thenReturn(Lists.newArrayList(DESTINATION_S3, DESTINATION_SNOWFLAKE));
 
-    // when the database is not empty, calling loadData again will not change anything
+    reset(configPersistence);
     configPersistence.loadData(seedPersistence);
-    assertRecordCount(2);
+    assertRecordCount(3);
     assertHasSource(SOURCE_GITHUB);
+    // the new destination is added
+    assertHasDestination(DESTINATION_S3);
+    assertHasDestination(DESTINATION_SNOWFLAKE);
+    verify(configPersistence, never()).copyConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
+    verify(configPersistence, times(1)).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
+
+    // 3. when a connector is used, its definition will not be updated
+    // the seed has a newer version of s3 destination
+    StandardDestinationDefinition destinationS3V2 = YamlSeedConfigPersistence.get()
+        .getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, "4816b78f-1489-44c1-9060-4b19d5fa9362", StandardDestinationDefinition.class)
+        .withDockerImageTag("10000.1.0");
+    reset(seedPersistence);
+    when(seedPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
+        .thenReturn(Collections.singletonList(destinationS3V2));
+
+    reset(configPersistence);
+    StandardSync s3Sync = new StandardSync()
+        .withSourceId(SOURCE_GITHUB.getSourceDefinitionId())
+        .withDestinationId(destinationS3V2.getDestinationDefinitionId());
+    configPersistence.writeConfig(ConfigSchema.STANDARD_SYNC, UUID.randomUUID().toString(), s3Sync);
+    configPersistence.loadData(seedPersistence);
+    // s3 destination is not updated
+    verify(configPersistence, never())
+        .updateConfigRecord(any(DSLContext.class), any(OffsetDateTime.class), any(String.class), any(JsonNode.class), any(String.class));
+    assertHasDestination(DESTINATION_S3);
+
+    // 4. when a connector is not used, its definition will be updated
+    // the seed has a newer version of snowflake destination
+    StandardDestinationDefinition snowflakeV2 = YamlSeedConfigPersistence.get()
+        .getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, "424892c4-daac-4491-b35d-c6688ba547ba", StandardDestinationDefinition.class)
+        .withDockerImageTag("10000.2.0");
+    reset(seedPersistence);
+    when(seedPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
+        .thenReturn(Collections.singletonList(snowflakeV2));
+
+    reset(configPersistence);
+    configPersistence.loadData(seedPersistence);
+    // snowflake destination is updated
+    verify(configPersistence, times(1))
+        .updateConfigRecord(any(DSLContext.class), any(OffsetDateTime.class), any(String.class), any(JsonNode.class), any(String.class));
+    assertHasDestination(snowflakeV2);
   }
 
   @Test
