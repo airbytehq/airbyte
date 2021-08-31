@@ -1,0 +1,14 @@
+
+
+      create or replace transient table "AIRBYTE_DATABASE".TEST_NORMALIZATION."UNNEST_ALIAS_CHILDREN_OWNER"  as
+      (
+-- Final base SQL model
+select
+    _AIRBYTE_CHILDREN_HASHID,
+    OWNER_ID,
+    _airbyte_emitted_at,
+    _AIRBYTE_OWNER_HASHID
+from "AIRBYTE_DATABASE"._AIRBYTE_TEST_NORMALIZATION."UNNEST_ALIAS_CHILDREN_OWNER_AB3"
+-- OWNER at unnest_alias/children/owner from "AIRBYTE_DATABASE".TEST_NORMALIZATION."UNNEST_ALIAS_CHILDREN"
+      );
+    
