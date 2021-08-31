@@ -40,9 +40,9 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
 
   public static final String DRIVER_CLASS = "oracle.jdbc.OracleDriver";
 
-  public static final String COLUMN_NAME_AB_ID = JavaBaseConstants.COLUMN_NAME_AB_ID.substring(1).toUpperCase();
-  public static final String COLUMN_NAME_DATA = JavaBaseConstants.COLUMN_NAME_DATA.substring(1).toUpperCase();
-  public static final String COLUMN_NAME_EMITTED_AT = JavaBaseConstants.COLUMN_NAME_EMITTED_AT.substring(1).toUpperCase();
+  public static final String COLUMN_NAME_AB_ID = "\"" + JavaBaseConstants.COLUMN_NAME_AB_ID.toUpperCase() + "\"";
+  public static final String COLUMN_NAME_DATA = "\"" + JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase() + "\"";
+  public static final String COLUMN_NAME_EMITTED_AT = "\"" + JavaBaseConstants.COLUMN_NAME_EMITTED_AT.toUpperCase() + "\"";
 
   public OracleDestination() {
     super(DRIVER_CLASS, new OracleNameTransformer(), new OracleOperations("users"));

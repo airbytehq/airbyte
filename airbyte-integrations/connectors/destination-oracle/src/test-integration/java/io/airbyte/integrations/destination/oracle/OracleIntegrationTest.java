@@ -69,7 +69,7 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName, String namespace, JsonNode streamSchema) throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
-        .map(r -> Jsons.deserialize(r.get(OracleDestination.COLUMN_NAME_DATA).asText()))
+        .map(r -> Jsons.deserialize(r.get(OracleDestination.COLUMN_NAME_DATA.replace("\"", "")).asText()))
         .collect(Collectors.toList());
   }
 
@@ -111,10 +111,10 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
   }
 
   private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
-    List<org.jooq.Record> result = getDatabase().query(ctx -> ctx
-        .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, OracleDestination.COLUMN_NAME_EMITTED_AT))
-        .stream()
-        .collect(Collectors.toList()));
+    List<org.jooq.Record> result = getDatabase()
+        .query(ctx -> ctx.fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, OracleDestination.COLUMN_NAME_EMITTED_AT))
+            .stream()
+            .collect(Collectors.toList()));
     return result
         .stream()
         .map(r -> r.formatJSON(JSON_FORMAT))
@@ -165,7 +165,6 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
 
     final Database database = getDatabase();
     var tables = getAllTables(database);
-    tables.removeAll(allTables);
     try {
       for (String table : tables) {
         database.query(ctx -> {
