@@ -23,7 +23,7 @@
 #
 
 from source_google_ads.google_ads import GoogleAds
-from source_google_ads.streams import AdGroupAdReport, chunk_date_range
+from source_google_ads.streams import AdGroupAdReport, CustomQuery, chunk_date_range
 
 
 def test_chunk_date_range():
@@ -49,3 +49,73 @@ def test_get_updated_state(config):
     latest_record = {"segments.date": "2020-02-01"}
     new_stream_state = client.get_updated_state(current_state_stream, latest_record)
     assert new_stream_state == {"segments.date": "2020-02-01"}
+
+
+def get_instance_from_config(config, query):
+    start_date = "2021-03-04"
+    conversion_window_days = 14
+    google_api = GoogleAds(credentials=config["credentials"], customer_id=config["customer_id"])
+
+    instance = CustomQuery(
+        api=google_api,
+        conversion_window_days=conversion_window_days,
+        start_date=start_date,
+        custom_query_config={"query": query, "table_name": "whatever_table"},
+    )
+    return instance
+
+
+def test_get_json_schema_parse_query(config):
+    query = """
+        SELECT
+            campaign.accessible_bidding_strategy,
+            segments.ad_destination_type,
+            campaign.start_date,
+            campaign.end_date
+        FROM campaign
+        """
+    final_fields = ["campaign.accessible_bidding_strategy", "segments.ad_destination_type", "campaign.start_date", "campaign.end_date"]
+
+    instance = get_instance_from_config(config=config, query=query)
+    final_schema = instance.get_json_schema()
+    schema_keys = set(final_schema["properties"])
+    assert set(schema_keys) == set(final_fields)  # test 1
+
+
+def test_google_type_conversion(config):
+    """
+    query may be invalid (fields incompatibility did not checked).
+    But we are just testing types, without submitting the query and further steps.
+    Doing that with all possible types.
+    """
+    desired_mapping = {
+        "accessible_bidding_strategy.target_impression_share.location": "string",  # "ENUM"
+        "campaign.name": ["string", "null"],  # STRING
+        "campaign.end_date": ["string", "null"],  # DATE
+        "campaign.optimization_score": ["number", "null"],  # DOUBLE
+        "campaign.resource_name": ["string", "null"],  # RESOURCE_NAME
+        "campaign.shopping_setting.campaign_priority": ["integer", "null"],  # INT32
+        "campaign.shopping_setting.merchant_id": ["integer", "null"],  # INT64
+        "campaign_budget.explicitly_shared": ["boolean", "null"],  # BOOLEAN
+        "bidding_strategy.enhanced_cpc": ["string", "number", "array", "object", "boolean", "null"],  # MESSAGE
+    }
+
+    # query is select field of each type
+    query = """
+        SELECT
+            accessible_bidding_strategy.target_impression_share.location,
+            campaign.name,
+            campaign.end_date,
+            campaign.optimization_score,
+            campaign.resource_name,
+            campaign.shopping_setting.campaign_priority,
+            campaign.shopping_setting.merchant_id,
+            campaign_budget.explicitly_shared,
+            bidding_strategy.enhanced_cpc
+        FROM campaign
+        """
+    instance = get_instance_from_config(config=config, query=query)
+    final_schema = instance.get_json_schema()
+    schema_properties = final_schema.get("properties")
+    for prop, value in schema_properties.items():
+        assert desired_mapping[prop] == value.get("type")

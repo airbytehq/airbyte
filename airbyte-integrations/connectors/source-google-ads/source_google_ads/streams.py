@@ -256,7 +256,14 @@ class CustomQuery(IncrementalGoogleAdsStream):
             "additionalProperties": True,
         }
         # full list {'ENUM', 'STRING', 'DATE', 'DOUBLE', 'RESOURCE_NAME', 'INT32', 'INT64', 'BOOLEAN', 'MESSAGE'}
-        google_datatype_mapping = {"INT64": "integer", "DOUBLE": "number", "STRING": "string", "BOOLEAN": "boolean", "DATE": "string"}
+        google_datatype_mapping = {
+            "INT64": "integer",
+            "INT32": "integer",
+            "DOUBLE": "number",
+            "STRING": "string",
+            "BOOLEAN": "boolean",
+            "DATE": "string",
+        }
         fields = self.user_defined_query.lower().split("select")[1].split("from")[0].strip()
         google_resource_name = self.user_defined_query.lower().split("from", 1)[1].strip()
         google_resource_name = re.split("\\s+", google_resource_name)[0]
@@ -276,7 +283,7 @@ class CustomQuery(IncrementalGoogleAdsStream):
                 field_value = {"type": output_type}
             else:
                 output_type = [google_datatype_mapping.get(google_data_type, "string"), "null"]
-                field_value  = {"type": output_type}
+                field_value = {"type": output_type}
             local_json_schema["properties"][field] = field_value
 
         return local_json_schema
