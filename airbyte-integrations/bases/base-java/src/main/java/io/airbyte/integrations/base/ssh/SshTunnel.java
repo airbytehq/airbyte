@@ -57,7 +57,7 @@ public class SshTunnel implements AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SshTunnel.class);
 
-  public enum Method {
+  public enum SshMethod {
     NO_TUNNEL,
     SSH_PASSWORD_AUTH,
     SSH_KEY_AUTH
@@ -69,12 +69,12 @@ public class SshTunnel implements AutoCloseable {
   private final List<String> hostKey;
   private final List<String> portKey;
 
-  private final Method method;
-  private final String host;
-  private final int tunnelSshPort;
-  private final String user;
+  private final SshMethod sshMethod;
+  private final String bastionHost;
+  private final int bastionPort;
+  private final String bastionUser;
   private final String sshKey;
-  private final String tunnelUserPassword;
+  private final String bastionUserPassword;
   private final String remoteDatabaseHost;
   private final int remoteDatabasePort;
   private int tunnelDatabasePort;
@@ -82,50 +82,69 @@ public class SshTunnel implements AutoCloseable {
   private SshClient sshclient;
   private ClientSession tunnelSession;
 
+  /**
+   *
+   * @param config - the full config that was passed to the source.
+   * @param hostKey - a list of keys that point to the database host name. should be pointing to where
+   *        in the config remoteDatabaseHost is found.
+   * @param portKey - a list of keys that point to the database port. should be pointing to where in
+   *        the config remoteDatabasePort is found.
+   * @param sshMethod - the type of ssh method that should be used (includes not using SSH at all).
+   * @param bastionHost - host name of the bastion to which we will establish an ssh connection.
+   * @param bastionPort - port of the bastion to which we will establish an ssh connection.
+   * @param bastionUser - user that is allowed to access the bastion to which we will establish an ssh
+   *        connection.
+   * @param sshKey - the ssh key that will be used to make the ssh connection. can be null if we are
+   *        using bastionUserPassword instead.
+   * @param bastionUserPassword - the password for the bastionUser. can be null if we are using
+   *        bastionUserPassword instead.
+   * @param remoteDatabaseHost - the actual host name of the database (as it is known to the bastion).
+   * @param remoteDatabasePort - the actual port of the database (as it is known to the bastion).
+   */
   public SshTunnel(final JsonNode config,
                    final List<String> hostKey,
                    final List<String> portKey,
-                   final Method method,
-                   final String host,
-                   final int tunnelSshPort,
-                   final String user,
+                   final SshMethod sshMethod,
+                   final String bastionHost,
+                   final int bastionPort,
+                   final String bastionUser,
                    final String sshKey,
-                   final String tunnelUserPassword,
+                   final String bastionUserPassword,
                    final String remoteDatabaseHost,
                    final int remoteDatabasePort) {
     this.config = config;
     this.hostKey = hostKey;
     this.portKey = portKey;
 
-    Preconditions.checkNotNull(method);
-    this.method = method;
+    Preconditions.checkNotNull(sshMethod);
+    this.sshMethod = sshMethod;
 
-    if (method.equals(Method.NO_TUNNEL)) {
-      this.host = null;
-      this.tunnelSshPort = 0;
-      this.user = null;
+    if (sshMethod.equals(SshMethod.NO_TUNNEL)) {
+      this.bastionHost = null;
+      this.bastionPort = 0;
+      this.bastionUser = null;
       this.sshKey = null;
-      this.tunnelUserPassword = null;
+      this.bastionUserPassword = null;
       this.remoteDatabaseHost = null;
       this.remoteDatabasePort = 0;
     } else {
-      Preconditions.checkNotNull(host);
-      Preconditions.checkArgument(tunnelSshPort > 0);
-      Preconditions.checkNotNull(user);
-      if (method.equals(Method.SSH_KEY_AUTH)) {
+      Preconditions.checkNotNull(bastionHost);
+      Preconditions.checkArgument(bastionPort > 0);
+      Preconditions.checkNotNull(bastionUser);
+      if (sshMethod.equals(SshMethod.SSH_KEY_AUTH)) {
         Preconditions.checkNotNull(sshKey);
       }
-      if (method.equals(Method.SSH_PASSWORD_AUTH)) {
-        Preconditions.checkNotNull(tunnelUserPassword);
+      if (sshMethod.equals(SshMethod.SSH_PASSWORD_AUTH)) {
+        Preconditions.checkNotNull(bastionUserPassword);
       }
       Preconditions.checkNotNull(remoteDatabaseHost);
       Preconditions.checkArgument(remoteDatabasePort > 0);
 
-      this.host = host;
-      this.tunnelSshPort = tunnelSshPort;
-      this.user = user;
+      this.bastionHost = bastionHost;
+      this.bastionPort = bastionPort;
+      this.bastionUser = bastionUser;
       this.sshKey = sshKey;
-      this.tunnelUserPassword = tunnelUserPassword;
+      this.bastionUserPassword = bastionUserPassword;
       this.remoteDatabaseHost = remoteDatabaseHost;
       this.remoteDatabasePort = remoteDatabasePort;
 
@@ -139,10 +158,14 @@ public class SshTunnel implements AutoCloseable {
   }
 
   public JsonNode getConfigInTunnel() {
-    final JsonNode clone = Jsons.clone(config);
-    Jsons.replaceNestedString(clone, hostKey, SshdSocketAddress.LOCALHOST_ADDRESS.getHostName());
-    Jsons.replaceNestedInt(clone, portKey, tunnelDatabasePort);
-    return clone;
+    if (sshMethod.equals(SshMethod.NO_TUNNEL)) {
+      return getOriginalConfig();
+    } else {
+      final JsonNode clone = Jsons.clone(config);
+      Jsons.replaceNestedString(clone, hostKey, SshdSocketAddress.LOCALHOST_ADDRESS.getHostName());
+      Jsons.replaceNestedInt(clone, portKey, tunnelDatabasePort);
+      return clone;
+    }
   }
 
   // /**
@@ -159,10 +182,10 @@ public class SshTunnel implements AutoCloseable {
   // }
 
   public static SshTunnel getInstance(final JsonNode config, final List<String> hostKey, final List<String> portKey) {
-    final Method tunnelMethod = Jsons.getOptional(config, "tunnel_method", "tunnel_method")
-        .map(method -> Method.valueOf(method.asText().trim()))
-        .orElse(Method.NO_TUNNEL);
-    LOGGER.info("Starting connection with method: {}", tunnelMethod);
+    final SshMethod sshMethod = Jsons.getOptional(config, "tunnel_method", "tunnel_method")
+        .map(method -> SshMethod.valueOf(method.asText().trim()))
+        .orElse(SshMethod.NO_TUNNEL);
+    LOGGER.info("Starting connection with method: {}", sshMethod);
 
     // final int localPort = findFreePort();
 
@@ -170,7 +193,7 @@ public class SshTunnel implements AutoCloseable {
         config,
         hostKey,
         portKey,
-        tunnelMethod,
+        sshMethod,
         Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_host")),
         Jsons.getIntOrZero(config, "tunnel_method", "tunnel_ssh_port"),
         Strings.safeTrim(Jsons.getStringOrNull(config, "tunnel_method", "tunnel_username")),
@@ -253,16 +276,16 @@ public class SshTunnel implements AutoCloseable {
     try {
       client.start();
       final ClientSession session = client.connect(
-          user.trim(),
-          host.trim(),
-          tunnelSshPort)
+          bastionUser.trim(),
+          bastionHost.trim(),
+          bastionPort)
           .verify(TIMEOUT_MILLIS)
           .getSession();
-      if (method.equals(Method.SSH_KEY_AUTH)) {
+      if (sshMethod.equals(SshMethod.SSH_KEY_AUTH)) {
         session.addPublicKeyIdentity(getPrivateKeyPair());
       }
-      if (method.equals(Method.SSH_PASSWORD_AUTH)) {
-        session.addPasswordIdentity(tunnelUserPassword);
+      if (sshMethod.equals(SshMethod.SSH_PASSWORD_AUTH)) {
+        session.addPasswordIdentity(bastionUserPassword);
       }
 
       session.auth().verify(TIMEOUT_MILLIS);
@@ -285,10 +308,10 @@ public class SshTunnel implements AutoCloseable {
   @Override
   public String toString() {
     return "SSHTunnel{" +
-        "method=" + method +
-        ", host='" + host + '\'' +
-        ", tunnelSshPort='" + tunnelSshPort + '\'' +
-        ", user='" + user + '\'' +
+        "method=" + sshMethod +
+        ", host='" + bastionHost + '\'' +
+        ", tunnelSshPort='" + bastionPort + '\'' +
+        ", user='" + bastionUser + '\'' +
         ", remoteDatabaseHost='" + remoteDatabaseHost + '\'' +
         ", remoteDatabasePort='" + remoteDatabasePort + '\'' +
         ", tunnelDatabasePort='" + tunnelDatabasePort + '\'' +
