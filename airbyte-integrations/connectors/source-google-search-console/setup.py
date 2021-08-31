@@ -27,6 +27,8 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk",
+    "google-api-python-client",
+    "oauth2client",
 ]
 
 TEST_REQUIREMENTS = [

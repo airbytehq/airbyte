@@ -22,6 +22,16 @@
 # SOFTWARE.
 #
 
+import json
 
-def test_example_method():
-    assert True
+from source_google_search_console.service_account_authenticator import ServiceAccountAuthenticator
+
+
+def test_service_account_authenticator():
+    with open("secrets/service_account.json") as f:
+        service_account_info = json.load(f)
+    authenticator = ServiceAccountAuthenticator(service_account_info=service_account_info)
+    access_token = authenticator.get_access_token()
+
+    assert access_token
+    assert authenticator.get_auth_header() == {"Authorization": f"Bearer {access_token}"}

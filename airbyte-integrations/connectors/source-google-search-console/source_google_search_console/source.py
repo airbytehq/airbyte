@@ -24,7 +24,6 @@
 
 
 from typing import Any, List, Mapping, Tuple
-from urllib.parse import quote_plus
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
@@ -43,9 +42,7 @@ from source_google_search_console.streams import (
 
 
 class SourceGoogleSearchConsole(AbstractSource):
-    def check_connection(
-        self, logger: AirbyteLogger, config: Mapping[str, Any]
-    ) -> Tuple[bool, Any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             stream_kwargs = self.get_stream_kwargs(config)
             sites = Sites(**stream_kwargs)
@@ -63,16 +60,18 @@ class SourceGoogleSearchConsole(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        stream_kwargs = self.get_stream_kwargs(config)
+
+        stream_config = self.get_stream_kwargs(config)
+
         streams = [
-            Sites(**stream_kwargs),
-            Sitemaps(**stream_kwargs),
-            SearchAnalyticsByCountry(**stream_kwargs),
-            SearchAnalyticsByDevice(**stream_kwargs),
-            SearchAnalyticsByDate(**stream_kwargs),
-            SearchAnalyticsByQuery(**stream_kwargs),
-            SearchAnalyticsByPage(**stream_kwargs),
-            SearchAnalyticsAllFields(**stream_kwargs),
+            Sites(**stream_config),
+            Sitemaps(**stream_config),
+            SearchAnalyticsByCountry(**stream_config),
+            SearchAnalyticsByDevice(**stream_config),
+            SearchAnalyticsByDate(**stream_config),
+            SearchAnalyticsByQuery(**stream_config),
+            SearchAnalyticsByPage(**stream_config),
+            SearchAnalyticsAllFields(**stream_config),
         ]
 
         return streams
@@ -83,8 +82,9 @@ class SourceGoogleSearchConsole(AbstractSource):
             "client_id": config.get("client_id"),
             "client_secret": config.get("client_secret"),
             "refresh_token": config.get("refresh_token"),
-            "site_url": quote_plus(config.get("site_url")),
+            "site_urls": config.get("site_urls"),
             "start_date": config.get("start_date"),
+            "service_account_info": config.get("service_account_info"),
         }
 
         return stream_kwargs
