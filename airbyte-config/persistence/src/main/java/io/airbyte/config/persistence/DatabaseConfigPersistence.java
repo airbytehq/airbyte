@@ -317,7 +317,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       }
 
       if (!currentRepoToIdAndVersions.containsKey(repository)) {
-        insertConfigRecord(ctx, timestamp, configType.name(), configJson, configType.getIdFieldName());
+        insertionCount += insertConfigRecord(ctx, timestamp, configType.name(), configJson, configType.getIdFieldName());
         continue;
       }
 
