@@ -63,6 +63,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   private final VoidCallable requestClose;
   private boolean receivedFirstRecord;
   private boolean hasSnapshotFinished;
+  private boolean signalledClose;
 
   public DebeziumRecordIterator(LinkedBlockingQueue<ChangeEvent<String, String>> queue,
                                 CdcTargetPosition targetPosition,
@@ -74,6 +75,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     this.requestClose = requestClose;
     this.receivedFirstRecord = false;
     this.hasSnapshotFinished = true;
+    this.signalledClose = false;
   }
 
   @Override
@@ -103,7 +105,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
       hasSnapshotFinished = hasSnapshotFinished(eventAsJson);
 
       // if the last record matches the target file position, it is time to tell the producer to shutdown.
-      if (shouldSignalClose(eventAsJson)) {
+      if (!signalledClose && shouldSignalClose(eventAsJson)) {
         requestClose();
       }
       receivedFirstRecord = true;
@@ -135,8 +137,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
    */
   @Override
   public void close() throws Exception {
-    requestClose.call();
-    throwExceptionIfSnapshotNotFinished();
+    requestClose();
   }
 
   private boolean shouldSignalClose(JsonNode eventAsJson) {
@@ -146,6 +147,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   private void requestClose() {
     try {
       requestClose.call();
+      signalledClose = true;
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
