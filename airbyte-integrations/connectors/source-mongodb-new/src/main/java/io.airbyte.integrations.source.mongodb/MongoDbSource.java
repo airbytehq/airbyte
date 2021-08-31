@@ -24,17 +24,16 @@
 
 package io.airbyte.integrations.source.mongodb;
 
+import static com.mongodb.client.model.Filters.gt;
+
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.Databases;
-import io.airbyte.db.mongodb.MongoDataType;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.db.mongodb.MongoUtils;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -45,22 +44,32 @@ import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.bson.BsonType;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MongoDbSource extends AbstractDbSource<MongoDataType, MongoDatabase> {
+public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbSource.class);
 
   private static final String PRIMARY_KEY = "_id";
 
   private String quote = "";
+
+  public static void main(String[] args) throws Exception {
+    final Source source = new MongoDbSource();
+    LOGGER.info("starting source: {}", MongoDbSource.class);
+    new IntegrationRunner(source).run(args);
+    LOGGER.info("completed source: {}", MongoDbSource.class);
+  }
 
   @Override
   public JsonNode toDatabaseConfig(JsonNode config) {
@@ -101,7 +110,7 @@ public class MongoDbSource extends AbstractDbSource<MongoDataType, MongoDatabase
   }
 
   @Override
-  protected JsonSchemaPrimitive getType(MongoDataType fieldType) {
+  protected JsonSchemaPrimitive getType(BsonType fieldType) {
     return MongoUtils.getType(fieldType);
   }
 
@@ -111,30 +120,20 @@ public class MongoDbSource extends AbstractDbSource<MongoDataType, MongoDatabase
   }
 
   @Override
-  protected List<TableInfo<CommonField<MongoDataType>>> discoverInternal(MongoDatabase database)
+  protected List<TableInfo<CommonField<BsonType>>> discoverInternal(MongoDatabase database)
       throws Exception {
-    List<TableInfo<CommonField<MongoDataType>>> tableInfos = new ArrayList<>();
+    List<TableInfo<CommonField<BsonType>>> tableInfos = new ArrayList<>();
 
     for (String collectionName : database.getCollectionNames()) {
       MongoCollection<Document> collection = database.getCollection(collectionName);
+      Map<String, BsonType> uniqueFields = MongoUtils.getUniqueFields(collection);
 
-      MongoCursor<Document> cursor = collection.find().iterator();
+      List<CommonField<BsonType>> fields = uniqueFields.keySet().stream()
+          .map(field -> new CommonField<>(field, uniqueFields.get(field)))
+          .collect(Collectors.toList());
 
-      List<CommonField<MongoDataType>> fields = new ArrayList<>();
-      Map<String, MongoDataType> uniqueFields = new HashMap<>();
-      while (cursor.hasNext()) {
-        Document document = cursor.next();
-        for (Map.Entry<String, Object> docField : document.entrySet()) {
-          MongoDataType dataType = MongoDataType.STRING;
-          fields.add(new CommonField<MongoDataType>(docField.getKey(), dataType));
-        }
-      }
-
-      // The field name _id is reserved for use as a primary key; its value must be unique in the
-      // collection,
-      // is immutable, and may be of any type other than an array.
-      // map to airbyte schema
-      TableInfo<CommonField<MongoDataType>> tableInfo = TableInfo.<CommonField<MongoDataType>>builder()
+      // The field name _id is reserved for use as a primary key;
+      TableInfo<CommonField<BsonType>> tableInfo = TableInfo.<CommonField<BsonType>>builder()
           .nameSpace(database.getName())
           .name(collectionName)
           .fields(fields)
@@ -143,14 +142,12 @@ public class MongoDbSource extends AbstractDbSource<MongoDataType, MongoDatabase
 
       tableInfos.add(tableInfo);
     }
-
     return tableInfos;
   }
 
   @Override
   protected Map<String, List<String>> discoverPrimaryKeys(MongoDatabase database,
-                                                          List<TableInfo<CommonField<MongoDataType>>> tableInfos) {
-
+                                                          List<TableInfo<CommonField<BsonType>>> tableInfos) {
     return tableInfos.stream()
         .collect(Collectors.toMap(
             tableInfo -> tableInfo.getName(),
@@ -167,16 +164,7 @@ public class MongoDbSource extends AbstractDbSource<MongoDataType, MongoDatabase
                                                                List<String> columnNames,
                                                                String schemaName,
                                                                String tableName) {
-
-    MongoCollection<Document> collection = database.getCollection(tableName);
-    MongoCursor<Document> cursor = collection.find().iterator();
-    List<JsonNode> nodes = new ArrayList<>();
-    while (cursor.hasNext()) {
-      // todo read and map
-      ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-      nodes.add(jsonNode);
-    }
-    return AutoCloseableIterators.fromStream(nodes.stream());
+    return queryTable(database, columnNames, tableName, null);
   }
 
   @Override
@@ -185,25 +173,21 @@ public class MongoDbSource extends AbstractDbSource<MongoDataType, MongoDatabase
                                                                String schemaName,
                                                                String tableName,
                                                                String cursorField,
-                                                               MongoDataType cursorFieldType,
+                                                               BsonType cursorFieldType,
                                                                String cursor) {
-
-    MongoCollection<Document> collection = database.getCollection(tableName);
-    MongoCursor<Document> mongoCursor = collection.find().iterator(); // todo add find query
-    List<JsonNode> nodes = new ArrayList<>();
-    while (mongoCursor.hasNext()) {
-      // todo read and map
-      ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-      nodes.add(jsonNode);
-    }
-    return AutoCloseableIterators.fromStream(nodes.stream());
+    Bson greaterComparison = gt(cursorField, cursor);
+    return queryTable(database, columnNames, tableName, greaterComparison);
   }
 
-  public static void main(String[] args) throws Exception {
-    final Source source = new MongoDbSource();
-    LOGGER.info("starting source: {}", MongoDbSource.class);
-    new IntegrationRunner(source).run(args);
-    LOGGER.info("completed source: {}", MongoDbSource.class);
+  private AutoCloseableIterator<JsonNode> queryTable(MongoDatabase database, List<String> columnNames, String tableName, Bson filter) {
+    return AutoCloseableIterators.lazyIterator(() -> {
+      try {
+        final Stream<JsonNode> stream = database.read(tableName, columnNames, Optional.ofNullable(filter));
+        return AutoCloseableIterators.fromStream(stream);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    });
   }
 
 }

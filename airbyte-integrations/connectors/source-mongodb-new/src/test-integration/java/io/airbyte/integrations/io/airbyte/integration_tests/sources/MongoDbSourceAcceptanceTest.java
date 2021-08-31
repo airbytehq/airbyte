@@ -52,6 +52,7 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private MongoDBContainer mongoDBContainer;
   private JsonNode config;
+  private MongoDatabase database;
 
   @Override
   protected String getImageName() {
@@ -84,15 +85,14 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("connectionString", connectionString)
         .build());
 
-    final MongoDatabase mongoDatabase = new MongoDatabase(connectionString, "test");
+    database = new MongoDatabase(connectionString, "test");
 
-    MongoCollection<Document> collection = mongoDatabase.createCollection("acceptance_test");
-    var doc1 = new Document("id", "0001")
-        .append("name", "Test");
-    /*
-     * var doc2 = new Document("id", "0002") .append("name", "Mongo");
-     */
-    collection.insertMany(List.of(doc1));
+    MongoCollection<Document> collection = database.createCollection("acceptance_test");
+    var doc1 = new Document("id", "0001").append("name", "Test");
+    var doc2 = new Document("id", "0002").append("name", "Mongo");
+    var doc3 = new Document("id", "0003").append("name", "Source");
+
+    collection.insertMany(List.of(doc1, doc2, doc3));
   }
 
   @Override
@@ -110,13 +110,16 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("_id"))
+            .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withCursorField(List.of("_id"))
             .withStream(CatalogHelpers.createAirbyteStream(
                 "test.acceptance_test",
+                Field.of("_id", JsonSchemaPrimitive.STRING),
                 Field.of("id", JsonSchemaPrimitive.STRING),
                 Field.of("name", JsonSchemaPrimitive.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
+                .withDefaultCursorField(List.of("_id")))));
   }
 
   @Override
