@@ -42,7 +42,7 @@ class Oauth2Authenticator(AuthBase):
         client_id: str,
         client_secret: str,
         refresh_token: str,
-        token_expiry_date: pendulum.datetime = pendulum.now().subtract(days=1),
+        token_expiry_date: None,
         scopes: List[str] = None,
         access_token_name: str = "access_token",
         expires_in_name: str = "expires_in",
@@ -55,7 +55,7 @@ class Oauth2Authenticator(AuthBase):
         self.access_token_name = access_token_name
         self.expires_in_name = expires_in_name
 
-        self._token_expiry_date = token_expiry_date
+        self._token_expiry_date = token_expiry_date or pendulum.now().subtract(days=1)
         self._access_token = None
 
     def __call__(self, request):
