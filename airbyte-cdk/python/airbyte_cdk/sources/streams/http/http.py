@@ -44,6 +44,7 @@ class HttpStream(Stream, ABC):
     """
 
     source_defined_cursor = True  # Most HTTP streams use a source defined cursor (i.e: the user can't configure it like on a SQL table)
+    page_size = None  # Use this variable to define page size for API http requests with pagination support
 
     def __init__(self, authenticator: HttpAuthenticator = NoAuth()):
         self._authenticator = authenticator
