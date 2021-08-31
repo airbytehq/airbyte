@@ -11,6 +11,7 @@ select
     id,
     currency,
     date,
+    timestamp_col,
     HKD_special___characters,
     HKD_special___characters_1,
     NZD,
@@ -20,13 +21,13 @@ select
         partition by id, currency, cast(NZD as 
     string
 )
-        order by date desc, _airbyte_emitted_at desc
+        order by date is null asc, date desc, _airbyte_emitted_at desc
     ) as _airbyte_end_at,
     lag(date) over (
         partition by id, currency, cast(NZD as 
     string
 )
-        order by date desc, _airbyte_emitted_at desc
+        order by date is null asc, date desc, _airbyte_emitted_at desc
     ) is null as _airbyte_active_row,
     _airbyte_emitted_at,
     _airbyte_dedup_exchange_rate_hashid

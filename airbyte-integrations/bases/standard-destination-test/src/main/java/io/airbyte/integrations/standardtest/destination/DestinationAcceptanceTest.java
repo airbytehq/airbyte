@@ -226,6 +226,28 @@ public abstract class DestinationAcceptanceTest {
     }
   }
 
+  /**
+   * Detects if a destination implements overwrite mode from the spec.json that should include
+   * 'supportedDestinationSyncMode'
+   *
+   * @return - a boolean.
+   */
+  protected boolean implementsOverwrite() throws WorkerException {
+    final ConnectorSpecification spec = runSpec();
+    assertNotNull(spec);
+    if (spec.getSupportedDestinationSyncModes() != null) {
+      return spec.getSupportedDestinationSyncModes().contains(DestinationSyncMode.OVERWRITE);
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Override to return true to if the destination implements basic normalization and it should be
+   * tested here.
+   *
+   * @return - a boolean.
+   */
   protected boolean supportsNormalization() {
     return false;
   }
@@ -350,10 +372,34 @@ public abstract class DestinationAcceptanceTest {
   }
 
   /**
+   * This serves to test MSSQL 2100 limit parameters in a single query. this means that for Airbyte
+   * insert data need to limit to ~ 700 records (3 columns for the raw tables) = 2100 params
+   */
+  @ParameterizedTest
+  @ArgumentsSource(DataArgumentsProvider.class)
+  public void testSyncWithLargeRecordBatch(String messagesFilename, String catalogFilename) throws Exception {
+    final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+
+    final List<AirbyteMessage> largeNumberRecords = Collections.nCopies(1000, messages).stream().flatMap(List::stream).collect(Collectors.toList());
+
+    final JsonNode config = getConfig();
+    final String defaultSchema = getDefaultSchema(config);
+    runSyncAndVerifyStateOutput(config, largeNumberRecords, configuredCatalog, false);
+  }
+
+  /**
    * Verify that the integration overwrites the first sync with the second sync.
    */
   @Test
   public void testSecondSync() throws Exception {
+    if (!implementsOverwrite()) {
+      LOGGER.info("Destination's spec.json does not support overwrite sync mode.");
+      return;
+    }
+
     final AirbyteCatalog catalog =
         Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);

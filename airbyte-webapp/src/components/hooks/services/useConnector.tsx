@@ -1,9 +1,10 @@
 import { useFetcher, useResource } from "rest-hooks";
-import config from "config";
 import { useMemo } from "react";
 
-import SourceDefinitionResource from "../../../core/resources/SourceDefinition";
-import DestinationDefinitionResource from "../../../core/resources/DestinationDefinition";
+import SourceDefinitionResource from "core/resources/SourceDefinition";
+import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+import { Connector } from "core/domain/connector";
+import { useWorkspace } from "components/hooks/services/useWorkspace";
 
 type ConnectorService = {
   hasNewVersions: boolean;
@@ -16,16 +17,17 @@ type ConnectorService = {
 };
 
 const useConnector = (): ConnectorService => {
+  const { workspace } = useWorkspace();
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
     {
-      workspaceId: config.ui.workspaceId,
+      workspaceId: workspace.workspaceId,
     }
   );
   const { destinationDefinitions } = useResource(
     DestinationDefinitionResource.listShape(),
     {
-      workspaceId: config.ui.workspaceId,
+      workspaceId: workspace.workspaceId,
     }
   );
 
@@ -37,52 +39,19 @@ const useConnector = (): ConnectorService => {
     DestinationDefinitionResource.updateShape()
   );
 
-  const hasNewSourceVersion = useMemo(
-    () =>
-      sourceDefinitions.some(
-        (source) => source.latestDockerImageTag !== source.dockerImageTag
-      ),
+  const newSourceDefinitions = useMemo(
+    () => sourceDefinitions.filter(Connector.hasNewerVersion),
     [sourceDefinitions]
   );
 
-  const hasNewDestinationVersion = useMemo(
-    () =>
-      destinationDefinitions.some(
-        (destination) =>
-          destination.latestDockerImageTag !== destination.dockerImageTag
-      ),
-    [destinationDefinitions]
-  );
-
-  const hasNewVersions = useMemo(
-    () => hasNewSourceVersion || hasNewDestinationVersion,
-    [hasNewSourceVersion, hasNewDestinationVersion]
-  );
-
-  const countNewSourceVersion = useMemo(
-    () =>
-      sourceDefinitions.filter(
-        (source) => source.latestDockerImageTag !== source.dockerImageTag
-      ).length,
-    [sourceDefinitions]
-  );
-
-  const countNewDestinationVersion = useMemo(
-    () =>
-      destinationDefinitions.filter(
-        (destination) =>
-          destination.latestDockerImageTag !== destination.dockerImageTag
-      ).length,
+  const newDestinationDefinitions = useMemo(
+    () => destinationDefinitions.filter(Connector.hasNewerVersion),
     [destinationDefinitions]
   );
 
   const updateAllSourceVersions = async () => {
-    const updateList = sourceDefinitions.filter(
-      (source) => source.latestDockerImageTag !== source.dockerImageTag
-    );
-
     await Promise.all(
-      updateList?.map((item) =>
+      newSourceDefinitions?.map((item) =>
         updateSourceDefinition(
           {},
           {
@@ -95,13 +64,8 @@ const useConnector = (): ConnectorService => {
   };
 
   const updateAllDestinationVersions = async () => {
-    const updateList = destinationDefinitions.filter(
-      (destination) =>
-        destination.latestDockerImageTag !== destination.dockerImageTag
-    );
-
     await Promise.all(
-      updateList?.map((item) =>
+      newDestinationDefinitions?.map((item) =>
         updateDestinationDefinition(
           {},
           {
@@ -113,14 +77,18 @@ const useConnector = (): ConnectorService => {
     );
   };
 
+  const hasNewSourceVersion = newSourceDefinitions.length > 0;
+  const hasNewDestinationVersion = newDestinationDefinitions.length > 0;
+  const hasNewVersions = hasNewSourceVersion || hasNewDestinationVersion;
+
   return {
     hasNewVersions,
     hasNewSourceVersion,
     hasNewDestinationVersion,
     updateAllSourceVersions,
     updateAllDestinationVersions,
-    countNewSourceVersion,
-    countNewDestinationVersion,
+    countNewSourceVersion: newSourceDefinitions.length,
+    countNewDestinationVersion: newDestinationDefinitions.length,
   };
 };
 

@@ -4,20 +4,22 @@
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
 select
     json_value(_airbyte_data, 
-  '$."id"') as id,
+    '$."id"') as id,
     json_value(_airbyte_data, 
-  '$."currency"') as currency,
+    '$."currency"') as currency,
     json_value(_airbyte_data, 
-  '$."date"') as `date`,
+    '$."date"') as `date`,
     json_value(_airbyte_data, 
-  '$."HKD@spéçiäl & characters"') as `HKD@spéçiäl & characters`,
+    '$."timestamp_col"') as timestamp_col,
     json_value(_airbyte_data, 
-  '$."HKD_special___characters"') as hkd_special___characters,
+    '$."HKD@spéçiäl & characters"') as `HKD@spéçiäl & characters`,
     json_value(_airbyte_data, 
-  '$."NZD"') as nzd,
+    '$."HKD_special___characters"') as hkd_special___characters,
     json_value(_airbyte_data, 
-  '$."USD"') as usd,
+    '$."NZD"') as nzd,
+    json_value(_airbyte_data, 
+    '$."USD"') as usd,
     _airbyte_emitted_at
-from test_normalization._airbyte_raw_dedup_exchange_rate
+from test_normalization._airbyte_raw_dedup_exchange_rate as table_alias
 -- dedup_exchange_rate
   );

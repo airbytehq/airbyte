@@ -24,12 +24,12 @@
 
 package io.airbyte.server;
 
-import io.airbyte.api.model.ImportRead;
-import io.airbyte.api.model.ImportRead.StatusEnum;
+import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.migrate.MigrateConfig;
 import io.airbyte.migrate.MigrationRunner;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -44,46 +44,41 @@ public class RunMigration implements Runnable, AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RunMigration.class);
   private final String targetVersion;
-  private final ConfigDumpExport configDumpExport;
-  private final ConfigDumpImport configDumpImport;
+  private final ConfigPersistence seedPersistence;
+  private final ConfigDumpExporter configDumpExporter;
+  private final ConfigDumpImporter configDumpImporter;
   private final List<File> filesToBeCleanedUp = new ArrayList<>();
 
-  public RunMigration(String initialVersion,
-                      JobPersistence jobPersistence,
+  public RunMigration(JobPersistence jobPersistence,
                       ConfigRepository configRepository,
                       String targetVersion,
-                      Path latestSeeds) {
+                      ConfigPersistence seedPersistence) {
     this.targetVersion = targetVersion;
-    this.configDumpExport = new ConfigDumpExport(configRepository, jobPersistence, initialVersion);
-    this.configDumpImport = new ConfigDumpImport(initialVersion, targetVersion, latestSeeds, jobPersistence, configRepository);
+    this.seedPersistence = seedPersistence;
+    this.configDumpExporter = new ConfigDumpExporter(configRepository, jobPersistence, null);
+    this.configDumpImporter = new ConfigDumpImporter(configRepository, jobPersistence, null);
   }
 
   @Override
   public void run() {
     try {
       // Export data
-      File exportData = configDumpExport.dump();
+      File exportData = configDumpExporter.dump();
       filesToBeCleanedUp.add(exportData);
 
       // Define output target
       final Path tempFolder = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive_output");
-      final File output = Files.createTempFile(tempFolder, "airbyte_archive_output", ".tar.gz")
-          .toFile();
+      final File output = Files.createTempFile(tempFolder, "airbyte_archive_output", ".tar.gz").toFile();
       filesToBeCleanedUp.add(output);
       filesToBeCleanedUp.add(tempFolder.toFile());
 
       // Run Migration
-      MigrateConfig migrateConfig = new MigrateConfig(exportData.toPath(), output.toPath(),
-          targetVersion);
+      MigrateConfig migrateConfig = new MigrateConfig(exportData.toPath(), output.toPath(), targetVersion);
       MigrationRunner.run(migrateConfig);
 
       // Import data
-      ImportRead importRead = configDumpImport.importData(output);
-      if (importRead.getStatus() == StatusEnum.FAILED) {
-        throw new RuntimeException("Automatic migration failed : " + importRead.getReason());
-      }
-
-    } catch (IOException e) {
+      configDumpImporter.importDataWithSeed(targetVersion, output, seedPersistence);
+    } catch (IOException | JsonValidationException e) {
       throw new RuntimeException("Automatic migration failed", e);
     }
   }

@@ -2,10 +2,8 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
-import { AnalyticsService } from "core/analytics/AnalyticsService";
-
 import ContentCard from "components/ContentCard";
-import ServiceForm from "components/ServiceForm";
+import ServiceForm from "views/Connector/ServiceForm";
 import ConnectionBlock from "components/ConnectionBlock";
 import { JobsLogItem } from "components/JobItem";
 
@@ -17,6 +15,7 @@ import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
 
 import SkipOnboardingButton from "./SkipOnboardingButton";
+import { useAnalytics } from "components/hooks/useAnalytics";
 
 type IProps = {
   availableServices: DestinationDefinition[];
@@ -50,12 +49,13 @@ const DestinationStep: React.FC<IProps> = ({
   const currentSource = useResource(SourceDefinitionResource.detailShape(), {
     sourceDefinitionId: currentSourceDefinitionId,
   });
+  const analyticsService = useAnalytics();
 
   const onDropDownSelect = (destinationDefinition: string) => {
     const destinationConnector = availableServices.find(
       (s) => s.destinationDefinitionId === destinationDefinition
     );
-    AnalyticsService.track("New Destination - Action", {
+    analyticsService.track("New Destination - Action", {
       action: "Select a connector",
       connector_destination: destinationConnector?.name,
       connector_destination_definition_id:

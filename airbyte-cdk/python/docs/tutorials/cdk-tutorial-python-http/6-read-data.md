@@ -20,6 +20,13 @@ Optionally, we can provide additional inputs to customize requests:
 * request parameters and headers
 * how to recognize rate limit errors, and how long to wait \(by default it retries 429 and 5XX errors using exponential backoff\)
 * HTTP method and request body if applicable
+* configure exponential backoff policy
+
+Backoff policy options:
+
+- `retry_factor` Specifies factor for exponential backoff policy (by default is 5)
+- `max_retries` Specifies maximum amount of retries for backoff policy (by default is 5)
+- `raise_on_http_errors` If set to False, allows opting-out of raising HTTP code exception (by default is True)
 
 There are many other customizable options - you can find them in the [`airbyte_cdk.sources.streams.http.HttpStream`](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/streams/http/http.py) class.
 
@@ -85,7 +92,7 @@ def streams(self, config: Mapping[str, Any]) -> List[Stream]:
 
 We're now ready to query the API!
 
-To do this, we'll need a [ConfiguredCatalog](https://docs.airbyte.io/tutorials/tutorials/beginners-guide-to-catalog). We've prepared one [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/configured_catalog.json) -- download this and place it in `sample_files/configured_catalog.json`. Then run:
+To do this, we'll need a [ConfiguredCatalog](https://docs.airbyte.io/understanding-airbyte/beginners-guide-to-catalog#configuredairbytecatalog). We've prepared one [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/configured_catalog.json) -- download this and place it in `sample_files/configured_catalog.json`. Then run:
 
 ```text
  python main.py read --config sample_files/config.json --catalog sample_files/configured_catalog.json

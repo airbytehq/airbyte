@@ -204,7 +204,7 @@ font-style: italic;
 </div>
     <div class="app-desc">More information: <a href="https://openapi-generator.tech">https://openapi-generator.tech</a></div>
     <div class="app-desc">Contact Info: <a href="contact@airbyte.io">contact@airbyte.io</a></div>
-    <div class="app-desc">Version: 1.0.0-oas3</div>
+    <div class="app-desc">Version: 1.0.0</div>
     <div class="app-desc">BasePath:/api</div>
     <div class="license-info">MIT</div>
     <div class="license-url">https://opensource.org/licenses/MIT</div>
@@ -229,10 +229,18 @@ font-style: italic;
   <li><a href="#syncConnection"><code><span class="http-method">post</span> /v1/connections/sync</code></a></li>
   <li><a href="#updateConnection"><code><span class="http-method">post</span> /v1/connections/update</code></a></li>
   </ul>
+  <h4><a href="#DbMigration">DbMigration</a></h4>
+  <ul>
+  <li><a href="#executeMigrations"><code><span class="http-method">post</span> /v1/db_migrations/migrate</code></a></li>
+  <li><a href="#listMigrations"><code><span class="http-method">post</span> /v1/db_migrations/list</code></a></li>
+  </ul>
   <h4><a href="#Deployment">Deployment</a></h4>
   <ul>
   <li><a href="#exportArchive"><code><span class="http-method">post</span> /v1/deployment/export</code></a></li>
+  <li><a href="#exportWorkspace"><code><span class="http-method">post</span> /v1/deployment/export_workspace</code></a></li>
   <li><a href="#importArchive"><code><span class="http-method">post</span> /v1/deployment/import</code></a></li>
+  <li><a href="#importIntoWorkspace"><code><span class="http-method">post</span> /v1/deployment/import_into_workspace</code></a></li>
+  <li><a href="#uploadArchiveResource"><code><span class="http-method">post</span> /v1/deployment/upload_archive_resource</code></a></li>
   </ul>
   <h4><a href="#Destination">Destination</a></h4>
   <ul>
@@ -1093,6 +1101,153 @@ font-style: italic;
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <h1><a name="DbMigration">DbMigration</a></h1>
+  <div class="method"><a name="executeMigrations"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/db_migrations/migrate</code></pre></div>
+    <div class="method-summary">Migrate the database to the latest version (<span class="nickname">executeMigrations</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">DbMigrationRequestBody <a href="#DbMigrationRequestBody">DbMigrationRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#DbMigrationExecutionRead">DbMigrationExecutionRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "initialVersion" : "initialVersion",
+  "executedMigrations" : [ {
+    "migrationVersion" : "migrationVersion",
+    "migrationDescription" : "migrationDescription",
+    "migratedAt" : 0,
+    "migrationType" : "migrationType",
+    "migrationScript" : "migrationScript",
+    "migratedBy" : "migratedBy"
+  }, {
+    "migrationVersion" : "migrationVersion",
+    "migrationDescription" : "migrationDescription",
+    "migratedAt" : 0,
+    "migrationType" : "migrationType",
+    "migrationScript" : "migrationScript",
+    "migratedBy" : "migratedBy"
+  } ],
+  "targetVersion" : "targetVersion"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#DbMigrationExecutionRead">DbMigrationExecutionRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="listMigrations"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/db_migrations/list</code></pre></div>
+    <div class="method-summary">List all database migrations (<span class="nickname">listMigrations</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">DbMigrationRequestBody <a href="#DbMigrationRequestBody">DbMigrationRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#DbMigrationReadList">DbMigrationReadList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "migrations" : [ {
+    "migrationVersion" : "migrationVersion",
+    "migrationDescription" : "migrationDescription",
+    "migratedAt" : 0,
+    "migrationType" : "migrationType",
+    "migrationScript" : "migrationScript",
+    "migratedBy" : "migratedBy"
+  }, {
+    "migrationVersion" : "migrationVersion",
+    "migrationDescription" : "migrationDescription",
+    "migratedAt" : 0,
+    "migrationType" : "migrationType",
+    "migrationScript" : "migrationScript",
+    "migratedBy" : "migratedBy"
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#DbMigrationReadList">DbMigrationReadList</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <h1><a name="Deployment">Deployment</a></h1>
   <div class="method"><a name="exportArchive"/>
     <div class="method-path">
@@ -1103,6 +1258,53 @@ font-style: italic;
 
 
 
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      
+      File
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/x-gzip</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#File">File</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="exportWorkspace"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/deployment/export_workspace</code></pre></div>
+    <div class="method-summary">Export Airbyte Workspace Configuration (<span class="nickname">exportWorkspace</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">WorkspaceIdRequestBody <a href="#WorkspaceIdRequestBody">WorkspaceIdRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
 
 
 
@@ -1180,6 +1382,115 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     Successful operation
         <a href="#ImportRead">ImportRead</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="importIntoWorkspace"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/deployment/import_into_workspace</code></pre></div>
+    <div class="method-summary">Import Airbyte Configuration into Workspace (this operation might change ids of imported configurations). Note, in order to use this api endpoint, you might need to upload a temporary archive resource with 'deployment/upload_archive_resource' first (<span class="nickname">importIntoWorkspace</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">ImportRequestBody <a href="#ImportRequestBody">ImportRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#ImportRead">ImportRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "reason" : "reason",
+  "status" : "succeeded"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#ImportRead">ImportRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="uploadArchiveResource"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/deployment/upload_archive_resource</code></pre></div>
+    <div class="method-summary">Upload a GZIP archive tarball and stage it in the server's cache as a temporary resource (<span class="nickname">uploadArchiveResource</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/x-gzip</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body <a href="#file">file</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#UploadRead">UploadRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "resourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "status" : "succeeded"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#UploadRead">UploadRead</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="Destination">Destination</a></h1>
@@ -2495,7 +2806,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">OperationCreateOrUpdate <a href="#OperationCreateOrUpdate">OperationCreateOrUpdate</a> (required)</div>
+      <div class="param">OperatorConfiguration <a href="#OperatorConfiguration">OperatorConfiguration</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -2583,7 +2894,8 @@ font-style: italic;
       "dbtArguments" : "dbtArguments",
       "gitRepoUrl" : "gitRepoUrl"
     }
-  }
+  },
+  "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -2698,7 +3010,8 @@ font-style: italic;
       "dbtArguments" : "dbtArguments",
       "gitRepoUrl" : "gitRepoUrl"
     }
-  }
+  },
+  "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -2769,7 +3082,8 @@ font-style: italic;
         "dbtArguments" : "dbtArguments",
         "gitRepoUrl" : "gitRepoUrl"
       }
-    }
+    },
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   }, {
     "name" : "name",
     "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -2783,7 +3097,8 @@ font-style: italic;
         "dbtArguments" : "dbtArguments",
         "gitRepoUrl" : "gitRepoUrl"
       }
-    }
+    },
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ]
 }</code></pre>
 
@@ -2854,7 +3169,8 @@ font-style: italic;
       "dbtArguments" : "dbtArguments",
       "gitRepoUrl" : "gitRepoUrl"
     }
-  }
+  },
+  "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -4113,7 +4429,8 @@ font-style: italic;
         "dbtArguments" : "dbtArguments",
         "gitRepoUrl" : "gitRepoUrl"
       }
-    }
+    },
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   }, {
     "name" : "name",
     "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -4127,7 +4444,8 @@ font-style: italic;
         "dbtArguments" : "dbtArguments",
         "gitRepoUrl" : "gitRepoUrl"
       }
-    }
+    },
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ],
   "name" : "name",
   "syncCatalog" : {
@@ -4268,7 +4586,8 @@ font-style: italic;
         "dbtArguments" : "dbtArguments",
         "gitRepoUrl" : "gitRepoUrl"
       }
-    }
+    },
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   }, {
     "name" : "name",
     "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -4282,7 +4601,8 @@ font-style: italic;
         "dbtArguments" : "dbtArguments",
         "gitRepoUrl" : "gitRepoUrl"
       }
-    }
+    },
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ],
   "name" : "name",
   "syncCatalog" : {
@@ -4427,7 +4747,8 @@ font-style: italic;
           "dbtArguments" : "dbtArguments",
           "gitRepoUrl" : "gitRepoUrl"
         }
-      }
+      },
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     }, {
       "name" : "name",
       "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -4441,7 +4762,8 @@ font-style: italic;
           "dbtArguments" : "dbtArguments",
           "gitRepoUrl" : "gitRepoUrl"
         }
-      }
+      },
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     } ],
     "name" : "name",
     "syncCatalog" : {
@@ -4529,7 +4851,8 @@ font-style: italic;
           "dbtArguments" : "dbtArguments",
           "gitRepoUrl" : "gitRepoUrl"
         }
-      }
+      },
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     }, {
       "name" : "name",
       "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -4543,7 +4866,8 @@ font-style: italic;
           "dbtArguments" : "dbtArguments",
           "gitRepoUrl" : "gitRepoUrl"
         }
-      }
+      },
+      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     } ],
     "name" : "name",
     "syncCatalog" : {
@@ -4812,7 +5136,8 @@ font-style: italic;
         "dbtArguments" : "dbtArguments",
         "gitRepoUrl" : "gitRepoUrl"
       }
-    }
+    },
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   }, {
     "name" : "name",
     "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -4826,7 +5151,8 @@ font-style: italic;
         "dbtArguments" : "dbtArguments",
         "gitRepoUrl" : "gitRepoUrl"
       }
-    }
+    },
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ],
   "name" : "name",
   "syncCatalog" : {
@@ -4953,8 +5279,8 @@ font-style: italic;
     Successful operation
         <a href="#WorkspaceRead">WorkspaceRead</a>
     <h4 class="field-label">422</h4>
-    
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="deleteWorkspace"/>
@@ -5337,6 +5663,11 @@ font-style: italic;
     <li><a href="#ConnectionStatus"><code>ConnectionStatus</code> - </a></li>
     <li><a href="#ConnectionUpdate"><code>ConnectionUpdate</code> - </a></li>
     <li><a href="#DataType"><code>DataType</code> - </a></li>
+    <li><a href="#DbMigrationExecutionRead"><code>DbMigrationExecutionRead</code> - </a></li>
+    <li><a href="#DbMigrationRead"><code>DbMigrationRead</code> - </a></li>
+    <li><a href="#DbMigrationReadList"><code>DbMigrationReadList</code> - </a></li>
+    <li><a href="#DbMigrationRequestBody"><code>DbMigrationRequestBody</code> - </a></li>
+    <li><a href="#DbMigrationState"><code>DbMigrationState</code> - </a></li>
     <li><a href="#DestinationCoreConfig"><code>DestinationCoreConfig</code> - </a></li>
     <li><a href="#DestinationCreate"><code>DestinationCreate</code> - </a></li>
     <li><a href="#DestinationDefinitionCreate"><code>DestinationDefinitionCreate</code> - </a></li>
@@ -5353,6 +5684,7 @@ font-style: italic;
     <li><a href="#DestinationUpdate"><code>DestinationUpdate</code> - </a></li>
     <li><a href="#HealthCheckRead"><code>HealthCheckRead</code> - </a></li>
     <li><a href="#ImportRead"><code>ImportRead</code> - </a></li>
+    <li><a href="#ImportRequestBody"><code>ImportRequestBody</code> - </a></li>
     <li><a href="#InvalidInputExceptionInfo"><code>InvalidInputExceptionInfo</code> - </a></li>
     <li><a href="#InvalidInputProperty"><code>InvalidInputProperty</code> - </a></li>
     <li><a href="#JobConfigType"><code>JobConfigType</code> - </a></li>
@@ -5373,7 +5705,6 @@ font-style: italic;
     <li><a href="#NotificationRead"><code>NotificationRead</code> - </a></li>
     <li><a href="#NotificationType"><code>NotificationType</code> - </a></li>
     <li><a href="#OperationCreate"><code>OperationCreate</code> - </a></li>
-    <li><a href="#OperationCreateOrUpdate"><code>OperationCreateOrUpdate</code> - </a></li>
     <li><a href="#OperationIdRequestBody"><code>OperationIdRequestBody</code> - </a></li>
     <li><a href="#OperationRead"><code>OperationRead</code> - </a></li>
     <li><a href="#OperationReadList"><code>OperationReadList</code> - </a></li>
@@ -5388,7 +5719,6 @@ font-style: italic;
     <li><a href="#SlugRequestBody"><code>SlugRequestBody</code> - </a></li>
     <li><a href="#SourceCoreConfig"><code>SourceCoreConfig</code> - </a></li>
     <li><a href="#SourceCreate"><code>SourceCreate</code> - </a></li>
-    <li><a href="#SourceCreate_allOf"><code>SourceCreate_allOf</code> - </a></li>
     <li><a href="#SourceDefinitionCreate"><code>SourceDefinitionCreate</code> - </a></li>
     <li><a href="#SourceDefinitionIdRequestBody"><code>SourceDefinitionIdRequestBody</code> - </a></li>
     <li><a href="#SourceDefinitionRead"><code>SourceDefinitionRead</code> - </a></li>
@@ -5403,13 +5733,13 @@ font-style: italic;
     <li><a href="#SourceUpdate"><code>SourceUpdate</code> - </a></li>
     <li><a href="#SyncMode"><code>SyncMode</code> - </a></li>
     <li><a href="#SynchronousJobRead"><code>SynchronousJobRead</code> - </a></li>
+    <li><a href="#UploadRead"><code>UploadRead</code> - </a></li>
     <li><a href="#WebBackendConnectionCreate"><code>WebBackendConnectionCreate</code> - </a></li>
-    <li><a href="#WebBackendConnectionCreate_allOf"><code>WebBackendConnectionCreate_allOf</code> - </a></li>
     <li><a href="#WebBackendConnectionRead"><code>WebBackendConnectionRead</code> - </a></li>
     <li><a href="#WebBackendConnectionReadList"><code>WebBackendConnectionReadList</code> - </a></li>
     <li><a href="#WebBackendConnectionRequestBody"><code>WebBackendConnectionRequestBody</code> - </a></li>
     <li><a href="#WebBackendConnectionUpdate"><code>WebBackendConnectionUpdate</code> - </a></li>
-    <li><a href="#WebBackendConnectionUpdate_allOf"><code>WebBackendConnectionUpdate_allOf</code> - </a></li>
+    <li><a href="#WebBackendOperationCreateOrUpdate"><code>WebBackendOperationCreateOrUpdate</code> - </a></li>
     <li><a href="#WorkspaceCreate"><code>WorkspaceCreate</code> - </a></li>
     <li><a href="#WorkspaceIdRequestBody"><code>WorkspaceIdRequestBody</code> - </a></li>
     <li><a href="#WorkspaceRead"><code>WorkspaceRead</code> - </a></li>
@@ -5600,6 +5930,48 @@ font-style: italic;
           </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="DbMigrationExecutionRead"><code>DbMigrationExecutionRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">initialVersion (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">targetVersion (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">executedMigrations (optional)</div><div class="param-desc"><span class="param-type"><a href="#DbMigrationRead">array[DbMigrationRead]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="DbMigrationRead"><code>DbMigrationRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">migrationType </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">migrationVersion </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">migrationDescription </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">migrationState (optional)</div><div class="param-desc"><span class="param-type"><a href="#DbMigrationState">DbMigrationState</a></span>  </div>
+<div class="param">migratedBy (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">migratedAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span>  format: int64</div>
+<div class="param">migrationScript (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="DbMigrationReadList"><code>DbMigrationReadList</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">migrations (optional)</div><div class="param-desc"><span class="param-type"><a href="#DbMigrationRead">array[DbMigrationRead]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="DbMigrationRequestBody"><code>DbMigrationRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">database </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="DbMigrationState"><code>DbMigrationState</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+          </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="DestinationCoreConfig"><code>DestinationCoreConfig</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -5611,10 +5983,10 @@ font-style: italic;
     <h3><a name="DestinationCreate"><code>DestinationCreate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">connectionConfiguration </div><div class="param-desc"><span class="param-type"><a href="#DestinationConfiguration">DestinationConfiguration</a></span>  </div>
-<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">connectionConfiguration </div><div class="param-desc"><span class="param-type"><a href="#DestinationConfiguration">DestinationConfiguration</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -5742,6 +6114,14 @@ font-style: italic;
         <div class="param-enum-header">Enum:</div>
         <div class="param-enum">succeeded</div><div class="param-enum">failed</div>
 <div class="param">reason (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="ImportRequestBody"><code>ImportRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">resourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -5903,15 +6283,7 @@ font-style: italic;
     <h3><a name="OperationCreate"><code>OperationCreate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">operatorConfiguration </div><div class="param-desc"><span class="param-type"><a href="#OperatorConfiguration">OperatorConfiguration</a></span>  </div>
-    </div>  <!-- field-items -->
-  </div>
-  <div class="model">
-    <h3><a name="OperationCreateOrUpdate"><code>OperationCreateOrUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
-    <div class="field-items">
-      <div class="param">operationId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">operatorConfiguration </div><div class="param-desc"><span class="param-type"><a href="#OperatorConfiguration">OperatorConfiguration</a></span>  </div>
     </div>  <!-- field-items -->
@@ -5927,7 +6299,8 @@ font-style: italic;
     <h3><a name="OperationRead"><code>OperationRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">operationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">operationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">operatorConfiguration </div><div class="param-desc"><span class="param-type"><a href="#OperatorConfiguration">OperatorConfiguration</a></span>  </div>
     </div>  <!-- field-items -->
@@ -6029,14 +6402,6 @@ font-style: italic;
       <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">connectionConfiguration </div><div class="param-desc"><span class="param-type"><a href="#SourceConfiguration">SourceConfiguration</a></span>  </div>
 <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-    </div>  <!-- field-items -->
-  </div>
-  <div class="model">
-    <h3><a name="SourceCreate_allOf"><code>SourceCreate_allOf</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
-    <div class="field-items">
-      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
@@ -6169,6 +6534,16 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="UploadRead"><code>UploadRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">succeeded</div><div class="param-enum">failed</div>
+<div class="param">resourceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="WebBackendConnectionCreate"><code>WebBackendConnectionCreate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -6184,13 +6559,6 @@ font-style: italic;
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperationCreate">array[OperationCreate]</a></span>  </div>
-    </div>  <!-- field-items -->
-  </div>
-  <div class="model">
-    <h3><a name="WebBackendConnectionCreate_allOf"><code>WebBackendConnectionCreate_allOf</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
-    <div class="field-items">
-      <div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperationCreate">array[OperationCreate]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -6246,15 +6614,17 @@ font-style: italic;
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">withRefreshedCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperationCreateOrUpdate">array[OperationCreateOrUpdate]</a></span>  </div>
+<div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#WebBackendOperationCreateOrUpdate">array[WebBackendOperationCreateOrUpdate]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="WebBackendConnectionUpdate_allOf"><code>WebBackendConnectionUpdate_allOf</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="WebBackendOperationCreateOrUpdate"><code>WebBackendOperationCreateOrUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">withRefreshedCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperationCreateOrUpdate">array[OperationCreateOrUpdate]</a></span>  </div>
+      <div class="param">operationId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">operatorConfiguration </div><div class="param-desc"><span class="param-type"><a href="#OperatorConfiguration">OperatorConfiguration</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

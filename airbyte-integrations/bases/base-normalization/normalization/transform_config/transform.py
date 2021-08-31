@@ -27,7 +27,6 @@ import argparse
 import json
 import os
 import pkgutil
-import shutil
 from enum import Enum
 from typing import Any, Dict
 
@@ -49,10 +48,6 @@ class TransformConfig:
         integration_type = inputs["integration_type"]
         transformed_config = self.transform(integration_type, original_config)
         self.write_yaml_config(inputs["output_path"], transformed_config)
-        if DestinationType.bigquery.value == integration_type.value:
-            # for Bigquery, the credentials should be stored in a separate json file to be used by dbt
-            # move it right next to the profile.yml file for easier access.
-            shutil.copy("/tmp/bq_keyfile.json", os.path.join(inputs["output_path"], "bq_keyfile.json"))
 
     @staticmethod
     def parse(args):
@@ -94,21 +89,19 @@ class TransformConfig:
     @staticmethod
     def transform_bigquery(config: Dict[str, Any]):
         print("transform_bigquery")
-        credentials_json = config["credentials_json"]
-        keyfile_path = "/tmp/bq_keyfile.json"
-        with open(keyfile_path, "w") as fh:
-            fh.write(credentials_json)
-
         # https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile
         dbt_config = {
             "type": "bigquery",
-            "method": "service-account",
             "project": config["project_id"],
             "dataset": config["dataset_id"],
-            "keyfile": keyfile_path,
             "threads": 32,
             "retries": 1,
         }
+        if "credentials_json" in config:
+            dbt_config["method"] = "service-account-json"
+            dbt_config["keyfile_json"] = json.loads(config["credentials_json"])
+        else:
+            dbt_config["method"] = "oauth"
 
         return dbt_config
 

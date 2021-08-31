@@ -24,9 +24,11 @@
 
 package io.airbyte.integrations.destination.mysql;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.jdbc.DefaultSqlOperations;
+import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.File;
 import java.io.IOException;
@@ -36,7 +38,7 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MySQLSqlOperations extends DefaultSqlOperations {
+public class MySQLSqlOperations extends JdbcSqlOperations {
 
   private boolean isLocalFileEnabled = false;
 
@@ -46,10 +48,10 @@ public class MySQLSqlOperations extends DefaultSqlOperations {
   }
 
   @Override
-  public void insertRecords(JdbcDatabase database,
-                            List<AirbyteRecordMessage> records,
-                            String schemaName,
-                            String tmpTableName)
+  public void insertRecordsInternal(JdbcDatabase database,
+                                    List<AirbyteRecordMessage> records,
+                                    String schemaName,
+                                    String tmpTableName)
       throws SQLException {
     if (records.isEmpty()) {
       return;
@@ -80,7 +82,7 @@ public class MySQLSqlOperations extends DefaultSqlOperations {
         String absoluteFile = "'" + tmpFile.getAbsolutePath() + "'";
 
         String query = String.format(
-            "LOAD DATA LOCAL INFILE %s INTO TABLE %s.%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n'",
+            "LOAD DATA LOCAL INFILE %s INTO TABLE %s.%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' ESCAPED BY '\\\"' LINES TERMINATED BY '\\r\\n'",
             absoluteFile, schemaName, tmpTableName);
 
         try (Statement stmt = connection.createStatement()) {
@@ -90,6 +92,11 @@ public class MySQLSqlOperations extends DefaultSqlOperations {
         throw new RuntimeException(e);
       }
     });
+  }
+
+  @Override
+  protected JsonNode formatData(JsonNode data) {
+    return StandardNameTransformer.formatJsonPath(data);
   }
 
   void verifyLocalFileEnabled(JdbcDatabase database) throws SQLException {

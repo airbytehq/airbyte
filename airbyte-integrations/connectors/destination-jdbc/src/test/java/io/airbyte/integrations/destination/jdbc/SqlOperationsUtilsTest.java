@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -80,7 +81,7 @@ class SqlOperationsUtilsTest {
     final UUID RECORD2_UUID = UUID.randomUUID();
     when(uuidSupplier.get()).thenReturn(RECORD1_UUID).thenReturn(RECORD2_UUID);
 
-    new DefaultSqlOperations().createTableIfNotExists(database, SCHEMA_NAME, STREAM_NAME);
+    new TestJdbcSqlOperations().createTableIfNotExists(database, SCHEMA_NAME, STREAM_NAME);
 
     final String insertQueryComponent = String.format(
         "INSERT INTO %s.%s (%s, %s, %s) VALUES\n",
@@ -111,12 +112,14 @@ class SqlOperationsUtilsTest {
         Jsons.jsonNode(ImmutableMap.builder()
             .put(JavaBaseConstants.COLUMN_NAME_AB_ID, RECORD1_UUID)
             .put(JavaBaseConstants.COLUMN_NAME_DATA, records.get(0).getData())
-            .put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, JdbcUtils.toISO8601String(records.get(0).getEmittedAt()))
+            .put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, DataTypeUtils
+                .toISO8601String(records.get(0).getEmittedAt()))
             .build()),
         Jsons.jsonNode(ImmutableMap.builder()
             .put(JavaBaseConstants.COLUMN_NAME_AB_ID, RECORD2_UUID)
             .put(JavaBaseConstants.COLUMN_NAME_DATA, records.get(1).getData())
-            .put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, JdbcUtils.toISO8601String(records.get(1).getEmittedAt()))
+            .put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, DataTypeUtils
+                .toISO8601String(records.get(1).getEmittedAt()))
             .build()));
 
     actualRecords.forEach(

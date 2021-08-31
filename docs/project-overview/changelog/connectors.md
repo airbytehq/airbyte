@@ -10,6 +10,137 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on.
 
+## 8/26/2021
+
+New source: 
+* [**Short.io**](https://docs.airbyte.io/integrations/sources/shortio)
+
+New features:
+* **GitHub** source: Add support for rotating through multiple API tokens.
+* **Google Ads** source: Added `UserLocationReport` stream.
+* **Cart** source: Added the `order_items` stream.
+
+Bug fixes:
+* **Postgres** source: Fix out-of-memory issue with CDC interacting with large JSON blobs.
+* **Intercom** source: Pagination now works as expected.
+
+## 8/18/2021
+
+New source:
+* [**Bing Ads**](https://docs.airbyte.io/integrations/sources/bing-ads)
+
+New destination:
+* [**Keen**](https://docs.airbyte.io/integrations/destinations/keen)
+
+New features:
+* **Chargebee** source: Adds support for the `items`, `item prices` and  `attached items` endpoints.
+
+Bug fixes:
+* **Quickbooks** source: Now uses the number data type for decimal fields.
+* **Hubspot** source: Fixed `empty string` inside of the `number` and `float` datatypes.
+* **GitHub** source: Validation fixed on non-required fields.
+* **BigQuery** destination: Now supports processing of arrays of records properly.
+* **Oracle** destination: Fixed destination check for users without DBA role.
+
+## 8/9/2021
+
+New sources:
+* [**S3/Abstract Files**](https://docs.airbyte.io/integrations/sources/s3)
+* [**Zuora**](https://docs.airbyte.io/integrations/sources/zuora)
+* [**Kustomer**](https://docs.airbyte.io/integrations/sources/kustomer)
+* [**Apify**](https://docs.airbyte.io/integrations/sources/apify-dataset)
+* [**Chargebee**](https://docs.airbyte.io/integrations/sources/chargebee)
+
+
+New features:
+* **Shopify** source: The `status` property is now in the `Products` stream.
+* **Amazon Seller Partner** source: Added support for `GET_MERCHANT_LISTINGS_ALL_DATA` and `GET_FBA_INVENTORY_AGED_DATA` stream endpoints.
+* **GitHub** source: Existing streams now don't minify the `user` property.
+* **Hubspot** source: Updated user-defined custom field schema generation.
+* **Zendesk** source: Migrated from Singer to the Airbyte CDK.
+* **Amazon Seller Partner** source: Migrated to the Airbyte CDK.
+
+
+Bug fixes:
+* **Hubspot** source: Casting exceptions are now logged correctly.
+* **S3** source: Fixed bug where syncs could hang indefinitely.
+* **Shopify** source: Fixed the `products` schema to be in accordance with the API.
+* **PayPal Transactions** source: Fixed the start date minimum to be 3 years rather than 45 days.
+* **Google Ads** source: Added the `login-customer-id` setting.
+* **Intercom** source: Rate limit corrected from 1000 requests/minute from 1000 requests/hour.
+* **S3** source: Fixed bug in spec to properly display the `format` field in the UI.
+
+New CDK features:
+* Now allows for setting request data in non-JSON formats.
+
+
+## 7/30/2021
+
+New sources:
+* [**PrestaShop**](https://docs.airbyte.io/integrations/sources/presta-shop)
+* [**Snapchat Marketing**](https://docs.airbyte.io/integrations/sources/snapchat-marketing)
+* [**Drupal**](https://docs.airbyte.io/integrations/sources/drupal)
+* [**Magento**](https://docs.airbyte.io/integrations/sources/magento)
+* [**Microsoft Dynamics AX**](https://docs.airbyte.io/integrations/sources/microsoft-dynamics-ax)
+* [**Microsoft Dynamics Customer Engagement**](https://docs.airbyte.io/integrations/sources/microsoft-dynamics-customer-engagement)
+* [**Microsoft Dynamics GP**](https://docs.airbyte.io/integrations/sources/microsoft-dynamics-gp)
+* [**Microsoft Dynamics NAV**](https://docs.airbyte.io/integrations/sources/microsoft-dynamics-nav)
+* [**Oracle PeopleSoft**](https://docs.airbyte.io/integrations/sources/oracle-peoplesoft)
+* [**Oracle Siebel CRM**](https://docs.airbyte.io/integrations/sources/oracle-siebel-crm)
+* [**SAP Business One**](https://docs.airbyte.io/integrations/sources/sap-business-one)
+* [**Spree Commerce**](https://docs.airbyte.io/integrations/sources/spree-commerce)
+* [**Sugar CRM**](https://docs.airbyte.io/integrations/sources/sugar-crm)
+* [**Woo Commerce**](https://docs.airbyte.io/integrations/sources/woo-commerce)
+* [**Wordpress**](https://docs.airbyte.io/integrations/sources/wordpress)
+* [**Zencart**](https://docs.airbyte.io/integrations/sources/zencart)
+
+Bug fixes:
+* **Shopify** source: Fixed the `products` schema to be in accordance with the API.
+* **BigQuery** source: No longer fails with `Array of Records` data types.
+* **BigQuery** destination: Improved logging, Job IDs are now filled with location and Project IDs.
+
+## 7/23/2021
+
+New sources:
+* [**Pipedrive**](https://docs.airbyte.io/integrations/sources/pipedrive)
+* [**US Census**](https://docs.airbyte.io/integrations/sources/us-census)
+* [**BigQuery**](https://docs.airbyte.io/integrations/sources/bigquery)
+
+New destinations:
+* [**Google Cloud Storage**](https://docs.airbyte.io/integrations/destinations/gcs)
+* [**Kafka**](https://docs.airbyte.io/integrations/destinations/kafka)
+
+New Features:
+* **Java Connectors**: Now have config validators for check, discover, read, and write calls
+* **Stripe** source: All subscription types are returnable (including expired and canceled ones).
+* **Mixpanel** source: Migrated to the CDK.
+* **Intercom** source: Migrated to the CDK.
+* **Google Ads** source: Now supports the `Campaigns`, `Ads`, `AdGroups`, and `Accounts` streams.
+
+Bug Fixes:
+* **Facebook** source: Improved rate limit management
+* **Instagram** source: Now supports old format for state and automatically updates it to the new format.
+* **Sendgrid** source: Now gracefully handles malformed responses from API.
+* **Jira** source: Fixed dbt failing to normalize schema for the labels stream.
+* **MySQL** destination: Does not fail anymore with columns that contain JSON data.
+* **Slack** source: Now does not fail stream slicing on reading threads.
+
+## 7/16/2021
+3 new sources:
+* [**Zendesk Sunshine**](https://docs.airbyte.io/integrations/sources/zendesk-sunshine)
+* [**Dixa**](https://docs.airbyte.io/integrations/sources/dixa)
+* [**Typeform**](https://docs.airbyte.io/integrations/sources/typeform)
+
+New Features:
+* **MySQL** destination: Now supports normalization!
+* **MSSQL** source: Now supports CDC (Change Data Capture).
+* **Snowflake** destination: Data coming from Airbyte is now identifiable.
+* **GitHub** source: Now handles rate limiting.
+
+Bug Fixes:
+* **GitHub** source: Now uses the correct cursor field for the `IssueEvents` stream.
+* **Square** source: `send_request` method is no longer broken.
+
 ## 7/08/2021
 7 new sources:
 * [**PayPal Transaction**](https://docs.airbyte.io/integrations/sources/paypal-transaction)
@@ -221,7 +352,7 @@ Other progress on connectors:
 ## 03/22/2021
 
 * 2 new source connectors: [**Gitlab**](https://docs.airbyte.io/integrations/sources/gitlab) and [**Airbyte-native Hubspot**](https://docs.airbyte.io/integrations/sources/hubspot)
-* Developing connectors now requires almost no interaction with Gradle, Airbyte’s  monorepo build tool. If you’re building a Python connector, you never have to worry about developing outside your typical flow. See [the updated documentation](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector).
+* Developing connectors now requires almost no interaction with Gradle, Airbyte’s monorepo build tool. If you’re building a Python connector, you never have to worry about developing outside your typical flow. See [the updated documentation](https://docs.airbyte.io/connector-development).
 
 ## 03/15/2021
 
@@ -269,7 +400,7 @@ Other progress on connectors:
 ## 02/02/2021
 
 * Sources that we improved reliability for \(and that became “certified”\):
-  * [Certified sources](https://docs.airbyte.io/integrations/connector-health): Files and Shopify
+  * [Certified sources](https://docs.airbyte.io/integrations): Files and Shopify
   * Enhanced continuous testing for Tempo and Looker sources
 * Other fixes / features:
   * Correctly handle boolean types in the File Source
@@ -284,7 +415,7 @@ Other progress on connectors:
 
 ## 01/19/2021
 
-* **Our new** [**Connector Health Status**](../../integrations/connector-health.md) **page**
+* **Our new** [**Connector Health Grade**](../../integrations) **page**
 * **1 new source:** App Store \(thanks to [@Muriloo](https://github.com/Muriloo)\)
 * Fixes on connectors:
   * Bug fix writing boolean columns to Redshift

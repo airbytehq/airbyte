@@ -19,7 +19,7 @@ info:
       * Adding fields to request or response bodies.
       * Adding new HTTP endpoints.
 
-  version: "1.0.0-oas3"
+  version: "1.0.0"
   title: Airbyte Configuration API
   contact:
     email: contact@airbyte.io
@@ -48,6 +48,8 @@ tags:
     description: Destination  related resources.
   - name: connection
     description: Connection between sources and destinations.
+  - name: db_migration
+    description: Database migration related resources.
   - name: web_backend
     description: Connection between sources and destinations.
   - name: health
@@ -76,7 +78,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/WorkspaceRead"
         "422":
-          $ref: "#/components/responses/ExceptionOccurred"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/workspaces/delete:
     post:
       tags:
@@ -952,7 +954,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/OperationCreateOrUpdate"
+              $ref: "#/components/schemas/OperatorConfiguration"
         required: true
       responses:
         "200":
@@ -1132,6 +1134,52 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CheckConnectionRead"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/db_migrations/list:
+    post:
+      tags:
+        - db_migration
+      summary: List all database migrations
+      operationId: listMigrations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DbMigrationRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DbMigrationReadList"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/db_migrations/migrate:
+    post:
+      tags:
+        - db_migration
+      summary: Migrate the database to the latest version
+      operationId: executeMigrations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DbMigrationRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DbMigrationExecutionRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
   /v1/web_backend/connections/list:
@@ -1416,6 +1464,68 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ImportRead"
+  /v1/deployment/export_workspace:
+    post:
+      tags:
+        - deployment
+      summary: Export Airbyte Workspace Configuration
+      operationId: exportWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/x-gzip:
+              schema:
+                $ref: "#/components/schemas/AirbyteArchive"
+  /v1/deployment/upload_archive_resource:
+    post:
+      tags:
+        - deployment
+      summary: Upload a GZIP archive tarball and stage it in the server's cache as a temporary resource
+      operationId: uploadArchiveResource
+      requestBody:
+        content:
+          application/x-gzip:
+            schema:
+              $ref: "#/components/schemas/AirbyteArchive"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadRead"
+  /v1/deployment/import_into_workspace:
+    post:
+      tags:
+        - deployment
+      summary: >
+        Import Airbyte Configuration into Workspace (this operation might change ids of imported
+        configurations). Note, in order to use this api endpoint, you might need to upload a
+        temporary archive resource with 'deployment/upload_archive_resource' first
+      operationId: importIntoWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImportRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
 components:
   securitySchemes:
     bearerAuth:
@@ -1687,17 +1797,21 @@ components:
         connectionConfiguration:
           $ref: "#/components/schemas/SourceConfiguration"
     SourceCreate:
-      allOf:
-        - $ref: "#/components/schemas/SourceCoreConfig"
-        - type: object
-          required:
-            - workspaceId
-            - name
-          properties:
-            workspaceId:
-              $ref: "#/components/schemas/WorkspaceId"
-            name:
-              type: string
+      type: object
+      required:
+        - workspaceId
+        - name
+        - sourceDefinitionId
+        - connectionConfiguration
+      properties:
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+        connectionConfiguration:
+          $ref: "#/components/schemas/SourceConfiguration"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        name:
+          type: string
     SourceRecreate:
       type: object
       required:
@@ -1894,17 +2008,21 @@ components:
         connectionConfiguration:
           $ref: "#/components/schemas/DestinationConfiguration"
     DestinationCreate:
-      allOf:
-        - $ref: "#/components/schemas/DestinationCoreConfig"
-        - type: object
-          required:
-            - workspaceId
-            - name
-          properties:
-            workspaceId:
-              $ref: "#/components/schemas/WorkspaceId"
-            name:
-              type: string
+      type: object
+      required:
+        - name
+        - workspaceId
+        - destinationDefinitionId
+        - connectionConfiguration
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        name:
+          type: string
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
+        connectionConfiguration:
+          $ref: "#/components/schemas/DestinationConfiguration"
     DestinationRecreate:
       type: object
       required:
@@ -1979,6 +2097,13 @@ components:
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
+    DbMigrationRequestBody:
+      type: object
+      required:
+        - database
+      properties:
+        database:
+          type: string
     WebBackendConnectionRequestBody:
       type: object
       required:
@@ -2025,14 +2150,46 @@ components:
         resourceRequirements:
           $ref: "#/components/schemas/ResourceRequirements"
     WebBackendConnectionCreate:
-      allOf:
-        - $ref: "#/components/schemas/ConnectionCreate"
-        - type: object
-          properties:
-            operations:
-              type: array
-              items:
-                $ref: "#/components/schemas/OperationCreate"
+      type: object
+      required:
+        - connection
+        - sourceId
+        - destinationId
+        - status
+      properties:
+        name:
+          type: string
+          description: Optional name of the connection
+        namespaceDefinition:
+          $ref: "#/components/schemas/NamespaceDefinitionType"
+        namespaceFormat:
+          type: string
+          description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
+          default: null
+          example: "${SOURCE_NAMESPACE}"
+        prefix:
+          type: string
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+        operationIds:
+          type: array
+          items:
+            $ref: "#/components/schemas/OperationId"
+        syncCatalog:
+          $ref: "#/components/schemas/AirbyteCatalog"
+        schedule:
+          $ref: "#/components/schemas/ConnectionSchedule"
+        status:
+          $ref: "#/components/schemas/ConnectionStatus"
+        resourceRequirements:
+          $ref: "#/components/schemas/ResourceRequirements"
+        operations:
+          type: array
+          items:
+            $ref: "#/components/schemas/OperationCreate"
     ConnectionUpdate:
       type: object
       required:
@@ -2065,16 +2222,42 @@ components:
         resourceRequirements:
           $ref: "#/components/schemas/ResourceRequirements"
     WebBackendConnectionUpdate:
-      allOf:
-        - $ref: "#/components/schemas/ConnectionUpdate"
-        - type: object
-          properties:
-            withRefreshedCatalog:
-              type: boolean
-            operations:
-              type: array
-              items:
-                $ref: "#/components/schemas/OperationCreateOrUpdate"
+      type: object
+      required:
+        - connectionId
+        - syncCatalog
+        - status
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        namespaceDefinition:
+          $ref: "#/components/schemas/NamespaceDefinitionType"
+        namespaceFormat:
+          type: string
+          description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
+          default: null
+          example: "${SOURCE_NAMESPACE}"
+        prefix:
+          type: string
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
+        operationIds:
+          type: array
+          items:
+            $ref: "#/components/schemas/OperationId"
+        syncCatalog:
+          $ref: "#/components/schemas/AirbyteCatalog"
+        schedule:
+          $ref: "#/components/schemas/ConnectionSchedule"
+        status:
+          $ref: "#/components/schemas/ConnectionStatus"
+        resourceRequirements:
+          $ref: "#/components/schemas/ResourceRequirements"
+        withRefreshedCatalog:
+          type: boolean
+        operations:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebBackendOperationCreateOrUpdate"
     ConnectionRead:
       type: object
       required:
@@ -2173,7 +2356,10 @@ components:
       required:
         - name
         - operatorConfiguration
+        - workspaceId
       properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
         name:
           type: string
         operatorConfiguration:
@@ -2191,14 +2377,17 @@ components:
           type: string
         operatorConfiguration:
           $ref: "#/components/schemas/OperatorConfiguration"
-    OperationCreateOrUpdate:
+    WebBackendOperationCreateOrUpdate:
       type: object
       required:
         - name
         - operatorConfiguration
+        - workspaceId
       properties:
         operationId:
           $ref: "#/components/schemas/OperationId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
         name:
           type: string
         operatorConfiguration:
@@ -2209,7 +2398,10 @@ components:
         - operationId
         - name
         - operatorConfiguration
+        - workspaceId
       properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
         operationId:
           $ref: "#/components/schemas/OperationId"
         name:
@@ -2622,6 +2814,68 @@ components:
           type: string
         memory_limit:
           type: string
+    # DB Migration
+    DbMigrationState:
+      type: string
+      # https://github.com/flyway/flyway/blob/master/flyway-core/src/main/java/org/flywaydb/core/api/MigrationState.java
+      enum:
+        - pending
+        - above_target
+        - below_baseline
+        - baseline
+        - ignored
+        - missing_success
+        - missing_failed
+        - success
+        - undone
+        - available
+        - failed
+        - out_of_order
+        - future_success
+        - future_failed
+        - outdated
+        - superseded
+        - deleted
+    DbMigrationRead:
+      type: object
+      required:
+        - migrationType
+        - migrationVersion
+        - migrationDescription
+      properties:
+        migrationType:
+          type: string
+        migrationVersion:
+          type: string
+        migrationDescription:
+          type: string
+        migrationState:
+          $ref: "#/components/schemas/DbMigrationState"
+        migratedBy:
+          type: string
+        migratedAt:
+          type: integer
+          format: int64
+        migrationScript:
+          type: string
+    DbMigrationReadList:
+      type: object
+      properties:
+        migrations:
+          type: array
+          items:
+            $ref: "#/components/schemas/DbMigrationRead"
+    DbMigrationExecutionRead:
+      type: object
+      properties:
+        initialVersion:
+          type: string
+        targetVersion:
+          type: string
+        executedMigrations:
+          type: array
+          items:
+            $ref: "#/components/schemas/DbMigrationRead"
     # Web Backend
     WebBackendConnectionRead:
       type: object
@@ -2719,6 +2973,31 @@ components:
             - failed
         reason:
           type: string
+    ResourceId:
+      type: string
+      format: uuid
+    UploadRead:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - succeeded
+            - failed
+        resourceId:
+          $ref: "#/components/schemas/ResourceId"
+    ImportRequestBody:
+      type: object
+      required:
+        - resourceId
+        - workspaceId
+      properties:
+        resourceId:
+          $ref: "#/components/schemas/ResourceId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
     InvalidInputProperty:
       type: object
       required:

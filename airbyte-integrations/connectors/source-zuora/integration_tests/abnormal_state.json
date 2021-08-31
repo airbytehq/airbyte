@@ -1,0 +1,230 @@
+{
+  "account": {
+    "updateddate": "2025-07-15T07:41:30-07:00"
+  },
+  "accountingperiod": {
+    "updateddate": "2025-12-19T22:11:16-08:00"
+  },
+  "amendment": {
+    "updateddate": "2025-06-25T02:11:34-07:00"
+  },
+  "applicationgroup": {
+    "updateddate": "2025-07-06T03:26:45-07:00"
+  },
+  "aquatasklog": {
+    "updateddate": "2025-06-11T06:53:19-07:00"
+  },
+  "billingrun": {
+    "updateddate": "2025-12-19T22:03:02-08:00"
+  },
+  "chargemetrics": {
+    "updateddate": "2025-06-25T09:11:39.139Z"
+  },
+  "chargemetricsdiscountallocationdetail": {
+    "updateddate": "2025-06-12T09:03:50.584Z"
+  },
+  "contact": {
+    "updateddate": "2025-12-19T22:00:12-08:00"
+  },
+  "contactsnapshot": {
+    "updateddate": "2025-12-19T22:00:12-08:00"
+  },
+  "creditmemo": {
+    "updateddate": "2025-11-28T15:26:37-08:00"
+  },
+  "creditmemoapplication": {
+    "updateddate": "2025-11-28T15:26:37-08:00"
+  },
+  "creditmemoapplicationitem": {
+    "updateddate": "2025-11-28T15:26:37-08:00"
+  },
+  "creditmemoitem": {
+    "updateddate": "2025-11-28T15:26:37-08:00"
+  },
+  "creditmemopart": {
+    "updateddate": "2025-11-28T15:26:37-08:00"
+  },
+  "creditmemopartitem": {
+    "updateddate": "2025-11-28T15:26:37-08:00"
+  },
+  "credittaxationitem": {
+    "updateddate": "2025-11-28T15:26:37-08:00"
+  },
+  "invoice": {
+    "updateddate": "2025-07-06T03:25:26-07:00"
+  },
+  "invoicehistory": {
+    "createddate": "2025-07-06T03:25:28-07:00"
+  },
+  "invoiceitem": {
+    "updateddate": "2025-07-06T03:25:26-07:00"
+  },
+  "journalentry": {
+    "updateddate": "2025-12-18T09:34:11-08:00"
+  },
+  "journalentryitem": {
+    "updateddate": "2025-12-18T09:34:11-08:00"
+  },
+  "journalrun": {
+    "updateddate": "2025-12-18T09:34:11-08:00"
+  },
+  "memohistory": {
+    "createddate": "2025-11-28T15:26:37-08:00"
+  },
+  "orderaction": {
+    "updateddate": "2025-06-25T02:11:32-07:00"
+  },
+  "orderactionrateplan": {
+    "updateddate": "2025-06-25T02:11:34-07:00"
+  },
+  "orderelp": {
+    "updateddate": "2025-06-25T02:11:34-07:00"
+  },
+  "orderitem": {
+    "updateddate": "2025-06-25T02:11:34-07:00"
+  },
+  "ordermrr": {
+    "updateddate": "2025-06-25T02:11:34-07:00"
+  },
+  "orderquantity": {
+    "updateddate": "2025-06-25T02:11:34-07:00"
+  },
+  "orders": {
+    "updateddate": "2025-06-25T02:11:34-07:00"
+  },
+  "ordertcb": {
+    "updateddate": "2025-06-25T02:11:34-07:00"
+  },
+  "ordertcv": {
+    "updateddate": "2025-06-25T02:11:34-07:00"
+  },
+  "payment": {
+    "updateddate": "2025-07-06T03:26:45-07:00"
+  },
+  "paymentapplication": {
+    "updateddate": "2025-07-06T03:25:26-07:00"
+  },
+  "paymentapplicationitem": {
+    "updateddate": "2025-07-06T03:25:26-07:00"
+  },
+  "paymentmethod": {
+    "updateddate": "2025-12-19T22:00:12-08:00"
+  },
+  "paymentmethodsnapshot": {
+    "updateddate": "2025-05-16T06:57:06-07:00"
+  },
+  "paymentpart": {
+    "updateddate": "2025-12-19T22:04:21-08:00"
+  },
+  "paymentpartitem": {
+    "updateddate": "2025-12-19T22:04:21-08:00"
+  },
+  "paymentrun": {
+    "updateddate": "2025-04-18T21:00:00-07:00"
+  },
+  "paymenttransactionlog": {
+    "createddate": "2025-05-16T06:57:06-07:00"
+  },
+  "processedusage": {
+    "updateddate": "2025-05-21T08:49:00-07:00"
+  },
+  "product": {
+    "updateddate": "2025-08-14T07:42:32-07:00"
+  },
+  "productrateplan": {
+    "updateddate": "2025-02-06T09:28:01-08:00"
+  },
+  "productrateplancharge": {
+    "updateddate": "2025-02-06T09:29:11-08:00"
+  },
+  "productrateplanchargetier": {
+    "updateddate": "2025-07-24T01:58:29-07:00"
+  },
+  "productrateplancurrency": {
+    "updateddate": "2025-02-06T09:29:12-08:00"
+  },
+  "rateplan": {
+    "updateddate": "2025-06-25T02:11:33-07:00"
+  },
+  "rateplancharge": {
+    "updateddate": "2025-06-25T02:11:33-07:00"
+  },
+  "rateplanchargetier": {
+    "updateddate": "2025-06-25T02:11:34-07:00"
+  },
+  "refund": {
+    "updateddate": "2025-07-06T03:26:45-07:00"
+  },
+  "refundapplication": {
+    "updateddate": "2025-07-06T03:26:45-07:00"
+  },
+  "refundapplicationitem": {
+    "updateddate": "2025-07-06T03:26:45-07:00"
+  },
+  "refundpart": {
+    "updateddate": "2025-07-06T03:26:45-07:00"
+  },
+  "refundpartitem": {
+    "updateddate": "2025-07-06T03:26:45-07:00"
+  },
+  "revenuechargesummary": {
+    "updateddate": "2025-12-19T22:03:02-08:00"
+  },
+  "revenuechargesummaryitem": {
+    "updateddate": "2025-12-19T22:03:02-08:00"
+  },
+  "revenueevent": {
+    "updateddate": "2025-12-19T22:03:02-08:00"
+  },
+  "revenueeventcreditmemoitem": {
+    "updateddate": "2025-11-28T15:26:05-08:00"
+  },
+  "revenueeventinvoiceitem": {
+    "updateddate": "2025-12-19T22:03:02-08:00"
+  },
+  "revenueeventitem": {
+    "updateddate": "2025-12-19T22:03:02-08:00"
+  },
+  "revenueeventitemcreditmemoitem": {
+    "updateddate": "2025-11-28T15:26:05-08:00"
+  },
+  "revenueeventiteminvoiceitem": {
+    "updateddate": "2025-12-19T22:03:02-08:00"
+  },
+  "revenueeventtype": {
+    "updateddate": "2025-05-08T15:02:42-07:00"
+  },
+  "revenueschedule": {
+    "updateddate": "2025-12-19T22:03:02-08:00"
+  },
+  "revenueschedulecreditmemoitem": {
+    "updateddate": "2025-11-28T15:26:05-08:00"
+  },
+  "revenuescheduleinvoiceitem": {
+    "updateddate": "2025-12-19T22:03:02-08:00"
+  },
+  "revenuescheduleitem": {
+    "updateddate": "2025-12-19T22:03:02-08:00"
+  },
+  "revenuescheduleitemcreditmemoitem": {
+    "updateddate": "2025-11-28T15:26:05-08:00"
+  },
+  "revenuescheduleiteminvoiceitem": {
+    "updateddate": "2025-12-19T22:03:02-08:00"
+  },
+  "subscription": {
+    "updateddate": "2025-07-15T07:43:34-07:00"
+  },
+  "subscriptionproductfeature": {
+    "updateddate": "2025-06-12T02:03:50-07:00"
+  },
+  "taxationitem": {
+    "updateddate": "2025-12-19T22:03:00-08:00"
+  },
+  "usage": {
+    "updateddate": "2025-05-21T08:49:00-07:00"
+  },
+  "user": {
+    "createddate": "2025-06-14T01:49:11-07:00"
+  }
+}

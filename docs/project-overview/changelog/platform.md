@@ -6,6 +6,70 @@ description: Be sure to not miss out on new features and improvements!
 
 This is the changelog for Airbyte Platform. For our connector changelog, please visit our [Connector Changelog](connectors.md) page.
 
+## [08-23-2021 - 0.29.12](https://github.com/airbytehq/airbyte/releases/tag/v0.29.12-alpha)
+* Syncs now have a `max_sync_timeout` that times them out after 3 days.
+* Fixed Kube deploys when logging with Minio.
+
+## [08-20-2021 - 0.29.11](https://github.com/airbytehq/airbyte/releases/tag/v0.29.11-alpha)
+* Nothing of note.
+
+## [08-20-2021 - 0.29.10](https://github.com/airbytehq/airbyte/releases/tag/v0.29.10-alpha)
+* Migration of Python connector template images to Alpine Docker images to reduce size.
+
+## [08-20-2021 - 0.29.9](https://github.com/airbytehq/airbyte/releases/tag/v0.29.9-alpha)
+* Nothing of note.
+
+## [08-17-2021 - 0.29.8](https://github.com/airbytehq/airbyte/releases/tag/v0.29.8-alpha)
+* Nothing of note.
+
+## [08-14-2021 - 0.29.7](https://github.com/airbytehq/airbyte/releases/tag/v0.29.7-alpha)
+* Re-release: Fixed errant ENV variable in `0.29.6`
+
+## [08-14-2021 - 0.29.6](https://github.com/airbytehq/airbyte/releases/tag/v0.29.6-alpha)
+* Connector pods no longer fail with edge case names for the associated Docker images.
+
+## [08-14-2021 - 0.29.5](https://github.com/airbytehq/airbyte/releases/tag/v0.29.5-alpha)
+* Nothing of note.
+
+## [08-12-2021 - 0.29.4](https://github.com/airbytehq/airbyte/releases/tag/v0.29.4-alpha)
+* Introduced implementation for date-time support in normalization.
+
+## [08-9-2021 - 0.29.3](https://github.com/airbytehq/airbyte/releases/tag/v0.29.3-alpha)
+* Importing configuration no longer removes available but unused connectors. 
+
+## [08-6-2021 - 0.29.2](https://github.com/airbytehq/airbyte/releases/tag/v0.29.2-alpha)
+* Fixed nil pointer exception in version migrations.
+
+## [07-29-2021 - 0.29.1](https://github.com/airbytehq/airbyte/releases/tag/v0.29.1-alpha)
+* When migrating, types represented in the config archive need to be a subset of the types declared in the schema.
+
+## [07-28-2021 - 0.29.0](https://github.com/airbytehq/airbyte/releases/tag/v0.29.0-alpha)
+* Deprecated `DEFAULT_WORKSPACE_ID`; default workspace no longer exists by default.
+
+## [07-28-2021 - 0.28.2](https://github.com/airbytehq/airbyte/releases/tag/v0.28.2-alpha)
+* Backend now handles workspaceId for WebBackend operations.
+
+## [07-26-2021 - 0.28.1](https://github.com/airbytehq/airbyte/releases/tag/v0.28.1-alpha)
+* K8s: Overly-sensitive logs are now silenced.
+
+## [07-22-2021 - 0.28.0](https://github.com/airbytehq/airbyte/releases/tag/v0.28.0-alpha)
+* Acceptance test dependencies fixed.
+
+## [07-22-2021 - 0.27.5](https://github.com/airbytehq/airbyte/releases/tag/v0.27.5-alpha)
+* Fixed unreliable logging on Kubernetes deployments.
+* Introduced pre-commit to auto-format files on commits.
+
+## [07-21-2021 - 0.27.4](https://github.com/airbytehq/airbyte/releases/tag/v0.27.4-alpha)
+* Config persistence is now migrated to the internal Airbyte database.
+* Source connector ports now properly close when deployed on Kubernetes.
+* Missing dependencies added that allow acceptance tests to run.
+
+## [07-15-2021 - 0.27.3](https://github.com/airbytehq/airbyte/releases/tag/v0.27.3-alpha)
+* Fixed some minor API spec errors.
+
+## [07-12-2021 - 0.27.2](https://github.com/airbytehq/airbyte/releases/tag/v0.27.2-alpha)
+* GCP environment variable is now stubbed out to prevent noisy and harmless errors.
+
 ## [07-8-2021 - 0.27.1](https://github.com/airbytehq/airbyte/releases/tag/v0.27.1-alpha)
 * New API endpoint: List workspaces
 * K8s: Server doesn't start up before Temporal is ready to operate now.
@@ -179,7 +243,7 @@ This is the changelog for Airbyte Platform. For our connector changelog, please 
 * Support Import / Export of Airbyte Data in the Admin section of the UI
 * Bug fixes:
   * If Airbyte is closed during a sync the running job is not marked as failed
-  * Airbyte should fail when instance version doesn't match data version
+  * Airbyte should fail when deployment version doesn't match data version
   * Upgrade Airbyte Version without losing existing configuration / data
 
 ## [0.12-alpha](https://github.com/airbytehq/airbyte/milestone/14?closed=1) - Released 01/20/2021

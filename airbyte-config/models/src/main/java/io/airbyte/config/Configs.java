@@ -25,6 +25,7 @@
 package io.airbyte.config;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Set;
 
 public interface Configs {
@@ -32,6 +33,10 @@ public interface Configs {
   String getAirbyteRole();
 
   String getAirbyteVersion();
+
+  String getAirbyteApiHost();
+
+  int getAirbyteApiPort();
 
   String getAirbyteVersionOrWarning();
 
@@ -47,6 +52,18 @@ public interface Configs {
 
   String getDatabaseUrl();
 
+  String getConfigDatabaseUser();
+
+  String getConfigDatabasePassword();
+
+  String getConfigDatabaseUrl();
+
+  boolean runDatabaseMigrationOnStartup();
+
+  int getMaxSyncJobAttempts();
+
+  int getMaxSyncTimeoutDays();
+
   String getWebappUrl();
 
   String getWorkspaceDockerMount();
@@ -57,15 +74,21 @@ public interface Configs {
 
   TrackingStrategy getTrackingStrategy();
 
+  DeploymentMode getDeploymentMode();
+
   WorkerEnvironment getWorkerEnvironment();
 
   WorkspaceRetentionConfig getWorkspaceRetentionConfig();
+
+  List<WorkerPodToleration> getWorkerPodTolerations();
 
   String getTemporalHost();
 
   Set<Integer> getTemporalWorkerPorts();
 
   String getKubeNamespace();
+
+  String getSubmitterNumThreads();
 
   // Resources
   String getCpuRequest();
@@ -99,6 +122,11 @@ public interface Configs {
   enum WorkerEnvironment {
     DOCKER,
     KUBERNETES
+  }
+
+  enum DeploymentMode {
+    OSS,
+    CLOUD
   }
 
 }

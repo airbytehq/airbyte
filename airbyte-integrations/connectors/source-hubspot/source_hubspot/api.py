@@ -27,7 +27,7 @@ import sys
 import time
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
-from functools import partial
+from functools import lru_cache, partial
 from http import HTTPStatus
 from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
@@ -39,6 +39,34 @@ from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, Hubsp
 
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
+
+VALID_JSON_SCHEMA_TYPES = {
+    "string",
+    "integer",
+    "number",
+    "boolean",
+    "object",
+    "array",
+}
+
+KNOWN_CONVERTIBLE_SCHEMA_TYPES = {
+    "bool": ("boolean", None),
+    "enumeration": ("string", None),
+    "date": ("string", "date-time"),
+    "date-time": ("string", "date-time"),
+    "datetime": ("string", "date-time"),
+    "json": ("string", None),
+    "phone_number": ("string", None),
+}
+
+CUSTOM_FIELD_VALUE_TYPE_CAST = {
+    bool: "boolean",
+    str: "string",
+    float: "number",
+    int: "integer",
+}
+
+CUSTOM_FIELD_VALUE_TYPE_CAST_REVERSED = {v: k for k, v in CUSTOM_FIELD_VALUE_TYPE_CAST.items()}
 
 
 def retry_connection_handler(**kwargs):
@@ -146,7 +174,6 @@ class API:
             self._session.headers["Authorization"] = f"Bearer {self.access_token}"
         else:
             params["hapikey"] = self.api_key
-
         return params
 
     @staticmethod
@@ -157,7 +184,8 @@ class API:
             message = response.json().get("message")
 
         if response.status_code == HTTPStatus.FORBIDDEN:
-            raise HubspotAccessDenied(message, response=response)
+            """ Once hit the forbidden endpoint, we return the error message from response. """
+            pass
         elif response.status_code in (HTTPStatus.UNAUTHORIZED, CLOUDFLARE_ORIGIN_DNS_ERROR):
             raise HubspotInvalidAuth(message, response=response)
         elif response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
@@ -230,9 +258,59 @@ class Stream(ABC):
                         record["properties"].pop(key)
             yield record
 
+    @staticmethod
+    def _cast_value(declared_field_types: List, field_name: str, field_value):
+
+        if field_value is None and "null" in declared_field_types:
+            return field_value
+
+        actual_field_type = type(field_value)
+        actual_field_type_name = CUSTOM_FIELD_VALUE_TYPE_CAST.get(actual_field_type)
+        if actual_field_type_name in declared_field_types:
+            return field_value
+
+        target_type_name = next(filter(lambda t: t != "null", declared_field_types))
+        target_type = CUSTOM_FIELD_VALUE_TYPE_CAST_REVERSED.get(target_type_name)
+
+        if target_type_name == "number":
+            # do not cast numeric IDs into float, use integer instead
+            target_type = int if field_name.endswith("_id") else target_type
+
+        if target_type_name != "string" and field_value == "":
+            # do not cast empty strings, return None instead to be properly casted.
+            field_value = None
+            return field_value
+
+        try:
+            casted_value = target_type(field_value)
+        except ValueError:
+            logger.exception(f"Could not cast `{field_value}` to `{target_type}`")
+            return field_value
+
+        return casted_value
+
+    def _cast_record_fields_if_needed(self, record: Mapping, properties: Mapping[str, Any] = None) -> Mapping:
+
+        if self.entity not in {"contact", "engagement", "product", "quote", "ticket", "company", "deal", "line_item"}:
+            return record
+
+        if not record.get("properties"):
+            return record
+
+        properties = properties or self.properties
+
+        for field_name, field_value in record["properties"].items():
+            declared_field_types = properties[field_name].get("type") or []
+            if not isinstance(declared_field_types, Iterable):
+                declared_field_types = [declared_field_types]
+            record["properties"][field_name] = self._cast_value(declared_field_types, field_name, field_value)
+
+        return record
+
     def _transform(self, records: Iterable) -> Iterable:
         """Preprocess record before emitting"""
         for record in records:
+            record = self._cast_record_fields_if_needed(record)
             if self.created_at_field and self.updated_at_field and record.get(self.updated_at_field) is None:
                 record[self.updated_at_field] = record[self.created_at_field]
             yield record
@@ -261,7 +339,25 @@ class Stream(ABC):
         while True:
             response = getter(params=params)
             if isinstance(response, Mapping):
+                if response.get("status", None) == "error":
+                    """
+                    When the API Key doen't have the permissions to access the endpoint,
+                    we break the read, skip this stream and log warning message for the user.
+
+                    Example:
+
+                    response.json() = {
+                        'status': 'error',
+                        'message': 'This hapikey (....) does not have proper permissions! (requires any of [automation-access])',
+                        'correlationId': '111111-2222-3333-4444-55555555555'}
+                    """
+                    logger.warn(f"Stream `{self.data_field}` cannot be procced. {response.get('message')}")
+                    break
+
                 if response.get(self.data_field) is None:
+                    """
+                    When the response doen't have the stream's data, raise an exception.
+                    """
                     raise RuntimeError("Unexpected API response: {} not in {}".format(self.data_field, response.keys()))
 
                 yield from response[self.data_field]
@@ -293,7 +389,31 @@ class Stream(ABC):
 
         yield from self._filter_dynamic_fields(self._filter_old_records(self._transform(self._read(getter, params))))
 
+    @staticmethod
+    def _get_field_props(field_type: str) -> Mapping[str, List[str]]:
+
+        if field_type in VALID_JSON_SCHEMA_TYPES:
+            return {
+                "type": ["null", field_type],
+            }
+
+        converted_type, field_format = KNOWN_CONVERTIBLE_SCHEMA_TYPES.get(field_type) or (None, None)
+
+        if not converted_type:
+            converted_type = "string"
+            logger.warn(f"Unsupported type {field_type} found")
+
+        field_props = {
+            "type": ["null", converted_type or field_type],
+        }
+
+        if field_format:
+            field_props["format"] = field_format
+
+        return field_props
+
     @property
+    @lru_cache()
     def properties(self) -> Mapping[str, Any]:
         """Some entities has dynamic set of properties, so we trying to resolve those at runtime"""
         if not self.entity:
@@ -302,10 +422,7 @@ class Stream(ABC):
         props = {}
         data = self._api.get(f"/properties/v2/{self.entity}/properties")
         for row in data:
-            field_type = row["type"]
-            if field_type in ["enumeration", "date", "date-time"]:
-                field_type = "string"
-            props[row["name"]] = {"type": field_type}
+            props[row["name"]] = self._get_field_props(row["type"])
 
         return props
 
@@ -356,7 +473,7 @@ class IncrementalStream(Stream, ABC):
                 self._start_date = self._state
 
     def read_chunked(
-        self, getter: Callable, params: Mapping[str, Any] = None, chunk_size: pendulum.Interval = pendulum.interval(days=1)
+        self, getter: Callable, params: Mapping[str, Any] = None, chunk_size: pendulum.duration = pendulum.duration(days=1)
     ) -> Iterator:
         params = {**params} if params else {}
         now_ts = int(pendulum.now().timestamp() * 1000)
