@@ -179,11 +179,8 @@ def generate_dbt_models(destination_type: DestinationType, test_resource_name: s
     This is the normalization step generating dbt models files from the destination_catalog.json taken as input.
     """
     catalog_processor = CatalogProcessor(os.path.join(test_root_dir, "models", "generated"), destination_type)
-    airbyte_data = "_airbyte_data"
-    if destination_type == DestinationType.ORACLE:
-        airbyte_data = airbyte_data[1:]
     catalog_processor.process(
-        os.path.join("resources", test_resource_name, "data_input", "catalog.json"), airbyte_data, dbt_test_utils.target_schema
+        os.path.join("resources", test_resource_name, "data_input", "catalog.json"), "_airbyte_data", dbt_test_utils.target_schema
     )
 
 

@@ -41,7 +41,7 @@ DESTINATION_SIZE_LIMITS = {
     DestinationType.POSTGRES.value: 63,
     # https://dev.mysql.com/doc/refman/8.0/en/identifier-length.html
     DestinationType.MYSQL.value: 64,
-    # find source
+    # https://oracle-base.com/articles/12c/long-identifiers-12cr2
     DestinationType.ORACLE.value: 128,
 }
 
@@ -182,7 +182,9 @@ class DestinationNameTransformer:
             result = result.replace("'", "\\'")
             if self.destination_type == DestinationType.ORACLE:
                 # Oracle dbt lib doesn't implemented adapter quote yet.
+                result = self.__normalize_identifier_case(result, is_quoted=True)
                 result = f"quote('{result}')"
+                return result
             else:
                 result = f"adapter.quote('{result}')"
             result = self.__normalize_identifier_case(result, is_quoted=True)
@@ -200,7 +202,7 @@ class DestinationNameTransformer:
         result = input_name
         if self.destination_type.value == DestinationType.ORACLE.value:
             return transform_standard_naming(result)
-        if self.destination_type.value == DestinationType.BIGQUERY.value:
+        elif self.destination_type.value == DestinationType.BIGQUERY.value:
             result = transform_standard_naming(result)
             doesnt_start_with_alphaunderscore = match("[^A-Za-z_]", result[0]) is not None
             if doesnt_start_with_alphaunderscore:

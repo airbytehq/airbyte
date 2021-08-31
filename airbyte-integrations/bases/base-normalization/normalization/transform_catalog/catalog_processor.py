@@ -114,7 +114,8 @@ class CatalogProcessor:
             # The logic here matches the logic in JdbcBufferedConsumerFactory.java.
             # Any modifications need to be reflected there and vice versa.
             schema = default_schema
-            if "namespace" in stream_config and destination_type != DestinationType.ORACLE:
+            #if "namespace" in stream_config and destination_type != DestinationType.ORACLE:
+            if 'namespace' in stream_config:
                 schema = stream_config["namespace"]
 
             schema_name = name_transformer.normalize_schema_name(schema, truncate=False)
@@ -151,6 +152,7 @@ class CatalogProcessor:
                 stream_name=stream_name,
                 destination_type=destination_type,
                 raw_schema=raw_schema_name,
+                default_schema=default_schema,
                 schema=schema_name,
                 source_sync_mode=source_sync_mode,
                 destination_sync_mode=destination_sync_mode,
