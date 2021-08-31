@@ -28,20 +28,6 @@ from typing import Any, List, Mapping
 from requests.auth import AuthBase
 
 
-class TokenAuthenticator(AuthBase):
-    def __init__(self, token: str, auth_method: str = "Bearer", auth_header: str = "Authorization"):
-        self.auth_method = auth_method
-        self.auth_header = auth_header
-        self._token = token
-
-    def __call__(self, request):
-        request.headers.update(self.get_auth_header())
-        return request
-
-    def get_auth_header(self) -> Mapping[str, Any]:
-        return {self.auth_header: f"{self.auth_method} {self._token}"}
-
-
 class MultipleTokenAuthenticator(AuthBase):
     def __init__(self, tokens: List[str], auth_method: str = "Bearer", auth_header: str = "Authorization"):
         self.auth_method = auth_method
@@ -55,3 +41,8 @@ class MultipleTokenAuthenticator(AuthBase):
 
     def get_auth_header(self) -> Mapping[str, Any]:
         return {self.auth_header: f"{self.auth_method} {next(self._tokens_iter)}"}
+
+
+class TokenAuthenticator(MultipleTokenAuthenticator):
+    def __init__(self, token: str, auth_method: str = "Bearer", auth_header: str = "Authorization"):
+        super().__init__([token], auth_method, auth_header)

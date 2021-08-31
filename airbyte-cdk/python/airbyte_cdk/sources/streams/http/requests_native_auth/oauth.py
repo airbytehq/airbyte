@@ -36,14 +36,26 @@ class Oauth2Authenticator(AuthBase):
     The generated access token is attached to each request via the Authorization header.
     """
 
-    def __init__(self, token_refresh_endpoint: str, client_id: str, client_secret: str, refresh_token: str, scopes: List[str] = None):
+    def __init__(
+        self,
+        token_refresh_endpoint: str,
+        client_id: str,
+        client_secret: str,
+        refresh_token: str,
+        token_expiry_date: pendulum.datetime = pendulum.now().subtract(days=1),
+        scopes: List[str] = None,
+        access_token_name: str = "access_token",
+        expires_in_name: str = "expires_in",
+    ):
         self.token_refresh_endpoint = token_refresh_endpoint
         self.client_secret = client_secret
         self.client_id = client_id
         self.refresh_token = refresh_token
         self.scopes = scopes
+        self.access_token_name = access_token_name
+        self.expires_in_name = expires_in_name
 
-        self._token_expiry_date = pendulum.now().subtract(days=1)
+        self._token_expiry_date = token_expiry_date
         self._access_token = None
 
     def __call__(self, request):
@@ -87,6 +99,6 @@ class Oauth2Authenticator(AuthBase):
             response = requests.request(method="POST", url=self.token_refresh_endpoint, data=self.get_refresh_request_body())
             response.raise_for_status()
             response_json = response.json()
-            return response_json["access_token"], response_json["expires_in"]
+            return response_json[self.access_token_name], response_json[self.expires_in_name]
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
