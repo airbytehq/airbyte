@@ -334,6 +334,8 @@ class Branches(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/repos#list-branches
     """
 
+    primary_key = None
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/branches"
 
@@ -373,20 +375,12 @@ class Organizations(GithubStream):
         yield response.json()
 
 
-class Repositories(GithubStream):
+class Repositories(Organizations):
     """
     API docs: https://docs.github.com/en/rest/reference/repos#list-organization-repositories
     """
 
     fields_to_minimize = ("owner",)
-
-    def __init__(self, organizations: List[str], **kwargs):
-        super(GithubStream, self).__init__(**kwargs)
-        self.organizations = organizations
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        for organization in self.organizations:
-            yield {"organization": organization}
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"orgs/{stream_slice['organization']}/repos"
@@ -400,6 +394,8 @@ class Tags(GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/repos#list-repository-tags
     """
+
+    primary_key = None
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/tags"
@@ -415,18 +411,10 @@ class Teams(GithubStream):
         return f"orgs/{owner}/teams"
 
 
-class Users(GithubStream):
+class Users(Organizations):
     """
     API docs: https://docs.github.com/en/rest/reference/orgs#list-organization-members
     """
-
-    def __init__(self, organizations: List[str], **kwargs):
-        super(GithubStream, self).__init__(**kwargs)
-        self.organizations = organizations
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        for organization in self.organizations:
-            yield {"organization": organization}
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"orgs/{stream_slice['organization']}/members"
@@ -500,7 +488,7 @@ class PullRequests(SemiIncrementalGithubStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/pulls"
 
-    def transform(self, record: MutableMapping[str, Any], repository: str) -> MutableMapping[str, Any]:
+    def transform(self, record: MutableMapping[str, Any], repository: str = None) -> MutableMapping[str, Any]:
         record = super().transform(record=record, repository=repository)
 
         for nested in ("head", "base"):
@@ -567,7 +555,7 @@ class Stargazers(SemiIncrementalGithubStream):
 
         return {**base_headers, **headers}
 
-    def transform(self, record: MutableMapping[str, Any], repository: str) -> MutableMapping[str, Any]:
+    def transform(self, record: MutableMapping[str, Any], repository: str = None) -> MutableMapping[str, Any]:
         """
         We need to provide the "user_id" for the primary_key attribute
         and don't remove the whole "user" block from the record.
