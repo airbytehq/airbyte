@@ -2,6 +2,6 @@
   "sourceDefinitionId": "fe2b4084-3386-4d3b-9ad6-308f61a6f1e6",
   "name": "Harvest",
   "dockerRepository": "airbyte/source-harvest",
-  "dockerImageTag": "0.1.3",
+  "dockerImageTag": "0.1.4",
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/harvest"
 }
