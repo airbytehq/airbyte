@@ -1,7 +1,10 @@
 # Changelog
 
+## 0.1.14
+If the input config file does not comply with spec schema, raise an exception instead of `system.exit`.
+
 ## 0.1.13
-In case of passed config file are not comply with spec schema raise an exception instead of sending airbyte error message and exit.
+Fix defect with user defined backoff time retry attempts, number of retries logic fixed
 
 ## 0.1.12
 Add raise_on_http_errors, max_retries, retry_factor properties to be able to ignore http status errors and modify retry time in HTTP stream

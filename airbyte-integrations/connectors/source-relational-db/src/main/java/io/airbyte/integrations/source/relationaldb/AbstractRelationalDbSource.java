@@ -70,6 +70,13 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class contains helper functions and boilerplate for implementing a source connector for a
+ * relational DB source.
+ *
+ * @see io.airbyte.integrations.source.jdbc.AbstractJdbcSource if you are implementing a relational
+ *      DB which can be accessed via JDBC driver.
+ */
 public abstract class AbstractRelationalDbSource<DataType, Database extends SqlDatabase> extends BaseConnector implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRelationalDbSource.class);
