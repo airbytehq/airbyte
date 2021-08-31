@@ -11,30 +11,23 @@ tests:
     - config_path: "secrets/config.json"
   basic_read:
     - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/small_streams_configured_catalog.json"
-      timeout_seconds: 3600
-    # Below streams have too much records and because of it we are getting timeouts and hitting rate limits.
-    # That's why we turned them off.
-  #    - config_path: "secrets/config.json"
-  #      configured_catalog_path: "integration_tests/too_large_streams_configured_catalog.json"
-  # TODO: Should be fixed after we create new repositories for testing (issue #4750)
+      configured_catalog_path: "integration_tests/configured_catalog.json"
   incremental:
     - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/incremental_configured_catalog.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
       future_state_path: "integration_tests/abnormal_state.json"
       cursor_paths:
-        issues: ["airbytehq/airbyte", "updated_at"]
-        comments: ["airbytehq/airbyte", "updated_at"]
-        commits: ["airbytehq/airbyte", "created_at"]
-        commit_comments: ["airbytehq/airbyte", "updated_at"]
-        issue_milestones: ["airbytehq/airbyte", "updated_at"]
-        projects: ["airbytehq/airbyte", "updated_at"]
-        releases: ["airbytehq/airbyte", "created_at"]
+        events: ["airbytehq/integration-test", "created_at"]
+        comments: ["airbytehq/integration-test", "updated_at"]
+        pull_requests: ["airbytehq/integration-test", "updated_at"]
+        commit_comments: ["airbytehq/integration-test", "updated_at"]
+        issue_milestones: ["airbytehq/integration-test", "updated_at"]
+        commits: ["airbytehq/integration-test", "created_at"]
+        stargazers: ["airbytehq/integration-test", "starred_at"]
+        projects: ["airbytehq/integration-test", "updated_at"]
+        issues: ["airbytehq/integration-test", "updated_at"]
+        issue_events: ["airbytehq/integration-test", "created_at"]
+        releases: ["airbytehq/integration-test", "created_at"]
   full_refresh:
     - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/small_streams_configured_catalog.json"
-      timeout_seconds: 3600
-    # Below streams have too much records and because of it we are getting timeouts and hitting rate limits.
-    # That's why we turned them off.
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/too_large_streams_configured_catalog.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
