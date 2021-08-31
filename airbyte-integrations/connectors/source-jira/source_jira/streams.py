@@ -24,7 +24,7 @@
 
 import urllib.parse as urlparse
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qs
 
 import pendulum
