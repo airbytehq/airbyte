@@ -11,9 +11,14 @@
 - destinationDefinitionId: 25c5221d-dce2-4163-ade9-739ef790f503
   name: Postgres
   dockerRepository: airbyte/destination-postgres
-  dockerImageTag: 0.3.9
+  dockerImageTag: 0.3.10
   documentationUrl: https://docs.airbyte.io/integrations/destinations/postgres
   icon: postgresql.svg
+- destinationDefinitionId: b4c5d105-31fd-4817-96b6-cb923bfc04cb
+  name: Azure Blob Storage
+  dockerRepository: airbyte/destination-azure-blob-storage
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/azureblobstorage
 - destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   name: BigQuery
   dockerRepository: airbyte/destination-bigquery
@@ -68,7 +73,7 @@
 - destinationDefinitionId: 3986776d-2319-4de9-8af8-db14c0996e72
   name: Oracle (Alpha)
   dockerRepository: airbyte/destination-oracle
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.7
   documentationUrl: https://docs.airbyte.io/integrations/destinations/oracle
 - destinationDefinitionId: 9f760101-60ae-462f-9ee6-b7a9dafd454d
   name: Kafka

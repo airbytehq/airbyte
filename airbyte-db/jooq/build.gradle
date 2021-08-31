@@ -1,0 +1,85 @@
+plugins {
+    id 'java'
+    id 'nu.studer.jooq' version '6.0.1'
+}
+
+dependencies {
+    implementation 'org.jooq:jooq-meta:3.13.4'
+    implementation 'org.jooq:jooq:3.13.4'
+    implementation 'org.postgresql:postgresql:42.2.18'
+    implementation "org.flywaydb:flyway-core:7.14.0"
+
+    implementation project(':airbyte-db:lib')
+
+    // jOOQ code generation
+    implementation 'org.jooq:jooq-codegen:3.13.4'
+    implementation "org.testcontainers:postgresql:1.15.1"
+    // The jOOQ code generator only has access to classes added to the jooqGenerator configuration
+    jooqGenerator project(':airbyte-db:lib')
+}
+
+jooq {
+    version = '3.13.4'
+    edition = nu.studer.gradle.jooq.JooqEdition.OSS
+
+    configurations {
+        configsDatabase {
+            generateSchemaSourceOnCompilation = true
+            generationTool {
+                generator {
+                    name = 'org.jooq.codegen.DefaultGenerator'
+                    database {
+                        name = 'io.airbyte.db.instance.configs.ConfigsFlywayMigrationDatabase'
+                        inputSchema = 'public'
+                        excludes = 'airbyte_configs_migrations'
+                    }
+                    target {
+                        packageName = 'io.airbyte.db.instance.configs.jooq'
+                        directory = 'build/generated/configsDatabase/src/main/java'
+                    }
+                }
+            }
+        }
+
+        jobsDatabase {
+            generateSchemaSourceOnCompilation = true
+            generationTool {
+                generator {
+                    name = 'org.jooq.codegen.DefaultGenerator'
+                    database {
+                        name = 'io.airbyte.db.instance.jobs.JobsFlywayMigrationDatabase'
+                        inputSchema = 'public'
+                        excludes = 'airbyte_jobs_migrations'
+                    }
+                    target {
+                        packageName = 'io.airbyte.db.instance.jobs.jooq'
+                        directory = 'build/generated/jobsDatabase/src/main/java'
+                    }
+                }
+            }
+        }
+    }
+}
+
+sourceSets.main.java.srcDirs (
+    tasks.named('generateConfigsDatabaseJooq').flatMap { it.outputDir },
+    tasks.named('generateJobsDatabaseJooq').flatMap { it.outputDir }
+)
+
+sourceSets {
+    main {
+        java {
+            srcDirs "$buildDir/generated/configsDatabase/src/main/java", "$buildDir/generated/jobsDatabase/src/main/java"
+        }
+    }
+}
+
+tasks.named('generateConfigsDatabaseJooq').configure {
+    allInputsDeclared = true
+    outputs.cacheIf { true }
+}
+
+tasks.named('generateJobsDatabaseJooq').configure {
+    allInputsDeclared = true
+    outputs.cacheIf { true }
+}
