@@ -25,93 +25,60 @@
 package io.airbyte.integrations.destination.databricks;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.integrations.destination.jdbc.copy.CopyConsumerFactory;
+import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
+import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
+import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.util.function.Consumer;
 
-public class DatabricksDestination extends AbstractJdbcDestination implements Destination {
+public class DatabricksDestination extends CopyDestination {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DatabricksDestination.class);
+  private static final String DRIVER_CLASS = "com.simba.spark.jdbc.Driver";
 
-  public static final String DRIVER_CLASS = "com.simba.spark.jdbc.Driver";
-
-  // TODO: this isn't working yet!
-  public static void getDriver() throws MalformedURLException, ClassNotFoundException {
-    File driverJar = new File("/Users/phlair/Downloads/SparkDriver/SparkJDBC42.jar");
-    URL jarUrl = new URL("jar", "", "file:" + driverJar.getAbsolutePath() + "!/");
-    URLClassLoader myLoader = new URLClassLoader(new URL[] { jarUrl } );
-    myLoader.loadClass(DRIVER_CLASS);
+  @Override
+  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> outputRecordCollector) {
+    return CopyConsumerFactory.create(
+        outputRecordCollector,
+        getDatabase(config),
+        getSqlOperations(),
+        getNameTransformer(),
+        S3Config.getS3Config(config),
+        catalog,
+        new DatabricksStreamCopierFactory(),
+        config.get("schema").asText()
+    );
   }
 
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
-
-    try (final JdbcDatabase database = getDatabase(config)) {
-      DatabricksSqlOperations databricksSqlOperations = (DatabricksSqlOperations) getSqlOperations();
-
-      String outputSchema = getNamingResolver().getIdentifier(config.get("database").asText());
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, getNamingResolver(), databricksSqlOperations);
-
-      databricksSqlOperations.verifyLocalFileEnabled(database);
-
-      // TODO: enforce databricks runtime version instead of this mySql code
-//      VersionCompatibility compatibility = dbSqlOperations.isCompatibleVersion(database);
-//      if (!compatibility.isCompatible()) {
-//        throw new RuntimeException(String
-//            .format("Your MySQL version %s is not compatible with Airbyte",
-//                compatibility.getVersion()));
-//      }
-
-      return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
-    } catch (Exception e) {
-      LOGGER.error("Exception while checking connection: ", e);
-      return new AirbyteConnectionStatus()
-          .withStatus(Status.FAILED)
-          .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
-    }
-  }
-
-  public DatabricksDestination() {
-    super(DRIVER_CLASS, new DatabricksNameTransformer(), new DatabricksSqlOperations());
+  public void checkPersistence(JsonNode config) {
+    S3StreamCopier.attemptS3WriteAndDelete(S3Config.getS3Config(config));
   }
 
   @Override
-  public JsonNode toJdbcConfig(JsonNode databricksConfig) {
-    return getJdbcConfig(databricksConfig);
+  public ExtendedNameTransformer getNameTransformer() {
+    return new DatabricksNameTransformer();
   }
 
-  public static JsonNode getJdbcConfig(JsonNode databricksConfig) {
-    final String schema = Optional.ofNullable(databricksConfig.get("schema")).map(JsonNode::asText).orElse("default");
-
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("username", "dummy")
-        .put("password", "dummy")
-//        .put("jdbc_url", String.format("jdbc:TODO://%s:%s/%s",
-//            databricksConfig.get("host").asText(),
-//            databricksConfig.get("port").asText(),
-//            databricksConfig.get("database").asText()))
-//        .put("schema", schema)
-        .put("jdbc_url", databricksConfig.get("jdbcUrl").asText())
-        .build());
+  @Override
+  public JdbcDatabase getDatabase(JsonNode databricksConfig) {
+    return Databases.createJdbcDatabase(
+        databricksConfig.get("username").asText(),
+        databricksConfig.has("password") ? databricksConfig.get("password").asText() : null,
+        databricksConfig.get("jdbc_url").asText(),
+        DRIVER_CLASS
+    );
   }
 
-  public static void main(String[] args) throws Exception {
-    LOGGER.info("starting destination: {}", DatabricksDestination.class);
-    getDriver();
-    new IntegrationRunner(new DatabricksDestination()).run(args);
-    LOGGER.info("completed destination: {}", DatabricksDestination.class);
+  @Override
+  public SqlOperations getSqlOperations() {
+    return new DatabricksSqlOperations();
   }
 
 }
