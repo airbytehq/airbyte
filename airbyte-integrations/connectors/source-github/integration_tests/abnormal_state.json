@@ -1,57 +1,57 @@
 {
   "commit_comments": {
-    "airbytehq/airbyte": {
+    "airbytehq/integration-test": {
       "updated_at": "2121-04-30T20:36:17Z"
     }
   },
   "projects": {
-    "airbytehq/airbyte": {
+    "airbytehq/integration-test": {
       "updated_at": "2121-06-28T17:24:51Z"
     }
   },
   "releases": {
-    "airbytehq/airbyte": {
+    "airbytehq/integration-test": {
       "created_at": "2121-06-23T23:57:07Z"
     }
   },
   "issue_milestones": {
-    "airbytehq/airbyte": {
+    "airbytehq/integration-test": {
       "updated_at": "2121-06-25T22:28:33Z"
     }
   },
   "issues": {
-    "airbytehq/airbyte": {
+    "airbytehq/integration-test": {
       "updated_at": "2121-06-30T06:44:42Z"
     }
   },
   "comments": {
-    "airbytehq/airbyte": {
+    "airbytehq/integration-test": {
       "updated_at": "2121-06-30T10:22:10Z"
     }
   },
   "commits": {
-    "airbytehq/airbyte": {
+    "airbytehq/integration-test": {
       "created_at": "2121-06-30T10:04:41Z"
     }
   },
 
   "stargazers": {
-    "airbytehq/airbyte": {
+    "airbytehq/integration-test": {
       "starred_at": "2121-06-29T02:04:57Z"
     }
   },
   "events": {
-    "airbytehq/airbyte": {
+    "airbytehq/integration-test": {
       "created_at": "2121-06-29T03:44:45Z"
     }
   },
   "issue_events": {
-    "airbytehq/airbyte": {
+    "airbytehq/integration-test": {
       "created_at": "2121-06-29T01:49:42Z"
     }
   },
   "pull_requests": {
-    "airbytehq/airbyte": {
+    "airbytehq/integration-test": {
       "updated_at": "2121-06-28T23:36:35Z"
     }
   }

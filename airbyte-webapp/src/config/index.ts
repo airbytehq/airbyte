@@ -45,6 +45,8 @@ type Config = {
   ui: {
     helpLink: string;
     gitLink: string;
+    termsLink: string;
+    privacyLink: string;
     updateLink: string;
     slackLink: string;
     docsLink: string;
@@ -73,6 +75,8 @@ const BASE_DOCS_LINK = "https://docs.airbyte.io";
 const config: Config = {
   ui: {
     technicalSupport: `${BASE_DOCS_LINK}/troubleshooting/on-deploying`,
+    termsLink: "https://airbyte.io/terms",
+    privacyLink: "https://airbyte.io/privacy-policy",
     helpLink: "https://airbyte.io/community",
     gitLink: "https://github.com/airbytehq/airbyte",
     updateLink: `${BASE_DOCS_LINK}/upgrading-airbyte`,
