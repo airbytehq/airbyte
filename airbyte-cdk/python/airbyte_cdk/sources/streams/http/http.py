@@ -44,6 +44,7 @@ class HttpStream(Stream, ABC):
     """
 
     source_defined_cursor = True  # Most HTTP streams use a source defined cursor (i.e: the user can't configure it like on a SQL table)
+    page_size = None  # Use this variable to define page size for API http requests with pagination support
 
     def __init__(self, authenticator: HttpAuthenticator = NoAuth()):
         self._authenticator = authenticator
@@ -71,9 +72,9 @@ class HttpStream(Stream, ABC):
         return True
 
     @property
-    def max_retries(self) -> int:
+    def max_retries(self) -> Union[int, None]:
         """
-        Override if needed. Specifies maximum amount of retries for backoff policy.
+        Override if needed. Specifies maximum amount of retries for backoff policy. Return None for no limit.
         """
         return 5
 
@@ -265,9 +266,33 @@ class HttpStream(Stream, ABC):
         """
         Creates backoff wrappers which are responsible for retry logic
         """
-        backoff_handler = default_backoff_handler(max_tries=self.max_retries, factor=self.retry_factor)
-        user_backoff_handler = user_defined_backoff_handler(max_tries=self.max_retries)(backoff_handler)
-        return user_backoff_handler(self._send)(request, request_kwargs)
+
+        """
+        Backoff package has max_tries parameter that means total number of
+        tries before giving up, so if this number is 0 no calls expected to be done.
+        But for this class we call it max_REtries assuming there would be at
+        least one attempt and some retry attempts, to comply this logic we add
+        1 to expected retries attempts.
+        """
+        max_tries = self.max_retries
+        """
+        According to backoff max_tries docstring:
+            max_tries: The maximum number of attempts to make before giving
+                up ...The default value of None means there is no limit to
+                the number of tries.
+        This implies that if max_tries is excplicitly set to None there is no
+        limit to retry attempts, otherwise it is limited number of tries. But
+        this is not true for current version of backoff packages (1.8.0). Setting
+        max_tries to 0 or negative number would result in endless retry atempts.
+        Add this condition to avoid an endless loop if it hasnt been set
+        explicitly (i.e. max_retries is not None).
+        """
+        if max_tries is not None:
+            max_tries = max(0, max_tries) + 1
+
+        user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries)(self._send)
+        backoff_handler = default_backoff_handler(max_tries=max_tries, factor=self.retry_factor)
+        return backoff_handler(user_backoff_handler)(request, request_kwargs)
 
     def read_records(
         self,

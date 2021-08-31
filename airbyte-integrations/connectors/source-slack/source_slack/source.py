@@ -74,16 +74,6 @@ class SlackStream(HttpStream, ABC):
         json_response = response.json()
         yield from json_response.get(self.data_field, [])
 
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        """This method is called if we run into the rate limit.
-        Slack puts the retry time in the `Retry-After` response header so we
-        we return that value. If the response is anything other than a 429 (e.g: 5XX)
-        fall back on default retry behavior.
-
-        Rate Limits Docs: https://api.slack.com/docs/rate-limits#web"""
-
-        return int(response.headers.get("Retry-After", 0))
-
     @property
     @abstractmethod
     def data_field(self) -> str:
