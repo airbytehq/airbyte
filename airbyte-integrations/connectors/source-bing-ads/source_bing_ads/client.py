@@ -62,6 +62,7 @@ class Client:
         client_id: str,
         refresh_token: str,
         reports_start_date: str,
+        report_aggregation: Mapping[str, str],
         **kwargs: Mapping[str, Any],
     ) -> None:
         self.authorization_data: Mapping[str, AuthorizationData] = {}
@@ -74,6 +75,7 @@ class Client:
         self.refresh_token = refresh_token
         self.customer_id = customer_id
         self.developer_token = developer_token
+        self.report_aggregation = report_aggregation["value"]
 
         self.oauth: OAuthTokens = self._get_access_token()
         self.reports_start_date = pendulum.parse(reports_start_date).astimezone(tz=timezone.utc)

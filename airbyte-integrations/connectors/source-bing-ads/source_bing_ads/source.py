@@ -320,8 +320,8 @@ class BudgetSummaryReport(ReportsMixin, BingAdsStream):
     report_name: str = "BudgetSummaryReport"
     operation_name: str = "download_report"
     additional_fields: str = ""
+    aggregation_disabled = True
     cursor_field = "Date"
-    date_format = "M/D/YYYY"
 
     report_columns = [
         "AccountName",
@@ -343,9 +343,7 @@ class CampaignPerformanceReport(ReportsMixin, BingAdsStream):
     report_name: str = "CampaignPerformanceReport"
     operation_name: str = "download_report"
     additional_fields: str = ""
-    aggregation = "Daily"
     cursor_field = "TimePeriod"
-    date_format = "YYYY-MM-DD"
 
     report_columns = [
         "AccountName",
@@ -374,9 +372,7 @@ class AdPerformanceReport(ReportsMixin, BingAdsStream):
     report_name: str = "AdPerformanceReport"
     operation_name: str = "download_report"
     additional_fields: str = ""
-    aggregation = "Daily"
     cursor_field = "TimePeriod"
-    date_format = "YYYY-MM-DD"
 
     report_columns = [
         "AccountName",
@@ -410,9 +406,7 @@ class AdGroupPerformanceReport(ReportsMixin, BingAdsStream):
     report_name: str = "AdGroupPerformanceReport"
     operation_name: str = "download_report"
     additional_fields: str = ""
-    aggregation = "Daily"
     cursor_field = "TimePeriod"
-    date_format = "YYYY-MM-DD"
 
     report_columns = [
         "AccountName",
@@ -443,9 +437,7 @@ class KeywordPerformanceReport(ReportsMixin, BingAdsStream):
     report_name: str = "KeywordPerformanceReport"
     operation_name: str = "download_report"
     additional_fields: str = ""
-    aggregation = "Daily"
     cursor_field = "TimePeriod"
-    date_format = "YYYY-MM-DD"
 
     report_columns = [
         "AccountName",
@@ -482,9 +474,7 @@ class AccountPerformanceReport(ReportsMixin, BingAdsStream):
     report_name: str = "AccountPerformanceReport"
     operation_name: str = "download_report"
     additional_fields: str = ""
-    aggregation = "Daily"
     cursor_field = "TimePeriod"
-    date_format = "YYYY-MM-DD"
 
     report_columns = [
         "AccountName",

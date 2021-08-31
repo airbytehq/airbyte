@@ -58,6 +58,8 @@ API limits number of requests for all Microsoft Advertising clients. You can fin
 * refresh_token: Token received during [auth process](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth?view=bingads-13)
 * client_secret: Secret generated during application registration
 * client_id: Id generated during application registration
+* reports_start_date: From which date report generation should start
+* report_aggregation: Defines how report data will be aggregated
 
 ### Setup guide
 

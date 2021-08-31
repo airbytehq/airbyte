@@ -88,13 +88,12 @@ REPORT_FIELD_TYPES = {
 
 
 class ReportsMixin(abc.ABC):
+    # The directory where the file with report will be downloaded.
     file_directory: str = "/tmp"
-    timeout: int = 60000  # in milliseconds
+    # timeout for reporting download operations in milliseconds
+    timeout: int = 300000
     report_file_format: str = "Csv"
-    # list of possible aggregations
-    # https://docs.microsoft.com/en-us/advertising/reporting-service/reportaggregation?view=bingads-13
-    # if None aggregation is disabled
-    aggregation: Optional[str] = None
+    aggregation_disabled: bool = False
 
     @property
     @abc.abstractmethod
@@ -109,14 +108,6 @@ class ReportsMixin(abc.ABC):
     def report_columns(self) -> Iterable[str]:
         """
         Specifies bing ads report naming
-        """
-        pass
-
-    @property
-    @abc.abstractmethod
-    def date_format(self) -> Iterable[str]:
-        """
-        Specifies format for cursor field
         """
         pass
 
@@ -147,9 +138,7 @@ class ReportsMixin(abc.ABC):
         report_time.PredefinedTime = None
         report_time.ReportTimeZone = request_time_zone.GreenwichMeanTimeDublinEdinburghLisbonLondon
 
-        report_request = self.get_report_request(
-            account_id, self.aggregation, False, False, False, self.report_file_format, False, report_time
-        )
+        report_request = self.get_report_request(account_id, False, False, False, self.report_file_format, False, report_time)
 
         return {
             "report_request": report_request,
@@ -167,7 +156,7 @@ class ReportsMixin(abc.ABC):
         account_id = latest_record["AccountId"]
         current_stream_state[account_id] = current_stream_state.get(account_id, {})
         current_stream_state[account_id][self.cursor_field] = max(
-            pendulum.from_format(latest_record[self.cursor_field], self.date_format).int_timestamp,
+            self.get_report_record_timestamp(latest_record[self.cursor_field]),
             current_stream_state.get(account_id, {}).get(self.cursor_field, 1),
         )
         return current_stream_state
@@ -185,7 +174,6 @@ class ReportsMixin(abc.ABC):
     def get_report_request(
         self,
         account_id: str,
-        aggregation: Optional[str],
         exclude_column_headers: bool,
         exclude_report_footer: bool,
         exclude_report_header: bool,
@@ -195,13 +183,14 @@ class ReportsMixin(abc.ABC):
     ) -> sudsobject.Object:
         reporting_service = self.client.get_service(self.service_name)
         report_request = reporting_service.factory.create(f"{self.report_name}Request")
-        if aggregation:
-            report_request.Aggregation = aggregation
+        if not self.aggregation_disabled:
+            report_request.Aggregation = self.client.report_aggregation
 
         report_request.ExcludeColumnHeaders = exclude_column_headers
         report_request.ExcludeReportFooter = exclude_report_footer
         report_request.ExcludeReportHeader = exclude_report_header
         report_request.Format = report_file_format
+        report_request.FormatVersion = "2.0"
         report_request.ReturnOnlyCompleteData = return_only_complete_data
         report_request.Time = time
         report_request.ReportName = self.report_name
@@ -238,6 +227,20 @@ class ReportsMixin(abc.ABC):
                 value = 0.0 if value == "--" else float(value.replace("%", "").replace(",", ""))
 
         return value
+
+    def get_report_record_timestamp(self, datestring: str) -> int:
+        """
+        Parse report date field based on aggregation type
+        """
+        if self.aggregation_disabled:
+            date = pendulum.from_format(datestring, "M/D/YYYY")
+        else:
+            if self.client.report_aggregation == "Hourly":
+                date = pendulum.from_format(datestring, "YYYY-MM-DD|H")
+            else:
+                date = pendulum.parse(datestring)
+
+        return date.int_timestamp
 
     def stream_slices(
         self,

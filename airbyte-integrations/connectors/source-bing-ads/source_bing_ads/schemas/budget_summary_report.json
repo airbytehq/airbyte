@@ -11,10 +11,6 @@
     "AccountId": {
       "type": ["null", "integer"]
     },
-    "TimePeriod": {
-      "type": ["null", "string"],
-      "format": "date"
-    },
     "CampaignId": {
       "type": ["null", "integer"]
     },

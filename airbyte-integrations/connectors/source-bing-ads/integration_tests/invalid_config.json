@@ -6,5 +6,6 @@
   "refresh_token": "as2Ggas23gsa236gasgaskjfhas7i8ygf78as7osa7gy87asg8as7tg6as",
   "client_secret": "1234",
   "client_id": "123",
-  "reports_start_date": "2018-11-13T20:20:39+00:00"
+  "reports_start_date": "2018-11-13",
+  "report_aggregation": {"value": "Monthly"}
 }

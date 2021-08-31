@@ -12,8 +12,7 @@
       "type": ["null", "integer"]
     },
     "TimePeriod": {
-      "type": ["null", "string"],
-      "format": "date"
+      "type": ["null", "string"]
     },
     "CampaignId": {
       "type": ["null", "integer"]

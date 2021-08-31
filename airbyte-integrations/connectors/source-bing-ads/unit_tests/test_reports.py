@@ -30,11 +30,15 @@ from source_bing_ads.reports import ReportsMixin
 from source_bing_ads.source import SourceBingAds
 
 
+class TestClient:
+    report_aggregation = "Monthly"
+
+
 class TestReport(ReportsMixin, SourceBingAds):
     date_format, report_columns, report_name, cursor_field = "YYYY-MM-DD", None, None, "Time"
 
     def __init__(self) -> None:
-        pass
+        self.client = TestClient()
 
 
 def test_get_column_value():
@@ -75,3 +79,21 @@ def test_get_updated_state_state_new_account():
     new_state = test_report.get_updated_state(stream_state, latest_record)
     assert 234 in new_state and 123 in new_state
     assert new_state[234]["Time"] == pendulum.parse("2020-01-02").timestamp()
+
+
+def test_get_report_record_timestamp_daily():
+    test_report = TestReport()
+    test_report.report_aggregation = "Daily"
+    assert pendulum.parse("2020-01-01").timestamp() == test_report.get_report_record_timestamp("2020-01-01")
+
+
+def test_get_report_record_timestamp_without_aggregation():
+    test_report = TestReport()
+    test_report.aggregation_disabled = True
+    assert pendulum.parse("2020-07-20").timestamp() == test_report.get_report_record_timestamp("7/20/2020")
+
+
+def test_get_report_record_timestamp_hourly():
+    test_report = TestReport()
+    test_report.client.report_aggregation = "Hourly"
+    assert pendulum.parse("2020-01-01T15:00:00").timestamp() == test_report.get_report_record_timestamp("2020-01-01|15")
