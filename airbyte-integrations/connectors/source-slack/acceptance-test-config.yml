@@ -12,13 +12,15 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/full_refresh_catalog.json"
+      timeout_seconds: 7200
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-      timeout_seconds: 3600
+      timeout_seconds: 7200
       cursor_paths:
         channel_messages: ["float_ts"]
         threads: ["float_ts"]
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/full_refresh_catalog.json"
+      timeout_seconds: 7200

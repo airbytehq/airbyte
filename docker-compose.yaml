@@ -70,7 +70,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - workspace:${WORKSPACE_ROOT}
       - ${LOCAL_ROOT}:${LOCAL_ROOT}
-      - data:${CONFIG_ROOT}
   server:
     image: airbyte/server:${VERSION}
     logging: *default-logging
@@ -145,6 +144,9 @@ services:
 volumes:
   workspace:
     name: ${WORKSPACE_DOCKER_MOUNT}
+  # the data volume is only needed for backward compatibility; when users upgrade
+  # from an old Airbyte version that relies on file-based configs, the server needs
+  # to read this volume to copy their configs to the database
   data:
     name: ${DATA_DOCKER_MOUNT}
   db:
