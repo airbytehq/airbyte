@@ -25,7 +25,6 @@
 from abc import ABC
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
-import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_facebook_pages.metrics import PAGE_FIELDS, PAGE_METRICS, POST_FIELDS, POST_METRICS
@@ -76,11 +75,10 @@ class FacebookPagesStream(HttpStream, ABC):
         if not self.data_field:
             yield response.json()
 
-        else:
-            records = response.json().get(self.data_field)
+        records = response.json().get(self.data_field, [])
 
-            for record in records:
-                yield record
+        for record in records:
+            yield record
 
 
 class Page(FacebookPagesStream):
