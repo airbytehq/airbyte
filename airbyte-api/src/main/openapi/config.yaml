@@ -1184,7 +1184,7 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
-  /v1/source_oauths/get_oauth_consent:
+  /v1/source_oauths/get_consent_url:
     post:
       tags:
         - oauth
@@ -1230,7 +1230,7 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
-  /v1/destination_oauths/get_oauth_consent:
+  /v1/destination_oauths/get_consent_url:
     post:
       tags:
         - oauth
