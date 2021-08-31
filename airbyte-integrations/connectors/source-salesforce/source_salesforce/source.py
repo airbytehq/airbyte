@@ -30,6 +30,7 @@ from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.utils.schema_helpers import split_config
 
 from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, IncrementalSalesforceStream, SalesforceStream
@@ -76,6 +77,7 @@ class SourceSalesforce(AbstractSource):
         (Salesforce has a strict API limit on requests).
         """
         connector_state = copy.deepcopy(state or {})
+        config, internal_config = split_config(config)
         # get the streams once in case the connector needs to make any queries to generate them
         logger.info("Starting generating streams")
         stream_instances = {s.name: s for s in self.streams(config, catalog=catalog)}
@@ -89,7 +91,11 @@ class SourceSalesforce(AbstractSource):
 
             try:
                 yield from self._read_stream(
-                    logger=logger, stream_instance=stream_instance, configured_stream=configured_stream, connector_state=connector_state
+                    logger=logger,
+                    stream_instance=stream_instance,
+                    configured_stream=configured_stream,
+                    connector_state=connector_state,
+                    internal_config=internal_config,
                 )
             except Exception as e:
                 logger.exception(f"Encountered an exception while reading stream {self.name}")
