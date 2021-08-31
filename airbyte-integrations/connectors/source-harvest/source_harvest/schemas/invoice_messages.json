@@ -47,14 +47,17 @@
       "type": ["null", "string"]
     },
     "recipients": {
-      "type": ["null", "object"],
-      "properties": {
-        "name": {
-          "type": ["null", "string"]
+      "type": ["null", "array"],
+      "items": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
         },
-        "email": {
-          "type": ["null", "string"]
-        }
+        "type": "object"
       }
     },
     "subject": {

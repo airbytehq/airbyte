@@ -62,9 +62,18 @@
       "type": ["null", "number"]
     },
     "roles": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "avatar_url": {
+      "type": ["null", "string"]
+    },
+    "calendar_integration_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "calendar_integration_source": {
       "type": ["null", "string"]
     }
   }

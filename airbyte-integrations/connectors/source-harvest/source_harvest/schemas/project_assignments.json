@@ -15,7 +15,7 @@
       "type": ["null", "boolean"]
     },
     "budget": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "created_at": {
       "type": ["null", "string"],
@@ -50,11 +50,51 @@
         },
         "name": {
           "type": ["null", "string"]
+        },
+        "currency": {
+          "type": ["null", "string"]
         }
       }
     },
     "task_assignments": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "properties": {
+          "billable": {
+            "type": ["null", "boolean"]
+          },
+          "budget": {
+            "type": ["null", "number"]
+          },
+          "created_at": {
+            "type": ["string", "null"]
+          },
+          "hourly_rate": {
+            "type": ["null", "number"]
+          },
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "is_active": {
+            "type": ["null", "boolean"]
+          },
+          "task": {
+            "properties": {
+              "id": {
+                "type": ["null", "integer"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              }
+            },
+            "type": ["object", "null"]
+          },
+          "updated_at": {
+            "type": ["null", "string"]
+          }
+        },
+        "type": "object"
+      }
     }
   }
 }
