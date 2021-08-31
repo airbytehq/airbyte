@@ -289,7 +289,7 @@ class PullRequestStats(GithubStream):
 
     @property
     def record_keys(self) -> List[str]:
-        return list(self.get_json_schema()['properties'].keys())
+        return list(self.get_json_schema()["properties"].keys())
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -302,21 +302,12 @@ class PullRequestStats(GithubStream):
             for pull_request in pull_requests_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
                 yield {"pull_request_number": pull_request["number"], "repository": stream_slice["repository"]}
 
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         yield self.transform(response.json(), repository=stream_slice["repository"])
 
     def transform(self, record: MutableMapping[str, Any], repository: str = None) -> MutableMapping[str, Any]:
         record = super().transform(record=record, repository=repository)
-        keys = [key for key in record if key not in self.record_keys]
-        for key in keys:
-             del record[key]
-        return record
+        return {key: value for key, value in record.items() if key in self.record_keys}
 
 
 class Reviews(GithubStream):

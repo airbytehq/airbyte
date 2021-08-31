@@ -55,9 +55,8 @@ from .streams import (
     Stargazers,
     Tags,
     Teams,
-    Users
+    Users,
 )
-
 
 TOKEN_SEPARATOR = ","
 
