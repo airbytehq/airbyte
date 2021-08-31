@@ -67,7 +67,7 @@ public class SshTunnel implements AutoCloseable {
   private final String tunnelSshPort;
   private final String user;
   private final String sshkey;
-  private final String password;
+  private final String tunnelUserPassword;
   private final String remoteDatabaseHost;
   private final String remoteDatabasePort;
   private final String tunnelDatabasePort;
@@ -80,7 +80,7 @@ public class SshTunnel implements AutoCloseable {
                    final String tunnelSshPort,
                    final String user,
                    final String sshKey,
-                   final String password,
+                   final String tunnelUserPassword,
                    final String remoteDatabaseHost,
                    final String remoteDatabasePort,
                    final String tunnelDatabasePort) {
@@ -93,7 +93,7 @@ public class SshTunnel implements AutoCloseable {
       this.tunnelSshPort = null;
       this.user = null;
       this.sshkey = null;
-      this.password = null;
+      this.tunnelUserPassword = null;
       this.remoteDatabaseHost = null;
       this.remoteDatabasePort = null;
       this.tunnelDatabasePort = null;
@@ -101,8 +101,12 @@ public class SshTunnel implements AutoCloseable {
       Preconditions.checkNotNull(host);
       Preconditions.checkNotNull(tunnelSshPort);
       Preconditions.checkNotNull(user);
-      Preconditions.checkArgument(sshKey != null || password != null,
-          "SSH Tunnel was requested to be opened while it was already open.  This is a coding error.");
+      if (method.equals(Method.SSH_KEY_AUTH)) {
+        Preconditions.checkNotNull(sshKey);
+      }
+      if (method.equals(Method.SSH_PASSWORD_AUTH)) {
+        Preconditions.checkNotNull(tunnelUserPassword);
+      }
       Preconditions.checkNotNull(remoteDatabaseHost);
       Preconditions.checkNotNull(remoteDatabasePort);
       Preconditions.checkNotNull(tunnelDatabasePort);
@@ -111,7 +115,7 @@ public class SshTunnel implements AutoCloseable {
       this.tunnelSshPort = tunnelSshPort;
       this.user = user;
       this.sshkey = sshKey;
-      this.password = password;
+      this.tunnelUserPassword = tunnelUserPassword;
       this.remoteDatabaseHost = remoteDatabaseHost;
       this.remoteDatabasePort = remoteDatabasePort;
       this.tunnelDatabasePort = tunnelDatabasePort;
@@ -212,7 +216,7 @@ public class SshTunnel implements AutoCloseable {
         session.addPublicKeyIdentity(getPrivateKeyPair());
       }
       if (method.equals(Method.SSH_PASSWORD_AUTH)) {
-        session.addPasswordIdentity(password);
+        session.addPasswordIdentity(tunnelUserPassword);
       }
       session.auth().verify(TIMEOUT_MILLIS);
       final SshdSocketAddress address = session.startLocalPortForwarding(
