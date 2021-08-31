@@ -89,14 +89,15 @@ public class RocksetDestinationAcceptanceTest extends DestinationAcceptanceTest 
     RocksetUtils.waitUntilCollectionReady(client, ws, streamName);
     collectionNames.add(streamName);
 
-    String sqlText = String.format("SELECT * FROM %s.%s;", ws, streamName);
+    // ORDER BY _event_time because the test suite expects to retrieve messages in the order they were
+    // originally written
+    String sqlText = String.format("SELECT * FROM %s.%s ORDER BY _event_time;", ws, streamName);
 
     QueryRequest query =
       new QueryRequest()
         .sql(new QueryRequestSql().query(sqlText));
 
     QueriesApi queryClient = new QueriesApi(RocksetUtils.apiClientFromConfig(getConfig()));
-    Response response = queryClient.queryCall(query, null, null).execute();
 
     try {
       // As Rockset is not a transactional database, we have to wait a few seconds to be extra sure
@@ -106,6 +107,7 @@ public class RocksetDestinationAcceptanceTest extends DestinationAcceptanceTest 
       e.printStackTrace();
     }
 
+    Response response = queryClient.queryCall(query, null, null).execute();
     JsonNode json = mapper.readTree(response.body().string());
     List<JsonNode> results = Lists.newArrayList(json.get("results").iterator());
     results =
