@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.15
+Add \_limit and \_page_size as internal config parameters for SAT
+
 ## 0.1.14
 If the input config file does not comply with spec schema, raise an exception instead of `system.exit`.
 
