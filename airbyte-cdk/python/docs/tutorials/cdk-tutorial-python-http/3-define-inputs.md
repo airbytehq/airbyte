@@ -35,6 +35,11 @@ Given that we'll pulling currency data for our example source, we'll define the 
   }
 }
 ```
+Beside regular parameter there is intenal CDK config that started with '_' character and used mainly for testing purposes:
+
+* _limit - set maximum number of records being read for each stream
+* _page_size - for http based streams set number of records for each page. Depends on stream implementation.
+
 
 In addition to metadata, we define two inputs:
 

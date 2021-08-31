@@ -43,6 +43,8 @@ from airbyte_cdk.models import (
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http.http import HttpStream
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
 
 
 class AbstractSource(Source, ABC):
@@ -95,6 +97,7 @@ class AbstractSource(Source, ABC):
         """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
         connector_state = copy.deepcopy(state or {})
         logger.info(f"Starting syncing {self.name}")
+        config, internal_config = split_config(config)
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
         stream_instances = {s.name: s for s in self.streams(config)}
@@ -107,7 +110,11 @@ class AbstractSource(Source, ABC):
 
             try:
                 yield from self._read_stream(
-                    logger=logger, stream_instance=stream_instance, configured_stream=configured_stream, connector_state=connector_state
+                    logger=logger,
+                    stream_instance=stream_instance,
+                    configured_stream=configured_stream,
+                    connector_state=connector_state,
+                    internal_config=internal_config,
                 )
             except Exception as e:
                 logger.exception(f"Encountered an exception while reading stream {self.name}")
@@ -121,7 +128,12 @@ class AbstractSource(Source, ABC):
         stream_instance: Stream,
         configured_stream: ConfiguredAirbyteStream,
         connector_state: MutableMapping[str, Any],
+        internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
+
+        if internal_config.page_size and isinstance(stream_instance, HttpStream):
+            logger.info(f"Setting page size for {stream_instance.name} to {internal_config.page_size}")
+            stream_instance.page_size = internal_config.page_size
 
         use_incremental = configured_stream.sync_mode == SyncMode.incremental and stream_instance.supports_incremental
         if use_incremental:
@@ -135,6 +147,9 @@ class AbstractSource(Source, ABC):
         for record in record_iterator:
             if record.type == MessageType.RECORD:
                 record_counter += 1
+                if internal_config.limit and record_counter > internal_config.limit:
+                    logger.info(f"Reached limit defined by internal config ({internal_config.limit}), stop reading")
+                    break
             yield record
 
         logger.info(f"Read {record_counter} records from {stream_name} stream")

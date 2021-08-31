@@ -144,6 +144,11 @@ def config_mock(mocker, request):
         ({"username": "fake"}, {"type": "object", "properties": {"name": {"type": "string"}}, "additionalProperties": False}, False),
         ({"username": "fake"}, {"type": "object", "properties": {"username": {"type": "string"}}, "additionalProperties": False}, True),
         ({"username": "fake"}, {"type": "object", "properties": {"user": {"type": "string"}}}, True),
+        (
+            {"username": "fake", "_limit": 22},
+            {"type": "object", "properties": {"username": {"type": "string"}}, "additionalProperties": False},
+            True,
+        ),
     ],
     indirect=["config_mock"],
 )
