@@ -163,20 +163,19 @@ spec:
           containerPort: 8001
           protocol: TCP
         volumeMounts:
-        - name: airbyte-volume-configs
+        - name: airbyte-data
           mountPath: /configs
-        - name: airbyte-volume-workspace
+          subPath: configs
+        - name: airbyte-data
           mountPath: /workspace
+          subPath: workspace
         - name: gcs-log-creds-volume
           mountPath: /secrets/gcs-log-creds
           readOnly: true
       volumes:
-      - name: airbyte-volume-workspace
+      - name: airbyte-data
         persistentVolumeClaim:
-          claimName: {{ include "common.names.fullname" . }}-workspace
-      - name: airbyte-volume-configs
-        persistentVolumeClaim:
-          claimName: {{ include "common.names.fullname" . }}-configs
+          claimName: {{ include "common.names.fullname" . }}-data
       - name: gcs-log-creds-volume
         secret:
           secretName: gcs-log-creds

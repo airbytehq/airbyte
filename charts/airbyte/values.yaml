@@ -146,24 +146,13 @@ server:
     type: ClusterIP
     port: 8001
 
-  ## @param server.configs.persistence.accessMode The access mode for the airbyte configs pvc
-  ## @param server.configs.persistence.storageClass The storage class to use for the airbyte configs pvc
-  ## @param server.configs.persistence.size The size of the pvc to use for the airbyte configs pvc
-  configs:
-    persistence:
-      accessMode: ReadWriteOnce
-      storageClass: standard
-      size: 500Mi
-
-  ## @param server.workspace.persistence.accessMode The access mode for the airbyte workspace pvc
-  ## @param server.workspace.persistence.storageClass The storage class to use for the airbyte workspace pvc
-  ## @param server.workspace.persistence.size The size of the pvc to use for the airbyte workspace pvc
-  workspace:
-    persistence:
-      accessMode: ReadWriteOnce
-      storageClass: standard
-      size: 500Mi
-
+  ## @param server.persistence.accessMode The access mode for the airbyte server pvc
+  ## @param server.persistence.storageClass The storage class to use for the airbyte server pvc
+  ## @param server.persistence.size The size of the pvc to use for the airbyte server pvc
+  persistence:
+    accessMode: ReadWriteOnce
+    storageClass: standard
+    size: 1Gi
 
 ## @section Temporal parameters
 ## TODO: Move to consuming temporal from a dedicated helm chart
