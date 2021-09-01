@@ -1,0 +1,201 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "actions": {
+      "type": ["null", "array"]
+    },
+    "admin_creator": {
+      "type": ["null", "object"]
+    },
+    "allowed_advertising_objectives": {
+      "type": ["null", "object"]
+    },
+    "application": {
+      "type": ["null", "object"]
+    },
+    "backdated_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "call_to_action": {
+      "type": ["null", "object"]
+    },
+    "can_reply_privately": {
+      "type": ["null", "boolean"]
+    },
+    "child_attachments": {
+      "type": ["null", "array"]
+    },
+    "comments_mirroring_domain": {
+      "type": ["null", "string"]
+    },
+    "coordinates": {
+      "type": ["null", "object"]
+    },
+    "created_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "event": {
+      "type": ["null", "object"]
+    },
+    "expanded_height": {
+      "type": ["null", "integer"]
+    },
+    "expanded_width": {
+      "type": ["null", "integer"]
+    },
+    "feed_targeting": {
+      "type": ["null", "object"]
+    },
+    "from": {
+      "type": ["null", "object"]
+    },
+    "full_picture": {
+      "type": ["null", "string"]
+    },
+    "height": {
+      "type": ["null", "integer"]
+    },
+    "icon": {
+      "type": ["null", "string"]
+    },
+    "instagram_eligibility": {
+      "type": ["null", "array", "string"]
+    },
+    "is_app_share": {
+      "type": ["null", "boolean"]
+    },
+    "is_eligible_for_promotion": {
+      "type": ["null", "boolean"]
+    },
+    "is_expired": {
+      "type": ["null", "boolean"]
+    },
+    "is_hidden": {
+      "type": ["null", "boolean"]
+    },
+    "is_inline_created": {
+      "type": ["null", "boolean"]
+    },
+    "is_instagram_eligible": {
+      "type": ["null", "boolean"]
+    },
+    "is_popular": {
+      "type": ["null", "boolean"]
+    },
+    "is_published": {
+      "type": ["null", "boolean"]
+    },
+    "is_spherical": {
+      "type": ["null", "boolean"]
+    },
+    "message": {
+      "type": ["null", "string"]
+    },
+    "message_tags": {
+      "type": ["null", "array"]
+    },
+    "multi_share_end_card": {
+      "type": ["null", "boolean"]
+    },
+    "multi_share_optimized": {
+      "type": ["null", "boolean"]
+    },
+    "parent_id": {
+      "type": ["null", "string"]
+    },
+    "permalink_url": {
+      "type": ["null", "string"]
+    },
+    "picture": {
+      "type": ["null", "string"]
+    },
+    "place": {
+      "type": ["null", "object"]
+    },
+    "privacy": {
+      "type": ["null", "object"]
+    },
+    "promotable_id": {
+      "type": ["null", "string"]
+    },
+    "promotion_status": {
+      "type": ["null", "string"]
+    },
+    "properties": {
+      "type": ["null", "array"]
+    },
+    "scheduled_publish_time": {
+      "type": ["null", "number"]
+    },
+    "shares": {
+      "type": ["null", "object"]
+    },
+    "status_type": {
+      "type": ["null", "string"]
+    },
+    "story": {
+      "type": ["null", "string"]
+    },
+    "story_tags": {
+      "type": ["null", "array"]
+    },
+    "subscribed": {
+      "type": ["null", "boolean"]
+    },
+    "target": {
+      "type": ["null", "object"]
+    },
+    "targeting": {
+      "type": ["null", "object"]
+    },
+    "timeline_visibility": {
+      "type": ["null", "string"]
+    },
+    "updated_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "via": {
+      "type": ["null", "object"]
+    },
+    "video_buying_eligibility": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "array", "string"]
+      }
+    },
+    "width": {
+      "type": ["null", "integer"]
+    },
+    "attachments": {
+      "type": ["null", "object"]
+    },
+    "comments": {
+      "type": ["null", "object"]
+    },
+    "dynamic_posts": {
+      "type": ["null", "object"]
+    },
+    "insights": {
+      "type": ["null", "object"]
+    },
+    "likes": {
+      "type": ["null", "object"]
+    },
+    "reactions": {
+      "type": ["null", "object"]
+    },
+    "sharedposts": {
+      "type": ["null", "object"]
+    },
+    "sponsor_tags": {
+      "type": ["null", "object"]
+    },
+    "to": {
+      "type": ["null", "object"]
+    }
+  }
+}

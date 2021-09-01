@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "name": {
+      "type": ["null", "string"]
+    },
+    "period": {
+      "type": ["null", "string"]
+    },
+    "values": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "value": {
+            "type": ["null", "object", "integer"]
+          },
+          "end_time": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    }
+  }
+}

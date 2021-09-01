@@ -140,6 +140,12 @@
   dockerImageTag: 0.2.14
   documentationUrl: https://docs.airbyte.io/integrations/sources/facebook-marketing
   icon: facebook.svg
+- sourceDefinitionId: 010eb12f-837b-4685-892d-0a39f76a98f5
+  name: Facebook Pages
+  dockerRepository: airbyte/source-facebook-pages
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-facebook-pages
+  icon: facebook.svg
 - sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   name: Hubspot
   dockerRepository: airbyte/source-hubspot
