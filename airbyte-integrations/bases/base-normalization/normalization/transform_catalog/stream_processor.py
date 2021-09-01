@@ -506,7 +506,7 @@ from {{ from_table }}
         )
         return sql
 
-    def oracle_col_jinja(self, col_name: str):
+    def oracle_col_jinja(self, col_name: str) -> str:
         if col_name.replace("'", "").startswith("_"):
             col_name = self.name_transformer.normalize_column_name(col_name)
 
@@ -515,7 +515,7 @@ from {{ from_table }}
         else:
             return col_name
 
-    def oracle_safe_cast_cols_jinja(self, columns: List[str]):
+    def oracle_safe_cast_cols_jinja(self, columns: List[str]) -> List[str]:
         # this inject jinja macro in Oracle queries
         # for Oracle you need to be explicit when calling jinja macros in queries
         # array_to_string(field), quote(field) is a dbt macro but in oracle will throw an error
