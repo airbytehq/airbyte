@@ -63,8 +63,6 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
   private static final String PRIMARY_KEY = "_id";
 
-  private String quote = "";
-
   public static void main(String[] args) throws Exception {
     final Source source = new MongoDbSource();
     LOGGER.info("starting source: {}", MongoDbSource.class);
@@ -94,8 +92,9 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
   @Override
   protected MongoDatabase createDatabase(JsonNode config) throws Exception {
-    return Databases.createMongoDatabase(config.get("connectionString").asText(),
-        config.get("database").asText());
+    var dbConfig = toDatabaseConfig(config);
+    return Databases.createMongoDatabase(dbConfig.get("connectionString").asText(),
+        dbConfig.get("database").asText());
   }
 
   @Override
@@ -153,13 +152,13 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
       List<TableInfo<CommonField<BsonType>>> tableInfos) {
     return tableInfos.stream()
         .collect(Collectors.toMap(
-            tableInfo -> tableInfo.getName(),
-            tableInfo -> tableInfo.getPrimaryKeys()));
+            TableInfo::getName,
+            TableInfo::getPrimaryKeys));
   }
 
   @Override
   protected String getQuoteString() {
-    return quote;
+    return "";
   }
 
   @Override

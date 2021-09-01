@@ -3,5 +3,6 @@
   "name": "MongoDb",
   "dockerRepository": "airbyte/source-mongodb-new",
   "dockerImageTag": "0.1.0",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/mongodb-new"
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/mongodb-new",
+  "icon": "mongodb.svg"
 }

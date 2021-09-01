@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.bson.BsonArray;
 import org.bson.BsonBinary;
 import org.bson.BsonDocument;
 import org.bson.BsonDocumentReader;
@@ -65,13 +66,13 @@ public class MongoUtils {
   }
 
   public static JsonNode toJsonNode(final Document document, final List<String> columnNames) {
-    final BsonDocument bsonDocument = toBsonDocument(document);
     final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-    readBson(bsonDocument, objectNode, columnNames);
+    readBson(document, objectNode, columnNames);
     return objectNode;
   }
 
-  private static void readBson(final BsonDocument bsonDocument, final ObjectNode o, final List<String> columnNames) {
+  private static void readBson(final Document document, final ObjectNode o, final List<String> columnNames) {
+    final BsonDocument bsonDocument = toBsonDocument(document);
     try (BsonReader reader = new BsonDocumentReader(bsonDocument)) {
       reader.readStartDocument();
       while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
@@ -93,8 +94,8 @@ public class MongoUtils {
           case JAVASCRIPT -> o.put(fieldName, reader.readJavaScript());
           case JAVASCRIPT_WITH_SCOPE -> o.put(fieldName, reader.readJavaScriptWithScope());
           case REGULAR_EXPRESSION -> o.put(fieldName, toString(reader.readRegularExpression()));
-          case DOCUMENT -> o.put(fieldName, toString(reader.readBinaryData())); // todo
-          case ARRAY -> o.put(fieldName, toString(reader.readBinaryData())); // todo
+          case DOCUMENT -> o.put(fieldName, documentToString(document.get(fieldName)));
+          case ARRAY -> o.put(fieldName, arrayToString(document.get(fieldName)));
           default -> reader.skipValue();
         }
 
@@ -113,7 +114,7 @@ public class MongoUtils {
    * Gets 10.000 documents from collection, gathers all unique fields and its type. In case when one
    * field has different types in 2 and more documents, the type is set to String.
    *
-   * @param collection
+   * @param collection mongo collection
    * @return map of unique fields and its type
    */
   public static Map<String, BsonType> getUniqueFields(MongoCollection<Document> collection) {
@@ -160,6 +161,28 @@ public class MongoUtils {
 
   private static byte[] toByteArray(BsonBinary value) {
     return value == null ? null : value.getData();
+  }
+
+  // temporary method for MVP
+  private static String documentToString(Object obj) {
+    try {
+      Document document = (Document) obj;
+      return document.toJson();
+    } catch (Exception e) {
+      LOGGER.error("Failed to convert document to a String: ", e.getMessage());
+      return null;
+    }
+  }
+
+  // temporary method for MVP
+  private static String arrayToString(Object obj) {
+    try {
+      BsonArray array = (BsonArray) obj;
+      return array.toString();
+    } catch (Exception e) {
+      LOGGER.error("Failed to convert document to a String: ", e.getMessage());
+      return null;
+    }
   }
 
 }

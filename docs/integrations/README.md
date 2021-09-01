@@ -65,6 +65,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Microsoft Teams](./sources/microsoft-teams.md)| Certified |
 |[Mixpanel](./sources/mixpanel.md)| Beta |
 |[Mongo DB](./sources/mongodb.md)| Alpha |
+|[Mongo DB new](./sources/mongodb-new.md)| Alpha |
 |[MySQL](./sources/mysql.md)| Certified |
 |[Okta](./sources/okta.md)| Beta |
 |[Oracle DB](./sources/oracle.md)| Certified |

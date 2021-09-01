@@ -83,6 +83,7 @@
     * [Microsoft Teams](integrations/sources/microsoft-teams.md)
     * [Mixpanel](integrations/sources/mixpanel.md)
     * [Mongo DB](integrations/sources/mongodb.md)
+    * [Mongo DB new](integrations/sources/mongodb-new.md)
     * [MySQL](integrations/sources/mysql.md)
     * [Okta](integrations/sources/okta.md)
     * [Oracle DB](integrations/sources/oracle.md)

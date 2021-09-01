@@ -77,7 +77,6 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("password", "")
         .put("auth_source", "admin")
         .put("tls", false)
-        .put("replica_set", "test")
         .build());
 
     String connectionString = String.format("mongodb://%s:%s/?authSource=admin&tls=false",
@@ -96,6 +95,7 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+    database.close();
     mongoDBContainer.close();
   }
 
@@ -113,14 +113,14 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withCursorField(List.of("_id"))
             .withStream(CatalogHelpers.createAirbyteStream(
-                "test.acceptance_test",
-                Field.of("_id", JsonSchemaPrimitive.STRING),
-                Field.of("id", JsonSchemaPrimitive.STRING),
-                Field.of("name", JsonSchemaPrimitive.STRING))
+                    "test.acceptance_test",
+                    Field.of("_id", JsonSchemaPrimitive.STRING),
+                    Field.of("id", JsonSchemaPrimitive.STRING),
+                    Field.of("name", JsonSchemaPrimitive.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
                 .withDefaultCursorField(List.of("_id")))));
   }
-
+//
   @Override
   protected JsonNode getState() throws Exception {
     return Jsons.jsonNode(new HashMap<>());
