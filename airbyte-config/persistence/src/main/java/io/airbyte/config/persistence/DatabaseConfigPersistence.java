@@ -55,7 +55,6 @@ import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Record1;
-import org.jooq.Record2;
 import org.jooq.Result;
 import org.jooq.impl.SQLDataType;
 import org.slf4j.Logger;
@@ -269,73 +268,103 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     LOGGER.info("Config database data loading completed with {} records", insertionCount);
   }
 
+  private static class ConnectorInfo {
+
+    private final String connectorDefinitionId;
+    private final String dockerImageTag;
+
+    private ConnectorInfo(String connectorDefinitionId, String dockerImageTag) {
+      this.connectorDefinitionId = connectorDefinitionId;
+      this.dockerImageTag = dockerImageTag;
+    }
+
+  }
+
+  private static class ConnectorCounter {
+
+    private final int newCount;
+    private final int updateCount;
+
+    private ConnectorCounter(int newCount, int updateCount) {
+      this.newCount = newCount;
+      this.updateCount = updateCount;
+    }
+
+  }
+
   @VisibleForTesting
   void updateConfigsFromSeed(DSLContext ctx, ConfigPersistence seedConfigPersistence) throws SQLException {
     LOGGER.info("Config database has been initialized; updating connector definitions from the seed if necessary...");
 
     try {
-      Set<String> usedConnectorRepos = getUsedConnectorRepos(ctx);
-      Map<String, Record2<String, String>> currentRepoToIdAndVersions = getCurrentRepoToIdAndVersions(ctx);
+      Set<String> connectorRepositoriesInUse = getConnectorRepositoriesInUse(ctx);
+      Map<String, ConnectorInfo> connectorRepositoryToInfoMap = getConnectorRepositoryToInfoMap(ctx);
 
       OffsetDateTime timestamp = OffsetDateTime.now();
-      int insertionCount = 0;
-      int updatedCount = 0;
+      int newConnectorCount = 0;
+      int updatedConnectorCount = 0;
 
       List<StandardSourceDefinition> latestSources = seedConfigPersistence.listConfigs(
           ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
-      Record2<Integer, Integer> sourceUpdate = updateConnectorDefinitions(ctx, timestamp, ConfigSchema.STANDARD_SOURCE_DEFINITION,
-          latestSources, usedConnectorRepos, currentRepoToIdAndVersions);
-      insertionCount += sourceUpdate.value1();
-      updatedCount += sourceUpdate.value2();
+      ConnectorCounter sourceConnectorCounter = updateConnectorDefinitions(ctx, timestamp, ConfigSchema.STANDARD_SOURCE_DEFINITION,
+          latestSources, connectorRepositoriesInUse, connectorRepositoryToInfoMap);
+      newConnectorCount += sourceConnectorCounter.newCount;
+      updatedConnectorCount += sourceConnectorCounter.updateCount;
 
       List<StandardDestinationDefinition> latestDestinations = seedConfigPersistence.listConfigs(
           ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class);
-      Record2<Integer, Integer> destinationUpdate = updateConnectorDefinitions(ctx, timestamp, ConfigSchema.STANDARD_DESTINATION_DEFINITION,
-          latestDestinations, usedConnectorRepos, currentRepoToIdAndVersions);
-      insertionCount += destinationUpdate.value1();
-      updatedCount += destinationUpdate.value2();
+      ConnectorCounter destinationConnectorCounter = updateConnectorDefinitions(ctx, timestamp, ConfigSchema.STANDARD_DESTINATION_DEFINITION,
+          latestDestinations, connectorRepositoriesInUse, connectorRepositoryToInfoMap);
+      newConnectorCount += destinationConnectorCounter.newCount;
+      updatedConnectorCount += destinationConnectorCounter.updateCount;
 
-      LOGGER.info("Connector definitions have been updated ({} new connectors, and {} updates)", insertionCount, updatedCount);
+      LOGGER.info("Connector definitions have been updated ({} new connectors, and {} updates)", newConnectorCount, updatedConnectorCount);
     } catch (IOException | JsonValidationException e) {
       throw new SQLException(e);
     }
   }
 
-  private <T> Record2<Integer, Integer> updateConnectorDefinitions(DSLContext ctx,
-                                                                   OffsetDateTime timestamp,
-                                                                   AirbyteConfig configType,
-                                                                   List<T> latestDefinitions,
-                                                                   Set<String> usedConnectorRepos,
-                                                                   Map<String, Record2<String, String>> currentRepoToIdAndVersions) {
-    int insertionCount = 0;
+  /**
+   * @param connectorRepositoriesInUse when a connector is used in any standard sync, its definition
+   *        will not be updated. This is necessary because the new connector version may not be
+   *        backward compatible.
+   */
+  private <T> ConnectorCounter updateConnectorDefinitions(DSLContext ctx,
+                                                          OffsetDateTime timestamp,
+                                                          AirbyteConfig configType,
+                                                          List<T> latestDefinitions,
+                                                          Set<String> connectorRepositoriesInUse,
+                                                          Map<String, ConnectorInfo> connectorRepositoryToIdVersionMap) {
+    int newCount = 0;
     int updatedCount = 0;
     for (T latestDefinition : latestDefinitions) {
       JsonNode configJson = Jsons.jsonNode(latestDefinition);
       String repository = configJson.get("dockerRepository").asText();
-      if (usedConnectorRepos.contains(repository)) {
+      if (connectorRepositoriesInUse.contains(repository)) {
         continue;
       }
 
-      if (!currentRepoToIdAndVersions.containsKey(repository)) {
-        insertionCount += insertConfigRecord(ctx, timestamp, configType.name(), configJson, configType.getIdFieldName());
+      if (!connectorRepositoryToIdVersionMap.containsKey(repository)) {
+        newCount += insertConfigRecord(ctx, timestamp, configType.name(), configJson, configType.getIdFieldName());
         continue;
       }
 
-      Record2<String, String> currentSourceIdAndVersion = currentRepoToIdAndVersions.get(repository);
-      String latestVersion = configJson.get("dockerImageTag").asText();
-      if (!latestVersion.equals(currentSourceIdAndVersion.value2())) {
-        updatedCount += updateConfigRecord(ctx, timestamp, configType.name(), configJson, currentSourceIdAndVersion.value1());
+      ConnectorInfo connectorInfo = connectorRepositoryToIdVersionMap.get(repository);
+      String latestImageTag = configJson.get("dockerImageTag").asText();
+      if (!latestImageTag.equals(connectorInfo.dockerImageTag)) {
+        updatedCount += updateConfigRecord(ctx, timestamp, configType.name(), configJson, connectorInfo.connectorDefinitionId);
       }
     }
-    return ctx
-        .newRecord(field("Insertion Count", SQLDataType.INTEGER), field("Update Count", SQLDataType.INTEGER))
-        .values(insertionCount, updatedCount);
+    return new ConnectorCounter(newCount, updatedCount);
   }
 
   /**
-   * @return a map from docker repository to config id and versions
+   * @return A map about current connectors (both source and destination). It maps from connector
+   *         repository to its definition id and docker image tag. We identify a connector by its
+   *         repository name instead of definition id because connectors can be added manually by
+   *         users, and are not always the same as those in the seed.
    */
-  private Map<String, Record2<String, String>> getCurrentRepoToIdAndVersions(DSLContext ctx) {
+  private Map<String, ConnectorInfo> getConnectorRepositoryToInfoMap(DSLContext ctx) {
     Field<String> repoField = field("config_blob ->> 'dockerRepository'", SQLDataType.VARCHAR).as("repository");
     Field<String> versionField = field("config_blob ->> 'dockerImageTag'", SQLDataType.VARCHAR).as("version");
     return ctx.select(AIRBYTE_CONFIGS.CONFIG_ID, repoField, versionField)
@@ -344,12 +373,16 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .fetch().stream()
         .collect(Collectors.toMap(
             row -> row.getValue(repoField),
-            row -> ctx
-                .newRecord(row.field(AIRBYTE_CONFIGS.CONFIG_ID), row.field(versionField))
-                .values(row.getValue(AIRBYTE_CONFIGS.CONFIG_ID), row.getValue(versionField))));
+            row -> new ConnectorInfo(row.getValue(AIRBYTE_CONFIGS.CONFIG_ID), row.getValue(versionField))));
   }
 
-  private Set<String> getUsedConnectorRepos(DSLContext ctx) {
+  /**
+   * @return A set of connectors (both source and destination) that are already used in standard
+   *         syncs. We identify connectors by its repository name instead of definition id because
+   *         connectors can be added manually by users, and their config ids are not always the same
+   *         as those in the seed.
+   */
+  private Set<String> getConnectorRepositoriesInUse(DSLContext ctx) {
     Field<String> sourceIdField = field("config_blob ->> 'sourceId'", SQLDataType.VARCHAR).as("sourceId");
     Field<String> destinationIdField = field("config_blob ->> 'destinationId'", SQLDataType.VARCHAR).as("destinationId");
     Set<String> usedConfigIds = ctx

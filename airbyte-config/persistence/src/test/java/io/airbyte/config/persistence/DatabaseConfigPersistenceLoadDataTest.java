@@ -48,6 +48,7 @@ import org.jooq.DSLContext;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -79,11 +80,9 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
     reset(configPersistence);
   }
 
-  /**
-   * When the database is empty, seed will be copied into the database.
-   */
   @Test
   @Order(1)
+  @DisplayName("When database is empty, seed should be copied to the database")
   public void testCopyConfigsToEmptyDatabase() throws Exception {
     Map<String, Stream<JsonNode>> initialSeeds = Map.of(
         ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(), Stream.of(Jsons.jsonNode(DESTINATION_SNOWFLAKE)),
@@ -98,11 +97,9 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
     verify(configPersistence, never()).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
   }
 
-  /**
-   * When the database is not empty, configs will be updated.
-   */
   @Test
   @Order(2)
+  @DisplayName("When database is not empty, configs should be updated")
   public void testUpdateConfigsInNonEmptyDatabase() throws Exception {
     // the seed has two destinations, one of which (S3) is new
     when(seedPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
@@ -118,11 +115,9 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
     verify(configPersistence, times(1)).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
   }
 
-  /**
-   * When a connector is used, its definition will not be updated.
-   */
   @Test
   @Order(3)
+  @DisplayName("When a connector is in use, its definition should not be updated")
   public void testNoUpdateForUsedConnector() throws Exception {
     // the seed has a newer version of s3 destination
     StandardDestinationDefinition destinationS3V2 = YamlSeedConfigPersistence.get()
@@ -142,11 +137,9 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
     assertHasDestination(DESTINATION_S3);
   }
 
-  /**
-   * When a connector is not used, its definition will be updated.
-   */
   @Test
   @Order(4)
+  @DisplayName("When a connector is not in use, its definition should be updated")
   public void testUpdateForUnusedConnector() throws Exception {
     // the seed has a newer version of snowflake destination
     StandardDestinationDefinition snowflakeV2 = YamlSeedConfigPersistence.get()
