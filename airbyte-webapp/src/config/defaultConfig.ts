@@ -6,7 +6,7 @@ const defaultConfig: Config = {
   fullstory: {
     orgId: "",
   },
-  segment: { enabled: false, token: "" },
+  segment: { enabled: true, token: "" },
   healthCheckInterval: 10000,
   openreplay: {
     obscureTextEmails: false,

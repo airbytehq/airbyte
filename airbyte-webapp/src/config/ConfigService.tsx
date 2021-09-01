@@ -18,10 +18,12 @@ export function useConfig<T extends Config>(): T {
     throw new Error("useConfig must be used within a ConfigProvider");
   }
 
-  return (configService.config as unknown) as T;
+  return useMemo(() => (configService.config as unknown) as T, [
+    configService.config,
+  ]);
 }
 
-export const ConfigService: React.FC<{
+const ConfigServiceInner: React.FC<{
   defaultConfig: Config;
   providers: ValueProvider<Config>;
 }> = ({ children, defaultConfig, providers }) => {
@@ -39,3 +41,8 @@ export const ConfigService: React.FC<{
     </configContext.Provider>
   );
 };
+
+export const ConfigService: React.FC<{
+  defaultConfig: Config;
+  providers: ValueProvider<Config>;
+}> = React.memo(ConfigServiceInner);

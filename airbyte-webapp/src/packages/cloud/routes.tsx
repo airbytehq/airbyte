@@ -6,14 +6,13 @@ import {
   Switch,
 } from "react-router-dom";
 import { FormattedMessage } from "react-intl";
-
-import { useConfig } from "config";
+import { useAsync } from "react-use";
 
 import SourcesPage from "pages/SourcesPage";
 import DestinationPage from "pages/DestinationPage";
 import {
-  SourcesPage as SettingsSourcesPage,
   DestinationsPage as SettingsDestinationPage,
+  SourcesPage as SettingsSourcesPage,
 } from "pages/SettingsPage/pages/ConnectorsPage";
 import ConnectionPage from "pages/ConnectionPage";
 import SettingsPage from "pages/SettingsPage";
@@ -33,15 +32,13 @@ import {
   useWorkspaceService,
   WorkspaceServiceProvider,
 } from "packages/cloud/services/workspaces/WorkspacesService";
-import { HealthService } from "core/health/HealthService";
-import { useDefaultRequestMiddlewares } from "./services/useDefaultRequestMiddlewares";
 import { PageConfig } from "pages/SettingsPage/SettingsPage";
 import { WorkspaceSettingsView } from "./views/workspaces/WorkspaceSettingsView";
 import { UsersSettingsView } from "packages/cloud/views/users/UsersSettingsView/UsersSettingsView";
 import { AccountSettingsView } from "packages/cloud/views/users/AccountSettingsView/AccountSettingsView";
 import { ConfirmEmailPage } from "./views/auth/ConfirmEmailPage";
 import useRouter from "hooks/useRouter";
-import { useAsync } from "react-use";
+import { WithPageAnalytics } from "pages/withPageAnalytics";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -157,14 +154,7 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
 };
 
 const MainViewRoutes = () => {
-  const config = useConfig();
-  const middlewares = useDefaultRequestMiddlewares();
-  const healthService = useMemo(
-    () => new HealthService(config.apiUrl, middlewares),
-    [config, middlewares]
-  );
-
-  useApiHealthPoll(config.healthCheckInterval, healthService);
+  useApiHealthPoll();
   const { currentWorkspaceId } = useWorkspaceService();
 
   return (
@@ -191,9 +181,7 @@ const VerifyEmailRoute: React.FC = () => {
   const { query } = useRouter<{ oobCode: string }>();
   const { verifyEmail } = useAuthService();
 
-  useAsync(async () => {
-    await verifyEmail(query.oobCode);
-  }, []);
+  useAsync(async () => await verifyEmail(query.oobCode), []);
 
   return <LoadingPage />;
 };
@@ -203,6 +191,7 @@ export const Routing: React.FC = () => {
 
   return (
     <Router>
+      <WithPageAnalytics />
       <Suspense fallback={<LoadingPage />}>
         {inited ? (
           <>

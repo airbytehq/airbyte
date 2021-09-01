@@ -13,7 +13,9 @@ declare global {
     AIRBYTE_VERSION?: string;
     API_URL?: string;
     IS_DEMO?: string;
+
     analytics: SegmentAnalytics;
+    _API_URL: string;
   }
 }
 

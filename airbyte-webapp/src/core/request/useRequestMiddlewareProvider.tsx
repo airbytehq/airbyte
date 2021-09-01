@@ -34,6 +34,6 @@ export const useRequestMiddlewareProvider = (): RequestMiddlewareProvider => {
       register: set,
       unregister: remove,
     }),
-    [requestMiddlewares, remove, set]
+    [requestMiddlewares]
   );
 };

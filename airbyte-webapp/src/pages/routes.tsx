@@ -23,9 +23,6 @@ import { useWorkspace } from "hooks/services/useWorkspace";
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { WithPageAnalytics } from "./withPageAnalytics";
-import { HealthService } from "core/health/HealthService";
-import { useApiServices } from "../core/servicesProvider";
-import { getMiddlewares } from "../core/request/useRequestMiddlewareProvider";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -108,12 +105,8 @@ function useDemo() {
 
 export const Routing: React.FC = () => {
   const config = useConfig();
-  useApiServices();
-  const healthService = useMemo(
-    () => new HealthService(config.apiUrl, getMiddlewares()),
-    [config]
-  );
-  useApiHealthPoll(config.healthCheckInterval, healthService);
+
+  useApiHealthPoll();
   useDemo();
 
   const { workspace } = useWorkspace();

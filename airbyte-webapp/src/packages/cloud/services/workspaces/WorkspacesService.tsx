@@ -4,10 +4,10 @@ import { useLocalStorage } from "react-use";
 import { useResetter } from "rest-hooks";
 
 import { CloudWorkspacesService } from "packages/cloud/lib/domain/cloudWorkspaces/CloudWorkspacesService";
-import { api } from "packages/cloud/config/api";
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
 import { useDefaultRequestMiddlewares } from "packages/cloud/services/useDefaultRequestMiddlewares";
 import { CloudWorkspace } from "packages/cloud/lib/domain/cloudWorkspaces/types";
+import { useConfig } from "packages/cloud/config";
 
 type Context = {
   currentWorkspaceId?: string | null;
@@ -25,10 +25,11 @@ export const WorkspaceServiceContext = React.createContext<Context | null>(
 
 function useGetWorkspaceService() {
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
+  const { cloudApiUrl } = useConfig();
 
   return useMemo(
-    () => new CloudWorkspacesService(api.cloud, requestAuthMiddleware),
-    [requestAuthMiddleware]
+    () => new CloudWorkspacesService(cloudApiUrl, requestAuthMiddleware),
+    [requestAuthMiddleware, cloudApiUrl]
   );
 }
 

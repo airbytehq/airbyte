@@ -1,21 +1,6 @@
 import merge from "lodash.merge";
 import { ConfigProvider, DeepPartial, ValueProvider } from "./types";
-
-const fileConfigProvider: ConfigProvider = async () => {
-  const response = await fetch("/config.json");
-
-  if (response.ok) {
-    try {
-      const config = await response.json();
-
-      return config;
-    } catch (e) {
-      console.error("error occured while parsing the json config");
-    }
-  }
-
-  return {};
-};
+import { isDefined } from "../utils/common";
 
 const windowConfigProvider: ConfigProvider = async () => {
   return {
@@ -28,7 +13,9 @@ const windowConfigProvider: ConfigProvider = async () => {
     },
     fullstory: { devMode: window.FULLSTORY === "disabled" },
     segment: {
-      enabled: window.TRACKING_STRATEGY === "segment",
+      enabled: isDefined(window.TRACKING_STRATEGY)
+        ? window.TRACKING_STRATEGY === "segment"
+        : undefined,
     },
     apiUrl: window.API_URL,
     version: window.AIRBYTE_VERSION,
@@ -39,6 +26,9 @@ const windowConfigProvider: ConfigProvider = async () => {
 const envConfigProvider: ConfigProvider = async () => {
   return {
     apiUrl: process.env.REACT_APP_API_URL,
+    segment: {
+      token: process.env.REACT_APP_SEGMENT_TOKEN,
+    },
     fullstory: {
       orgId: process.env.REACT_APP_FULL_STORY_ORG,
     },
@@ -64,9 +54,4 @@ async function applyProviders<T>(
   return merge(defaultValue, value);
 }
 
-export {
-  fileConfigProvider,
-  windowConfigProvider,
-  envConfigProvider,
-  applyProviders,
-};
+export { windowConfigProvider, envConfigProvider, applyProviders };

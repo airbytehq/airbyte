@@ -11,7 +11,6 @@ import {
 
 import { parseResponse } from "core/request/AirbyteRequestService";
 import { getMiddlewares } from "core/request/useRequestMiddlewareProvider";
-import { rootUrl } from "core/servicesProvider";
 
 // TODO: rename to crud resource after upgrade to rest-hook 5.0.0
 export default abstract class BaseResource extends Resource {
@@ -68,7 +67,7 @@ export default abstract class BaseResource extends Resource {
   }
 
   static rootUrl(): string {
-    return rootUrl;
+    return window._API_URL;
   }
 
   static listShape<T extends typeof Resource>(

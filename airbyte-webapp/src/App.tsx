@@ -1,4 +1,4 @@
-import React, { Suspense, useMemo } from "react";
+import React, { Suspense } from "react";
 import { ThemeProvider } from "styled-components";
 import { IntlProvider } from "react-intl";
 import { CacheProvider } from "rest-hooks";
@@ -17,11 +17,7 @@ import {
   usePickFirstWorkspace,
 } from "hooks/services/useWorkspace";
 import { Feature, FeatureService } from "hooks/services/Feature";
-import {
-  ServiceInject,
-  ServicesProvider,
-  WithService,
-} from "./core/servicesProvider";
+import { ServicesProvider, useApiServices } from "./core/servicesProvider";
 import {
   envConfigProvider,
   windowConfigProvider,
@@ -65,25 +61,24 @@ const configProviders: ValueProvider<Config> = [
   windowConfigProvider,
 ];
 
+const services = {
+  currentWorkspaceProvider: usePickFirstWorkspace,
+  useCustomerIdProvider: useCustomerIdProvider,
+};
+
 const AppServices: React.FC = ({ children }) => (
-  <ServicesProvider>
+  <ServicesProvider inject={services}>
     <ConfigService defaultConfig={defaultConfig} providers={configProviders}>
       <ServiceOverrides />
-      <FeatureService features={Features}>{children}</FeatureService>
+      {children}
     </ConfigService>
   </ServicesProvider>
 );
 
-const ServiceOverrides: React.FC = () => {
-  const services = useMemo<ServiceInject[]>(
-    () => [
-      ["currentWorkspaceProvider", usePickFirstWorkspace],
-      ["useCustomerIdProvider", useCustomerIdProvider],
-    ],
-    []
-  );
-  return <WithService serviceInject={services} />;
-};
+const ServiceOverrides: React.FC = React.memo(() => {
+  useApiServices();
+  return null;
+});
 
 const App: React.FC = () => {
   return (
@@ -92,15 +87,17 @@ const App: React.FC = () => {
         <I18NProvider>
           <StoreProvider>
             <Suspense fallback={<LoadingPage />}>
-              <AppServices>
-                <ApiErrorBoundary>
+              <ApiErrorBoundary>
+                <FeatureService features={Features}>
                   <NotificationService>
-                    <AnalyticsInitializer>
-                      <Routing />
-                    </AnalyticsInitializer>
+                    <AppServices>
+                      <AnalyticsInitializer>
+                        <Routing />
+                      </AnalyticsInitializer>
+                    </AppServices>
                   </NotificationService>
-                </ApiErrorBoundary>
-              </AppServices>
+                </FeatureService>
+              </ApiErrorBoundary>
             </Suspense>
           </StoreProvider>
         </I18NProvider>

@@ -15,7 +15,6 @@ function WithAnalytics({
   workspaceId?: string;
 }) {
   const config = useConfig();
-  console.log(config);
   useSegment(config.segment.enabled ? config.segment.token : "");
   const analyticsService = useAnalytics();
 

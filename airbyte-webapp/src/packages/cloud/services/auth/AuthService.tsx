@@ -30,18 +30,8 @@ type AuthContextApi = {
 
 export const AuthContext = React.createContext<AuthContextApi | null>(null);
 
-// TODO: place token into right place
-// let token = "";
-
 // TODO: add proper DI service
 const authService = new GoogleAuthService();
-// const userService = new UserService(api.cloud, [
-//   RequestAuthMiddleware({
-//     getValue(): string {
-//       return token;
-//     },
-//   }),
-// ]);
 
 export const AuthenticationProvider: React.FC = ({ children }) => {
   const [

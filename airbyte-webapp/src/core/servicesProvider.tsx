@@ -8,22 +8,17 @@ import { DestinationDefinitionService } from "./domain/connector/DestinationDefi
 import { getMiddlewares } from "./request/useRequestMiddlewareProvider";
 import { OperationService } from "./domain/connection";
 import { DeploymentService } from "./resources/DeploymentService";
+import { HealthService } from "./health/HealthService";
 
-// This is workaround for rest-hooks
-let services: {
+type ServiceContainer = {
   [key: string]: Service;
-} = {};
-
-export function getService<T extends Service>(serviceId: string): T {
-  return services[serviceId];
-}
-
-//
+};
 
 type Service = any;
 
 type ServicesProviderApi = {
   register(name: string, service: Service): void;
+  registerAll(newMap: ServiceContainer): void;
   getService<T>(serviceType: string): T;
   unregister(name: string): void;
 };
@@ -32,18 +27,24 @@ const ServicesProviderContext = React.createContext<ServicesProviderApi | null>(
   null
 );
 
-export const ServicesProvider: React.FC = ({ children }) => {
-  const [registeredServices, { remove, set }] = useMap<{
-    [key: string]: Service;
-  }>();
+export const ServicesProvider: React.FC<{ inject?: ServiceContainer }> = ({
+  children,
+  inject,
+}) => {
+  const [
+    registeredServices,
+    { remove, set, setAll },
+  ] = useMap<ServiceContainer>(inject);
 
   const ctxValue = useMemo<ServicesProviderApi>(
     () => ({
       register: set,
+      registerAll: (newServices) =>
+        setAll({ ...registeredServices, ...newServices }),
       getService: (serviceType) => registeredServices[serviceType],
       unregister: remove,
     }),
-    [registeredServices, remove, set]
+    [registeredServices]
   );
 
   useEffect(() => {
@@ -59,24 +60,21 @@ export const ServicesProvider: React.FC = ({ children }) => {
 
 export type ServiceInject = [string, Service];
 
-export const WithService: React.FC<{
+const WithServiceInner: React.FC<{
   serviceInject: ServiceInject[];
 }> = ({ children, serviceInject }) => {
   const { register, unregister } = useServicesProvider();
 
   useEffect(() => {
-    serviceInject.forEach(([token, service]) => {
-      register(token, service);
-    });
+    serviceInject.forEach(([token, service]) => register(token, service));
 
-    return () =>
-      serviceInject.forEach(([token]) => {
-        unregister(token);
-      });
+    return () => serviceInject.forEach(([token]) => unregister(token));
   }, [register, unregister, serviceInject]);
 
   return <>{children}</>;
 };
+
+export const WithService = React.memo(WithServiceInner);
 
 /**
  *
@@ -99,39 +97,41 @@ export function useGetService<T>(serviceToken: string): T {
   return getService<T>(serviceToken);
 }
 
-export let rootUrl = "";
+// This is workaround for rest-hooks
+let services: ServiceContainer = {};
 
-export function useOperationService(): OperationService {
-  const config = useConfig();
-
-  return useMemo(() => new OperationService(config.apiUrl, getMiddlewares()), [
-    config,
-  ]);
+export function getService<T extends Service>(serviceId: string): T {
+  return services[serviceId];
 }
+
+//
 
 export const useApiServices = (): void => {
   const config = useConfig();
-  const { register, unregister } = useServicesProvider();
+  const { registerAll, unregister } = useServicesProvider();
 
   useEffect(() => {
-    rootUrl = config.apiUrl;
-    register(
-      "SourceDefinitionService",
-      new SourceDefinitionService(rootUrl, getMiddlewares())
-    );
-    register(
-      "DestinationDefinitionService",
-      new DestinationDefinitionService(rootUrl, getMiddlewares())
-    );
-    register(
-      "DeploymentService",
-      new DeploymentService(rootUrl, getMiddlewares())
-    );
+    window._API_URL = config.apiUrl;
+  }, [config]);
 
-    return () => {
-      unregister("SourceDefinitionService");
-      unregister("DestinationDefinitionService");
-      unregister("DeploymentService");
+  useEffect(() => {
+    const middlewares = getMiddlewares();
+    const services = {
+      SourceDefinitionService: new SourceDefinitionService(
+        config.apiUrl,
+        middlewares
+      ),
+      DestinationDefinitionService: new DestinationDefinitionService(
+        config.apiUrl,
+        middlewares
+      ),
+      DeploymentService: new DeploymentService(config.apiUrl, middlewares),
+      OperationService: new OperationService(config.apiUrl, middlewares),
+      HealthService: new HealthService(config.apiUrl, middlewares),
     };
-  }, [config, register, unregister]);
+
+    registerAll(services);
+
+    return () => Object.keys(services).forEach(unregister);
+  }, [config]);
 };

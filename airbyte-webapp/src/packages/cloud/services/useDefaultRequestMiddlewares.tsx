@@ -26,7 +26,7 @@ export const useDefaultRequestMiddlewares = (): RequestMiddleware[] => {
     register("AuthMiddleware", requestAuthMiddleware);
 
     return () => unregister("AuthMiddleware");
-  }, [register, unregister, requestAuthMiddleware]);
+  }, [requestAuthMiddleware]);
 
   return useMemo(() => [requestAuthMiddleware], [requestAuthMiddleware]);
 };

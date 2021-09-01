@@ -1,35 +1,38 @@
-import React, { Suspense, useMemo } from "react";
+import React, { Suspense } from "react";
 import { ThemeProvider } from "styled-components";
 import { IntlProvider } from "react-intl";
 import { CacheProvider } from "rest-hooks";
 import { QueryClient, QueryClientProvider } from "react-query";
 
 import en from "locales/en.json";
-import cloudLocales from "./locales/en.json";
+import cloudLocales from "packages/cloud/locales/en.json";
 import GlobalStyle from "global-styles";
-import { theme } from "./theme";
+import { theme } from "packages/cloud/theme";
 
 import "packages/cloud/config/firebase";
 
-import { Routing } from "./routes";
+import { Routing } from "packages/cloud/routes";
 import LoadingPage from "components/LoadingPage";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 import NotificationServiceProvider from "hooks/services/Notification";
 import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
 import { FeatureService } from "hooks/services/Feature";
-import { AuthenticationProvider } from "./services/auth/AuthService";
+import { AuthenticationProvider } from "packages/cloud/services/auth/AuthService";
+import { ServicesProvider, useApiServices } from "core/servicesProvider";
+import { Config, ConfigService, ValueProvider } from "config";
 import {
-  ServiceInject,
-  ServicesProvider,
-  WithService,
-} from "core/servicesProvider";
-import { Config, ConfigService, defaultConfig, ValueProvider } from "config";
-import { useCurrentWorkspaceProvider, useCustomerIdProvider } from "./services";
+  useCurrentWorkspaceProvider,
+  useCustomerIdProvider,
+} from "packages/cloud/services";
 import {
   envConfigProvider,
-  fileConfigProvider,
   windowConfigProvider,
 } from "config/configProviders";
+import {
+  cloudEnvConfigProvider,
+  fileConfigProvider,
+} from "packages/cloud/config/configProviders";
+import { defaultConfig } from "packages/cloud/config";
 
 const messages = Object.assign({}, en, cloudLocales);
 
@@ -56,56 +59,54 @@ const StoreProvider: React.FC = ({ children }) => (
 
 const configProviders: ValueProvider<Config> = [
   fileConfigProvider,
+  cloudEnvConfigProvider,
   windowConfigProvider,
   envConfigProvider,
 ];
 
+const services = {
+  currentWorkspaceProvider: useCurrentWorkspaceProvider,
+  useCustomerIdProvider: useCustomerIdProvider,
+};
+
 const AppServices: React.FC = ({ children }) => (
-  <ServicesProvider>
-    <ServiceOverrides />
+  <ServicesProvider inject={services}>
     <ConfigService defaultConfig={defaultConfig} providers={configProviders}>
-      <FeatureService>{children}</FeatureService>
+      <ServiceOverrides />
+      {children}
     </ConfigService>
   </ServicesProvider>
 );
 
-const ServiceOverrides: React.FC = () => {
-  const services = useMemo<ServiceInject[]>(
-    () => [
-      ["currentWorkspaceProvider", useCurrentWorkspaceProvider],
-      ["useCustomerIdProvider", useCustomerIdProvider],
-    ],
-    []
-  );
-  return <WithService serviceInject={services} />;
-};
+const ServiceOverrides: React.FC = React.memo(() => {
+  useApiServices();
+  return null;
+});
 
-const App: React.FC = () => {
-  return (
-    <React.StrictMode>
-      <StyleProvider>
-        <I18NProvider>
-          <StoreProvider>
-            <Suspense fallback={<LoadingPage />}>
-              <ApiErrorBoundary>
+const App: React.FC = () => (
+  <React.StrictMode>
+    <StyleProvider>
+      <I18NProvider>
+        <StoreProvider>
+          <Suspense fallback={<LoadingPage />}>
+            <ApiErrorBoundary>
+              <NotificationServiceProvider>
                 <FeatureService>
                   <AppServices>
-                    <NotificationServiceProvider>
-                      <AuthenticationProvider>
-                        <AnalyticsInitializer>
-                          <Routing />
-                        </AnalyticsInitializer>
-                      </AuthenticationProvider>
-                    </NotificationServiceProvider>
+                    <AuthenticationProvider>
+                      <AnalyticsInitializer>
+                        <Routing />
+                      </AnalyticsInitializer>
+                    </AuthenticationProvider>
                   </AppServices>
                 </FeatureService>
-              </ApiErrorBoundary>
-            </Suspense>
-          </StoreProvider>
-        </I18NProvider>
-      </StyleProvider>
-    </React.StrictMode>
-  );
-};
+              </NotificationServiceProvider>
+            </ApiErrorBoundary>
+          </Suspense>
+        </StoreProvider>
+      </I18NProvider>
+    </StyleProvider>
+  </React.StrictMode>
+);
 
-export default App;
+export default React.memo(App);
