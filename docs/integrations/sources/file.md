@@ -71,6 +71,7 @@ File Formats are mostly enabled \(and further tested\) thanks to other open-sour
 | HTML | No |
 | XML | No |
 | Excel | Yes |
+| Excel Binary Workbook| Yes |
 | Feather | Yes |
 | Parquet | Yes |
 | Pickle | No |
@@ -112,6 +113,10 @@ In case you select `JSON` format, then options from the [read\_json](https://pan
 
 For example, you can use the `{"orient" : "records"}` to change how orientation of data is loaded \(if data is `[{column -> value}, … , {column -> value}]`\)
 
+#### Changing data types of source columns
+
+Normally, Airbyte tries to infer the data type from the source, but you can use `reader_options` to force specific data types. If you input `{"dtype":"string"}`, all columns will be forced to be parsed as strings. If you only want a specific column to be parsed as a string, simply use `{"dtype" : {"column name": "string"}}`. 
+
 ### Examples
 
 Here are a list of examples of possible file inputs:
@@ -142,6 +147,7 @@ Please see \(or add\) more at `airbyte-integrations/connectors/source-file/integ
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.2.6   | 2021-08-26 | [5613](https://github.com/airbytehq/airbyte/pull/5613) | Add support to xlsb format |
 | 0.2.5   | 2021-07-26 | [4953](https://github.com/airbytehq/airbyte/pull/4953) | Allow non-default port for SFTP type |
 | 0.2.4   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE_ENTRYPOINT for Kubernetes support |
 | 0.2.3   | 2021-06-01 | [3771](https://github.com/airbytehq/airbyte/pull/3771) | Add Azure Storage Blob Files option |

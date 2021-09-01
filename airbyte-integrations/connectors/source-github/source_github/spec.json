@@ -4,18 +4,19 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Github Source Spec",
     "type": "object",
-    "required": ["access_token", "repository", "start_date"],
+    "required": ["access_token", "start_date", "repository"],
     "additionalProperties": false,
     "properties": {
       "access_token": {
         "type": "string",
-        "description": "Log into Github and then generate a <a href=\"https://github.com/settings/tokens\"> personal access token</a>.",
+        "title": "Access Tokens",
+        "description": "Log into Github and then generate a <a href=\"https://github.com/settings/tokens\"> personal access token</a>. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with \",\"",
         "airbyte_secret": true
       },
       "repository": {
         "type": "string",
-        "examples": ["airbytehq/airbyte"],
-        "description": "GitHub repository. e.g. 'airbytehq/airbyte' or 'singer-io/tap-github'"
+        "examples": ["airbytehq/airbyte", "airbytehq/*"],
+        "description": "Space-delimited list of GitHub repositories/organizations, e.g. `airbytehq/airbyte` for single repository and `airbytehq/*` for get all repositories from organization"
       },
       "start_date": {
         "type": "string",

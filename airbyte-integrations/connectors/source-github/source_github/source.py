@@ -23,16 +23,18 @@
 #
 
 
+import re
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import MultipleTokenAuthenticator
 
 from .streams import (
     Assignees,
+    Branches,
     Collaborators,
     Comments,
     CommitComments,
@@ -42,32 +44,74 @@ from .streams import (
     IssueLabels,
     IssueMilestones,
     Issues,
+    Organizations,
     Projects,
     PullRequests,
+    PullRequestStats,
     Releases,
+    Repositories,
+    ReviewComments,
     Reviews,
     Stargazers,
+    Tags,
     Teams,
+    Users,
 )
+
+TOKEN_SEPARATOR = ","
 
 
 class SourceGithub(AbstractSource):
+    @staticmethod
+    def _generate_repositories(config: Mapping[str, Any], authenticator: MultipleTokenAuthenticator) -> List[str]:
+        repositories = list(filter(None, config["repository"].split(" ")))
+
+        if not repositories:
+            raise Exception("Field `repository` required to be provided for connect to Github API")
+
+        repositories_list = [repo for repo in repositories if not re.match("^.*/\\*$", repo)]
+        organizations = [org.split("/")[0] for org in repositories if org not in repositories_list]
+        if organizations:
+            repos = Repositories(authenticator=authenticator, organizations=organizations)
+            for stream in repos.stream_slices(sync_mode=SyncMode.full_refresh):
+                repositories_list += [r["full_name"] for r in repos.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream)]
+
+        return list(set(repositories_list))
+
+    @staticmethod
+    def _get_authenticator(token: str):
+        tokens = [t.strip() for t in token.split(TOKEN_SEPARATOR)]
+        return MultipleTokenAuthenticator(tokens=tokens, auth_method="token")
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
-            authenticator = TokenAuthenticator(token=config["access_token"], auth_method="token")
-            commits_stream = Commits(authenticator=authenticator, repository=config["repository"], start_date=config["start_date"])
-            next(commits_stream.read_records(sync_mode=SyncMode.full_refresh))
+            authenticator = self._get_authenticator(config["access_token"])
+            repositories = self._generate_repositories(config=config, authenticator=authenticator)
+
+            # We should use the most poorly filled stream to use the `list` method,
+            # because when using the `next` method, we can get the `StopIteration` error.
+            projects_stream = Projects(
+                authenticator=authenticator,
+                repositories=repositories,
+                start_date=config["start_date"],
+            )
+            for stream in projects_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+                list(projects_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream))
             return True, None
         except Exception as e:
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        authenticator = TokenAuthenticator(token=config["access_token"], auth_method="token")
-        full_refresh_args = {"authenticator": authenticator, "repository": config["repository"]}
+        authenticator = self._get_authenticator(config["access_token"])
+        repositories = self._generate_repositories(config=config, authenticator=authenticator)
+        organizations = list({org.split("/")[0] for org in repositories})
+        full_refresh_args = {"authenticator": authenticator, "repositories": repositories}
         incremental_args = {**full_refresh_args, "start_date": config["start_date"]}
+        organization_args = {"authenticator": authenticator, "organizations": organizations}
 
         return [
             Assignees(**full_refresh_args),
+            Branches(**full_refresh_args),
             Collaborators(**full_refresh_args),
             Comments(**incremental_args),
             CommitComments(**incremental_args),
@@ -77,10 +121,16 @@ class SourceGithub(AbstractSource):
             IssueLabels(**full_refresh_args),
             IssueMilestones(**incremental_args),
             Issues(**incremental_args),
+            Organizations(**organization_args),
             Projects(**incremental_args),
+            PullRequestStats(**full_refresh_args),
             PullRequests(**incremental_args),
             Releases(**incremental_args),
+            Repositories(**organization_args),
+            ReviewComments(**incremental_args),
             Reviews(**full_refresh_args),
             Stargazers(**incremental_args),
-            Teams(**full_refresh_args),
+            Tags(**full_refresh_args),
+            Teams(**organization_args),
+            Users(**organization_args),
         ]

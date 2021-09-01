@@ -13,7 +13,6 @@ type IProps = {
 };
 
 const LightContentCard = styled(ContentCard)`
-  background: ${({ theme }) => theme.backgroundColor};
   display: flex;
   justify-content: space-between;
   align-items: center;
