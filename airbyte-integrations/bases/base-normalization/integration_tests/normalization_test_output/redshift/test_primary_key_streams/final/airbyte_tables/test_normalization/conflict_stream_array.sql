@@ -12,7 +12,7 @@ with __dbt__CTE__conflict_stream_array_ab1 as (
 select
     case when json_extract_path_text(_airbyte_data, 'id', true) != '' then json_extract_path_text(_airbyte_data, 'id', true) end as id,
     json_extract_path_text(_airbyte_data, 'conflict_stream_array', true) as conflict_stream_array,
-    _airbyte_emitted_at 
+    _airbyte_emitted_at
 from "integrationtests".test_normalization._airbyte_raw_conflict_stream_array as table_alias
 -- conflict_stream_array
 ),  __dbt__CTE__conflict_stream_array_ab2 as (

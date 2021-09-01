@@ -5,7 +5,7 @@ select
     _airbyte_unnest_alias_hashid,
     {{ json_extract_scalar(unnested_column_value('children'), ['ab_id'], ['ab_id']) }} as ab_id,
     {{ json_extract('', unnested_column_value('children'), ['owner'], ['owner']) }} as {{ adapter.quote('owner') }},
-    _airbyte_emitted_at 
+    _airbyte_emitted_at
 from {{ ref('unnest_alias') }} as table_alias
 {{ cross_join_unnest('unnest_alias', 'children') }}
 where children is not null

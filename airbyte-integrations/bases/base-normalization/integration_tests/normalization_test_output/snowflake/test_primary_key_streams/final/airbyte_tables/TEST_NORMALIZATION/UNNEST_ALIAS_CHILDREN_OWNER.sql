@@ -8,7 +8,7 @@ with __dbt__CTE__UNNEST_ALIAS_CHILDREN_OWNER_AB1 as (
 select
     _AIRBYTE_CHILDREN_HASHID,
     to_varchar(get_path(parse_json(OWNER), '"owner_id"')) as OWNER_ID,
-    _AIRBYTE_EMITTED_AT 
+    _AIRBYTE_EMITTED_AT
 from "AIRBYTE_DATABASE".TEST_NORMALIZATION."UNNEST_ALIAS_CHILDREN" as table_alias
 where OWNER is not null
 -- OWNER at unnest_alias/children/owner

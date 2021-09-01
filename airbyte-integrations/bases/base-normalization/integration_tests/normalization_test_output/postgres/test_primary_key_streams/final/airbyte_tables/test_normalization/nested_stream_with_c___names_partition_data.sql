@@ -10,7 +10,7 @@ with __dbt__CTE__nested_stream_with_c___names_partition_data_ab1 as (
 select
     _airbyte_partition_hashid,
     jsonb_extract_path_text(_airbyte_nested_data, 'currency') as currency,
-    _airbyte_emitted_at 
+    _airbyte_emitted_at
 from "postgres".test_normalization."nested_stream_with_c___long_names_partition" as table_alias
 cross join jsonb_array_elements(
         case jsonb_typeof("DATA")

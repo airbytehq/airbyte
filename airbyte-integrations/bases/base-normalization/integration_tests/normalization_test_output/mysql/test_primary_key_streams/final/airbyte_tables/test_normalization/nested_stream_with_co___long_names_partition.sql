@@ -15,7 +15,7 @@ select
     '$."DATA"') as `DATA`,
     json_extract(`partition`, 
     '$."column___with__quotes"') as `column__'with"_quotes`,
-    _airbyte_emitted_at 
+    _airbyte_emitted_at
 from test_normalization.`nested_stream_with_co__lting_into_long_names` as table_alias
 where `partition` is not null
 -- partition at nested_stream_with_complex_columns_resulting_into_long_names/partition

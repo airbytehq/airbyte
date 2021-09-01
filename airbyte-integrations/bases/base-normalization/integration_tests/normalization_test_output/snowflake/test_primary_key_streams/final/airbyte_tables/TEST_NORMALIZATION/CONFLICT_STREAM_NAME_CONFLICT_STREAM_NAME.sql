@@ -10,7 +10,7 @@ select
     
         get_path(parse_json(table_alias.CONFLICT_STREAM_NAME), '"conflict_stream_name"')
      as CONFLICT_STREAM_NAME,
-    _AIRBYTE_EMITTED_AT 
+    _AIRBYTE_EMITTED_AT
 from "AIRBYTE_DATABASE".TEST_NORMALIZATION."CONFLICT_STREAM_NAME" as table_alias
 where CONFLICT_STREAM_NAME is not null
 -- CONFLICT_STREAM_NAME at conflict_stream_name/conflict_stream_name

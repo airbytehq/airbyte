@@ -4,7 +4,7 @@
 select
     _airbyte_partition_hashid,
     {{ json_extract_scalar(unnested_column_value(adapter.quote('DATA')), ['currency'], ['currency']) }} as currency,
-    _airbyte_emitted_at 
+    _airbyte_emitted_at
 from {{ ref('nested_stream_with_co___long_names_partition') }} as table_alias
 {{ cross_join_unnest('partition', adapter.quote('DATA')) }}
 where {{ adapter.quote('DATA') }} is not null

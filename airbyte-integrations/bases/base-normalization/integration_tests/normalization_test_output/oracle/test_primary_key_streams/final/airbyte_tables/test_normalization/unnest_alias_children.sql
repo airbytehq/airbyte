@@ -36,7 +36,7 @@ from dbt__cte__unnest_alias_children_ab1__
 -- SQL model to build a hash column based on the values of this record
 select
     ora_hash(
-        '"_AIRBYTE_UNNEST_ALIAS_HASHID"' || '~' ||
+        "_AIRBYTE_UNNEST_ALIAS_HASHID" || '~' ||
             'ab_id' || '~' ||
             'owner'
     ) as "_AIRBYTE_CHILDREN_HASHID",

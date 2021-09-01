@@ -11,7 +11,7 @@ select
     to_varchar(get_path(parse_json(_airbyte_data), '"_ab_cdc_lsn"')) as _AB_CDC_LSN,
     to_varchar(get_path(parse_json(_airbyte_data), '"_ab_cdc_updated_at"')) as _AB_CDC_UPDATED_AT,
     to_varchar(get_path(parse_json(_airbyte_data), '"_ab_cdc_deleted_at"')) as _AB_CDC_DELETED_AT,
-    _AIRBYTE_EMITTED_AT 
+    _AIRBYTE_EMITTED_AT
 from "AIRBYTE_DATABASE".TEST_NORMALIZATION._AIRBYTE_RAW_DEDUP_CDC_EXCLUDED as table_alias
 -- DEDUP_CDC_EXCLUDED
 ),  __dbt__CTE__DEDUP_CDC_EXCLUDED_AB2 as (
@@ -78,14 +78,14 @@ select
     _AB_CDC_LSN,
     _AB_CDC_UPDATED_AT,
     _AB_CDC_DELETED_AT,
-    _airbyte_emitted_at as _airbyte_start_at,
-    lag(_airbyte_emitted_at) over (
+    _AIRBYTE_EMITTED_AT as _airbyte_start_at,
+    lag(_AIRBYTE_EMITTED_AT) over (
         partition by ID
-        order by _airbyte_emitted_at is null asc, _airbyte_emitted_at desc, _airbyte_emitted_at desc
+        order by _AIRBYTE_EMITTED_AT is null asc, _AIRBYTE_EMITTED_AT desc, _airbyte_emitted_at desc
     ) as _airbyte_end_at,
-    lag(_airbyte_emitted_at) over (
+    lag(_AIRBYTE_EMITTED_AT) over (
         partition by ID
-        order by _airbyte_emitted_at is null asc, _airbyte_emitted_at desc, _airbyte_emitted_at desc, _ab_cdc_updated_at desc
+        order by _AIRBYTE_EMITTED_AT is null asc, _AIRBYTE_EMITTED_AT desc, _airbyte_emitted_at desc, _ab_cdc_updated_at desc
     ) is null and _ab_cdc_deleted_at is null as _AIRBYTE_ACTIVE_ROW,
     _AIRBYTE_EMITTED_AT,
     _AIRBYTE_DEDUP_CDC_EXCLUDED_HASHID

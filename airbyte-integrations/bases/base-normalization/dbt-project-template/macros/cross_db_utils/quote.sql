@@ -1,4 +1,4 @@
-{# surrogate_key  ----------------------------------     #}
+{# quote  ----------------------------------     #}
 {% macro quote(column_name) -%}
   {{ adapter.dispatch('quote')(column_name) }}
 {%- endmacro %}

@@ -14,7 +14,7 @@ select
     to_varchar(get_path(parse_json(_airbyte_data), '"HKD_special___characters"')) as HKD_SPECIAL___CHARACTERS,
     to_varchar(get_path(parse_json(_airbyte_data), '"NZD"')) as NZD,
     to_varchar(get_path(parse_json(_airbyte_data), '"USD"')) as USD,
-    _AIRBYTE_EMITTED_AT 
+    _AIRBYTE_EMITTED_AT
 from "AIRBYTE_DATABASE".TEST_NORMALIZATION._AIRBYTE_RAW_EXCHANGE_RATE as table_alias
 -- EXCHANGE_RATE
 ),  __dbt__CTE__EXCHANGE_RATE_AB2 as (

@@ -14,7 +14,7 @@ select
     
         case when json_extract_path_text(table_alias.conflict_stream_name, 'conflict_stream_name', true) != '' then json_extract_path_text(table_alias.conflict_stream_name, 'conflict_stream_name', true) end
      as conflict_stream_name,
-    _airbyte_emitted_at 
+    _airbyte_emitted_at
 from "integrationtests".test_normalization."conflict_stream_name" as table_alias
 where conflict_stream_name is not null
 -- conflict_stream_name at conflict_stream_name/conflict_stream_name

@@ -10,7 +10,7 @@ select
     get_path(parse_json(PARTITION), '"double_array_data"') as DOUBLE_ARRAY_DATA,
     get_path(parse_json(PARTITION), '"DATA"') as DATA,
     get_path(parse_json(PARTITION), '"column`_''with""_quotes"') as "column`_'with""_quotes",
-    _AIRBYTE_EMITTED_AT 
+    _AIRBYTE_EMITTED_AT
 from "AIRBYTE_DATABASE".TEST_NORMALIZATION."NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES" as table_alias
 where PARTITION is not null
 -- PARTITION at nested_stream_with_complex_columns_resulting_into_long_names/partition

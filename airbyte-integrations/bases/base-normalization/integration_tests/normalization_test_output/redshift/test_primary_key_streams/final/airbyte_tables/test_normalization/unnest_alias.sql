@@ -12,7 +12,7 @@ with __dbt__CTE__unnest_alias_ab1 as (
 select
     case when json_extract_path_text(_airbyte_data, 'id', true) != '' then json_extract_path_text(_airbyte_data, 'id', true) end as id,
     json_extract_path_text(_airbyte_data, 'children', true) as children,
-    _airbyte_emitted_at 
+    _airbyte_emitted_at
 from "integrationtests".test_normalization._airbyte_raw_unnest_alias as table_alias
 -- unnest_alias
 ),  __dbt__CTE__unnest_alias_ab2 as (

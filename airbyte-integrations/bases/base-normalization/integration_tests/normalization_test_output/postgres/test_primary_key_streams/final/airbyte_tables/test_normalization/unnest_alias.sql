@@ -9,7 +9,7 @@ with __dbt__CTE__unnest_alias_ab1 as (
 select
     jsonb_extract_path_text(_airbyte_data, 'id') as "id",
     jsonb_extract_path(_airbyte_data, 'children') as children,
-    _airbyte_emitted_at 
+    _airbyte_emitted_at
 from "postgres".test_normalization._airbyte_raw_unnest_alias as table_alias
 -- unnest_alias
 ),  __dbt__CTE__unnest_alias_ab2 as (

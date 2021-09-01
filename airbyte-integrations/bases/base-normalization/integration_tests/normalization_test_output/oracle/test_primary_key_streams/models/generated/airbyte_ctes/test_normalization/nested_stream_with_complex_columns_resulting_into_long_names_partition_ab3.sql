@@ -2,7 +2,7 @@
 -- SQL model to build a hash column based on the values of this record
 select
     ora_hash(
-        '{{ quote('_AIRBYTE_NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_HASHID') }}' || '~' ||
+        {{ quote('_AIRBYTE_NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_HASHID') }} || '~' ||
             {{ array_to_string('double_array_data') }} || '~' ||
             {{ array_to_string('data') }} || '~' ||
             {{ array_to_string('column___with__quotes') }}

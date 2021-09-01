@@ -8,7 +8,7 @@ with __dbt__CTE__CONFLICT_STREAM_ARRAY_AB1 as (
 select
     to_varchar(get_path(parse_json(_airbyte_data), '"id"')) as ID,
     get_path(parse_json(_airbyte_data), '"conflict_stream_array"') as CONFLICT_STREAM_ARRAY,
-    _AIRBYTE_EMITTED_AT 
+    _AIRBYTE_EMITTED_AT
 from "AIRBYTE_DATABASE".TEST_NORMALIZATION._AIRBYTE_RAW_CONFLICT_STREAM_ARRAY as table_alias
 -- CONFLICT_STREAM_ARRAY
 ),  __dbt__CTE__CONFLICT_STREAM_ARRAY_AB2 as (

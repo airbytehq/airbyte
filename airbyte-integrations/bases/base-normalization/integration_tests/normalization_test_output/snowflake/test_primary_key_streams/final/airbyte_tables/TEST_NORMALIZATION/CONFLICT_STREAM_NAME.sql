@@ -10,7 +10,7 @@ select
     
         get_path(parse_json(table_alias._airbyte_data), '"conflict_stream_name"')
      as CONFLICT_STREAM_NAME,
-    _AIRBYTE_EMITTED_AT 
+    _AIRBYTE_EMITTED_AT
 from "AIRBYTE_DATABASE".TEST_NORMALIZATION._AIRBYTE_RAW_CONFLICT_STREAM_NAME as table_alias
 -- CONFLICT_STREAM_NAME
 ),  __dbt__CTE__CONFLICT_STREAM_NAME_AB2 as (

@@ -12,7 +12,7 @@ select
     
         jsonb_extract_path(table_alias._airbyte_data, 'partition')
      as "partition",
-    _airbyte_emitted_at 
+    _airbyte_emitted_at
 from "postgres".test_normalization._airbyte_raw_nested_stream_with_complex_columns_resulting_into_long_names as table_alias
 -- nested_stream_with_c__lting_into_long_names
 ),  __dbt__CTE__nested_stream_with_c__lting_into_long_names_ab2 as (

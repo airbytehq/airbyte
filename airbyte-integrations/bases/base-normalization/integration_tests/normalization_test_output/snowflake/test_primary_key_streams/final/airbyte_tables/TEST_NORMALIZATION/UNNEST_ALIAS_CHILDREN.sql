@@ -12,7 +12,7 @@ select
     
         get_path(parse_json(CHILDREN.value), '"owner"')
      as OWNER,
-    _AIRBYTE_EMITTED_AT 
+    _AIRBYTE_EMITTED_AT
 from "AIRBYTE_DATABASE".TEST_NORMALIZATION."UNNEST_ALIAS" as table_alias
 cross join table(flatten(CHILDREN)) as CHILDREN
 where CHILDREN is not null

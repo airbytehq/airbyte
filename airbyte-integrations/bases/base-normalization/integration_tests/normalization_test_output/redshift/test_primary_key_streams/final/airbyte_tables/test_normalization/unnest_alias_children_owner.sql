@@ -12,7 +12,7 @@ with __dbt__CTE__unnest_alias_children_owner_ab1 as (
 select
     _airbyte_children_hashid,
     case when json_extract_path_text(owner, 'owner_id', true) != '' then json_extract_path_text(owner, 'owner_id', true) end as owner_id,
-    _airbyte_emitted_at 
+    _airbyte_emitted_at
 from "integrationtests".test_normalization."unnest_alias_children" as table_alias
 where owner is not null
 -- owner at unnest_alias/children/owner

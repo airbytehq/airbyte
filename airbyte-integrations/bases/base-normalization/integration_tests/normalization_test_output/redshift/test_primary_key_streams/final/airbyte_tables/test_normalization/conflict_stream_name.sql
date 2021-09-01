@@ -14,7 +14,7 @@ select
     
         case when json_extract_path_text(table_alias._airbyte_data, 'conflict_stream_name', true) != '' then json_extract_path_text(table_alias._airbyte_data, 'conflict_stream_name', true) end
      as conflict_stream_name,
-    _airbyte_emitted_at 
+    _airbyte_emitted_at
 from "integrationtests".test_normalization._airbyte_raw_conflict_stream_name as table_alias
 -- conflict_stream_name
 ),  __dbt__CTE__conflict_stream_name_ab2 as (

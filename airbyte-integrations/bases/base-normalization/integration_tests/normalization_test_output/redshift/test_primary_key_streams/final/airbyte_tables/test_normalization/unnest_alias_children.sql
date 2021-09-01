@@ -59,7 +59,7 @@ select
     
         case when json_extract_path_text(_airbyte_nested_data, 'owner', true) != '' then json_extract_path_text(_airbyte_nested_data, 'owner', true) end
      as owner,
-    _airbyte_emitted_at 
+    _airbyte_emitted_at
 from "integrationtests".test_normalization."unnest_alias" as table_alias
 left join joined on _airbyte_unnest_alias_hashid = joined._airbyte_hashid
 where children is not null

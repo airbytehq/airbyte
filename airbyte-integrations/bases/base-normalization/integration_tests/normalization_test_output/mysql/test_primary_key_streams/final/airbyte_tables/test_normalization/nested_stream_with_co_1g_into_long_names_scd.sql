@@ -16,7 +16,7 @@ select
         json_extract(table_alias._airbyte_data, 
     '$."partition"')
      as `partition`,
-    _airbyte_emitted_at 
+    _airbyte_emitted_at
 from test_normalization._airbyte_raw_nested_s__lting_into_long_names as table_alias
 -- nested_stream_with_co__lting_into_long_names
 ),  __dbt__CTE__nested_stream_with_co_1g_into_long_names_ab2 as (

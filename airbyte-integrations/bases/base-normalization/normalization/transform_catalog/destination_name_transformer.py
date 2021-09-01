@@ -184,6 +184,8 @@ class DestinationNameTransformer:
                 # Oracle dbt lib doesn't implemented adapter quote yet.
                 result = self.__normalize_identifier_case(result, is_quoted=True)
                 result = f"quote('{result}')"
+                if not in_jinja:
+                    result = jinja_call(result)
                 return result
             else:
                 result = f"adapter.quote('{result}')"

@@ -56,7 +56,7 @@ select
     _airbyte_partition_hashid,
     json_value(_airbyte_nested_data, 
     '$."id"') as id,
-    _airbyte_emitted_at 
+    _airbyte_emitted_at
 from test_normalization.`nested_stream_with_co___long_names_partition` as table_alias
 left join joined on _airbyte_partition_hashid = joined._airbyte_hashid
 where double_array_data is not null

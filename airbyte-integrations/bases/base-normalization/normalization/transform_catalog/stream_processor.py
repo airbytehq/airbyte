@@ -24,6 +24,7 @@
 
 
 import os
+import re
 from typing import Dict, List, Optional, Tuple
 
 from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMode
@@ -359,10 +360,7 @@ from {{ from_table }} {{ table_alias }}
         return sql
 
     def get_emitted_at(self):
-        emitted_at_normalized = self.name_transformer.normalize_column_name(self.airbyte_emitted_at, False, False)
-        if self.destination_type == DestinationType.ORACLE:
-            return jinja_call(emitted_at_normalized)
-        return emitted_at_normalized
+        return self.name_transformer.normalize_column_name(self.airbyte_emitted_at, False, False)
 
     def extract_json_columns(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
         return [
@@ -380,7 +378,7 @@ from {{ from_table }} {{ table_alias }}
             table_alias = ""
         if json_column_name.startswith("'_") and self.destination_type == DestinationType.ORACLE:
             json_column_name = json_column_name.replace("'", "")
-            json_column_name = self.name_transformer.normalize_column_name(json_column_name, False, False)
+            json_column_name = self.name_transformer.normalize_column_name(json_column_name, True, False)
 
         json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path})")
         if "type" in definition:
@@ -390,9 +388,6 @@ from {{ from_table }} {{ table_alias }}
                 json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path}, {normalized_json_path})")
             elif is_simple_property(definition["type"]):
                 json_extract = jinja_call(f"json_extract_scalar({json_column_name}, {json_path}, {normalized_json_path})")
-
-        if self.destination_type == DestinationType.ORACLE and "quote(" in column_name:
-            column_name = jinja_call(column_name)
 
         return f"{json_extract} as {column_name}"
 
@@ -450,8 +445,7 @@ from {{ from_table }}
         else:
             print(f"WARN: Unknown type {definition['type']} for column {property_name} at {self.current_json_path()}")
             return column_name
-        if self.destination_type == DestinationType.ORACLE and "quote(" in column_name:
-            column_name = jinja_call(column_name)
+
         return f"cast({column_name} as {sql_type}) as {column_name}"
 
     def generate_id_hashing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
@@ -467,7 +461,7 @@ from {{ from_table }}
 select
     ora_hash(
       {%- if parent_hash_id %}
-        '{{ parent_hash_id }}' || '~' ||
+        {{ parent_hash_id }} || '~' ||
       {%- endif %}
       {%- for field in fields %}
         {% if not loop.last %}
@@ -506,36 +500,26 @@ from {{ from_table }}
         )
         return sql
 
-    def oracle_col_jinja(self, col_name: str) -> str:
-        if col_name.replace("'", "").startswith("_"):
-            col_name = self.name_transformer.normalize_column_name(col_name)
-
-        if "(" in col_name:
-            return jinja_call(col_name)
-        else:
-            return col_name
-
-    def oracle_safe_cast_cols_jinja(self, columns: List[str]) -> List[str]:
-        # this inject jinja macro in Oracle queries
-        # for Oracle you need to be explicit when calling jinja macros in queries
-        # array_to_string(field), quote(field) is a dbt macro but in oracle will throw an error
-        # so you need to specify them as {{ array_to_string(field) }}.
-        oracle_cols_safe = []
-        for col in columns:
-            oracle_cols_safe.append(self.oracle_col_jinja(col))
-        return oracle_cols_safe
-
     def safe_cast_to_strings(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
+
         columns_name_safety = [
             StreamProcessor.safe_cast_to_string(self.properties[field], column_names[field][1]) for field in column_names
         ]
+
         if self.destination_type == DestinationType.ORACLE:
-            return self.oracle_safe_cast_cols_jinja(columns_name_safety)
+            column_inside_parenthesis = re.compile("\((.+)\)")
+            oracle_columns_safe = []
+            for col in columns_name_safety:
+                if column_inside_parenthesis.findall(col):
+                    oracle_columns_safe.append(jinja_call(col))
+                else:
+                    oracle_columns_safe.append(col)
+            return oracle_columns_safe
 
         return columns_name_safety
 
     @staticmethod
-    def safe_cast_to_string(definition: Dict, column_name: str) -> str:
+    def safe_cast_to_string(definition: Dict, column_name: str, need_jinja: bool = False) -> str:
         """
         Note that the result from this static method should always be used within a jinja context (for example, from jinja macro surrogate_key call)
         """
@@ -572,10 +556,7 @@ from {{ from_table }} tmp
         return sql
 
     def process_col(self, col: str):
-        col_normalized = self.name_transformer.normalize_column_name(col)
-        if self.destination_type == DestinationType.ORACLE:
-            col_normalized = self.oracle_col_jinja(col_normalized)
-        return col_normalized
+        return self.name_transformer.normalize_column_name(col)
 
     def generate_scd_type_2_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
 
@@ -653,20 +634,15 @@ from {{ from_table }}
 
     def get_cursor_field(self, column_names: Dict[str, Tuple[str, str]]) -> str:
         if not self.cursor_field:
-            cursor = "_airbyte_emitted_at"
+            return self.name_transformer.normalize_column_name("_airbyte_emitted_at")
         elif len(self.cursor_field) == 1:
             if not is_airbyte_column(self.cursor_field[0]):
-                cursor = column_names[self.cursor_field[0]][0]
+                return column_names[self.cursor_field[0]][0]
             else:
                 # using an airbyte generated column
-                cursor = self.cursor_field[0]
+                return self.cursor_field[0]
         else:
             raise ValueError(f"Unsupported nested cursor field {'.'.join(self.cursor_field)} for stream {self.stream_name}")
-
-        if self.destination_type == DestinationType.ORACLE:
-            return self.oracle_col_jinja(cursor)
-        else:
-            return cursor
 
     def get_primary_key(self, column_names: Dict[str, Tuple[str, str]]) -> str:
         if self.primary_key and len(self.primary_key) > 0:
@@ -724,8 +700,6 @@ from {{ from_table }}
         return sql
 
     def list_fields(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
-        if self.destination_type == DestinationType.ORACLE:
-            return [self.oracle_col_jinja(column_names[field][0]) for field in column_names]
         return [column_names[field][0] for field in column_names]
 
     def add_to_outputs(self, sql: str, is_intermediate: bool, column_count: int = 0, suffix: str = "") -> str:
@@ -805,11 +779,7 @@ from {{ from_table }}
                 level = len(self.json_path)
                 hash_id_col = f"_airbyte_{self.normalized_stream_name()}_{level}_hashid"
 
-        hash_id_col_normalized = self.name_transformer.normalize_column_name(hash_id_col)
-        if self.destination_type == DestinationType.ORACLE:
-            return jinja_call(hash_id_col_normalized)
-        else:
-            return hash_id_col_normalized
+        return self.name_transformer.normalize_column_name(hash_id_col)
 
     # Nested Streams
 

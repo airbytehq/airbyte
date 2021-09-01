@@ -3,7 +3,7 @@
 select
     {{ json_extract_scalar('_airbyte_data', ['id'], ['id']) }} as id,
     {{ json_extract_array('_airbyte_data', ['conflict_stream_array'], ['conflict_stream_array']) }} as conflict_stream_array,
-    _airbyte_emitted_at 
+    _airbyte_emitted_at
 from {{ source('test_normalization', '_airbyte_raw_conflict_stream_array') }} as table_alias
 -- conflict_stream_array
 

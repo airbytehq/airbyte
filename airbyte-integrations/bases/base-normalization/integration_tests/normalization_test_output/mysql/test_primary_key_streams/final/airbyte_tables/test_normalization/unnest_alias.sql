@@ -12,7 +12,7 @@ select
     '$."id"') as id,
     json_extract(_airbyte_data, 
     '$."children"') as children,
-    _airbyte_emitted_at 
+    _airbyte_emitted_at
 from test_normalization._airbyte_raw_unnest_alias as table_alias
 -- unnest_alias
 ),  __dbt__CTE__unnest_alias_ab2 as (

@@ -18,7 +18,7 @@ select
     '$."_ab_cdc_updated_at"') as _ab_cdc_updated_at,
     json_value(_airbyte_data, 
     '$."_ab_cdc_deleted_at"') as _ab_cdc_deleted_at,
-    _airbyte_emitted_at 
+    _airbyte_emitted_at
 from test_normalization._airbyte_raw_dedup_cdc_excluded as table_alias
 -- dedup_cdc_excluded
 ),  __dbt__CTE__dedup_cdc_excluded_ab2 as (

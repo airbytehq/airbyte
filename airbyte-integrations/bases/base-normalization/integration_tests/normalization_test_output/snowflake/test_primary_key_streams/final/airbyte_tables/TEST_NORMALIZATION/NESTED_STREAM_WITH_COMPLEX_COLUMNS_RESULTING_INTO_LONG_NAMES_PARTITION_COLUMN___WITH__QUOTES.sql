@@ -9,7 +9,7 @@ with __dbt__CTE__NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PA
 select
     _AIRBYTE_PARTITION_HASHID,
     to_varchar(get_path(parse_json("column`_'with""_quotes".value), '"currency"')) as CURRENCY,
-    _AIRBYTE_EMITTED_AT 
+    _AIRBYTE_EMITTED_AT
 from "AIRBYTE_DATABASE".TEST_NORMALIZATION."NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION" as table_alias
 cross join table(flatten("column`_'with""_quotes")) as "column`_'with""_quotes"
 where "column`_'with""_quotes" is not null

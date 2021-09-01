@@ -14,7 +14,7 @@ select
     json_extract_path_text("partition", 'double_array_data', true) as double_array_data,
     json_extract_path_text("partition", 'DATA', true) as data,
     json_extract_path_text("partition", 'column`_''with"_quotes', true) as "column`_'with""_quotes",
-    _airbyte_emitted_at 
+    _airbyte_emitted_at
 from "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names" as table_alias
 where "partition" is not null
 -- partition at nested_stream_with_complex_columns_resulting_into_long_names/partition

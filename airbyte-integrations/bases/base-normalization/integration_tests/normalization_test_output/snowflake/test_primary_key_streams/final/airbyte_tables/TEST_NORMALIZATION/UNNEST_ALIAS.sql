@@ -8,7 +8,7 @@ with __dbt__CTE__UNNEST_ALIAS_AB1 as (
 select
     to_varchar(get_path(parse_json(_airbyte_data), '"id"')) as ID,
     get_path(parse_json(_airbyte_data), '"children"') as CHILDREN,
-    _AIRBYTE_EMITTED_AT 
+    _AIRBYTE_EMITTED_AT
 from "AIRBYTE_DATABASE".TEST_NORMALIZATION._AIRBYTE_RAW_UNNEST_ALIAS as table_alias
 -- UNNEST_ALIAS
 ),  __dbt__CTE__UNNEST_ALIAS_AB2 as (

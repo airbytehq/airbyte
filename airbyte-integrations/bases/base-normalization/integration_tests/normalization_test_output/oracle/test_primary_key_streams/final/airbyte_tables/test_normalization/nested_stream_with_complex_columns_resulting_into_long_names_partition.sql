@@ -32,7 +32,7 @@ from dbt__cte__nested_stream_with_complex_columns_resulting_into_long_names_part
 -- SQL model to build a hash column based on the values of this record
 select
     ora_hash(
-        '"_AIRBYTE_NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_HASHID"' || '~' ||
+        "_AIRBYTE_NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_HASHID" || '~' ||
             cast(double_array_data as varchar2(4000)) || '~' ||
             cast(data as varchar2(4000)) || '~' ||
             cast(column___with__quotes as varchar2(4000))

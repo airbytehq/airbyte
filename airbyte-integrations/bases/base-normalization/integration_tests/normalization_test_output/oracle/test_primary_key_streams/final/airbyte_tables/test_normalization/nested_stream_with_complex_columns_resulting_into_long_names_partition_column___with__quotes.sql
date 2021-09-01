@@ -30,7 +30,7 @@ from dbt__cte__nested_stream_with_complex_columns_resulting_into_long_names_part
 -- SQL model to build a hash column based on the values of this record
 select
     ora_hash(
-        '"_AIRBYTE_PARTITION_HASHID"' || '~' ||
+        "_AIRBYTE_PARTITION_HASHID" || '~' ||
             'currency'
     ) as "_AIRBYTE_COLUMN___WITH__QUOTES_HASHID",
     tmp.*

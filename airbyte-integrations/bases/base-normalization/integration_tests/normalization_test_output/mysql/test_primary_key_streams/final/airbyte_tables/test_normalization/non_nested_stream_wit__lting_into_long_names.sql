@@ -12,7 +12,7 @@ select
     '$."id"') as id,
     json_value(_airbyte_data, 
     '$."date"') as `date`,
-    _airbyte_emitted_at 
+    _airbyte_emitted_at
 from test_normalization._airbyte_raw_non_nest__lting_into_long_names as table_alias
 -- non_nested_stream_wit__lting_into_long_names
 ),  __dbt__CTE__non_nested_stream_wit_1g_into_long_names_ab2 as (

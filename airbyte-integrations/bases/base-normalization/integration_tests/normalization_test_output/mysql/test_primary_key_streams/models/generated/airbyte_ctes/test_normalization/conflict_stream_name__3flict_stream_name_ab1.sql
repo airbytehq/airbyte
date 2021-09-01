@@ -3,7 +3,7 @@
 select
     _airbyte_conflict_stream_name_2_hashid,
     {{ json_extract_scalar('conflict_stream_name', ['groups'], ['groups']) }} as {{ adapter.quote('groups') }},
-    _airbyte_emitted_at 
+    _airbyte_emitted_at
 from {{ ref('conflict_stream_name_conflict_stream_name') }} as table_alias
 where conflict_stream_name is not null
 -- conflict_stream_name at conflict_stream_name/conflict_stream_name/conflict_stream_name

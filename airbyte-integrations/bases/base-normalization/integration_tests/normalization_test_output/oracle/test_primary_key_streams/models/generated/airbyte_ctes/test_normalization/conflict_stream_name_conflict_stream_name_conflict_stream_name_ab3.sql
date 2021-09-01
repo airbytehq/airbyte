@@ -2,7 +2,7 @@
 -- SQL model to build a hash column based on the values of this record
 select
     ora_hash(
-        '{{ quote('_AIRBYTE_CONFLICT_STREAM_NAME_2_HASHID') }}' || '~' ||
+        {{ quote('_AIRBYTE_CONFLICT_STREAM_NAME_2_HASHID') }} || '~' ||
             'groups'
     ) as {{ quote('_AIRBYTE_CONFLICT_STREAM_NAME_3_HASHID') }},
     tmp.*

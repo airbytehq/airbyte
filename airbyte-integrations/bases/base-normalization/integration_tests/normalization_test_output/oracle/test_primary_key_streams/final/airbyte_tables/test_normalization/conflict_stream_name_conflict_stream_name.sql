@@ -30,7 +30,7 @@ from dbt__cte__conflict_stream_name_conflict_stream_name_ab1__
 -- SQL model to build a hash column based on the values of this record
 select
     ora_hash(
-        '"_AIRBYTE_CONFLICT_STREAM_NAME_HASHID"' || '~' ||
+        "_AIRBYTE_CONFLICT_STREAM_NAME_HASHID" || '~' ||
             'conflict_stream_name'
     ) as "_AIRBYTE_CONFLICT_STREAM_NAME_2_HASHID",
     tmp.*

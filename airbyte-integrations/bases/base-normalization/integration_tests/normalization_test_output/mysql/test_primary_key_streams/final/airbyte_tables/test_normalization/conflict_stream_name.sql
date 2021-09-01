@@ -14,7 +14,7 @@ select
         json_extract(table_alias._airbyte_data, 
     '$."conflict_stream_name"')
      as conflict_stream_name,
-    _airbyte_emitted_at 
+    _airbyte_emitted_at
 from test_normalization._airbyte_raw_conflict_stream_name as table_alias
 -- conflict_stream_name
 ),  __dbt__CTE__conflict_stream_name_ab2 as (
