@@ -9,23 +9,30 @@ The GitHub source supports both Full Refresh and Incremental syncs. You can choo
 This connector outputs the following full refresh streams:
 
 * [Assignees](https://docs.github.com/en/rest/reference/issues#list-assignees)
-* [Reviews](https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request)
+* [Branches](https://docs.github.com/en/rest/reference/repos#list-branches)
 * [Collaborators](https://docs.github.com/en/rest/reference/repos#list-repository-collaborators)
-* [Teams](https://docs.github.com/en/rest/reference/teams#list-teams)
 * [Issue labels](https://docs.github.com/en/free-pro-team@latest/rest/reference/issues#list-labels-for-a-repository)
+* [Organizations](https://docs.github.com/en/rest/reference/orgs#get-an-organization)
+* [Pull Request Stats](https://docs.github.com/en/rest/reference/pulls#get-a-pull-request)
+* [Repositories](https://docs.github.com/en/rest/reference/repos#list-organization-repositories)
+* [Reviews](https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request)
+* [Tags](https://docs.github.com/en/rest/reference/repos#list-repository-tags)
+* [Teams](https://docs.github.com/en/rest/reference/teams#list-teams)
+* [Users](https://docs.github.com/en/rest/reference/orgs#list-organization-members)
 
 This connector outputs the following incremental streams:
 
 * [Comments](https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository)
 * [Commits](https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository)
-* [Issues](https://docs.github.com/en/rest/reference/issues#list-repository-issues)
 * [Commit comments](https://docs.github.com/en/rest/reference/repos#list-commit-comments-for-a-repository)
 * [Events](https://docs.github.com/en/rest/reference/activity#list-repository-events)
+* [Issues](https://docs.github.com/en/rest/reference/issues#list-repository-issues)
 * [Issue events](https://docs.github.com/en/rest/reference/issues#list-issue-events-for-a-repository)
 * [Issue milestones](https://docs.github.com/en/rest/reference/issues#list-milestones)
 * [Projects](https://docs.github.com/en/rest/reference/projects#list-repository-projects)
 * [Pull requests](https://docs.github.com/en/rest/reference/pulls#list-pull-requests)
 * [Releases](https://docs.github.com/en/rest/reference/repos#list-releases)
+* [Review Comments](https://docs.github.com/en/rest/reference/pulls#list-review-comments-in-a-repository)
 * [Stargazers](https://docs.github.com/en/rest/reference/activity#list-stargazers)
 
 ### Notes
@@ -86,6 +93,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.8   | 2021-09-01 | [5757](https://github.com/airbytehq/airbyte/pull/5757) | Add more streams |
 | 0.1.7   | 2021-08-27 | [5696](https://github.com/airbytehq/airbyte/pull/5696) | Handle negative backoff values |
 | 0.1.6   | 2021-08-18 | [5456](https://github.com/airbytehq/airbyte/pull/5223) | Add MultipleTokenAuthenticator |
 | 0.1.5   | 2021-08-18 | [5456](https://github.com/airbytehq/airbyte/pull/5456) | Fix set up validation |

@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "repository": {
+      "type": ["string"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "type": ["null", "string"]
+    },
+    "number": {
+      "type": ["null", "integer"]
+    },
+    "merged": {
+      "type": ["null", "boolean"]
+    },
+    "mergeable": {
+      "type": ["null", "boolean"]
+    },
+    "rebaseable": {
+      "type": ["null", "boolean"]
+    },
+    "mergeable_state": {
+      "type": ["null", "string"]
+    },
+    "merged_by": {
+      "$ref": "user.json"
+    },
+    "comments": {
+      "type": ["null", "integer"]
+    },
+    "review_comments": {
+      "type": ["null", "integer"]
+    },
+    "maintainer_can_modify": {
+      "type": ["null", "boolean"]
+    },
+    "commits": {
+      "type": ["null", "integer"]
+    },
+    "additions": {
+      "type": ["null", "integer"]
+    },
+    "deletions": {
+      "type": ["null", "integer"]
+    },
+    "changed_files": {
+      "type": ["null", "integer"]
+    }
+  }
+}
