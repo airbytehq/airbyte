@@ -21,6 +21,7 @@ import DestinationStep from "./components/DestinationStep";
 import ConnectionStep from "./components/ConnectionStep";
 import WelcomeStep from "./components/WelcomeStep";
 import FinalStep from "./components/FinalStep";
+import LetterLine from "./components/LetterLine";
 import { StepType } from "./types";
 import { useAnalytics } from "components/hooks/useAnalytics";
 import StepsCounter from "./components/StepsCounter";
@@ -35,6 +36,12 @@ const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   flex-direction: column;
   align-items: center;
   min-height: 100%;
+  position: relative;
+  z-index: 2;
+`;
+const ScreenContent = styled.div`
+  width: 100%;
+  position: relative;
 `;
 
 const OnboardingPage: React.FC = () => {
@@ -215,17 +222,24 @@ const OnboardingPage: React.FC = () => {
   };
 
   return (
-    <Content
-      big={currentStep === StepType.SET_UP_CONNECTION}
-      medium={
-        currentStep === StepType.INSTRUCTION || currentStep === StepType.FINAl
-      }
-    >
-      <HeadTitle titles={[{ id: "onboarding.headTitle" }]} />
-      <StepsCounter steps={steps} currentStep={currentStep} />
+    <ScreenContent>
+      {currentStep === StepType.CREATE_SOURCE ? (
+        <LetterLine exit={successRequest} />
+      ) : currentStep === StepType.CREATE_DESTINATION ? (
+        <LetterLine onRight exit={successRequest} />
+      ) : null}
+      <Content
+        big={currentStep === StepType.SET_UP_CONNECTION}
+        medium={
+          currentStep === StepType.INSTRUCTION || currentStep === StepType.FINAl
+        }
+      >
+        <HeadTitle titles={[{ id: "onboarding.headTitle" }]} />
+        <StepsCounter steps={steps} currentStep={currentStep} />
 
-      <Suspense fallback={<LoadingPage />}>{renderStep()}</Suspense>
-    </Content>
+        <Suspense fallback={<LoadingPage />}>{renderStep()}</Suspense>
+      </Content>
+    </ScreenContent>
   );
 };
 
