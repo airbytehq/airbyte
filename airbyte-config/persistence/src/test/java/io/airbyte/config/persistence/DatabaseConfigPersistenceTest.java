@@ -24,88 +24,39 @@
 
 package io.airbyte.config.persistence;
 
-import static org.jooq.impl.DSL.asterisk;
-import static org.jooq.impl.DSL.count;
-import static org.jooq.impl.DSL.table;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
-import org.jooq.Record1;
-import org.jooq.Result;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
 
-public class DatabaseConfigPersistenceTest extends BaseTest {
-
-  private static PostgreSQLContainer<?> container;
-
-  private Database database;
-  private DatabaseConfigPersistence configPersistence;
-
-  @BeforeAll
-  public static void dbSetup() {
-    container = new PostgreSQLContainer<>("postgres:13-alpine")
-        .withDatabaseName("airbyte")
-        .withUsername("docker")
-        .withPassword("docker");
-    container.start();
-  }
-
-  @AfterAll
-  public static void dbDown() {
-    container.close();
-  }
+/**
+ * The {@link DatabaseConfigPersistence#loadData} method is tested in
+ * {@link DatabaseConfigPersistenceLoadDataTest}.
+ */
+public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest {
 
   @BeforeEach
   public void setup() throws Exception {
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-    configPersistence = new DatabaseConfigPersistence(database);
+    configPersistence = spy(new DatabaseConfigPersistence(database));
     database.query(ctx -> ctx.execute("TRUNCATE TABLE airbyte_configs"));
   }
 
   @AfterEach
   void tearDown() throws Exception {
     database.close();
-  }
-
-  @Test
-  public void testLoadData() throws Exception {
-    final ConfigPersistence seedPersistence = mock(ConfigPersistence.class);
-    final Map<String, Stream<JsonNode>> seeds1 = Map.of(
-        ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(), Stream.of(Jsons.jsonNode(DESTINATION_SNOWFLAKE)),
-        ConfigSchema.STANDARD_SOURCE_DEFINITION.name(), Stream.of(Jsons.jsonNode(SOURCE_GITHUB)));
-    when(seedPersistence.dumpConfigs()).thenReturn(seeds1);
-
-    configPersistence.loadData(seedPersistence);
-    assertRecordCount(2);
-    assertHasSource(SOURCE_GITHUB);
-    assertHasDestination(DESTINATION_SNOWFLAKE);
-
-    final Map<String, Stream<JsonNode>> seeds2 = Map.of(
-        ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(), Stream.of(Jsons.jsonNode(DESTINATION_S3), Jsons.jsonNode(DESTINATION_SNOWFLAKE)));
-    when(seedPersistence.dumpConfigs()).thenReturn(seeds2);
-
-    // when the database is not empty, calling loadData again will not change anything
-    configPersistence.loadData(seedPersistence);
-    assertRecordCount(2);
-    assertHasSource(SOURCE_GITHUB);
   }
 
   @Test
@@ -167,23 +118,6 @@ public class DatabaseConfigPersistenceTest extends BaseTest {
         ConfigSchema.STANDARD_SOURCE_DEFINITION.name(), Stream.of(Jsons.jsonNode(SOURCE_GITHUB), Jsons.jsonNode(SOURCE_POSTGRES)),
         ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(), Stream.of(Jsons.jsonNode(DESTINATION_S3)));
     assertSameConfigDump(expected, actual);
-  }
-
-  private void assertRecordCount(int expectedCount) throws Exception {
-    Result<Record1<Integer>> recordCount = database.query(ctx -> ctx.select(count(asterisk())).from(table("airbyte_configs")).fetch());
-    assertEquals(expectedCount, recordCount.get(0).value1());
-  }
-
-  private void assertHasSource(StandardSourceDefinition source) throws Exception {
-    assertEquals(source, configPersistence
-        .getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, source.getSourceDefinitionId().toString(),
-            StandardSourceDefinition.class));
-  }
-
-  private void assertHasDestination(StandardDestinationDefinition destination) throws Exception {
-    assertEquals(destination, configPersistence
-        .getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId().toString(),
-            StandardDestinationDefinition.class));
   }
 
 }

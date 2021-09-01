@@ -144,6 +144,11 @@ def config_mock(mocker, request):
         ({"username": "fake"}, {"type": "object", "properties": {"name": {"type": "string"}}, "additionalProperties": False}, False),
         ({"username": "fake"}, {"type": "object", "properties": {"username": {"type": "string"}}, "additionalProperties": False}, True),
         ({"username": "fake"}, {"type": "object", "properties": {"user": {"type": "string"}}}, True),
+        (
+            {"username": "fake", "_limit": 22},
+            {"type": "object", "properties": {"username": {"type": "string"}}, "additionalProperties": False},
+            True,
+        ),
     ],
     indirect=["config_mock"],
 )
@@ -156,9 +161,9 @@ def test_config_validate(entrypoint: AirbyteEntrypoint, mocker, config_mock, sch
         messages = list(entrypoint.run(parsed_args))
         assert [_wrap_message(check_value)] == messages
     else:
-        with pytest.raises(SystemExit) as ex_info:
+        with pytest.raises(Exception) as ex_info:
             list(entrypoint.run(parsed_args))
-        assert ex_info.value.code == 1
+        assert "Config validation error:" in str(ex_info.value)
 
 
 def test_run_check(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
