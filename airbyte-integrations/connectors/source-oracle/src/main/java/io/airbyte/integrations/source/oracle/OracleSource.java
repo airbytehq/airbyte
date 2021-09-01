@@ -35,7 +35,9 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import java.sql.JDBCType;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +47,8 @@ public class OracleSource extends AbstractJdbcSource implements Source {
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleSource.class);
 
   static final String DRIVER_CLASS = "oracle.jdbc.OracleDriver";
+
+  private List<String> schemas;
 
   public OracleSource() {
     super(DRIVER_CLASS, new OracleJdbcStreamingQueryConfiguration());
@@ -63,6 +67,13 @@ public class OracleSource extends AbstractJdbcSource implements Source {
       configBuilder.put("password", config.get("password").asText());
     }
 
+    schemas = List.of(config.get("username").asText().toUpperCase(Locale.ROOT));
+    if (config.has("schemas") && config.get("schemas").isArray()) {
+      schemas = new ArrayList<>();
+      for (final JsonNode schema : config.get("schemas")) {
+        schemas.add(schema.asText());
+      }
+    }
     return Jsons.jsonNode(configBuilder.build());
   }
 
@@ -71,9 +82,17 @@ public class OracleSource extends AbstractJdbcSource implements Source {
     // if schemas is empty
     // use the user's name
     // check uniqueness
+    List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
+    for (String schema : schemas) {
+      LOGGER.debug("Discovering schema: {}", schema);
+      internals.addAll(super.discoverInternal(database, schema));
+    }
 
-    // otherwise iterate through all the schemas and return them.
-    return super.discoverInternal(database);
+    for (TableInfo<CommonField<JDBCType>> info : internals) {
+      LOGGER.debug("Found table: {}", info.getName());
+    }
+
+    return internals;
   }
 
   @Override
