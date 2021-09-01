@@ -24,16 +24,21 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.DefaultSqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import java.sql.SQLException;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 class SnowflakeSqlOperations extends DefaultSqlOperations implements SqlOperations {
 
@@ -53,7 +58,12 @@ class SnowflakeSqlOperations extends DefaultSqlOperations implements SqlOperatio
 
   @Override
   public void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tableName) throws SQLException {
-    LOGGER.info("actual size of batch: {}", records.size());
+    LOGGER.info("actual size of records: {}", records.size());
+    var config = ((SnowflakeDatabase.SnowflakeConnectionSupplier) ((DefaultJdbcDatabase) database).getConnectionSupplier()).getConfig();
+    Map<String, JsonNode> map = new HashMap<>();
+    config.fields().forEachRemaining(entry -> map.put(entry.getKey(), entry.getValue()));
+    Integer batchSize = map.containsKey("batch_size") ? map.get("batch_size").intValue() : null;
+    LOGGER.info("batch size: {}", batchSize == null ? records.size() : batchSize);
 
     // snowflake query syntax:
     // requires selecting from a set of values in order to invoke the parse_json function.
@@ -65,7 +75,7 @@ class SnowflakeSqlOperations extends DefaultSqlOperations implements SqlOperatio
         "INSERT INTO %s.%s (%s, %s, %s) SELECT column1, parse_json(column2), column3 FROM VALUES\n",
         schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     final String recordQuery = "(?, ?, ?),\n";
-    SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQuery, recordQuery, database, records);
+    SqlOperationsUtils.insertRawRecordsInBatchesQueries(insertQuery, recordQuery, database, records, batchSize);
   }
 
 }

@@ -26,8 +26,11 @@ package io.airbyte.integrations.destination.jdbc;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+
+import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -35,6 +38,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class SqlOperationsUtils {
 
@@ -55,6 +60,33 @@ public class SqlOperationsUtils {
                                                    List<AirbyteRecordMessage> records)
       throws SQLException {
     insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, true);
+  }
+
+  /**
+   * Inserts "raw" records in batches queries. The purpose of helper to abstract away database-specific
+   * SQL syntax from this query. Internally uses {@code insertRawRecordsInSingleQuery} method.
+   *
+   * @param insertQueryComponent the first line of the query e.g. INSERT INTO public.users (ab_id,
+   *        data, emitted_at)
+   * @param recordQueryComponent query template for a full record e.g. (?, ?::jsonb ?)
+   * @param jdbcDatabase jdbc database
+   * @param records records to write
+   * @param batchSize batch size
+   * @throws SQLException exception
+   */
+  public static void insertRawRecordsInBatchesQueries(String insertQueryComponent,
+                                                      String recordQueryComponent,
+                                                      JdbcDatabase jdbcDatabase,
+                                                      List<AirbyteRecordMessage> records,
+                                                      @Nullable Integer batchSize)
+          throws SQLException {
+    if (batchSize == null || batchSize <= 0) {
+      insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, true);
+    } else {
+      batches(records, batchSize).forEach(recordList -> Exceptions.toRuntime(() -> {
+        insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, recordList, UUID::randomUUID, true);
+      }));
+    }
   }
 
   /**
@@ -117,6 +149,16 @@ public class SqlOperationsUtils {
         statement.execute();
       }
     });
+  }
+
+  private static <T> Stream<List<T>> batches(List<T> source, int length) {
+    int size = source.size();
+    if (size <= 0) {
+      return Stream.empty();
+    }
+    int fullChunks = (size - 1) / length;
+    return IntStream.range(0, fullChunks + 1).mapToObj(
+            n -> source.subList(n * length, n == fullChunks ? size : (n + 1) * length));
   }
 
 }
