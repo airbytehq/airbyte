@@ -76,7 +76,7 @@ class SourceZendeskSupportStream(HttpStream, ABC):
         See https://developer.zendesk.com/api-reference/ticketing/account-configuration/usage_limits/
         The response has a Retry-After header that tells you for how many seconds to wait before retrying.
         """
-        # default value if there is not any headers
+        # default value if there is not any header
         sleep_timeout = 60
         retry_after = int(response.headers.get("Retry-After") or 0)
         if retry_after and retry_after > 0:
@@ -87,7 +87,6 @@ class SourceZendeskSupportStream(HttpStream, ABC):
             rate_limit = float(response.headers.get("X-Rate-Limit") or 0)
             if rate_limit and rate_limit > 0:
                 return (60.0 / rate_limit) * 2
-
         return sleep_timeout
 
     @staticmethod
@@ -257,8 +256,6 @@ class IncrementalUnsortedStream(IncrementalEntityStream, ABC):
                     yield record
             if not send_cnt:
                 self._finished = True
-            else:
-                self.logger.info(f"found new {send_cnt} record(s)")
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(self._max_cursor_date or "", (current_stream_state or {}).get(self.cursor_field, ""))}
@@ -346,7 +343,7 @@ class TicketComments(IncrementalSortedPageStream):
     def parse_response(
         self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping]:
-        """try to select relevant data only"""
+        # save a slice ticket state
         self._cursor_ticket_date = stream_slice[Tickets.cursor_field]
         yield from super().parse_response(response, stream_state=stream_state, stream_slice=stream_slice, **kwargs)
 

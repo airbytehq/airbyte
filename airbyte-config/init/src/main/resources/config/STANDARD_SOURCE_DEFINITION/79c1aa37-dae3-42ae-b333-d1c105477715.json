@@ -2,7 +2,7 @@
   "sourceDefinitionId": "79c1aa37-dae3-42ae-b333-d1c105477715",
   "name": "Zendesk Support",
   "dockerRepository": "airbyte/source-zendesk-support",
-  "dockerImageTag": "0.1.0",
+  "dockerImageTag": "0.1.1",
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/zendesk-support",
   "icon": "zendesk.svg"
 }
