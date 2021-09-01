@@ -84,20 +84,18 @@ public class DatabricksStreamCopier implements StreamCopier {
     sqlOperations.createSchemaIfNotExists(db, database);
   }
 
-  //
   @Override
   public void createTemporaryTable() throws Exception {
     LOGGER.info("Preparing tmp table in destination for stream: {}, database: {}, tmp table name: {}.", streamName, database, tmpTableName);
     LOGGER.info(parquetWriter.parquetSchema.toString());
-//    sqlOperations.createTableIfNotExists(db, database, tmpTableName);
+    sqlOperations.createTableIfNotExists(db, database, tmpTableName);
   }
 
-  // DUMMY for now, throwing exception
   @Override
   public void copyStagingFileToTemporaryTable() throws Exception {
     LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, database: {}, .", tmpTableName, streamName, database);
-    throw new Exception();
-//    LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
+    // TODO: load data sql operation 
+    LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }
 
 
