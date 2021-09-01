@@ -1,5 +1,5 @@
 {
-  "type": ["null","object"],
+  "type": ["null", "object"],
   "properties": {
     "runSchedule": {
       "type": ["null", "object"],
@@ -10,20 +10,14 @@
         "end": {
           "type": ["null", "integer"]
         }
-      } 
+      }
     },
     "created": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "lastModified": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "name": {
@@ -56,5 +50,5 @@
     "status": {
       "type": ["null", "string"]
     }
-}
+  }
 }

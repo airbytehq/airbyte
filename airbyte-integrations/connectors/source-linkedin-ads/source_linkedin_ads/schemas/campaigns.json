@@ -1,11 +1,8 @@
 {
-  "type": [
-    "null",
-    "object"
-  ],
+  "type": ["null", "object"],
   "properties": {
     "targetingCriteria": {
-      "type": ["null","object"],
+      "type": ["null", "object"],
       "properties": {
         "include": {
           "type": ["null", "object"],
@@ -54,220 +51,118 @@
       }
     },
     "servingStatuses": {
-          "type": [
-            "null",
-            "array"
-          ],
-          "items": {
-            "type": [
-              "null",
-              "string"
-            ]
-          }
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "type": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "locale": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": ["null", "object"],
       "properties": {
         "country": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "language": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       }
     },
     "version": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": ["null", "object"],
       "properties": {
         "versionTag": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       }
     },
     "associatedEntity": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "runSchedule": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": ["null", "object"],
       "properties": {
         "start": {
-          "type": [
-            "null",
-            "integer"
-          ]
+          "type": ["null", "integer"]
         },
         "end": {
-          "type": [
-            "null",
-            "integer"
-          ]
+          "type": ["null", "integer"]
         }
       }
     },
     "optimizationTargetType": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "created": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "lastModified": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "campaignGroup": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "dailyBudget": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": ["null", "object"],
       "properties": {
         "amount": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "currencyCode": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       }
     },
     "unitCost": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": ["null", "object"],
       "properties": {
         "amount": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "currencyCode": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       }
     },
     "creativeSelection": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "costType": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "name": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "offsiteDeliveryEnabled": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "id": {
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "audienceExpansionEnabled": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "account": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "status": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "storyDeliveryEnabled": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "pacingStrategy": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "format": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "objectiveType": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     }
   }
 }
