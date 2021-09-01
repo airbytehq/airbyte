@@ -24,6 +24,9 @@
 
 package io.airbyte.worker;
 
+import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.invoker.ApiException;
+import io.airbyte.api.client.model.HealthCheckRead;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
@@ -97,12 +100,30 @@ public class WorkerApp {
     }
   }
 
-  public static void main(String[] args) throws IOException {
+  public static void waitForServer(Configs configs) throws InterruptedException {
+    final AirbyteApiClient apiClient = new AirbyteApiClient(
+        new io.airbyte.api.client.invoker.ApiClient().setScheme("http")
+            .setHost(configs.getAirbyteApiHost())
+            .setPort(configs.getAirbyteApiPort())
+            .setBasePath("/api"));
+
+    boolean isHealthy = false;
+    while (!isHealthy) {
+      try {
+        HealthCheckRead healthCheck = apiClient.getHealthApi().getHealthCheck();
+        isHealthy = healthCheck.getDb();
+      } catch (ApiException e) {
+        LOGGER.info("Waiting for server to become available...");
+        Thread.sleep(2000);
+      }
+    }
+  }
+
+  public static void main(String[] args) throws IOException, InterruptedException {
     final Configs configs = new EnvConfigs();
 
-    // todo: add proper wait for server
+    waitForServer(configs);
 
-    // todo: move to a non-scheduler log endpoint for workers, can be a larger issue
     MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, LogClientSingleton.getSchedulerLogsRoot(configs).toString());
 
     final Path workspaceRoot = configs.getWorkspaceRoot();
