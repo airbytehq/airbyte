@@ -55,6 +55,7 @@ public class TestDefaultJdbcDatabase {
   private static PostgreSQLContainer<?> PSQL_DB;
 
   private JsonNode config;
+  private final JdbcSourceOperations sourceOperations = JdbcUtils.getDefaultSourceOperations();
 
   @BeforeAll
   static void init() {
@@ -90,7 +91,7 @@ public class TestDefaultJdbcDatabase {
   void testBufferedResultQuery() throws SQLException {
     final List<JsonNode> actual = getDatabaseFromConfig(config).bufferedResultSetQuery(
         connection -> connection.createStatement().executeQuery("SELECT * FROM id_and_name;"),
-        JdbcUtils::rowToJson);
+        sourceOperations::rowToJson);
 
     assertEquals(RECORDS_AS_JSON, actual);
   }
@@ -99,7 +100,7 @@ public class TestDefaultJdbcDatabase {
   void testResultSetQuery() throws SQLException {
     final Stream<JsonNode> actual = getDatabaseFromConfig(config).resultSetQuery(
         connection -> connection.createStatement().executeQuery("SELECT * FROM id_and_name;"),
-        JdbcUtils::rowToJson);
+        sourceOperations::rowToJson);
     final List<JsonNode> actualAsList = actual.collect(Collectors.toList());
     actual.close();
 
@@ -110,7 +111,7 @@ public class TestDefaultJdbcDatabase {
   void testQuery() throws SQLException {
     final Stream<JsonNode> actual = getDatabaseFromConfig(config).query(
         connection -> connection.prepareStatement("SELECT * FROM id_and_name;"),
-        JdbcUtils::rowToJson);
+        sourceOperations::rowToJson);
 
     assertEquals(RECORDS_AS_JSON, actual.collect(Collectors.toList()));
   }

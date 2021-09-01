@@ -27,6 +27,7 @@ package io.airbyte.integrations.destination.jdbc;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -90,7 +91,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
                                                             SqlOperations sqlOps)
       throws Exception {
     // attempt to get metadata from the database as a cheap way of seeing if we can connect.
-    database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils::rowToJson);
+    database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils.getDefaultSourceOperations()::rowToJson);
 
     // verify we have write permissions on the target schema by creating a table with a random name,
     // then dropping that table

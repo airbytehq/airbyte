@@ -67,6 +67,7 @@ public class TestStreamingJdbcDatabase {
   private JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration;
   private JdbcDatabase defaultJdbcDatabase;
   private JdbcDatabase streamingJdbcDatabase;
+  private JdbcSourceOperations sourceOperations = JdbcUtils.getDefaultSourceOperations();
 
   @BeforeAll
   static void init() {
@@ -128,7 +129,7 @@ public class TestStreamingJdbcDatabase {
 
     final List<JsonNode> actual = streamingJdbcDatabase.bufferedResultSetQuery(
         connection -> connection.createStatement().executeQuery("SELECT * FROM id_and_name;"),
-        JdbcUtils::rowToJson);
+        sourceOperations::rowToJson);
 
     assertEquals(RECORDS_AS_JSON, actual);
     verify(defaultJdbcDatabase).bufferedResultSetQuery(any(), any());
@@ -141,7 +142,7 @@ public class TestStreamingJdbcDatabase {
 
     final Stream<JsonNode> actual = streamingJdbcDatabase.resultSetQuery(
         connection -> connection.createStatement().executeQuery("SELECT * FROM id_and_name;"),
-        JdbcUtils::rowToJson);
+        sourceOperations::rowToJson);
     final List<JsonNode> actualAsList = actual.collect(Collectors.toList());
     actual.close();
 
@@ -162,7 +163,7 @@ public class TestStreamingJdbcDatabase {
           ps1.set(ps);
           return ps;
         },
-        JdbcUtils::rowToJson);
+        sourceOperations::rowToJson);
 
     assertEquals(RECORDS_AS_JSON, actual.collect(Collectors.toList()));
     // verify that the query configuration is invoked.
