@@ -252,7 +252,9 @@ jobs:
       #      - name: Get Docker Space
       #        run: docker run --rm busybox df -h
 
-      # make sure these always run before pushing platform docker images
+      - name: Check documentation
+        run: docker images | head -n 10
+
       - name: Run End-to-End Acceptance Tests
         run: ./tools/bin/acceptance_test.sh
 
