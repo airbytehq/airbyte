@@ -26,3 +26,4 @@ configMapGenerator:
 
 patchesStrategicMerge:
   - pod-antiaffinity.yaml
+  - parallelize-worker.yaml

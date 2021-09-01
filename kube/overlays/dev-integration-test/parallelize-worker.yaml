@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airbyte-worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      airbyte: worker
+  template:
+    metadata:
+      labels:
+        airbyte: worker
