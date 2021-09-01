@@ -25,8 +25,8 @@
 import json
 from unittest import TestCase
 
-import requests_mock
 import requests
+import requests_mock
 import timeout_decorator
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
 from source_zendesk_support import SourceZendeskSupport
@@ -47,18 +47,17 @@ class TestZendeskSupport(TestCase):
         with open(CONFIG_FILE, "r") as f:
             return SourceZendeskSupport.convert_config2stream_args(json.loads(f.read()))
 
-    # @timeout_decorator.timeout(10)
-    # def test_backoff(self):
-    #     """Zendesk sends the header 'Retry-After' about needed delay.
-    #     All streams have to handle it"""
-    #     timeout = 1
-    #     stream = Tags(**self.prepare_stream_args())
-    #     with requests_mock.Mocker() as m:
-    #         url = stream.url_base + stream.path()
-    #         m.get(url, text=json.dumps({}), status_code=429,
-    #               headers={"Retry-After": str(timeout)})
-    #         with self.assertRaises(UserDefinedBackoffException):
-    #             list(stream.read_records(sync_mode=None))
+    @timeout_decorator.timeout(10)
+    def test_backoff(self):
+        """Zendesk sends the header 'Retry-After' about needed delay.
+        All streams have to handle it"""
+        timeout = 1
+        stream = Tags(**self.prepare_stream_args())
+        with requests_mock.Mocker() as m:
+            url = stream.url_base + stream.path()
+            m.get(url, text=json.dumps({}), status_code=429, headers={"Retry-After": str(timeout)})
+            with self.assertRaises(UserDefinedBackoffException):
+                list(stream.read_records(sync_mode=None))
 
     def test_backoff_cases(self):
         """Zendesk sends the header different value for backoff logic"""
