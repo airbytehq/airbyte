@@ -24,22 +24,49 @@
 
 package io.airbyte.config.persistence;
 
+import static org.jooq.impl.DSL.asterisk;
+import static org.jooq.impl.DSL.count;
+import static org.jooq.impl.DSL.table;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.db.Database;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.jooq.Record1;
+import org.jooq.Result;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 /**
  * This class provides downstream tests with constants and helpers.
  */
-public abstract class BaseTest {
+public abstract class BaseDatabaseConfigPersistenceTest {
+
+  protected static PostgreSQLContainer<?> container;
+  protected static Database database;
+  protected static DatabaseConfigPersistence configPersistence;
+
+  @BeforeAll
+  public static void dbSetup() {
+    container = new PostgreSQLContainer<>("postgres:13-alpine")
+        .withDatabaseName("airbyte")
+        .withUsername("docker")
+        .withPassword("docker");
+    container.start();
+  }
+
+  @AfterAll
+  public static void dbDown() {
+    container.close();
+  }
 
   protected static final StandardSourceDefinition SOURCE_GITHUB;
   protected static final StandardSourceDefinition SOURCE_POSTGRES;
@@ -84,6 +111,23 @@ public abstract class BaseTest {
   // so streams are converted to sets before being compared.
   protected void assertSameConfigDump(Map<String, Stream<JsonNode>> expected, Map<String, Stream<JsonNode>> actual) {
     assertEquals(getMapWithSet(expected), getMapWithSet(actual));
+  }
+
+  protected void assertRecordCount(int expectedCount) throws Exception {
+    Result<Record1<Integer>> recordCount = database.query(ctx -> ctx.select(count(asterisk())).from(table("airbyte_configs")).fetch());
+    assertEquals(expectedCount, recordCount.get(0).value1());
+  }
+
+  protected void assertHasSource(StandardSourceDefinition source) throws Exception {
+    assertEquals(source, configPersistence
+        .getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, source.getSourceDefinitionId().toString(),
+            StandardSourceDefinition.class));
+  }
+
+  protected void assertHasDestination(StandardDestinationDefinition destination) throws Exception {
+    assertEquals(destination, configPersistence
+        .getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId().toString(),
+            StandardDestinationDefinition.class));
   }
 
 }
