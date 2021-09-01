@@ -507,7 +507,7 @@ from {{ from_table }}
         ]
 
         if self.destination_type == DestinationType.ORACLE:
-            column_inside_parenthesis = re.compile("\((.+)\)")
+            column_inside_parenthesis = re.compile(r"\((.+)\)")
             oracle_columns_safe = []
             for col in columns_name_safety:
                 if column_inside_parenthesis.findall(col):
