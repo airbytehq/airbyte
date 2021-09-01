@@ -39,6 +39,7 @@ import { PageConfig } from "pages/SettingsPage/SettingsPage";
 import { WorkspaceSettingsView } from "./views/workspaces/WorkspaceSettingsView";
 import { UsersSettingsView } from "packages/cloud/views/users/UsersSettingsView/UsersSettingsView";
 import { AccountSettingsView } from "packages/cloud/views/users/AccountSettingsView/AccountSettingsView";
+import OnboardingPage from "pages/OnboardingPage";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -140,6 +141,9 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
       <Route path={Routes.Settings}>
         <SettingsPage pageConfig={pageConfig} />
       </Route>
+      <Route exact path={Routes.Onboarding}>
+        <OnboardingPage />
+      </Route>
       <Route exact path={Routes.Root}>
         <SourcesPage />
       </Route>
@@ -179,6 +183,7 @@ const MainViewRoutes = () => {
 
 export const Routing: React.FC = () => {
   const { user, inited } = useAuthService();
+
   return (
     <Router>
       <Suspense fallback={<LoadingPage />}>

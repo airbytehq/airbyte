@@ -220,4 +220,13 @@ const useConnection = (): {
     deleteConnection,
   };
 };
+
+const useConnectionList = (): { connections: Connection[] } => {
+  const { workspace } = useWorkspace();
+  return useResource(ConnectionResource.listShape(), {
+    workspaceId: workspace.workspaceId,
+  });
+};
+
+export { useConnectionList };
 export default useConnection;

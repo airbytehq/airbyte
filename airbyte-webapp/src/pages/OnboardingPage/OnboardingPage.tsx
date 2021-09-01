@@ -18,10 +18,12 @@ import SourceStep from "./components/SourceStep";
 import DestinationStep from "./components/DestinationStep";
 import ConnectionStep from "./components/ConnectionStep";
 import WelcomeStep from "./components/WelcomeStep";
+import FinalStep from "./components/FinalStep";
 import { StepType } from "./types";
 import { useAnalytics } from "components/hooks/useAnalytics";
 import StepsCounter from "./components/StepsCounter";
 import LoadingPage from "components/LoadingPage";
+import { FormattedMessage } from "react-intl";
 
 const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   width: 100%;
@@ -176,13 +178,37 @@ const OnboardingPage: React.FC = () => {
       );
     }
 
-    return (
-      <ConnectionStep
-        errorStatus={errorStatusRequest?.status}
-        source={sources[0]}
-        destination={destinations[0]}
-      />
-    );
+    if (currentStep === StepType.SET_UP_CONNECTION) {
+      return (
+        <ConnectionStep
+          errorStatus={errorStatusRequest?.status}
+          source={sources[0]}
+          destination={destinations[0]}
+        />
+      );
+    }
+
+    const useCases = [
+      {
+        id: "replicateMySQL",
+        data: <FormattedMessage id="onboarding.replicateMySQL" />,
+      },
+      {
+        id: "consolidateMarketing",
+        data: <FormattedMessage id="onboarding.consolidateMarketing" />,
+      },
+      {
+        id: "consolidatePayment",
+        data: <FormattedMessage id="onboarding.consolidatePayment" />,
+      },
+      {
+        id: "buildDashboard",
+        data: <FormattedMessage id="onboarding.buildDashboard" />,
+      },
+      { id: "zoomCalls", data: <FormattedMessage id="onboarding.zoomCalls" /> },
+    ];
+
+    return <FinalStep useCases={useCases} />;
   };
 
   return (
