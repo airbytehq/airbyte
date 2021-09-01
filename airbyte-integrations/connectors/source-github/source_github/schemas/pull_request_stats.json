@@ -26,8 +26,8 @@
     "mergeable_state": {
       "type": ["null", "string"]
     },
-    "merged_by_id": {
-      "type": ["null", "integer"]
+    "merged_by": {
+      "$ref": "user.json"
     },
     "comments": {
       "type": ["null", "integer"]

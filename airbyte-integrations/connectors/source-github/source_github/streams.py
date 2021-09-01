@@ -289,8 +289,6 @@ class PullRequestStats(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
     """
 
-    fields_to_minimize = ("merged_by",)
-
     @property
     def record_keys(self) -> List[str]:
         return list(self.get_json_schema()["properties"].keys())
@@ -381,8 +379,6 @@ class Repositories(Organizations):
     """
     API docs: https://docs.github.com/en/rest/reference/repos#list-organization-repositories
     """
-
-    fields_to_minimize = ("owner",)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"orgs/{stream_slice['organization']}/repos"

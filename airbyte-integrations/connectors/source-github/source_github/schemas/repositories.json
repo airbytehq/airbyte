@@ -14,8 +14,8 @@
     "full_name": {
       "type": ["null", "string"]
     },
-    "owner_id": {
-      "type": ["null", "integer"]
+    "owner": {
+      "$ref": "user.json"
     },
     "private": {
       "type": ["null", "boolean"]
