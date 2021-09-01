@@ -54,4 +54,4 @@ CommerceTools has some [rate limit restrictions](https://docs.commercetools.com/
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.0  | 2021-09-01 | [5521](https://github.com/airbytehq/airbyte/pull/5521) | Initial Release. Source CommerceTools |
+| 0.1.0  | 2021-09-01 | [5794](https://github.com/airbytehq/airbyte/pull/5794) | Initial Release. Source CommerceTools |
