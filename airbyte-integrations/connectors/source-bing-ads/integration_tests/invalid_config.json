@@ -7,5 +7,5 @@
   "client_secret": "1234",
   "client_id": "123",
   "reports_start_date": "2018-11-13",
-  "report_aggregation": {"value": "Monthly"}
+  "report_aggregation": { "value": "Monthly" }
 }

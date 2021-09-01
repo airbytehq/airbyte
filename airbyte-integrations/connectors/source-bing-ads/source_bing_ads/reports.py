@@ -22,7 +22,7 @@
 # SOFTWARE.
 #
 
-import abc
+from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 
@@ -87,7 +87,7 @@ REPORT_FIELD_TYPES = {
 }
 
 
-class ReportsMixin(abc.ABC):
+class ReportsMixin(ABC):
     # The directory where the file with report will be downloaded.
     file_directory: str = "/tmp"
     # timeout for reporting download operations in milliseconds
@@ -96,7 +96,7 @@ class ReportsMixin(abc.ABC):
     aggregation_disabled: bool = False
 
     @property
-    @abc.abstractmethod
+    @abstractmethod
     def report_name(self) -> str:
         """
         Specifies bing ads report naming
@@ -104,7 +104,7 @@ class ReportsMixin(abc.ABC):
         pass
 
     @property
-    @abc.abstractmethod
+    @abstractmethod
     def report_columns(self) -> Iterable[str]:
         """
         Specifies bing ads report naming

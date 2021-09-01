@@ -39,7 +39,7 @@ CACHE: VcrCache = VcrCache()
 
 
 class BingAdsStream(Stream, ABC):
-    primary_key: Optional[str] = "Id"
+    primary_key: Optional[str] = None
     # indicates whether stream should cache incoming responses via VcrCache
     use_cache: bool = False
 
@@ -147,6 +147,8 @@ class Accounts(BingAdsStream):
     Stream caches incoming responses to be able to reuse this data in Campaigns stream
     """
 
+    primary_key = "Id"
+    # Stream caches incoming responses to avoid duplicated http requests
     use_cache: bool = True
     data_field: str = "AdvertiserAccount"
     service_name: str = "CustomerManagementService"
@@ -204,6 +206,7 @@ class Campaigns(BingAdsStream):
     Stream caches incoming responses to be able to reuse this data in AdGroups stream
     """
 
+    primary_key = "Id"
     # Stream caches incoming responses to avoid duplicated http requests
     use_cache: bool = True
     data_field: str = "Campaign"
@@ -243,6 +246,7 @@ class AdGroups(BingAdsStream):
     Stream caches incoming responses to be able to reuse this data in Ads stream
     """
 
+    primary_key = "Id"
     # Stream caches incoming responses to avoid duplicated http requests
     use_cache: bool = True
     data_field: str = "AdGroup"
@@ -276,6 +280,7 @@ class Ads(BingAdsStream):
     Ad schema: https://docs.microsoft.com/en-us/advertising/campaign-management-service/ad?view=bingads-13
     """
 
+    primary_key = "Id"
     data_field: str = "Ad"
     service_name: str = "CampaignManagement"
     operation_name: str = "GetAdsByAdGroupId"
@@ -314,7 +319,6 @@ class Ads(BingAdsStream):
 
 
 class BudgetSummaryReport(ReportsMixin, BingAdsStream):
-    primary_key = None
     data_field: str = ""
     service_name: str = "ReportingService"
     report_name: str = "BudgetSummaryReport"
@@ -337,7 +341,6 @@ class BudgetSummaryReport(ReportsMixin, BingAdsStream):
 
 
 class CampaignPerformanceReport(ReportsMixin, BingAdsStream):
-    primary_key = None
     data_field: str = ""
     service_name: str = "ReportingService"
     report_name: str = "CampaignPerformanceReport"
@@ -366,7 +369,6 @@ class CampaignPerformanceReport(ReportsMixin, BingAdsStream):
 
 
 class AdPerformanceReport(ReportsMixin, BingAdsStream):
-    primary_key = None
     data_field: str = ""
     service_name: str = "ReportingService"
     report_name: str = "AdPerformanceReport"
@@ -400,7 +402,6 @@ class AdPerformanceReport(ReportsMixin, BingAdsStream):
 
 
 class AdGroupPerformanceReport(ReportsMixin, BingAdsStream):
-    primary_key = None
     data_field: str = ""
     service_name: str = "ReportingService"
     report_name: str = "AdGroupPerformanceReport"
@@ -431,7 +432,6 @@ class AdGroupPerformanceReport(ReportsMixin, BingAdsStream):
 
 
 class KeywordPerformanceReport(ReportsMixin, BingAdsStream):
-    primary_key = None
     data_field: str = ""
     service_name: str = "ReportingService"
     report_name: str = "KeywordPerformanceReport"
@@ -468,7 +468,6 @@ class KeywordPerformanceReport(ReportsMixin, BingAdsStream):
 
 
 class AccountPerformanceReport(ReportsMixin, BingAdsStream):
-    primary_key = None
     data_field: str = ""
     service_name: str = "ReportingService"
     report_name: str = "AccountPerformanceReport"
@@ -522,13 +521,13 @@ class SourceBingAds(AbstractSource):
         client = Client(**config)
         return [
             Accounts(client, config),
+            AccountPerformanceReport(client, config),
             AdGroups(client, config),
             Ads(client, config),
+            AdGroupPerformanceReport(client, config),
+            AdPerformanceReport(client, config),
+            BudgetSummaryReport(client, config),
             Campaigns(client, config),
             CampaignPerformanceReport(client, config),
-            BudgetSummaryReport(client, config),
-            AdPerformanceReport(client, config),
-            AdGroupPerformanceReport(client, config),
             KeywordPerformanceReport(client, config),
-            AccountPerformanceReport(client, config),
         ]
