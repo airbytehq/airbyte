@@ -27,7 +27,7 @@ import calendar
 import time
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl, urlparse
 
 import pytz
@@ -69,23 +69,26 @@ class SourceZendeskSupportStream(HttpStream, ABC):
             return dict(parse_qsl(urlparse(next_page).query)).get("page")
         return None
 
-    def backoff_time(self, response: requests.Response) -> int:
+    def backoff_time(self, response: requests.Response) -> Union[int, float]:
         """
         The rate limit is 700 requests per minute
         # monitoring-your-request-activity
         See https://developer.zendesk.com/api-reference/ticketing/account-configuration/usage_limits/
         The response has a Retry-After header that tells you for how many seconds to wait before retrying.
         """
-        retry_after = response.headers.get("Retry-After")
-        if retry_after:
-            return int(retry_after)
-        # the header X-Rate-Limit returns a amount of requests per minute
-        # we try to wait twice as long
-        rate_limit = float(response.headers.get("X-Rate-Limit") or 0)
-        if rate_limit:
-            return (60.0 / rate_limit) * 2
         # default value if there is not any headers
-        return 60
+        sleep_timeout = 60
+        retry_after = int(response.headers.get("Retry-After") or 0)
+        if retry_after and retry_after > 0:
+            sleep_timeout = int(retry_after)
+        else:
+            # the header X-Rate-Limit returns a amount of requests per minute
+            # we try to wait twice as long
+            rate_limit = float(response.headers.get("X-Rate-Limit") or 0)
+            if rate_limit and rate_limit > 0:
+                return (60.0 / rate_limit) * 2
+
+        return sleep_timeout
 
     @staticmethod
     def str2datetime(str_dt: str) -> datetime:
@@ -140,7 +143,8 @@ class IncrementalEntityStream(SourceZendeskSupportStream, ABC):
     def __init__(self, start_date: str, **kwargs):
         super().__init__(**kwargs)
         # add the custom value for skiping of not relevant records
-        self._start_date = self.str2datetime(start_date) if isinstance(start_date, str) else start_date
+        self._start_date = self.str2datetime(
+            start_date) if isinstance(start_date, str) else start_date
 
     def path(self, **kwargs) -> str:
         return f"{self.name}.json"
@@ -158,7 +162,8 @@ class IncrementalEntityStream(SourceZendeskSupportStream, ABC):
         # try to save maximum value of a cursor field
         return {
             self.cursor_field: max(
-                str((latest_record or {}).get(self.cursor_field, "")), str((current_stream_state or {}).get(self.cursor_field, ""))
+                str((latest_record or {}).get(self.cursor_field, "")), str(
+                    (current_stream_state or {}).get(self.cursor_field, ""))
             )
         }
 
@@ -210,7 +215,8 @@ class IncrementalExportStream(IncrementalEntityStream, ABC):
             if current_state and isinstance(current_state, str) and not current_state.isdigit():
                 # try to save a stage with UnixTime format
                 current_state = self.str2unixtime(current_state)
-            start_time = int(current_state or time.mktime(self._start_date.timetuple())) + 1
+            start_time = int(current_state or time.mktime(
+                self._start_date.timetuple())) + 1
             # +1 because the API returns all records where  generated_timestamp >= start_time
 
             now = calendar.timegm(datetime.now().utctimetuple())
@@ -264,7 +270,8 @@ class IncrementalUnsortedStream(IncrementalEntityStream, ABC):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
 
-        max_updated_at = self.datetime2str(self._max_cursor_date) if self._max_cursor_date else ""
+        max_updated_at = self.datetime2str(
+            self._max_cursor_date) if self._max_cursor_date else ""
         return {self.cursor_field: max(max_updated_at, (current_stream_state or {}).get(self.cursor_field, ""))}
 
     @property
@@ -306,7 +313,8 @@ class IncrementalSortedCursorStream(IncrementalUnsortedStream, ABC):
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(next_page_token=next_page_token, **kwargs)
-        params.update({"sort_by": self.cursor_field, "sort_order": "desc", "limit": self.page_size})
+        params.update({"sort_by": self.cursor_field,
+                       "sort_order": "desc", "limit": self.page_size})
 
         if next_page_token:
             params["cursor"] = next_page_token
@@ -324,7 +332,8 @@ class IncrementalSortedPageStream(IncrementalUnsortedPageStream, ABC):
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
         if params:
-            params.update({"sort_by": self.cursor_field, "sort_order": "desc", "limit": self.page_size})
+            params.update({"sort_by": self.cursor_field,
+                           "sort_order": "desc", "limit": self.page_size})
         return params
 
 
@@ -348,12 +357,15 @@ class TicketComments(IncrementalSortedPageStream):
         stream_state = stream_state or {}
         # convert a comment state value to a ticket one
         # Comment state: {"created_at": "2021-07-30T12:30:09Z"} => Ticket state {"generated_timestamp": 1627637409}
-        ticket_stream_value = Tickets.str2unixtime(stream_state.get(self.cursor_field))
+        ticket_stream_value = Tickets.str2unixtime(
+            stream_state.get(self.cursor_field))
 
         tickets = Tickets(self._start_date, subdomain=self._subdomain, authenticator=self.authenticator).read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_state={Tickets.cursor_field: ticket_stream_value}
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_state={
+                Tickets.cursor_field: ticket_stream_value}
         )
-        stream_state_dt = self.str2datetime(stream_state.get(self.cursor_field))
+        stream_state_dt = self.str2datetime(
+            stream_state.get(self.cursor_field))
 
         # selects all tickets what have at least one comment
         ticket_ids = [
@@ -365,7 +377,8 @@ class TicketComments(IncrementalSortedPageStream):
             for ticket in tickets
             if ticket["comment_count"]
         ]
-        self.logger.info(f"Found updated {len(ticket_ids)} ticket(s) with comments")
+        self.logger.info(
+            f"Found updated {len(ticket_ids)} ticket(s) with comments")
         # sort slices by generated_timestamp
         ticket_ids.sort(key=lambda ticket: ticket[Tickets.cursor_field])
         return ticket_ids
