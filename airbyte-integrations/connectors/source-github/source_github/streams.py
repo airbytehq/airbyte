@@ -293,9 +293,7 @@ class RepositoryStats(GithubStream):
         return f"repos/{stream_slice['repository']}"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        response_data = self.catch_error(response, stream_slice=stream_slice)
-        if response_data is not None:
-            yield self.transform(response_data)
+        yield response.json()
 
 
 class Assignees(GithubStream):
