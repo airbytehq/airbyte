@@ -40,13 +40,25 @@ import java.util.stream.Collectors;
 
 public class DatabricksSqlOperations extends JdbcSqlOperations {
 
-  private boolean isLocalFileEnabled = false;
 
   @Override
   public void executeTransaction(JdbcDatabase database, List<String> queries) throws Exception {
     database.executeWithinTransaction(queries);
   }
 
+  @Override
+  public String createTableQuery(JdbcDatabase database, String schemaName, String tableName) {
+    // Since Databricks uses Hive, there isn't an enforcement of primary keys or ability to set default column values
+    return String.format(
+        "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
+            + "%s STRING,\n"
+            + "%s JSON,\n"
+            + "%s TIMESTAMP\n"
+            + ");\n",
+        schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+  }
+
+  // THIS IS A DUMMY RIGHT NOW
   @Override
   public void insertRecordsInternal(JdbcDatabase database,
                                     List<AirbyteRecordMessage> records,
@@ -56,123 +68,112 @@ public class DatabricksSqlOperations extends JdbcSqlOperations {
     if (records.isEmpty()) {
       return;
     }
-
-    verifyLocalFileEnabled(database);
-    try {
-      File tmpFile = Files.createTempFile(tmpTableName + "-", ".tmp").toFile();
-
-      loadDataIntoTable(database, records, schemaName, tmpTableName, tmpFile);
-
-      Files.delete(tmpFile.toPath());
-    } catch (IOException e) {
-      throw new SQLException(e);
-    }
-  }
-
-  private void loadDataIntoTable(JdbcDatabase database,
-                                 List<AirbyteRecordMessage> records,
-                                 String schemaName,
-                                 String tmpTableName,
-                                 File tmpFile)
-      throws SQLException {
-    database.execute(connection -> {
-      try {
-        writeBatchToFile(tmpFile, records);
-
-        String absoluteFile = "'" + tmpFile.getAbsolutePath() + "'";
-
-        String query = String.format(
-            "LOAD DATA LOCAL INFILE %s INTO TABLE %s.%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' ESCAPED BY '\\\"' LINES TERMINATED BY '\\r\\n'",
-            absoluteFile, schemaName, tmpTableName);
-
-        try (Statement stmt = connection.createStatement()) {
-          stmt.execute(query);
-        }
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    });
-  }
-
-  @Override
-  protected JsonNode formatData(JsonNode data) {
-    return StandardNameTransformer.formatJsonPath(data);
-  }
-
-  void verifyLocalFileEnabled(JdbcDatabase database) throws SQLException {
-    boolean localFileEnabled = isLocalFileEnabled || checkIfLocalFileIsEnabled(database);
-    if (!localFileEnabled) {
-      tryEnableLocalFile(database);
-    }
-    isLocalFileEnabled = true;
-  }
-
-  private void tryEnableLocalFile(JdbcDatabase database) throws SQLException {
-    database.execute(connection -> {
-      try (Statement statement = connection.createStatement()) {
-        statement.execute("set global local_infile=true");
-      } catch (Exception e) {
-        throw new RuntimeException(
-            "The DB user provided to airbyte was unable to switch on the local_infile attribute on the MySQL server. As an admin user, you will need to run \"SET GLOBAL local_infile = true\" before syncing data with Airbyte.",
-            e);
-      }
-    });
-  }
-
-  private double getVersion(JdbcDatabase database) throws SQLException {
-    List<String> value = database.resultSetQuery(connection -> connection.createStatement().executeQuery("select version()"),
-        resultSet -> resultSet.getString("version()")).collect(Collectors.toList());
-    return Double.parseDouble(value.get(0).substring(0, 3));
-  }
-
-  VersionCompatibility isCompatibleVersion(JdbcDatabase database) throws SQLException {
-    double version = getVersion(database);
-    return new VersionCompatibility(version, version >= 5.7);
-  }
-
-  @Override
-  public boolean isSchemaRequired() {
-    return false;
-  }
-
-  private boolean checkIfLocalFileIsEnabled(JdbcDatabase database) throws SQLException {
-    List<String> value = database.resultSetQuery(connection -> connection.createStatement().executeQuery("SHOW GLOBAL VARIABLES LIKE 'local_infile'"),
-        resultSet -> resultSet.getString("Value")).collect(Collectors.toList());
-
-    return value.get(0).equalsIgnoreCase("on");
-  }
-
-  @Override
-  public String createTableQuery(JdbcDatabase database, String schemaName, String tableName) {
-    // MySQL requires byte information with VARCHAR. Since we are using uuid as value for the column,
-    // 256 is enough
-    return String.format(
-        "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
-            + "%s VARCHAR(256) PRIMARY KEY,\n"
-            + "%s JSON,\n"
-            + "%s TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6)\n"
-            + ");\n",
-        schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
-  }
-
-  public static class VersionCompatibility {
-
-    private final double version;
-    private final boolean isCompatible;
-
-    public VersionCompatibility(double version, boolean isCompatible) {
-      this.version = version;
-      this.isCompatible = isCompatible;
-    }
-
-    public double getVersion() {
-      return version;
-    }
-
-    public boolean isCompatible() {
-      return isCompatible;
-    }
+    throw new SQLException();
 
   }
+
+
+//  @Override
+//  public void insertRecordsInternal(JdbcDatabase database,
+//                                    List<AirbyteRecordMessage> records,
+//                                    String schemaName,
+//                                    String tmpTableName)
+//      throws SQLException {
+//    if (records.isEmpty()) {
+//      return;
+//    }
+//
+//    verifyLocalFileEnabled(database);
+//    try {
+//      File tmpFile = Files.createTempFile(tmpTableName + "-", ".tmp").toFile();
+//
+//      loadDataIntoTable(database, records, schemaName, tmpTableName, tmpFile);
+//
+//      Files.delete(tmpFile.toPath());
+//    } catch (IOException e) {
+//      throw new SQLException(e);
+//    }
+//  }
+//
+//  private void loadDataIntoTable(JdbcDatabase database,
+//                                 List<AirbyteRecordMessage> records,
+//                                 String schemaName,
+//                                 String tmpTableName,
+//                                 File tmpFile)
+//      throws SQLException {
+//    database.execute(connection -> {
+//      try {
+//        writeBatchToFile(tmpFile, records);
+//
+//        String absoluteFile = "'" + tmpFile.getAbsolutePath() + "'";
+//
+//        String query = String.format(
+//            "LOAD DATA LOCAL INFILE %s INTO TABLE %s.%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' ESCAPED BY '\\\"' LINES TERMINATED BY '\\r\\n'",
+//            absoluteFile, schemaName, tmpTableName);
+//
+//        try (Statement stmt = connection.createStatement()) {
+//          stmt.execute(query);
+//        }
+//      } catch (Exception e) {
+//        throw new RuntimeException(e);
+//      }
+//    });
+//  }
+
+//  private double getVersion(JdbcDatabase database) throws SQLException {
+//    List<String> value = database.resultSetQuery(connection -> connection.createStatement().executeQuery("select version()"),
+//        resultSet -> resultSet.getString("version()")).collect(Collectors.toList());
+//    return Double.parseDouble(value.get(0).substring(0, 3));
+//  }
+//
+//  VersionCompatibility isCompatibleVersion(JdbcDatabase database) throws SQLException {
+//    double version = getVersion(database);
+//    return new VersionCompatibility(version, version >= 5.7);
+//  }
+//
+//  @Override
+//  public boolean isSchemaRequired() {
+//    return false;
+//  }
+//
+//  private boolean checkIfLocalFileIsEnabled(JdbcDatabase database) throws SQLException {
+//    List<String> value = database.resultSetQuery(connection -> connection.createStatement().executeQuery("SHOW GLOBAL VARIABLES LIKE 'local_infile'"),
+//        resultSet -> resultSet.getString("Value")).collect(Collectors.toList());
+//
+//    return value.get(0).equalsIgnoreCase("on");
+//  }
+//
+//  @Override
+//  public String createTableQuery(JdbcDatabase database, String schemaName, String tableName) {
+//    // MySQL requires byte information with VARCHAR. Since we are using uuid as value for the column,
+//    // 256 is enough
+//    return String.format(
+//        "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
+//            + "%s VARCHAR(256) PRIMARY KEY,\n"
+//            + "%s JSON,\n"
+//            + "%s TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6)\n"
+//            + ");\n",
+//        schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+//  }
+
+//  public static class VersionCompatibility {
+//
+//    private final double version;
+//    private final boolean isCompatible;
+//
+//    public VersionCompatibility(double version, boolean isCompatible) {
+//      this.version = version;
+//      this.isCompatible = isCompatible;
+//    }
+//
+//    public double getVersion() {
+//      return version;
+//    }
+//
+//    public boolean isCompatible() {
+//      return isCompatible;
+//    }
+//
+//  }
 
 }

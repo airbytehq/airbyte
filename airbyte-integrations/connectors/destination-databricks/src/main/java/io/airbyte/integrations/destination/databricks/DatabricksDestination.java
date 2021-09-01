@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.CopyConsumerFactory;
@@ -42,6 +43,10 @@ public class DatabricksDestination extends CopyDestination {
 
   private static final String DRIVER_CLASS = "com.simba.spark.jdbc.Driver";
 
+  public static void main(String[] args) throws Exception {
+    new IntegrationRunner(new DatabricksDestination()).run(args);
+  }
+
   @Override
   public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> outputRecordCollector) {
     return CopyConsumerFactory.create(
@@ -52,7 +57,7 @@ public class DatabricksDestination extends CopyDestination {
         S3Config.getS3Config(config),
         catalog,
         new DatabricksStreamCopierFactory(),
-        config.get("schema").asText()
+        config.get("schema").asText().equals("") ? "default" : config.get("schema").asText()
     );
   }
 
@@ -69,9 +74,11 @@ public class DatabricksDestination extends CopyDestination {
   @Override
   public JdbcDatabase getDatabase(JsonNode databricksConfig) {
     return Databases.createJdbcDatabase(
-        databricksConfig.get("username").asText(),
-        databricksConfig.has("password") ? databricksConfig.get("password").asText() : null,
-        databricksConfig.get("jdbc_url").asText(),
+        "token",
+        databricksConfig.get("pat").asText(),
+        String.format("jdbc:spark://%s:443/default;transportMode=http;ssl=1;httpPath=%s",
+            databricksConfig.get("serverHostname").asText(),
+            databricksConfig.get("httpPath").asText()),
         DRIVER_CLASS
     );
   }

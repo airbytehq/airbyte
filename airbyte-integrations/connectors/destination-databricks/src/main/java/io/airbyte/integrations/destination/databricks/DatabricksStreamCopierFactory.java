@@ -13,6 +13,7 @@ import io.airbyte.integrations.destination.s3.writer.ProductionWriterFactory;
 import io.airbyte.integrations.destination.s3.writer.S3WriterFactory;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import java.sql.Timestamp;
 
 public class DatabricksStreamCopierFactory implements StreamCopierFactory<S3Config> {
@@ -27,13 +28,14 @@ public class DatabricksStreamCopierFactory implements StreamCopierFactory<S3Conf
                              SqlOperations sqlOperations) {
     try {
       AirbyteStream stream = configuredStream.getStream();
+      DestinationSyncMode syncMode = configuredStream.getDestinationSyncMode();
       String schema = StreamCopierFactory.getSchema(stream, configuredSchema, nameTransformer);
       AmazonS3 s3Client = S3StreamCopier.getAmazonS3(s3Config);
       S3WriterFactory writerFactory = new ProductionWriterFactory();
       Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
       return new DatabricksStreamCopier(
-          stagingFolder, schema, configuredStream, s3Client, db, s3Config, nameTransformer, sqlOperations, writerFactory, uploadTimestamp);
+          stagingFolder, syncMode, schema, configuredStream, stream.getName(), s3Client, db, s3Config, nameTransformer, sqlOperations, writerFactory, uploadTimestamp);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
