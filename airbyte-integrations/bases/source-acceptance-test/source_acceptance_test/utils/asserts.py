@@ -24,22 +24,17 @@
 
 import logging
 import re
-import pendulum
 from collections import defaultdict
 from typing import List, Mapping
 
+import pendulum
 from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog
-from jsonschema import Draft7Validator, FormatChecker, ValidationError, FormatError
+from jsonschema import Draft7Validator, FormatChecker, FormatError, ValidationError
 
-timestamp_regex = re.compile((r"^\d{4}-\d?\d-\d?\d" # date
-                              r"(\s|T)" # separator
-                              r"\d?\d:\d?\d:\d?\d(.\d+)?" # time
-                              r".*$" #timezone
-                             ))
+timestamp_regex = re.compile((r"^\d{4}-\d?\d-\d?\d" r"(\s|T)" r"\d?\d:\d?\d:\d?\d(.\d+)?" r".*$"))  # date  # separator  # time  # timezone
 
 
 class CustomFormatChecker(FormatChecker):
-
     @staticmethod
     def check_datetime(value: str) -> bool:
         valid_format = timestamp_regex.match(value)
@@ -57,7 +52,6 @@ class CustomFormatChecker(FormatChecker):
                 raise FormatError(f"{instance} has invalid datetime format")
         else:
             return super().check(instance, format)
-
 
 
 def verify_records_schema(
