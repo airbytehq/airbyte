@@ -170,7 +170,7 @@ public class ServerApp implements ServerRunnable {
   public static ServerRunnable getServer(ServerFactory apiFactory) throws Exception {
     final Configs configs = new EnvConfigs();
 
-    LogClientSingleton.setWorkspaceMdc(LogClientSingleton.getSchedulerLogsRoot(configs));
+    LogClientSingleton.setWorkspaceMdc(LogClientSingleton.getServerLogsRoot(configs));
 
     LOGGER.info("Creating config repository...");
     final Database configDatabase = new ConfigsDatabaseInstance(
