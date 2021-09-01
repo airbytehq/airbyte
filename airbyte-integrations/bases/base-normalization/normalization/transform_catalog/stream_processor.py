@@ -77,7 +77,7 @@ class StreamProcessor(object):
         stream_name: str,
         destination_type: DestinationType,
         raw_schema: str,
-            default_schema: str,
+        default_schema: str,
         schema: str,
         source_sync_mode: SyncMode,
         destination_sync_mode: DestinationSyncMode,
@@ -155,7 +155,7 @@ class StreamProcessor(object):
         stream_name: str,
         destination_type: DestinationType,
         raw_schema: str,
-            default_schema: str,
+        default_schema: str,
         schema: str,
         source_sync_mode: SyncMode,
         destination_sync_mode: DestinationSyncMode,
@@ -235,7 +235,7 @@ class StreamProcessor(object):
         if self.destination_sync_mode.value == DestinationSyncMode.append_dedup.value:
             from_table = self.add_to_outputs(self.generate_dedup_record_model(from_table, column_names), is_intermediate=True, suffix="ab4")
             if self.destination_type == DestinationType.ORACLE:
-                where_clause = "\nwhere \"_AIRBYTE_ROW_NUM\" = 1"
+                where_clause = '\nwhere "_AIRBYTE_ROW_NUM" = 1'
             else:
                 where_clause = "\nwhere _airbyte_row_num = 1"
             from_table = self.add_to_outputs(
@@ -340,7 +340,7 @@ select
   {%- for field in fields %}
     {{ field }},
   {%- endfor %}
-    {{ col_emitted_at }} 
+    {{ col_emitted_at }}
 from {{ from_table }} {{ table_alias }}
 {{ unnesting_after_query }}
 {{ sql_table_comment }}
@@ -378,8 +378,8 @@ from {{ from_table }} {{ table_alias }}
         table_alias = f"{table_alias}"
         if "unnested_column_value" in json_column_name:
             table_alias = ""
-        if json_column_name.startswith('\'_') and self.destination_type == DestinationType.ORACLE:
-            json_column_name = json_column_name.replace('\'', '')
+        if json_column_name.startswith("'_") and self.destination_type == DestinationType.ORACLE:
+            json_column_name = json_column_name.replace("'", "")
             json_column_name = self.name_transformer.normalize_column_name(json_column_name, False, False)
 
         json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path})")
@@ -390,8 +390,10 @@ from {{ from_table }} {{ table_alias }}
                 json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path}, {normalized_json_path})")
             elif is_simple_property(definition["type"]):
                 json_extract = jinja_call(f"json_extract_scalar({json_column_name}, {json_path}, {normalized_json_path})")
-        if self.destination_type == DestinationType.ORACLE and 'quote(' in column_name:
+
+        if self.destination_type == DestinationType.ORACLE and "quote(" in column_name:
             column_name = jinja_call(column_name)
+
         return f"{json_extract} as {column_name}"
 
     def generate_column_typing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
@@ -448,12 +450,18 @@ from {{ from_table }}
         else:
             print(f"WARN: Unknown type {definition['type']} for column {property_name} at {self.current_json_path()}")
             return column_name
-        if self.destination_type == DestinationType.ORACLE and 'quote(' in column_name:
+        if self.destination_type == DestinationType.ORACLE and "quote(" in column_name:
             column_name = jinja_call(column_name)
         return f"cast({column_name} as {sql_type}) as {column_name}"
 
     def generate_id_hashing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
+
         if self.destination_type == DestinationType.ORACLE:
+            # Oracle doesn't have the surrogate_key macro
+            # because of this we use Oracle default function to hash column
+            # there is a open issue requesting the function to be implemented in oracle-dbt lib
+            # https://github.com/techindicium/dbt-oracle/issues/24
+
             hash_sql_template = """
 -- SQL model to build a hash column based on the values of this record
 select
@@ -487,6 +495,7 @@ select
     ]) {{ '}}' }} as {{ hash_id }}
 from {{ from_table }}
 {{ sql_table_comment }} """
+
         template = Template(hash_sql_template)
         sql = template.render(
             parent_hash_id=self.parent_hash_id(),
@@ -498,7 +507,7 @@ from {{ from_table }}
         return sql
 
     def oracle_col_jinja(self, col_name: str):
-        if col_name.replace('\'', '').startswith('_'):
+        if col_name.replace("'", "").startswith("_"):
             col_name = self.name_transformer.normalize_column_name(col_name)
 
         if "(" in col_name:
@@ -540,7 +549,8 @@ from {{ from_table }}
             return column_name
 
     def generate_dedup_record_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
-        template = Template("""
+        template = Template(
+            """
 -- SQL model to prepare for deduplicating records based on the hash record column
 select
   row_number() over (
@@ -550,11 +560,14 @@ select
   tmp.*
 from {{ from_table }} tmp
 {{ sql_table_comment }}
-        """)
+        """
+        )
         sql = template.render(
             active_row=self.process_col("_airbyte_row_num"),
             col_emitted_at=self.get_emitted_at(),
-            hash_id=self.hash_id(), from_table=jinja_call(from_table), sql_table_comment=self.sql_table_comment(include_from_table=True)
+            hash_id=self.hash_id(),
+            from_table=jinja_call(from_table),
+            sql_table_comment=self.sql_table_comment(include_from_table=True),
         )
         return sql
 
@@ -580,7 +593,7 @@ select
     lag({{ cursor_field }}) over (
         partition by {{ primary_key }}
         order by {{ cursor_field }} desc, {{ col_emitted_at }} desc
-    ) as "_AIRBYTE_END_AT", 
+    ) as "_AIRBYTE_END_AT",
     coalesce(cast(lag({{ cursor_field }}) over (
         partition by {{ primary_key }}
         order by {{ cursor_field }} desc, {{ col_emitted_at }} desc
@@ -710,7 +723,7 @@ from {{ from_table }}
         )
         return sql
 
-    def list_fields(self,column_names: Dict[str, Tuple[str, str]]) -> List[str]:
+    def list_fields(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
         if self.destination_type == DestinationType.ORACLE:
             return [self.oracle_col_jinja(column_names[field][0]) for field in column_names]
         return [column_names[field][0] for field in column_names]
