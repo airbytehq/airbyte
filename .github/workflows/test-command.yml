@@ -156,9 +156,13 @@ jobs:
           ZOOM_INTEGRATION_TEST_CREDS: ${{ secrets.ZOOM_INTEGRATION_TEST_CREDS }}
           PLAID_INTEGRATION_TEST_CREDS: ${{ secrets.PLAID_INTEGRATION_TEST_CREDS }}
           DESTINATION_S3_INTEGRATION_TEST_CREDS: ${{ secrets.DESTINATION_S3_INTEGRATION_TEST_CREDS }}
+          DESTINATION_AZURE_BLOB_CREDS: ${{ secrets.DESTINATION_AZURE_BLOB_CREDS }}
           DESTINATION_GCS_CREDS: ${{ secrets.DESTINATION_GCS_CREDS }}
+          DESTINATION_DYNAMODB_TEST_CREDS: ${{ secrets.DESTINATION_DYNAMODB_TEST_CREDS }}
           APIFY_INTEGRATION_TEST_CREDS: ${{ secrets.APIFY_INTEGRATION_TEST_CREDS }}
           SOURCE_ZUORA_TEST_CREDS: ${{ secrets.SOURCE_ZUORA_TEST_CREDS }}
+          SOURCE_BAMBOO_HR_CREDS: ${{ secrets.SOURCE_BAMBOO_HR_CREDS }}
+          SOURCE_BIGCOMMERCE_CREDS: ${{ secrets.SOURCE_BIGCOMMERCE_CREDS }}
       - run: |
           ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
         name: test ${{ github.event.inputs.connector }}
