@@ -4,19 +4,54 @@
     "object"
   ],
   "properties": {
-    "targeting": {
-      "type": [
-        "null",
-        "object"
-      ],
-      "additionalProperties": true
-    },
     "targetingCriteria": {
-      "type": [
-        "null",
-        "object"
-      ],
-      "additionalProperties": true
+      "type": ["null","object"],
+      "properties": {
+        "include": {
+          "type": ["null", "object"],
+          "properties": {
+            "and": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "type": {
+                    "type": ["null", "string"]
+                  },
+                  "values": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "exclude": {
+          "type": ["null", "object"],
+          "properties": {
+            "or": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "type": {
+                    "type": ["null", "string"]
+                  },
+                  "values": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "servingStatuses": {
           "type": [

@@ -63,19 +63,46 @@
       ]
     },
     "variables": {
-      "type": [
-        "null",
-        "object"
-      ],
+      "type": ["null","object"],
       "properties": {
-        "data": {
-          "type": [
-            "null",
-            "object"
-          ],
-          "additionalProperties": true
+        "click_uri": {
+          "type": ["null","string"]
+        },
+        "type": {
+          "type": ["null","string"]
+        },
+        "values": {
+              "type": ["null","array"],
+              "items": {
+                "type": ["null","object"],
+                "properties": {
+                  "key": {
+                    "type": ["null","string"]
+                  },
+                  "value": {
+                    "anyOf": [
+                      {
+                        "type": ["null","string"]
+                      },
+                      {
+                        "type": ["null","boolean"]
+                      },
+                      {
+                        "type": ["null","number"]
+                      },
+                      {
+                        "type": ["null","integer"]
+                      },
+                      {
+                        "type": ["null","object"],
+                        "additionalProperties": true
+                      }
+                    ]
+                  }
+                }
+              }
+            } 
         }
-      }
     },
     "version": {
       "type": [
