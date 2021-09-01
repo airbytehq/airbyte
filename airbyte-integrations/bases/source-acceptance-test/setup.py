@@ -39,7 +39,6 @@ MAIN_REQUIREMENTS = [
     "pprintpp~=0.4",
     "dpath~=2.0.1",
     "jsonschema~=3.2.0",
-    "rfc3339-validator~=0.1.4",
 ]
 
 setuptools.setup(
