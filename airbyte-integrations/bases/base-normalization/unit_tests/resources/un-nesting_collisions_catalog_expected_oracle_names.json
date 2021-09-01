@@ -1,22 +1,15 @@
-{
-  "schema_test.simple stream name.simple stream name": {
-    "file": "simple_stream_name_2b1",
-    "schema": "schema_test",
-    "table": "simple_stream_name_2b1"
-  },
-  "schema_test.simple.simple": {
-    "file": "simple",
-    "schema": "schema_test",
-    "table": "simple"
-  },
-  "schema_test.simple_b94_stream_name.simple_b94_stream_name": {
-    "file": "schema_test_simple_b94_stream_name_b82",
-    "schema": "schema_test",
-    "table": "simple_b94_stream_name_b82"
-  },
-  "schema_test.simple_stream_name.stream_name": {
-    "file": "simple_60f_stream_name",
-    "schema": "schema_test",
-    "table": "simple_60f_stream_name"
-  }
-}
+{"namespace.simple stream name.simple stream name": {"file": "simple_stream_name_f35",
+                                                     "schema": "namespace",
+                                                     "table": "simple_stream_name_f35"},
+ "namespace.simple.simple": {"file": "simple",
+                             "schema": "namespace",
+                             "table": "simple"},
+ "namespace.simple_stream_name.stream_name": {"file": "namespace_simple_b94_stream_name",
+                                              "schema": "namespace",
+                                              "table": "simple_b94_stream_name"},
+ "other_namespace.simple_b94_stream_name.simple_b94_stream_name": {"file": "other_namespace_simple_b94_stream_name",
+                                                                   "schema": "other_namespace",
+                                                                   "table": "simple_b94_stream_name"},
+ "yet_another_namespace_with_a_very_long_name.simple_b94_stream_name.simple_b94_stream_name": {"file": "yet_another_namespace_with_a_very_long_name_simple_b94_stream_name",
+                                                                                               "schema": "yet_another_namespace_with_a_very_long_name",
+                                                                                               "table": "simple_b94_stream_name"}}

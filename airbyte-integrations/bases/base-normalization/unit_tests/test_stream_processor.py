@@ -59,6 +59,7 @@ def test_cursor_field(cursor_field: List[str], expecting_exception: bool, expect
     stream_processor = StreamProcessor.create(
         stream_name="test_cursor_field",
         destination_type=DestinationType.POSTGRES,
+        default_schema="default_schema",
         raw_schema="raw_schema",
         schema="schema_name",
         source_sync_mode=SyncMode.incremental,
@@ -103,6 +104,7 @@ def test_primary_key(
         stream_name="test_primary_key",
         destination_type=DestinationType.POSTGRES,
         raw_schema="raw_schema",
+        default_schema="default_schema",
         schema="schema_name",
         source_sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append_dedup,
