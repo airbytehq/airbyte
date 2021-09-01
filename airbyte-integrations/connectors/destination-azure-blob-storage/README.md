@@ -8,7 +8,7 @@ As a community contributor, you will need access to Azure to run the integration
 
 - Create an AzureBlobStorage account for testing. Check if it works under https://portal.azure.com/ -> "Storage explorer (preview)".
 - Get your `azure_blob_storage_account_name` and `azure_blob_storage_account_key` that can read and write to the Azure Container.
-- Paste the accountName and key information into the config files under [`./sample_secrets`](secrets).
+- Paste the accountName and key information into the config files under [`./sample_secrets`](./sample_secrets).
 - Rename the directory from `sample_secrets` to `secrets`.
 - Feel free to modify the config files with different settings in the acceptance test file (e.g. `AzureBlobStorageJsonlDestinationAcceptanceTest.java`, method `getFormatConfig`), as long as they follow the schema defined in [spec.json](src/main/resources/spec.json).
 

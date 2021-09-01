@@ -28,13 +28,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.jdbc.DefaultSqlOperations;
+import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations {
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -57,13 +58,15 @@ class SnowflakeSqlOperations extends DefaultSqlOperations implements SqlOperatio
   }
 
   @Override
-  public void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tableName) throws SQLException {
+  public void insertRecordsInternal(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tableName)
+      throws SQLException {
     LOGGER.info("actual size of records: {}", records.size());
     var config = ((SnowflakeDatabase.SnowflakeConnectionSupplier) ((DefaultJdbcDatabase) database).getConnectionSupplier()).getConfig();
     Map<String, JsonNode> map = new HashMap<>();
     config.fields().forEachRemaining(entry -> map.put(entry.getKey(), entry.getValue()));
     Integer batchSize = map.containsKey("batch_size") ? map.get("batch_size").intValue() : null;
     LOGGER.info("batch size: {}", batchSize == null ? records.size() : batchSize);
+
 
     // snowflake query syntax:
     // requires selecting from a set of values in order to invoke the parse_json function.
