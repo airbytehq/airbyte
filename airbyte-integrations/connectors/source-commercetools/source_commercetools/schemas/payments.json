@@ -16,17 +16,17 @@
       "format": "date-time"
     },
     "createdBy": {
-      "$ref": "shared/created_by.json"
+      "$ref": "created_by.json"
     },
     "lastModifiedAt": {
       "type": ["null","string"],
       "format": "date-time"
     },
     "lastModifiedBy": {
-      "$ref": "shared/last_modified_by.json"
+      "$ref": "last_modified_by.json"
     },
     "customer": {
-      "$ref": "shared/reference.json"
+      "$ref": "reference.json"
     },
     "anonymousId": {
       "type": ["null","string"]
@@ -35,7 +35,7 @@
       "type": ["null","string"]
     },
     "amountPlanned": {
-      "$ref": "shared/money.json"
+      "$ref": "money.json"
     },
     "paymentMethodInfo": {
       "type": ["null","object"],
@@ -47,7 +47,7 @@
           "type": ["null","string"]
         },
         "name": {
-          "type": ["null","string"]
+          "$ref": "localized_string.json"
         }
       }
     },
@@ -61,7 +61,7 @@
           "type": ["null","string"]
         },
         "state": {
-          "$ref": "shared/reference.json"
+          "$ref": "reference.json"
         }
       }
     },
@@ -80,7 +80,7 @@
             "type": ["null","string"]
           },
           "amount": {
-            "$ref": "shared/money.json"
+            "$ref": "money.json"
           },
           "interactionId": {
             "type": ["null","string"]
@@ -94,11 +94,11 @@
     "interfaceInteractions": {
       "type": ["null","array"],
       "items": {
-        "$ref": "shared/custom.json"
+        "$ref": "custom.json"
       }
     },
     "custom": {
-      "$ref": "shared/custom.json"
+      "$ref": "custom.json"
     }
   }
 }

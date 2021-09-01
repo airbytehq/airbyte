@@ -13,7 +13,7 @@
     "prices": {
       "type": ["null","array"],
       "items": {
-        "$ref": "shared/price.json"
+        "$ref": "price.json"
       }
     },
     "attributes": {
@@ -31,7 +31,7 @@
       }
     },
     "price": {
-      "$ref": "shared/price.json"
+      "$ref": "price.json"
     },
     "images": {
       "type": ["null","array"],
@@ -44,7 +44,7 @@
           "dimensions": {
             "type": ["null","array"],
             "items": {
-              "$ref": "shared/dimension.json"
+              "$ref": "dimension.json"
             }
           },
           "label": {
@@ -78,7 +78,7 @@
                 "dimensions": {
                   "type": ["null","array"],
                   "items": {
-                    "$ref": "shared/dimension.json"
+                    "$ref": "dimension.json"
                   }
                 },
                 "contentType": {
@@ -97,7 +97,7 @@
             "type": ["null","array"]
           },
           "custom": {
-            "$ref": "shared/custom.json"
+            "$ref": "custom.json"
           }
         }
       }
@@ -113,6 +113,9 @@
         },
         "availableQuantity": {
           "type": ["null","number"]
+        },
+        "channels": {
+          "type": ["null","object"]
         }
       }
     },

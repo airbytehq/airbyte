@@ -6,21 +6,21 @@
       "type": ["null", "string"]
     },
     "version": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "createdAt": {
-      "type": ["null", "integer"],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "createdBy": {
-      "$ref": "shared/created_by.json"
+      "$ref": "created_by.json"
     },
     "lastModifiedAt": {
       "type": ["null", "string"],
       "format": "date-time"
     },
     "lastModifiedBy": {
-      "$ref": "shared/last_modified_by.json"
+      "$ref": "last_modified_by.json"
     },
     "completedAt": {
       "type": ["null", "integer"],
@@ -39,7 +39,7 @@
       "type": ["null", "string"]
     },
     "store": {
-      "$ref": "shared/key_reference.json"
+      "$ref": "key_reference.json"
     },
     "lineItems": {
       "type": ["null", "array"],
@@ -53,25 +53,25 @@
             "type": ["null", "string"]
           },
           "name": {
-            "type": ["null", "string"]
+            "$ref": "localized_string.json"
           },
           "productSlug": {
-            "type": ["null", "string"]
+            "$ref": "localized_string.json"
           },
           "productType": {
-            "$ref": "shared/reference.json"
+            "$ref": "reference.json"
           },
           "variant": {
-            "$ref": "shared/product_variant.json"
+            "$ref": "product_variant.json"
           },
           "price": {
-            "$ref": "shared/price.json"
+            "$ref": "price.json"
           },
           "taxedPrice": {
-            "$ref": "shared/taxed_item_price.json"
+            "$ref": "taxed_item_price.json"
           },
           "totalPrice": {
-            "$ref": "shared/money.json"
+            "$ref": "money.json"
           },
           "quantity": {
             "type": ["null","number"]
@@ -83,20 +83,20 @@
           "state": {
             "type": ["null","array"],
             "items": {
-              "$ref": "shared/state.json"
+              "$ref": "state.json"
             }
           },
           "taxRate": {
-            "$ref": "shared/taxrate.json"
+            "$ref": "taxrate.json"
           },
           "supplyChannel": {
-            "$ref": "shared/reference.json"
+            "$ref": "reference.json"
           },
           "distributionChannel": {
-            "$ref": "shared/reference.json"
+            "$ref": "reference.json"
           },
           "discountedPricePerQuantity": {
-            "$ref": "shared/discounted_price_per_quantity.json"
+            "$ref": "discounted_price_per_quantity.json"
           },
           "priceMode": {
             "type": ["null","string"]
@@ -105,10 +105,10 @@
             "type": ["null","string"]
           },
           "custom": {
-            "$ref": "shared/custom.json"
+            "$ref": "custom.json"
           },
           "shippingDetails": {
-            "$ref": "shared/shipping_details.json"
+            "$ref": "shipping_details.json"
           },
           "lastModifiedAt": {
             "type": ["null","string"],
@@ -126,16 +126,16 @@
             "type": ["null", "string"]
           },
           "name": {
-            "type": ["null", "string"]
+            "$ref": "localized_string.json"
           },
           "money": {
-            "type": ["null", "string"]
+            "$ref": "money.json"
           },
           "taxedPrice": {
-            "$ref": "shared/taxed_item_price.json"
+            "$ref": "taxed_item_price.json"
           },
           "totalPrice": {
-            "$ref": "shared/money.json"
+            "$ref": "money.json"
           },
           "slug": {
             "type": ["null", "string"]
@@ -144,37 +144,43 @@
             "type": ["null", "number"]
           },
           "state": {
-            "$ref": "shared/state.json"
+            "type": ["null","array"],
+            "items": {
+              "$ref": "state.json"
+            }
           },
           "taxCategory": {
-            "$ref": "shared/reference.json"
+            "$ref": "reference.json"
           },
           "taxRate": {
-            "$ref": "shared/taxrate.json"
+            "$ref": "taxrate.json"
           },
           "discountedPricePerQuantity": {
-            "$ref": "shared/discounted_price_per_quantity.json"
+            "type": ["null","array"],
+            "items": {
+              "$ref": "discounted_price_per_quantity.json"
+            }
           },
           "custom": {
-            "$ref": "shared/custom.json"
+            "$ref": "custom.json"
           },
           "shippingDetails": {
-            "$ref": "shared/shipping_details.json"
+            "$ref": "shipping_details.json"
           }
         }
       }
     },
     "totalPrice": {
-      "$ref": "shared/money.json"
+      "$ref": "money.json"
     },
     "taxedPrice": {
-      "$ref": "shared/taxed_price.json"
+      "$ref": "taxed_price.json"
     },
     "shippingAddress": {
-      "$ref": "shared/address.json"
+      "$ref": "address.json"
     },
     "billingAddress": {
-      "$ref": "shared/address.json"
+      "$ref": "address.json"
     },
     "taxMode": {
       "type": ["null", "string"]
@@ -189,7 +195,7 @@
       "type": ["null", "string"]
     },
     "customerGroup": {
-      "$ref": "shared/reference.json"
+      "$ref": "reference.json"
     },
     "country": {
       "type": ["null", "string"]
@@ -198,7 +204,7 @@
       "type": ["null", "string"]
     },
     "state": {
-      "$ref": "shared/reference.json"
+      "$ref": "reference.json"
     },
     "shipmentState": {
       "type": ["null", "string"]
@@ -213,16 +219,16 @@
           "type": ["null", "string"]
         },
         "price": {
-          "$ref": "shared/money.json"
+          "$ref": "money.json"
         },
         "shippingRate": {
           "type": ["null", "object"],
           "properties": {
             "price": {
-              "$ref": "shared/money.json"
+              "$ref": "money.json"
             },
             "freeAbove": {
-              "$ref": "shared/money.json"
+              "$ref": "money.json"
             },
             "tiers": {
               "type": ["null", "array"]
@@ -233,16 +239,16 @@
           }
         },
         "taxedPrice": {
-          "$ref": "shared/taxed_item_price.json"
+          "$ref": "taxed_item_price.json"
         },
         "taxRate": {
-          "$ref": "shared/taxrate.json"
+          "$ref": "taxrate.json"
         },
         "taxCategory": {
-          "$ref": "shared/reference.json"
+          "$ref": "reference.json"
         },
         "shippingMethod": {
-          "$ref": "shared/reference.json"
+          "$ref": "reference.json"
         },
         "deliveries": {
           "type": ["null", "array"],
@@ -323,7 +329,7 @@
                 }
               },
               "address": {
-                "$ref": "shared/address.json"
+                "$ref": "address.json"
               }
             }
           }
@@ -332,7 +338,7 @@
           "type": ["null","object"],
           "properties": {
             "value": {
-              "type": ["null","string"]
+              "$ref": "money.json"
             },
             "includedDiscounts": {
               "type": ["null","array"],
@@ -340,10 +346,10 @@
                 "type": ["null","object"],
                 "properties": {
                   "discount": {
-                    "$ref": "shared/reference.json"
+                    "$ref": "reference.json"
                   },
                   "discountedAmount": {
-                    "type": ["null","string"]
+                    "$ref": "money.json"
                   }
                 }
               }
@@ -361,7 +367,7 @@
         "type": ["null", "object"],
         "properties": {
           "channel": {
-            "$ref": "shared/reference.json"
+            "$ref": "reference.json"
           },
           "externalId": {
             "type": ["null", "string"]
@@ -431,7 +437,7 @@
         "type": ["null", "object"],
         "properties": {
           "discountCode": {
-            "$ref": "shared/reference.json"
+            "$ref": "reference.json"
           },
           "state": {
             "type": ["null", "string"]
@@ -442,17 +448,17 @@
     "refusedGifts": {
       "type": ["null", "array"],
       "items": {
-        "$ref": "shared/reference.json"
+        "$ref": "reference.json"
       }
     },
     "lastMessageSequenceNumber": {
       "type": ["null", "number"]
     },
     "cart": {
-      "$ref": "shared/reference.json"
+      "$ref": "reference.json"
     },
     "custom": {
-      "$ref": "shared/custom.json"
+      "$ref": "custom.json"
     },
     "paymentInfo": {
       "type": ["null", "object"],
@@ -460,7 +466,7 @@
         "payments": {
           "type": ["null", "array"],
           "items": {
-            "$ref": "shared/reference.json"
+            "$ref": "reference.json"
           }
         }
       }
@@ -472,7 +478,7 @@
       "type": ["null", "string"]
     },
     "shippingRateInput": {
-      "type": ["null", "string"]
+      "$ref": "localized_string.json"
     },
     "origin": {
       "type": ["null", "string"]
@@ -480,7 +486,7 @@
     "itemShippingAddresses": {
       "type": ["null", "array"],
       "items": {
-        "$ref": "shared/address.json"
+        "$ref": "address.json"
       }
     }
   }

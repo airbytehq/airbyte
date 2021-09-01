@@ -19,14 +19,14 @@
       "format": " date-time"
     },
     "createdBy": {
-      "$ref": "shared/created_by.json"
+      "$ref": "created_by.json"
     },
     "lastModifiedAt": {
       "type": ["null", "string"],
       "format": " date-time"
     },
     "lastModifiedBy": {
-      "$ref": "shared/last_modified_by.json"
+      "$ref": "last_modified_by.json"
     },
     "email": {
       "type": ["null", "string"]
@@ -37,7 +37,7 @@
     "stores": {
       "type": ["null", "array"],
       "items": {
-        "$ref": "shared/key_reference.json"
+        "$ref": "key_reference.json"
       }
     },
     "firstName": {
@@ -68,7 +68,7 @@
     "addresses": {
       "type": ["null","array"],
       "items": {
-        "$ref": "shared/address.json"
+        "$ref": "address.json"
       }
     },
     "defaultShippingAddressId": {
@@ -90,13 +90,14 @@
       "type": ["null", "string"]
     },
     "customerGroup": {
-      "$ref": "shared/reference.json"
+      "$ref": "reference.json"
     },
     "custom": {
-      "$ref": "shared/custom.json"
+      "$ref": "custom.json"
     },
     "locale": {
       "type": ["null", "string"]
     }
   }
 }
+

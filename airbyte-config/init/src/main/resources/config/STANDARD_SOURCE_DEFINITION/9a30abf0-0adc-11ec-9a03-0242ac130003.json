@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "9a30abf0-0adc-11ec-9a03-0242ac130003",
+  "name": "CommerceTools",
+  "dockerRepository": "airbyte/source-commercetools",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl":" https://docs.airbyte.io/integrations/sources/commercetools"
+}

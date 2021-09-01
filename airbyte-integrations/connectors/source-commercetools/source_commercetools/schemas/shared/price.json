@@ -5,7 +5,7 @@
       "type": ["null","string"]
     },
     "value": {
-      "type": ["null","string"]
+      "$ref": "money.json"
     },
     "country": {
       "type": ["null","string"]
@@ -33,7 +33,7 @@
             "type": ["null","integer"]
           },
           "value": {
-            "type": ["null","string"]
+            "$ref": "money.json"
           }
         }
       }

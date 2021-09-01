@@ -6,27 +6,27 @@
       "type": ["null", "string"]
     },
     "version": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "createdAt": {
       "type": ["null", "string"],
       "format": "date-time"
     },
     "createdBy": {
-      "$ref": "shared/created_by.json"
+      "$ref": "created_by.json"
     },
     "lastModifiedAt": {
       "type": ["null", "string"],
       "format": "date-time"
     },
     "lastModifiedBy": {
-      "$ref": "shared/last_modified_by.json"
+      "$ref": "last_modified_by.json"
     },
     "name": {
-      "type": ["null", "string"]
+      "$ref": "localized_string.json"
     },
     "description": {
-      "type": ["null", "string"]
+      "$ref": "localized_string.json"
     },
     "code": {
       "type": ["null", "string"]
@@ -34,7 +34,7 @@
     "cartDiscounts": {
       "type": ["null","array"],
       "items": {
-        "$ref": "shared/reference.json"
+        "$ref": "reference.json"
       }
     },
     "groups": {
@@ -54,7 +54,7 @@
     "references": {
       "type": ["null","array"],
       "items": {
-        "$ref": "shared/reference.json"
+        "$ref": "reference.json"
       }
     },
     "maxApplications": {
@@ -64,7 +64,7 @@
       "type": ["null", "number"]
     },
     "custom": {
-      "$ref": "shared/custom.json"
+      "$ref": "custom.json"
     }
   }
 }

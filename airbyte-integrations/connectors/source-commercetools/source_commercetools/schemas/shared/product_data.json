@@ -2,31 +2,31 @@
   "type": ["null","object"],
   "properties": {
     "name": {
-      "type": ["null","string"]
+      "$ref": "localized_string.json"
     },
     "categories": {
       "type": ["null","array"],
       "items": {
-        "$ref": "shared/reference.json"
+        "$ref": "reference.json"
       }
     },
     "categoryOrderHints": {
-      "type": ["null","string"]
+      "type": ["null","object"]
     },
     "description": {
-      "type": ["null","string"]
+      "$ref": "localized_string.json"
     },
     "slug": {
-      "type": ["null","string"]
+      "$ref": "localized_string.json"
     },
     "metaTitle": {
-      "type": ["null","string"]
+      "$ref": "localized_string.json"
     },
     "metaDescription": {
-      "type": ["null","string"]
+      "$ref": "localized_string.json"
     },
     "metaKeywords": {
-      "type": ["null","string"]
+      "$ref": "localized_string.json"
     },
     "masterVariant": {
       "$ref": "product_variant.json"
@@ -38,7 +38,15 @@
       }
     },
     "searchKeywords": {
-      "type": ["null","string"]
+      "type": ["null","object"],
+      "properties": {
+        "text": {
+          "type": ["null","string"]
+        },
+        "suggestTokenizer": {
+          "type": ["null","string"]
+        }
+      }
     }
   }
 }

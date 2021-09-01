@@ -8,7 +8,7 @@
       "type": ["null","object"],
       "properties": {
         "value": {
-          "type": ["null","string"]
+          "$ref": "money.json"
         },
         "includedDiscounts": {
           "type": ["null","array"],
@@ -19,7 +19,7 @@
                 "$ref": "reference.json"
               },
               "discountedAmount": {
-                "type": ["null","string"]
+                "$ref": "money.json"
               }
             }
           }

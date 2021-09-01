@@ -16,17 +16,17 @@
       "format": "date-time"
     },
     "createdBy": {
-      "$ref": "shared/created_by.json"
+      "$ref": "created_by.json"
     },
     "lastModifiedAt": {
       "type": ["null","string"],
       "format": "date-time"
     },
     "lastModifiedBy": {
-      "$ref": "shared/last_modified_by.json"
+      "$ref": "last_modified_by.json"
     },
     "productType": {
-      "$ref": "shared/reference.json"
+      "$ref": "reference.json"
     },
     "masterData": {
       "type": ["null","object"],
@@ -35,10 +35,10 @@
           "type": ["null","boolean"]
         },
         "current": {
-          "$ref": "shared/product_data.json"
+          "$ref": "product_data.json"
         },
         "staged": {
-          "$ref": "shared/product_data.json"
+          "$ref": "product_data.json"
         },
         "hasStagedChanges": {
           "type": ["null","boolean"]
@@ -46,10 +46,10 @@
       }
     },
     "taxCategory": {
-      "$ref": "shared/reference.json"
+      "$ref": "reference.json"
     },
     "state": {
-      "$ref": "shared/reference.json"
+      "$ref": "reference.json"
     },
     "reviewRatingStatistics": {
       "type": ["null","object"],
