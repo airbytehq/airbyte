@@ -61,8 +61,7 @@ def setup_test_path(request):
 
 
 @pytest.mark.parametrize("column_count", [1500])
-# @pytest.mark.parametrize("integration_type", list(DestinationType))
-@pytest.mark.parametrize("integration_type", [DestinationType.ORACLE])
+@pytest.mark.parametrize("integration_type", list(DestinationType))
 def test_destination_supported_limits(integration_type: DestinationType, column_count: int):
     if integration_type == DestinationType.MYSQL:
         # In MySQL, the max number of columns is limited by row size (8KB),

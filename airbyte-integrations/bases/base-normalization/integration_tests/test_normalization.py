@@ -78,7 +78,6 @@ def setup_test_path(request):
 # @pytest.mark.parametrize("destination_type", [DestinationType.POSTGRES, DestinationType.MYSQL])
 # Run tests on all destinations:
 # @pytest.mark.parametrize("destination_type", list(DestinationType))
-# @pytest.mark.parametrize("destination_type", [DestinationType.ORACLE])
 @pytest.mark.parametrize("destination_type", list(DestinationType))
 def test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
     print("Testing normalization")
