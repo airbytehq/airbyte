@@ -49,9 +49,7 @@ import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
-import io.airbyte.worker.WorkerApp;
 import io.airbyte.worker.process.KubePortManagerSingleton;
-import io.airbyte.worker.process.WorkerHeartbeatServer;
 import io.airbyte.worker.temporal.TemporalClient;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -219,17 +217,6 @@ public class SchedulerApp {
             KubePortManagerSingleton.getNumAvailablePorts(), supportedWorkers);
         SUBMITTER_NUM_THREADS = supportedWorkers;
       }
-
-      Map<String, String> mdc = MDC.getCopyOfContextMap();
-      Executors.newSingleThreadExecutor().submit(
-          () -> {
-            MDC.setContextMap(mdc);
-            try {
-              new WorkerHeartbeatServer(WorkerApp.KUBE_HEARTBEAT_PORT).start();
-            } catch (Exception e) {
-              throw new RuntimeException(e);
-            }
-          });
     }
 
     AirbyteVersion.assertIsCompatible(configs.getAirbyteVersion(), jobPersistence.getVersion().get());

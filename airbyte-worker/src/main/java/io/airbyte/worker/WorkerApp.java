@@ -30,6 +30,7 @@ import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.worker.process.DockerProcessFactory;
 import io.airbyte.worker.process.KubeProcessFactory;
 import io.airbyte.worker.process.ProcessFactory;
+import io.airbyte.worker.process.WorkerHeartbeatServer;
 import io.airbyte.worker.temporal.TemporalPool;
 import io.airbyte.worker.temporal.TemporalUtils;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
@@ -40,6 +41,8 @@ import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Path;
+import java.util.Map;
+import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -62,6 +65,17 @@ public class WorkerApp {
   }
 
   public void start() {
+    Map<String, String> mdc = MDC.getCopyOfContextMap();
+    Executors.newSingleThreadExecutor().submit(
+        () -> {
+          MDC.setContextMap(mdc);
+          try {
+            new WorkerHeartbeatServer(KUBE_HEARTBEAT_PORT).start();
+          } catch (Exception e) {
+            throw new RuntimeException(e);
+          }
+        });
+
     final TemporalPool temporalPool = new TemporalPool(temporalService, workspaceRoot, processFactory);
     temporalPool.run();
   }

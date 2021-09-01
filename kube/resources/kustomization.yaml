@@ -14,3 +14,4 @@ resources:
   - volume-db.yaml
   - volume-workspace.yaml
   - webapp.yaml
+  - worker.yaml
