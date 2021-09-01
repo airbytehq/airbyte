@@ -164,7 +164,7 @@ class GithubStream(HttpStream, ABC):
         for record in response.json():  # GitHub puts records in an array.
             yield self.transform(record=record, repository=stream_slice["repository"])
 
-    def transform(self, record: MutableMapping[str, Any], repository: str) -> MutableMapping[str, Any]:
+    def transform(self, record: MutableMapping[str, Any], repository: str = None, organization: str = None) -> MutableMapping[str, Any]:
         """
         Use this method to:
             - remove excessive fields from record;
@@ -193,7 +193,10 @@ class GithubStream(HttpStream, ABC):
                 record[f"{field}_id"] = field_value.get("id") if field_value else None
             elif isinstance(field_value, list):
                 record[field] = [value.get("id") for value in field_value]
-        record["repository"] = repository
+        if repository:
+            record["repository"] = repository
+        if organization:
+            record["organization"] = organization
 
         return record
 
@@ -272,27 +275,6 @@ class IncrementalGithubStream(SemiIncrementalGithubStream):
         return params
 
 
-class Repositories(GithubStream):
-    """
-    This stream is technical and not intended for the user, it is used only to obtain repositories for organizations.
-    API docs: https://docs.github.com/en/rest/reference/repos#list-organization-repositories
-    """
-
-    def __init__(self, organizations: List[str], **kwargs):
-        super(GithubStream, self).__init__(**kwargs)
-        self.organizations = organizations
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        for organization in self.organizations:
-            yield {"organization": organization}
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"orgs/{stream_slice['organization']}/repos"
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield from response.json()
-
-
 # Below are full refresh streams
 
 
@@ -300,6 +282,34 @@ class Assignees(GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/issues#list-assignees
     """
+
+
+class PullRequestStats(GithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
+    """
+
+    @property
+    def record_keys(self) -> List[str]:
+        return list(self.get_json_schema()["properties"].keys())
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"repos/{stream_slice['repository']}/pulls/{stream_slice['pull_request_number']}"
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        for stream_slice in super().stream_slices(**kwargs):
+            pull_requests_stream = PullRequests(authenticator=self.authenticator, repositories=[stream_slice["repository"]], start_date="")
+            for pull_request in pull_requests_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+                yield {"pull_request_number": pull_request["number"], "repository": stream_slice["repository"]}
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        yield self.transform(response.json(), repository=stream_slice["repository"])
+
+    def transform(self, record: MutableMapping[str, Any], repository: str = None) -> MutableMapping[str, Any]:
+        record = super().transform(record=record, repository=repository)
+        return {key: value for key, value in record.items() if key in self.record_keys}
 
 
 class Reviews(GithubStream):
@@ -319,6 +329,17 @@ class Reviews(GithubStream):
                 yield {"pull_request_number": pull_request["number"], "repository": stream_slice["repository"]}
 
 
+class Branches(GithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/repos#list-branches
+    """
+
+    primary_key = None
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/branches"
+
+
 class Collaborators(GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/repos#list-repository-collaborators
@@ -334,14 +355,74 @@ class IssueLabels(GithubStream):
         return f"repos/{stream_slice['repository']}/labels"
 
 
-class Teams(GithubStream):
+class Organizations(GithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/orgs#get-an-organization
+    """
+
+    def __init__(self, organizations: List[str], **kwargs):
+        super(GithubStream, self).__init__(**kwargs)
+        self.organizations = organizations
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        for organization in self.organizations:
+            yield {"organization": organization}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"orgs/{stream_slice['organization']}"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield response.json()
+
+
+class Repositories(Organizations):
+    """
+    API docs: https://docs.github.com/en/rest/reference/repos#list-organization-repositories
+    """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"orgs/{stream_slice['organization']}/repos"
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        for record in response.json():  # GitHub puts records in an array.
+            yield self.transform(record=record, organization=stream_slice["organization"])
+
+
+class Tags(GithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/repos#list-repository-tags
+    """
+
+    primary_key = None
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/tags"
+
+
+class Teams(Organizations):
     """
     API docs: https://docs.github.com/en/rest/reference/teams#list-teams
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        owner, _ = stream_slice["repository"].split("/")
-        return f"orgs/{owner}/teams"
+        return f"orgs/{stream_slice['organization']}/teams"
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        for record in response.json():
+            yield self.transform(record=record, organization=stream_slice["organization"])
+
+
+class Users(Organizations):
+    """
+    API docs: https://docs.github.com/en/rest/reference/orgs#list-organization-members
+    """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"orgs/{stream_slice['organization']}/members"
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        for record in response.json():
+            yield self.transform(record, organization=stream_slice["organization"])
 
 
 # Below are semi incremental streams
@@ -355,7 +436,7 @@ class Releases(SemiIncrementalGithubStream):
     cursor_field = "created_at"
     fields_to_minimize = ("author",)
 
-    def transform(self, record: MutableMapping[str, Any], repository: str = None) -> MutableMapping[str, Any]:
+    def transform(self, record: MutableMapping[str, Any], repository: str = None, **kwargs) -> MutableMapping[str, Any]:
         record = super().transform(record=record, repository=repository)
 
         assets = record.get("assets", [])
@@ -409,7 +490,7 @@ class PullRequests(SemiIncrementalGithubStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/pulls"
 
-    def transform(self, record: MutableMapping[str, Any], repository: str) -> MutableMapping[str, Any]:
+    def transform(self, record: MutableMapping[str, Any], repository: str = None, **kwargs) -> MutableMapping[str, Any]:
         record = super().transform(record=record, repository=repository)
 
         for nested in ("head", "base"):
@@ -476,7 +557,7 @@ class Stargazers(SemiIncrementalGithubStream):
 
         return {**base_headers, **headers}
 
-    def transform(self, record: MutableMapping[str, Any], repository: str) -> MutableMapping[str, Any]:
+    def transform(self, record: MutableMapping[str, Any], repository: str = None, **kwargs) -> MutableMapping[str, Any]:
         """
         We need to provide the "user_id" for the primary_key attribute
         and don't remove the whole "user" block from the record.
@@ -546,7 +627,7 @@ class Commits(IncrementalGithubStream):
         "committer",
     )
 
-    def transform(self, record: MutableMapping[str, Any], repository: str = None) -> MutableMapping[str, Any]:
+    def transform(self, record: MutableMapping[str, Any], repository: str = None, **kwargs) -> MutableMapping[str, Any]:
         record = super().transform(record=record, repository=repository)
 
         # Record of the `commits` stream doesn't have an updated_at/created_at field at the top level (so we could
@@ -576,3 +657,14 @@ class Issues(IncrementalGithubStream):
         "sort": "updated",
         "direction": "asc",
     }
+
+
+class ReviewComments(IncrementalGithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/pulls#list-review-comments-in-a-repository
+    """
+
+    page_size = 30  # `review-comments` is a large stream so it's better to set smaller page size.
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/pulls/comments"
