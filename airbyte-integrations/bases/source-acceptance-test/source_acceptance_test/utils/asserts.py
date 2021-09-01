@@ -31,10 +31,10 @@ from typing import List, Mapping
 from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog
 from jsonschema import Draft7Validator, FormatChecker, ValidationError, FormatError
 
-timestamp_regex = re.compile(("^\d{4}-\d?\d-\d?\d" # date
-                              "(\s|T)" # separator
-                              "\d?\d:\d?\d:\d?\d(.\d+)?" # time
-                              ".*$" #timezone
+timestamp_regex = re.compile((r"^\d{4}-\d?\d-\d?\d" # date
+                              r"(\s|T)" # separator
+                              r"\d?\d:\d?\d:\d?\d(.\d+)?" # time
+                              r".*$" #timezone
                              ))
 
 
