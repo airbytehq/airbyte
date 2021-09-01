@@ -90,11 +90,14 @@ class SourcePythonHttpExample(AbstractSource):
             return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        # Parse the date from a string into a datetime object.
+        start_date = datetime.strptime(config["start_date"], "%Y-%m-%d")
+        
         # NoAuth just means there is no authentication required for this API and is included for completeness.
         # Skip passing an authenticator if no authentication is required.
         # Other authenticators are available for API token-based auth and Oauth2. 
         auth = NoAuth()
-        return [ExchangeRates(authenticator=auth)]
+        return [ExchangeRates(authenticator=auth, base=config["base"], start_date=start_date)]
 ```
 
 Test it.
