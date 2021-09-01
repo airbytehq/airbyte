@@ -35,13 +35,12 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations {
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-class SnowflakeSqlOperations extends DefaultSqlOperations implements SqlOperations {
+class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
 
@@ -65,7 +64,7 @@ class SnowflakeSqlOperations extends DefaultSqlOperations implements SqlOperatio
     Map<String, JsonNode> map = new HashMap<>();
     config.fields().forEachRemaining(entry -> map.put(entry.getKey(), entry.getValue()));
     Integer batchSize = map.containsKey("batch_size") ? map.get("batch_size").intValue() : null;
-    LOGGER.info("batch size: {}", batchSize == null ? records.size() : batchSize);
+    LOGGER.info("batch size: {}", batchSize == null || batchSize <=0 ? records.size() : batchSize);
 
 
     // snowflake query syntax:
