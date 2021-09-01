@@ -49,7 +49,6 @@ import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationOauthConsentRequest;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
-import io.airbyte.api.model.DestinationRecreate;
 import io.airbyte.api.model.DestinationUpdate;
 import io.airbyte.api.model.HealthCheckRead;
 import io.airbyte.api.model.ImportRead;
@@ -82,7 +81,6 @@ import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceOauthConsentRequest;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
-import io.airbyte.api.model.SourceRecreate;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.api.model.UploadRead;
 import io.airbyte.api.model.WebBackendConnectionCreate;
@@ -195,8 +193,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         schedulerHandler,
         operationsHandler);
     oAuthHandler = new OAuthHandler(configRepository);
-    webBackendSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler, workspaceHelper, oAuthHandler);
-    webBackendDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler, workspaceHelper, oAuthHandler);
+    webBackendSourceHandler = new WebBackendSourceHandler(sourceHandler, oAuthHandler);
+    webBackendDestinationHandler = new WebBackendDestinationHandler(destinationHandler, oAuthHandler);
     healthCheckHandler = new HealthCheckHandler(configRepository);
     archiveHandler = new ArchiveHandler(configs.getAirbyteVersion(), configRepository, jobPersistence, workspaceHelper, archiveTtlManager);
     logsHandler = new LogsHandler();
@@ -578,17 +576,6 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public DestinationRead webBackendCreateDestination(DestinationCreate destinationCreate) {
     return execute(() -> webBackendDestinationHandler.webBackendCreateDestination(destinationCreate));
-  }
-
-  @Override
-  public DestinationRead webBackendRecreateDestination(final DestinationRecreate destinationRecreate) {
-    return execute(
-        () -> webBackendDestinationHandler.webBackendRecreateDestinationAndCheck(destinationRecreate));
-  }
-
-  @Override
-  public SourceRead webBackendRecreateSource(final SourceRecreate sourceRecreate) {
-    return execute(() -> webBackendSourceHandler.webBackendRecreateSourceAndCheck(sourceRecreate));
   }
 
   @Override

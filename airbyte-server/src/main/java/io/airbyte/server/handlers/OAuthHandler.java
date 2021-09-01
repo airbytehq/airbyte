@@ -31,6 +31,7 @@ import io.airbyte.api.model.CompleteSourceOauthRequest;
 import io.airbyte.api.model.DestinationOauthConsentRequest;
 import io.airbyte.api.model.OAuthConsentRead;
 import io.airbyte.api.model.SourceOauthConsentRequest;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -43,7 +44,6 @@ import java.util.UUID;
 
 public class OAuthHandler {
 
-  public static final String OAUTH_PROPERTY_NAME = "oauth";
   private final ConfigRepository configRepository;
 
   public OAuthHandler(final ConfigRepository configRepository) {
@@ -75,10 +75,16 @@ public class OAuthHandler {
     configRepository.listSourceOAuthParam().stream()
         .filter(p -> sourceDefinitionId.equals(p.getSourceDefinitionId()))
         .filter(p -> p.getWorkspaceId() == null || workspaceId.equals(p.getWorkspaceId()))
-        // we prefer params specific to a workspace before global ones
-        .min(Comparator.nullsLast(Comparator.comparing(SourceOAuthParameter::getWorkspaceId))
+        // we prefer params specific to a workspace before global ones (ie workspace is null)
+        .min(Comparator.comparing(SourceOAuthParameter::getWorkspaceId, Comparator.nullsLast(Comparator.naturalOrder()))
             .thenComparing(SourceOAuthParameter::getOauthParameterId))
-        .ifPresent(oAuthParameter -> ((ObjectNode) sourceConnectorConfig).set(OAUTH_PROPERTY_NAME, oAuthParameter.getConfiguration()));
+        .ifPresent(oAuthParameter -> {
+          final ObjectNode config = (ObjectNode) sourceConnectorConfig;
+          final ObjectNode authParams = (ObjectNode) oAuthParameter.getConfiguration();
+          for (String key : Jsons.keys(authParams)) {
+            config.set(key, authParams.get(key));
+          }
+        });
     return sourceConnectorConfig;
   }
 
@@ -87,10 +93,16 @@ public class OAuthHandler {
     configRepository.listDestinationOAuthParam().stream()
         .filter(p -> destinationDefinitionId.equals(p.getDestinationDefinitionId()))
         .filter(p -> p.getWorkspaceId() == null || workspaceId.equals(p.getWorkspaceId()))
-        // we prefer params specific to a workspace before global ones
-        .min(Comparator.nullsLast(Comparator.comparing(DestinationOAuthParameter::getWorkspaceId))
+        // we prefer params specific to a workspace before global ones (ie workspace is null)
+        .min(Comparator.comparing(DestinationOAuthParameter::getWorkspaceId, Comparator.nullsLast(Comparator.naturalOrder()))
             .thenComparing(DestinationOAuthParameter::getOauthParameterId))
-        .ifPresent(oAuthParameter -> ((ObjectNode) destinationConnectorConfig).set(OAUTH_PROPERTY_NAME, oAuthParameter.getConfiguration()));
+        .ifPresent(oAuthParameter -> {
+          final ObjectNode config = (ObjectNode) destinationConnectorConfig;
+          final ObjectNode authParams = (ObjectNode) oAuthParameter.getConfiguration();
+          for (String key : Jsons.keys(authParams)) {
+            config.set(key, authParams.get(key));
+          }
+        });
     return destinationConnectorConfig;
   }
 

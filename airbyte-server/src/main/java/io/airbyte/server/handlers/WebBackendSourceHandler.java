@@ -24,17 +24,9 @@
 
 package io.airbyte.server.handlers;
 
-import static io.airbyte.api.model.CheckConnectionRead.StatusEnum.SUCCEEDED;
-
-import com.google.api.client.util.Preconditions;
-import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.SourceCreate;
-import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
-import io.airbyte.api.model.SourceRecreate;
 import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.scheduler.persistence.WorkspaceHelper;
-import io.airbyte.server.errors.ConnectFailureKnownException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import org.slf4j.Logger;
@@ -45,50 +37,12 @@ public class WebBackendSourceHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(WebBackendSourceHandler.class);
 
   private final SourceHandler sourceHandler;
-
   private final OAuthHandler oAuthHandler;
-  private final SchedulerHandler schedulerHandler;
-  private final WorkspaceHelper workspaceHelper;
 
   public WebBackendSourceHandler(final SourceHandler sourceHandler,
-                                 final SchedulerHandler schedulerHandler,
-                                 final WorkspaceHelper workspaceHelper,
                                  final OAuthHandler oAuthHandler) {
     this.sourceHandler = sourceHandler;
-    this.schedulerHandler = schedulerHandler;
-    this.workspaceHelper = workspaceHelper;
     this.oAuthHandler = oAuthHandler;
-  }
-
-  public SourceRead webBackendRecreateSourceAndCheck(SourceRecreate sourceRecreate)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-    Preconditions
-        .checkArgument(workspaceHelper.getWorkspaceForSourceIdIgnoreExceptions(sourceRecreate.getSourceId()).equals(sourceRecreate.getWorkspaceId()));
-
-    final SourceCreate sourceCreate = new SourceCreate();
-    sourceCreate.setConnectionConfiguration(sourceRecreate.getConnectionConfiguration());
-    sourceCreate.setName(sourceRecreate.getName());
-    sourceCreate.setWorkspaceId(sourceRecreate.getWorkspaceId());
-    sourceCreate.setSourceDefinitionId(sourceRecreate.getSourceDefinitionId());
-
-    final SourceRead source = sourceHandler.createSource(sourceCreate);
-
-    final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody().sourceId(source.getSourceId());
-
-    try {
-      final CheckConnectionRead checkConnectionRead = schedulerHandler
-          .checkSourceConnectionFromSourceId(sourceIdRequestBody);
-      if (checkConnectionRead.getStatus() == SUCCEEDED) {
-        final SourceIdRequestBody sourceIdRequestBody1 = new SourceIdRequestBody().sourceId(sourceRecreate.getSourceId());
-        sourceHandler.deleteSource(sourceIdRequestBody1);
-        return source;
-      }
-    } catch (Exception e) {
-      LOGGER.error("Error while checking connection", e);
-    }
-
-    sourceHandler.deleteSource(sourceIdRequestBody);
-    throw new ConnectFailureKnownException("Unable to connect to source");
   }
 
   public SourceRead webBackendCreateSource(SourceCreate sourceCreate) throws JsonValidationException, ConfigNotFoundException, IOException {
