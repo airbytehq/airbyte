@@ -28,46 +28,20 @@ from typing import Dict, List
 This is the example of input record for the test_make_analytics_slices.
 """
 test_input_record: Dict = {
-    "storyDeliveryEnabled": False,
-    "targetingCriteria": {
-        "include": {
-            "and": [
-                {
-                    "type": "urn:li:adTargetingFacet:interfaceLocales",
-                    "values": ["urn:li:locale:en_US"],
-                },
-                {
-                    "type": "urn:li:adTargetingFacet:locations",
-                    "values": ["urn:li:geo:103644278"],
-                },
-            ]
-        }
-    },
-    "locale": {"country": "US", "language": "en"},
-    "type": "SPONSORED_UPDATES",
-    "pacingStrategy": "LIFETIME",
-    "runSchedule": {"start": 1628230144426, "end": 1630971900000},
-    "optimizationTargetType": "MAX_REACH",
-    "creativeSelection": "OPTIMIZED",
-    "costType": "CPM",
-    "offsiteDeliveryEnabled": True,
-    "id": 168387646,
+    "id": 123,
     "audienceExpansionEnabled": True,
     "test": False,
     "format": "STANDARD_UPDATE",
     "servingStatuses": ["CAMPAIGN_GROUP_TOTAL_BUDGET_HOLD"],
     "version": {"versionTag": "2"},
-    "objectiveType": "BRAND_AWARENESS",
-    "associatedEntity": "urn:li:organization:64265083",
+    "objectiveType": "TEST_TEST",
+    "associatedEntity": "urn:li:organization:456",
     "offsitePreferences": {
         "iabCategories": {"exclude": []},
         "publisherRestrictionFiles": {"exclude": []},
     },
-    "campaignGroup": "urn:li:sponsoredCampaignGroup:616471656",
-    "dailyBudget": {"currencyCode": "USD", "amount": "10"},
-    "unitCost": {"currencyCode": "USD", "amount": "62.73"},
-    "name": "Brand awareness - Aug 6, 2021",
-    "account": "urn:li:sponsoredAccount:508720451",
+    "campaignGroup": "urn:li:sponsoredCampaignGroup:1234567",
+    "account": "urn:li:sponsoredAccount:123456",
     "status": "ACTIVE",
     "created": "2021-08-06 06:03:52",
     "lastModified": "2021-08-06 06:09:04",
@@ -86,7 +60,7 @@ Make sure for valid KEY_VALUE_MAP references inside of the `test_input_record`
 """
 test_output_slices: List = [
     {
-        "camp_id": 168387646,
+        "camp_id": 123,
         "fields": "actionClicks,adUnitClicks,approximateUniqueImpressions,cardClicks,cardImpressions,clicks,commentLikes,comments,companyPageClicks,conversionValueInLocalCurrency,costInLocalCurrency,costInUsd,dateRange,externalWebsiteConversions,externalWebsitePostClickConversions,externalWebsitePostViewConversions,follows,pivot,pivotValue",
         "dateRange": {
             "start.day": 1,
@@ -98,7 +72,7 @@ test_output_slices: List = [
         },
     },
     {
-        "camp_id": 168387646,
+        "camp_id": 123,
         "fields": "actionClicks,adUnitClicks,approximateUniqueImpressions,cardClicks,cardImpressions,clicks,commentLikes,comments,companyPageClicks,conversionValueInLocalCurrency,costInLocalCurrency,costInUsd,dateRange,externalWebsiteConversions,externalWebsitePostClickConversions,externalWebsitePostViewConversions,follows,pivot,pivotValue",
         "dateRange": {
             "start.day": 31,
@@ -110,7 +84,7 @@ test_output_slices: List = [
         },
     },
     {
-        "camp_id": 168387646,
+        "camp_id": 123,
         "fields": "fullScreenPlays,impressions,landingPageClicks,leadGenerationMailContactInfoShares,leadGenerationMailInterestedClicks,likes,oneClickLeadFormOpens,oneClickLeads,opens,otherEngagements,pivot,pivotValue,pivotValues,reactions,sends,shares,textUrlClicks,dateRange",
         "dateRange": {
             "start.day": 1,
@@ -122,7 +96,7 @@ test_output_slices: List = [
         },
     },
     {
-        "camp_id": 168387646,
+        "camp_id": 123,
         "fields": "fullScreenPlays,impressions,landingPageClicks,leadGenerationMailContactInfoShares,leadGenerationMailInterestedClicks,likes,oneClickLeadFormOpens,oneClickLeads,opens,otherEngagements,pivot,pivotValue,pivotValues,reactions,sends,shares,textUrlClicks,dateRange",
         "dateRange": {
             "start.day": 31,
@@ -134,7 +108,7 @@ test_output_slices: List = [
         },
     },
     {
-        "camp_id": 168387646,
+        "camp_id": 123,
         "fields": "totalEngagements,videoCompletions,videoFirstQuartileCompletions,videoMidpointCompletions,videoStarts,videoThirdQuartileCompletions,videoViews,viralCardClicks,viralCardImpressions,viralClicks,viralCommentLikes,viralComments,viralCompanyPageClicks,viralExternalWebsiteConversions,viralExternalWebsitePostClickConversions,viralExternalWebsitePostViewConversions,viralFollows,dateRange,pivot,pivotValue",
         "dateRange": {
             "start.day": 1,
@@ -146,7 +120,7 @@ test_output_slices: List = [
         },
     },
     {
-        "camp_id": 168387646,
+        "camp_id": 123,
         "fields": "totalEngagements,videoCompletions,videoFirstQuartileCompletions,videoMidpointCompletions,videoStarts,videoThirdQuartileCompletions,videoViews,viralCardClicks,viralCardImpressions,viralClicks,viralCommentLikes,viralComments,viralCompanyPageClicks,viralExternalWebsiteConversions,viralExternalWebsitePostClickConversions,viralExternalWebsitePostViewConversions,viralFollows,dateRange,pivot,pivotValue",
         "dateRange": {
             "start.day": 31,
@@ -158,7 +132,7 @@ test_output_slices: List = [
         },
     },
     {
-        "camp_id": 168387646,
+        "camp_id": 123,
         "fields": "viralFullScreenPlays,viralImpressions,viralLandingPageClicks,viralLikes,viralOneClickLeadFormOpens,viralOneClickLeads,viralOtherEngagements,viralReactions,viralShares,viralTotalEngagements,viralVideoCompletions,viralVideoFirstQuartileCompletions,viralVideoMidpointCompletions,viralVideoStarts,viralVideoThirdQuartileCompletions,viralVideoViews,dateRange,pivot,pivotValue",
         "dateRange": {
             "start.day": 1,
@@ -170,7 +144,7 @@ test_output_slices: List = [
         },
     },
     {
-        "camp_id": 168387646,
+        "camp_id": 123,
         "fields": "viralFullScreenPlays,viralImpressions,viralLandingPageClicks,viralLikes,viralOneClickLeadFormOpens,viralOneClickLeads,viralOtherEngagements,viralReactions,viralShares,viralTotalEngagements,viralVideoCompletions,viralVideoFirstQuartileCompletions,viralVideoMidpointCompletions,viralVideoStarts,viralVideoThirdQuartileCompletions,viralVideoViews,dateRange,pivot,pivotValue",
         "dateRange": {
             "start.day": 31,

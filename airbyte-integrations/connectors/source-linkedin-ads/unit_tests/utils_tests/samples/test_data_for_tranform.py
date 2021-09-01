@@ -69,9 +69,9 @@ input_test_data = [
         "variables": {
             "data": {
                 "com.linkedin.ads.SponsoredUpdateCreativeVariables": {
-                    "activity": "urn:li:activity:6823991265370214400",
+                    "activity": "urn:li:activity:1234",
                     "directSponsoredContent": 0,
-                    "share": "urn:li:share:6823991265126957056",
+                    "share": "urn:li:share:1234",
                 }
             }
         },
@@ -122,9 +122,9 @@ output_test_data = [
         "variables": {
             "type": "com.linkedin.ads.SponsoredUpdateCreativeVariables",
             "values": [
-                {"key": "activity", "value": "urn:li:activity:6823991265370214400"},
+                {"key": "activity", "value": "urn:li:activity:1234"},
                 {"key": "directSponsoredContent", "value": 0},
-                {"key": "share", "value": "urn:li:share:6823991265126957056"},
+                {"key": "share", "value": "urn:li:share:1234"},
             ],
         },
         "created": "2021-08-21 21:27:55",
