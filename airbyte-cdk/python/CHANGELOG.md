@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.15
+Add \_limit and \_page_size as internal config parameters for SAT
+
+## 0.1.14
+If the input config file does not comply with spec schema, raise an exception instead of `system.exit`.
+
 ## 0.1.13
 Fix defect with user defined backoff time retry attempts, number of retries logic fixed
 
