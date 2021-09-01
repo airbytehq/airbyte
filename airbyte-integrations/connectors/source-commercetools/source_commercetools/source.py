@@ -38,7 +38,7 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 class CommercetoolsStream(HttpStream, ABC):
 
     # Page size
-    limit = 2
+    limit = 500
     # Define primary key as sort key for full_refresh, or very first sync for incremental_refresh
     primary_key = "id"
     filter_field = "lastModifiedAt"
