@@ -154,10 +154,10 @@ public class LogClientSingleton {
   public static void setWorkspaceMdc(Path path) {
     if (shouldUseLocalLogs(new EnvConfigs())) {
       LOGGER.info("Setting docker workspace mdc");
-      MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, path.resolve(LogClientSingleton.LOG_FILENAME).toString());
+      MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, path.toString());
     } else {
       LOGGER.info("Setting kube workspace mdc");
-      MDC.put(LogClientSingleton.CLOUD_WORKSPACE_MDC_KEY, path.resolve(LogClientSingleton.LOG_FILENAME).toString());
+      MDC.put(LogClientSingleton.CLOUD_WORKSPACE_MDC_KEY, path.toString());
     }
   }
 
