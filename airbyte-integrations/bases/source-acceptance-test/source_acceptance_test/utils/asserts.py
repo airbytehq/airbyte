@@ -31,7 +31,12 @@ import pendulum
 from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog
 from jsonschema import Draft7Validator, FormatChecker, FormatError, ValidationError
 
-timestamp_regex = re.compile((r"^\d{4}-\d?\d-\d?\d" r"(\s|T)" r"\d?\d:\d?\d:\d?\d(.\d+)?" r".*$"))  # date  # separator  # time  # timezone
+# fmt: off
+timestamp_regex = re.compile((r"^\d{4}-\d?\d-\d?\d"  # date
+                              r"(\s|T)"  # separator
+                              r"\d?\d:\d?\d:\d?\d(.\d+)?"  # time
+                              r".*$"))  # timezone
+# fmt: on
 
 
 class CustomFormatChecker(FormatChecker):
