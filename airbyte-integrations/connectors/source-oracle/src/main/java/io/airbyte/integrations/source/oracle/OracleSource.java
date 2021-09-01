@@ -67,6 +67,7 @@ public class OracleSource extends AbstractJdbcSource implements Source {
       configBuilder.put("password", config.get("password").asText());
     }
 
+    // Use the upper-cased username by default.
     schemas = List.of(config.get("username").asText().toUpperCase(Locale.ROOT));
     if (config.has("schemas") && config.get("schemas").isArray()) {
       schemas = new ArrayList<>();
@@ -74,14 +75,12 @@ public class OracleSource extends AbstractJdbcSource implements Source {
         schemas.add(schema.asText());
       }
     }
+
     return Jsons.jsonNode(configBuilder.build());
   }
 
   @Override
   public List<TableInfo<CommonField<JDBCType>>> discoverInternal(JdbcDatabase database) throws Exception {
-    // if schemas is empty
-    // use the user's name
-    // check uniqueness
     List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
     for (String schema : schemas) {
       LOGGER.debug("Discovering schema: {}", schema);
