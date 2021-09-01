@@ -6,7 +6,7 @@ import { H3 } from "components/base";
 const Header = styled.div`
   color: ${({ theme }) => theme.whiteColor};
   padding: 59px 78px 39px;
-  background: ${({ theme }) => theme.textColor};
+  background: ${({ theme }) => theme.textColor} url("/stars-background.svg");
   max-width: 492px;
   border-radius: 10px 10px 0 0;
   position: relative;

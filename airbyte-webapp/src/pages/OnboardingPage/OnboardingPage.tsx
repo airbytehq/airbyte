@@ -1,6 +1,7 @@
 import React, { Suspense, useEffect, useState } from "react";
 import styled from "styled-components";
 import { useResource } from "rest-hooks";
+import { FormattedMessage } from "react-intl";
 
 import HeadTitle from "components/HeadTitle";
 import useSource, {
@@ -9,6 +10,7 @@ import useSource, {
 import useDestination, {
   useDestinationList,
 } from "components/hooks/services/useDestinationHook";
+import { useConnectionList } from "components/hooks/services/useConnectionHook";
 import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
@@ -23,7 +25,6 @@ import { StepType } from "./types";
 import { useAnalytics } from "components/hooks/useAnalytics";
 import StepsCounter from "./components/StepsCounter";
 import LoadingPage from "components/LoadingPage";
-import { FormattedMessage } from "react-intl";
 
 const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   width: 100%;
@@ -45,7 +46,7 @@ const OnboardingPage: React.FC = () => {
 
   const { sources } = useSourceList();
   const { destinations } = useDestinationList();
-
+  const { connections } = useConnectionList();
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
     {}
@@ -73,6 +74,7 @@ const OnboardingPage: React.FC = () => {
   const { currentStep, setCurrentStep, steps } = useGetStepsConfig(
     !!sources.length,
     !!destinations.length,
+    !!connections.length,
     afterUpdateStep
   );
 
@@ -184,6 +186,7 @@ const OnboardingPage: React.FC = () => {
           errorStatus={errorStatusRequest?.status}
           source={sources[0]}
           destination={destinations[0]}
+          afterSubmitConnection={() => setCurrentStep(StepType.FINAl)}
         />
       );
     }

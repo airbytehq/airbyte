@@ -11,6 +11,7 @@
   "sidebar.connections": "Connections",
   "sidebar.settings": "Settings",
   "sidebar.update": "Update",
+  "sidebar.onboarding": "Onboarding",
 
   "form.continue": "Continue",
   "form.yourEmail": "Your email",
@@ -189,6 +190,9 @@
   "onboarding.zoomCalls": "Visualize the time spent by your team in Zoom calls ",
   "onboarding.skip": "Skip",
   "onboarding.closeOnboarding": "Close onboarding",
+  "onboarding.syncCompleted": "Your first sync has been successfully completed!",
+  "onboarding.checkData": "Please check the data at the destination.\nDoes it fit with your expectations?",
+  "onboarding.skipNow": "Skip for now",
 
   "sources.searchIncremental": "Search cursor value for incremental",
   "sources.incrementalDefault": "{value} (default)",
