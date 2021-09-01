@@ -64,8 +64,7 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
     Map<String, JsonNode> map = new HashMap<>();
     config.fields().forEachRemaining(entry -> map.put(entry.getKey(), entry.getValue()));
     Integer batchSize = map.containsKey("batch_size") ? map.get("batch_size").intValue() : null;
-    LOGGER.info("batch size: {}", batchSize == null || batchSize <=0 ? records.size() : batchSize);
-
+    LOGGER.info("batch size: {}", batchSize == null || batchSize <= 0 ? records.size() : batchSize);
 
     // snowflake query syntax:
     // requires selecting from a set of values in order to invoke the parse_json function.
