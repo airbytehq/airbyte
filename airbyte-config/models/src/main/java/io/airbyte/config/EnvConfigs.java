@@ -83,6 +83,8 @@ public class EnvConfigs implements Configs {
   private static final String DEFAULT_KUBE_NAMESPACE = "default";
   private static final String DEFAULT_RESOURCE_REQUIREMENT_CPU = null;
   private static final String DEFAULT_RESOURCE_REQUIREMENT_MEMORY = null;
+  private static final String SECRET_STORE_GCP_PROJECT_ID = "SECRET_STORE_GCP_PROJECT_ID";
+  private static final String SECRET_STORE_CONFIGS_ENABLE = "SECRET_STORE_CONFIGS_ENABLE";
   private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB = 5000;
@@ -180,6 +182,16 @@ public class EnvConfigs implements Configs {
   public String getConfigDatabaseUrl() {
     // Default to reuse the job database
     return getEnvOrDefault(CONFIG_DATABASE_URL, getDatabaseUrl());
+  }
+
+  @Override
+  public String getSecretStoreGcpProjectId() {
+    return getEnv(SECRET_STORE_GCP_PROJECT_ID);
+  }
+
+  @Override
+  public String getSecretStoreConfigsEnabled() {
+    return getEnv(SECRET_STORE_CONFIGS_ENABLE);
   }
 
   @Override

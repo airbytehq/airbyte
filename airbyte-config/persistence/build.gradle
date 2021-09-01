@@ -6,6 +6,8 @@ dependencies {
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-config:init')
     implementation project(':airbyte-json-validation')
+    implementation platform('com.google.cloud:libraries-bom:22.0.0')
 
+    compile 'com.google.cloud:google-cloud-secretmanager'
     testImplementation "org.testcontainers:postgresql:1.15.1"
 }

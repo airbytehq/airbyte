@@ -47,9 +47,15 @@ import java.util.stream.Stream;
 public class ConfigRepository {
 
   private final ConfigPersistence persistence;
+  private final ConfigPersistence secretsPersistence;
 
   public ConfigRepository(final ConfigPersistence persistence) {
+    this(persistence, persistence);
+  }
+
+  public ConfigRepository(final ConfigPersistence persistence, final ConfigPersistence secretsPersistence) {
     this.persistence = persistence;
+    this.secretsPersistence = secretsPersistence;
   }
 
   public StandardWorkspace getStandardWorkspace(final UUID workspaceId, final boolean includeTombstone)
@@ -164,10 +170,13 @@ public class ConfigRepository {
 
   public SourceConnection getSourceConnection(final UUID sourceId) throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.getConfig(ConfigSchema.SOURCE_CONNECTION, sourceId.toString(), SourceConnection.class);
+    // TODO: secretsPersistence
+    // have sourceId available only. Called by WorkspaceHelperTest.
   }
 
   public void writeSourceConnection(final SourceConnection source) throws JsonValidationException, IOException {
     persistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, source.getSourceId().toString(), source);
+    // TODO: secretsPersistence. Called by WorkspaceHelperTest.
   }
 
   public List<SourceConnection> listSourceConnection() throws JsonValidationException, IOException {
@@ -177,10 +186,14 @@ public class ConfigRepository {
   public DestinationConnection getDestinationConnection(final UUID destinationId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.getConfig(ConfigSchema.DESTINATION_CONNECTION, destinationId.toString(), DestinationConnection.class);
+    // TODO: secretsPersistence
+    // have destinationId available only. Called by WorkspaceHelperTest.
   }
 
   public void writeDestinationConnection(final DestinationConnection destinationConnection) throws JsonValidationException, IOException {
     persistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, destinationConnection.getDestinationId().toString(), destinationConnection);
+    // TODO: secretsPersistence on destinationConnection.getConfiguration()
+    // also have destinationConnection.getName() available. Called by WorkspaceHelperTest.
   }
 
   public List<DestinationConnection> listDestinationConnection() throws JsonValidationException, IOException {
