@@ -39,7 +39,7 @@
 - sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   name: GitHub
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/github
   icon: github.svg
 - sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
