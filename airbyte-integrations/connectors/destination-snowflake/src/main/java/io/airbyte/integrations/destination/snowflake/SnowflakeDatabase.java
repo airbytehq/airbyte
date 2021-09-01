@@ -91,6 +91,7 @@ public class SnowflakeDatabase {
     public JsonNode getConfig() {
       return config;
     }
+
   }
 
 }

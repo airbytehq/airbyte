@@ -29,8 +29,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-
-import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -40,6 +38,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 
 public class SqlOperationsUtils {
 
@@ -63,8 +62,9 @@ public class SqlOperationsUtils {
   }
 
   /**
-   * Inserts "raw" records in batches queries. The purpose of helper to abstract away database-specific
-   * SQL syntax from this query. Internally uses {@code insertRawRecordsInSingleQuery} method.
+   * Inserts "raw" records in batches queries. The purpose of helper to abstract away
+   * database-specific SQL syntax from this query. Internally uses
+   * {@code insertRawRecordsInSingleQuery} method.
    *
    * @param insertQueryComponent the first line of the query e.g. INSERT INTO public.users (ab_id,
    *        data, emitted_at)
@@ -79,7 +79,7 @@ public class SqlOperationsUtils {
                                                       JdbcDatabase jdbcDatabase,
                                                       List<AirbyteRecordMessage> records,
                                                       @Nullable Integer batchSize)
-          throws SQLException {
+      throws SQLException {
     if (batchSize == null || batchSize <= 0) {
       insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, true);
     } else {
@@ -158,7 +158,7 @@ public class SqlOperationsUtils {
     }
     int fullChunks = (size - 1) / length;
     return IntStream.range(0, fullChunks + 1).mapToObj(
-            n -> source.subList(n * length, n == fullChunks ? size : (n + 1) * length));
+        n -> source.subList(n * length, n == fullChunks ? size : (n + 1) * length));
   }
 
 }
