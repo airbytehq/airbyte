@@ -27,7 +27,7 @@ from typing import Dict, Iterable, List, Mapping
 import pendulum as pdm
 
 
-def make_slice(records: List, key_value_map: Dict) -> Dict:
+def make_slice(record: Dict, key_value_map: Dict) -> Dict:
     """
     Outputs the Dict with key:value slices for the stream.
     EXAMPLE:
@@ -40,7 +40,7 @@ def make_slice(records: List, key_value_map: Dict) -> Dict:
     """
     result = {}
     for key in key_value_map:
-        value = records[key_value_map.get(key, None)]
+        value = record[key_value_map.get(key, None)]
         if value:
             result.update(**{key: value})
     return result

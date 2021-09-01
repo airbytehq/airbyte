@@ -35,7 +35,7 @@ FIELDS_CHUNK_SIZE = 17
 # Number of days ahead for date slices, from start date.
 WINDOW_IN_DAYS = 30
 # List of adAnalyticsV2 fields available for fetch
-ANALYTICS_FIELDS_V2: Dict = [
+ANALYTICS_FIELDS_V2: List = [
     "actionClicks",
     "adUnitClicks",
     "approximateUniqueImpressions",
@@ -109,7 +109,11 @@ ANALYTICS_FIELDS_V2: Dict = [
 BASE_ANALLYTICS_FIELDS = ["dateRange", "pivot", "pivotValue"]
 
 
-def chunk_analytics_fields(fields: List = ANALYTICS_FIELDS_V2, fields_chunk_size: int = FIELDS_CHUNK_SIZE) -> Iterable[Mapping]:
+def chunk_analytics_fields(
+    fields: List = ANALYTICS_FIELDS_V2,
+    base_fields: List = BASE_ANALLYTICS_FIELDS,
+    fields_chunk_size: int = FIELDS_CHUNK_SIZE,
+) -> Iterable[Mapping]:
     """
     Chunks the list of available fields into the chunks of equal size.
     """
@@ -117,15 +121,16 @@ def chunk_analytics_fields(fields: List = ANALYTICS_FIELDS_V2, fields_chunk_size
     chunks = list((fields[f : f + fields_chunk_size] for f in range(0, len(fields), fields_chunk_size)))
     # Make sure base_fields are within the chunks
     for chunk in chunks:
-        for field in BASE_ANALLYTICS_FIELDS:
+        for field in base_fields:
             if field not in chunk:
                 chunk.append(field)
     return chunks
 
 
-def make_date_slices(start_date: str, window_in_days: int = WINDOW_IN_DAYS, end_date: str = None) -> Iterable[Mapping]:
+def make_date_slices(start_date: str, end_date: str = None, window_in_days: int = WINDOW_IN_DAYS) -> Iterable[Mapping]:
     """
-    Produces date slices from start_date to end_date (if specified), otherwise end_date will be present time.
+    Produces date slices from start_date to end_date (if specified),
+    otherwise end_date will be present time.
     """
     start = pdm.parse(start_date)
     end = pdm.parse(end_date) if end_date else pdm.now()
@@ -145,18 +150,18 @@ def make_date_slices(start_date: str, window_in_days: int = WINDOW_IN_DAYS, end_
     return date_slices
 
 
-def make_analytics_slices(records: List, key_value_map: Dict, start_date: str) -> Iterable[Mapping]:
+def make_analytics_slices(record: Dict, key_value_map: Dict, start_date: str, end_date: str = None) -> Iterable[Mapping]:
     """
     We drive the ability to directly pass the prepared parameters inside the stream_slice.
     The output of this method is ready slices for analytics streams:
     """
     # define the base_slice
-    base_slice = make_slice(records, key_value_map)
+    base_slice = make_slice(record, key_value_map)
     # add chunked fields, date_slices to the base_slice
     analytics_slices = []
     for fields_set in chunk_analytics_fields():
         base_slice.update(**{"fields": ",".join(map(str, fields_set))})
-        for date_slice in make_date_slices(start_date):
+        for date_slice in make_date_slices(start_date, end_date):
             base_slice.update(**date_slice)
             analytics_slices.append(base_slice.copy())
     return analytics_slices
@@ -182,7 +187,8 @@ def update_analytics_params(stream_slice: Dict) -> Mapping[str, Any]:
 
 def merge_chunks(chunked_result: Iterable[Mapping[str, Any]], merge_by_key: str) -> Iterable[Mapping]:
     """
-    We need to merge the chunked API responses into the single structure using any available unique field.
+    We need to merge the chunked API responses
+    into the single structure using any available unique field.
     """
     # Merge the pieces together
     merged = {}

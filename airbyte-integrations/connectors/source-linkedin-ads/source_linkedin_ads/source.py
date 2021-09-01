@@ -176,10 +176,10 @@ class StreamMixin(IncrementalLinkedinAdsStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
-        slice_stream = self.slice_from_stream(config=self.config)
-        for records in slice_stream.read_records(sync_mode=SyncMode.full_refresh):
-            slice = super().read_records(stream_slice=make_slice(records=records, key_value_map=self.slice_key_value_map), **kwargs)
-            yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
+        parent_stream = self.slice_from_stream(config=self.config)
+        for record in parent_stream.read_records(sync_mode=SyncMode.full_refresh):
+            child_stream_slice = super().read_records(stream_slice=make_slice(record, self.slice_key_value_map), **kwargs)
+            yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=child_stream_slice)
 
 
 class AccountUsers(StreamMixin):
@@ -281,10 +281,10 @@ class AnalyticsStreamMixin(IncrementalLinkedinAdsStream):
         stream_state = stream_state or {self.cursor_field: self.start_date}
         parent_stream = self.slice_from_stream(config=self.config)
         result_chunks = []
-        for records in parent_stream.read_records(sync_mode=SyncMode.full_refresh):
-            for analytics_slice in make_analytics_slices(records, self.slice_key_value_map, stream_state.get(self.cursor_field)):
-                slice = super().read_records(stream_slice=analytics_slice, **kwargs)
-                result_chunks.append(slice)
+        for record in parent_stream.read_records(sync_mode=SyncMode.full_refresh):
+            for analytics_slice in make_analytics_slices(record, self.slice_key_value_map, stream_state.get(self.cursor_field)):
+                child_stream_slice = super().read_records(stream_slice=analytics_slice, **kwargs)
+                result_chunks.append(child_stream_slice)
             yield from merge_chunks(result_chunks, self.cursor_field)
 
 

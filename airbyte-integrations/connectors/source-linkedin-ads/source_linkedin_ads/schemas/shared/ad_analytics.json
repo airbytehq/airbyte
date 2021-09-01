@@ -27,11 +27,11 @@
       },
       "start_date": {
         "type": ["null", "string"],
-        "format": "date-time"
+        "format": "date"
       },
       "end_date": {
         "type": ["null", "string"],
-        "format": "date-time"
+        "format": "date"
       },
       "externalWebsiteConversions": {
         "type": ["null", "number"]
