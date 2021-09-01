@@ -72,6 +72,7 @@ See [docs](https://help.getharvest.com/api-v2/authentication-api/authentication/
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.4   | 2021-06-22 | [5701](https://github.com/airbytehq/airbyte/pull/5071) | Harvest normalization failure: fixing the schemas |
 | 0.1.3   | 2021-06-22 | [4274](https://github.com/airbytehq/airbyte/pull/4274) | Fix wrong data type on `statement_key` in `clients` stream |
 | 0.1.2   | 2021-06-07 | [4222](https://github.com/airbytehq/airbyte/pull/4222) | Correct specification parameter name |
 | 0.1.1   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
