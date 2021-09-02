@@ -129,6 +129,11 @@ class GithubStream(HttpStream, ABC):
                 # For private repositories `Teams` stream is not available and we get "404 Client Error: Not Found for
                 # url: https://api.github.com/orgs/sherifnada/teams?per_page=100" error.
                 error_msg = f"Syncing `Team` stream isn't available for repository `{stream_slice['repository']}`."
+            elif e.response.status_code == requests.codes.CONFLICT:
+                error_msg = (
+                    f"Syncing `{self.name}` stream isn't available for repository "
+                    f"`{stream_slice['repository']}`, it seems like this repository is empty."
+                )
             else:
                 self.logger.error(f"Undefined error while reading records: {error_msg}")
                 raise e
@@ -276,6 +281,19 @@ class IncrementalGithubStream(SemiIncrementalGithubStream):
 
 
 # Below are full refresh streams
+
+
+class RepositoryStats(GithubStream):
+    """
+    This stream is technical and not intended for the user, we use it for checking connection with the repository.
+    API docs: https://docs.github.com/en/rest/reference/repos#get-a-repository
+    """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}"
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        yield response.json()
 
 
 class Assignees(GithubStream):
