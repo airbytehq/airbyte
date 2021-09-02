@@ -52,13 +52,7 @@ public class OAuthConfigSupplier {
         // we prefer params specific to a workspace before global ones (ie workspace is null)
         .min(Comparator.comparing(SourceOAuthParameter::getWorkspaceId, Comparator.nullsLast(Comparator.naturalOrder()))
             .thenComparing(SourceOAuthParameter::getOauthParameterId))
-        .ifPresent(oAuthParameter -> {
-          final ObjectNode config = (ObjectNode) sourceConnectorConfig;
-          final ObjectNode authParams = (ObjectNode) oAuthParameter.getConfiguration();
-          for (String key : Jsons.keys(authParams)) {
-            config.set(key, authParams.get(key));
-          }
-        });
+        .ifPresent(sourceOAuthParameter -> injectJsonNode((ObjectNode) sourceConnectorConfig, (ObjectNode) sourceOAuthParameter.getConfiguration()));
     return sourceConnectorConfig;
   }
 
@@ -70,14 +64,15 @@ public class OAuthConfigSupplier {
         // we prefer params specific to a workspace before global ones (ie workspace is null)
         .min(Comparator.comparing(DestinationOAuthParameter::getWorkspaceId, Comparator.nullsLast(Comparator.naturalOrder()))
             .thenComparing(DestinationOAuthParameter::getOauthParameterId))
-        .ifPresent(oAuthParameter -> {
-          final ObjectNode config = (ObjectNode) destinationConnectorConfig;
-          final ObjectNode authParams = (ObjectNode) oAuthParameter.getConfiguration();
-          for (String key : Jsons.keys(authParams)) {
-            config.set(key, authParams.get(key));
-          }
-        });
+        .ifPresent(destinationOAuthParameter -> injectJsonNode((ObjectNode) destinationConnectorConfig,
+            (ObjectNode) destinationOAuthParameter.getConfiguration()));
     return destinationConnectorConfig;
+  }
+
+  private static void injectJsonNode(ObjectNode config, ObjectNode fromConfig) {
+    for (String key : Jsons.keys(fromConfig)) {
+      config.set(key, fromConfig.get(key));
+    }
   }
 
 }
