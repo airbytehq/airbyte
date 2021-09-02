@@ -33,11 +33,15 @@ spec:
         - mountPath: /script/sweep-pod.sh
           subPath: sweep-pod.sh
           name: sweep-pod-script
+        - mountPath: /.kube
+          name: kube-config
         command: ["/bin/bash", "-c", /script/sweep-pod.sh]
         {{- if .Values.podSweeper.resources }}
         resources: {{- toYaml .Values.podSweeper.resources | nindent 10 }}
         {{- end }}
       volumes:
+      - name: kube-config
+        emptyDir: {}
       - name: sweep-pod-script
         configMap:
           name: {{ include "airbyte.fullname" . }}-sweep-pod-script
