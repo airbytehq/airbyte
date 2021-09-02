@@ -32,6 +32,13 @@ const envConfigProvider: ConfigProvider = async () => {
     fullstory: {
       orgId: process.env.REACT_APP_FULL_STORY_ORG,
     },
+    openreplay: {
+      projectID:
+        isDefined(process.env.REACT_APP_OPEN_REPLAY_PROJECT_ID) &&
+        Number.isInteger(process.env.REACT_APP_OPEN_REPLAY_PROJECT_ID)
+          ? Number.parseInt(process.env.REACT_APP_OPEN_REPLAY_PROJECT_ID)
+          : -1,
+    },
     papercups: {
       accountId: process.env.REACT_APP_PAPERCUPS_ACCOUNT_ID,
       enableStorytime: !process.env.REACT_APP_PAPERCUPS_DISABLE_STORYTIME,

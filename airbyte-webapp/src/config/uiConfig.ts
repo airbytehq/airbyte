@@ -5,6 +5,8 @@ type UiConfig = {
   gitLink: string;
   updateLink: string;
   slackLink: string;
+  termsLink: string;
+  privacyLink: string;
   docsLink: string;
   configurationArchiveLink: string;
   namespaceLink: string;
@@ -15,6 +17,8 @@ type UiConfig = {
 
 const uiConfig: UiConfig = {
   technicalSupport: `${BASE_DOCS_LINK}/troubleshooting/on-deploying`,
+  termsLink: "https://airbyte.io/terms",
+  privacyLink: "https://airbyte.io/privacy-policy",
   helpLink: "https://airbyte.io/community",
   gitLink: "https://github.com/airbytehq/airbyte",
   updateLink: `${BASE_DOCS_LINK}/upgrading-airbyte`,
