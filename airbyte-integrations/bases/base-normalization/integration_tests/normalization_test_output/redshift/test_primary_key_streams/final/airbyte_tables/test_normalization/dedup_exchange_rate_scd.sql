@@ -64,12 +64,12 @@ from __dbt__CTE__dedup_exchange_rate_ab2
 
 -- SQL model to prepare for deduplicating records based on the hash record column
 select
+  *,
   row_number() over (
     partition by _airbyte_dedup_exchange_rate_hashid
     order by _airbyte_emitted_at asc
-  ) as _airbyte_row_num,
-  tmp.*
-from __dbt__CTE__dedup_exchange_rate_ab3 tmp
+  ) as _airbyte_row_num
+from __dbt__CTE__dedup_exchange_rate_ab3
 -- dedup_exchange_rate from "integrationtests".test_normalization._airbyte_raw_dedup_exchange_rate
 )-- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
 select

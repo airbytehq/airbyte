@@ -4,7 +4,7 @@ select
     cast(ID as {{ dbt_utils.type_string() }}) as ID,
     cast(DATE as {{ dbt_utils.type_string() }}) as DATE,
     cast(PARTITION as {{ type_json() }}) as PARTITION,
-    _AIRBYTE_EMITTED_AT
+    _airbyte_emitted_at
 from {{ ref('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_AB1') }}
 -- NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES
 

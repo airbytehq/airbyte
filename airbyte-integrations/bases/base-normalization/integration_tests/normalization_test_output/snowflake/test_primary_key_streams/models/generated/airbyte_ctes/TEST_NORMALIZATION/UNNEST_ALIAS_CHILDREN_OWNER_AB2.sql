@@ -3,7 +3,7 @@
 select
     _AIRBYTE_CHILDREN_HASHID,
     cast(OWNER_ID as {{ dbt_utils.type_bigint() }}) as OWNER_ID,
-    _AIRBYTE_EMITTED_AT
+    _airbyte_emitted_at
 from {{ ref('UNNEST_ALIAS_CHILDREN_OWNER_AB1') }}
 -- OWNER at unnest_alias/children/owner
 

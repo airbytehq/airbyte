@@ -8,5 +8,5 @@ select
         adapter.quote('partition'),
     ]) }} as _airbyte_nested_strea__nto_long_names_hashid
 from {{ ref('nested_stream_with_co_1g_into_long_names_ab2') }}
--- nested_stream_with_co__lting_into_long_names 
+-- nested_stream_with_co__lting_into_long_names
 

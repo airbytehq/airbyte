@@ -3,7 +3,7 @@
 select
     cast(ID as {{ dbt_utils.type_string() }}) as ID,
     cast(CONFLICT_STREAM_SCALAR as {{ dbt_utils.type_bigint() }}) as CONFLICT_STREAM_SCALAR,
-    _AIRBYTE_EMITTED_AT
+    _airbyte_emitted_at
 from {{ ref('CONFLICT_STREAM_SCALAR_AB1') }}
 -- CONFLICT_STREAM_SCALAR
 

@@ -9,5 +9,5 @@ select
         array_to_string('column___with__quotes'),
     ]) }} as _airbyte_partition_hashid
 from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_partition_ab2') }}
--- partition at nested_stream_with_complex_columns_resulting_into_long_names/partition 
+-- partition at nested_stream_with_complex_columns_resulting_into_long_names/partition
 

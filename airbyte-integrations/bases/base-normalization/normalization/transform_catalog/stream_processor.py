@@ -359,8 +359,8 @@ from {{ from_table }} {{ table_alias }}
         )
         return sql
 
-    def get_emitted_at(self):
-        return self.name_transformer.normalize_column_name(self.airbyte_emitted_at, False, False)
+    def get_emitted_at(self, in_jinja: bool = False):
+        return self.name_transformer.normalize_column_name(self.airbyte_emitted_at, in_jinja, False)
 
     def extract_json_columns(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
         return [
@@ -450,49 +450,25 @@ from {{ from_table }}
 
     def generate_id_hashing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
 
-        if self.destination_type == DestinationType.ORACLE:
-            # Oracle doesn't have the surrogate_key macro
-            # because of this we use Oracle default function to hash column
-            # there is a open issue requesting the function to be implemented in oracle-dbt lib
-            # https://github.com/techindicium/dbt-oracle/issues/24
-
-            hash_sql_template = """
+        hash_sql_template = """
 -- SQL model to build a hash column based on the values of this record
 select
-    ora_hash(
-      {%- if parent_hash_id %}
-        {{ parent_hash_id }} || '~' ||
-      {%- endif %}
-      {%- for field in fields %}
-        {% if not loop.last %}
-            {{ field }} || '~' ||
-        {% else %}
-            {{ field }}
-        {% endif %}
-      {%- endfor %}
-    ) as {{ hash_id }},
-    tmp.*
-from {{ from_table }} tmp
-{{ sql_table_comment }}"""
-        else:
-            hash_sql_template = """
--- SQL model to build a hash column based on the values of this record
-select
-    *,
     {{ '{{' }} dbt_utils.surrogate_key([
       {%- if parent_hash_id %}
-        '{{ parent_hash_id }}',
+        {{ parent_hash_id }},
       {%- endif %}
       {%- for field in fields %}
         {{ field }},
       {%- endfor %}
-    ]) {{ '}}' }} as {{ hash_id }}
-from {{ from_table }}
-{{ sql_table_comment }} """
+    ]) {{ '}}' }} as {{ hash_id }},
+    tmp.*
+from {{ from_table }} tmp
+{{ sql_table_comment }}
+    """
 
         template = Template(hash_sql_template)
         sql = template.render(
-            parent_hash_id=self.parent_hash_id(),
+            parent_hash_id=self.parent_hash_id(in_jinja=True),
             fields=self.safe_cast_to_strings(column_names),
             hash_id=self.hash_id(),
             from_table=jinja_call(from_table),
@@ -502,35 +478,29 @@ from {{ from_table }}
 
     def safe_cast_to_strings(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
 
-        columns_name_safety = [
+        return [
             StreamProcessor.safe_cast_to_string(self.properties[field], column_names[field][1]) for field in column_names
         ]
 
-        if self.destination_type == DestinationType.ORACLE:
-            column_inside_parenthesis = re.compile(r"\((.+)\)")
-            oracle_columns_safe = []
-            for col in columns_name_safety:
-                if column_inside_parenthesis.findall(col):
-                    oracle_columns_safe.append(jinja_call(col))
-                else:
-                    oracle_columns_safe.append(col)
-            return oracle_columns_safe
-
-        return columns_name_safety
-
     @staticmethod
-    def safe_cast_to_string(definition: Dict, column_name: str, need_jinja: bool = False) -> str:
+    def safe_cast_to_string(definition: Dict, column_name: str) -> str:
         """
         Note that the result from this static method should always be used within a jinja context (for example, from jinja macro surrogate_key call)
         """
+        column_inside_parenthesis = re.compile(r"\((.+)\)")
         if "type" not in definition:
-            return column_name
+            col = column_name
         elif is_boolean(definition["type"]):
-            return f"boolean_to_string({column_name})"
+            col = f"boolean_to_string({column_name})"
         elif is_array(definition["type"]):
-            return f"array_to_string({column_name})"
+            col = f"array_to_string({column_name})"
         else:
-            return column_name
+            col = column_name
+
+        if 'quote' in col:
+            return col.replace("{{ ", "").replace(" }}", "")
+        else:
+            return col
 
     def generate_dedup_record_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
         template = Template(
@@ -560,8 +530,7 @@ from {{ from_table }} tmp
 
     def generate_scd_type_2_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
 
-        if self.destination_type == DestinationType.ORACLE:
-            scd_sql_template = """
+        scd_sql_template = """
 -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
 select
   {%- if parent_hash_id %}
@@ -570,41 +539,10 @@ select
   {%- for field in fields %}
     {{ field }},
   {%- endfor %}
-    {{ cursor_field }} as "_AIRBYTE_START_AT",
-    lag({{ cursor_field }}) over (
-        partition by {{ primary_key }}
-        order by {{ cursor_field }} desc, {{ col_emitted_at }} desc
-    ) as "_AIRBYTE_END_AT",
-    coalesce(cast(lag({{ cursor_field }}) over (
-        partition by {{ primary_key }}
-        order by {{ cursor_field }} desc, {{ col_emitted_at }} desc
-    ) as varchar(200)), 'Latest') as "_AIRBYTE_ACTIVE_ROW",
-    "_AIRBYTE_EMITTED_AT",
-    {{ hash_id }}
-from {{ from_table }}
-{{ sql_table_comment }}
-        """
-        else:
-            scd_sql_template = """
--- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
-select
-  {%- if parent_hash_id %}
-    {{ parent_hash_id }},
-  {%- endif %}
-  {%- for field in fields %}
-    {{ field }},
-  {%- endfor %}
-    {{ cursor_field }} as _airbyte_start_at,
-    lag({{ cursor_field }}) over (
-        partition by {{ primary_key }}
-        order by {{ cursor_field }} is null asc, {{ cursor_field }} desc, _airbyte_emitted_at desc
-    ) as _airbyte_end_at,
-    lag({{ cursor_field }}) over (
-        partition by {{ primary_key }}
-        order by {{ cursor_field }} is null asc, {{ cursor_field }} desc, _airbyte_emitted_at desc{{ cdc_updated_at_order }}
-    ) is null {{ cdc_active_row }}as {{ active_row }},
-    {{ col_emitted_at }},
-    {{ hash_id }}
+  {{ cursor_field }} as {{ airbyte_start_at }},
+  {{ '{{' }} lag_end_at({{ cursor_field_lag }}, \"{{ primary_key }}\", {{ lag_emitted_at }}) {{ '}}' }} as {{ airbyte_end_at }},
+  {{ col_emitted_at }},
+  {{ hash_id }}
 from {{ from_table }}
 {{ sql_table_comment }}
         """
@@ -618,11 +556,15 @@ from {{ from_table }}
             cdc_updated_order_pattern = ", _ab_cdc_updated_at desc"
 
         sql = template.render(
+            airbyte_start_at=self.name_transformer.normalize_column_name("_airbyte_start_at"),
+            airbyte_end_at=self.name_transformer.normalize_column_name("_airbyte_end_at"),
             active_row=self.name_transformer.normalize_column_name("_airbyte_active_row"),
+            lag_emitted_at=self.get_emitted_at(in_jinja=True),
             col_emitted_at=self.get_emitted_at(),
             parent_hash_id=self.parent_hash_id(),
             fields=self.list_fields(column_names),
             cursor_field=self.get_cursor_field(column_names),
+            cursor_field_lag=self.get_cursor_field(column_names, in_jinja=True),
             primary_key=self.get_primary_key(column_names),
             hash_id=self.hash_id(),
             from_table=jinja_call(from_table),
@@ -632,17 +574,19 @@ from {{ from_table }}
         )
         return sql
 
-    def get_cursor_field(self, column_names: Dict[str, Tuple[str, str]]) -> str:
+    def get_cursor_field(self, column_names: Dict[str, Tuple[str, str]], in_jinja: bool = False) -> str:
         if not self.cursor_field:
-            return self.name_transformer.normalize_column_name("_airbyte_emitted_at")
+            cursor = self.name_transformer.normalize_column_name("_airbyte_emitted_at", in_jinja)
         elif len(self.cursor_field) == 1:
             if not is_airbyte_column(self.cursor_field[0]):
-                return column_names[self.cursor_field[0]][0]
+                cursor = column_names[self.cursor_field[0]][0]
             else:
                 # using an airbyte generated column
-                return self.cursor_field[0]
+                cursor = self.cursor_field[0]
         else:
             raise ValueError(f"Unsupported nested cursor field {'.'.join(self.cursor_field)} for stream {self.stream_name}")
+
+        return cursor.replace('{{ ', '').replace(' }}', '')
 
     def get_primary_key(self, column_names: Dict[str, Tuple[str, str]]) -> str:
         if self.primary_key and len(self.primary_key) > 0:
@@ -772,20 +716,20 @@ from {{ from_table }}
             result += f" from {from_table}"
         return result
 
-    def hash_id(self) -> str:
+    def hash_id(self, in_jinja: bool = False) -> str:
         hash_id_col = f"_airbyte_{self.normalized_stream_name()}_hashid"
         if self.parent:
             if self.normalized_stream_name().lower() == self.parent.stream_name.lower():
                 level = len(self.json_path)
                 hash_id_col = f"_airbyte_{self.normalized_stream_name()}_{level}_hashid"
 
-        return self.name_transformer.normalize_column_name(hash_id_col)
+        return self.name_transformer.normalize_column_name(hash_id_col, in_jinja)
 
     # Nested Streams
 
-    def parent_hash_id(self) -> str:
+    def parent_hash_id(self, in_jinja: bool = False) -> str:
         if self.parent:
-            return self.parent.hash_id()
+            return self.parent.hash_id(in_jinja)
         return ""
 
     def unnesting_before_query(self) -> str:

@@ -7,5 +7,5 @@ select
         adapter.quote('date'),
     ]) }} as _airbyte_simple_stre__nto_long_names_hashid
 from {{ ref('simple_stream_with_n__lting_into_long_names_ab2') }}
--- simple_stream_with_n__lting_into_long_names 
+-- simple_stream_with_n__lting_into_long_names
 

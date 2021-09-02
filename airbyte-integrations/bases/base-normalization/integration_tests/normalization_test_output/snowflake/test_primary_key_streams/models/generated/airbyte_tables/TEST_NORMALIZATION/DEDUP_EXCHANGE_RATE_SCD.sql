@@ -17,8 +17,8 @@ select
     lag(DATE) over (
         partition by ID, CURRENCY, cast(NZD as {{ dbt_utils.type_string() }})
         order by DATE is null asc, DATE desc, _airbyte_emitted_at desc
-    ) is null as _AIRBYTE_ACTIVE_ROW,
-    _AIRBYTE_EMITTED_AT,
+    ) is null as _airbyte_active_row,
+    _airbyte_emitted_at,
     _AIRBYTE_DEDUP_EXCHANGE_RATE_HASHID
 from {{ ref('DEDUP_EXCHANGE_RATE_AB4') }}
 -- DEDUP_EXCHANGE_RATE from {{ source('TEST_NORMALIZATION', '_AIRBYTE_RAW_DEDUP_EXCHANGE_RATE') }}

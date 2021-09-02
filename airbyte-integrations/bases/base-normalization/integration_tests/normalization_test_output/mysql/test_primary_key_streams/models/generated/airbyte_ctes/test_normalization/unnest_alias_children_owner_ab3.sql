@@ -7,5 +7,5 @@ select
         'owner_id',
     ]) }} as _airbyte_owner_hashid
 from {{ ref('unnest_alias_children_owner_ab2') }}
--- owner at unnest_alias/children/owner 
+-- owner at unnest_alias/children/owner
 

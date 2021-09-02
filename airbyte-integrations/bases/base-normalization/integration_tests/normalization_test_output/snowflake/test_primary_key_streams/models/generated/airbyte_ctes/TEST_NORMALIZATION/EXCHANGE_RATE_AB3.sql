@@ -13,5 +13,5 @@ select
         'USD',
     ]) }} as _AIRBYTE_EXCHANGE_RATE_HASHID
 from {{ ref('EXCHANGE_RATE_AB2') }}
--- EXCHANGE_RATE 
+-- EXCHANGE_RATE
 

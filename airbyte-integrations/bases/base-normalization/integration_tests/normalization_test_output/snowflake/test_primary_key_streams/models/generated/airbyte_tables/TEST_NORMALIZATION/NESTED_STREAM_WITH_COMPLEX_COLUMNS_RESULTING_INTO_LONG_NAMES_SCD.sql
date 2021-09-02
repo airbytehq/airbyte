@@ -12,8 +12,8 @@ select
     lag(DATE) over (
         partition by ID
         order by DATE is null asc, DATE desc, _airbyte_emitted_at desc
-    ) is null as _AIRBYTE_ACTIVE_ROW,
-    _AIRBYTE_EMITTED_AT,
+    ) is null as _airbyte_active_row,
+    _airbyte_emitted_at,
     _AIRBYTE_NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_HASHID
 from {{ ref('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_AB4') }}
 -- NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES from {{ source('TEST_NORMALIZATION', '_AIRBYTE_RAW_NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES') }}

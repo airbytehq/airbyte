@@ -4,7 +4,7 @@
 select
     _AIRBYTE_PARTITION_HASHID,
     {{ json_extract_scalar(unnested_column_value(adapter.quote('column`_\'with""_quotes')), ['currency'], ['currency']) }} as CURRENCY,
-    _AIRBYTE_EMITTED_AT
+    _airbyte_emitted_at
 from {{ ref('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION') }} as table_alias
 {{ cross_join_unnest('PARTITION', adapter.quote('column`_\'with""_quotes')) }}
 where {{ adapter.quote('column`_\'with""_quotes') }} is not null

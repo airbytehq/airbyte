@@ -7,5 +7,5 @@ select
         array_to_string('children'),
     ]) }} as _airbyte_unnest_alias_hashid
 from {{ ref('unnest_alias_ab2') }}
--- unnest_alias 
+-- unnest_alias
 
