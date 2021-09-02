@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.server.handlers;
+package io.airbyte.scheduler.persistence.job_factory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -34,7 +34,6 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
@@ -43,29 +42,29 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class OAuthHandlerTest {
+public class OAuthConfigSupplierTest {
 
   private ConfigRepository configRepository;
-  private OAuthHandler oAuthHandler;
+  private OAuthConfigSupplier oAuthConfigSupplier;
 
   @BeforeEach
-  public void setup() throws Exception {
+  public void setup() {
     configRepository = mock(ConfigRepository.class);
-    oAuthHandler = new OAuthHandler(configRepository);
+    oAuthConfigSupplier = new OAuthConfigSupplier(configRepository);
   }
 
   @Test
   public void testInjectEmptyOAuthParameters() throws JsonValidationException, IOException {
-    JsonNode config = SourceHelpers.getTestImplementationJson();
+    final JsonNode config = generateJsonConfig();
     final UUID sourceDefinitionId = UUID.randomUUID();
     final UUID workspaceId = UUID.randomUUID();
-    final JsonNode actualConfig = oAuthHandler.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
+    final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
     assertEquals(config, actualConfig);
   }
 
   @Test
   public void testInjectGlobalOAuthParameters() throws JsonValidationException, IOException {
-    final JsonNode config = SourceHelpers.getTestImplementationJson();
+    final JsonNode config = generateJsonConfig();
     final UUID sourceDefinitionId = UUID.randomUUID();
     final UUID workspaceId = UUID.randomUUID();
     final Map<String, String> oauthParameters = generateOAuthParameters();
@@ -80,7 +79,7 @@ public class OAuthHandlerTest {
             .withSourceDefinitionId(UUID.randomUUID())
             .withWorkspaceId(null)
             .withConfiguration(Jsons.jsonNode(generateOAuthParameters()))));
-    final JsonNode actualConfig = oAuthHandler.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
+    final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
     final ObjectNode expectedConfig = ((ObjectNode) Jsons.clone(config));
     for (String key : oauthParameters.keySet()) {
       expectedConfig.set(key, Jsons.jsonNode(oauthParameters.get(key)));
@@ -90,7 +89,7 @@ public class OAuthHandlerTest {
 
   @Test
   public void testInjectWorkspaceOAuthParameters() throws JsonValidationException, IOException {
-    final JsonNode config = SourceHelpers.getTestImplementationJson();
+    final JsonNode config = generateJsonConfig();
     final UUID sourceDefinitionId = UUID.randomUUID();
     final UUID workspaceId = UUID.randomUUID();
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of(
@@ -107,13 +106,20 @@ public class OAuthHandlerTest {
                 .put("api_secret", "my secret workspace")
                 .put("api_client", Map.of("anyOf", List.of(Map.of("id", "id"), Map.of("service", "account"))))
                 .build()))));
-    final JsonNode actualConfig = oAuthHandler.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
+    final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
     final ObjectNode expectedConfig = (ObjectNode) Jsons.clone(config);
     expectedConfig.set("api_secret", Jsons.jsonNode("my secret workspace"));
     expectedConfig.set("api_client", Jsons.jsonNode(Map.of("anyOf", List.of(
         Map.of("id", "id"),
         Map.of("service", "account")))));
     assertEquals(expectedConfig, actualConfig);
+  }
+
+  private JsonNode generateJsonConfig() {
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put("apiSecret", "123")
+        .put("client", "testing")
+        .build());
   }
 
   private Map<String, String> generateOAuthParameters() {

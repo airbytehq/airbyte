@@ -188,7 +188,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         jobHistoryHandler,
         schedulerHandler,
         operationsHandler);
-    oAuthHandler = new OAuthHandler(configRepository);
+    oAuthHandler = new OAuthHandler();
     healthCheckHandler = new HealthCheckHandler(configRepository);
     archiveHandler = new ArchiveHandler(configs.getAirbyteVersion(), configRepository, jobPersistence, workspaceHelper, archiveTtlManager);
     logsHandler = new LogsHandler();
