@@ -1,48 +1,57 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
   "properties": {
-    "defaultGroups": {
-      "items": {
-        "type": "string"
-      },
-      "type": "array"
-    },
-    "defined": {
-      "type": "boolean"
+    "key": {
+      "type": "string",
+      "description": "The key of the application role."
     },
     "groups": {
-      "items": {
-        "type": "string"
-      },
-      "type": "array"
-    },
-    "hasUnlimitedSeats": {
-      "type": "boolean"
-    },
-    "key": {
-      "type": "string"
+      "uniqueItems": true,
+      "type": "array",
+      "description": "The groups associated with the application role.",
+      "items": { "type": "string" }
     },
     "name": {
-      "type": "string"
+      "type": "string",
+      "description": "The display name of the application role."
     },
-    "numberOfSeats": {
-      "type": "integer"
-    },
-    "platform": {
-      "type": "boolean"
-    },
-    "remainingSeats": {
-      "type": "integer"
+    "defaultGroups": {
+      "uniqueItems": true,
+      "type": "array",
+      "description": "The groups that are granted default access for this application role.",
+      "items": { "type": "string" }
     },
     "selectedByDefault": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Determines whether this application role should be selected by default on user creation."
+    },
+    "defined": { "type": "boolean", "description": "Deprecated." },
+    "numberOfSeats": {
+      "type": "integer",
+      "description": "The maximum count of users on your license.",
+      "format": "int32"
+    },
+    "remainingSeats": {
+      "type": "integer",
+      "description": "The count of users remaining on your license.",
+      "format": "int32"
     },
     "userCount": {
-      "type": "integer"
+      "type": "integer",
+      "description": "The number of users counting against your license.",
+      "format": "int32"
     },
     "userCountDescription": {
-      "type": "string"
+      "type": "string",
+      "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license."
+    },
+    "hasUnlimitedSeats": { "type": "boolean" },
+    "platform": {
+      "type": "boolean",
+      "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
     }
   },
-  "type": "object"
+  "additionalProperties": false,
+  "description": "Details of an application role."
 }
