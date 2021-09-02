@@ -27,6 +27,7 @@ package io.airbyte.commons.json;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -241,6 +242,32 @@ class JsonsTest {
     assertEquals(expectedOutput, Jsons.toPrettyString(jsonNode));
   }
 
+  @Test
+  void testGetOptional() {
+    final JsonNode json = Jsons.deserialize("{ \"abc\": { \"def\": \"ghi\" }, \"jkl\": {}, \"mno\": \"pqr\", \"stu\": null }");
+
+    assertEquals(Optional.of(Jsons.jsonNode("ghi")), Jsons.getOptional(json, "abc", "def"));
+    assertEquals(Optional.of(Jsons.emptyObject()), Jsons.getOptional(json, "jkl"));
+    assertEquals(Optional.of(Jsons.jsonNode("pqr")), Jsons.getOptional(json, "mno"));
+    assertEquals(Optional.of(Jsons.jsonNode(null)), Jsons.getOptional(json, "stu"));
+    assertEquals(Optional.empty(), Jsons.getOptional(json, "xyz"));
+    assertEquals(Optional.empty(), Jsons.getOptional(json, "abc", "xyz"));
+    assertEquals(Optional.empty(), Jsons.getOptional(json, "abc", "def", "xyz"));
+    assertEquals(Optional.empty(), Jsons.getOptional(json, "abc", "jkl", "xyz"));
+    assertEquals(Optional.empty(), Jsons.getOptional(json, "stu", "xyz"));
+  }
+
+  @Test
+  void testGetStringOrNull() {
+    final JsonNode json = Jsons.deserialize("{ \"abc\": { \"def\": \"ghi\" }, \"jkl\": \"mno\", \"pqr\": 1 }");
+
+    assertEquals("ghi", Jsons.getStringOrNull(json, "abc", "def"));
+    assertEquals("mno", Jsons.getStringOrNull(json, "jkl"));
+    assertEquals("1", Jsons.getStringOrNull(json, "pqr"));
+    assertNull(Jsons.getStringOrNull(json, "abc", "def", "xyz"));
+    assertNull(Jsons.getStringOrNull(json, "xyz"));
+  }
+
   private static class ToClass {
 
     @JsonProperty("str")
@@ -254,21 +281,21 @@ class JsonsTest {
 
     public ToClass() {}
 
-    public ToClass(String str, Integer num, long numLong) {
+    public ToClass(final String str, final Integer num, final long numLong) {
       this.str = str;
       this.num = num;
       this.numLong = numLong;
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
       if (this == o) {
         return true;
       }
       if (o == null || getClass() != o.getClass()) {
         return false;
       }
-      ToClass toClass = (ToClass) o;
+      final ToClass toClass = (ToClass) o;
       return numLong == toClass.numLong
           && Objects.equals(str, toClass.str)
           && Objects.equals(num, toClass.num);
