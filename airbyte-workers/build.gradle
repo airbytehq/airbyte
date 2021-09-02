@@ -53,7 +53,7 @@ jsonSchema2Pojo {
     includeSetters = true
 }
 
-mainClassName = 'io.airbyte.worker.WorkerApp'
+mainClassName = 'io.airbyte.workers.WorkerApp'
 
 application {
     mainClass = mainClassName

@@ -15,7 +15,7 @@ RUN add-apt-repository \
        stable"
 RUN apt-get update && apt-get install -y docker-ce-cli jq
 
-ENV APPLICATION airbyte-worker
+ENV APPLICATION airbyte-workers
 
 WORKDIR /app
 
