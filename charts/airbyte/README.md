@@ -8,7 +8,7 @@
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------- | --------------- |
 | `nameOverride`               | String to partially override airbyte.fullname template with a string (will prepend the release name)                | `""`            |
 | `fullnameOverride`           | String to fully override airbyte.fullname template with a string                                                    | `""`            |
-| `serviceAccount.annotations` | Annotations for service account. Evaluated as a template. Only used if `create` is `true`.                          | `undefined`     |
+| `serviceAccount.annotations` | Annotations for service account. Evaluated as a template. Only used if `create` is `true`.                          | `{}`            |
 | `serviceAccount.create`      | Specifies whether a ServiceAccount should be created                                                                | `true`          |
 | `serviceAccount.name`        | Name of the service account to use. If not set and create is true, a name is generated using the fullname template. | `airbyte-admin` |
 
@@ -21,33 +21,42 @@
 | `webapp.image.repository`    | The repository to use for the airbyte webapp image.              | `airbyte/webapp` |
 | `webapp.image.pullPolicy`    | the pull policy to use for the airbyte webapp image              | `IfNotPresent`   |
 | `webapp.image.tag`           | The airbyte webapp image tag. Defaults to the chart's AppVersion | `0.29.13-alpha`  |
+| `webapp.podAnnotations`      | Add extra annotations to the scheduler pod                       | `{}`             |
 | `webapp.service.type`        | The service type to use for the webapp service                   | `ClusterIP`      |
 | `webapp.service.port`        | The service port to expose the webapp on                         | `80`             |
+| `webapp.resources.limits`    | The resources limits for the Web container                       | `{}`             |
+| `webapp.resources.requests`  | The requested resources for the Web container                    | `{}`             |
 | `webapp.ingress.enabled`     | Set to true to enable ingress record generation                  | `false`          |
 | `webapp.ingress.className`   | Specifies ingressClassName for clusters >= 1.18+                 | `""`             |
 | `webapp.ingress.hosts`       | Ingress Hosts configuration                                      | `[]`             |
-| `webapp.ingress.annotations` | Ingress annotations done as key:value pairs                      | `undefined`      |
+| `webapp.ingress.annotations` | Ingress annotations done as key:value pairs                      | `{}`             |
 | `webapp.ingress.hosts`       | The list of hostnames to be covered with this ingress record.    | `[]`             |
-| `webapp.ingress.tls`         | Custom ingress TLS configuration                                 | `undefined`      |
+| `webapp.ingress.tls`         | Custom ingress TLS configuration                                 | `[]`             |
 
 
 ### Scheduler Parameters
 
-| Name                         | Description                                                         | Value               |
-| ---------------------------- | ------------------------------------------------------------------- | ------------------- |
-| `scheduler.replicaCount`     | Number of scheduler replicas                                        | `1`                 |
-| `scheduler.image.repository` | The repository to use for the airbyte scheduler image.              | `airbyte/scheduler` |
-| `scheduler.image.pullPolicy` | the pull policy to use for the airbyte scheduler image              | `IfNotPresent`      |
-| `scheduler.image.tag`        | The airbyte scheduler image tag. Defaults to the chart's AppVersion | `0.29.13-alpha`     |
+| Name                           | Description                                                         | Value               |
+| ------------------------------ | ------------------------------------------------------------------- | ------------------- |
+| `scheduler.replicaCount`       | Number of scheduler replicas                                        | `1`                 |
+| `scheduler.image.repository`   | The repository to use for the airbyte scheduler image.              | `airbyte/scheduler` |
+| `scheduler.image.pullPolicy`   | the pull policy to use for the airbyte scheduler image              | `IfNotPresent`      |
+| `scheduler.image.tag`          | The airbyte scheduler image tag. Defaults to the chart's AppVersion | `0.29.13-alpha`     |
+| `scheduler.podAnnotations`     | Add extra annotations to the scheduler pod                          | `{}`                |
+| `scheduler.resources.limits`   | The resources limits for the scheduler container                    | `{}`                |
+| `scheduler.resources.requests` | The requested resources for the scheduler container                 | `{}`                |
 
 
 ### Pod Sweeper parameters
 
-| Name                          | Description                                     | Value             |
-| ----------------------------- | ----------------------------------------------- | ----------------- |
-| `podSweeper.image.repository` | The image repository to use for the pod sweeper | `bitnami/kubectl` |
-| `podSweeper.image.pullPolicy` | The pull policy for the pod sweeper image       | `IfNotPresent`    |
-| `podSweeper.image.tag`        | The pod sweeper image tag to use                | `latest`          |
+| Name                            | Description                                          | Value             |
+| ------------------------------- | ---------------------------------------------------- | ----------------- |
+| `podSweeper.image.repository`   | The image repository to use for the pod sweeper      | `bitnami/kubectl` |
+| `podSweeper.image.pullPolicy`   | The pull policy for the pod sweeper image            | `IfNotPresent`    |
+| `podSweeper.image.tag`          | The pod sweeper image tag to use                     | `latest`          |
+| `podSweeper.podAnnotations`     | Add extra annotations to the podSweeper pod          | `{}`              |
+| `podSweeper.resources.limits`   | The resources limits for the podSweeper container    | `{}`              |
+| `podSweeper.resources.requests` | The requested resources for the podSweeper container | `{}`              |
 
 
 ### Server parameters
@@ -58,6 +67,7 @@
 | `server.image.repository`                   | The repository to use for the airbyte server image.              | `airbyte/server` |
 | `server.image.pullPolicy`                   | the pull policy to use for the airbyte server image              | `IfNotPresent`   |
 | `server.image.tag`                          | The airbyte server image tag. Defaults to the chart's AppVersion | `0.29.13-alpha`  |
+| `server.podAnnotations`                     | Add extra annotations to the server pod                          | `{}`             |
 | `server.livenessProbe.enabled`              | Enable livenessProbe on the server                               | `true`           |
 | `server.livenessProbe.initialDelaySeconds`  | Initial delay seconds for livenessProbe                          | `30`             |
 | `server.livenessProbe.periodSeconds`        | Period seconds for livenessProbe                                 | `10`             |
@@ -70,14 +80,13 @@
 | `server.readinessProbe.timeoutSeconds`      | Timeout seconds for readinessProbe                               | `1`              |
 | `server.readinessProbe.failureThreshold`    | Failure threshold for readinessProbe                             | `3`              |
 | `server.readinessProbe.successThreshold`    | Success threshold for readinessProbe                             | `1`              |
+| `server.resources.limits`                   | The resources limits for the server container                    | `{}`             |
+| `server.resources.requests`                 | The requested resources for the server container                 | `{}`             |
 | `server.service.type`                       | The service type to use for the API server                       | `ClusterIP`      |
 | `server.service.port`                       | The service port to expose the API server on                     | `8001`           |
-| `server.configs.persistence.accessMode`     | The access mode for the airbyte configs pvc                      | `ReadWriteOnce`  |
-| `server.configs.persistence.storageClass`   | The storage class to use for the airbyte configs pvc             | `standard`       |
-| `server.configs.persistence.size`           | The size of the pvc to use for the airbyte configs pvc           | `500Mi`          |
-| `server.workspace.persistence.accessMode`   | The access mode for the airbyte workspace pvc                    | `ReadWriteOnce`  |
-| `server.workspace.persistence.storageClass` | The storage class to use for the airbyte workspace pvc           | `standard`       |
-| `server.workspace.persistence.size`         | The size of the pvc to use for the airbyte workspace pvc         | `500Mi`          |
+| `server.persistence.accessMode`             | The access mode for the airbyte server pvc                       | `ReadWriteOnce`  |
+| `server.persistence.storageClass`           | The storage class to use for the airbyte server pvc              | `standard`       |
+| `server.persistence.size`                   | The size of the pvc to use for the airbyte server pvc            | `1Gi`            |
 
 
 ### Temporal parameters
@@ -119,3 +128,5 @@
 | `minio.secretKey.password` | Minio Secret Key                                 | `minio123`  |
 | `externalMinio.host`       | Minio Host                                       | `localhost` |
 | `externalMinio.port`       | Minio Port                                       | `9000`      |
+
+

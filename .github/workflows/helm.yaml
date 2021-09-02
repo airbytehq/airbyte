@@ -47,7 +47,7 @@ jobs:
       run: npm install -g
     - name: Test can update README with generated parameters
       working-directory: charts/airbyte
-      run: readme-generator -v ./values.yaml -r README.md
+      run: make update-docs
 
   install:
     name: Install

@@ -26,3 +26,9 @@ diagnostics:
 
 template:
 	helm template --release-name $(RELEASE_NAME) .
+
+
+# Uses the readme-generator command to update the README.md
+# with changes in the values.yaml file. See: https://github.com/bitnami-labs/readme-generator-for-helm
+update-docs:
+	readme-generator -v ./values.yaml -r README.md

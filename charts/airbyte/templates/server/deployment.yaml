@@ -15,6 +15,10 @@ spec:
     metadata:
       labels:
         airbyte: server
+      {{- if .Values.server.podAnnotations }}
+      annotations:
+        {{- include "common.tplvalues.render" (dict "value" .Values.server.podAnnotations "context" $) | nindent 8 }}
+      {{- end }}
     spec:
       containers:
       - name: airbyte-server-container
@@ -162,6 +166,9 @@ spec:
         - name: http
           containerPort: 8001
           protocol: TCP
+        {{- if .Values.server.resources }}
+        resources: {{- toYaml .Values.server.resources | nindent 10 }}
+        {{- end }}
         volumeMounts:
         - name: airbyte-data
           mountPath: /configs

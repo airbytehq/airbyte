@@ -14,6 +14,10 @@ spec:
     metadata:
       labels:
         airbyte: webapp
+      {{- if .Values.webapp.podAnnotations }}
+      annotations:
+        {{- include "common.tplvalues.render" (dict "value" .Values.webapp.podAnnotations "context" $) | nindent 8 }}
+      {{- end }}
     spec:
       containers:
       - name: airbyte-webapp-container
@@ -64,3 +68,6 @@ spec:
         - name: http
           containerPort: 80
           protocol: TCP
+        {{- if .Values.webapp.resources }}
+        resources: {{- toYaml .Values.webapp.resources | nindent 10 }}
+        {{- end }}

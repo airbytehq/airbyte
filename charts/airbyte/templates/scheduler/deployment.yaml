@@ -13,6 +13,10 @@ spec:
     metadata:
       labels:
         airbyte: scheduler
+      {{- if .Values.scheduler.podAnnotations }}
+      annotations:
+        {{- include "common.tplvalues.render" (dict "value" .Values.scheduler.podAnnotations "context" $) | nindent 8 }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "airbyte.serviceAccountName" . }}
       automountServiceAccountToken: true
@@ -195,6 +199,9 @@ spec:
         - containerPort: 9028
         - containerPort: 9029
         - containerPort: 9030 # end temporal worker port pool
+        {{- if .Values.scheduler.resources }}
+        resources: {{- toYaml .Values.scheduler.resources | nindent 10 }}
+        {{- end }}
         volumeMounts:
         - name: gcs-log-creds-volume
           mountPath: /secrets/gcs-log-creds
