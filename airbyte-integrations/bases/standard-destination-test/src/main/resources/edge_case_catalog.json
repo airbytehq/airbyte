@@ -139,6 +139,21 @@
           }
         }
       }
+    },
+    {
+      "name": "stream_with_dates",
+      "json_schema": {
+        "properties": {
+          "some_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "some_datetime": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
     }
   ]
 }
