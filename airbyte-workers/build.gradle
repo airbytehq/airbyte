@@ -36,7 +36,7 @@ dependencies {
 
     testImplementation project(':airbyte-commons-docker')
 
-    integrationTestJavaImplementation project(':airbyte-worker')
+    integrationTestJavaImplementation project(':airbyte-workers')
 }
 
 jsonSchema2Pojo {

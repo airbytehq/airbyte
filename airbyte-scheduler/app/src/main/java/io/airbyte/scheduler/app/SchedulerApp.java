@@ -47,7 +47,6 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.worker.WorkerApp;
-import io.airbyte.worker.process.KubePortManagerSingleton;
 import io.airbyte.worker.temporal.TemporalClient;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -188,15 +187,6 @@ public class SchedulerApp {
         workspaceRoot,
         jobPersistence);
     final JobNotifier jobNotifier = new JobNotifier(configs.getWebappUrl(), configRepository, new WorkspaceHelper(configRepository, jobPersistence));
-
-    if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
-      var supportedWorkers = KubePortManagerSingleton.getSupportedWorkers();
-      if (supportedWorkers < SUBMITTER_NUM_THREADS) {
-        LOGGER.warn("{} workers configured with only {} ports available. Insufficient ports. Setting workers to {}.", SUBMITTER_NUM_THREADS,
-            KubePortManagerSingleton.getNumAvailablePorts(), supportedWorkers);
-        SUBMITTER_NUM_THREADS = supportedWorkers;
-      }
-    }
 
     AirbyteVersion.assertIsCompatible(configs.getAirbyteVersion(), jobPersistence.getVersion().get());
 

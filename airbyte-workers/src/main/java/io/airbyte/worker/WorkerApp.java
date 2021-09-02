@@ -31,6 +31,7 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.worker.process.DockerProcessFactory;
+import io.airbyte.worker.process.KubePortManagerSingleton;
 import io.airbyte.worker.process.KubeProcessFactory;
 import io.airbyte.worker.process.ProcessFactory;
 import io.airbyte.worker.process.WorkerHeartbeatServer;
@@ -78,6 +79,18 @@ public class WorkerApp {
             throw new RuntimeException(e);
           }
         });
+
+    // TODO: fix
+//    Configs configs = new EnvConfigs();
+//
+//    if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
+//      var supportedWorkers = KubePortManagerSingleton.getSupportedWorkers();
+//      if (supportedWorkers < SUBMITTER_NUM_THREADS) {
+//        LOGGER.warn("{} workers configured with only {} ports available. Insufficient ports. Setting workers to {}.", SUBMITTER_NUM_THREADS,
+//            KubePortManagerSingleton.getNumAvailablePorts(), supportedWorkers);
+//        SUBMITTER_NUM_THREADS = supportedWorkers;
+//      }
+//    }
 
     final TemporalPool temporalPool = new TemporalPool(temporalService, workspaceRoot, processFactory);
     temporalPool.run();

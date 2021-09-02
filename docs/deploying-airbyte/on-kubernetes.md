@@ -145,6 +145,11 @@ Now visit [http://localhost:8000](http://localhost:8000) in your browser and sta
 * Volume sizes
   * You can modify `kube/resources/volume-*` files to specify different volume sizes for the persistent volumes backing Airbyte.
 
+### Increasing worker parallelism
+
+TODO 
+You can increase the number of replicas for the `airbyte-worker` deployment to increase the number of syncs that can run simultaneously. 
+
 ### Cloud logging
 
 Airbyte writes logs to two directories. App logs, including server and scheduler logs, are written to the `app-logging` directory.
