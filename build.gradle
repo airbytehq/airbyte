@@ -310,7 +310,7 @@ tasks.withType(AbstractArchiveTask) {
 //        ':airbyte-scheduler:models',
 //        ':airbyte-scheduler:persistence',
 //        ':airbyte-server',
-//        ':airbyte-worker'
+//        ':airbyte-workers'
 //]
 //configure(subprojects.findAll { toPublish.contains(it.getPath()) }) {
 //    apply plugin: 'maven-publish'
