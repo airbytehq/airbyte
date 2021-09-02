@@ -180,16 +180,12 @@ class DestinationNameTransformer:
             else:
                 result = result.replace("`", "_")
             result = result.replace("'", "\\'")
+            result = self.__normalize_identifier_case(result, is_quoted=True)
             if self.destination_type == DestinationType.ORACLE:
                 # Oracle dbt lib doesn't implemented adapter quote yet.
-                result = self.__normalize_identifier_case(result, is_quoted=True)
                 result = f"quote('{result}')"
-                if not in_jinja:
-                    result = jinja_call(result)
-                return result
             else:
                 result = f"adapter.quote('{result}')"
-            result = self.__normalize_identifier_case(result, is_quoted=True)
             if not in_jinja:
                 result = jinja_call(result)
             return result

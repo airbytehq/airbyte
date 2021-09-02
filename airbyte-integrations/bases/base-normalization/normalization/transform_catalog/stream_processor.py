@@ -24,6 +24,7 @@
 
 
 import os
+import re
 from typing import Dict, List, Optional, Tuple
 
 from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMode
@@ -483,8 +484,15 @@ from {{ from_table }} tmp
     @staticmethod
     def safe_cast_to_string(definition: Dict, column_name: str) -> str:
         """
-        Note that the result from this static method should always be used within a jinja context (for example, from jinja macro surrogate_key call)
+        Note that the result from this static method should always be used within a
+        jinja context (for example, from jinja macro surrogate_key call)
+
+        The jinja_remove function is necessary because of Oracle database, some columns
+        are created with {{ quote('column_name') }} and reused the same fields for this
+        operation. Because the quote is injected inside a jinja macro we need to remove
+        the curly brackets.
         """
+        quote_in_parenthesis = re.compile(r"quote\((.*)\)")
         if "type" not in definition:
             col = column_name
         elif is_boolean(definition["type"]):
@@ -494,7 +502,7 @@ from {{ from_table }} tmp
         else:
             col = column_name
 
-        if "quote" in col:
+        if quote_in_parenthesis.findall(col):
             return remove_jinja(col)
         else:
             return col
