@@ -11,6 +11,8 @@ spec:
   selector:
     matchLabels:
       airbyte: server
+  strategy:
+    type: Recreate # Needed due to volume claims
   template:
     metadata:
       labels:
