@@ -60,21 +60,6 @@
           "airbyte_secret": true,
           "multiline": true,
           "order": 4
-        },
-        "remote_resource_host": {
-          "title": "Remote Database Host",
-          "description": "Hostname or static IP address of the database to port-forward, as recognized from the jump server.",
-          "type": "string",
-          "order": 5
-        },
-        "remote_resource_port": {
-          "title": "Remote Database Port",
-          "description": "Port on the database to port-forward, typically that database's usual default port.",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 65536,
-          "examples": ["5432"],
-          "order": 6
         }
       }
     },
@@ -122,21 +107,6 @@
           "type": "string",
           "airbyte_secret": true,
           "order": 4
-        },
-        "remote_resource_host": {
-          "title": "Remote Database Host",
-          "description": "Hostname or static IP address of the database to port-forward, as recognized from the jump server.",
-          "type": "string",
-          "order": 5
-        },
-        "remote_resource_port": {
-          "title": "Remote Database Port",
-          "description": "Port on the database to port-forward, typically that database's usual default port.",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 65536,
-          "examples": ["5432"],
-          "order": 6
         }
       }
     }
