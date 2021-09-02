@@ -88,6 +88,7 @@ Please follow the [Jira confluence for generating an API token](https://confluen
 
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
+| 0.2.10 | 2021-09-02 | [#5523](https://github.com/airbytehq/airbyte/pull/5523) | Rollback to swagger schemas with fixing incorrect.
 | 0.2.9 | 2021-07-28 | [#5426](https://github.com/airbytehq/airbyte/pull/5426) | Changed cursor field from fields.created to fields.updated for Issues stream. Made Issues worklogs stream full refresh.
 | 0.2.8 | 2021-07-28 | [#4947](https://github.com/airbytehq/airbyte/pull/4947) | Source Jira: fixing schemas accordinately to response.
 | 0.2.7 | 2021-07-19 | [#4817](https://github.com/airbytehq/airbyte/pull/4817) | Fixed `labels` schema properties issue. |
