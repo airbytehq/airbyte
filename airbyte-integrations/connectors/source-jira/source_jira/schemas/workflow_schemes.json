@@ -70,12 +70,7 @@
           "type": "string",
           "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
           "readOnly": true,
-          "enum": [
-            "atlassian",
-            "app",
-            "customer",
-            "unknown"
-          ]
+          "enum": ["atlassian", "app", "customer", "unknown"]
         },
         "name": {
           "type": "string",
