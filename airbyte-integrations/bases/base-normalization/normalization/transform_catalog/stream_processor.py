@@ -24,7 +24,6 @@
 
 
 import os
-import re
 from typing import Dict, List, Optional, Tuple
 
 from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMode
@@ -45,6 +44,7 @@ from normalization.transform_catalog.utils import (
     is_string,
     is_timestamp_with_time_zone,
     jinja_call,
+    remove_jinja,
 )
 
 # using too many columns breaks ephemeral materialization (somewhere between 480 and 490 columns)
@@ -246,7 +246,7 @@ class StreamProcessor(object):
                 suffix="scd",
             )
             if self.destination_type == DestinationType.ORACLE:
-                where_clause = "\nwhere \"_AIRBYTE_ACTIVE_ROW\" = 1"
+                where_clause = '\nwhere "_AIRBYTE_ACTIVE_ROW" = 1'
             else:
                 where_clause = "\nwhere _airbyte_active_row = 1"
 
@@ -478,16 +478,13 @@ from {{ from_table }} tmp
 
     def safe_cast_to_strings(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
 
-        return [
-            StreamProcessor.safe_cast_to_string(self.properties[field], column_names[field][1]) for field in column_names
-        ]
+        return [StreamProcessor.safe_cast_to_string(self.properties[field], column_names[field][1]) for field in column_names]
 
     @staticmethod
     def safe_cast_to_string(definition: Dict, column_name: str) -> str:
         """
         Note that the result from this static method should always be used within a jinja context (for example, from jinja macro surrogate_key call)
         """
-        column_inside_parenthesis = re.compile(r"\((.+)\)")
         if "type" not in definition:
             col = column_name
         elif is_boolean(definition["type"]):
@@ -497,8 +494,8 @@ from {{ from_table }} tmp
         else:
             col = column_name
 
-        if 'quote' in col:
-            return col.replace("{{ ", "").replace(" }}", "")
+        if "quote" in col:
+            return remove_jinja(col)
         else:
             return col
 
@@ -559,11 +556,12 @@ from {{ from_table }}
         order_null = "is null asc"
         if self.destination_type == DestinationType.ORACLE:
             order_null = "asc nulls first"
+
         cdc_active_row_pattern = ""
         cdc_updated_order_pattern = ""
-        col_cdc_deleted_at = self.name_transformer.normalize_column_name("_ab_cdc_deleted_at")
-        col_cdc_updated_at = self.name_transformer.normalize_column_name("_ab_cdc_updated_at")
-        if col_cdc_deleted_at in column_names.keys():
+        if "_ab_cdc_deleted_at" in column_names.keys():
+            col_cdc_deleted_at = self.name_transformer.normalize_column_name("_ab_cdc_deleted_at")
+            col_cdc_updated_at = self.name_transformer.normalize_column_name("_ab_cdc_updated_at")
             cdc_active_row_pattern = f"and {col_cdc_deleted_at} is null "
             cdc_updated_order_pattern = f", {col_cdc_updated_at} desc"
 
