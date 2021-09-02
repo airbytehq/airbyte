@@ -38,10 +38,14 @@ const FinalStep: React.FC<FinalStepProps> = ({ useCases }) => {
         <VideoItem
           small
           description={<FormattedMessage id="onboarding.watchVideo" />}
+          videoId="sKDviQrOAbU"
+          img="/videoCover.png"
         />
         <VideoItem
           small
           description={<FormattedMessage id="onboarding.exploreDemo" />}
+          videoId="sKDviQrOAbU"
+          img="/videoCover.png"
         />
       </Videos>
       <ProgressBlock />

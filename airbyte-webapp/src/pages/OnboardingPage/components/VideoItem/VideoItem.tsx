@@ -1,9 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
+
+import ShowVideo from "./components/ShowVideo";
+import PlayButton from "./components/PlayButton";
 
 type VideoItemProps = {
   small?: boolean;
-  videoLink?: string;
+  videoId?: string;
+  img?: string;
   description?: React.ReactNode;
 };
 
@@ -44,16 +48,21 @@ const VideoBlock = styled.div<{ small?: boolean }>`
   }
 `;
 
-const VideoFrame = styled.div<{ small?: boolean }>`
+const VideoFrame = styled.div<{ small?: boolean; img?: string }>`
   position: relative;
   width: ${({ small }) => (small ? 158 : 317)}px;
   height: ${({ small }) => (small ? 92 : 185)}px;
-  background: ${({ theme }) => theme.whiteColor};
+  background: ${({ theme }) => theme.whiteColor}
+    ${({ img }) => (img ? `url(${img})` : "")};
+  background-size: cover;
   border: 2.4px solid ${({ theme }) => theme.whiteColor};
   box-shadow: 0 2.4px 4.8px rgba(26, 25, 77, 0.12),
     0 16.2px 7.2px -10.2px rgba(26, 25, 77, 0.2);
   border-radius: ${({ small }) => (small ? 3.6 : 7.2)}px;
   z-index: 3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
 const Description = styled.div<{ small?: boolean }>`
@@ -65,13 +74,25 @@ const Description = styled.div<{ small?: boolean }>`
   margin-top: 14px;
 `;
 
-const VideoItem: React.FC<VideoItemProps> = ({ description, small }) => {
+const VideoItem: React.FC<VideoItemProps> = ({
+  description,
+  small,
+  videoId,
+  img,
+}) => {
+  const [isVideoOpen, setIsVideoOpen] = useState(false);
+
   return (
     <Content small={small}>
       <VideoBlock small={small}>
-        <VideoFrame small={small} />
+        <VideoFrame small={small} img={img}>
+          <PlayButton small={small} onClick={() => setIsVideoOpen(true)} />
+        </VideoFrame>
       </VideoBlock>
       <Description small={small}>{description}</Description>
+      {isVideoOpen ? (
+        <ShowVideo videoId={videoId} onClose={() => setIsVideoOpen(false)} />
+      ) : null}
     </Content>
   );
 };

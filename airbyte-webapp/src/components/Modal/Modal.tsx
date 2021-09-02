@@ -7,6 +7,7 @@ import ContentCard from "components/ContentCard";
 export type IProps = {
   title?: string | React.ReactNode;
   onClose?: () => void;
+  clear?: boolean;
 };
 
 const fadeIn = keyframes`
@@ -27,7 +28,7 @@ const Overlay = styled.div`
   z-index: 10;
 `;
 
-const Modal: React.FC<IProps> = ({ children, title, onClose }) => {
+const Modal: React.FC<IProps> = ({ children, title, onClose, clear }) => {
   const handleUserKeyPress = useCallback((event, closeModal) => {
     const { keyCode } = event;
     if (keyCode === 27) {
@@ -51,7 +52,7 @@ const Modal: React.FC<IProps> = ({ children, title, onClose }) => {
 
   return createPortal(
     <Overlay>
-      <ContentCard title={title}>{children}</ContentCard>
+      {clear ? children : <ContentCard title={title}>{children}</ContentCard>}
     </Overlay>,
     document.body
   );
