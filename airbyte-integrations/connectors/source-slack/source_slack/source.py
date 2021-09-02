@@ -43,6 +43,11 @@ class SlackStream(HttpStream, ABC):
     primary_key = "id"
     page_size = 100
 
+    @property
+    def max_retries(self) -> int:
+        # Slack's rate limiting can be unpredictable so we increase the max number of retries by a lot before failing
+        return 20
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """Slack uses a cursor-based pagination strategy.
         Extract the cursor from the response if it exists and return it in a format
