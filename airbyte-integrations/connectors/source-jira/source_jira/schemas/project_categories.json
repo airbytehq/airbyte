@@ -1,18 +1,27 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
   "properties": {
-    "description": {
-      "type": "string"
+    "self": {
+      "type": "string",
+      "description": "The URL of the project category.",
+      "format": "uri",
+      "readOnly": true
     },
     "id": {
-      "type": "string"
+      "type": "string",
+      "description": "The ID of the project category.",
+      "readOnly": true
     },
     "name": {
-      "type": "string"
+      "type": "string",
+      "description": "The name of the project category. Required on create, optional on update."
     },
-    "self": {
-      "type": "string"
+    "description": {
+      "type": "string",
+      "description": "The description of the project category. Required on create, optional on update."
     }
   },
-  "type": "object"
+  "additionalProperties": false,
+  "description": "A project category."
 }
