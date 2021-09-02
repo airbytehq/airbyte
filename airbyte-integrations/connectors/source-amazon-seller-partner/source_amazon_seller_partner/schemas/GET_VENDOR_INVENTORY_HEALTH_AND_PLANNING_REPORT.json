@@ -1,6 +1,6 @@
 {
-  "title": "FBA Fulfillment Removal Shipment Detail Data",
-  "description": "FBA Fulfillment Removal Shipment Detail Data Reports",
+  "title": "Vendor Inventory Health and Planning Data",
+  "description": "Vendor Inventory Health and Planning Data Reports",
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
@@ -42,32 +42,17 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "removal-date": {
+    "seller-sku": {
       "type": ["null", "string"]
     },
-    "order-id": {
+    "quantity": {
       "type": ["null", "string"]
     },
-    "shipment-date": {
-      "type": ["null", "string"]
+    "price": {
+      "type": ["null", "number"]
     },
-    "sku": {
-      "type": ["null", "string"]
-    },
-    "fnsku": {
-      "type": ["null", "string"]
-    },
-    "disposition": {
-      "type": ["null", "string"]
-    },
-    "quantity shipped": {
-      "type": ["null", "string"]
-    },
-    "carrier": {
-      "type": ["null", "string"]
-    },
-    "tracking-number": {
-      "type": ["null", "string"]
+    "product ID": {
+      "type": ["null", "number"]
     }
   }
 }

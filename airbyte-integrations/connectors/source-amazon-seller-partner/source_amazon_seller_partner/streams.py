@@ -44,7 +44,7 @@ from source_amazon_seller_partner.auth import AWSSignature
 
 REPORTS_API_VERSION = "2020-09-04"
 ORDERS_API_VERSION = "v0"
-VENDOR_API_VERSIONS = "v1"
+VENDOR_API_VERSION = "v1"
 
 
 class AmazonSPStream(HttpStream, ABC):
@@ -172,10 +172,10 @@ class ReportsAmazonSPStream(Stream, ABC):
     def authenticator(self) -> HttpAuthenticator:
         return self._authenticator
 
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self) -> MutableMapping[str, Any]:
         return {"MarketplaceIds": ",".join(self.marketplace_ids)}
 
-    def request_headers(self, *args, **kwargs) -> Mapping[str, Any]:
+    def request_headers(self) -> Mapping[str, Any]:
         return {"content-type": "application/json"}
 
     def path(self, document_id: str) -> str:
@@ -317,14 +317,26 @@ class MerchantListingsReports(ReportsAmazonSPStream):
 
 
 class FlatFileOrdersReports(ReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=201648780
+    """
+
     name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
 
 
 class FbaInventoryReports(ReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/gp/help/200740930
+    """
+
     name = "GET_FBA_INVENTORY_AGED_DATA"
 
 
 class FulfilledShipmentsReports(ReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200453120
+    """
+
     name = "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL"
 
 
@@ -333,15 +345,23 @@ class FlatFileOpenListingsReports(ReportsAmazonSPStream):
 
 
 class FbaOrdersReports(ReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200989110
+    """
+
     name = "GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA"
 
 
 class FbaShipmentsReports(ReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200989100
+    """
+
     name = "GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA"
 
 
 class VendorInventoryHealthReports(ReportsAmazonSPStream):
-    name = "GET_VENDOR_INVENTORY_HEALTH_REPORT"
+    name = "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT"
 
 
 class Orders(IncrementalAmazonSPStream):
@@ -396,12 +416,12 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
         ).strftime(self.time_format)
 
     def path(self, **kwargs) -> str:
-        return f"/vendor/directFulfillment/shipping/{VENDOR_API_VERSIONS}/shippingLabels"
+        return f"/vendor/directFulfillment/shipping/{VENDOR_API_VERSION}/shippingLabels"
 
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, next_page_token, **kwargs)
+        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         if not next_page_token:
             params.update({"createdBefore": pendulum.now("utc").strftime(self.time_format)})
         return params
