@@ -146,10 +146,10 @@ class AbstractSource(Source, ABC):
         logger.info(f"Syncing stream: {stream_name} ")
         for record in record_iterator:
             if record.type == MessageType.RECORD:
-                record_counter += 1
-                if internal_config.limit and record_counter > internal_config.limit:
+                if internal_config.limit and record_counter >= internal_config.limit:
                     logger.info(f"Reached limit defined by internal config ({internal_config.limit}), stop reading")
                     break
+                record_counter += 1
             yield record
 
         logger.info(f"Read {record_counter} records from {stream_name} stream")
