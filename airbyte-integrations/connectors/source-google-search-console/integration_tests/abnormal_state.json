@@ -1,26 +1,20 @@
 {
   "search_analytics_by_date": {
-    "date": "2022-10-10",
-    "end_date": "2023-10-10"
+    "date": "2022-10-10"
   },
   "search_analytics_by_country": {
-    "date": "2022-10-10",
-    "end_date": "2023-10-10"
+    "date": "2022-10-10"
   },
   "search_analytics_by_device": {
-    "date": "2022-10-10",
-    "end_date": "2023-10-10"
+    "date": "2022-10-10"
   },
   "search_analytics_by_page": {
-    "date": "2022-10-10",
-    "end_date": "2023-10-10"
+    "date": "2022-10-10"
   },
   "search_analytics_by_query": {
-    "date": "2022-10-10",
-    "end_date": "2023-10-10"
+    "date": "2022-10-10"
   },
   "search_analytics_all_fields": {
-    "date": "2022-10-10",
-    "end_date": "2023-10-10"
+    "date": "2022-10-10"
   }
 }

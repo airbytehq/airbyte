@@ -46,7 +46,8 @@ class SourceGoogleSearchConsole(AbstractSource):
         try:
             stream_kwargs = self.get_stream_kwargs(config)
             sites = Sites(**stream_kwargs)
-            sites_gen = sites.read_records(sync_mode=SyncMode.full_refresh)
+            stream_slice = next(sites.stream_slices(SyncMode.full_refresh))
+            sites_gen = sites.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
             next(sites_gen)
             return True, None
 
@@ -78,13 +79,20 @@ class SourceGoogleSearchConsole(AbstractSource):
 
     @staticmethod
     def get_stream_kwargs(config: Mapping[str, Any]):
+        authorization = config.get("authorization", {})
+
         stream_kwargs = {
-            "client_id": config.get("client_id"),
-            "client_secret": config.get("client_secret"),
-            "refresh_token": config.get("refresh_token"),
+            "auth_type": config.get("authorization", {}).get("auth_type"),
             "site_urls": config.get("site_urls"),
             "start_date": config.get("start_date"),
-            "service_account_info": config.get("service_account_info"),
+            "end_date": config.get("end_date"),
         }
+
+        if stream_kwargs["auth_type"] == "Client":
+            stream_kwargs["client_id"] = authorization.get("client_id")
+            stream_kwargs["client_secret"] = authorization.get("client_secret")
+            stream_kwargs["refresh_token"] = authorization.get("refresh_token")
+        else:
+            stream_kwargs["service_account_info"] = authorization.get("service_account_info")
 
         return stream_kwargs

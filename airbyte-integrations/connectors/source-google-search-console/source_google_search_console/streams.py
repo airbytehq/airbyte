@@ -29,6 +29,7 @@ from urllib.parse import quote_plus, unquote_plus
 
 import pendulum
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 from airbyte_cdk.sources.streams.http.auth.oauth import Oauth2Authenticator
@@ -37,58 +38,70 @@ from source_google_search_console.service_account_authenticator import ServiceAc
 BASE_URL = "https://www.googleapis.com/webmasters/v3"
 GOOGLE_TOKEN_URI = "https://oauth2.googleapis.com/token"
 ROW_LIMIT = 25000
+CLIENT_AUTH = "Client"
 
 
 class GoogleSearchConsole(HttpStream, ABC):
     url_base = BASE_URL
     primary_key = None
-    data_field = None
+    data_field = ""
 
     def __init__(
         self,
-        client_id: str,
-        client_secret: str,
-        refresh_token: str,
-        site_urls: str,
-        start_date: pendulum.datetime,
-        service_account_info: str,
+        auth_type: str,
+        site_urls: list,
+        start_date: str,
+        end_date: str,
+        client_id: str = None,
+        client_secret: str = None,
+        refresh_token: str = None,
+        service_account_info: str = None,
     ):
         super().__init__()
+        self._auth_type = auth_type
+        self._site_urls = self.sanitize_urls_list(site_urls)
+        self._start_date = start_date
+        self._end_date = end_date
+
         self._client_id = client_id
         self._client_secret = client_secret
         self._refresh_token = refresh_token
-        self._site_urls = self.get_urls_list(site_urls)
-        self._start_date = start_date
+
         self._service_account_info = service_account_info
 
     @staticmethod
-    def get_urls_list(site_urls: list) -> List[str]:
+    def sanitize_urls_list(site_urls: list) -> List[str]:
         return list(map(quote_plus, site_urls))
 
-    @property
-    def path_param(self):
-        return self.name[:-1]
-
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if self._site_urls:
-            return self._site_urls.pop(0)
         return None
 
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        for site_url in self._site_urls:
+            yield {"site_url": site_url}
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        records = response.json().get(self.data_field) or []
-        for record in records:
-            yield record
+        if not self.data_field:
+            yield response.json()
+
+        else:
+            records = response.json().get(self.data_field) or []
+            for record in records:
+                yield record
 
     @property
     def authenticator(self) -> Union[HttpAuthenticator, None]:
-        if self._client_id and self._client_secret and self._refresh_token:
+        if self._auth_type == CLIENT_AUTH:
             return Oauth2Authenticator(
                 token_refresh_endpoint=GOOGLE_TOKEN_URI,
                 client_secret=self._client_secret,
                 client_id=self._client_id,
                 refresh_token=self._refresh_token,
             )
-        elif self._service_account_info:
+
+        else:
             info = json.loads(self._service_account_info)
             return ServiceAccountAuthenticator(service_account_info=info)
 
@@ -104,10 +117,7 @@ class Sites(GoogleSearchConsole):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> str:
-        return f"/sites/{next_page_token or self._site_urls.pop(0)}"
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield response.json()
+        return f"/sites/{stream_slice.get('site_url')}"
 
 
 class Sitemaps(GoogleSearchConsole):
@@ -123,7 +133,7 @@ class Sitemaps(GoogleSearchConsole):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> str:
-        return f"/sites/{next_page_token or self._site_urls.pop(0)}/sitemaps"
+        return f"/sites/{stream_slice.get('site_url')}/sitemaps"
 
 
 class SearchAnalytics(GoogleSearchConsole, ABC):
@@ -133,19 +143,8 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
 
     data_field = "rows"
     start_row = 0
-    value_field = None
-
-    def __init__(
-        self,
-        client_id: str,
-        client_secret: str,
-        refresh_token: str,
-        site_urls: list,
-        start_date: pendulum.datetime,
-        service_account_info: str,
-    ):
-        super().__init__(client_id, client_secret, refresh_token, site_urls, start_date, service_account_info)
-        self.search_types = ["web", "news", "image", "video"]
+    dimensions = []
+    search_types = ["web", "news", "image", "video"]
 
     def path(
         self,
@@ -153,7 +152,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> str:
-        return f"/sites/{self._site_urls[0]}/searchAnalytics/query"
+        return f"/sites/{stream_slice.get('site_url')}/searchAnalytics/query"
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
@@ -163,37 +162,22 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
     def http_method(self) -> str:
         return "POST"
 
-    def next_page_token(self, response: requests.Response) -> Optional[dict]:
-        result = {}
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        for site_url in self._site_urls:
+            for search_type in self.search_types:
+                yield {"site_url": site_url, "search_type": search_type}
 
+    def next_page_token(self, response: requests.Response) -> Optional[bool]:
         if len(response.json().get(self.data_field, [])) == ROW_LIMIT:
             self.start_row += ROW_LIMIT
+            return True
 
-        elif len(self.search_types) > 1:
-            self.search_types.pop(0)
-            self.start_row = 0
+        self.start_row = 0
 
-        elif len(self._site_urls) > 1:
-            self._site_urls.pop(0)
-            self.search_types = ["web", "news", "image", "video"]
-            self.start_row = 0
-
-        else:
-            return None
-
-        result["starRow"] = self.start_row
-        result["searchType"] = self.search_types[0]
-
-        return result
-
-    def request_headers(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Mapping[str, Any]:
-        headers = {"Content-Type": "application/json"}
-        return headers
+    def request_headers(self, **kwargs) -> Mapping[str, Any]:
+        return {"Content-Type": "application/json"}
 
     def request_body_json(
         self,
@@ -212,22 +196,34 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
 
         data = {
             "startDate": start_date,
-            "endDate": stream_state.get("end_date") or pendulum.now().to_date_string(),
-            "dimensions": ["date", self.value_field],
-            "searchType": next_page_token.get("searchType") if isinstance(next_page_token, dict) else "web",
+            "endDate": self._end_date,
+            "dimensions": self.dimensions,
+            "searchType": stream_slice.get("search_type"),
             "aggregationType": "auto",
-            "startRow": next_page_token.get("starRow") if isinstance(next_page_token, dict) else 0,
+            "startRow": self.start_row,
             "rowLimit": ROW_LIMIT,
         }
         return data
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
         records = response.json().get(self.data_field) or []
-        for record in sorted(records, key=lambda x: x["keys"][0]):
-            record["site_url"] = unquote_plus(self._site_urls[0])
-            record["date"] = record["keys"][0]
-            record["searchType"] = self.search_types[0]
-            record[self.value_field] = record.pop("keys")[1]
+
+        for record in records:
+            record["site_url"] = unquote_plus(stream_slice.get("site_url"))
+            record["searchType"] = stream_slice.get("search_type")
+
+            for dimension in self.dimensions:
+                record[dimension] = record["keys"].pop(0)
+
+            # remove unnecessary empty field
+            record.pop("keys")
+
             yield record
 
     def get_updated_state(
@@ -241,63 +237,25 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         return {self.cursor_field: latest_benchmark}
 
 
+class SearchAnalyticsByDate(SearchAnalytics):
+    dimensions = ["date"]
+
+
 class SearchAnalyticsByCountry(SearchAnalytics):
-    value_field = "country"
+    dimensions = ["date", "country"]
 
 
 class SearchAnalyticsByDevice(SearchAnalytics):
-    value_field = "device"
+    dimensions = ["date", "device"]
 
 
 class SearchAnalyticsByPage(SearchAnalytics):
-    value_field = "page"
+    dimensions = ["date", "page"]
 
 
 class SearchAnalyticsByQuery(SearchAnalytics):
-    value_field = "query"
-
-
-class SearchAnalyticsByDate(SearchAnalytics):
-    def request_body_json(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Optional[Union[Mapping, str]]:
-        data = super().request_body_json(stream_state, stream_slice, next_page_token)
-        data["dimensions"] = ["date"]
-
-        return data
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        records = response.json().get(self.data_field) or []
-        for record in records:
-            record["site_url"] = unquote_plus(self._site_urls[0])
-            record["searchType"] = self.search_types[0]
-            record["date"] = record.pop("keys")[0]
-            yield record
+    dimensions = ["date", "query"]
 
 
 class SearchAnalyticsAllFields(SearchAnalytics):
-    def request_body_json(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Optional[Union[Mapping, str]]:
-        data = super().request_body_json(stream_state, stream_slice, next_page_token)
-        data["dimensions"] = ["date", "country", "device", "page", "query"]
-
-        return data
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        records = response.json().get(self.data_field) or []
-        for record in records:
-            record["site_url"] = unquote_plus(self._site_urls[0])
-            record["searchType"] = self.search_types[0]
-            record["date"] = record["keys"][0]
-            record["country"] = record["keys"][1]
-            record["device"] = record["keys"][2]
-            record["page"] = record["keys"][3]
-            record["query"] = record.pop("keys")[4]
-            yield record
+    dimensions = ["date", "country", "device", "page", "query"]

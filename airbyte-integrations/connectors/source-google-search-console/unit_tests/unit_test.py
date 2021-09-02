@@ -22,16 +22,53 @@
 # SOFTWARE.
 #
 
-import json
+from urllib.parse import quote_plus
 
-from source_google_search_console.service_account_authenticator import ServiceAccountAuthenticator
+import pytest
+from airbyte_cdk.models import SyncMode
+from source_google_search_console.streams import CLIENT_AUTH, ROW_LIMIT, SearchAnalyticsByDate
 
 
-def test_service_account_authenticator():
-    with open("secrets/service_account.json") as f:
-        service_account_info = json.load(f)
-    authenticator = ServiceAccountAuthenticator(service_account_info=service_account_info)
-    access_token = authenticator.get_access_token()
+class MockResponse:
+    def __init__(self, data_field: str, count: int):
+        self.value = {data_field: [0 for i in range(count)]}
 
-    assert access_token
-    assert authenticator.get_auth_header() == {"Authorization": f"Bearer {access_token}"}
+    def json(self):
+        return self.value
+
+
+@pytest.mark.parametrize(
+    "count, expected",
+    [
+        (ROW_LIMIT, ROW_LIMIT),
+        (ROW_LIMIT - 1, 0),
+        (0, 0),
+    ],
+)
+def test_pagination(count, expected):
+    stream = SearchAnalyticsByDate(CLIENT_AUTH, ["https://example.com"], "start_date", "end_date")
+    response = MockResponse(stream.data_field, count)
+    stream.next_page_token(response)
+    assert stream.start_row == expected
+
+
+@pytest.mark.parametrize(
+    "site_urls, sync_mode",
+    [
+        (["https://example1.com", "https://example2.com"], SyncMode.full_refresh),
+        (["https://example1.com", "https://example2.com"], SyncMode.incremental),
+        (["https://example.com"], SyncMode.full_refresh),
+        (["https://example.com"], SyncMode.incremental),
+    ],
+)
+def test_slice(site_urls, sync_mode):
+    stream = SearchAnalyticsByDate(CLIENT_AUTH, site_urls, "start_date", "end_date")
+
+    search_types = stream.search_types
+    stream_slice = stream.stream_slices(sync_mode=sync_mode)
+
+    for site_url in site_urls:
+        for search_type in search_types:
+            expected = {"site_url": quote_plus(site_url), "search_type": search_type}
+
+            assert expected == next(stream_slice)
