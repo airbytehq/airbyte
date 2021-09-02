@@ -76,18 +76,17 @@ class SourceZendeskSupportStream(HttpStream, ABC):
         See https://developer.zendesk.com/api-reference/ticketing/account-configuration/usage_limits/
         The response has a Retry-After header that tells you for how many seconds to wait before retrying.
         """
-        # default value if there is not any header
-        sleep_timeout = 60
+
         retry_after = int(response.headers.get("Retry-After") or 0)
         if retry_after and retry_after > 0:
-            sleep_timeout = int(retry_after)
-        else:
-            # the header X-Rate-Limit returns a amount of requests per minute
-            # we try to wait twice as long
-            rate_limit = float(response.headers.get("X-Rate-Limit") or 0)
-            if rate_limit and rate_limit > 0:
-                return (60.0 / rate_limit) * 2
-        return sleep_timeout
+            return int(retry_after)
+        # the header X-Rate-Limit returns a amount of requests per minute
+        # we try to wait twice as long
+
+        rate_limit = float(response.headers.get("X-Rate-Limit") or 2)
+        if rate_limit and rate_limit > 0:
+            return (60.0 / rate_limit) * 2
+        return 60
 
     @staticmethod
     def str2datetime(str_dt: str) -> datetime:
@@ -159,9 +158,7 @@ class IncrementalEntityStream(SourceZendeskSupportStream, ABC):
         # try to save maximum value of a cursor field
         old_value = str((current_stream_state or {}).get(self.cursor_field, ""))
         new_value = max(str((latest_record or {}).get(self.cursor_field, "")), old_value)
-        if old_value != new_value:
-            return {self.cursor_field: new_value}
-        return None
+        return {self.cursor_field: new_value}
 
 
 class IncrementalExportStream(IncrementalEntityStream, ABC):
