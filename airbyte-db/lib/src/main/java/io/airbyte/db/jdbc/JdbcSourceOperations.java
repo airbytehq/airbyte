@@ -113,26 +113,28 @@ public class JdbcSourceOperations implements SourceOperations<ResultSet, JDBCTyp
 
     // https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html
     switch (columnType) {
-      case BIT, BOOLEAN -> o.put(columnName, r.getBoolean(i));
-      case TINYINT, SMALLINT -> o.put(columnName, r.getShort(i));
+      case BIT, BOOLEAN -> putBoolean(o, columnName, r, i);
+      case TINYINT, SMALLINT -> putShortInt(o, columnName, r, i);
       case INTEGER -> putInteger(o, columnName, r, i);
-      case BIGINT -> o.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> r.getLong(i)));
-      case FLOAT, DOUBLE -> o.put(columnName, DataTypeUtils
-          .returnNullIfInvalid(() -> r.getDouble(i), Double::isFinite));
-      case REAL -> o.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> r.getFloat(i), Float::isFinite));
-      case NUMERIC, DECIMAL -> o.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> r.getBigDecimal(i)));
-      case CHAR, VARCHAR, LONGVARCHAR -> o.put(columnName, r.getString(i));
-      case DATE -> o.put(columnName, DataTypeUtils.toISO8601String(r.getDate(i)));
-      case TIME -> o.put(columnName, DataTypeUtils.toISO8601String(r.getTime(i)));
-      case TIMESTAMP -> {
-        // https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html
-        final Timestamp t = r.getTimestamp(i);
-        java.util.Date d = new java.util.Date(t.getTime() + (t.getNanos() / 1000000));
-        o.put(columnName, DataTypeUtils.toISO8601String(d));
-      }
-      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> o.put(columnName, r.getBytes(i));
-      default -> o.put(columnName, r.getString(i));
+      case BIGINT -> putBigInt(o, columnName, r, i);
+      case FLOAT, DOUBLE -> putDouble(o, columnName, r, i);
+      case REAL -> putReal(o, columnName, r, i);
+      case NUMERIC, DECIMAL -> putNumber(o, columnName, r, i);
+      case CHAR, VARCHAR, LONGVARCHAR -> putString(o, columnName, r, i);
+      case DATE -> putDate(o, columnName, r, i);
+      case TIME -> putTime(o, columnName, r, i);
+      case TIMESTAMP -> putTimestamp(o, columnName, r, i);
+      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(o, columnName, r, i);
+      default -> putDefault(o, columnName, r, i);
     }
+  }
+
+  protected void putBoolean(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+    node.put(columnName, resultSet.getBoolean(index));
+  }
+
+  protected void putShortInt(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+    node.put(columnName, resultSet.getShort(index));
   }
 
   /**
@@ -140,12 +142,55 @@ public class JdbcSourceOperations implements SourceOperations<ResultSet, JDBCTyp
    * unsigned Integer type, which can contain value 3428724653. If we fail to cast Integer value, we
    * will try to cast Long.
    */
-  protected void putInteger(ObjectNode node, String columnName, ResultSet resultSet, int index) {
+  protected void putInteger(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
     try {
       node.put(columnName, resultSet.getInt(index));
     } catch (SQLException e) {
       node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> resultSet.getLong(index)));
     }
+  }
+
+  protected void putBigInt(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+    node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> resultSet.getLong(index)));
+  }
+
+  protected void putDouble(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+    node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> resultSet.getDouble(index), Double::isFinite));
+  }
+
+  protected void putReal(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+    node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> resultSet.getFloat(index), Float::isFinite));
+  }
+
+  protected void putNumber(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+    node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> resultSet.getBigDecimal(index)));
+  }
+
+  protected void putString(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+    node.put(columnName, resultSet.getString(index));
+  }
+
+  protected void putDate(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+    node.put(columnName, DataTypeUtils.toISO8601String(resultSet.getDate(index)));
+  }
+
+  protected void putTime(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+    node.put(columnName, DataTypeUtils.toISO8601String(resultSet.getTime(index)));
+  }
+
+  protected void putTimestamp(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+    // https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html
+    final Timestamp t = resultSet.getTimestamp(index);
+    java.util.Date d = new java.util.Date(t.getTime() + (t.getNanos() / 1000000));
+    node.put(columnName, DataTypeUtils.toISO8601String(d));
+  }
+
+  protected void putBinary(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+    node.put(columnName, resultSet.getByte(index));
+  }
+
+  protected void putDefault(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+    node.put(columnName, resultSet.getString(index));
   }
 
   // todo (cgardens) - move generic date helpers to commons.
