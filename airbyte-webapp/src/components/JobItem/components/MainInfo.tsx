@@ -32,6 +32,7 @@ const MainView = styled(Row)<{
   cursor: pointer;
   height: 59px;
   padding: 10px 44px 10px 40px;
+  justify-content: space-between;
   border-bottom: 1px solid
     ${({ theme, isOpen, isFailed }) =>
       !isOpen
@@ -62,6 +63,10 @@ const CancelButton = styled(Button)`
   margin-right: 10px;
   padding: 3px 7px;
   z-index: 1;
+`;
+
+const InfoCell = styled(Cell)`
+  flex: none;
 `;
 
 const Arrow = styled.div<{
@@ -108,7 +113,7 @@ const MainInfo: React.FC<IProps> = ({
 
   return (
     <MainView isOpen={isOpen} isFailed={isFailed} onClick={onExpand}>
-      <Cell>
+      <InfoCell>
         <Title isFailed={isFailed}>
           {isFailed && !shortInfo && <ErrorSign />}
           <FormattedMessage id={`sources.${job.status}`} />
@@ -120,8 +125,8 @@ const MainInfo: React.FC<IProps> = ({
             />
           ) : null}
         </Title>
-      </Cell>
-      <Cell>
+      </InfoCell>
+      <InfoCell>
         {!shortInfo && isNotCompleted && (
           <CancelButton secondary onClick={onCancelJob}>
             <FormattedMessage id="form.cancel" />
@@ -154,7 +159,7 @@ const MainInfo: React.FC<IProps> = ({
         <Arrow isOpen={isOpen} isFailed={isFailed}>
           <FontAwesomeIcon icon={faAngleDown} />
         </Arrow>
-      </Cell>
+      </InfoCell>
     </MainView>
   );
 };
