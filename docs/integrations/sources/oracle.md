@@ -96,9 +96,14 @@ GRANT SELECT ON "<schema_b>"."<table_2>" TO airbyte;
 
 Your database user should now be ready for use with Airbyte.
 
+#### 3. Include the schemas Airbyte should look at when configuring the Airbyte Oracle Source.
+
+Case sensitive. Defaults to the upper-cased user if empty. If the user does not have access to the configured schemas, no tables will be discovered.
+
 
 ## Changelog
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.3.2   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator |
+| 0.3.3   | 2021-09-01 | [5779](https://github.com/airbytehq/airbyte/pull/5779) | Ability to only discover certain schemas. |
+| 0.3.2   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator. |

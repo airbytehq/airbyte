@@ -132,6 +132,17 @@ public abstract class AbstractRelationalDbSource<DataType, Database extends SqlD
       throws Exception;
 
   /**
+   * Discovers all available tables within a schema in the source database.
+   *
+   * @param database - source database
+   * @param schema - source schema
+   * @return list of source tables
+   * @throws Exception - access to the database might lead to exceptions.
+   */
+  protected abstract List<TableInfo<CommonField<DataType>>> discoverInternal(final Database database, String schema)
+      throws Exception;
+
+  /**
    * Discover Primary keys for each table and @return a map of namespace.table name to their
    * associated list of primary key fields.
    *

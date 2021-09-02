@@ -39,6 +39,7 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +63,7 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         .put("sid", container.getSid())
         .put("username", container.getUsername())
         .put("password", container.getPassword())
+        .put("schemas", List.of("TEST"))
         .build());
 
     Database database = Databases.createOracleDatabase(config.get("username").asText(),
