@@ -125,8 +125,10 @@ class CatalogProcessor:
                 if not quote_in_parenthesis.findall(json_column_name):
                     json_column_name = name_transformer.normalize_column_name(json_column_name, in_jinja=True)
             else:
+                column_inside_single_quote = re.compile(r"\'(.*)\'")
                 raw_schema_name = name_transformer.normalize_schema_name(f"_airbyte_{schema}", truncate=False)
-                json_column_name = f"'{json_column_name}'"
+                if not column_inside_single_quote.findall(json_column_name):
+                    json_column_name = f"'{json_column_name}'"
 
             stream_name = get_field(stream_config, "name", f"Invalid Stream: 'name' is not defined in stream: {str(stream_config)}")
             # MySQL table names need to be manually truncated, because it does not do it automatically
