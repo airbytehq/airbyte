@@ -68,11 +68,7 @@
 {%- endmacro %}
 
 {% macro oracle__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
-    {%- if from_table|string() == '' %}
-        json_value({{ json_column }}, {{ format_json_path(normalized_json_path) }})
-    {% else %}
-        json_value({{ json_column }}, {{ format_json_path(normalized_json_path) }})
-    {% endif -%}
+    json_value({{ json_column }}, {{ format_json_path(normalized_json_path) }})
 {%- endmacro %}
 
 {% macro bigquery__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}

@@ -246,9 +246,9 @@ class StreamProcessor(object):
                 suffix="scd",
             )
             if self.destination_type == DestinationType.ORACLE:
-                where_clause = "\nwhere \"_AIRBYTE_ACTIVE_ROW\" = 'Latest'"
+                where_clause = "\nwhere \"_AIRBYTE_ACTIVE_ROW\" = 1"
             else:
-                where_clause = "\nwhere _airbyte_active_row = True"
+                where_clause = "\nwhere _airbyte_active_row = 1"
 
             from_table = self.add_to_outputs(
                 self.generate_final_model(from_table, column_names) + where_clause, is_intermediate=False, column_count=column_count
@@ -540,7 +540,14 @@ select
     {{ field }},
   {%- endfor %}
   {{ cursor_field }} as {{ airbyte_start_at }},
-  {{ '{{' }} lag_end_at({{ cursor_field_lag }}, \"{{ primary_key }}\", {{ lag_emitted_at }}) {{ '}}' }} as {{ airbyte_end_at }},
+  lag({{ cursor_field }}) over (
+    partition by {{ primary_key }}
+    order by {{ cursor_field }} {{ order_null }}, {{ cursor_field }} desc, {{ col_emitted_at }} desc
+  ) as {{ airbyte_end_at }},
+  case when lag({{ cursor_field }}) over (
+    partition by {{ primary_key }}
+    order by {{ cursor_field }} {{ order_null }}, {{ cursor_field }} desc, {{ col_emitted_at }} desc{{ cdc_updated_at_order }}
+  ) is null {{ cdc_active_row }} then 1 else 0 end as {{ active_row }},
   {{ col_emitted_at }},
   {{ hash_id }}
 from {{ from_table }}
@@ -549,13 +556,19 @@ from {{ from_table }}
 
         template = Template(scd_sql_template)
 
+        order_null = "is null asc"
+        if self.destination_type == DestinationType.ORACLE:
+            order_null = "asc nulls first"
         cdc_active_row_pattern = ""
         cdc_updated_order_pattern = ""
-        if "_ab_cdc_deleted_at" in column_names.keys():
-            cdc_active_row_pattern = "and _ab_cdc_deleted_at is null "
-            cdc_updated_order_pattern = ", _ab_cdc_updated_at desc"
+        col_cdc_deleted_at = self.name_transformer.normalize_column_name("_ab_cdc_deleted_at")
+        col_cdc_updated_at = self.name_transformer.normalize_column_name("_ab_cdc_updated_at")
+        if col_cdc_deleted_at in column_names.keys():
+            cdc_active_row_pattern = f"and {col_cdc_deleted_at} is null "
+            cdc_updated_order_pattern = f", {col_cdc_updated_at} desc"
 
         sql = template.render(
+            order_null=order_null,
             airbyte_start_at=self.name_transformer.normalize_column_name("_airbyte_start_at"),
             airbyte_end_at=self.name_transformer.normalize_column_name("_airbyte_end_at"),
             active_row=self.name_transformer.normalize_column_name("_airbyte_active_row"),
@@ -564,7 +577,6 @@ from {{ from_table }}
             parent_hash_id=self.parent_hash_id(),
             fields=self.list_fields(column_names),
             cursor_field=self.get_cursor_field(column_names),
-            cursor_field_lag=self.get_cursor_field(column_names, in_jinja=True),
             primary_key=self.get_primary_key(column_names),
             hash_id=self.hash_id(),
             from_table=jinja_call(from_table),
@@ -586,7 +598,7 @@ from {{ from_table }}
         else:
             raise ValueError(f"Unsupported nested cursor field {'.'.join(self.cursor_field)} for stream {self.stream_name}")
 
-        return cursor.replace('{{ ', '').replace(' }}', '')
+        return cursor
 
     def get_primary_key(self, column_names: Dict[str, Tuple[str, str]]) -> str:
         if self.primary_key and len(self.primary_key) > 0:
