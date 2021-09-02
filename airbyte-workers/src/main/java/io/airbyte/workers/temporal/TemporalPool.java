@@ -24,6 +24,7 @@
 
 package io.airbyte.workers.temporal;
 
+import io.airbyte.config.MaxWorkersConfig;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.SyncWorkflow.DbtTransformationActivityImpl;
 import io.airbyte.workers.temporal.SyncWorkflow.NormalizationActivityImpl;
@@ -32,6 +33,7 @@ import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
+import io.temporal.worker.WorkerOptions;
 import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,31 +45,33 @@ public class TemporalPool implements Runnable {
   private final WorkflowServiceStubs temporalService;
   private final Path workspaceRoot;
   private final ProcessFactory processFactory;
+  private final MaxWorkersConfig maxWorkers;
 
-  public TemporalPool(WorkflowServiceStubs temporalService, Path workspaceRoot, ProcessFactory processFactory) {
+  public TemporalPool(WorkflowServiceStubs temporalService, Path workspaceRoot, ProcessFactory processFactory, MaxWorkersConfig maxWorkers) {
     this.temporalService = temporalService;
     this.workspaceRoot = workspaceRoot;
     this.processFactory = processFactory;
+    this.maxWorkers = maxWorkers;
   }
 
   @Override
   public void run() {
-
     final WorkerFactory factory = WorkerFactory.newInstance(WorkflowClient.newInstance(temporalService));
 
-    final Worker specWorker = factory.newWorker(TemporalJobType.GET_SPEC.name());
+    final Worker specWorker = factory.newWorker(TemporalJobType.GET_SPEC.name(), getWorkerOptions(maxWorkers.getMaxSpecWorkers()));
     specWorker.registerWorkflowImplementationTypes(SpecWorkflow.WorkflowImpl.class);
     specWorker.registerActivitiesImplementations(new SpecWorkflow.SpecActivityImpl(processFactory, workspaceRoot));
 
-    final Worker checkConnectionWorker = factory.newWorker(TemporalJobType.CHECK_CONNECTION.name());
+    final Worker checkConnectionWorker =
+        factory.newWorker(TemporalJobType.CHECK_CONNECTION.name(), getWorkerOptions(maxWorkers.getMaxCheckWorkers()));
     checkConnectionWorker.registerWorkflowImplementationTypes(CheckConnectionWorkflow.WorkflowImpl.class);
     checkConnectionWorker.registerActivitiesImplementations(new CheckConnectionWorkflow.CheckConnectionActivityImpl(processFactory, workspaceRoot));
 
-    final Worker discoverWorker = factory.newWorker(TemporalJobType.DISCOVER_SCHEMA.name());
+    final Worker discoverWorker = factory.newWorker(TemporalJobType.DISCOVER_SCHEMA.name(), getWorkerOptions(maxWorkers.getMaxDiscoverWorkers()));
     discoverWorker.registerWorkflowImplementationTypes(DiscoverCatalogWorkflow.WorkflowImpl.class);
     discoverWorker.registerActivitiesImplementations(new DiscoverCatalogWorkflow.DiscoverCatalogActivityImpl(processFactory, workspaceRoot));
 
-    final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name());
+    final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflow.WorkflowImpl.class);
     syncWorker.registerActivitiesImplementations(
         new ReplicationActivityImpl(processFactory, workspaceRoot),
@@ -75,6 +79,12 @@ public class TemporalPool implements Runnable {
         new DbtTransformationActivityImpl(processFactory, workspaceRoot));
 
     factory.start();
+  }
+
+  private static final WorkerOptions getWorkerOptions(int max) {
+    return WorkerOptions.newBuilder()
+        .setMaxConcurrentActivityExecutionSize(max)
+        .build();
   }
 
 }

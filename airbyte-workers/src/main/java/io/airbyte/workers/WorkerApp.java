@@ -29,6 +29,7 @@ import io.airbyte.api.client.invoker.ApiException;
 import io.airbyte.api.client.model.HealthCheckRead;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.MaxWorkersConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.KubeProcessFactory;
@@ -58,13 +59,16 @@ public class WorkerApp {
   private final Path workspaceRoot;
   private final ProcessFactory processFactory;
   private final WorkflowServiceStubs temporalService;
+  private final MaxWorkersConfig maxWorkers;
 
   public WorkerApp(Path workspaceRoot,
                    ProcessFactory processFactory,
-                   WorkflowServiceStubs temporalService) {
+                   WorkflowServiceStubs temporalService,
+                   MaxWorkersConfig maxWorkers) {
     this.workspaceRoot = workspaceRoot;
     this.processFactory = processFactory;
     this.temporalService = temporalService;
+    this.maxWorkers = maxWorkers;
   }
 
   public void start() {
@@ -79,19 +83,7 @@ public class WorkerApp {
           }
         });
 
-    // TODO: fix
-//    Configs configs = new EnvConfigs();
-//
-//    if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
-//      var supportedWorkers = KubePortManagerSingleton.getSupportedWorkers();
-//      if (supportedWorkers < SUBMITTER_NUM_THREADS) {
-//        LOGGER.warn("{} workers configured with only {} ports available. Insufficient ports. Setting workers to {}.", SUBMITTER_NUM_THREADS,
-//            KubePortManagerSingleton.getNumAvailablePorts(), supportedWorkers);
-//        SUBMITTER_NUM_THREADS = supportedWorkers;
-//      }
-//    }
-
-    final TemporalPool temporalPool = new TemporalPool(temporalService, workspaceRoot, processFactory);
+    final TemporalPool temporalPool = new TemporalPool(temporalService, workspaceRoot, processFactory, maxWorkers);
     temporalPool.run();
   }
 
@@ -148,7 +140,7 @@ public class WorkerApp {
 
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
 
-    new WorkerApp(workspaceRoot, processFactory, temporalService).start();
+    new WorkerApp(workspaceRoot, processFactory, temporalService, configs.getMaxWorkers()).start();
   }
 
 }

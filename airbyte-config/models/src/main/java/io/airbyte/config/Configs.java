@@ -82,6 +82,8 @@ public interface Configs {
 
   List<WorkerPodToleration> getWorkerPodTolerations();
 
+  MaxWorkersConfig getMaxWorkers();
+
   String getTemporalHost();
 
   Set<Integer> getTemporalWorkerPorts();
