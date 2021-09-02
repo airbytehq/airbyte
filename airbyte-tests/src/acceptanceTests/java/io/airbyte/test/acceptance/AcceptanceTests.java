@@ -754,8 +754,6 @@ public class AcceptanceTests {
 
   @Test
   @Order(14)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
   public void testRedactionOfSensitiveRequestBodies() throws Exception {
     // check that the source password is not present in the logs
     final List<String> serverLogLines = java.nio.file.Files.readAllLines(
