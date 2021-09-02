@@ -42,7 +42,7 @@ dependencies {
     acceptanceTestsImplementation project(':airbyte-api')
     acceptanceTestsImplementation project(':airbyte-commons')
     acceptanceTestsImplementation project(':airbyte-config:persistence')
-    acceptanceTestsImplementation project(':airbyte-db')
+    acceptanceTestsImplementation project(':airbyte-db:lib')
     acceptanceTestsImplementation project(':airbyte-tests')
     acceptanceTestsImplementation project(':airbyte-test-utils')
 
