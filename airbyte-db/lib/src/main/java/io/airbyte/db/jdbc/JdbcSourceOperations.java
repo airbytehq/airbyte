@@ -186,7 +186,7 @@ public class JdbcSourceOperations implements SourceOperations<ResultSet, JDBCTyp
   }
 
   protected void putBinary(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
-    node.put(columnName, resultSet.getByte(index));
+    node.put(columnName, resultSet.getBytes(index));
   }
 
   protected void putDefault(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
