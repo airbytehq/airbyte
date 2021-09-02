@@ -78,7 +78,7 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> void replaceAllConfigs(final Map<AirbyteConfig, Stream<T>> configs, final boolean dryRun) throws IOException {
+  public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
     // todo (cgardens) need to do validation here.
     decoratedPersistence.replaceAllConfigs(configs, dryRun);
   }

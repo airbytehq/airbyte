@@ -119,7 +119,7 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> void replaceAllConfigs(Map<AirbyteConfig, Stream<T>> configs, boolean dryRun) {
+  public void replaceAllConfigs(Map<AirbyteConfig, Stream<?>> configs, boolean dryRun) {
     throw new UnsupportedOperationException("The seed config persistence is read only.");
   }
 
