@@ -452,7 +452,7 @@ from {{ from_table }}
     def generate_id_hashing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
 
         template = Template(
-        """
+            """
 -- SQL model to build a hash column based on the values of this record
 select
     {{ '{{' }} dbt_utils.surrogate_key([
