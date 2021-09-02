@@ -1,0 +1,61 @@
+# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-amazon-ads:dev
+tests:
+  spec:
+    - spec_path: "integration_tests/spec.json"
+  connection:
+    - config_path: "secrets/config.json"
+      status: "succeed"
+    - config_path: "integration_tests/invalid_config.json"
+      status: "failed"
+  discovery:
+    - config_path: "secrets/config.json"
+  basic_read:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog_products.json"
+      empty_streams:
+        [
+          "sponsored_product_negative_keywords",
+          "sponsored_product_targetings",
+          "sponsored_product_ads",
+        ]
+      expect_records:
+        path: "integration_tests/expected_products_stream.txt"
+        extra_fields: no
+        exact_order: no
+        extra_records: yes
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/no_profiles_catalog.json"
+      empty_streams:
+        ["sponsored_display_product_ads", "sponsored_display_targetings"]
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog_display.json"
+      empty_streams:
+        [
+          "sponsored_display_report_stream",
+          "sponsored_display_product_ads",
+          "sponsored_display_targetings",
+        ]
+      expect_records:
+        path: "integration_tests/expected_display_stream.txt"
+        extra_fields: no
+        exact_order: no
+        extra_records: yes
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog_brands.json"
+      empty_streams: ["sponsored_brands_report_stream"]
+      expect_records:
+        path: "integration_tests/expected_brands_stream.txt"
+        extra_fields: no
+        exact_order: no
+        extra_records: no
+  full_refresh:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog_full_refresh.json"
+  # For now products report stream failing on sandbox environments with
+  # "Unsupported metric bidPlus" error, comment this test out.
+  #incremental:
+  #  - config_path: "secrets/config.json"
+  #    configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
+  #    future_state_path: "integration_tests/future_state.json"

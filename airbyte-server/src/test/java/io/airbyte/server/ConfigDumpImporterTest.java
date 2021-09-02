@@ -25,20 +25,212 @@
 package io.airbyte.server;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.AdditionalMatchers.not;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.Status;
+import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.StandardSyncOperation.OperatorType;
+import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.validation.json.JsonSchemaValidator;
+import io.airbyte.validation.json.JsonValidationException;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class ConfigDumpImporterTest {
+
+  public static final String TEST_VERSION = "0.0.1-test-version";
+
+  private ConfigRepository configRepository;
+  private JobPersistence jobPersistence;
+  private WorkspaceHelper workspaceHelper;
+  private ConfigDumpImporter configDumpImporter;
+  private ConfigDumpExporter configDumpExporter;
+
+  private UUID workspaceId;
+  private StandardSourceDefinition standardSourceDefinition;
+  private SourceConnection sourceConnection;
+  private StandardDestinationDefinition standardDestinationDefinition;
+  private DestinationConnection destinationConnection;
+  private StandardSyncOperation operation;
+  private StandardSync connection;
+
+  @BeforeEach
+  public void setup() throws IOException, JsonValidationException, ConfigNotFoundException {
+    configRepository = mock(ConfigRepository.class);
+    jobPersistence = mock(JobPersistence.class);
+    workspaceHelper = mock(WorkspaceHelper.class);
+    configDumpImporter = new ConfigDumpImporter(configRepository, jobPersistence, workspaceHelper, mock(JsonSchemaValidator.class));
+    configDumpExporter = new ConfigDumpExporter(configRepository, jobPersistence, workspaceHelper);
+
+    workspaceId = UUID.randomUUID();
+    when(jobPersistence.getVersion()).thenReturn(Optional.of(TEST_VERSION));
+
+    standardSourceDefinition = new StandardSourceDefinition()
+        .withSourceDefinitionId(UUID.randomUUID())
+        .withName("test-standard-source")
+        .withDockerRepository("test")
+        .withDocumentationUrl("http://doc")
+        .withIcon("hello")
+        .withDockerImageTag("dev");
+    sourceConnection = new SourceConnection()
+        .withSourceId(UUID.randomUUID())
+        .withSourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
+        .withConfiguration(Jsons.emptyObject())
+        .withName("test-source")
+        .withTombstone(false)
+        .withWorkspaceId(workspaceId);
+    when(configRepository.listStandardSources())
+        .thenReturn(List.of(standardSourceDefinition));
+    when(configRepository.getStandardSourceDefinition(standardSourceDefinition.getSourceDefinitionId()))
+        .thenReturn(standardSourceDefinition);
+    when(configRepository.getSourceConnection(any()))
+        .thenReturn(sourceConnection);
+
+    standardDestinationDefinition = new StandardDestinationDefinition()
+        .withDestinationDefinitionId(UUID.randomUUID())
+        .withName("test-standard-destination")
+        .withDockerRepository("test")
+        .withDocumentationUrl("http://doc")
+        .withIcon("hello")
+        .withDockerImageTag("dev");
+    destinationConnection = new DestinationConnection()
+        .withDestinationId(UUID.randomUUID())
+        .withDestinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
+        .withConfiguration(Jsons.emptyObject())
+        .withName("test-source")
+        .withTombstone(false)
+        .withWorkspaceId(workspaceId);
+    when(configRepository.listStandardDestinationDefinitions())
+        .thenReturn(List.of(standardDestinationDefinition));
+    when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
+        .thenReturn(standardDestinationDefinition);
+    when(configRepository.getDestinationConnection(any()))
+        .thenReturn(destinationConnection);
+
+    operation = new StandardSyncOperation()
+        .withOperationId(UUID.randomUUID())
+        .withName("test-operation")
+        .withWorkspaceId(workspaceId)
+        .withTombstone(false)
+        .withOperatorType(OperatorType.DBT);
+    when(configRepository.getStandardSyncOperation(any()))
+        .thenReturn(operation);
+
+    connection = new StandardSync()
+        .withConnectionId(UUID.randomUUID())
+        .withSourceId(sourceConnection.getSourceId())
+        .withDestinationId(destinationConnection.getDestinationId())
+        .withOperationIds(List.of(operation.getOperationId()))
+        .withName("test-sync")
+        .withStatus(Status.ACTIVE);
+
+    when(workspaceHelper.getWorkspaceForConnection(sourceConnection.getSourceId(), destinationConnection.getDestinationId()))
+        .thenReturn(workspaceId);
+  }
+
+  @Test
+  public void testImportIntoWorkspaceWithConflicts() throws JsonValidationException, ConfigNotFoundException, IOException {
+    when(configRepository.listSourceConnection())
+        .thenReturn(List.of(sourceConnection,
+            new SourceConnection()
+                .withSourceId(UUID.randomUUID())
+                .withWorkspaceId(UUID.randomUUID())));
+    when(configRepository.listDestinationConnection())
+        .thenReturn(List.of(destinationConnection,
+            new DestinationConnection()
+                .withDestinationId(UUID.randomUUID())
+                .withWorkspaceId(UUID.randomUUID())));
+    when(configRepository.listStandardSyncOperations())
+        .thenReturn(List.of(operation,
+            new StandardSyncOperation()
+                .withOperationId(UUID.randomUUID())
+                .withWorkspaceId(UUID.randomUUID())));
+    when(configRepository.listStandardSyncs())
+        .thenReturn(List.of(connection));
+    final File archive = configDumpExporter.exportWorkspace(workspaceId);
+
+    final UUID newWorkspaceId = UUID.randomUUID();
+    configDumpImporter.importIntoWorkspace(TEST_VERSION, newWorkspaceId, archive);
+
+    verify(configRepository)
+        .writeSourceConnection(Jsons.clone(sourceConnection).withWorkspaceId(newWorkspaceId).withSourceId(not(eq(sourceConnection.getSourceId()))));
+    verify(configRepository).writeDestinationConnection(
+        Jsons.clone(destinationConnection).withWorkspaceId(newWorkspaceId).withDestinationId(not(eq(destinationConnection.getDestinationId()))));
+    verify(configRepository)
+        .writeStandardSyncOperation(Jsons.clone(operation).withWorkspaceId(newWorkspaceId).withOperationId(not(eq(operation.getOperationId()))));
+    verify(configRepository).writeStandardSync(Jsons.clone(connection).withConnectionId(not(eq(connection.getConnectionId()))));
+  }
+
+  @Test
+  public void testImportIntoWorkspaceWithoutConflicts() throws JsonValidationException, ConfigNotFoundException, IOException {
+    when(configRepository.listSourceConnection())
+        // First called for export
+        .thenReturn(List.of(sourceConnection,
+            new SourceConnection()
+                .withSourceId(UUID.randomUUID())
+                .withWorkspaceId(UUID.randomUUID())))
+        // then called for import
+        .thenReturn(List.of(new SourceConnection()
+            .withSourceId(UUID.randomUUID())
+            .withWorkspaceId(UUID.randomUUID())));
+    when(configRepository.listDestinationConnection())
+        // First called for export
+        .thenReturn(List.of(destinationConnection,
+            new DestinationConnection()
+                .withDestinationId(UUID.randomUUID())
+                .withWorkspaceId(UUID.randomUUID())))
+        // then called for import
+        .thenReturn(List.of(new DestinationConnection()
+            .withDestinationId(UUID.randomUUID())
+            .withWorkspaceId(UUID.randomUUID())));
+    when(configRepository.listStandardSyncOperations())
+        // First called for export
+        .thenReturn(List.of(operation,
+            new StandardSyncOperation()
+                .withOperationId(UUID.randomUUID())
+                .withWorkspaceId(UUID.randomUUID())))
+        // then called for import
+        .thenReturn(List.of(new StandardSyncOperation()
+            .withOperationId(UUID.randomUUID())
+            .withWorkspaceId(UUID.randomUUID())));
+    when(configRepository.listStandardSyncs())
+        // First called for export
+        .thenReturn(List.of(connection))
+        // then called for import
+        .thenReturn(List.of());
+    final File archive = configDumpExporter.exportWorkspace(workspaceId);
+
+    final UUID newWorkspaceId = UUID.randomUUID();
+    configDumpImporter.importIntoWorkspace(TEST_VERSION, newWorkspaceId, archive);
+
+    verify(configRepository).writeSourceConnection(Jsons.clone(sourceConnection).withWorkspaceId(newWorkspaceId));
+    verify(configRepository).writeDestinationConnection(Jsons.clone(destinationConnection).withWorkspaceId(newWorkspaceId));
+    verify(configRepository).writeStandardSyncOperation(Jsons.clone(operation).withWorkspaceId(newWorkspaceId));
+    verify(configRepository).writeStandardSync(connection);
+  }
 
   @Test
   public void testReplaceDeploymentMetadata() throws Exception {
