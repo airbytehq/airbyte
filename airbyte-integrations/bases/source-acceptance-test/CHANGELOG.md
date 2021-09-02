@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.16
+Fix for flake8-ckeck for acceptance-tests: https://github.com/airbytehq/airbyte/pull/5785
+
 ## 0.1.15
 Add detailed logging for acceptance tests: https://github.com/airbytehq/airbyte/pull/5392
 
@@ -34,3 +37,4 @@ Add test whether PKs present and not None if `source_defined_primary_key` define
 
 ## 0.1.5
 Add configurable timeout for the acceptance tests: https://github.com/airbytehq/airbyte/pull/4296
+
