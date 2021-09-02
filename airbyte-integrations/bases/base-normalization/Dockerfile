@@ -1,6 +1,8 @@
 FROM fishtownanalytics/dbt:0.19.0
 COPY --from=airbyte/base-airbyte-protocol-python:0.1.1 /airbyte /airbyte
 
+RUN apt-get update && apt-get install -y jq sshpass
+
 WORKDIR /airbyte
 COPY entrypoint.sh .
 

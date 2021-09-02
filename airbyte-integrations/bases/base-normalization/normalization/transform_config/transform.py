@@ -87,6 +87,14 @@ class TransformConfig:
         return base_profile
 
     @staticmethod
+    def ssh_tunnelling(config: Dict[str, Any]) -> bool:
+        tunnel_methods = ["SSH_KEY_AUTH", "SSH_PASSWORD_AUTH"]
+        if "tunnel_method" in config.keys() and config["tunnel_method"]["tunnel_method"].upper() in tunnel_methods:
+            return True
+        else:
+            return False
+
+    @staticmethod
     def transform_bigquery(config: Dict[str, Any]):
         print("transform_bigquery")
         # https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile
@@ -108,13 +116,19 @@ class TransformConfig:
     @staticmethod
     def transform_postgres(config: Dict[str, Any]):
         print("transform_postgres")
+
+        # set port correctly depending on whether we're ssh tunnelling
+        port = config["port"]
+        if TransformConfig.ssh_tunnelling(config):
+            port = config["tunnel_method"]["tunnel_local_port"]
+
         # https://docs.getdbt.com/reference/warehouse-profiles/postgres-profile
         dbt_config = {
             "type": "postgres",
             "host": config["host"],
             "user": config["username"],
             "pass": config.get("password", ""),
-            "port": config["port"],
+            "port": port,
             "dbname": config["database"],
             "schema": config["schema"],
             "threads": 32,

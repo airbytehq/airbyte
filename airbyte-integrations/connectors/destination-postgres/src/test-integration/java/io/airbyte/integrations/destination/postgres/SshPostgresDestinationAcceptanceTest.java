@@ -61,7 +61,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
 
   @Override
   protected JsonNode getConfig() {
-    return Jsons.deserialize(IOs.readFile(Path.of("secrets/ssh-pwd-config.json")));
+    return Jsons.deserialize(IOs.readFile(getConfigFilePath()));
   }
 
   @Override
@@ -140,6 +140,15 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
   protected void setup(final TestDestinationEnv testEnv) {}
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {}
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
+    // need to wipe the data from static db otherwise we end up with duplicate records in incremental tests
+    // todo: is this actually more robust if in setup()? Put it here to follow convention of tearDown removing data.
+    final JsonNode config = getConfig();
+    SshTunnel.sshWrap(config, () -> Databases.createPostgresDatabase(config.get("username").asText(), config.get("password").asText(),
+        String.format("jdbc:postgresql://%s:%s/%s", config.get("host").asText(), config.get("port").asText(), config.get("database").asText())).query(
+        ctx -> ctx
+            .execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE;", config.get("schema").asText()))
+    ));
+  }
 
 }
