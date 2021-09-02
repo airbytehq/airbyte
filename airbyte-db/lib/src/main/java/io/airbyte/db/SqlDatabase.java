@@ -27,7 +27,7 @@ package io.airbyte.db;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.stream.Stream;
 
-public abstract class SqlDatabase extends NoSqlDatabase {
+public abstract class SqlDatabase extends AbstractDatabase {
 
   public abstract void execute(String sql) throws Exception;
 

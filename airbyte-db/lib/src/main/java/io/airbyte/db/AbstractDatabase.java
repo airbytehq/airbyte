@@ -26,7 +26,7 @@ package io.airbyte.db;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-public abstract class NoSqlDatabase implements AutoCloseable {
+public abstract class AbstractDatabase implements AutoCloseable {
 
   private JsonNode sourceConfig;
   private JsonNode databaseConfig;

@@ -32,7 +32,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoIterable;
 import io.airbyte.commons.functional.CheckedFunction;
-import io.airbyte.db.NoSqlDatabase;
+import io.airbyte.db.AbstractDatabase;
 import java.util.List;
 import java.util.Optional;
 import java.util.Spliterator;
@@ -46,7 +46,7 @@ import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MongoDatabase extends NoSqlDatabase {
+public class MongoDatabase extends AbstractDatabase {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDatabase.class);
   private static final int BATCH_SIZE = 1000;
