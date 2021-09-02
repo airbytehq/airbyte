@@ -89,7 +89,9 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
     this(driverClass, jdbcStreamingQueryConfiguration, JdbcUtils.getDefaultSourceOperations());
   }
 
-  public AbstractJdbcSource(final String driverClass, final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration, JdbcSourceOperations sourceOperations) {
+  public AbstractJdbcSource(final String driverClass,
+                            final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration,
+                            JdbcSourceOperations sourceOperations) {
     this.driverClass = driverClass;
     this.jdbcStreamingQueryConfiguration = jdbcStreamingQueryConfiguration;
     this.sourceOperations = sourceOperations;
