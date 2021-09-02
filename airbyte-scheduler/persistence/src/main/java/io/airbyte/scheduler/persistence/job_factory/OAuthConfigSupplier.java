@@ -35,7 +35,6 @@ import java.io.IOException;
 import java.util.Comparator;
 import java.util.UUID;
 
-// TODO chris: move to oauth module
 public class OAuthConfigSupplier {
 
   final private ConfigRepository configRepository;
