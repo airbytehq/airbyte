@@ -67,7 +67,7 @@ services:
       - MAX_SYNC_TIMEOUT_DAYS=${MAX_SYNC_TIMEOUT_DAYS}
       - INTERNAL_API_HOST=${INTERNAL_API_HOST}
     volumes:
-      - workspace:${WORKSPACE_ROOT} # todo: can these be removed?
+      - workspace:${WORKSPACE_ROOT}
       - ${LOCAL_ROOT}:${LOCAL_ROOT}
       - data:${CONFIG_ROOT}
   worker:
