@@ -53,7 +53,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.converters.CatalogConverter;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.worker.WorkerUtils;
+import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;

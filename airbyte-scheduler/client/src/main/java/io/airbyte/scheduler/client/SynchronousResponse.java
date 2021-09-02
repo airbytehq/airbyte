@@ -25,7 +25,7 @@
 package io.airbyte.scheduler.client;
 
 import io.airbyte.config.JobConfig.ConfigType;
-import io.airbyte.worker.temporal.TemporalResponse;
+import io.airbyte.workers.temporal.TemporalResponse;
 import java.util.Objects;
 import java.util.UUID;
 

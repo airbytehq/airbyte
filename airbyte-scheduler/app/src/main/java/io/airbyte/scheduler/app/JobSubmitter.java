@@ -131,7 +131,7 @@ public class JobSubmitter implements Runnable {
             persistence.writeOutput(job.getId(), attemptNumber, output.getOutput().get());
           }
 
-          if (output.getStatus() == io.airbyte.worker.JobStatus.SUCCEEDED) {
+          if (output.getStatus() == io.airbyte.workers.JobStatus.SUCCEEDED) {
             persistence.succeedAttempt(job.getId(), attemptNumber);
           } else {
             persistence.failAttempt(job.getId(), attemptNumber);
@@ -141,7 +141,7 @@ public class JobSubmitter implements Runnable {
         .setOnException(e -> {
           LOGGER.error("Exception thrown in Job Submission: ", e);
           persistence.failAttempt(job.getId(), attemptNumber);
-          trackCompletion(job, io.airbyte.worker.JobStatus.FAILED);
+          trackCompletion(job, io.airbyte.workers.JobStatus.FAILED);
         })
         .setOnFinish(() -> {
           runningJobs.remove(job.getId());
@@ -160,7 +160,7 @@ public class JobSubmitter implements Runnable {
     jobTracker.trackSync(job, JobState.STARTED);
   }
 
-  private void trackCompletion(Job job, io.airbyte.worker.JobStatus status) {
+  private void trackCompletion(Job job, io.airbyte.workers.JobStatus status) {
     jobTracker.trackSync(job, Enums.convertTo(status, JobState.class));
   }
 

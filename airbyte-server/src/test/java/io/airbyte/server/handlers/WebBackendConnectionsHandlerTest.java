@@ -87,7 +87,7 @@ import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.server.helpers.SourceDefinitionHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.worker.WorkerUtils;
+import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.time.Instant;
