@@ -53,7 +53,8 @@ public class RedshiftStreamCopier extends S3StreamCopier {
     final var copyQuery = String.format(
         "COPY %s.%s FROM '%s'\n"
             + "CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s'\n"
-            + "CSV REGION '%s' TIMEFORMAT 'auto';\n",
+            + "CSV REGION '%s' TIMEFORMAT 'auto'\n"
+            + "STATUPDATE OFF;\n",
         schema,
         tableName,
         s3FileLocation,
