@@ -97,7 +97,7 @@ class TestConnection(BaseTest):
                 docker_runner.call_check(config=connector_config)
 
             assert err.value.exit_status != 0, "Connector should exit with error code"
-            assert "Traceback" in err.value.stderr.decode("utf-8"), "Connector should print exception"
+            assert "Traceback" in err.value.stderr, "Connector should print exception"
 
 
 @pytest.mark.default_timeout(30)
@@ -208,7 +208,7 @@ class TestBasicRead(BaseTest):
         detailed_logger,
     ):
         output = docker_runner.call_read(connector_config, configured_catalog)
-        records = filter_output(output, Type.RECORD)
+        records = [message.record for message in filter_output(output, Type.RECORD)]
 
         assert records, "At least one record should be read using provided catalog"
 
