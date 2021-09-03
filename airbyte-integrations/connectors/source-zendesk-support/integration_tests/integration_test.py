@@ -55,6 +55,7 @@ class TestIntegrationZendeskSupport:
         for record_id, timestamp in record_timestamps.items():
             state = {stream.cursor_field: timestamp}
             for record in stream.read_records(sync_mode=None, stream_state=state):
+                print(f"First record: {record}!={record_id} ({timestamp}), state:{state}")
                 assert record["id"] != record_id
                 break
 
