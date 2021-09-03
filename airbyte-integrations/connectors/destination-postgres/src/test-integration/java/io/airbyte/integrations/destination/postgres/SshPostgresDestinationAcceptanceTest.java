@@ -26,11 +26,12 @@ package io.airbyte.integrations.destination.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.base.SshTunnel;
+import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
@@ -126,14 +127,22 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
     final JsonNode config = getConfig();
-    return SshTunnel.sshWrap(config, () -> Databases.createPostgresDatabase(config.get("username").asText(), config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s", config.get("host").asText(), config.get("port").asText(), config.get("database").asText())).query(
-            ctx -> ctx
-                .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                .stream()
-                .map(r -> r.formatJSON(JSON_FORMAT))
-                .map(Jsons::deserialize)
-                .collect(Collectors.toList())));
+    return SshTunnel.sshWrap(
+        config,
+        PostgresDestination.HOST_KEY,
+        PostgresDestination.PORT_KEY,
+        (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> Databases.createPostgresDatabase(
+            mangledConfig.get("username").asText(),
+            mangledConfig.get("password").asText(),
+            String.format("jdbc:postgresql://%s:%s/%s", mangledConfig.get("host").asText(), mangledConfig.get("port").asText(),
+                mangledConfig.get("database").asText()))
+            .query(
+                ctx -> ctx
+                    .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                    .stream()
+                    .map(r -> r.formatJSON(JSON_FORMAT))
+                    .map(Jsons::deserialize)
+                    .collect(Collectors.toList())));
   }
 
   @Override

@@ -29,8 +29,8 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
-import io.airbyte.integrations.destination.jdbc.SshWrappedJdbcDestination;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -42,6 +42,8 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresDestination.class);
 
   public static final String DRIVER_CLASS = "org.postgresql.Driver";
+  public static final List<String> HOST_KEY = List.of("host");
+  public static final List<String> PORT_KEY = List.of("port");
 
   public PostgresDestination() {
     super(DRIVER_CLASS, new PostgresSQLNameTransformer(), new PostgresSqlOperations());
@@ -79,7 +81,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   }
 
   public static void main(final String[] args) throws Exception {
-    final Destination destination = new SshWrappedJdbcDestination(new PostgresDestination());
+    final Destination destination = new SshWrappedDestination(new PostgresDestination(), HOST_KEY, PORT_KEY);
     LOGGER.info("starting destination: {}", PostgresDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", PostgresDestination.class);
