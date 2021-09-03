@@ -69,14 +69,9 @@ class AdsInsights(AsyncStream, FBMarketingIncrementalStream):
         "action_destination",
     ]
 
-    MAX_WAIT_TO_START = pendulum.duration(minutes=5)
-    MAX_WAIT_TO_FINISH = pendulum.duration(minutes=30)
-    MAX_ASYNC_SLEEP = pendulum.duration(minutes=5)
     INSIGHTS_RETENTION_PERIOD = pendulum.duration(days=37 * 30)
 
     action_breakdowns = ALL_ACTION_BREAKDOWNS
-    level = "ad"
-    action_attribution_windows = ALL_ACTION_ATTRIBUTION_WINDOWS
     time_increment = 1
 
     def __init__(self, buffer_days, days_per_job, **kwargs):
@@ -89,12 +84,12 @@ class AdsInsights(AsyncStream, FBMarketingIncrementalStream):
         params = deep_merge(
             params,
             {
-                "level": self.level,
+                "level": "ad",
                 "action_breakdowns": self.action_breakdowns,
                 "breakdowns": self.breakdowns,
                 "fields": self.fields,
                 "time_increment": self.time_increment,
-                "action_attribution_windows": self.action_attribution_windows,
+                "action_attribution_windows": self.ALL_ACTION_ATTRIBUTION_WINDOWS,
             },
         )
 
