@@ -142,6 +142,12 @@ class IncrementalEntityStream(SourceZendeskSupportStream, ABC):
         super().__init__(**kwargs)
         # add the custom value for skiping of not relevant records
         self._start_date = self.str2datetime(start_date) if isinstance(start_date, str) else start_date
+        # Flag for marking of completed process
+        self._finished = False
+
+    @property
+    def is_finished(self):
+        return self._finished
 
     def path(self, **kwargs) -> str:
         return f"{self.name}.json"
@@ -176,6 +182,12 @@ class IncrementalExportStream(IncrementalEntityStream, ABC):
     # this endpoint provides responces in ascending order.
     state_checkpoint_interval = 100
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # for saving of last page cursor value
+        # endpoints can have different cursor format but incremental logic uses unixtime format only
+        self._last_end_time = None
+
     @staticmethod
     def str2unixtime(str_dt: str) -> int:
         """convert string to unixtime number
@@ -188,11 +200,9 @@ class IncrementalExportStream(IncrementalEntityStream, ABC):
         return calendar.timegm(dt.utctimetuple())
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        data = response.json()
-        if data["end_of_stream"]:
-            # true if the current request has returned all the results up to the current time; false otherwise
+        if self.is_finished:
             return None
-        return {"start_time": data["end_time"]}
+        return {"start_time": self._last_end_time}
 
     def path(self, *args, **kwargs) -> str:
         return f"incremental/{self.name}.json"
@@ -203,12 +213,15 @@ class IncrementalExportStream(IncrementalEntityStream, ABC):
 
         params = {"per_page": self.page_size}
         if not next_page_token:
-            # try to search all reconds with generated_timestamp > start_time
-            current_state = stream_state.get(self.cursor_field)
-            if current_state and isinstance(current_state, str) and not current_state.isdigit():
-                # try to save a stage with UnixTime format
-                current_state = self.str2unixtime(current_state)
-            start_time = int(current_state or time.mktime(self._start_date.timetuple())) + 1
+            current_state = stream_state.get("_last_end_time")
+            if not current_state:
+                # try to search all reconds with generated_timestamp > start_time
+                current_state = stream_state.get(self.cursor_field)
+                if current_state and isinstance(current_state, str) and not current_state.isdigit():
+                    # try to save a stage with UnixTime format
+                    current_state = self.str2unixtime(current_state)
+
+            start_time = int(current_state or time.mktime(self._start_date.timetuple()))
             # +1 because the API returns all records where  generated_timestamp >= start_time
 
             now = calendar.timegm(datetime.now().utctimetuple())
@@ -221,6 +234,27 @@ class IncrementalExportStream(IncrementalEntityStream, ABC):
             params.update(next_page_token)
         return params
 
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        # try to save maximum value of a cursor field
+        state = super().get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record)
+
+        if self._last_end_time:
+            state["_last_end_time"] = self._last_end_time
+        self.logger.warn(str(state))
+        current_stream_state.update(state)
+        return current_stream_state
+
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping]:
+
+        data = response.json()
+        # save a last end time for the next attempt
+        self._last_end_time = data["end_time"]
+        # end_of_stream is true if the current request has returned all the results up to the current time; false otherwise
+        self._finished = data["end_of_stream"]
+        yield from super().parse_response(response, stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+
 
 class IncrementalUnsortedStream(IncrementalEntityStream, ABC):
     """Stream for loading without sorting
@@ -231,8 +265,6 @@ class IncrementalUnsortedStream(IncrementalEntityStream, ABC):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # Flag for marking of completed process
-        self._finished = False
         # For saving of a relevant last updated date
         self._max_cursor_date = None
 
@@ -256,10 +288,6 @@ class IncrementalUnsortedStream(IncrementalEntityStream, ABC):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(self._max_cursor_date or "", (current_stream_state or {}).get(self.cursor_field, ""))}
-
-    @property
-    def is_finished(self):
-        return self._finished
 
     @abstractmethod
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -359,7 +387,7 @@ class TicketComments(IncrementalSortedPageStream):
             # for backward compatibility because not all relevant states can have some last ticket state
             ticket_stream_value = Tickets.str2unixtime(stream_state.get(self.cursor_field))
 
-        tickets = Tickets(self._start_date, subdomain=self._subdomain, authenticator=self.authenticator).read_records(
+        tickets = Tickets(start_date=self._start_date, subdomain=self._subdomain, authenticator=self.authenticator).read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_state={Tickets.cursor_field: ticket_stream_value}
         )
 
