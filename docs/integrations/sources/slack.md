@@ -101,6 +101,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.11   | 2021-08-27 | [5830](https://github.com/airbytehq/airbyte/pull/5830) | Fixed sync operations hang forever issue |
 | 0.1.10   | 2021-08-27 | [5697](https://github.com/airbytehq/airbyte/pull/5697) | Fixed max retries issue |
 | 0.1.9   | 2021-07-20 | [4860](https://github.com/airbytehq/airbyte/pull/4860) | Fixed reading threads issue |
 | 0.1.8   | 2021-07-14 | [4683](https://github.com/airbytehq/airbyte/pull/4683) | Add float_ts primary key |
