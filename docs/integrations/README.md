@@ -18,8 +18,11 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Appstore](./sources/appstore.md)| Alpha |
 |[Asana](./sources/asana.md) | Beta |
 |[AWS CloudTrail](./sources/aws-cloudtrail.md)| Beta |
+|[BambooHR](./sources/bamboo-hr.md)| Alpha |
 |[Braintree](./sources/braintree.md)| Alpha |
+|[BigCommerce](./sources/bigcommerce.md)| Alpha |
 |[BigQuery](./sources/bigquery.md)| Beta |
+|[Bing Ads](./sources/bing-ads.md)| Beta |
 |[Cart](./sources/cart.md)| Beta |
 |[Chargebee](./sources/chargebee.md)| Alpha |
 |[ClickHouse](./sources/clickhouse.md)| Beta |
@@ -109,6 +112,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 ### Destinations
 | Connector | Grade |
 |----|----|
+|[AzureBlobStorage](./destinations/azureblobstorage.md)| Alpha |
 |[BigQuery](./destinations/bigquery.md)| Certified |
 |[Chargify (Keen)](./destinations/keen.md)| Alpha |
 |[Google Cloud Storage (GCS)](./destinations/gcs.md)| Alpha |

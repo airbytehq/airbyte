@@ -1,0 +1,21 @@
+plugins {
+    id 'application'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.dynamodb.DynamodbDestination'
+}
+
+dependencies {
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-integrations:bases:base-java')
+    implementation project(':airbyte-integrations:connectors:destination-jdbc')
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    implementation 'com.amazonaws:aws-java-sdk-dynamodb:1.12.47'
+
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-dynamodb')
+}

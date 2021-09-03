@@ -33,6 +33,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.concurrency.VoidCallable;
@@ -85,7 +86,7 @@ public class BufferedStreamConsumerTest {
   private VoidCallable onStart;
   private RecordWriter recordWriter;
   private CheckedConsumer<Boolean, Exception> onClose;
-  private CheckedFunction<String, Boolean, Exception> isValidRecord;
+  private CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
   private Consumer<AirbyteMessage> outputRecordCollector;
 
   @SuppressWarnings("unchecked")
