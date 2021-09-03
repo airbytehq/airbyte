@@ -137,18 +137,15 @@ class AbstractSource(Source, ABC):
 
         use_incremental = configured_stream.sync_mode == SyncMode.incremental and stream_instance.supports_incremental
         if use_incremental:
-            record_iterator = self._read_incremental(logger, stream_instance, configured_stream, connector_state)
+            record_iterator = self._read_incremental(logger, stream_instance, configured_stream, connector_state, internal_config)
         else:
-            record_iterator = self._read_full_refresh(stream_instance, configured_stream)
+            record_iterator = self._read_full_refresh(stream_instance, configured_stream, internal_config)
 
         record_counter = 0
         stream_name = configured_stream.stream.name
         logger.info(f"Syncing stream: {stream_name} ")
         for record in record_iterator:
             if record.type == MessageType.RECORD:
-                if internal_config.limit and record_counter >= internal_config.limit:
-                    logger.info(f"Reached limit defined by internal config ({internal_config.limit}), stop reading")
-                    break
                 record_counter += 1
             yield record
 
@@ -160,6 +157,7 @@ class AbstractSource(Source, ABC):
         stream_instance: Stream,
         configured_stream: ConfiguredAirbyteStream,
         connector_state: MutableMapping[str, Any],
+        internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
         stream_name = configured_stream.stream.name
         stream_state = connector_state.get(stream_name, {})
@@ -184,17 +182,23 @@ class AbstractSource(Source, ABC):
                 stream_state = stream_instance.get_updated_state(stream_state, record_data)
                 if checkpoint_interval and record_counter % checkpoint_interval == 0:
                     yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
+                if internal_config.limit and record_counter >= internal_config.limit:
+                    break
 
             yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
 
-    def _read_full_refresh(self, stream_instance: Stream, configured_stream: ConfiguredAirbyteStream) -> Iterator[AirbyteMessage]:
+    def _read_full_refresh(
+        self, stream_instance: Stream, configured_stream: ConfiguredAirbyteStream, internal_config: InternalConfig
+    ) -> Iterator[AirbyteMessage]:
         slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field)
         for slice in slices:
             records = stream_instance.read_records(
                 stream_slice=slice, sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field
             )
-            for record in records:
+            for count, record in enumerate(records):
                 yield self._as_airbyte_record(configured_stream.stream.name, record)
+                if internal_config.limit and count + 1 >= internal_config.limit:
+                    break
 
     def _checkpoint_state(self, stream_name, stream_state, connector_state, logger):
         logger.info(f"Setting state of {stream_name} stream to {stream_state}")

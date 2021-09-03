@@ -30,7 +30,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http.http import HttpStream
@@ -55,6 +55,25 @@ def source():
 
 
 @pytest.fixture
+def catalog():
+    configured_catalog = {
+        "streams": [
+            {
+                "stream": {"name": "mock_http_stream", "json_schema": {}},
+                "destination_sync_mode": "overwrite",
+                "sync_mode": "full_refresh",
+            },
+            {
+                "stream": {"name": "mock_stream", "json_schema": {}},
+                "destination_sync_mode": "overwrite",
+                "sync_mode": "full_refresh",
+            },
+        ]
+    }
+    return ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
+
+
+@pytest.fixture
 def abstract_source(mocker):
     mocker.patch.multiple(HttpStream, __abstractmethods__=set())
     mocker.patch.multiple(Stream, __abstractmethods__=set())
@@ -62,6 +81,9 @@ def abstract_source(mocker):
     class MockHttpStream(MagicMock, HttpStream):
         url_base = "http://example.com"
         path = "/dummy/path"
+
+        def supports_incremental(self):
+            return True
 
         def __init__(self, *args, **kvargs):
             MagicMock.__init__(self)
@@ -120,22 +142,7 @@ def test_read_catalog(source):
         assert actual == expected
 
 
-def test_internal_config(abstract_source):
-    configured_catalog = {
-        "streams": [
-            {
-                "stream": {"name": "mock_http_stream", "json_schema": {}},
-                "destination_sync_mode": "overwrite",
-                "sync_mode": "full_refresh",
-            },
-            {
-                "stream": {"name": "mock_stream", "json_schema": {}},
-                "destination_sync_mode": "overwrite",
-                "sync_mode": "full_refresh",
-            },
-        ]
-    }
-    catalog = ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
+def test_internal_config(abstract_source, catalog):
     streams = abstract_source.streams(None)
     assert len(streams) == 2
     http_stream = streams[0]
@@ -175,3 +182,37 @@ def test_internal_config(abstract_source):
     assert http_stream.page_size == 2
     # Make sure page_size havent been set for non http streams
     assert not non_http_stream.page_size
+
+
+def test_internal_config_limit(abstract_source, catalog):
+    logger_mock = MagicMock()
+    del catalog.streams[1]
+    STREAM_LIMIT = 2
+    FULL_RECORDS_NUMBER = 3
+    streams = abstract_source.streams(None)
+    http_stream = streams[0]
+    http_stream.read_records.return_value = [{}] * FULL_RECORDS_NUMBER
+    internal_config = {"some_config": 100, "_limit": STREAM_LIMIT}
+
+    catalog.streams[0].sync_mode = SyncMode.full_refresh
+    records = [r for r in abstract_source.read(logger=logger_mock, config=internal_config, catalog=catalog, state={})]
+    assert len(records) == STREAM_LIMIT
+    logger_info_args = [call[0][0] for call in logger_mock.info.call_args_list]
+    # Check if log line matches number of limit
+    read_log_record = [_l for _l in logger_info_args if _l.startswith("Read")]
+    assert read_log_record[0].startswith(f"Read {STREAM_LIMIT} ")
+
+    # No limit, check if state record produced for incremental stream
+    catalog.streams[0].sync_mode = SyncMode.incremental
+    records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
+    assert len(records) == FULL_RECORDS_NUMBER + 1
+    assert records[-1].type == Type.STATE
+
+    # Set limit and check if state is produced when limit is set for incremental stream
+    logger_mock.reset_mock()
+    records = [r for r in abstract_source.read(logger=logger_mock, config=internal_config, catalog=catalog, state={})]
+    assert len(records) == STREAM_LIMIT + 1
+    assert records[-1].type == Type.STATE
+    logger_info_args = [call[0][0] for call in logger_mock.info.call_args_list]
+    read_log_record = [_l for _l in logger_info_args if _l.startswith("Read")]
+    assert read_log_record[0].startswith(f"Read {STREAM_LIMIT} ")
