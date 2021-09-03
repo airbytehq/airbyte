@@ -43,7 +43,7 @@ class LinkedinAdsStream(HttpStream, ABC):
 
     url_base = "https://api.linkedin.com/v2/"
     primary_key = "id"
-    limit = 500
+    records_limit = 500
 
     def __init__(self, config: Dict):
         super().__init__(authenticator=config.get("authenticator"))
@@ -62,14 +62,15 @@ class LinkedinAdsStream(HttpStream, ABC):
         We have reached the end of the dataset when the response contains fewer elements than the `count` parameter request.
         https://docs.microsoft.com/en-us/linkedin/shared/api-guide/concepts/pagination?context=linkedin/marketing/context
         """
-        if len(response.json().get("elements")) < self.limit:
+        parsed_response = response.json()
+        if len(parsed_response.get("elements")) < self.records_limit:
             return None
-        return {"start": response.json().get("paging").get("start") + self.limit}
+        return {"start": parsed_response.get("paging").get("start") + self.records_limit}
 
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        params = {"count": self.limit, "q": "search"}
+        params = {"count": self.records_limit, "q": "search"}
         if next_page_token:
             params.update(**next_page_token)
         return params
@@ -131,30 +132,21 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
         return self.slice_from_stream
 
     @property
-    def limit(self) -> str:
-        """ Define the checkpoint from the size of the records output limit. """
-        return super().limit
+    def interval(self) -> str:
+        """ Define the checkpoint from the records output size. """
+        return super().records_limit
 
-    state_checkpoint_interval = limit
+    state_checkpoint_interval = interval
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = {self.cursor_field: self.start_date} if not current_stream_state else current_stream_state
-        return {self.cursor_field: max(latest_record.get(self.cursor_field, None), current_stream_state.get(self.cursor_field, None))}
-
-    def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
-        """ For the streams that provide the cursor_field `lastModified`, we filter out the old records. """
-        if stream_state:
-            for record in records_slice:
-                if record[self.cursor_field] >= stream_state.get(self.cursor_field):
-                    yield record
-        else:
-            yield from records_slice
+        return {self.cursor_field: max(latest_record.get(self.cursor_field), current_stream_state.get(self.cursor_field))}
 
 
 class StreamMixin(IncrementalLinkedinAdsStream):
     """
     This class stands for provide stream slicing for other dependent streams.
-    :: `slice_from_stream` - the reference to the parrent stream class,
+    :: `slice_from_stream` - the reference to the parent stream class,
         by default it's referenced to the Accounts stream class, as far as majority of streams are using it.
     :: `slice_key_value_map` - key_value map for stream slices in a format: {<slice_key_name>: <key inside record>}
     :: `search_param` - the query param to pass with request_params
@@ -171,6 +163,15 @@ class StreamMixin(IncrementalLinkedinAdsStream):
         params = super().request_params(stream_state=stream_state, **kwargs)
         params[self.search_param] = f"{self.search_param_value}{stream_slice.get(self.primary_slice_key)}"
         return params
+
+    def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
+        """ For the streams that provide the cursor_field `lastModified`, we filter out the old records. """
+        if stream_state:
+            for record in records_slice:
+                if record[self.cursor_field] >= stream_state.get(self.cursor_field):
+                    yield record
+        else:
+            yield from records_slice
 
     def read_records(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs

@@ -22,7 +22,7 @@
 # SOFTWARE.
 #
 
-from typing import Dict, Iterable, List, Mapping
+from typing import Any, Dict, Iterable, List, Mapping
 
 import pendulum as pdm
 
@@ -30,37 +30,30 @@ import pendulum as pdm
 def make_slice(record: Dict, key_value_map: Dict) -> Dict:
     """
     Outputs the Dict with key:value slices for the stream.
-    EXAMPLE:
-        in: records = [{dict}, {dict}, ...],
+    :: EXAMPLE:
+        Input:
+            records = [{dict}, {dict}, ...],
             key_value_map = {<slice_key_name>: <key inside record>}
-        {
-            <slice_key_name> : records.<key inside record>.value,
-            ....
-        }
+
+        Output:
+            {
+                <slice_key_name> : records.<key inside record>.value,
+            }
     """
     result = {}
     for key in key_value_map:
-        value = record[key_value_map.get(key, None)]
+        value = record[key_value_map.get(key)]
         if value:
             result.update(**{key: value})
     return result
 
 
-def transform_data(records: List) -> Iterable[Mapping]:
+def transform_change_audit_stamps(
+    record: Dict, dict_key: str = "changeAuditStamps", props: List = ["created", "lastModified"], fields: List = ["time"]
+) -> Mapping[str, Any]:
+
     """
-    We need to transform the nested complex data structures into simple key:value pair,
-    to be properly normalised in the destination.
-
-    The cursor_field has the nested structure as:
-    :: EXAMPLE `dateRange` structure in Analytics streams:
-        {
-            "dateRange": {
-                "start": {"month": 8,"day": 13,"year": 2021},
-                "end": {"month": 8,"day": 13,"year": 2021}
-            }
-        }
-
-    :: EXAMPLE `changeAuditStamps` structure:
+    :: EXAMPLE `changeAuditStamps` input structure:
         {
             "changeAuditStamps": {
                 "created": {"time": 1629581275000},
@@ -68,116 +61,291 @@ def transform_data(records: List) -> Iterable[Mapping]:
             }
         }
 
+    :: EXAMPLE output:
+        {
+            "created": "2021-08-21 21:27:55",
+            "lastModified": "2021-08-22 20:35:44"
+        }
     """
 
+    target_dict: Dict = record.get(dict_key)
+    for prop in props:
+        # Update dict with flatten key:value
+        for field in fields:
+            record.update(**{prop: pdm.from_timestamp(target_dict.get(prop).get(field) / 1000).to_datetime_string()})
+    record.pop(dict_key)
+
+    return record
+
+
+def date_str_from_date_range(record: Dict, prefix: str):
+    """
+    Makes the ISO8601 format date string from the input <prefix>.<part of the date>
+
+    EXAMPLE:
+        Input: record
+        {
+            "start.year": 2021, "start.month": 8, "start.day": 1,
+            "end.year": 2021, "end.month": 9, "end.day": 31
+        }
+
+    EXAMPLE output:
+        With `prefix` = "start"
+            str:  "2021-08-13",
+
+        With `prefix` = "end"
+            str: "2021-09-31",
+    """
+
+    year = record.get(f"{prefix}.year")
+    month = record.get(f"{prefix}.month")
+    day = record.get(f"{prefix}.day")
+    return pdm.date(year, month, day).to_date_string()
+
+
+def transform_date_range(
+    record: Dict,
+    dict_key: str = "dateRange",
+    props: List = ["start", "end"],
+    fields: List = ["year", "month", "day"],
+) -> Mapping[str, Any]:
+
+    """
+    :: EXAMPLE `dateRange` input structure in Analytics streams:
+        {
+            "dateRange": {
+                "start": {"month": 8, "day": 13, "year": 2021},
+                "end": {"month": 8, "day": 13, "year": 2021}
+            }
+        }
+    :: EXAMPLE output:
+        {
+            "start_date": "2021-08-13",
+            "end_date": "2021-08-13"
+        }
+    """
+    # define list of tmp keys for cleanup.
+    keys_to_remove = [dict_key, "start.day", "start.month", "start.year", "end.day", "end.month", "end.year", "start", "end"]
+
+    target_dict: Dict = record.get(dict_key)
+    for prop in props:
+        # Update dict with flatten key:value
+        for field in fields:
+            record.update(**{f"{prop}.{field}": target_dict.get(prop).get(field)})
+    # We build `start_date` & `end_date` fields from nested structure.
+    record.update(**{"start_date": date_str_from_date_range(record, "start"), "end_date": date_str_from_date_range(record, "end")})
+    # Cleanup tmp fields & nested used parts
+    for key in keys_to_remove:
+        if key in record.keys():
+            record.pop(key)
+    return record
+
+
+def transform_targeting_criteria(
+    record: Dict,
+    dict_key: str = "targetingCriteria",
+) -> Mapping[str, Any]:
+
+    """
+    :: EXAMPLE `targetingCriteria` input structure:
+        {
+            "targetingCriteria": {
+                "include": {
+                    "and": [
+                        {
+                            "or": {
+                                "urn:li:adTargetingFacet:titles": [
+                                    "urn:li:title:100",
+                                    "urn:li:title:10326",
+                                    "urn:li:title:10457",
+                                    "urn:li:title:10738",
+                                    "urn:li:title:10966",
+                                    "urn:li:title:11349",
+                                    "urn:li:title:1159",
+                                ]
+                            }
+                        },
+                        {"or": {"urn:li:adTargetingFacet:locations": ["urn:li:geo:103644278"]}},
+                        {"or": {"urn:li:adTargetingFacet:interfaceLocales": ["urn:li:locale:en_US"]}},
+                    ]
+                },
+                "exclude": {
+                    "or": {
+                        "urn:li:adTargetingFacet:facet_Key1": [
+                            "facet_test1",
+                            "facet_test2",
+                        ],
+                        "urn:li:adTargetingFacet:facet_Key2": [
+                            "facet_test3",
+                            "facet_test4",
+                        ],
+                }
+            }
+        }
+
+    :: EXAMPLE output:
+        {
+            "targetingCriteria": {
+                "include": {
+                    "and": [
+                        {
+                            "type": "urn:li:adTargetingFacet:titles",
+                            "values": [
+                                "urn:li:title:100",
+                                "urn:li:title:10326",
+                                "urn:li:title:10457",
+                                "urn:li:title:10738",
+                                "urn:li:title:10966",
+                                "urn:li:title:11349",
+                                "urn:li:title:1159",
+                            ],
+                        },
+                        {
+                            "type": "urn:li:adTargetingFacet:locations",
+                            "values": ["urn:li:geo:103644278"],
+                        },
+                        {
+                            "type": "urn:li:adTargetingFacet:interfaceLocales",
+                            "values": ["urn:li:locale:en_US"],
+                        },
+                    ]
+                },
+                "exclude": {
+                    "or": [
+                        {
+                            "type": "urn:li:adTargetingFacet:facet_Key1",
+                            "values": ["facet_test1", "facet_test2"],
+                        },
+                        {
+                            "type": "urn:li:adTargetingFacet:facet_Key2",
+                            "values": ["facet_test3", "facet_test4"],
+                        },
+                    ]
+                },
+            }
+
+    """
+    targeting_criteria = record.get(dict_key)
+    # transform `include`
+    if "include" in targeting_criteria.keys():
+        and_list = targeting_criteria.get("include").get("and")
+        for id, and_criteria in enumerate(and_list):
+            or_dict = and_criteria.get("or")
+            count = 0
+            num = len(or_dict) - 1
+            while count <= num:
+                key = list(or_dict)[count]
+                value = []
+                if isinstance(or_dict[key], list):
+                    if isinstance(or_dict[key][0], str):
+                        value = or_dict[key]
+                    elif isinstance(or_dict[key][0], dict):
+                        for v in or_dict[key]:
+                            value.append(v)
+                elif isinstance(or_dict[key], dict):
+                    value.append(or_dict[key])
+                # Replace the 'or' with {type:value}
+                record["targetingCriteria"]["include"]["and"][id]["type"] = key
+                record["targetingCriteria"]["include"]["and"][id]["values"] = value
+                record["targetingCriteria"]["include"]["and"][id].pop("or")
+                count = count + 1
+
+    # transform `exclude` if present
+    if "exclude" in targeting_criteria.keys():
+        or_dict = targeting_criteria.get("exclude").get("or")
+        updated_exclude = {"or": []}
+        count = 0
+        num = len(or_dict) - 1
+        while count <= num:
+            key = list(or_dict)[count]
+            value = []
+            if isinstance(or_dict[key], list):
+                if isinstance(or_dict[key][0], str):
+                    value = or_dict[key]
+                elif isinstance(or_dict[key][0], dict):
+                    for v in or_dict[key]:
+                        value.append(v)
+            elif isinstance(or_dict[key], dict):
+                value.append(or_dict[key])
+            updated_exclude["or"].append({"type": key, "values": value})
+            count = count + 1
+        record["targetingCriteria"]["exclude"].update(**updated_exclude)
+
+    return record
+
+
+def transform_variables(
+    record: Dict,
+    dict_key: str = "variables",
+) -> Mapping[str, Any]:
+
+    """
+    :: EXAMPLE `variables` input:
+    {
+        "variables": {
+            "data": {
+                "com.linkedin.ads.SponsoredUpdateCreativeVariables": {
+                    "activity": "urn:li:activity:1234",
+                    "directSponsoredContent": 0,
+                    "share": "urn:li:share:1234",
+                }
+            }
+        }
+    }
+
+    :: EXAMPLE output:
+    {
+        "variables": {
+            "type": "com.linkedin.ads.SponsoredUpdateCreativeVariables",
+            "values": [
+                {"key": "activity", "value": "urn:li:activity:1234"},
+                {"key": "directSponsoredContent", "value": 0},
+                {"key": "share", "value": "urn:li:share:1234"},
+            ],
+        }
+    }
+    """
+
+    variables = record.get(dict_key).get("data")
+    count = 0
+    num = len(variables) - 1
+    while count <= num:
+        key = list(variables)[count]
+        params = variables.get(key)
+        record["variables"]["type"] = key
+        record["variables"]["values"] = []
+
+        count2 = 0
+        pnum = len(params) - 1
+        while count2 <= pnum:
+            param_key = list(params)[count2]
+            param_value = params.get(param_key)
+            record["variables"]["values"].append({"key": param_key, "value": param_value})
+            count2 = count2 + 1
+
+        record["variables"].pop("data")
+        count = count + 1
+
+    return record
+
+
+def transform_data(records: List) -> Iterable[Mapping]:
+    """
+    We need to transform the nested complex data structures into simple key:value pair,
+    to be properly normalised in the destination.
+    """
     for record in records:
 
-        # Transform `changeAuditStamps`
         if "changeAuditStamps" in record:
-            dict_key: str = "changeAuditStamps"
-            props: List = ["created", "lastModified"]
-            fields: List = ["time"]
+            record = transform_change_audit_stamps(record)
 
-            target_dict: Dict = record.get(dict_key, None)
-            if target_dict:
-                for prop in props:
-                    # Update dict with flatten key:value
-                    for field in fields:
-                        record.update(**{prop: pdm.from_timestamp(target_dict.get(prop).get(field, None) / 1000).to_datetime_string()})
-                record.pop(dict_key)
-
-        # Transform `dateRange`
         if "dateRange" in record:
-            dict_key: str = "dateRange"
-            props: List = ["start", "end"]
-            fields: List = ["year", "month", "day"]
+            record = transform_date_range(record)
 
-            target_dict: Dict = record.get(dict_key, None)
-            if target_dict:
-                for prop in props:
-                    # Update dict with flatten key:value
-                    for field in fields:
-                        record.update(**{f"{prop}.{field}": target_dict.get(prop).get(field, None)})
-                # We build `start_date` & `end_date` fields from nested structure.
-                record.update(
-                    **{
-                        "start_date": pdm.date(record["start.year"], record["start.month"], record["start.day"]).to_date_string(),
-                        "end_date": pdm.date(record["end.year"], record["end.month"], record["end.day"]).to_date_string(),
-                    }
-                )
-                # Cleanup tmp fields & nested used parts
-                for key in [dict_key, "start.day", "start.month", "start.year", "end.day", "end.month", "end.year", "start", "end"]:
-                    if key in record.keys():
-                        record.pop(key)
-
-        # Transform `Targeting Criterias`
         if "targetingCriteria" in record:
-            targeting_criteria = record.get("targetingCriteria")
-            # transform `include`
-            if "include" in targeting_criteria.keys():
-                and_list = targeting_criteria.get("include").get("and")
-                for id, and_criteria in enumerate(and_list):
-                    or_dict = and_criteria.get("or")
-                    count = 0
-                    num = len(or_dict) - 1
-                    while count <= num:
-                        key = list(or_dict)[count]
-                        value = []
-                        if isinstance(or_dict[key], list):
-                            if isinstance(or_dict[key][0], str):
-                                value = or_dict[key]
-                            elif isinstance(or_dict[key][0], dict):
-                                for v in or_dict[key]:
-                                    value.append(v)
-                        elif isinstance(or_dict[key], dict):
-                            value.append(or_dict[key])
-                        # Replace the 'or' with {type:value}
-                        record["targetingCriteria"]["include"]["and"][id]["type"] = key
-                        record["targetingCriteria"]["include"]["and"][id]["values"] = value
-                        record["targetingCriteria"]["include"]["and"][id].pop("or")
-                        count = count + 1
+            record = transform_targeting_criteria(record)
 
-            # transform `exclude` if present
-            if "exclude" in targeting_criteria.keys():
-                or_dict = targeting_criteria.get("exclude").get("or")
-                updated_exclude = {"or": []}
-                count = 0
-                num = len(or_dict) - 1
-                while count <= num:
-                    key = list(or_dict)[count]
-                    value = []
-                    if isinstance(or_dict[key], list):
-                        if isinstance(or_dict[key][0], str):
-                            value = or_dict[key]
-                        elif isinstance(or_dict[key][0], dict):
-                            for v in or_dict[key]:
-                                value.append(v)
-                    elif isinstance(or_dict[key], dict):
-                        value.append(or_dict[key])
-                    updated_exclude["or"].append({"type": key, "values": value})
-                    count = count + 1
-                record["targetingCriteria"]["exclude"].update(**updated_exclude)
-
-        # tranform `variables` if present
         if "variables" in record:
-            variables = record.get("variables").get("data")
-            count = 0
-            num = len(variables) - 1
-            while count <= num:
-                key = list(variables)[count]
-                params = variables.get(key)
-                record["variables"]["type"] = key
-                record["variables"]["values"] = []
-
-                count2 = 0
-                pnum = len(params) - 1
-                while count2 <= pnum:
-                    param_key = list(params)[count2]
-                    param_value = params.get(param_key)
-                    record["variables"]["values"].append({"key": param_key, "value": param_value})
-                    count2 = count2 + 1
-
-                record["variables"].pop("data")
-                count = count + 1
+            record = transform_variables(record)
 
     yield from records
