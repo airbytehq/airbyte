@@ -14,7 +14,8 @@
   "database": "AIRBYTE_DATABASE",
   "schema": "AIRBYTE_SCHEMA",
   "username": "AIRBYTE_USER",
-  "password": "SOMEPASSWORD"
+  "password": "SOMEPASSWORD",
+  "batch_size": "BATCH SIZE" - not required field
 }
 ```
 
