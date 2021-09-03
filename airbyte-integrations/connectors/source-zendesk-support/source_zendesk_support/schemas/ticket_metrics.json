@@ -73,8 +73,7 @@
       "type": ["null", "integer"]
     },
     "latest_comment_added_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "on_hold_time_in_minutes": {
       "type": ["null", "object"],
@@ -131,20 +130,16 @@
       "type": ["null", "string"]
     },
     "initially_assigned_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "assigned_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "solved_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "assignee_updated_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     }
   },
   "type": ["null", "object"]

@@ -153,8 +153,7 @@
       "additionalProperties": true
     },
     "last_login_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "alias": {
       "type": ["null", "string"]

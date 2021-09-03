@@ -93,8 +93,7 @@
       "type": ["null", "boolean"]
     },
     "due_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "followup_ids": {
       "items": {

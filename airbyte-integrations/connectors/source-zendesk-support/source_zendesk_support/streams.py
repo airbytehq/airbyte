@@ -77,13 +77,13 @@ class SourceZendeskSupportStream(HttpStream, ABC):
         The response has a Retry-After header that tells you for how many seconds to wait before retrying.
         """
 
-        retry_after = int(response.headers.get("Retry-After") or 0)
+        retry_after = int(response.headers.get("Retry-After", 0))
         if retry_after and retry_after > 0:
             return int(retry_after)
         # the header X-Rate-Limit returns a amount of requests per minute
         # we try to wait twice as long
 
-        rate_limit = float(response.headers.get("X-Rate-Limit") or 2)
+        rate_limit = float(response.headers.get("X-Rate-Limit", 2))
         if rate_limit and rate_limit > 0:
             return (60.0 / rate_limit) * 2
         return 60
@@ -240,7 +240,6 @@ class IncrementalExportStream(IncrementalEntityStream, ABC):
 
         if self._last_end_time:
             state["_last_end_time"] = self._last_end_time
-        self.logger.warn(str(state))
         current_stream_state.update(state)
         return current_stream_state
 
