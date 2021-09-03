@@ -56,7 +56,7 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected String getImageName() {
-    return "airbyte/source-mongodb-new:dev";
+    return "airbyte/source-mongodb-v2:dev";
   }
 
   @Override
