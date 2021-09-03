@@ -72,8 +72,9 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
   @Override
   public JsonNode toDatabaseConfig(JsonNode config) {
-    String credentials = config.has("user") && config.has("password") && StringUtils.isNoneEmpty(config.get("user").asText()) ?
-        String.format("%s:%s@", config.get("user").asText(), config.get("password").asText()) : StringUtils.EMPTY;
+    String credentials = config.has("user") && config.has("password") && StringUtils.isNoneEmpty(config.get("user").asText())
+        ? String.format("%s:%s@", config.get("user").asText(), config.get("password").asText())
+        : StringUtils.EMPTY;
 
     String connectionString = String.format("mongodb://%s%s:%s/?authSource=%s",
         credentials,
@@ -155,7 +156,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
   @Override
   protected Map<String, List<String>> discoverPrimaryKeys(MongoDatabase database,
-      List<TableInfo<CommonField<BsonType>>> tableInfos) {
+                                                          List<TableInfo<CommonField<BsonType>>> tableInfos) {
     return tableInfos.stream()
         .collect(Collectors.toMap(
             TableInfo::getName,
@@ -169,20 +170,20 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
   @Override
   public AutoCloseableIterator<JsonNode> queryTableFullRefresh(MongoDatabase database,
-      List<String> columnNames,
-      String schemaName,
-      String tableName) {
+                                                               List<String> columnNames,
+                                                               String schemaName,
+                                                               String tableName) {
     return queryTable(database, columnNames, tableName, null);
   }
 
   @Override
   public AutoCloseableIterator<JsonNode> queryTableIncremental(MongoDatabase database,
-      List<String> columnNames,
-      String schemaName,
-      String tableName,
-      String cursorField,
-      BsonType cursorFieldType,
-      String cursor) {
+                                                               List<String> columnNames,
+                                                               String schemaName,
+                                                               String tableName,
+                                                               String cursorField,
+                                                               BsonType cursorFieldType,
+                                                               String cursor) {
     Bson greaterComparison = gt(cursorField, cursor);
     return queryTable(database, columnNames, tableName, greaterComparison);
   }

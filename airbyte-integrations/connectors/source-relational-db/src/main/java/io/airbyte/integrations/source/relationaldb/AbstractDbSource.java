@@ -33,8 +33,8 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.type.Types;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.db.IncrementalUtils;
 import io.airbyte.db.AbstractDatabase;
+import io.airbyte.db.IncrementalUtils;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Source;
@@ -112,7 +112,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   @Override
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
                                                     final ConfiguredAirbyteCatalog catalog,
-                                                    final JsonNode state) throws Exception {
+                                                    final JsonNode state)
+      throws Exception {
     final StateManager stateManager = new StateManager(
         state == null ? StateManager.emptyState() : Jsons.object(state, DbState.class),
         catalog);
@@ -213,10 +214,10 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   }
 
   protected AutoCloseableIterator<AirbyteMessage> createReadIterator(final Database database,
-      final ConfiguredAirbyteStream airbyteStream,
-      final TableInfo<CommonField<DataType>> table,
-      final StateManager stateManager,
-      final Instant emittedAt) {
+                                                                     final ConfiguredAirbyteStream airbyteStream,
+                                                                     final TableInfo<CommonField<DataType>> table,
+                                                                     final StateManager stateManager,
+                                                                     final Instant emittedAt) {
     final String streamName = airbyteStream.getStream().getName();
     final String namespace = airbyteStream.getStream().getNamespace();
     final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamName, namespace);
@@ -244,12 +245,12 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           .getCursorType(airbyteStream, cursorField);
 
       iterator = AutoCloseableIterators.transform(autoCloseableIterator -> new StateDecoratingIterator(
-              autoCloseableIterator,
-              stateManager,
-              pair,
-              cursorField,
-              cursorOptional.orElse(null),
-              cursorType),
+          autoCloseableIterator,
+          stateManager,
+          pair,
+          cursorField,
+          cursorOptional.orElse(null),
+          cursorType),
           airbyteMessageIterator);
     } else if (airbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
       iterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields, table, emittedAt);
@@ -270,11 +271,11 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   }
 
   protected AutoCloseableIterator<AirbyteMessage> getIncrementalStream(final Database database,
-      final ConfiguredAirbyteStream airbyteStream,
-      final List<String> selectedDatabaseFields,
-      final TableInfo<CommonField<DataType>> table,
-      final String cursor,
-      final Instant emittedAt) {
+                                                                       final ConfiguredAirbyteStream airbyteStream,
+                                                                       final List<String> selectedDatabaseFields,
+                                                                       final TableInfo<CommonField<DataType>> table,
+                                                                       final String cursor,
+                                                                       final Instant emittedAt) {
     final String streamName = airbyteStream.getStream().getName();
     final String namespace = airbyteStream.getStream().getNamespace();
     final String cursorField = IncrementalUtils.getCursorField(airbyteStream);
@@ -300,11 +301,11 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   }
 
   protected AutoCloseableIterator<AirbyteMessage> getFullRefreshStream(final Database database,
-      final String streamName,
-      final String namespace,
-      final List<String> selectedDatabaseFields,
-      final TableInfo<CommonField<DataType>> table,
-      final Instant emittedAt) {
+                                                                       final String streamName,
+                                                                       final String namespace,
+                                                                       final List<String> selectedDatabaseFields,
+                                                                       final TableInfo<CommonField<DataType>> table,
+                                                                       final Instant emittedAt) {
     final AutoCloseableIterator<JsonNode> queryStream =
         queryTableFullRefresh(database, selectedDatabaseFields, table.getNameSpace(), table.getName());
     return getMessageIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
@@ -315,9 +316,9 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   }
 
   public AutoCloseableIterator<AirbyteMessage> getMessageIterator(final AutoCloseableIterator<JsonNode> recordIterator,
-      final String streamName,
-      final String namespace,
-      final long emittedAt) {
+                                                                  final String streamName,
+                                                                  final String namespace,
+                                                                  final long emittedAt) {
     return AutoCloseableIterators.transform(recordIterator, r -> new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
@@ -484,12 +485,12 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @return iterator with read data
    */
   public abstract AutoCloseableIterator<JsonNode> queryTableIncremental(Database database,
-      List<String> columnNames,
-      String schemaName,
-      String tableName,
-      String cursorField,
-      DataType cursorFieldType,
-      String cursor);
+                                                                        List<String> columnNames,
+                                                                        String schemaName,
+                                                                        String tableName,
+                                                                        String cursorField,
+                                                                        DataType cursorFieldType,
+                                                                        String cursor);
 
   private Database createDatabaseInternal(final JsonNode sourceConfig) throws Exception {
     final Database database = createDatabase(sourceConfig);

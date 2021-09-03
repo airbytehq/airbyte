@@ -49,9 +49,9 @@ public abstract class AbstractRelationalDbSource<DataType, Database extends SqlD
 
   @Override
   public AutoCloseableIterator<JsonNode> queryTableFullRefresh(final Database database,
-      final List<String> columnNames,
-      final String schemaName,
-      final String tableName) {
+                                                               final List<String> columnNames,
+                                                               final String schemaName,
+                                                               final String tableName) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return queryTable(database, String.format("SELECT %s FROM %s",
         enquoteIdentifierList(columnNames),
