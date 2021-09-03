@@ -176,10 +176,10 @@ class AbstractSource(Source, ABC):
                 stream_state=stream_state,
                 cursor_field=configured_stream.cursor_field or None,
             )
-            for record_counter, record_data in enumerate(records):
+            for record_counter, record_data in enumerate(records, 1):
                 yield self._as_airbyte_record(stream_name, record_data)
                 stream_state = stream_instance.get_updated_state(stream_state, record_data)
-                if checkpoint_interval and (record_counter + 1) % checkpoint_interval == 0:
+                if checkpoint_interval and record_counter % checkpoint_interval == 0:
                     yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
                 if internal_config.limit:
                     total_records_counter += 1
