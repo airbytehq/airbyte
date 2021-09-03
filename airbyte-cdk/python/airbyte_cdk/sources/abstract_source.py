@@ -192,14 +192,17 @@ class AbstractSource(Source, ABC):
         self, stream_instance: Stream, configured_stream: ConfiguredAirbyteStream, internal_config: InternalConfig
     ) -> Iterator[AirbyteMessage]:
         slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field)
+        total_records_counter = 0
         for slice in slices:
             records = stream_instance.read_records(
                 stream_slice=slice, sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field
             )
-            for count, record in enumerate(records):
+            for record in records:
                 yield self._as_airbyte_record(configured_stream.stream.name, record)
-                if internal_config.limit and count + 1 >= internal_config.limit:
-                    break
+                if internal_config.limit:
+                    total_records_counter += 1
+                    if total_records_counter >= internal_config.limit:
+                        break
 
     def _checkpoint_state(self, stream_name, stream_state, connector_state, logger):
         logger.info(f"Setting state of {stream_name} stream to {stream_state}")
