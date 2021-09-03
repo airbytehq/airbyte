@@ -28,7 +28,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 
 @VisibleForTesting
-public class MongoDBNameTransformer extends ExtendedNameTransformer {
+public class MongodbNameTransformer extends ExtendedNameTransformer {
 
   @Override
   protected String applyDefaultCase(String input) {

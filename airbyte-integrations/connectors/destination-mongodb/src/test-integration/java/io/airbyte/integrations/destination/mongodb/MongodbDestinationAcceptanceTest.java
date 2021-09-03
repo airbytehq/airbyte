@@ -58,7 +58,7 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
   private static final String AIRBYTE_DATA = "_airbyte_data";
 
   private MongoDBContainer container;
-  private MongoDBNameTransformer namingResolver = new MongoDBNameTransformer();
+  private MongodbNameTransformer namingResolver = new MongodbNameTransformer();
 
   @Override
   protected String getImageName() {

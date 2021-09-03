@@ -38,7 +38,7 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.destination.mongodb.exception.MongodbDataBaseException;
+import io.airbyte.integrations.destination.mongodb.exception.MongodbDatabaseException;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -70,12 +70,12 @@ public class MongodbDestination extends BaseConnector implements Destination {
   private static final String PASSWORD = "password";
   private static final String AUTHORIZATION = "authorization";
   private static final String LOGIN_AND_PASSWORD = "login/password";
-  private static final String AIRBYTE_DATA = "_airbyte_data";
+  private static final String AIRBYTE_DATA_HASH = "_airbyte_data_hash";
 
-  private final MongoDBNameTransformer namingResolver;
+  private final MongodbNameTransformer namingResolver;
 
   public MongodbDestination() {
-    namingResolver = new MongoDBNameTransformer();
+    namingResolver = new MongodbNameTransformer();
   }
 
   public static void main(String[] args) throws Exception {
@@ -93,7 +93,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
       var database = getMongoDatabase(client, config.get(DATABASE).asText());
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (RuntimeException e) {
-      LOGGER.info("Check failed.", e);
+      LOGGER.error("Check failed.", e);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED)
           .withMessage(e.getMessage() != null ? e.getMessage() : e.toString());
     }
@@ -119,15 +119,15 @@ public class MongodbDestination extends BaseConnector implements Destination {
       }
 
       MongoCollection<Document> collection = getOrCreateNewMongodbCollection(database, tmpCollectionName);
-      Set<Document> documents = new HashSet<>();
+      Set<Integer> documentsHash = new HashSet<>();
       try (MongoCursor<Document> cursor = collection.find().projection(excludeId()).iterator()) {
         while (cursor.hasNext()) {
-          documents.add(cursor.next().get(AIRBYTE_DATA, Document.class));
+          documentsHash.add(cursor.next().get(AIRBYTE_DATA_HASH, Integer.class));
         }
       }
 
       writeConfigs.put(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
-          new MongodbWriteConfig(collectionName, tmpCollectionName, configStream.getDestinationSyncMode(), collection, documents));
+          new MongodbWriteConfig(collectionName, tmpCollectionName, configStream.getDestinationSyncMode(), collection, documentsHash));
     }
     return new MongodbRecordConsumer(writeConfigs, database, catalog, outputRecordCollector);
   }
@@ -163,7 +163,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
           .stream(mongoClient.listDatabaseNames().spliterator(), false)
           .collect(Collectors.toSet());
       if (!databaseNames.contains(dataBaseName)) {
-        throw new MongodbDataBaseException(dataBaseName);
+        throw new MongodbDatabaseException(dataBaseName);
       }
       return mongoClient.getDatabase(dataBaseName);
     } catch (RuntimeException e) {

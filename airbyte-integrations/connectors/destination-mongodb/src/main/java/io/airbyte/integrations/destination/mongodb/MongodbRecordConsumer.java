@@ -55,6 +55,7 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
   private static final Logger LOGGER = LoggerFactory.getLogger(MongodbRecordConsumer.class);
 
   private static final String AIRBYTE_DATA = "_airbyte_data";
+  private static final String AIRBYTE_DATA_HASH = "_airbyte_data_hash";
   private static final String AIRBYTE_EMITTED_AT = "_airbyte_emitted_at";
 
   private final Map<AirbyteStreamNameNamespacePair, MongodbWriteConfig> writeConfigs;
@@ -97,7 +98,7 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
                 Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
       }
       var writeConfig = writeConfigs.get(pair);
-      insertRecordToTmpCollection(writeConfig, message, recordMessage);
+      insertRecordToTmpCollection(writeConfig, message);
     }
   }
 
@@ -110,7 +111,7 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
           try {
             copyTable(mongoDatabase, mongodbWriteConfig.getCollectionName(), mongodbWriteConfig.getTmpCollectionName());
           } catch (RuntimeException e) {
-            LOGGER.error("Failed to process a message for Streams numbers: {}, \nSyncMode: {}, \nCollectionName: {}, \nTmpCollectionName: {}",
+            LOGGER.error("Failed to process a message for Streams numbers: {}, SyncMode: {}, CollectionName: {}, TmpCollectionName: {}",
                 catalog.getStreams().size(), mongodbWriteConfig.getSyncMode(), mongodbWriteConfig.getCollectionName(),
                 mongodbWriteConfig.getTmpCollectionName());
             LOGGER.error("Failed with exception: {}", e.getMessage());
@@ -132,24 +133,29 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
   /* Helpers */
 
   private void insertRecordToTmpCollection(MongodbWriteConfig writeConfig,
-                                           AirbyteMessage message,
-                                           AirbyteRecordMessage recordMessage) {
+                                           AirbyteMessage message) {
     try {
+      AirbyteRecordMessage recordMessage = message.getRecord();
       Map<String, Object> result = objectMapper.convertValue(recordMessage.getData(), new TypeReference<>() {});
+      var newDocumentDataHashCode = result.hashCode();
       var newDocument = new Document();
       newDocument.put(AIRBYTE_DATA, new Document(result));
+      newDocument.put(AIRBYTE_DATA_HASH, newDocumentDataHashCode);
       newDocument.put(AIRBYTE_EMITTED_AT, new LocalDateTime().toString());
 
       var collection = writeConfig.getCollection();
 
-      var documents = writeConfig.getDocuments();
-      if (!documents.contains(newDocument.get(AIRBYTE_DATA, Document.class))) {
+      var documentsHash = writeConfig.getDocumentsHash();
+      if (!documentsHash.contains(newDocumentDataHashCode)) {
         collection.insertOne(newDocument);
+        documentsHash.add(newDocumentDataHashCode);
+      } else {
+        LOGGER.info("Object with hashCode = {} already exist in table {}.", newDocumentDataHashCode, writeConfig.getCollectionName());
       }
     } catch (RuntimeException e) {
       LOGGER.error("Got an error while writing message:" + e.getMessage());
       LOGGER.error(String.format(
-          "Failed to process a message for Streams numbers: %s, \nSyncMode: %s, \nCollectionName: %s, \nTmpCollectionName: %s, \nAirbyteMessage: %s",
+          "Failed to process a message for Streams numbers: %s, SyncMode: %s, CollectionName: %s, TmpCollectionName: %s, AirbyteMessage: %s",
           catalog.getStreams().size(), writeConfig.getSyncMode(), writeConfig.getCollectionName(), writeConfig.getTmpCollectionName(), message));
       throw new RuntimeException(e);
     }
