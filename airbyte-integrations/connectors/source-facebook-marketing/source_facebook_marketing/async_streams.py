@@ -79,22 +79,6 @@ class AdsInsights(AsyncStream, FBMarketingIncrementalStream):
         self.lookback_window = pendulum.duration(days=buffer_days)
         self._days_per_job = days_per_job
 
-    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, **kwargs)
-        params = deep_merge(
-            params,
-            {
-                "level": "ad",
-                "action_breakdowns": self.action_breakdowns,
-                "breakdowns": self.breakdowns,
-                "fields": self.fields,
-                "time_increment": self.time_increment,
-                "action_attribution_windows": self.ALL_ACTION_ATTRIBUTION_WINDOWS,
-            },
-        )
-
-        return params
-
     def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Works differently for insights, so remove it"""
         return {}
@@ -132,8 +116,29 @@ class AdsInsights(AsyncStream, FBMarketingIncrementalStream):
 
         return {breakdown: schemas[breakdown] for breakdown in self.breakdowns}
 
+    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        params = deep_merge(
+            params,
+            {
+                "level": "ad",
+                "action_breakdowns": self.action_breakdowns,
+                "breakdowns": self.breakdowns,
+                "fields": self.fields,
+                "time_increment": self.time_increment,
+                "action_attribution_windows": self.ALL_ACTION_ATTRIBUTION_WINDOWS,
+            },
+        )
+
+        return params
+
     @backoff_policy
-    async def create_job(self, stream_slice, params) -> Any:
+    async def create_job(
+            self,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
+    ) -> Any:
+        params = self.request_params(stream_state=stream_state, stream_slice=stream_slice)
         job = self._api.account.get_insights(params=params, is_async=True)
         job_id = job["report_run_id"]
         time_range = params["time_range"]

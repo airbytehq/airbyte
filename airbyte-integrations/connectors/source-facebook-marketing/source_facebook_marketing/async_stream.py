@@ -67,8 +67,20 @@ class AsyncStream(Stream, ABC):
     def print(self, *args):
         print(self.name, *args)
 
+    @abstractmethod
+    async def create_job(
+            self,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
+    ) -> Any:
+        """Create async job and return"""
+
     @backoff_policy
-    async def create_and_wait(self, stream_slice):
+    async def create_and_wait(
+            self,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
+    ):
         """Single wait routing because we would like to re-create job in case its result is fail"""
         job = await self.create_job(stream_slice)
         await self.wait_for_job(job)
