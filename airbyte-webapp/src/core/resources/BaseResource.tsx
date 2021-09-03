@@ -10,14 +10,17 @@ import {
 } from "rest-hooks";
 
 import { parseResponse } from "core/request/AirbyteRequestService";
-import { getMiddlewares } from "core/request/useRequestMiddlewareProvider";
+import { getService } from "core/servicesProvider";
+import { RequestMiddleware } from "core/request/RequestMiddleware";
 
 // TODO: rename to crud resource after upgrade to rest-hook 5.0.0
 export default abstract class BaseResource extends Resource {
   static async useFetchInit(init: RequestInit): Promise<RequestInit> {
     let preparedOptions: RequestInit = init;
+    const middlewares =
+      getService<RequestMiddleware[]>("DefaultRequestMiddlewares") ?? [];
 
-    for (const middleware of getMiddlewares()) {
+    for (const middleware of middlewares) {
       preparedOptions = await middleware(preparedOptions);
     }
 

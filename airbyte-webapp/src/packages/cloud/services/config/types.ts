@@ -2,7 +2,10 @@ import { Config } from "config";
 
 export type CloudConfigExtension = {
   cloudApiUrl: string;
-  firebase: {};
+  firebase: {
+    apiKey: string;
+    authDomain: string;
+  };
 };
 
 export type CloudConfig = Config & CloudConfigExtension;

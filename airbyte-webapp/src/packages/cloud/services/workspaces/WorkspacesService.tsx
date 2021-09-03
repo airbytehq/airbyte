@@ -7,7 +7,7 @@ import { CloudWorkspacesService } from "packages/cloud/lib/domain/cloudWorkspace
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
 import { useDefaultRequestMiddlewares } from "packages/cloud/services/useDefaultRequestMiddlewares";
 import { CloudWorkspace } from "packages/cloud/lib/domain/cloudWorkspaces/types";
-import { useConfig } from "packages/cloud/config";
+import { useConfig } from "packages/cloud/services/config";
 
 type Context = {
   currentWorkspaceId?: string | null;

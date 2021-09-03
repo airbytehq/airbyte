@@ -1,8 +1,10 @@
 import { ConfigProvider } from "config/types";
 import { CloudConfig } from "./types";
 
+const CONFIG_PATH = "/config.json";
+
 const fileConfigProvider: ConfigProvider<CloudConfig> = async () => {
-  const response = await fetch("/config.json");
+  const response = await fetch(CONFIG_PATH);
 
   if (response.ok) {
     try {
@@ -20,7 +22,10 @@ const fileConfigProvider: ConfigProvider<CloudConfig> = async () => {
 const cloudEnvConfigProvider: ConfigProvider<CloudConfig> = async () => {
   return {
     cloudApiUrl: process.env.REACT_APP_CLOUD_API_URL,
-    firebase: {},
+    firebase: {
+      apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+      authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+    },
   };
 };
 

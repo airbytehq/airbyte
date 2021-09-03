@@ -19,11 +19,9 @@ function AnalyticsServiceProvider({
     [version, userId]
   );
   return (
-    <>
-      <analyticsServiceContext.Provider value={analyticsService}>
-        {children}
-      </analyticsServiceContext.Provider>
-    </>
+    <analyticsServiceContext.Provider value={analyticsService}>
+      {children}
+    </analyticsServiceContext.Provider>
   );
 }
 

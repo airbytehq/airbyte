@@ -9,10 +9,10 @@ import {
   authStateReducer,
   initialState,
 } from "./reducer";
-import { firebaseApp } from "packages/cloud/config/firebase";
 import { User } from "packages/cloud/lib/domain/users";
 import { AuthProviders } from "packages/cloud/lib/auth/AuthProviders";
 import { useGetUserService } from "packages/cloud/services/users/UserService";
+import { useAuth } from "packages/firebaseReact";
 
 type AuthContextApi = {
   user: User | null;
@@ -30,9 +30,6 @@ type AuthContextApi = {
 
 export const AuthContext = React.createContext<AuthContextApi | null>(null);
 
-// TODO: add proper DI service
-const authService = new GoogleAuthService();
-
 export const AuthenticationProvider: React.FC = ({ children }) => {
   const [
     state,
@@ -42,10 +39,12 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
     initialState,
     actions
   );
+  const auth = useAuth();
   const userService = useGetUserService();
+  const authService = useMemo(() => new GoogleAuthService(() => auth), []);
 
   useEffect(() => {
-    firebaseApp.auth().onAuthStateChanged(async (currentUser) => {
+    auth.onAuthStateChanged(async (currentUser) => {
       if (state.currentUser === null && currentUser) {
         // token = await currentUser.getIdToken();
 
@@ -100,20 +99,20 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         await authService.resetPassword(email);
       },
       async sendEmailVerification(): Promise<void> {
-        await authService.getCurrentUser()?.sendEmailVerification();
+        await authService.sendEmailVerifiedLink();
       },
       async verifyEmail(code: string): Promise<void> {
-        await firebaseApp.auth().applyActionCode(code);
+        await authService.confirmEmailVerify(code);
         emailVerified(true);
       },
       async confirmPasswordReset(code: string, email: string): Promise<void> {
-        await firebaseApp.auth().confirmPasswordReset(code, email);
+        await authService.finishResetPassword(code, email);
       },
       async signUp(form: {
         email: string;
         password: string;
       }): Promise<User | null> {
-        const user = await authService.signUp(form.email, form.password);
+        await authService.signUp(form.email, form.password);
         // const user = await userService.create({
         //   authProvider: AuthProviders.GoogleIdentityPlatform,
         //   authUserId: fbUser.user!.uid,
@@ -121,7 +120,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         //   name: form.email,
         // });
 
-        await user.sendEmailVerification();
+        await authService.sendEmailVerifiedLink();
         return null;
       },
       user: state.currentUser,

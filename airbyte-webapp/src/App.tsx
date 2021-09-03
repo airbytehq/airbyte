@@ -17,12 +17,15 @@ import {
   usePickFirstWorkspace,
 } from "hooks/services/useWorkspace";
 import { Feature, FeatureService } from "hooks/services/Feature";
-import { ServicesProvider, useApiServices } from "./core/servicesProvider";
+import { ServicesProvider } from "core/servicesProvider";
+import { useApiServices } from "core/defaultServices";
+import { envConfigProvider, windowConfigProvider } from "./config";
 import {
-  envConfigProvider,
-  windowConfigProvider,
-} from "./config/configProviders";
-import { Config, ConfigService, defaultConfig, ValueProvider } from "./config";
+  Config,
+  ConfigServiceProvider,
+  defaultConfig,
+  ValueProvider,
+} from "./config";
 
 function useCustomerIdProvider() {
   const workspace = useCurrentWorkspace();
@@ -68,16 +71,18 @@ const services = {
 
 const AppServices: React.FC = ({ children }) => (
   <ServicesProvider inject={services}>
-    <ConfigService defaultConfig={defaultConfig} providers={configProviders}>
-      <ServiceOverrides />
-      {children}
-    </ConfigService>
+    <ConfigServiceProvider
+      defaultConfig={defaultConfig}
+      providers={configProviders}
+    >
+      <ServiceOverrides>{children}</ServiceOverrides>
+    </ConfigServiceProvider>
   </ServicesProvider>
 );
 
-const ServiceOverrides: React.FC = React.memo(() => {
+const ServiceOverrides: React.FC = React.memo(({ children }) => {
   useApiServices();
-  return null;
+  return <>{children}</>;
 });
 
 const App: React.FC = () => {

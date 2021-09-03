@@ -1,15 +1,6 @@
 import React, { useContext, useEffect, useMemo } from "react";
 import { useMap } from "react-use";
 
-import { useConfig } from "config";
-
-import { SourceDefinitionService } from "./domain/connector/SourceDefinitionService";
-import { DestinationDefinitionService } from "./domain/connector/DestinationDefinitionService";
-import { getMiddlewares } from "./request/useRequestMiddlewareProvider";
-import { OperationService } from "./domain/connection";
-import { DeploymentService } from "./resources/DeploymentService";
-import { HealthService } from "./health/HealthService";
-
 type ServiceContainer = {
   [key: string]: Service;
 };
@@ -18,9 +9,9 @@ type Service = any;
 
 type ServicesProviderApi = {
   register(name: string, service: Service): void;
-  registerAll(newMap: ServiceContainer): void;
   getService<T>(serviceType: string): T;
   unregister(name: string): void;
+  registeredServices: ServiceContainer;
 };
 
 const ServicesProviderContext = React.createContext<ServicesProviderApi | null>(
@@ -31,18 +22,16 @@ export const ServicesProvider: React.FC<{ inject?: ServiceContainer }> = ({
   children,
   inject,
 }) => {
-  const [
-    registeredServices,
-    { remove, set, setAll },
-  ] = useMap<ServiceContainer>(inject);
+  const [registeredServices, { remove, set }] = useMap<ServiceContainer>(
+    inject
+  );
 
   const ctxValue = useMemo<ServicesProviderApi>(
     () => ({
       register: set,
-      registerAll: (newServices) =>
-        setAll({ ...registeredServices, ...newServices }),
       getService: (serviceType) => registeredServices[serviceType],
       unregister: remove,
+      registeredServices,
     }),
     [registeredServices]
   );
@@ -63,18 +52,26 @@ export type ServiceInject = [string, Service];
 const WithServiceInner: React.FC<{
   serviceInject: ServiceInject[];
 }> = ({ children, serviceInject }) => {
-  const { register, unregister } = useServicesProvider();
-
-  useEffect(() => {
-    serviceInject.forEach(([token, service]) => register(token, service));
-
-    return () => serviceInject.forEach(([token]) => unregister(token));
-  }, [register, unregister, serviceInject]);
+  useInjectServices(serviceInject);
 
   return <>{children}</>;
 };
 
-export const WithService = React.memo(WithServiceInner);
+export const WithService: React.FC<{
+  serviceInject: ServiceInject[];
+}> = React.memo(WithServiceInner);
+
+export function useInjectServices(serviceInject: ServiceContainer): void {
+  const { register, unregister } = useServicesProvider();
+
+  useEffect(() => {
+    Object.entries(serviceInject).forEach(([token, service]) =>
+      register(token, service)
+    );
+
+    return () => Object.keys(serviceInject).forEach(unregister);
+  }, [serviceInject]);
+}
 
 /**
  *
@@ -92,9 +89,12 @@ export const useServicesProvider = (): ServicesProviderApi => {
 };
 
 export function useGetService<T>(serviceToken: string): T {
-  const { getService } = useServicesProvider();
+  const { registeredServices } = useServicesProvider();
 
-  return getService<T>(serviceToken);
+  return useMemo(() => registeredServices[serviceToken], [
+    registeredServices,
+    serviceToken,
+  ]);
 }
 
 // This is workaround for rest-hooks
@@ -105,33 +105,3 @@ export function getService<T extends Service>(serviceId: string): T {
 }
 
 //
-
-export const useApiServices = (): void => {
-  const config = useConfig();
-  const { registerAll, unregister } = useServicesProvider();
-
-  useEffect(() => {
-    window._API_URL = config.apiUrl;
-  }, [config]);
-
-  useEffect(() => {
-    const middlewares = getMiddlewares();
-    const services = {
-      SourceDefinitionService: new SourceDefinitionService(
-        config.apiUrl,
-        middlewares
-      ),
-      DestinationDefinitionService: new DestinationDefinitionService(
-        config.apiUrl,
-        middlewares
-      ),
-      DeploymentService: new DeploymentService(config.apiUrl, middlewares),
-      OperationService: new OperationService(config.apiUrl, middlewares),
-      HealthService: new HealthService(config.apiUrl, middlewares),
-    };
-
-    registerAll(services);
-
-    return () => Object.keys(services).forEach(unregister);
-  }, [config]);
-};

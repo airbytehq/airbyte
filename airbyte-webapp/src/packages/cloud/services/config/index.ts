@@ -10,7 +10,10 @@ export function useConfig(): CloudConfig {
 
 const cloudConfigExtensionDefault: CloudConfigExtension = {
   cloudApiUrl: "",
-  firebase: {},
+  firebase: {
+    apiKey: "",
+    authDomain: "",
+  },
 };
 
 export const defaultConfig: CloudConfig = Object.assign(
@@ -18,3 +21,6 @@ export const defaultConfig: CloudConfig = Object.assign(
   coreDefaultConfig,
   cloudConfigExtensionDefault
 );
+
+export * from "./configProviders";
+export * from "./types";

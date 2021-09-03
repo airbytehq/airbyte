@@ -1,6 +1,6 @@
 import merge from "lodash.merge";
 import { ConfigProvider, DeepPartial, ValueProvider } from "./types";
-import { isDefined } from "../utils/common";
+import { isDefined } from "utils/common";
 
 const windowConfigProvider: ConfigProvider = async () => {
   return {
@@ -41,7 +41,11 @@ const envConfigProvider: ConfigProvider = async () => {
     },
     papercups: {
       accountId: process.env.REACT_APP_PAPERCUPS_ACCOUNT_ID,
-      enableStorytime: !process.env.REACT_APP_PAPERCUPS_DISABLE_STORYTIME,
+      enableStorytime: isDefined(
+        process.env.REACT_APP_PAPERCUPS_DISABLE_STORYTIME
+      )
+        ? !process.env.REACT_APP_PAPERCUPS_DISABLE_STORYTIME
+        : undefined,
     },
   };
 };

@@ -15,18 +15,21 @@ function WithAnalytics({
   workspaceId?: string;
 }) {
   const config = useConfig();
+
+  // segment section
   useSegment(config.segment.enabled ? config.segment.token : "");
   const analyticsService = useAnalytics();
-
   useEffect(() => {
     analyticsService.identify(customerId);
   }, [analyticsService, customerId]);
 
+  // openreplay section
   const tracker = useTracker(config.openreplay);
   useEffect(() => {
     tracker.userID(customerId);
   }, [tracker, customerId]);
 
+  // fullstory section
   const initializedFullstory = useFullStory(config.fullstory);
   useEffect(() => {
     if (initializedFullstory) {

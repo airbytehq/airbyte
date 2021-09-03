@@ -1,8 +1,9 @@
 import React, { useContext, useMemo } from "react";
 import { useAsync } from "react-use";
 
+import { LoadingPage } from "components";
+
 import { Config, ValueProvider } from "./types";
-import { LoadingPage } from "../components";
 import { applyProviders } from "./configProviders";
 
 type ConfigContext<T extends Config = Config> = {
@@ -42,7 +43,7 @@ const ConfigServiceInner: React.FC<{
   );
 };
 
-export const ConfigService: React.FC<{
+export const ConfigServiceProvider: React.FC<{
   defaultConfig: Config;
   providers: ValueProvider<Config>;
 }> = React.memo(ConfigServiceInner);

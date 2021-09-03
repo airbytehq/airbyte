@@ -1,3 +1,4 @@
 export * from "./defaultConfig";
-export * from "./ConfigService";
+export * from "./configProviders";
+export * from "./ConfigServiceProvider";
 export * from "./types";

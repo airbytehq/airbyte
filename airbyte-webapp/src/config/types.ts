@@ -41,10 +41,11 @@ export type DeepPartial<T> = {
   [P in keyof T]+?: DeepPartial<T[P]>;
 };
 
-export type Provider<T> = () => Promise<T>;
+export type ProviderAsync<T> = () => Promise<T>;
+export type Provider<T> = () => T;
 
-export type ValueProvider<T> = Provider<DeepPartial<T>>[];
+export type ValueProvider<T> = ProviderAsync<DeepPartial<T>>[];
 
-export type ConfigProvider<T extends Config = Config> = Provider<
+export type ConfigProvider<T extends Config = Config> = ProviderAsync<
   DeepPartial<T>
 >;
