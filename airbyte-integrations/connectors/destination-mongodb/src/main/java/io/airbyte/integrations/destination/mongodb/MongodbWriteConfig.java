@@ -70,4 +70,5 @@ class MongodbWriteConfig {
   public Set<Integer> getDocumentsHash() {
     return documentsHash;
   }
+
 }
