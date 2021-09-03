@@ -61,29 +61,25 @@ class AsyncStream(Stream, ABC):
 
     @property
     def job_sleep_intervals(self) -> Iterable[duration]:
+        """Sleep interval, also represents max number of retries"""
         return [duration(seconds=secs) for secs in list(range(5)) * 2]
 
     def print(self, *args):
         print(self.name, *args)
 
-    @abstractmethod
-    async def create_job(self, stream_slice) -> Any:
-        """"""
-        self.print("creating job")
-        await asyncio.sleep(2)
-        self.print("job created")
-        return {"id": 123}
-
+    @backoff_policy
     async def create_and_wait(self, stream_slice):
+        """Single wait routing because we would like to re-create job in case its result is fail"""
         job = await self.create_job(stream_slice)
         await self.wait_for_job(job)
 
     @abstractmethod
     async def check_job_status(self, job) -> bool:
-        """"""
+        """Something that will tell if job was successful"""
 
     @backoff_policy
     async def wait_for_job(self, job):
+        """Actual waiting for job to finish"""
         self.print("waiting job", job)
         start_time = pendulum.now()
         for sleep_interval in self.job_sleep_intervals:
@@ -102,11 +98,12 @@ class AsyncStream(Stream, ABC):
 
     @abstractmethod
     async def fetch_job_result(self, job):
-        """"""
+        """Reading job result, separate function because we want this to happen after we retrieved jobs in particular order"""
 
     @abstractmethod
     async def stream_slices(self, **kwargs):
-        """"""
+        """Required to be async by aiostream lib in order to use stream.map"""
+        yield None
 
 
 class AdsInsights(AsyncStream, FBMarketingIncrementalStream):
