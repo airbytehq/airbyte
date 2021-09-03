@@ -23,6 +23,7 @@ Expand the relevant checklist and delete the others.
 - [ ] Code reviews completed
 - [ ] Documentation updated 
     - [ ] Connector's `README.md`
+    - [ ] Connector's `bootstrap.md`. See [description and examples](https://docs.google.com/document/d/1ypdgmwmEHWv-TrO4_YOQ7pAJGVrMp5BOkEVh831N260/edit?usp=sharing)
     - [ ] `docs/SUMMARY.md`
     - [ ] `docs/integrations/<source or destination>/<name>.md` including changelog. See changelog [example](https://docs.airbyte.io/integrations/sources/stripe#changelog)
     - [ ] `docs/integrations/README.md`
@@ -55,6 +56,7 @@ If this is a community PR, the Airbyte engineer reviewing this PR is responsible
 - [ ] Code reviews completed
 - [ ] Documentation updated 
     - [ ] Connector's `README.md`
+    - [ ] Connector's `bootstrap.md`. See [description and examples](https://docs.google.com/document/d/1ypdgmwmEHWv-TrO4_YOQ7pAJGVrMp5BOkEVh831N260/edit?usp=sharing)
     - [ ] Changelog updated in `docs/integrations/<source or destination>/<name>.md` including changelog. See changelog [example](https://docs.airbyte.io/integrations/sources/stripe#changelog)
 - [ ] PR name follows [PR naming conventions](https://docs.airbyte.io/contributing-to-airbyte/updating-documentation#issues-and-pull-requests)
 - [ ] Connector version bumped like described [here](https://docs.airbyte.io/connector-development#publishing-a-connector)
