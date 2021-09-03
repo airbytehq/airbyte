@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y jq sshpass
 
 WORKDIR /airbyte
 COPY entrypoint.sh .
+COPY ssh/sshtunneling.sh .
 
 WORKDIR /airbyte/normalization_code
 COPY normalization ./normalization

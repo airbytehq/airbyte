@@ -58,50 +58,6 @@ function configuredbt() {
   fi
 }
 
-# This function opens an ssh tunnel if required using values provided in config.
-function openssh() {
-  tunnel_method=$(cat ${CONFIG_FILE} | jq -r '.tunnel_method.tunnel_method' | tr '[:lower:]' '[:upper:]')
-  tunnel_username=$(cat ${CONFIG_FILE} | jq -r '.tunnel_method.tunnel_username')
-  tunnel_localport=$(cat ${CONFIG_FILE} | jq -r '.tunnel_method.tunnel_local_port')
-  tunnel_db_remote_host=$(cat ${CONFIG_FILE} | jq -r '.tunnel_method.tunnel_db_remote_host')
-  tunnel_db_remote_port=$(cat ${CONFIG_FILE} | jq -r '.tunnel_method.tunnel_db_remote_port')
-  tunnel_host=$(cat ${CONFIG_FILE} | jq -r '.tunnel_method.tunnel_host')
-  # set a path for a control socket, allowing us to close this specific ssh connection when desired
-  tmpcontrolsocket="/tmp/sshsocket${tunnel_db_remote_port}-${RANDOM}"
-  if [[ ${tunnel_method} = "SSH_KEY_AUTH" ]] ; then
-    echo "Detected tunnel method SSH_KEY_AUTH for normalization"
-    # create a temporary file to hold ssh key with non-descript + random name and trap to delete on EXIT
-    trap 'rm -f "$tmpkeyfile"' EXIT
-    tmpkeyfile=$(mktemp /tmp/xyzfile.XXXXXXXXXXX) || exit 1
-    echo "$(cat ${CONFIG_FILE} | jq -r '.tunnel_method.tunnel_user_ssh_key')" > $tmpkeyfile
-    # -f=background  -N=no remote command  -M=master mode  StrictHostKeyChecking=no auto-adds host
-    echo "Running: ssh -f -N -M -o StrictHostKeyChecking=no -S {control socket} -i {key file} -l ${tunnel_username} -L ${tunnel_localport}:${tunnel_db_remote_host}:${tunnel_db_remote_port} ${tunnel_host}"
-    ssh -f -N -M -o StrictHostKeyChecking=no -S $tmpcontrolsocket -i $tmpkeyfile -l ${tunnel_username} -L ${tunnel_localport}:${tunnel_db_remote_host}:${tunnel_db_remote_port} ${tunnel_host} &&
-    echo "ssh tunnel opened"
-    rm -f $tmpkeyfile
-    sshopen="yes"
-  elif [[ ${tunnel_method} = "SSH_PASSWORD_AUTH" ]] ; then
-    echo "Detected tunnel method SSH_PASSWORD_AUTH for normalization"
-    # put ssh password in env var for use in sshpass. Better than directly passing with -p
-    export SSHPASS=$(cat ${CONFIG_FILE} | jq -r '.tunnel_method.tunnel_userpass')
-    echo "Running: sshpass -e ssh -f -N -M -o StrictHostKeyChecking=no -S {control socket} -l ${tunnel_username} -L ${tunnel_localport}:${tunnel_db_remote_host}:${tunnel_db_remote_port} ${tunnel_host}"
-    sshpass -e ssh -f -N -M -o StrictHostKeyChecking=no -S $tmpcontrolsocket -l ${tunnel_username} -L ${tunnel_localport}:${tunnel_db_remote_host}:${tunnel_db_remote_port} ${tunnel_host} &&
-    echo "ssh tunnel opened"
-    sshopen="yes"
-  fi
-}
-
-# This function checks if $sshopen variable has been set and if so, closes the ssh open via $tmpcontrolsocket
-# This only works after calling openssh()
-function closessh() {
-  # $sshopen $tmpcontrolsocket comes from openssh() function
-  if [ ! -z "$sshopen" ] ; then
-    ssh -S $tmpcontrolsocket -O exit ${tunnel_host} &&
-    echo "closed ssh tunnel"
-    trap 'rm -f "$tmpcontrolsocket"' EXIT
-  fi
-}
-
 ## todo: make it easy to select source or destination and validate based on selection by adding an integration type env variable.
 function main() {
   CMD="$1"
@@ -137,16 +93,15 @@ function main() {
 
   case "$CMD" in
   run)
-    openssh
     configuredbt
+    . /airbyte/sshtunneling.sh
+    openssh $CONFIG_FILE
     # Run dbt to compile and execute the generated normalization models
     dbt run --profiles-dir "${PROJECT_DIR}" --project-dir "${PROJECT_DIR}"
     closessh
     ;;
   configure-dbt)
-    openssh
     configuredbt
-    closessh
     ;;
   *)
     error "Unknown command: $CMD"

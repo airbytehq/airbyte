@@ -37,6 +37,19 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-workers')
 }
 
+sourceSets {
+    main {
+        resources {
+            srcDirs "src/main/resources", "../airbyte-integrations/bases/base-normalization/ssh"
+        }
+    }
+    test {
+        resources {
+            srcDirs "src/main/resources", "../airbyte-integrations/bases/base-normalization/ssh"
+        }
+    }
+}
+
 jsonSchema2Pojo {
     sourceType = SourceType.YAMLSCHEMA
     source = files("${sourceSets.main.output.resourcesDir}/workers_models")
