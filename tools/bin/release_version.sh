@@ -19,7 +19,7 @@ if [[ -z "${DOCKER_PASSWORD}" ]]; then
   exit 1;
 fi
 
-docker login -u airbytebot -p $DOCKER_PASSWORD
+docker login -u airbytebot -p "${DOCKER_PASSWORD}"
 
 PREV_VERSION=$(grep VERSION .env | cut -d"=" -f2)
 
