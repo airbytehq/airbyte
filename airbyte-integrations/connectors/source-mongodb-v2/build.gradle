@@ -19,6 +19,6 @@ dependencies {
     testImplementation "org.testcontainers:mongodb:1.15.3"
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mongodb-new')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mongodb-v2')
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }
