@@ -2,7 +2,9 @@
 
 ## Overview
 
-The Salesforce source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+The Salesforce source supports both `Full Refresh` and `Incremental` syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+
+The Connector supports `Custom Fields` for each of their available streams
 
 ### Output schema
 
