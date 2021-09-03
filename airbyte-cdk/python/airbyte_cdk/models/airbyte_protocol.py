@@ -103,6 +103,25 @@ class DestinationSyncMode(Enum):
     append_dedup = "append_dedup"
 
 
+class OAuth2Specification(BaseModel):
+    oauthFlowInitParameters: Optional[List[List[str]]] = Field(
+        None,
+        description="Pointers to the fields in the ConnectorSpecification which are needed to obtain the initial refresh/access tokens for the OAuth flow. Each inner array represents the path in the ConnectorSpecification of the referenced field. For example. Assume the ConnectorSpecification contains params 'app_secret', 'app_id' which are needed to get the initial refresh token. If they are not nested in the config, then the array would look like this [['app_secret'], ['app_id']] If they are nested inside, say, an object called 'auth_params' then this array would be [['auth_params', 'app_secret'], ['auth_params', 'app_id']]",
+    )
+
+
+class AuthType(Enum):
+    oauth2_0 = "oauth2.0"
+
+
+class AuthSpecification(BaseModel):
+    auth_type: Optional[AuthType] = None
+    oauth2Specification: Optional[OAuth2Specification] = Field(
+        None,
+        description="If the connector supports OAuth, this field should be non-null.",
+    )
+
+
 class ConnectorSpecification(BaseModel):
     class Config:
         extra = Extra.allow
@@ -119,6 +138,7 @@ class ConnectorSpecification(BaseModel):
     supported_destination_sync_modes: Optional[List[DestinationSyncMode]] = Field(
         None, description="List of destination sync modes supported by the connector"
     )
+    authSpecification: Optional[AuthSpecification] = None
 
 
 class AirbyteStream(BaseModel):
