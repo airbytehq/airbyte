@@ -22,11 +22,11 @@ jobs:
       - name: Release Airbyte
         id: release_airbyte
         env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           PART_TO_BUMP: ${{ github.event.inputs.partToBump }}
           CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
           CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
         run: |
-          docker login -u airbytebot -p ${{ secrets.DOCKER_PASSWORD }}
           ./tools/bin/release_version.sh
       - name: Save New Version
         id: new_version
