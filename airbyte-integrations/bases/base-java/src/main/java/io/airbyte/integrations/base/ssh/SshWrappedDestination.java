@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.jdbc;
+package io.airbyte.integrations.base.ssh;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -30,23 +30,29 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.SshTunnel;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
  * Decorates a Destination with an SSH Tunnel using the standard configuration that Airbyte uses for
  * configuring SSH.
  */
-public class SshWrappedJdbcDestination implements Destination {
+public class SshWrappedDestination implements Destination {
 
   private final Destination delegate;
+  private final List<String> hostKey;
+  private final List<String> portKey;
 
-  public SshWrappedJdbcDestination(final Destination delegate) {
+  public SshWrappedDestination(final Destination delegate,
+                               final List<String> hostKey,
+                               final List<String> portKey) {
     this.delegate = delegate;
+    this.hostKey = hostKey;
+    this.portKey = portKey;
   }
 
   @Override
@@ -60,7 +66,7 @@ public class SshWrappedJdbcDestination implements Destination {
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
-    return SshTunnel.sshWrap(config, () -> delegate.check(config));
+    return SshTunnel.sshWrap(config, hostKey, portKey, delegate::check);
   }
 
   @Override
@@ -68,8 +74,8 @@ public class SshWrappedJdbcDestination implements Destination {
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
-    final SshTunnel sshTunnel = SshTunnel.getInstance(config);
-    return AirbyteMessageConsumer.appendOnClose(delegate.getConsumer(config, catalog, outputRecordCollector), sshTunnel::close);
+    final SshTunnel tunnel = SshTunnel.getInstance(config, hostKey, portKey);
+    return AirbyteMessageConsumer.appendOnClose(delegate.getConsumer(tunnel.getConfigInTunnel(), catalog, outputRecordCollector), tunnel::close);
   }
 
 }
