@@ -148,6 +148,12 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
+  protected List<TableInfo<CommonField<BsonType>>> discoverInternal(MongoDatabase database, String schema) throws Exception {
+    // MondoDb doesn't support schemas
+    return discoverInternal(database);
+  }
+
+  @Override
   protected Map<String, List<String>> discoverPrimaryKeys(MongoDatabase database,
       List<TableInfo<CommonField<BsonType>>> tableInfos) {
     return tableInfos.stream()

@@ -48,39 +48,39 @@ public abstract class AbstractRelationalDbSource<DataType, Database extends SqlD
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRelationalDbSource.class);
 
   @Override
-  public AutoCloseableIterator<JsonNode> queryTableFullRefresh(Database database,
-                                                               List<String> columnNames,
-                                                               String schemaName,
-                                                               String tableName) {
+  public AutoCloseableIterator<JsonNode> queryTableFullRefresh(final Database database,
+      final List<String> columnNames,
+      final String schemaName,
+      final String tableName) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return queryTable(database, String.format("SELECT %s FROM %s",
         enquoteIdentifierList(columnNames),
         getFullTableName(schemaName, tableName)));
   }
 
-  protected String getIdentifierWithQuoting(String identifier) {
+  protected String getIdentifierWithQuoting(final String identifier) {
     return getQuoteString() + identifier + getQuoteString();
   }
 
-  protected String enquoteIdentifierList(List<String> identifiers) {
+  protected String enquoteIdentifierList(final List<String> identifiers) {
     final StringJoiner joiner = new StringJoiner(",");
-    for (String identifier : identifiers) {
+    for (final String identifier : identifiers) {
       joiner.add(getIdentifierWithQuoting(identifier));
     }
     return joiner.toString();
   }
 
-  protected String getFullTableName(String nameSpace, String tableName) {
+  protected String getFullTableName(final String nameSpace, final String tableName) {
     return (nameSpace == null || nameSpace.isEmpty() ? getIdentifierWithQuoting(tableName)
         : getIdentifierWithQuoting(nameSpace) + "." + getIdentifierWithQuoting(tableName));
   }
 
-  protected AutoCloseableIterator<JsonNode> queryTable(Database database, String sqlQuery) {
+  protected AutoCloseableIterator<JsonNode> queryTable(final Database database, final String sqlQuery) {
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
         final Stream<JsonNode> stream = database.query(sqlQuery);
         return AutoCloseableIterators.fromStream(stream);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new RuntimeException(e);
       }
     });

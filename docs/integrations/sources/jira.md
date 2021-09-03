@@ -63,7 +63,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 | Feature | Supported? |  |
 | :--- | :--- | :--- 
 | Full Refresh Sync | Yes |  |
-| Incremental Sync | Yes | Only Issues and Issue worklogs |
+| Incremental Sync | Yes | Only Issues |
 | Replicate Incremental Deletes | Coming soon | |
 | SSL connection | Yes |  |
 | Namespaces | No |  |
@@ -88,7 +88,9 @@ Please follow the [Jira confluence for generating an API token](https://confluen
 
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
-| 0.2.7 | 2021-07-28 | [#4947](https://github.com/airbytehq/airbyte/pull/4947) | Source Jira: fixing schemas accordinately to response.
+| 0.2.10 | 2021-09-02 | [#5523](https://github.com/airbytehq/airbyte/pull/5523) | Rollback to swagger schemas with fixing incorrect.
+| 0.2.9 | 2021-07-28 | [#5426](https://github.com/airbytehq/airbyte/pull/5426) | Changed cursor field from fields.created to fields.updated for Issues stream. Made Issues worklogs stream full refresh.
+| 0.2.8 | 2021-07-28 | [#4947](https://github.com/airbytehq/airbyte/pull/4947) | Source Jira: fixing schemas accordinately to response.
 | 0.2.7 | 2021-07-19 | [#4817](https://github.com/airbytehq/airbyte/pull/4817) | Fixed `labels` schema properties issue. |
 | 0.2.6 | 2021-06-15 | [#4113](https://github.com/airbytehq/airbyte/pull/4113) | Fixed `user` stream with the correct endpoint and query param. |
 | 0.2.5 | 2021-06-09 | [#3973](https://github.com/airbytehq/airbyte/pull/3973) | Added `AIRBYTE_ENTRYPOINT` in base Docker image for Kubernetes support. |
