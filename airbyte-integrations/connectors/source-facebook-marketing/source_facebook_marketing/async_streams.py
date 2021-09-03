@@ -23,7 +23,6 @@
 #
 
 import asyncio
-from functools import cached_property
 
 import pendulum
 from pendulum import duration
@@ -241,3 +240,24 @@ class AdsInsights(AsyncStream, FBMarketingIncrementalStream):
             yield {
                 "time_range": {"since": since.to_date_string(), "until": until.to_date_string()},
             }
+
+
+class AdsInsightsAgeAndGender(AdsInsights):
+    breakdowns = ["age", "gender"]
+
+
+class AdsInsightsCountry(AdsInsights):
+    breakdowns = ["country"]
+
+
+class AdsInsightsRegion(AdsInsights):
+    breakdowns = ["region"]
+
+
+class AdsInsightsDma(AdsInsights):
+    breakdowns = ["dma"]
+
+
+class AdsInsightsPlatformAndDevice(AdsInsights):
+    breakdowns = ["publisher_platform", "platform_position", "impression_device"]
+    action_breakdowns = ["action_type"]  # FB Async Job fails for unknown reason if we set other breakdowns

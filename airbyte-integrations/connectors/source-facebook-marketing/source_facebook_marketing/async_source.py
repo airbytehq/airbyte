@@ -26,7 +26,7 @@ import asyncio
 
 from aiostream import stream as aio_stream
 import copy
-from typing import Any, Mapping, MutableMapping, Iterator, List, Type
+from typing import Any, Mapping, MutableMapping, Iterator, List
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
@@ -40,6 +40,7 @@ from airbyte_cdk.sources.streams import Stream
 from source_facebook_marketing.streams import Campaigns, AdSets
 from source_facebook_marketing.source import ConnectorConfig
 from source_facebook_marketing.api import API
+from source_facebook_marketing.async_streams import AdsInsights, AdsInsightsAgeAndGender
 
 
 def iter_over_async(async_iterator, loop) -> Iterator:
@@ -65,15 +66,10 @@ class AsyncSource(AbstractSource):
     """
 
     def sync_streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        config: ConnectorConfig = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
-        api = API(account_id=config.account_id, access_token=config.access_token)
-        return [
-            Campaigns(api=api, start_date=config.start_date, include_deleted=config.include_deleted),
-            AdSets(api=api, start_date=config.start_date, include_deleted=config.include_deleted),
-        ]
+        return []
 
     def async_streams(self, config: Mapping[str, Any]):
-        return [(), DummyAsyncStream()]
+        return []
 
     def streams(self, config):
         return [*self.sync_streams(config), *self.async_streams(config)]
@@ -102,3 +98,30 @@ class AsyncSource(AbstractSource):
         async for job in stream.map(stream.stream_slices(), stream.create_and_wait, task_limit=stream.task_limit, ordered=True):
             async for record in stream.read_records(job):
                 yield record
+
+
+class FBSource(AsyncSource):
+    def sync_streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        config: ConnectorConfig = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
+        api = API(account_id=config.account_id, access_token=config.access_token)
+        classes = [Campaigns, AdSets]
+        instances = [
+            cls(api=api, start_date=config.start_date, include_deleted=config.include_deleted,)
+            for cls in classes
+        ]
+        return instances
+
+    def async_streams(self, config: Mapping[str, Any]):
+        config: ConnectorConfig = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
+        api = API(account_id=config.account_id, access_token=config.access_token)
+        classes = [AdsInsightsAgeAndGender, AdsInsights]
+        instances = [
+            cls(
+                api=api,
+                start_date=config.start_date,
+                buffer_days=config.insights_lookback_window,
+                days_per_job=config.insights_days_per_job,
+            )
+            for cls in classes
+        ]
+        return instances
