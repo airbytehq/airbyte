@@ -35,6 +35,16 @@
         "description": "Password associated with the username.",
         "type": "string",
         "airbyte_secret": true
+      },
+      "schemas": {
+        "title": "Schemas",
+        "description": "List of schemas to sync from. Defaults to user. Case sensitive.",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "minItems": 1,
+        "uniqueItems": true
       }
     }
   }

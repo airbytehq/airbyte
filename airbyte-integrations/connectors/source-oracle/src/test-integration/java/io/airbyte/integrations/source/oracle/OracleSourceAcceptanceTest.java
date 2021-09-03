@@ -64,6 +64,7 @@ public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("sid", container.getSid())
         .put("username", container.getUsername())
         .put("password", container.getPassword())
+        .put("schemas", List.of("JDBC_SPACE"))
         .build());
 
     JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
