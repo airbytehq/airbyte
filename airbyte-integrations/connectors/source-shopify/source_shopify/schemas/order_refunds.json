@@ -14,15 +14,13 @@
             "type": ["null", "integer"]
           },
           "tax_amount": {
-            "type": ["null", "number"],
-            "multipleOf": 1e-10
+            "type": ["null", "number"]
           },
           "refund_id": {
             "type": ["null", "integer"]
           },
           "amount": {
-            "type": ["null", "number"],
-            "multipleOf": 1e-10
+            "type": ["null", "number"]
           },
           "kind": {
             "type": ["null", "string"]

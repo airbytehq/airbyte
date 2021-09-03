@@ -33,6 +33,7 @@ from typing import Iterable, List
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, Status, Type
 from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
 
 logger = AirbyteLogger()
 
@@ -80,14 +81,21 @@ class AirbyteEntrypoint(object):
             raise Exception("No command passed")
 
         # todo: add try catch for exceptions with different exit codes
+        source_spec = self.source.spec(logger)
 
         with tempfile.TemporaryDirectory() as temp_dir:
             if cmd == "spec":
-                message = AirbyteMessage(type=Type.SPEC, spec=self.source.spec(logger))
+                message = AirbyteMessage(type=Type.SPEC, spec=source_spec)
                 yield message.json(exclude_unset=True)
             else:
                 raw_config = self.source.read_config(parsed_args.config)
                 config = self.source.configure(raw_config, temp_dir)
+                # Remove internal flags from config before validating so
+                # jsonschema's additionalProperties flag wont fail the validation
+                config, internal_config = split_config(config)
+                check_config_against_spec_or_exit(config, source_spec, logger)
+                # Put internal flags back to config dict
+                config.update(internal_config.dict())
 
                 if cmd == "check":
                     check_result = self.source.check(logger, config)
