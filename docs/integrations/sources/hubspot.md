@@ -73,7 +73,7 @@ This connector supports only authentication with API Key. To obtain API key for 
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.12   | 2021-09-04 | [](https://github.com/airbytehq/airbyte/pull/) | Fixed array fields without items property in schema |
+| 0.1.12   | 2021-09-04 | [5834](https://github.com/airbytehq/airbyte/pull/5834) | Fixed array fields without items property in schema |
 | 0.1.11   | 2021-08-26 | [5463](https://github.com/airbytehq/airbyte/pull/5463) | Remove all date-time format from schemas |
 | 0.1.10   | 2021-08-17 | [5463](https://github.com/airbytehq/airbyte/pull/5463) | Fix fail on reading stream using `API Key` without required permissions |
 | 0.1.9   | 2021-08-11 | [5334](https://github.com/airbytehq/airbyte/pull/5334) | Fix empty strings inside float datatype |
