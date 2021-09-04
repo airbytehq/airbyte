@@ -338,8 +338,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       }
 
       if (!connectorRepositoryToIdVersionMap.containsKey(repository)) {
-        writeConfig(configType, configType.getId(latestDefinition), latestDefinition);
-        newCount += 1;
+        newCount += insertConfigRecord(ctx, timestamp, configType.name(), configJson, configType.getIdFieldName());
         continue;
       }
 
