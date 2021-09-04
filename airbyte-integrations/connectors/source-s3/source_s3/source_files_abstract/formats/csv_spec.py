@@ -28,13 +28,14 @@ from pydantic import BaseModel, Field
 
 
 class CsvFormat(BaseModel):
+    'This connector utilises <a href="https: // arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html" target="_blank">PyArrow (Apache Arrow)</a> for CSV parsing.'
+
     class Config:
         title = "csv"
 
     filetype: str = Field(
         Config.title,
         const=True,
-        descriptions='This connector utilises <a href="https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html" target="_blank">PyArrow (Apache Arrow)</a> for CSV parsing.',
     )
 
     delimiter: str = Field(

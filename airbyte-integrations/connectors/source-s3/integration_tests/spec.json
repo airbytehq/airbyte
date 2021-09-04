@@ -32,15 +32,16 @@
       "format": {
         "title": "Format",
         "default": "csv",
+        "type": "object",
         "oneOf": [
           {
             "title": "csv",
+            "description": "This connector utilises <a href=\"https: // arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html\" target=\"_blank\">PyArrow (Apache Arrow)</a> for CSV parsing.",
             "type": "object",
             "properties": {
               "filetype": {
                 "title": "Filetype",
                 "const": "csv",
-                "descriptions": "This connector utilises <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html\" target=\"_blank\">PyArrow (Apache Arrow)</a> for CSV parsing.",
                 "type": "string"
               },
               "delimiter": {
@@ -97,17 +98,17 @@
           },
           {
             "title": "parquet",
+            "description": "This connector utilises <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html\" target=\"_blank\">PyArrow (Apache Arrow)</a> for Parquet parsing.",
             "type": "object",
             "properties": {
               "filetype": {
                 "title": "Filetype",
-                "description": "This connector utilises <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html\" target=\"_blank\">PyArrow (Apache Arrow)</a> for Parquet parsing.",
                 "const": "parquet",
                 "type": "string"
               },
               "buffer_size": {
                 "title": "Buffer Size",
-                "description": "Perform read buffering when deserializing individual column chunks. By default a file will be loaded fully to memory. This option can help to optimize a work with memory if your data is particularly wide or failing during detection of OOM errors.",
+                "description": "Perform read buffering when deserializing individual column chunks. By default every group column will be loaded fully to memory. This option can help to optimize a work with memory if your data is particularly wide or failing during detection of OOM errors.",
                 "default": 0,
                 "type": "integer"
               },
@@ -127,8 +128,7 @@
               }
             }
           }
-        ],
-        "type": "object"
+        ]
       },
       "provider": {
         "title": "S3: Amazon Web Services",

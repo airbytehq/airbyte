@@ -28,14 +28,12 @@ from pydantic import BaseModel, Field
 
 
 class ParquetFormat(BaseModel):
+    'This connector utilises <a href="https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html" target="_blank">PyArrow (Apache Arrow)</a> for Parquet parsing.'
+
     class Config:
         title = "parquet"
 
-    filetype: str = Field(
-        Config.title,
-        const=True,
-        description='This connector utilises <a href="https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html" target="_blank">PyArrow (Apache Arrow)</a> for Parquet parsing.',
-    )
+    filetype: str = Field(Config.title, const=True)
 
     buffer_size: int = Field(
         default=0,
