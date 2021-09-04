@@ -380,6 +380,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             (c1, c2) -> {
               AirbyteVersion v1 = new AirbyteVersion(c1.dockerImageTag);
               AirbyteVersion v2 = new AirbyteVersion(c2.dockerImageTag);
+              LOGGER.warn("Duplicated connector version found: {} ({}) vs {} ({})",
+                  c1.dockerImageTag, c1.connectorDefinitionId, c2.dockerImageTag, c2.connectorDefinitionId);
               int comparison = v1.patchVersionCompareTo(v2);
               if (comparison >= 0) {
                 return c1;
