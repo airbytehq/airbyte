@@ -123,8 +123,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
   @Override
   public <T> void writeConfig(AirbyteConfig configType, String configId, T config) throws IOException {
-    LOGGER.info("Upserting {} record {}", configType, configId);
-
     database.transaction(ctx -> {
       boolean isExistingConfig = ctx.fetchExists(select()
           .from(AIRBYTE_CONFIGS)
@@ -133,15 +131,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       OffsetDateTime timestamp = OffsetDateTime.now();
 
       if (isExistingConfig) {
-        int updateCount = updateConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(config), configId);
-        if (updateCount != 0 && updateCount != 1) {
-          LOGGER.warn("{} config {} has been updated; updated record count: {}", configType, configId, updateCount);
-        }
+        updateConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(config), configId);
       } else {
-        int insertionCount = insertConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(config), configType.getIdFieldName());
-        if (insertionCount != 1) {
-          LOGGER.warn("{} config {} has been inserted; insertion record count: {}", configType, configId, insertionCount);
-        }
+        insertConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(config), configType.getIdFieldName());
       }
 
       return null;
@@ -211,7 +203,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         : configJson.get(idFieldName).asText();
     LOGGER.info("Inserting {} record {}", configType, configId);
 
-    return ctx.insertInto(AIRBYTE_CONFIGS)
+    int insertionCount = ctx.insertInto(AIRBYTE_CONFIGS)
         .set(AIRBYTE_CONFIGS.CONFIG_ID, configId)
         .set(AIRBYTE_CONFIGS.CONFIG_TYPE, configType)
         .set(AIRBYTE_CONFIGS.CONFIG_BLOB, JSONB.valueOf(Jsons.serialize(configJson)))
@@ -220,6 +212,10 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .onConflict(AIRBYTE_CONFIGS.CONFIG_TYPE, AIRBYTE_CONFIGS.CONFIG_ID)
         .doNothing()
         .execute();
+    if (insertionCount != 1) {
+      LOGGER.warn("{} config {} already exists (insertion record count: {})", configType, configId, insertionCount);
+    }
+    return insertionCount;
   }
 
   /**
@@ -229,11 +225,15 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   int updateConfigRecord(DSLContext ctx, OffsetDateTime timestamp, String configType, JsonNode configJson, String configId) {
     LOGGER.info("Updating {} record {}", configType, configId);
 
-    return ctx.update(AIRBYTE_CONFIGS)
+    int updateCount = ctx.update(AIRBYTE_CONFIGS)
         .set(AIRBYTE_CONFIGS.CONFIG_BLOB, JSONB.valueOf(Jsons.serialize(configJson)))
         .set(AIRBYTE_CONFIGS.UPDATED_AT, timestamp)
         .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(configType), AIRBYTE_CONFIGS.CONFIG_ID.eq(configId))
         .execute();
+    if (updateCount != 1) {
+      LOGGER.warn("{} config {} is not updated (updated record count: {})", configType, configId, updateCount);
+    }
+    return updateCount;
   }
 
   @VisibleForTesting

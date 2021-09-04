@@ -156,12 +156,13 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
         .withSourceDefinitionId(definitionId)
         .withDockerRepository(connectorRepository)
         .withDockerImageTag("0.1.2");
-    database.query(ctx -> configPersistence.insertConfigRecord(
+    int insertionCount = database.query(ctx -> configPersistence.insertConfigRecord(
         ctx,
         timestamp,
         ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
         Jsons.jsonNode(source1),
         ConfigSchema.STANDARD_SOURCE_DEFINITION.getIdFieldName()));
+    assertEquals(1, insertionCount);
     // write an irrelevant source to make sure that it is not changed
     writeSource(configPersistence, SOURCE_GITHUB);
     assertRecordCount(2);
@@ -173,12 +174,13 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
         .withSourceDefinitionId(definitionId)
         .withDockerRepository(connectorRepository)
         .withDockerImageTag("0.1.5");
-    database.query(ctx -> configPersistence.insertConfigRecord(
+    insertionCount = database.query(ctx -> configPersistence.insertConfigRecord(
         ctx,
         timestamp,
         ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
         Jsons.jsonNode(source2),
         ConfigSchema.STANDARD_SOURCE_DEFINITION.getIdFieldName()));
+    assertEquals(0, insertionCount);
     assertRecordCount(2);
     assertHasSource(source1);
     assertHasSource(SOURCE_GITHUB);
