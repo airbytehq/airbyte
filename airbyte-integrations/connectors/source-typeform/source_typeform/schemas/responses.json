@@ -100,13 +100,13 @@
               "ids": {
                 "type": ["null", "array"],
                 "items": {
-                    "type": ["null", "string"]
+                  "type": ["null", "string"]
                 }
               },
               "labels": {
                 "type": ["null", "array"],
                 "items": {
-                    "type": ["null", "string"]
+                  "type": ["null", "string"]
                 }
               }
             }
