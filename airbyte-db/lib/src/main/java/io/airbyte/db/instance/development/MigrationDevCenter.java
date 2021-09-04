@@ -62,6 +62,11 @@ public abstract class MigrationDevCenter {
     return container;
   }
 
+  /**
+   * Directory under which a new migration will be created. This should match the database's name and match the {@link Db} enum.
+   */
+  protected abstract String getMigrationDirectory();
+
   protected abstract FlywayDatabaseMigrator getMigrator(Database database);
 
   protected abstract Database getDatabase(PostgreSQLContainer<?> container) throws IOException;
@@ -69,7 +74,7 @@ public abstract class MigrationDevCenter {
   private void createMigration() {
     try (PostgreSQLContainer<?> container = createContainer(); Database database = getDatabase(container)) {
       FlywayDatabaseMigrator migrator = getMigrator(database);
-      MigrationDevHelper.createNextMigrationFile("configs", migrator);
+      MigrationDevHelper.createNextMigrationFile(getMigrationDirectory(), migrator);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
