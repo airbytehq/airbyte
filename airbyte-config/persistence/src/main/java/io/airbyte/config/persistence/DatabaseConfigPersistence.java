@@ -327,7 +327,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                                                           AirbyteConfig configType,
                                                           List<T> latestDefinitions,
                                                           Set<String> connectorRepositoriesInUse,
-                                                          Map<String, ConnectorInfo> connectorRepositoryToIdVersionMap) throws IOException {
+                                                          Map<String, ConnectorInfo> connectorRepositoryToIdVersionMap)
+      throws IOException {
     int newCount = 0;
     int updatedCount = 0;
     for (T latestDefinition : latestDefinitions) {
