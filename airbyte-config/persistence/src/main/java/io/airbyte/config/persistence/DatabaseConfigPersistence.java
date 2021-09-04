@@ -32,6 +32,7 @@ import static org.jooq.impl.DSL.select;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConfigSchemaMigrationSupport;
@@ -268,10 +269,10 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     LOGGER.info("Config database data loading completed with {} records", insertionCount);
   }
 
-  private static class ConnectorInfo {
+  static class ConnectorInfo {
 
-    private final String connectorDefinitionId;
-    private final String dockerImageTag;
+    final String connectorDefinitionId;
+    final String dockerImageTag;
 
     private ConnectorInfo(String connectorDefinitionId, String dockerImageTag) {
       this.connectorDefinitionId = connectorDefinitionId;
@@ -364,7 +365,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    *         repository name instead of definition id because connectors can be added manually by
    *         users, and are not always the same as those in the seed.
    */
-  private Map<String, ConnectorInfo> getConnectorRepositoryToInfoMap(DSLContext ctx) {
+  @VisibleForTesting
+  Map<String, ConnectorInfo> getConnectorRepositoryToInfoMap(DSLContext ctx) {
     Field<String> repoField = field("config_blob ->> 'dockerRepository'", SQLDataType.VARCHAR).as("repository");
     Field<String> versionField = field("config_blob ->> 'dockerImageTag'", SQLDataType.VARCHAR).as("version");
     return ctx.select(AIRBYTE_CONFIGS.CONFIG_ID, repoField, versionField)
@@ -373,7 +375,18 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .fetch().stream()
         .collect(Collectors.toMap(
             row -> row.getValue(repoField),
-            row -> new ConnectorInfo(row.getValue(AIRBYTE_CONFIGS.CONFIG_ID), row.getValue(versionField))));
+            row -> new ConnectorInfo(row.getValue(AIRBYTE_CONFIGS.CONFIG_ID), row.getValue(versionField)),
+            // when there are duplicated connector definitions, return the latest one
+            (c1, c2) -> {
+              AirbyteVersion v1 = new AirbyteVersion(c1.dockerImageTag);
+              AirbyteVersion v2 = new AirbyteVersion(c2.dockerImageTag);
+              int comparison = v1.patchVersionCompareTo(v2);
+              if (comparison >= 0) {
+                return c1;
+              } else {
+                return c2;
+              }
+            }));
   }
 
   /**

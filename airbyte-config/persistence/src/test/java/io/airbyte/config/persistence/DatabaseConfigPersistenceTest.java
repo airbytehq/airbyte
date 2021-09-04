@@ -33,9 +33,12 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.persistence.DatabaseConfigPersistence.ConnectorInfo;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -118,6 +121,25 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
         ConfigSchema.STANDARD_SOURCE_DEFINITION.name(), Stream.of(Jsons.jsonNode(SOURCE_GITHUB), Jsons.jsonNode(SOURCE_POSTGRES)),
         ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(), Stream.of(Jsons.jsonNode(DESTINATION_S3)));
     assertSameConfigDump(expected, actual);
+  }
+
+  @Test
+  public void testGetConnectorRepositoryToInfoMap() throws Exception {
+    String connectorRepository = "airbyte/duplicated-connector";
+    String oldVersion = "0.1.10";
+    String newVersion = "0.2.0";
+    StandardSourceDefinition source1 = new StandardSourceDefinition()
+        .withSourceDefinitionId(UUID.randomUUID())
+        .withDockerRepository(connectorRepository)
+        .withDockerImageTag(oldVersion);
+    StandardSourceDefinition source2 = new StandardSourceDefinition()
+        .withSourceDefinitionId(UUID.randomUUID())
+        .withDockerRepository(connectorRepository)
+        .withDockerImageTag(newVersion);
+    writeSource(configPersistence, source1);
+    writeSource(configPersistence, source2);
+    Map<String, ConnectorInfo> result = database.query(ctx -> configPersistence.getConnectorRepositoryToInfoMap(ctx));
+    assertEquals(newVersion, result.get(connectorRepository).dockerImageTag);
   }
 
 }
