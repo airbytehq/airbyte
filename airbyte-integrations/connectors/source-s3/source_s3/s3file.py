@@ -75,7 +75,8 @@ class S3File(StorageFile):
             return obj.last_modified
         # For some reason, this standard method above doesn't work for public files with no credentials so fall back on below
         except NoCredentialsError as nce:
-            if self.use_aws_account(self._provider):  # we don't expect this error if using credentials so throw it
+            # we don't expect this error if using credentials so throw it
+            if self.use_aws_account(self._provider):
                 raise nce
             else:
                 return boto3.client("s3", config=ClientConfig(signature_version=UNSIGNED)).head_object(Bucket=bucket, Key=self.url)[

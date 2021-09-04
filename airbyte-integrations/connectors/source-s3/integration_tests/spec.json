@@ -32,15 +32,16 @@
       "format": {
         "title": "Format",
         "default": "csv",
+        "type": "object",
         "oneOf": [
           {
             "title": "csv",
+            "description": "This connector utilises <a href=\"https: // arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html\" target=\"_blank\">PyArrow (Apache Arrow)</a> for CSV parsing.",
             "type": "object",
             "properties": {
               "filetype": {
-                "title": "CsvFiletype",
-                "description": "This connector utilises <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html\" target=\"_blank\">PyArrow (Apache Arrow)</a> for CSV parsing.",
-                "enum": ["csv"],
+                "title": "Filetype",
+                "const": "csv",
                 "type": "string"
               },
               "delimiter": {
@@ -93,24 +94,41 @@
                 ],
                 "type": "string"
               }
-            },
-            "required": ["filetype"]
+            }
           },
           {
-            "title": "Coming Soon...",
+            "title": "parquet",
+            "description": "This connector utilises <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html\" target=\"_blank\">PyArrow (Apache Arrow)</a> for Parquet parsing.",
             "type": "object",
             "properties": {
               "filetype": {
-                "title": "ParquetFiletype",
-                "description": "An enumeration.",
-                "enum": ["parquet"],
+                "title": "Filetype",
+                "const": "parquet",
                 "type": "string"
+              },
+              "buffer_size": {
+                "title": "Buffer Size",
+                "description": "Perform read buffering when deserializing individual column chunks. By default every group column will be loaded fully to memory. This option can help to optimize a work with memory if your data is particularly wide or failing during detection of OOM errors.",
+                "default": 0,
+                "type": "integer"
+              },
+              "columns": {
+                "title": "Columns",
+                "description": "If you only want to sync a subset of the columns from the file(s), add the columns you want here. Leave it empty to sync all columns.",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "batch_size": {
+                "title": "Batch Size",
+                "description": "Maximum number of records per batch. Batches may be smaller if there aren’t enough rows in the file. This option can help to optimize a work with memory if your data is particularly wide or failing during detection of OOM errors.",
+                "default": 65536,
+                "type": "integer"
               }
-            },
-            "required": ["filetype"]
+            }
           }
-        ],
-        "type": "object"
+        ]
       },
       "provider": {
         "title": "S3: Amazon Web Services",

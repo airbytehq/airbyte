@@ -24,13 +24,13 @@
 
 import json
 import multiprocessing as mp
-from abc import ABC, abstractmethod
 from typing import Any, BinaryIO, Iterator, Mapping, Optional, TextIO, Tuple, Union
 
 import dill
 import pyarrow as pa
-from airbyte_cdk.logger import AirbyteLogger
 from pyarrow import csv as pa_csv
+
+from .abstract_file_parser import AbstractFileParser
 
 
 def multiprocess_queuer(func, queue: mp.Queue, *args, **kwargs):
@@ -38,100 +38,7 @@ def multiprocess_queuer(func, queue: mp.Queue, *args, **kwargs):
     queue.put(dill.loads(func)(*args, **kwargs))
 
 
-class FileFormatParser(ABC):
-    def __init__(self, format: dict, master_schema: dict = None):
-        """
-        :param format: file format specific mapping as described in spec.json
-        :param master_schema: superset schema determined from all files, might be unused for some formats, defaults to None
-        """
-        self._format = format
-        self._master_schema = (
-            master_schema  # this may need to be used differently by some formats, pyarrow allows extra columns in csv schema
-        )
-        self.logger = AirbyteLogger()
-
-    @property
-    @abstractmethod
-    def is_binary(self):
-        """
-        Override this per format so that file-like objects passed in are currently opened as binary or not
-        """
-
-    @abstractmethod
-    def get_inferred_schema(self, file: Union[TextIO, BinaryIO]) -> dict:
-        """
-        Override this with format-specifc logic to infer the schema of file
-        Note: needs to return inferred schema with JsonSchema datatypes
-
-        :param file: file-like object (opened via StorageFile)
-        :return: mapping of {columns:datatypes} where datatypes are JsonSchema types
-        """
-
-    @abstractmethod
-    def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
-        """
-        Override this with format-specifc logic to stream each data row from the file as a mapping of {columns:values}
-        Note: avoid loading the whole file into memory to avoid OOM breakages
-
-        :param file: file-like object (opened via StorageFile)
-        :yield: data record as a mapping of {columns:values}
-        """
-
-    @staticmethod
-    def json_type_to_pyarrow_type(typ: str, reverse: bool = False, logger: AirbyteLogger = AirbyteLogger()) -> str:
-        """
-        Converts Json Type to PyArrow types to (or the other way around if reverse=True)
-
-        :param typ: Json type if reverse is False, else PyArrow type
-        :param reverse: switch to True for PyArrow type -> Json type, defaults to False
-        :param logger: defaults to AirbyteLogger()
-        :return: PyArrow type if reverse is False, else Json type
-        """
-        str_typ = str(typ)
-        # this is a map of airbyte types to pyarrow types. The first list element of the pyarrow types should be the one to use where required.
-        map = {
-            "boolean": ("bool_", "bool"),
-            "integer": ("int64", "int8", "int16", "int32", "uint8", "uint16", "uint32", "uint64"),
-            "number": ("float64", "float16", "float32", "decimal128", "decimal256", "halffloat", "float", "double"),
-            "string": ("large_string", "string"),
-            "object": ("large_string",),  # TODO: support object type rather than coercing to string
-            "array": ("large_string",),  # TODO: support array type rather than coercing to string
-            "null": ("large_string",),
-        }
-        if not reverse:
-            for json_type, pyarrow_types in map.items():
-                if str_typ.lower() == json_type:
-                    return getattr(
-                        pa, pyarrow_types[0]
-                    ).__call__()  # better way might be necessary when we decide to handle more type complexity
-            logger.debug(f"JSON type '{str_typ}' is not mapped, falling back to default conversion to large_string")
-            return pa.large_string()
-        else:
-            for json_type, pyarrow_types in map.items():
-                if any([str_typ.startswith(pa_type) for pa_type in pyarrow_types]):
-                    return json_type
-            logger.debug(f"PyArrow type '{str_typ}' is not mapped, falling back to default conversion to string")
-            return "string"  # default type if unspecified in map
-
-    @staticmethod
-    def json_schema_to_pyarrow_schema(schema: Mapping[str, Any], reverse: bool = False) -> Mapping[str, Any]:
-        """
-        Converts a schema with JsonSchema datatypes to one with PyArrow types (or the other way if reverse=True)
-        This utilises json_type_to_pyarrow_type() to convert each datatype
-
-        :param schema: json/pyarrow schema to convert
-        :param reverse: switch to True for PyArrow schema -> Json schema, defaults to False
-        :return: converted schema dict
-        """
-        new_schema = {}
-
-        for column, json_type in schema.items():
-            new_schema[column] = FileFormatParser.json_type_to_pyarrow_type(json_type, reverse=reverse)
-
-        return new_schema
-
-
-class CsvParser(FileFormatParser):
+class CsvParser(AbstractFileParser):
     @property
     def is_binary(self):
         return True
@@ -139,7 +46,6 @@ class CsvParser(FileFormatParser):
     def _read_options(self):
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html
-
         build ReadOptions object like: pa.csv.ReadOptions(**self._read_options())
         """
         return {"block_size": self._format.get("block_size", 10000), "encoding": self._format.get("encoding", "utf8")}
@@ -147,7 +53,6 @@ class CsvParser(FileFormatParser):
     def _parse_options(self):
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.ParseOptions.html
-
         build ParseOptions object like: pa.csv.ParseOptions(**self._parse_options())
         """
         quote_char = self._format.get("quote_char", False) if self._format.get("quote_char", False) != "" else False
@@ -162,9 +67,7 @@ class CsvParser(FileFormatParser):
     def _convert_options(self, json_schema: Mapping[str, Any] = None):
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.ConvertOptions.html
-
         build ConvertOptions object like: pa.csv.ConvertOptions(**self._convert_options())
-
         :param json_schema: if this is passed in, pyarrow will attempt to enforce this schema on read, defaults to None
         """
         check_utf8 = True if self._format.get("encoding", "utf8").lower().replace("-", "") == "utf8" else False
@@ -178,14 +81,14 @@ class CsvParser(FileFormatParser):
         """
         fn passed in must return a tuple of (desired return value, Exception OR None)
         This allows propagating any errors from the process up and raising accordingly
-
         """
         result = None
         while result is None:
             q_worker = mp.Queue()
             proc = mp.Process(
                 target=multiprocess_queuer,
-                args=(dill.dumps(fn), q_worker, *args),  # use dill to pickle the function for Windows-compatibility
+                # use dill to pickle the function for Windows-compatibility
+                args=(dill.dumps(fn), q_worker, *args),
             )
             proc.start()
             try:
@@ -212,7 +115,6 @@ class CsvParser(FileFormatParser):
     def get_inferred_schema(self, file: Union[TextIO, BinaryIO]) -> dict:
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html
-
         This now uses multiprocessing in order to timeout the schema inference as it can hang.
         Since the hanging code is resistant to signal interrupts, threading/futures doesn't help so needed to multiprocess.
         https://issues.apache.org/jira/browse/ARROW-11853?page=com.atlassian.jira.plugin.system.issuetabpanels%3Aall-tabpanel
@@ -224,7 +126,6 @@ class CsvParser(FileFormatParser):
             """
             we need to reimport here to be functional on Windows systems since it doesn't have fork()
             https://docs.python.org/3.7/library/multiprocessing.html#contexts-and-start-methods
-
             This returns a tuple of (schema_dict, None OR Exception).
             If return[1] is not None and holds an exception we then raise this in the main process.
             This lets us propagate up any errors (that aren't timeouts) and raise correctly.

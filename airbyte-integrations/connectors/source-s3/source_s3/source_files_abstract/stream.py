@@ -37,7 +37,8 @@ from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from wcmatch.glob import GLOBSTAR, SPLIT, globmatch
 
-from .fileformatparser import CsvParser
+from .formats.csv_parser import CsvParser
+from .formats.parquet_parser import ParquetParser
 from .storagefile import StorageFile
 
 JSON_TYPES = ["string", "number", "integer", "object", "array", "boolean", "null"]
@@ -48,12 +49,14 @@ class ConfigurationError(Exception):
 
 
 class FileStream(Stream, ABC):
+    @property
+    def fileformatparser_map(self):
+        """Mapping where every key is equal  'filetype' and values are  corresponding  parser classes."""
+        return {
+            "csv": CsvParser,
+            "parquet": ParquetParser,
+        }
 
-    fileformatparser_map = {
-        "csv": CsvParser,
-        # 'parquet': ParquetParser,
-        # etc.
-    }
     # TODO: make these user configurable in spec.json
     ab_additional_col = "_ab_additional_properties"
     ab_last_mod_col = "_ab_source_file_last_modified"
@@ -122,7 +125,13 @@ class FileStream(Stream, ABC):
         """
         :return: reference to the relevant fileformatparser class e.g. CsvParser
         """
-        return self.fileformatparser_map[self._format.get("filetype")]
+        filetype = self._format.get("filetype")
+        file_reader = self.fileformatparser_map.get(self._format.get("filetype"))
+        if not file_reader:
+            raise RuntimeError(
+                f"Detected mismatched file format '{filetype}'. Available values: '{list( self.fileformatparser_map.keys())}''."
+            )
+        return file_reader
 
     @property
     @abstractmethod
@@ -181,7 +190,8 @@ class FileStream(Stream, ABC):
                 futures = [executor.submit(get_storagefile_with_lastmod, fp) for fp in filepath_gen]
 
                 for future in concurrent.futures.as_completed(futures):
-                    storagefiles.append(future.result())  # this will failfast on any errors
+                    # this will failfast on any errors
+                    storagefiles.append(future.result())
 
             # The array storagefiles contain tuples of (last_modified, StorageFile), so sort by last_modified
             self.storagefile_cache = sorted(storagefiles, key=itemgetter(0))
@@ -228,6 +238,7 @@ class FileStream(Stream, ABC):
             master_schema = deepcopy(self._schema)
 
             file_reader = self.fileformatparser_class(self._format)
+
             # time order isn't necessary here but we might as well use this method so we cache the list for later use
             for _, storagefile in self.time_ordered_storagefile_iterator():
                 with storagefile.open(file_reader.is_binary) as f:
@@ -412,7 +423,7 @@ class IncrementalFileStream(FileStream, ABC):
         we yield the stream_slice containing file(s) up to and EXcluding the file on the current iteration.
         The stream_slice is then cleared (if we yielded it) and this iteration's file appended to the (next) stream_slice
         """
-        if sync_mode.value == "full_refresh":
+        if sync_mode == SyncMode.full_refresh:
             yield from super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
         else:
