@@ -46,7 +46,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * The {@link DatabaseConfigPersistence#loadData} method is tested in {@link DatabaseConfigPersistenceLoadDataTest}.
+ * The {@link DatabaseConfigPersistence#loadData} method is tested in
+ * {@link DatabaseConfigPersistenceLoadDataTest}.
  */
 public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest {
 
@@ -139,7 +140,8 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     writeSource(configPersistence, source1);
     writeSource(configPersistence, source2);
     Map<String, ConnectorInfo> result = database.query(ctx -> configPersistence.getConnectorRepositoryToInfoMap(ctx));
-    // when there are duplicated connector definitions, the one with the latest version should be retrieved
+    // when there are duplicated connector definitions, the one with the latest version should be
+    // retrieved
     assertEquals(newVersion, result.get(connectorRepository).dockerImageTag);
   }
 
