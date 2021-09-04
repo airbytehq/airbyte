@@ -275,10 +275,12 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
   static class ConnectorInfo {
 
+    final String dockerRepository;
     final String connectorDefinitionId;
     final String dockerImageTag;
 
-    private ConnectorInfo(String connectorDefinitionId, String dockerImageTag) {
+    private ConnectorInfo(String dockerRepository, String connectorDefinitionId, String dockerImageTag) {
+      this.dockerRepository = dockerRepository;
       this.connectorDefinitionId = connectorDefinitionId;
       this.dockerImageTag = dockerImageTag;
     }
@@ -379,13 +381,13 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .fetch().stream()
         .collect(Collectors.toMap(
             row -> row.getValue(repoField),
-            row -> new ConnectorInfo(row.getValue(AIRBYTE_CONFIGS.CONFIG_ID), row.getValue(versionField)),
+            row -> new ConnectorInfo(row.getValue(repoField), row.getValue(AIRBYTE_CONFIGS.CONFIG_ID), row.getValue(versionField)),
             // when there are duplicated connector definitions, return the latest one
             (c1, c2) -> {
               AirbyteVersion v1 = new AirbyteVersion(c1.dockerImageTag);
               AirbyteVersion v2 = new AirbyteVersion(c2.dockerImageTag);
-              LOGGER.warn("Duplicated connector version found: {} ({}) vs {} ({})",
-                  c1.dockerImageTag, c1.connectorDefinitionId, c2.dockerImageTag, c2.connectorDefinitionId);
+              LOGGER.warn("Duplicated connector version found for {}: {} ({}) vs {} ({})",
+                  c1.dockerRepository, c1.dockerImageTag, c1.connectorDefinitionId, c2.dockerImageTag, c2.connectorDefinitionId);
               int comparison = v1.patchVersionCompareTo(v2);
               if (comparison >= 0) {
                 return c1;
