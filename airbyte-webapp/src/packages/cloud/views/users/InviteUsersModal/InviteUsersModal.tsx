@@ -10,16 +10,25 @@ import { useCurrentWorkspace } from "components/hooks/services/useWorkspace";
 
 const Content = styled.div`
   width: 614px;
-  padding: 20px 18px 75px 22px;
+  padding: 20px 18px 37px 22px;
 `;
 
 const Controls = styled.div`
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
+  margin-top: 26px;
 `;
 
 const SendInvitationButton = styled(LoadingButton)`
   margin-left: 10px;
+`;
+
+const FormHeader = styled(Header)`
+  margin-bottom: 14px;
+`;
+
+const FormRow = styled(Row)`
+  margin-bottom: 8px;
 `;
 
 export const InviteUsersModal: React.FC<{ onClose: () => void }> = (props) => {
@@ -54,8 +63,8 @@ export const InviteUsersModal: React.FC<{ onClose: () => void }> = (props) => {
         {({ values, isValid, isSubmitting, dirty }) => (
           <Form>
             <Content>
-              <Header>
-                <Cell>
+              <FormHeader>
+                <Cell flex={2}>
                   <H5>
                     <FormattedMessage id="modals.addUser.email.label" />
                   </H5>
@@ -65,14 +74,14 @@ export const InviteUsersModal: React.FC<{ onClose: () => void }> = (props) => {
                     <FormattedMessage id="modals.addUser.role.label" />
                   </H5>
                 </Cell>
-              </Header>
+              </FormHeader>
               <FieldArray
                 name="users"
                 render={(arrayHelpers) => (
                   <>
                     {values.users?.map((_, index) => (
-                      <Row>
-                        <Cell>
+                      <FormRow>
+                        <Cell flex={2}>
                           <Field name={`users[${index}].email`}>
                             {({ field }: FieldProps<string>) => (
                               <Input
@@ -92,9 +101,13 @@ export const InviteUsersModal: React.FC<{ onClose: () => void }> = (props) => {
                             component={DropDown}
                           />
                         </Cell>
-                      </Row>
+                      </FormRow>
                     ))}
-                    <Button type="button" onClick={() => arrayHelpers.push({})}>
+                    <Button
+                      type="button"
+                      onClick={() => arrayHelpers.push({})}
+                      secondary
+                    >
                       <FormattedMessage id="modals.addUser.button.addUser" />
                     </Button>
                   </>
