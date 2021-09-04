@@ -168,7 +168,7 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     assertHasSource(source1);
     assertHasSource(SOURCE_GITHUB);
 
-    // when the record already exists, it is updated
+    // when the record already exists, it is ignored
     StandardSourceDefinition source2 = new StandardSourceDefinition()
         .withSourceDefinitionId(definitionId)
         .withDockerRepository(connectorRepository)
@@ -180,7 +180,7 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
         Jsons.jsonNode(source2),
         ConfigSchema.STANDARD_SOURCE_DEFINITION.getIdFieldName()));
     assertRecordCount(2);
-    assertHasSource(source2);
+    assertHasSource(source1);
     assertHasSource(SOURCE_GITHUB);
   }
 

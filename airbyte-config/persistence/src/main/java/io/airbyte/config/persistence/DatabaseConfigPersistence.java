@@ -51,6 +51,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.JSONB;
@@ -132,27 +133,15 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       OffsetDateTime timestamp = OffsetDateTime.now();
 
       if (isExistingConfig) {
-        int updateCount = ctx.update(AIRBYTE_CONFIGS)
-            .set(AIRBYTE_CONFIGS.CONFIG_BLOB, JSONB.valueOf(Jsons.serialize(config)))
-            .set(AIRBYTE_CONFIGS.UPDATED_AT, timestamp)
-            .where(AIRBYTE_CONFIGS.CONFIG_TYPE.eq(configType.name()), AIRBYTE_CONFIGS.CONFIG_ID.eq(configId))
-            .execute();
+        int updateCount = updateConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(config), configId);
         if (updateCount != 0 && updateCount != 1) {
           LOGGER.warn("{} config {} has been updated; updated record count: {}", configType, configId, updateCount);
         }
-
-        return null;
-      }
-
-      int insertionCount = ctx.insertInto(AIRBYTE_CONFIGS)
-          .set(AIRBYTE_CONFIGS.CONFIG_ID, configId)
-          .set(AIRBYTE_CONFIGS.CONFIG_TYPE, configType.name())
-          .set(AIRBYTE_CONFIGS.CONFIG_BLOB, JSONB.valueOf(Jsons.serialize(config)))
-          .set(AIRBYTE_CONFIGS.CREATED_AT, timestamp)
-          .set(AIRBYTE_CONFIGS.UPDATED_AT, timestamp)
-          .execute();
-      if (insertionCount != 1) {
-        LOGGER.warn("{} config {} has been inserted; insertion record count: {}", configType, configId, insertionCount);
+      } else {
+        int insertionCount = insertConfigRecord(ctx, timestamp, configType.name(), Jsons.jsonNode(config), configType.getIdFieldName());
+        if (insertionCount != 1) {
+          LOGGER.warn("{} config {} has been inserted; insertion record count: {}", configType, configId, insertionCount);
+        }
       }
 
       return null;
@@ -216,24 +205,21 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    * @return the number of inserted records for convenience, which is always 1.
    */
   @VisibleForTesting
-  int insertConfigRecord(DSLContext ctx, OffsetDateTime timestamp, String configType, JsonNode configJson, String idFieldName) {
+  int insertConfigRecord(DSLContext ctx, OffsetDateTime timestamp, String configType, JsonNode configJson, @Nullable String idFieldName) {
     String configId = idFieldName == null
         ? UUID.randomUUID().toString()
         : configJson.get(idFieldName).asText();
     LOGGER.info("Inserting {} record {}", configType, configId);
 
-    ctx.insertInto(AIRBYTE_CONFIGS)
+    return ctx.insertInto(AIRBYTE_CONFIGS)
         .set(AIRBYTE_CONFIGS.CONFIG_ID, configId)
         .set(AIRBYTE_CONFIGS.CONFIG_TYPE, configType)
         .set(AIRBYTE_CONFIGS.CONFIG_BLOB, JSONB.valueOf(Jsons.serialize(configJson)))
         .set(AIRBYTE_CONFIGS.CREATED_AT, timestamp)
         .set(AIRBYTE_CONFIGS.UPDATED_AT, timestamp)
         .onConflict(AIRBYTE_CONFIGS.CONFIG_TYPE, AIRBYTE_CONFIGS.CONFIG_ID)
-        .doUpdate()
-        .set(AIRBYTE_CONFIGS.CONFIG_BLOB, JSONB.valueOf(Jsons.serialize(configJson)))
-        .set(AIRBYTE_CONFIGS.UPDATED_AT, timestamp)
+        .doNothing()
         .execute();
-    return 1;
   }
 
   /**
@@ -341,7 +327,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                                                           AirbyteConfig configType,
                                                           List<T> latestDefinitions,
                                                           Set<String> connectorRepositoriesInUse,
-                                                          Map<String, ConnectorInfo> connectorRepositoryToIdVersionMap) {
+                                                          Map<String, ConnectorInfo> connectorRepositoryToIdVersionMap) throws IOException {
     int newCount = 0;
     int updatedCount = 0;
     for (T latestDefinition : latestDefinitions) {
@@ -352,7 +338,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       }
 
       if (!connectorRepositoryToIdVersionMap.containsKey(repository)) {
-        newCount += insertConfigRecord(ctx, timestamp, configType.name(), configJson, configType.getIdFieldName());
+        writeConfig(configType, configType.getId(latestDefinition), latestDefinition);
+        newCount += 1;
         continue;
       }
 
