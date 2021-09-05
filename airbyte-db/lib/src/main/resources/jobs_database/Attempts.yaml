@@ -25,6 +25,8 @@ properties:
     type: ["null", object]
   status:
     type: string
+  temporalWorkflowId:
+    type: string
   created_at:
     # todo should be datetime.
     type: string

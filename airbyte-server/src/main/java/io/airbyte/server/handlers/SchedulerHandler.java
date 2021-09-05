@@ -358,6 +358,9 @@ public class SchedulerHandler {
     // behavior
     final Path attemptParentDir = WorkerUtils.getJobRoot(workspaceRoot, String.valueOf(jobId), 0L).getParent();
     final String workflowId = IOs.readFile(attemptParentDir, TemporalAttemptExecution.WORKFLOW_ID_FILENAME);
+
+    // instead of reading from a shared volume, pull this info from the database.
+
     final WorkflowExecution workflowExecution = WorkflowExecution.newBuilder()
         .setWorkflowId(workflowId)
         .build();
