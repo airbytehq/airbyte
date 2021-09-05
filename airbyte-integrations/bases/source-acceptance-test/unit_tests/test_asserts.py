@@ -104,6 +104,12 @@ def test_verify_records_schema(configured_catalog: ConfiguredAirbyteCatalog):
     [
         # Send null data
         ({"a": None}, {"type": "object", "properties": {"a": {"type": "string", "format": "time"}}}, False),
+        ({"a": None}, {"type": "object", "properties": {"a": {"type": "string", "format": "date"}}}, False),
+        ({"a": None}, {"type": "object", "properties": {"a": {"type": "string", "format": "date-time"}}}, False),
+        ({"a": None}, {"type": "object", "properties": {"a": {"type": "string", "format": "email"}}}, False),
+        ({"a": None}, {"type": "object", "properties": {"a": {"type": "string", "format": "hostname"}}}, False),
+        ({"a": None}, {"type": "object", "properties": {"a": {"type": "string", "format": "ipv4"}}}, False),
+        ({"a": None}, {"type": "object", "properties": {"a": {"type": "string", "format": "ipv6"}}}, False),
         # time
         ({"a": "sdf"}, {"type": "object", "properties": {"a": {"type": "string", "format": "time"}}}, False),
         ({"a": "12:00"}, {"type": "object", "properties": {"a": {"type": "string", "format": "time"}}}, False),

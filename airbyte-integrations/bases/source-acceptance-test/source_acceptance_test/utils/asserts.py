@@ -53,7 +53,7 @@ class CustomFormatChecker(FormatChecker):
 
     def check(self, instance, format):
         if format == "date-time":
-            if not self.check_datetime(instance):
+            if instance and not self.check_datetime(instance):
                 raise FormatError(f"{instance} has invalid datetime format")
         else:
             return super().check(instance, format)
