@@ -25,8 +25,9 @@
 from typing import Any, List, Mapping, Tuple
 
 import boto3
+import requests
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import ConnectorSpecification, SyncMode
+from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from pydantic import Field
@@ -72,7 +73,7 @@ class ConnectorConfig(BaseModel):
 
 class SourceAmazonSellerPartner(AbstractSource):
     def _get_stream_kwargs(self, config: ConnectorConfig):
-        self.endpoint, self.marketplace_id, self.region = get_marketplaces(config.aws_environment)[config.region]
+        endpoint, marketplace_id, region = get_marketplaces(config.aws_environment)[config.region]
 
         boto3_client = boto3.client("sts", aws_access_key_id=config.aws_access_key, aws_secret_access_key=config.aws_secret_key)
         role = boto3_client.assume_role(RoleArn=config.role_arn, RoleSessionName="guid")
@@ -82,37 +83,36 @@ class SourceAmazonSellerPartner(AbstractSource):
             aws_access_key_id=role_creds.get("AccessKeyId"),
             aws_secret_access_key=role_creds.get("SecretAccessKey"),
             aws_session_token=role_creds.get("SessionToken"),
-            region=self.region,
+            region=region,
         )
         auth = AWSAuthenticator(
             token_refresh_endpoint="https://api.amazon.com/auth/o2/token",
             client_secret=config.lwa_client_secret,
             client_id=config.lwa_app_id,
             refresh_token=config.refresh_token,
-            host=self.endpoint.replace("https://", ""),
+            host=endpoint.replace("https://", ""),
         )
         stream_kwargs = {
-            "url_base": self.endpoint,
+            "url_base": endpoint,
             "authenticator": auth,
             "aws_signature": aws_signature,
             "replication_start_date": config.replication_start_date,
-            "marketplace_ids": [self.marketplace_id],
+            "marketplace_ids": [marketplace_id],
         }
         return stream_kwargs
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        try:
-            config = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
-            stream_kwargs = self._get_stream_kwargs(config)
-            merchant_listings_reports_stream = MerchantListingsReports(**stream_kwargs)
-            stream_slices = list(merchant_listings_reports_stream.stream_slices(sync_mode=SyncMode.full_refresh))
-            reports_gen = MerchantListingsReports(**stream_kwargs).read_records(
-                sync_mode=SyncMode.full_refresh, stream_slice=stream_slices[0]
-            )
-            next(reports_gen)
-            return True, None
-        except Exception as error:
-            return False, f"Unable to connect to Amazon Seller API with the provided credentials - {repr(error)}"
+        config = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
+        stream_kwargs = self._get_stream_kwargs(config)
+
+        reports_res = requests.get(
+            url=f"{stream_kwargs['url_base']}{MerchantListingsReports.path_prefix}/reports",
+            headers={**stream_kwargs["authenticator"].get_auth_header(), "content-type": "application/json"},
+            params={"reportTypes": MerchantListingsReports.name},
+            auth=stream_kwargs["aws_signature"],
+        )
+        connected = reports_res.status_code == 200 and reports_res.json().get("payload")
+        return connected, f"Unable to connect to Amazon Seller API with the provided credentials - {reports_res.json()}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
