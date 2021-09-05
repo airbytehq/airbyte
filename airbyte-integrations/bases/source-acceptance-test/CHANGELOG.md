@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.18
+Fixed handling of `None`/null values of `date-time` format: https://github.com/airbytehq/airbyte/pull/5855
+
 ## 0.1.17
 Fix serialize function for acceptance-tests: https://github.com/airbytehq/airbyte/pull/5738
 
