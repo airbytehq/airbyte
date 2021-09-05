@@ -47,6 +47,12 @@ public abstract class MigrationDevCenter {
     DUMP_SCHEMA
   }
 
+  /**
+   * Directory under which a new migration will be created. This should match the database's name and
+   * match the {@link Db} enum. Set in main to enforce correct implementation.
+   */
+  private static String migrationDirectory;
+
   private final String schemaDumpFile;
 
   protected MigrationDevCenter(String schemaDumpFile) {
@@ -69,7 +75,7 @@ public abstract class MigrationDevCenter {
   private void createMigration() {
     try (PostgreSQLContainer<?> container = createContainer(); Database database = getDatabase(container)) {
       FlywayDatabaseMigrator migrator = getMigrator(database);
-      MigrationDevHelper.createNextMigrationFile("configs", migrator);
+      MigrationDevHelper.createNextMigrationFile(migrationDirectory, migrator);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -103,8 +109,14 @@ public abstract class MigrationDevCenter {
 
     Db db = Db.valueOf(args[0].toUpperCase());
     switch (db) {
-      case CONFIGS -> devCenter = new ConfigsDatabaseMigrationDevCenter();
-      case JOBS -> devCenter = new JobsDatabaseMigrationDevCenter();
+      case CONFIGS -> {
+        devCenter = new ConfigsDatabaseMigrationDevCenter();
+        migrationDirectory = "configs";
+      }
+      case JOBS -> {
+        devCenter = new JobsDatabaseMigrationDevCenter();
+        migrationDirectory = "jobs";
+      }
       default -> throw new IllegalArgumentException("Unexpected database: " + args[0]);
     }
 
