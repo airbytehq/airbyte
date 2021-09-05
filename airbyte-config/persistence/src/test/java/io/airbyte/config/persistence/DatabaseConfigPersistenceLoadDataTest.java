@@ -128,9 +128,10 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
 
     // create a sync to mark the destination as used
     StandardSync s3Sync = new StandardSync()
+        .withConnectionId(UUID.randomUUID())
         .withSourceId(SOURCE_GITHUB.getSourceDefinitionId())
         .withDestinationId(destinationS3V2.getDestinationDefinitionId());
-    configPersistence.writeConfig(ConfigSchema.STANDARD_SYNC, UUID.randomUUID().toString(), s3Sync);
+    configPersistence.writeConfig(ConfigSchema.STANDARD_SYNC, s3Sync.getConnectionId().toString(), s3Sync);
 
     configPersistence.loadData(seedPersistence);
     // s3 destination is not updated

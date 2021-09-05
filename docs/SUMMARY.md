@@ -50,6 +50,7 @@
     * [Drupal](integrations/sources/drupal.md)
     * [Exchange Rates API](integrations/sources/exchangeratesapi.md)
     * [Facebook Marketing](integrations/sources/facebook-marketing.md)
+    * [Facebook Pages](integrations/sources/facebook-pages.md)
     * [Files](integrations/sources/file.md)
     * [Freshdesk](integrations/sources/freshdesk.md)
     * [GitHub](integrations/sources/github.md)
