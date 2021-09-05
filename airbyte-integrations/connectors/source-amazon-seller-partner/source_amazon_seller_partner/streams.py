@@ -35,16 +35,17 @@ import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, NoAuth
-from airbyte_cdk.sources.streams.http.exceptions import RequestBodyException, UserDefinedBackoffException
+from airbyte_cdk.sources.streams.http.exceptions import RequestBodyException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
-from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler, user_defined_backoff_handler
 from base_python import Stream
 from Crypto.Cipher import AES
 from source_amazon_seller_partner.auth import AWSSignature
 
 REPORTS_API_VERSION = "2020-09-04"
 ORDERS_API_VERSION = "v0"
-VENDOR_API_VERSION = "v1"
+VENDORS_API_VERSION = "v1"
+
+REPORTS_MAX_WAIT_SECONDS = 50
 
 
 class AmazonSPStream(HttpStream, ABC):
@@ -136,17 +137,17 @@ class ReportsAmazonSPStream(Stream, ABC):
 
     Report streams are intended to work as following:
         - create a new report;
-        - wait until it's processed;
         - retrieve the report;
         - retry the retrieval if the report is still not fully processed;
-        - retrieve the report document (if report processing status is done);
-        - decrypt the report document (if report processing status is done);
-        - yield the report document (if report processing status is done) or the report json (if report processing status is **not** done)
+        - retrieve the report document (if report processing status is `DONE`);
+        - decrypt the report document (if report processing status is `DONE`);
+        - yield the report document (if report processing status is `DONE`)
+        or the report json (if report processing status is **not** `DONE`)
     """
 
     primary_key = None
     path_prefix = f"/reports/{REPORTS_API_VERSION}"
-    wait_seconds = 30
+    sleep_seconds = 30
     data_field = "payload"
 
     def __init__(
@@ -181,27 +182,6 @@ class ReportsAmazonSPStream(Stream, ABC):
     def path(self, document_id: str) -> str:
         return f"{self.path_prefix}/documents/{document_id}"
 
-    def should_retry(self, response: requests.Response) -> bool:
-        should_retry = response.status_code == 429 or 500 <= response.status_code < 600
-        if not should_retry:
-            should_retry = response.json().get(self.data_field, {}).get("processingStatus") in ["IN_QUEUE", "IN_PROGRESS"]
-        return should_retry
-
-    def backoff_time(self, response: requests.Response):
-        return self.wait_seconds
-
-    @default_backoff_handler(max_tries=5, factor=5)
-    @user_defined_backoff_handler(max_tries=5)
-    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
-        response: requests.Response = self._session.send(request, **request_kwargs)
-        if self.should_retry(response):
-            custom_backoff_time = self.backoff_time(response)
-            raise UserDefinedBackoffException(backoff=custom_backoff_time, request=request, response=response)
-        else:
-            response.raise_for_status()
-
-        return response
-
     def _create_prepared_request(
         self, path: str, http_method: str = "GET", headers: Mapping = None, params: Mapping = None, json: Any = None, data: Any = None
     ) -> requests.PreparedRequest:
@@ -235,10 +215,7 @@ class ReportsAmazonSPStream(Stream, ABC):
             headers=dict(request_headers, **self.authenticator.get_auth_header()),
             data=json_lib.dumps(report_data),
         )
-        report_response = self._send_request(create_report_request, {})
-
-        time.sleep(self.wait_seconds)
-
+        report_response = self._session.send(create_report_request)
         return report_response.json()[self.data_field]
 
     def _retrieve_report(self) -> Mapping[str, Any]:
@@ -248,7 +225,7 @@ class ReportsAmazonSPStream(Stream, ABC):
             path=f"{self.path_prefix}/reports/{report_id}",
             headers=dict(request_headers, **self.authenticator.get_auth_header()),
         )
-        retrieve_report_response = self._send_request(retrieve_report_request, {})
+        retrieve_report_response = self._session.send(retrieve_report_request)
         report_payload = retrieve_report_response.json().get(self.data_field, {})
         return report_payload
 
@@ -291,12 +268,19 @@ class ReportsAmazonSPStream(Stream, ABC):
         Decrypt and parse the report is its fully proceed, then yield the report document records.
         Yield the report body itself if there are no document id in it.
         """
+        report_payload = {}
+        is_processed = False
+        start_time = pendulum.now("utc")
+        seconds_waited = 0
 
         # create and retrieve the report
-        report_payload = self._retrieve_report()
-        is_done = report_payload.get("processingStatus") == "DONE"
+        while not is_processed and seconds_waited < REPORTS_MAX_WAIT_SECONDS:
+            report_payload = self._retrieve_report()
+            seconds_waited = (pendulum.now("utc") - start_time).seconds
+            is_processed = report_payload.get("processingStatus") not in ["IN_QUEUE", "IN_PROGRESS"]
+            time.sleep(self.sleep_seconds)
 
-        if is_done:
+        if is_processed:
             # retrieve and decrypt the report document
             document_id = report_payload["reportDocumentId"]
             request_headers = self.request_headers()
@@ -305,7 +289,7 @@ class ReportsAmazonSPStream(Stream, ABC):
                 headers=dict(request_headers, **self.authenticator.get_auth_header()),
                 params=self.request_params(),
             )
-            response = self._send_request(request, {})
+            response = self._session.send(request)
             yield from self.parse_response(response)
         else:
             # yield report if no report document exits
@@ -416,7 +400,7 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
         ).strftime(self.time_format)
 
     def path(self, **kwargs) -> str:
-        return f"/vendor/directFulfillment/shipping/{VENDOR_API_VERSION}/shippingLabels"
+        return f"/vendor/directFulfillment/shipping/{VENDORS_API_VERSION}/shippingLabels"
 
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
