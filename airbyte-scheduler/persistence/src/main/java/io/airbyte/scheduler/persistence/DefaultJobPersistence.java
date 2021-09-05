@@ -295,6 +295,25 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
+  public void setAttemptTemporalWorkflowId(long jobId, int attemptNumber, String temporalWorkflowId) throws IOException {
+
+  }
+
+  @Override
+  public String getAttemptTemporalWorkflowId(long jobId, int attemptNumber) throws IOException {
+    var result = database.query(ctx -> ctx.fetch(
+        " SELECT temporalWorkflowId from attempts WHERE job_id = ? AND attempt_number = ?",
+        jobId,
+        attemptNumber)).stream().findFirst();
+
+    if (result.isEmpty()) {
+      throw new RuntimeException("Unable to find attempt and retrieve temporalWorkflowId.");
+    }
+
+    return result.get().get("temporalworkflowid", String.class);
+  }
+
+  @Override
   public <T> void writeOutput(long jobId, int attemptNumber, T output) throws IOException {
     final LocalDateTime now = LocalDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
 

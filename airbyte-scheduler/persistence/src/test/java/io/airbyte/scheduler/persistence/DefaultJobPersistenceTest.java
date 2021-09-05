@@ -48,7 +48,9 @@ import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
 import io.airbyte.db.Database;
+import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
+import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
@@ -160,6 +162,10 @@ class DefaultJobPersistenceTest {
   public void setup() throws Exception {
     database = new JobsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
     resetDb();
+
+    DatabaseMigrator jobDbMigrator = new JobsDatabaseMigrator(database, "test");
+    jobDbMigrator.createBaseline();
+    jobDbMigrator.migrate();
 
     timeSupplier = mock(Supplier.class);
     when(timeSupplier.get()).thenReturn(NOW);
@@ -337,6 +343,21 @@ class DefaultJobPersistenceTest {
   private long createJobAt(Instant created_at) throws IOException {
     when(timeSupplier.get()).thenReturn(created_at);
     return jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+  }
+
+  @Nested
+  class TemporalWorkflowId {
+
+    @Test
+    void testSuccessfulSet() throws IOException, SQLException {
+      final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+
+      database.query(ctx -> ctx.execute(
+          "UPDATE attempts SET temporalWorkflowId = '56a81f3a-006c-42d7-bce2-29d675d08ea4' WHERE job_id = ? AND attempt_number =?", jobId, attemptNumber));
+      var string = jobPersistence.getAttemptTemporalWorkflowId(jobId, attemptNumber);
+      System.out.println(string);
+    }
   }
 
   @Nested
