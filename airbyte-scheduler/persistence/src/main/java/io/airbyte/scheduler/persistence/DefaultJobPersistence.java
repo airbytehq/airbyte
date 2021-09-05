@@ -296,7 +296,11 @@ public class DefaultJobPersistence implements JobPersistence {
 
   @Override
   public void setAttemptTemporalWorkflowId(long jobId, int attemptNumber, String temporalWorkflowId) throws IOException {
-
+    database.query(ctx -> ctx.execute(
+        " UPDATE attempts SET temporalWorkflowId = ? WHERE job_id = ? AND attempt_number = ?",
+        temporalWorkflowId,
+        jobId,
+        attemptNumber));
   }
 
   @Override

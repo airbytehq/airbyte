@@ -349,15 +349,37 @@ class DefaultJobPersistenceTest {
   class TemporalWorkflowId {
 
     @Test
-    void testSuccessfulSet() throws IOException, SQLException {
-      final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
-      final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+    void testSuccessfulGet() throws IOException, SQLException {
+      var jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      var attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+
+      var defaultWorkflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, attemptNumber);
+      assertEquals("", defaultWorkflowId);
 
       database.query(ctx -> ctx.execute(
-          "UPDATE attempts SET temporalWorkflowId = '56a81f3a-006c-42d7-bce2-29d675d08ea4' WHERE job_id = ? AND attempt_number =?", jobId, attemptNumber));
-      var string = jobPersistence.getAttemptTemporalWorkflowId(jobId, attemptNumber);
-      System.out.println(string);
+          "UPDATE attempts SET temporalWorkflowId = '56a81f3a-006c-42d7-bce2-29d675d08ea4' WHERE job_id = ? AND attempt_number =?", jobId,
+          attemptNumber));
+      var workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, attemptNumber);
+      assertEquals(workflowId, "56a81f3a-006c-42d7-bce2-29d675d08ea4");
     }
+
+    @Test
+    void testGetMissingAttempt() {
+      assertThrows(RuntimeException.class, () -> jobPersistence.getAttemptTemporalWorkflowId(0, 0));
+    }
+
+    @Test
+    void testSuccessfulSet() throws IOException {
+      long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      var attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+      var temporalWorkflowId = "test-id-usually-uuid";
+
+      jobPersistence.setAttemptTemporalWorkflowId(jobId, attemptNumber, temporalWorkflowId);
+
+      var workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, attemptNumber);
+      assertEquals(workflowId, temporalWorkflowId);
+    }
+
   }
 
   @Nested
