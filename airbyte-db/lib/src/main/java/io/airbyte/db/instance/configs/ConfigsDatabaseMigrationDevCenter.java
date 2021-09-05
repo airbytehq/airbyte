@@ -40,11 +40,6 @@ public class ConfigsDatabaseMigrationDevCenter extends MigrationDevCenter {
   }
 
   @Override
-  protected String getMigrationDirectory() {
-    return "configs";
-  }
-
-  @Override
   protected FlywayDatabaseMigrator getMigrator(Database database) {
     return new ConfigsDatabaseMigrator(database, ConfigsDatabaseMigrationDevCenter.class.getSimpleName());
   }

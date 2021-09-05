@@ -40,11 +40,6 @@ public class JobsDatabaseMigrationDevCenter extends MigrationDevCenter {
   }
 
   @Override
-  protected String getMigrationDirectory() {
-    return "jobs";
-  }
-
-  @Override
   protected FlywayDatabaseMigrator getMigrator(Database database) {
     return new JobsDatabaseMigrator(database, JobsDatabaseMigrationDevCenter.class.getSimpleName());
   }
