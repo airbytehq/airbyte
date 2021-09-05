@@ -24,8 +24,6 @@
 
 package io.airbyte.integrations.destination.mongodb;
 
-import static com.mongodb.client.model.Projections.excludeId;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
@@ -45,6 +43,11 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
+import org.bson.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -52,10 +55,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import javax.annotation.Nullable;
-import org.bson.Document;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static com.mongodb.client.model.Projections.excludeId;
 
 public class MongodbDestination extends BaseConnector implements Destination {
 
@@ -119,10 +120,10 @@ public class MongodbDestination extends BaseConnector implements Destination {
       }
 
       MongoCollection<Document> collection = getOrCreateNewMongodbCollection(database, tmpCollectionName);
-      Set<Integer> documentsHash = new HashSet<>();
+      Set<String> documentsHash = new HashSet<>();
       try (MongoCursor<Document> cursor = collection.find().projection(excludeId()).iterator()) {
         while (cursor.hasNext()) {
-          documentsHash.add(cursor.next().get(AIRBYTE_DATA_HASH, Integer.class));
+          documentsHash.add(cursor.next().get(AIRBYTE_DATA_HASH, String.class));
         }
       }
 

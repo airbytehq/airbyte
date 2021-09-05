@@ -24,8 +24,6 @@
 
 package io.airbyte.integrations.destination.mongodb;
 
-import static com.mongodb.client.model.Projections.excludeId;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.MongoCollection;
@@ -39,16 +37,21 @@ import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.bson.Document;
 import org.joda.time.LocalDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import static com.mongodb.client.model.Projections.excludeId;
 
 public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
 
@@ -137,7 +140,7 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
     try {
       AirbyteRecordMessage recordMessage = message.getRecord();
       Map<String, Object> result = objectMapper.convertValue(recordMessage.getData(), new TypeReference<>() {});
-      var newDocumentDataHashCode = result.hashCode();
+      var newDocumentDataHashCode = UUID.nameUUIDFromBytes(DigestUtils.md5Hex(Jsons.toBytes(recordMessage.getData())).getBytes()).toString();
       var newDocument = new Document();
       newDocument.put(AIRBYTE_DATA, new Document(result));
       newDocument.put(AIRBYTE_DATA_HASH, newDocumentDataHashCode);

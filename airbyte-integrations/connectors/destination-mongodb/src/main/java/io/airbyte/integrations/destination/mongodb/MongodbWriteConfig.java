@@ -26,10 +26,11 @@ package io.airbyte.integrations.destination.mongodb;
 
 import com.mongodb.client.MongoCollection;
 import io.airbyte.protocol.models.DestinationSyncMode;
+import org.bson.Document;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import org.bson.Document;
 
 class MongodbWriteConfig {
 
@@ -37,13 +38,13 @@ class MongodbWriteConfig {
   private final String tmpCollectionName;
   private final DestinationSyncMode syncMode;
   private final MongoCollection<Document> collection;
-  private final Set<Integer> documentsHash = new HashSet<>();
+  private final Set<String> documentsHash = new HashSet<>();
 
   MongodbWriteConfig(String collectionName,
                      String tmpCollectionName,
                      DestinationSyncMode syncMode,
                      MongoCollection<Document> collection,
-                     Collection<Integer> documentsHash) {
+                     Collection<String> documentsHash) {
     this.collectionName = collectionName;
     this.tmpCollectionName = tmpCollectionName;
     this.syncMode = syncMode;
@@ -67,7 +68,7 @@ class MongodbWriteConfig {
     return collection;
   }
 
-  public Set<Integer> getDocumentsHash() {
+  public Set<String> getDocumentsHash() {
     return documentsHash;
   }
 
