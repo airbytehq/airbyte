@@ -4,7 +4,7 @@ import styled from "styled-components";
 import * as yup from "yup";
 import { Field, FieldProps, Form, Formik } from "formik";
 
-import config from "config";
+import { useConfig } from "config";
 
 import { Button, LabeledInput, Link, Modal, StatusIcon } from "components";
 
@@ -94,6 +94,7 @@ const CreateConnectorModal: React.FC<IProps> = ({
   onSubmit,
   errorMessage,
 }) => {
+  const config = useConfig();
   const formatMessage = useIntl().formatMessage;
 
   return (

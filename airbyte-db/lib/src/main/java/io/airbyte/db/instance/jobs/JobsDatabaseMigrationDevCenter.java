@@ -36,7 +36,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 public class JobsDatabaseMigrationDevCenter extends MigrationDevCenter {
 
   public JobsDatabaseMigrationDevCenter() {
-    super("src/main/resources/jobs_database/schema_dump.txt");
+    super("jobs", "src/main/resources/jobs_database/schema_dump.txt");
   }
 
   @Override
