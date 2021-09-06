@@ -91,4 +91,4 @@ We're almost there! Armed with your Endpoint & Identity URLs and your Client ID 
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| `0.1.0` | 2021-09-06 | [0000](https://github.com/airbytehq/airbyte/pull/0000) | Release Marketo CDK Connector|
+| `0.1.0` | 2021-09-06 | [5863](https://github.com/airbytehq/airbyte/pull/5863) | Release Marketo CDK Connector|
