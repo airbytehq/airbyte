@@ -50,7 +50,7 @@ public class OAuthConfigSupplierTest {
   @BeforeEach
   public void setup() {
     configRepository = mock(ConfigRepository.class);
-    oAuthConfigSupplier = new OAuthConfigSupplier(configRepository);
+    oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, false);
   }
 
   @Test

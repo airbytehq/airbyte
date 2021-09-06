@@ -122,9 +122,7 @@ public class WebBackendConnectionsHandler {
 
   private SourceRead getSourceRead(ConnectionRead connectionRead) throws JsonValidationException, IOException, ConfigNotFoundException {
     final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody().sourceId(connectionRead.getSourceId());
-    SourceRead sourceRead = sourceHandler.getSource(sourceIdRequestBody);
-
-    return sourceRead;
+    return sourceHandler.getSource(sourceIdRequestBody);
   }
 
   private DestinationRead getDestinationRead(ConnectionRead connectionRead) throws JsonValidationException, IOException, ConfigNotFoundException {
