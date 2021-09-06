@@ -98,6 +98,7 @@ public class RunMigrationTest {
   @SuppressWarnings("UnstableApiUsage")
   @Test
   @Disabled
+  // TODO(#5857): Make migration tests compatible with writing new migrations.
   public void testRunMigration() throws Exception {
     try (final StubAirbyteDB stubAirbyteDB = new StubAirbyteDB()) {
       final File file = Path
