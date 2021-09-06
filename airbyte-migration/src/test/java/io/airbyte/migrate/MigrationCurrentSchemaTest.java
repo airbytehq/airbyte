@@ -61,19 +61,6 @@ public class MigrationCurrentSchemaTest {
         .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
   }
 
-  // get all of the "current" jobs (in other words the one airbyte-db). get all of the configs
-  // from the output schema of the last migration. make sure they match.
-  @Test
-  void testJobsOfLastMigrationMatchSource() {
-    final Map<ResourceId, JsonNode> lastMigrationSchema = getSchemaOfLastMigration(ResourceType.JOB);
-    final Map<ResourceId, JsonNode> currentSchema = MigrationUtils.getNameToSchemasFromResourcePath(
-        Path.of("jobs_database"),
-        ResourceType.JOB,
-        Enums.valuesAsStrings(JobKeys.class));
-
-    assertSameSchemas(currentSchema, lastMigrationSchema);
-  }
-
   private static void assertSameSchemas(Map<ResourceId, JsonNode> currentSchemas, Map<ResourceId, JsonNode> lastMigrationSchema) {
     assertEquals(currentSchemas.size(), lastMigrationSchema.size());
 

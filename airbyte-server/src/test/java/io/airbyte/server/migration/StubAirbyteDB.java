@@ -26,7 +26,9 @@ package io.airbyte.server.migration;
 
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
+import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
+import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import java.io.IOException;
 import org.testcontainers.containers.PostgreSQLContainer;
 
@@ -54,6 +56,10 @@ public class StubAirbyteDB implements AutoCloseable {
         container.getJdbcUrl(),
         jobsDatabaseSchema)
             .getAndInitialize();
+
+    DatabaseMigrator jobDbMigrator = new JobsDatabaseMigrator(database, "test");
+    jobDbMigrator.createBaseline();
+    jobDbMigrator.migrate();
   }
 
   @Override

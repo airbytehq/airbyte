@@ -297,7 +297,7 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public void setAttemptTemporalWorkflowId(long jobId, int attemptNumber, String temporalWorkflowId) throws IOException {
     database.query(ctx -> ctx.execute(
-        " UPDATE attempts SET temporalWorkflowId = ? WHERE job_id = ? AND attempt_number = ?",
+        " UPDATE attempts SET temporal_workflow_id = ? WHERE job_id = ? AND attempt_number = ?",
         temporalWorkflowId,
         jobId,
         attemptNumber));
@@ -306,7 +306,7 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public String getAttemptTemporalWorkflowId(long jobId, int attemptNumber) throws IOException {
     var result = database.query(ctx -> ctx.fetch(
-        " SELECT temporalWorkflowId from attempts WHERE job_id = ? AND attempt_number = ?",
+        " SELECT temporal_workflow_id from attempts WHERE job_id = ? AND attempt_number = ?",
         jobId,
         attemptNumber)).stream().findFirst();
 
@@ -314,7 +314,7 @@ public class DefaultJobPersistence implements JobPersistence {
       throw new RuntimeException("Unable to find attempt and retrieve temporalWorkflowId.");
     }
 
-    return result.get().get("temporalworkflowid", String.class);
+    return result.get().get("temporal_workflow_id", String.class);
   }
 
   @Override

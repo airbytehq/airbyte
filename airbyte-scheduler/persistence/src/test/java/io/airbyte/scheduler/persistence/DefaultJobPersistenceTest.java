@@ -357,7 +357,7 @@ class DefaultJobPersistenceTest {
       assertEquals("", defaultWorkflowId);
 
       database.query(ctx -> ctx.execute(
-          "UPDATE attempts SET temporalWorkflowId = '56a81f3a-006c-42d7-bce2-29d675d08ea4' WHERE job_id = ? AND attempt_number =?", jobId,
+          "UPDATE attempts SET temporal_workflow_id = '56a81f3a-006c-42d7-bce2-29d675d08ea4' WHERE job_id = ? AND attempt_number =?", jobId,
           attemptNumber));
       var workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, attemptNumber);
       assertEquals(workflowId, "56a81f3a-006c-42d7-bce2-29d675d08ea4");

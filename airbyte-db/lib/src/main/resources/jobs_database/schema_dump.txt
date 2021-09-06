@@ -28,7 +28,7 @@ create table "public"."attempts"(
   "created_at" timestamptz(35) null,
   "updated_at" timestamptz(35) null,
   "ended_at" timestamptz(35) null,
-  "temporalworkflowid" varchar(2147483647) not null default '''''::character varying',
+  "temporal_workflow_id" varchar(2147483647) not null default '''''::character varying',
   constraint "attempts_pkey"
     primary key ("id")
 );
