@@ -1,0 +1,7 @@
+{
+  "destinationDefinitionId": "8b746512-8c2e-6ac1-4adc-b59faafd473c",
+  "name": "MongoDB",
+  "dockerRepository": "airbyte/destination-mongodb",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mongodb"
+}

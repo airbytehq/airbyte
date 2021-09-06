@@ -122,6 +122,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Local CSV](./destinations/local-csv.md)| Certified |
 |[Local JSON](./destinations/local-json.md)| Certified |
 |[MeiliSearch](./destinations/meilisearch.md)| Beta |
+|[MongoDB](./destinations/mongodb.md)| Alpha |
 |[MySQL](./destinations/mysql.md)| Beta |
 |[Oracle](./destinations/oracle.md)| Alpha |
 |[Postgres](./destinations/postgres.md)| Certified |
