@@ -76,17 +76,22 @@ Make sure that MongoDB is accessible from external servers. Specific commands wi
 
 Your `READ_ONLY_USER` should now be ready for use with Airbyte.
 
-
-#### Possible configuration Parameters
-
-* Authentication Source
-* Host: URL of the database
-* Port: Port to use for connecting to the database
+### Сonfiguration Parameters
+* Database: database name
+* Authentication Source: specifies the database that the supplied credentials should be validated against. Defaults to `admin`.
 * User: username to use when connecting
 * Password: used to authenticate the user
-* Replica Set
-* Whether to enable SSL
+* TSL: whether to use TSL connection
+* **Standalone MongoDb instance**
+  * Host: URL of the database
+  * Port: Port to use for connecting to the database
+* **Replica Set**
+  * Server addresses: the members of a replica set
+  * Replica Set: A replica set name
+* **MongoDb Atlas Cluster**
+  * Cluster URL: URL of a cluster to connect to
 
+For more information regarding configuration parameters, please see [MongoDb Documentation](https://docs.mongodb.com/drivers/java/sync/v4.3/fundamentals/connection/).
 
 ## Changelog
 | Version | Date       | Pull Request | Subject |
