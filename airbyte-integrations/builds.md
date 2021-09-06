@@ -11,7 +11,9 @@
 | App Store   | [![source-appstore-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-appstore-singer%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-appstore-singer) |
 | Asana   | [![source-asana](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-asana%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-asana) |
 | AWS CloudTrail   | [![source-aws-cloudtrail](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-aws-cloudtrail%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-aws-cloudtrail) |
+| BambooHR   | [![source-bamboo-hr](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-bamboo-hr%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-braintree) |
 | Braintree   | [![source-braintree](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-braintree%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-braintree) |
+| BigCommerce   | [![source-bigcommerce](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-bigcommerce%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-braintree) |
 | BigQuery   | [![source-bigquery](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-bigquery%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-bigquery/) |
 | Bing Ads   [![source-bing-ads](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-bing-ads%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-bing-ads) |
 | Chargebee   | [![source-chargebee](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fsource-chargebee%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/source-chargebee/) |
@@ -84,6 +86,7 @@
 
 |name |status |
 | :--- | :--- |
+| Azure Blob Storage | [![destination-azure-blob-storage](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-azure-blob-storage%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-azure-blob-storage) |
 | BigQuery   | [![destination-bigquery](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-bigquery%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-bigquery) |
 | Google Cloud Storage (GCS) | [![destination-gcs](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-s3%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-gcs) |
 | Google PubSub   | [![destination-pubsub](https://img.shields.io/endpoint?url=https%3A%2F%2Fdnsgjos7lj2fu.cloudfront.net%2Ftests%2Fsummary%2Fdestination-pubsub%2Fbadge.json)](https://dnsgjos7lj2fu.cloudfront.net/tests/summary/destination-pubsub) |

@@ -1,64 +1,61 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { FormattedMessage } from "react-intl";
-import NotificationsForm from "./components/NotificationsForm";
-import useWorkspace from "components/hooks/services/useWorkspace";
+import useWorkspace from "hooks/services/useWorkspace";
 import WebHookForm from "./components/WebHookForm";
 import HeadTitle from "components/HeadTitle";
-import useWorkspaceEditor from "pages/SettingsPage/components/useWorkspaceEditor";
 
 import { Content, SettingsCard } from "../SettingsComponents";
 
+function useAsyncWithTimeout<K, T>(f: (data: K) => Promise<T>) {
+  const [errorMessage, setErrorMessage] = useState<React.ReactNode>(null);
+  const [successMessage, setSuccessMessage] = useState<React.ReactNode>(null);
+  const call = useCallback(
+    async (data: K) => {
+      setSuccessMessage(null);
+      setErrorMessage(null);
+      try {
+        await f(data);
+        setSuccessMessage(<FormattedMessage id="settings.changeSaved" />);
+
+        setTimeout(() => {
+          setSuccessMessage(null);
+        }, 2000);
+      } catch (e) {
+        setErrorMessage(<FormattedMessage id="form.someError" />);
+
+        setTimeout(() => {
+          setErrorMessage(null);
+        }, 2000);
+      }
+    },
+    [f]
+  );
+
+  return {
+    call,
+    successMessage,
+    errorMessage,
+  };
+}
+
 const NotificationPage: React.FC = () => {
   const { workspace, updateWebhook, testWebhook } = useWorkspace();
+
   const {
+    call: onSubmitWebhook,
     errorMessage,
     successMessage,
-    loading,
-    updateData,
-  } = useWorkspaceEditor();
-  const [
-    errorWebhookMessage,
-    setErrorWebhookMessage,
-  ] = useState<React.ReactNode>(null);
-  const [
-    successWebhookMessage,
-    setSuccessWebhookMessage,
-  ] = useState<React.ReactNode>(null);
-
-  const onChange = async (data: {
-    news: boolean;
-    securityUpdates: boolean;
-  }) => {
-    await updateData({ ...workspace, ...data });
-  };
-
-  const onSubmitWebhook = async (data: { webhook: string }) => {
-    setSuccessWebhookMessage(null);
-    setErrorWebhookMessage(null);
-    try {
-      await updateWebhook(data);
-      setSuccessWebhookMessage(<FormattedMessage id="settings.changeSaved" />);
-
-      setTimeout(() => {
-        setSuccessWebhookMessage(null);
-      }, 2000);
-    } catch (e) {
-      setErrorWebhookMessage(<FormattedMessage id="form.someError" />);
-
-      setTimeout(() => {
-        setErrorWebhookMessage(null);
-      }, 2000);
-    }
-  };
+  } = useAsyncWithTimeout(async (data: { webhook: string }) =>
+    updateWebhook(data)
+  );
 
   const onTestWebhook = async (data: { webhook: string }) => {
     await testWebhook(data.webhook);
   };
 
-  const initialWebhookUrl =
-    workspace.notifications && workspace.notifications.length
-      ? workspace.notifications[0].slackConfiguration.webhook
-      : "";
+  const initialWebhookUrl = workspace.notifications?.length
+    ? workspace.notifications[0].slackConfiguration.webhook
+    : "";
 
   return (
     <>
@@ -73,19 +70,8 @@ const NotificationPage: React.FC = () => {
             notificationUrl={initialWebhookUrl}
             onSubmit={onSubmitWebhook}
             onTest={onTestWebhook}
-            errorMessage={errorWebhookMessage}
-            successMessage={successWebhookMessage}
-          />
-
-          <NotificationsForm
-            isLoading={loading}
             errorMessage={errorMessage}
             successMessage={successMessage}
-            onChange={onChange}
-            preferencesValues={{
-              news: workspace.news,
-              securityUpdates: workspace.securityUpdates,
-            }}
           />
         </Content>
       </SettingsCard>

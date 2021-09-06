@@ -5,53 +5,37 @@
         "name": "assignees",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "reviews",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "events",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": false,
-        "default_cursor_field": ["created_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append",
-      "cursor_field": ["created_at"]
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "branches",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "collaborators",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
         "name": "comments",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": false,
-        "default_cursor_field": ["updated_at"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append",
-      "cursor_field": ["updated_at"]
-    },
-    {
-      "stream": {
-        "name": "pull_requests",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": false,
+        "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
@@ -64,20 +48,7 @@
         "name": "commit_comments",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": false,
-        "default_cursor_field": ["updated_at"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append",
-      "cursor_field": ["updated_at"]
-    },
-    {
-      "stream": {
-        "name": "issue_milestones",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": false,
+        "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
@@ -90,7 +61,20 @@
         "name": "commits",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": false,
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created_at"],
+        "source_defined_primary_key": [["sha"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["created_at"]
+    },
+    {
+      "stream": {
+        "name": "events",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
         "default_cursor_field": ["created_at"],
         "source_defined_primary_key": [["id"]]
       },
@@ -100,33 +84,59 @@
     },
     {
       "stream": {
-        "name": "collaborators",
+        "name": "issue_events",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["created_at"]
+    },
+    {
+      "stream": {
+        "name": "issue_labels",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
-        "name": "stargazers",
+        "name": "issue_milestones",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": false,
-        "default_cursor_field": ["starred_at"],
-        "source_defined_primary_key": [["user_id"]]
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
-      "cursor_field": ["starred_at"]
+      "cursor_field": ["updated_at"]
     },
     {
       "stream": {
-        "name": "teams",
+        "name": "issues",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updated_at"]
+    },
+    {
+      "stream": {
+        "name": "organizations",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -136,7 +146,7 @@
         "name": "projects",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": false,
+        "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
@@ -146,20 +156,20 @@
     },
     {
       "stream": {
-        "name": "issue_labels",
+        "name": "pull_request_stats",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
-        "name": "issues",
+        "name": "pull_requests",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": false,
+        "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
@@ -169,10 +179,10 @@
     },
     {
       "stream": {
-        "name": "issue_events",
+        "name": "releases",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": false,
+        "source_defined_cursor": true,
         "default_cursor_field": ["created_at"],
         "source_defined_primary_key": [["id"]]
       },
@@ -182,16 +192,79 @@
     },
     {
       "stream": {
-        "name": "releases",
+        "name": "repositories",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "review_comments",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": false,
-        "default_cursor_field": ["created_at"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
-      "cursor_field": ["created_at"]
+      "cursor_field": ["updated_at"]
+    },
+    {
+      "stream": {
+        "name": "reviews",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "stargazers",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["starred_at"],
+        "source_defined_primary_key": [["user_id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["starred_at"]
+    },
+    {
+      "stream": {
+        "name": "tags",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "teams",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "users",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

@@ -7,9 +7,9 @@ import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
 
 import { Routes } from "pages/routes";
-import config from "config";
+import { useConfig } from "config";
 
-import useConnector from "components/hooks/services/useConnector";
+import useConnector from "hooks/services/useConnector";
 import { Link } from "components";
 import Version from "components/Version";
 import Indicator from "components/Indicator";
@@ -18,7 +18,7 @@ import Source from "./components/SourceIcon";
 import Connections from "./components/ConnectionsIcon";
 import Destination from "./components/DestinationIcon";
 import Onboarding from "./components/OnboardingIcon";
-import useWorkspace from "components/hooks/services/useWorkspace";
+import useWorkspace from "hooks/services/useWorkspace";
 
 const Bar = styled.nav`
   width: 100px;
@@ -104,6 +104,7 @@ const Notification = styled(Indicator)`
 
 const SideBar: React.FC = () => {
   const { hasNewVersions } = useConnector();
+  const config = useConfig();
   const { workspace } = useWorkspace();
 
   return (

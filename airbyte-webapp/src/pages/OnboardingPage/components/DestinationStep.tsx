@@ -5,16 +5,16 @@ import ContentCard from "components/ContentCard";
 import ServiceForm from "views/Connector/ServiceForm";
 import { JobsLogItem } from "components/JobItem";
 
-import { useDestinationDefinitionSpecificationLoad } from "components/hooks/services/useDestinationHook";
+import { useDestinationDefinitionSpecificationLoad } from "hooks/services/useDestinationHook";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
 
 import SkipOnboardingButton from "./SkipOnboardingButton";
-import { useAnalytics } from "components/hooks/useAnalytics";
 import TitlesBlock from "./TitlesBlock";
 import HighlightedText from "./HighlightedText";
+import { useAnalytics } from "hooks/useAnalytics";
 
 type IProps = {
   availableServices: DestinationDefinition[];

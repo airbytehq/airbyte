@@ -43,6 +43,11 @@ class SlackStream(HttpStream, ABC):
     primary_key = "id"
     page_size = 100
 
+    @property
+    def max_retries(self) -> int:
+        # Slack's rate limiting can be unpredictable so we increase the max number of retries by a lot before failing
+        return 20
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """Slack uses a cursor-based pagination strategy.
         Extract the cursor from the response if it exists and return it in a format
@@ -79,10 +84,13 @@ class SlackStream(HttpStream, ABC):
         Slack puts the retry time in the `Retry-After` response header so we
         we return that value. If the response is anything other than a 429 (e.g: 5XX)
         fall back on default retry behavior.
-
         Rate Limits Docs: https://api.slack.com/docs/rate-limits#web"""
 
-        return int(response.headers.get("Retry-After", 0))
+        if "Retry-After" in response.headers:
+            return int(response.headers["Retry-After"])
+        else:
+            self.logger.info("Retry-after header not found. Using default backoff value")
+            return 5
 
     @property
     @abstractmethod
