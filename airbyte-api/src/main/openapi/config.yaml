@@ -2985,7 +2985,7 @@ components:
       required:
         - destinationDefinitionId
       properties:
-        sourceDefinitionId:
+        destinationDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
