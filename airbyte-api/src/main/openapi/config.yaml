@@ -1864,25 +1864,6 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         name:
           type: string
-    SourceRecreate:
-      type: object
-      required:
-        - workspaceId
-        - sourceDefinitionId
-        - sourceId
-        - connectionConfiguration
-        - name
-      properties:
-        sourceDefinitionId:
-          $ref: "#/components/schemas/SourceDefinitionId"
-        sourceId:
-          $ref: "#/components/schemas/SourceId"
-        workspaceId:
-          $ref: "#/components/schemas/WorkspaceId"
-        connectionConfiguration:
-          $ref: "#/components/schemas/SourceConfiguration"
-        name:
-          type: string
     SourceUpdate:
       type: object
       required:
@@ -2075,25 +2056,6 @@ components:
           $ref: "#/components/schemas/DestinationDefinitionId"
         connectionConfiguration:
           $ref: "#/components/schemas/DestinationConfiguration"
-    DestinationRecreate:
-      type: object
-      required:
-        - workspaceId
-        - destinationId
-        - destinationDefinitionId
-        - connectionConfiguration
-        - name
-      properties:
-        destinationDefinitionId:
-          $ref: "#/components/schemas/DestinationDefinitionId"
-        destinationId:
-          $ref: "#/components/schemas/DestinationId"
-        workspaceId:
-          $ref: "#/components/schemas/WorkspaceId"
-        connectionConfiguration:
-          $ref: "#/components/schemas/DestinationConfiguration"
-        name:
-          type: string
     DestinationUpdate:
       type: object
       required:
