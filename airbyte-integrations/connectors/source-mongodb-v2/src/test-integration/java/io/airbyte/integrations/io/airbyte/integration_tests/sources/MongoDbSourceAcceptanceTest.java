@@ -69,17 +69,19 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"));
     mongoDBContainer.start();
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
+    final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", mongoDBContainer.getHost())
         .put("port", mongoDBContainer.getFirstMappedPort())
+        .build());
+
+    config = Jsons.jsonNode(ImmutableMap.builder()
+        .put("instance_type", instanceConfig)
         .put("database", "test")
-        .put("user", "")
-        .put("password", "")
         .put("auth_source", "admin")
         .put("tls", false)
         .build());
 
-    String connectionString = String.format("mongodb://%s:%s/?authSource=admin&tls=false",
+    String connectionString = String.format("mongodb://%s:%s/",
         mongoDBContainer.getHost(),
         mongoDBContainer.getFirstMappedPort());
 
@@ -113,10 +115,10 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withCursorField(List.of("_id"))
             .withStream(CatalogHelpers.createAirbyteStream(
-                "test.acceptance_test",
-                Field.of("_id", JsonSchemaPrimitive.STRING),
-                Field.of("id", JsonSchemaPrimitive.STRING),
-                Field.of("name", JsonSchemaPrimitive.STRING))
+                    "test.acceptance_test",
+                    Field.of("_id", JsonSchemaPrimitive.STRING),
+                    Field.of("id", JsonSchemaPrimitive.STRING),
+                    Field.of("name", JsonSchemaPrimitive.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
                 .withDefaultCursorField(List.of("_id")))));
   }

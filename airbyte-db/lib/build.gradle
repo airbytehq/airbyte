@@ -24,7 +24,7 @@ dependencies {
     annotationProcessor('org.projectlombok:lombok:1.18.20')
 
     // MongoDB
-    implementation group: 'org.mongodb', name: 'mongo-java-driver', version: '3.12.8'
+    compile 'org.mongodb:mongodb-driver-sync:4.3.0'
 }
 
 task(newConfigsMigration, dependsOn: 'classes', type: JavaExec) {

@@ -26,7 +26,6 @@ package io.airbyte.db.mongodb;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import io.airbyte.commons.json.Jsons;
@@ -36,13 +35,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.bson.BsonArray;
 import org.bson.BsonBinary;
 import org.bson.BsonDocument;
 import org.bson.BsonDocumentReader;
 import org.bson.BsonReader;
 import org.bson.BsonType;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.Decimal128;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,8 +93,8 @@ public class MongoUtils {
           case JAVASCRIPT -> o.put(fieldName, reader.readJavaScript());
           case JAVASCRIPT_WITH_SCOPE -> o.put(fieldName, reader.readJavaScriptWithScope());
           case REGULAR_EXPRESSION -> o.put(fieldName, toString(reader.readRegularExpression()));
-          case DOCUMENT -> o.put(fieldName, documentToString(document.get(fieldName)));
-          case ARRAY -> o.put(fieldName, arrayToString(document.get(fieldName)));
+          case DOCUMENT -> o.put(fieldName, documentToString(document.get(fieldName), reader));
+          case ARRAY -> o.put(fieldName, arrayToString(document.get(fieldName), reader));
           default -> reader.skipValue();
         }
 
@@ -111,8 +110,8 @@ public class MongoUtils {
   }
 
   /**
-   * Gets 10.000 documents from collection, gathers all unique fields and its type. In case when one
-   * field has different types in 2 and more documents, the type is set to String.
+   * Gets 10.000 documents from collection, gathers all unique fields and its type. In case when one field has different types in 2 and more
+   * documents, the type is set to String.
    *
    * @param collection mongo collection
    * @return map of unique fields and its type
@@ -143,8 +142,7 @@ public class MongoUtils {
 
   private static BsonDocument toBsonDocument(final Document document) {
     try {
-      return document.toBsonDocument(BsonDocument.class,
-          MongoClient.getDefaultCodecRegistry());
+      return document.toBsonDocument(BsonDocument.class, Bson.DEFAULT_CODEC_REGISTRY);
     } catch (Exception e) {
       LOGGER.error("Exception while converting Document to BsonDocument: ", e.getMessage());
       throw new RuntimeException(e);
@@ -164,8 +162,9 @@ public class MongoUtils {
   }
 
   // temporary method for MVP
-  private static String documentToString(Object obj) {
+  private static String documentToString(Object obj, BsonReader reader) {
     try {
+      reader.skipValue();
       Document document = (Document) obj;
       return document.toJson();
     } catch (Exception e) {
@@ -175,12 +174,12 @@ public class MongoUtils {
   }
 
   // temporary method for MVP
-  private static String arrayToString(Object obj) {
+  private static String arrayToString(Object obj, BsonReader reader) {
     try {
-      BsonArray array = (BsonArray) obj;
-      return array.toString();
+      reader.skipValue();
+      return obj.toString();
     } catch (Exception e) {
-      LOGGER.error("Failed to convert document to a String: ", e.getMessage());
+      LOGGER.error("Failed to convert array to a String: ", e.getMessage());
       return null;
     }
   }

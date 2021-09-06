@@ -61,6 +61,20 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbSource.class);
 
+  private static final String MONGODB_SERVER_URL = "mongodb://%s%s:%s/?";
+  private static final String MONGODB_CLUSTER_URL = "mongodb+srv://%s%s/%s?retryWrites=true&w=majority&";
+  private static final String MONGODB_REPLICA_URL = "mongodb://%s%s/?replicaSet=%s&";
+  private static final String USER = "user";
+  private static final String PASSWORD = "password";
+  private static final String INSTANCE_TYPE = "instance_type";
+  private static final String HOST = "host";
+  private static final String PORT = "port";
+  private static final String CLUSTER_URL = "cluster_url";
+  private static final String DATABASE = "database";
+  private static final String SERVER_ADDRESSES = "server_addresses";
+  private static final String REPLICA_SET = "replica_set";
+  private static final String AUTH_SOURCE = "auth_source";
+  private static final String TLS = "tls";
   private static final String PRIMARY_KEY = "_id";
 
   public static void main(String[] args) throws Exception {
@@ -72,22 +86,31 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
   @Override
   public JsonNode toDatabaseConfig(JsonNode config) {
-    String credentials = config.has("user") && config.has("password") && StringUtils.isNoneEmpty(config.get("user").asText())
-        ? String.format("%s:%s@", config.get("user").asText(), config.get("password").asText())
+    var credentials = config.has(USER) && config.has(PASSWORD)
+        ? String.format("%s:%s@", config.get(USER).asText(), config.get(PASSWORD).asText())
         : StringUtils.EMPTY;
 
-    String connectionString = String.format("mongodb://%s%s:%s/?authSource=%s",
-        credentials,
-        config.get("host").asText(),
-        config.get("port").asText(),
-        config.get("auth_source").asText());
+    JsonNode instanceConfig = config.get(INSTANCE_TYPE);
+    String instanceConnectUrl;
+    if (instanceConfig.has(HOST) && instanceConfig.has(PORT)) {
+      instanceConnectUrl = String.format(MONGODB_SERVER_URL,
+          credentials, instanceConfig.get(HOST).asText(), instanceConfig.get(PORT).asText());
+    } else if (instanceConfig.has(CLUSTER_URL)) {
+      instanceConnectUrl = String.format(MONGODB_CLUSTER_URL,
+          credentials, instanceConfig.get(CLUSTER_URL).asText(), config.get(DATABASE).asText());
+    } else {
+      instanceConnectUrl = String.format(MONGODB_REPLICA_URL,
+          credentials, instanceConfig.get(SERVER_ADDRESSES).asText(), config.get(REPLICA_SET).asText());
+    }
 
-    String options = config.has("replica_set") ? String.format("&replica_set=%s&tls=true",
-        config.get("replica_set").asText()) : String.format("&tls=%s", config.get("tls").asText());
+    String options = "authSource=".concat(config.get(AUTH_SOURCE).asText());
+    if (config.get(TLS).asBoolean()) {
+      options.concat("&tls=true");
+    }
 
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("connectionString", connectionString + options)
-        .put("database", config.get("database").asText())
+        .put("connectionString", instanceConnectUrl + options)
+        .put("database", config.get(DATABASE).asText())
         .build());
   }
 

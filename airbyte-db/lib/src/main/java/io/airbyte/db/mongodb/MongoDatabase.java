@@ -26,8 +26,10 @@ package io.airbyte.db.mongodb;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
+import com.mongodb.ConnectionString;
+import com.mongodb.ReadConcern;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoIterable;
@@ -51,15 +53,15 @@ public class MongoDatabase extends AbstractDatabase {
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDatabase.class);
   private static final int BATCH_SIZE = 1000;
 
-  private final MongoClientURI mongoClientURI;
+  private final ConnectionString connectionString;
   private final String databaseName;
 
   private MongoClient mongoClient;
 
   public MongoDatabase(String uri, String databaseName) {
     try {
-      mongoClientURI = new MongoClientURI(uri);
-      mongoClient = new MongoClient(mongoClientURI);
+      connectionString = new ConnectionString(uri);
+      mongoClient = MongoClients.create(connectionString);
       this.databaseName = databaseName;
     } catch (Exception e) {
       LOGGER.error(e.getMessage());
@@ -81,7 +83,8 @@ public class MongoDatabase extends AbstractDatabase {
   }
 
   public MongoCollection<Document> getCollection(String collectionName) {
-    return getDatabase().getCollection(collectionName);
+    return getDatabase().getCollection(collectionName)
+        .withReadConcern(ReadConcern.MAJORITY);
   }
 
   @VisibleForTesting
