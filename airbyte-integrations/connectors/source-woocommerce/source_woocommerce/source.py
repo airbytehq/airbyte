@@ -161,8 +161,9 @@ class SourceWoocommerce(AbstractSource):
         """
         Testing connection availability for the connector.
         """
+        shop = config['shop']
         headers = {"Accept": "application/json"}
-        url =  f"https://{shop}.com/wp-json/{api_version}/"
+        url =  f"https://{shop}.com/wp-json/wc/v3/"
 
         try:
             auth = TokenAuthenticator(token=self._convert_auth_to_token(config["api_key"], config["api_secret"]), auth_method="Basic")
