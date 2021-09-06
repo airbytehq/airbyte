@@ -9,7 +9,7 @@ import ContentCard from "components/ContentCard";
 import useConnection, {
   useConnectionLoad,
   ValuesProps,
-} from "components/hooks/services/useConnectionHook";
+} from "hooks/services/useConnectionHook";
 import DeleteBlock from "components/DeleteBlock";
 import ConnectionForm from "views/Connection/ConnectionForm";
 import ResetDataModal from "components/ResetDataModal";
