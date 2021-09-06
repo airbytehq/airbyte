@@ -93,6 +93,23 @@
                 "type": ["null", "string"]
               }
             }
+          },
+          "choices": {
+            "type": ["null", "object"],
+            "properties": {
+              "ids": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
+              },
+              "labels": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
           }
         }
       }
