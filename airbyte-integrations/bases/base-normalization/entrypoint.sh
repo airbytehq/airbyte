@@ -95,7 +95,7 @@ function main() {
   run)
     configuredbt
     . /airbyte/sshtunneling.sh
-    openssh $CONFIG_FILE
+    openssh $CONFIG_FILE "${PROJECT_DIR}/localsshport.json"
     # Run dbt to compile and execute the generated normalization models
     dbt run --profiles-dir "${PROJECT_DIR}" --project-dir "${PROJECT_DIR}"
     closessh

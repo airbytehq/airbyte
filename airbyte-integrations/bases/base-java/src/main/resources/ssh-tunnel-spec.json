@@ -20,10 +20,9 @@
       "required": [
         "tunnel_method",
         "tunnel_host",
-        "tunnel_ssh_port",
-        "tunnel_username",
-        "tunnel_local_port",
-        "tunnel_user_ssh_key"
+        "tunnel_port",
+        "tunnel_user",
+        "ssh_key"
       ],
       "properties": {
         "tunnel_method": {
@@ -38,7 +37,7 @@
           "type": "string",
           "order": 1
         },
-        "tunnel_ssh_port": {
+        "tunnel_port": {
           "title": "SSH Connection Port",
           "description": "Port on the proxy/jump server that accepts inbound ssh connections.",
           "type": "integer",
@@ -48,43 +47,19 @@
           "examples": ["22"],
           "order": 2
         },
-        "tunnel_username": {
+        "tunnel_user": {
           "title": "SSH Login Username",
           "description": "OS-level username for logging into the jump server host.",
           "type": "string",
           "order": 3
         },
-        "tunnel_user_ssh_key": {
+        "ssh_key": {
           "title": "SSH Private Key",
           "description": "OS-level user account ssh key credentials for logging into the jump server host.",
           "type": "string",
           "airbyte_secret": true,
           "multiline": true,
           "order": 4
-        },
-        "tunnel_db_remote_host": {
-          "title": "Remote Database Host",
-          "description": "Hostname or static IP address of the database to port-forward, as recognized from the jump server.",
-          "type": "string",
-          "order": 5
-        },
-        "tunnel_db_remote_port": {
-          "title": "Remote Database Port",
-          "description": "Port on the database to port-forward, typically that database's usual default port.",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 65536,
-          "examples": ["5432"],
-          "order": 6
-        },
-        "tunnel_local_port": {
-          "title": "SSH Tunnel Database Port",
-          "description": "Port on the jump server host for the database's port to forward to. Do not share a port between database instances.",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 65536,
-          "examples": ["5000"],
-          "order": 7
         }
       }
     },
@@ -93,10 +68,9 @@
       "required": [
         "tunnel_method",
         "tunnel_host",
-        "tunnel_ssh_port",
-        "tunnel_username",
-        "tunnel_local_port",
-        "tunnel_userpass"
+        "tunnel_port",
+        "tunnel_user",
+        "tunnel_user_password"
       ],
       "properties": {
         "tunnel_method": {
@@ -111,7 +85,7 @@
           "type": "string",
           "order": 1
         },
-        "tunnel_ssh_port": {
+        "tunnel_port": {
           "title": "SSH Connection Port",
           "description": "Port on the proxy/jump server that accepts inbound ssh connections.",
           "type": "integer",
@@ -121,42 +95,18 @@
           "examples": ["22"],
           "order": 2
         },
-        "tunnel_username": {
+        "tunnel_user": {
           "title": "SSH Login Username",
           "description": "OS-level username for logging into the jump server host",
           "type": "string",
           "order": 3
         },
-        "tunnel_userpass": {
+        "tunnel_user_password": {
           "title": "Password",
           "description": "OS-level password for logging into the jump server host",
           "type": "string",
           "airbyte_secret": true,
           "order": 4
-        },
-        "tunnel_db_remote_host": {
-          "title": "Remote Database Host",
-          "description": "Hostname or static IP address of the database to port-forward, as recognized from the jump server.",
-          "type": "string",
-          "order": 5
-        },
-        "tunnel_db_remote_port": {
-          "title": "Remote Database Port",
-          "description": "Port on the database to port-forward, typically that database's usual default port.",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 65536,
-          "examples": ["5432"],
-          "order": 6
-        },
-        "tunnel_local_port": {
-          "title": "SSH Tunnel Database Port",
-          "description": "Port on the jump server host for the database's port to forward to. Do not share a port between database instances.",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 65536,
-          "examples": ["5000"],
-          "order": 7
         }
       }
     }

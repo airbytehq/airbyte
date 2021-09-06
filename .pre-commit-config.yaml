@@ -6,13 +6,13 @@ repos:
         args: ["--tmpl=LICENSE", "--ext=py", "-f"]
 
   - repo: https://github.com/ambv/black
-    rev: stable
+    rev: 20.8b1
     hooks:
       - id: black
         args: ["--line-length=140"]
 
   - repo: https://github.com/timothycrosley/isort
-    rev: 4.3.21
+    rev: 5.6.4
     hooks:
       - id: isort
         args: ["--settings-path=tools/python/.isort.cfg"]
@@ -24,8 +24,14 @@ repos:
         types_or: [yaml, json]
         exclude: ^.github/
 
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v1.2.3
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: 3.8.4
     hooks:
       - id: flake8
         args: ["--config=tools/python/.flake8"]
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v0.812
+    hooks:
+      - id: mypy
+        args: ["--config-file=tools/python/.mypy.ini"]

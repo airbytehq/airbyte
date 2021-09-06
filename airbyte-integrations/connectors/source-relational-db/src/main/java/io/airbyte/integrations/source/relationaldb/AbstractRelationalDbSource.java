@@ -70,6 +70,13 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class contains helper functions and boilerplate for implementing a source connector for a
+ * relational DB source.
+ *
+ * @see io.airbyte.integrations.source.jdbc.AbstractJdbcSource if you are implementing a relational
+ *      DB which can be accessed via JDBC driver.
+ */
 public abstract class AbstractRelationalDbSource<DataType, Database extends SqlDatabase> extends BaseConnector implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRelationalDbSource.class);
@@ -122,6 +129,17 @@ public abstract class AbstractRelationalDbSource<DataType, Database extends SqlD
    * @throws Exception access to the database might lead to an exceptions.
    */
   protected abstract List<TableInfo<CommonField<DataType>>> discoverInternal(final Database database)
+      throws Exception;
+
+  /**
+   * Discovers all available tables within a schema in the source database.
+   *
+   * @param database - source database
+   * @param schema - source schema
+   * @return list of source tables
+   * @throws Exception - access to the database might lead to exceptions.
+   */
+  protected abstract List<TableInfo<CommonField<DataType>>> discoverInternal(final Database database, String schema)
       throws Exception;
 
   /**

@@ -35,7 +35,7 @@ if [[ -f "${CWD}/bq_keyfile.json" ]]; then
 fi
 
 . $CWD/sshtunneling.sh
-openssh $CWD/destination_config.json
+openssh $CWD/destination_config.json $CWD/localsshport.json
 
 # Add mandatory flags profiles-dir and project-dir when calling dbt when necessary
 case "${CONTAINS_PROFILES_DIR}-${CONTAINS_PROJECT_DIR}" in

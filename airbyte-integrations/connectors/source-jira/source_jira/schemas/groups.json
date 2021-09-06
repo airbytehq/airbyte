@@ -1,12 +1,58 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
   "properties": {
-    "groupId": {
-      "type": "string"
+    "header": {
+      "type": "string",
+      "description": "Header text indicating the number of groups in the response and the total number of groups found in the search."
     },
-    "name": {
-      "type": "string"
+    "total": {
+      "type": "integer",
+      "description": "The total number of groups found in the search.",
+      "format": "int32"
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the group."
+          },
+          "html": {
+            "type": "string",
+            "description": "The group name with the matched query string highlighted with the HTML bold tag."
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "type": "string",
+                  "description": "The group label name."
+                },
+                "title": {
+                  "type": "string",
+                  "description": "The title of the group label."
+                },
+                "type": {
+                  "type": "string",
+                  "description": "The type of the group label.",
+                  "enum": ["ADMIN", "SINGLE", "MULTIPLE"]
+                }
+              }
+            }
+          },
+          "groupId": {
+            "type": "string",
+            "description": "The ID of the group, if available, which uniquely identifies the group across all Atlassian products. For example, *952d12c3-5b5b-4d04-bb32-44d383afc4b2*."
+          }
+        }
+      }
     }
   },
-  "type": "object"
+  "additionalProperties": false,
+  "description": "The list of groups found in a search, including header text (Showing X of Y matching groups) and total of matched groups."
 }
