@@ -42,8 +42,8 @@ class Oauth2Authenticator(AuthBase):
         client_id: str,
         client_secret: str,
         refresh_token: str,
-        token_expiry_date: None,
         scopes: List[str] = None,
+        token_expiry_date: pendulum.datetime = None,
         access_token_name: str = "access_token",
         expires_in_name: str = "expires_in",
     ):

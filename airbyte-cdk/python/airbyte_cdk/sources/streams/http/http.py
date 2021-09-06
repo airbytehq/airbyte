@@ -51,10 +51,10 @@ class HttpStream(Stream, ABC):
     def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None):
         self._session = requests.Session()
 
+        self._authenticator = NoAuth()
         if isinstance(authenticator, AuthBase):
             self._session.auth = authenticator
-            self._authenticator = NoAuth()
-        else:
+        elif authenticator:
             self._authenticator = authenticator
 
     @property
