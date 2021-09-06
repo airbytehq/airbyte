@@ -81,7 +81,7 @@ class SqlOperationsUtilsTest {
     final UUID RECORD2_UUID = UUID.randomUUID();
     when(uuidSupplier.get()).thenReturn(RECORD1_UUID).thenReturn(RECORD2_UUID);
 
-    new DefaultSqlOperations().createTableIfNotExists(database, SCHEMA_NAME, STREAM_NAME);
+    new TestJdbcSqlOperations().createTableIfNotExists(database, SCHEMA_NAME, STREAM_NAME);
 
     final String insertQueryComponent = String.format(
         "INSERT INTO %s.%s (%s, %s, %s) VALUES\n",

@@ -26,11 +26,14 @@
 import json
 import tempfile
 from typing import Any, Mapping, MutableMapping
+from unittest.mock import MagicMock
 
 import pytest
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
-from airbyte_cdk.sources import Source
+from airbyte_cdk.sources import AbstractSource, Source
+from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.streams.http.http import HttpStream
 
 
 class MockSource(Source):
@@ -49,6 +52,40 @@ class MockSource(Source):
 @pytest.fixture
 def source():
     return MockSource()
+
+
+@pytest.fixture
+def abstract_source(mocker):
+    mocker.patch.multiple(HttpStream, __abstractmethods__=set())
+    mocker.patch.multiple(Stream, __abstractmethods__=set())
+
+    class MockHttpStream(MagicMock, HttpStream):
+        url_base = "http://example.com"
+        path = "/dummy/path"
+
+        def __init__(self, *args, **kvargs):
+            MagicMock.__init__(self)
+            HttpStream.__init__(self, *args, kvargs)
+            self.read_records = MagicMock()
+
+    class MockStream(MagicMock, Stream):
+        page_size = None
+
+        def __init__(self, *args, **kvargs):
+            MagicMock.__init__(self)
+            self.read_records = MagicMock()
+
+    streams = [MockHttpStream(), MockStream()]
+
+    class MockAbstractSource(AbstractSource):
+        def check_connection(self):
+            return True, None
+
+        def streams(self, config):
+            self.streams_config = config
+            return streams
+
+    return MockAbstractSource()
 
 
 def test_read_state(source):
@@ -81,3 +118,60 @@ def test_read_catalog(source):
         catalog_file.flush()
         actual = source.read_catalog(catalog_file.name)
         assert actual == expected
+
+
+def test_internal_config(abstract_source):
+    configured_catalog = {
+        "streams": [
+            {
+                "stream": {"name": "mock_http_stream", "json_schema": {}},
+                "destination_sync_mode": "overwrite",
+                "sync_mode": "full_refresh",
+            },
+            {
+                "stream": {"name": "mock_stream", "json_schema": {}},
+                "destination_sync_mode": "overwrite",
+                "sync_mode": "full_refresh",
+            },
+        ]
+    }
+    catalog = ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
+    streams = abstract_source.streams(None)
+    assert len(streams) == 2
+    http_stream = streams[0]
+    non_http_stream = streams[1]
+    assert isinstance(http_stream, HttpStream)
+    assert not isinstance(non_http_stream, HttpStream)
+    http_stream.read_records.return_value = [{}] * 3
+    non_http_stream.read_records.return_value = [{}] * 3
+
+    # Test with empty config
+    records = [r for r in abstract_source.read(logger=MagicMock(), config={}, catalog=catalog, state={})]
+    # 3 for http stream and 3 for non http stream
+    assert len(records) == 3 + 3
+    assert http_stream.read_records.called
+    assert non_http_stream.read_records.called
+    # Make sure page_size havent been set
+    assert not http_stream.page_size
+    assert not non_http_stream.page_size
+    # Test with records limit set to 1
+    internal_config = {"some_config": 100, "_limit": 1}
+    records = [r for r in abstract_source.read(logger=MagicMock(), config=internal_config, catalog=catalog, state={})]
+    # 1 from http stream + 1 from non http stream
+    assert len(records) == 1 + 1
+    assert "_limit" not in abstract_source.streams_config
+    assert "some_config" in abstract_source.streams_config
+    # Test with records limit set to number that exceeds expceted records
+    internal_config = {"some_config": 100, "_limit": 20}
+    records = [r for r in abstract_source.read(logger=MagicMock(), config=internal_config, catalog=catalog, state={})]
+    assert len(records) == 3 + 3
+
+    # Check if page_size paramter is set to http instance only
+    internal_config = {"some_config": 100, "_page_size": 2}
+    records = [r for r in abstract_source.read(logger=MagicMock(), config=internal_config, catalog=catalog, state={})]
+    assert "_page_size" not in abstract_source.streams_config
+    assert "some_config" in abstract_source.streams_config
+    assert len(records) == 3 + 3
+    assert http_stream.page_size == 2
+    # Make sure page_size havent been set for non http streams
+    assert not non_http_stream.page_size

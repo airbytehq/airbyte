@@ -82,6 +82,7 @@ class BigQueryDenormalizedDestinationTest {
   private BigQuery bigquery;
   private Dataset dataset;
   private ConfiguredAirbyteCatalog catalog;
+  private String datasetId;
 
   private boolean tornDown = true;
 
@@ -106,13 +107,9 @@ class BigQueryDenormalizedDestinationTest {
         .build()
         .getService();
 
-    final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
+    datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
     final String datasetLocation = "EU";
     MESSAGE_USERS1.getRecord().setNamespace(datasetId);
-
-    catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
-        .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(getSchema()))
-        .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
 
     final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
     dataset = bigquery.create(datasetInfo);
@@ -162,6 +159,32 @@ class BigQueryDenormalizedDestinationTest {
 
   @Test
   void testNestedWrite() throws Exception {
+    catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
+        .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(getSchema()))
+        .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
+
+    final BigQueryDestination destination = new BigQueryDenormalizedDestination();
+    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
+
+    consumer.accept(MESSAGE_USERS1);
+    consumer.close();
+
+    final List<JsonNode> usersActual = retrieveRecordsAsJson(USERS_STREAM_NAME);
+    final JsonNode expectedUsersJson = MESSAGE_USERS1.getRecord().getData();
+    assertEquals(usersActual.size(), 1);
+    final JsonNode resultJson = usersActual.get(0);
+    assertEquals(extractJsonValues(resultJson, "name"), extractJsonValues(expectedUsersJson, "name"));
+    assertEquals(extractJsonValues(resultJson, "grants"), extractJsonValues(expectedUsersJson, "grants"));
+    assertEquals(extractJsonValues(resultJson, "domain"), extractJsonValues(expectedUsersJson, "domain"));
+
+  }
+
+  @Test
+  void testNestedWriteHandleMissedItemsForArrayType() throws Exception {
+    catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
+        .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(getSchemaWithInvalidArrayType()))
+        .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
+
     final BigQueryDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
@@ -245,6 +268,45 @@ class BigQueryDenormalizedDestinationTest {
             + "                \"string\"\n"
             + "              ]\n"
             + "            }\n"
+            + "          }\n"
+            + "        }\n"
+            + "      }\n"
+            + "    }\n"
+            + "  }\n"
+            + "}");
+
+  }
+
+  private JsonNode getSchemaWithInvalidArrayType() {
+    return Jsons.deserialize(
+        "{\n"
+            + "  \"type\": [\n"
+            + "    \"object\"\n"
+            + "  ],\n"
+            + "  \"properties\": {\n"
+            + "    \"name\": {\n"
+            + "      \"type\": [\n"
+            + "        \"string\"\n"
+            + "      ]\n"
+            + "    },\n"
+            + "    \"permissions\": {\n"
+            + "      \"type\": [\n"
+            + "        \"array\"\n"
+            + "      ],\n"
+            + "      \"items\": {\n"
+            + "        \"type\": [\n"
+            + "          \"object\"\n"
+            + "        ],\n"
+            + "        \"properties\": {\n"
+            + "          \"domain\": {\n"
+            + "            \"type\": [\n"
+            + "              \"string\"\n"
+            + "            ]\n"
+            + "          },\n"
+            + "          \"grants\": {\n"
+            + "            \"type\": [\n"
+            + "              \"array\"\n" // missed "items" element
+            + "            ]\n"
             + "          }\n"
             + "        }\n"
             + "      }\n"

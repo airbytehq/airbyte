@@ -36,7 +36,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 public class ConfigsDatabaseMigrationDevCenter extends MigrationDevCenter {
 
   public ConfigsDatabaseMigrationDevCenter() {
-    super("src/main/resources/configs_database/schema_dump.txt");
+    super("configs", "src/main/resources/configs_database/schema_dump.txt");
   }
 
   @Override

@@ -15,16 +15,16 @@
       "type": ["null", "string"]
     },
     "total_hours": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "billable_hours": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "currency": {
       "type": ["null", "string"]
     },
     "billable_amount": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "from": {
       "type": ["null", "string"]

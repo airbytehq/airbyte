@@ -89,7 +89,7 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
                   })}
                   error={!!meta.error && meta.touched}
                   onChange={(item) => {
-                    setFieldValue("connectorType", item.value);
+                    setFieldValue(field.name, item.value);
                   }}
                 />
               </ControlLabelsWithMargin>
