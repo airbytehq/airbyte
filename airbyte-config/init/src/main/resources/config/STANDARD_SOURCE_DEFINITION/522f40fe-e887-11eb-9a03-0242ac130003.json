@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "522f40fe-e887-11eb-9a03-0242ac130003",
+  "name": "Mailgun",
+  "dockerRepository": "blotout/source-mailgun-singer",
+  "dockerImageTag": "0.1.2",
+  "documentationUrl": "https://github.com/streetteam/tap-mailgun"
+}
