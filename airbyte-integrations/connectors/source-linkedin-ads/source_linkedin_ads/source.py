@@ -40,6 +40,9 @@ from .utils import make_slice, transform_data
 
 
 class LinkedinAdsStream(HttpStream, ABC):
+    """
+    Basic class provides base functionality for all streams.
+    """
 
     url_base = "https://api.linkedin.com/v2/"
     primary_key = "id"
@@ -316,6 +319,12 @@ class AdCreativeAnalytics(AnalyticsStreamMixin):
 
 
 class SourceLinkedinAds(AbstractSource):
+    """ 
+    Abstract Source inheritance, 
+    provides: 
+    - implementation for `check` connecto's connectivity
+    - implementation to call each stream with it's input parameters.
+    """
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         Testing connection availability for the connector.
