@@ -9,11 +9,24 @@ import {
 } from "pages/SettingsPage/pages/SettingsComponents";
 import { Button, LabeledInput, LoadingButton } from "components";
 import { useWorkspaceService } from "packages/cloud/services/workspaces/WorkspacesService";
-import { useCurrentWorkspace } from "components/hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
+`;
+
+const Buttons = styled.div`
+  margin-top: 10px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+
+  & > button {
+    margin-left: 5px;
+  }
 `;
 
 export const WorkspaceSettingsView: React.FC = () => {
@@ -35,11 +48,11 @@ export const WorkspaceSettingsView: React.FC = () => {
       >
         <Formik
           initialValues={{ name: name }}
-          onSubmit={(_, formikHelpers) =>
+          onSubmit={async (_, formikHelpers) =>
             formikHelpers.setFieldError("name", "Not implemented")
           }
         >
-          {() => (
+          {({ dirty, isSubmitting, resetForm }) => (
             <Form>
               <Content>
                 <Field name="name">
@@ -49,8 +62,6 @@ export const WorkspaceSettingsView: React.FC = () => {
                       label={
                         <FormattedMessage id="settings.generalSettings.form.name.label" />
                       }
-                      // TODO: add edit
-                      disabled={true}
                       placeholder={formatMessage({
                         id: "settings.generalSettings.form.name.placeholder",
                       })}
@@ -64,6 +75,22 @@ export const WorkspaceSettingsView: React.FC = () => {
                     />
                   )}
                 </Field>
+                <Buttons>
+                  <Button
+                    secondary
+                    disabled={!dirty}
+                    onClick={() => resetForm()}
+                  >
+                    cancel
+                  </Button>
+                  <LoadingButton
+                    type="submit"
+                    disabled={!dirty}
+                    isLoading={isSubmitting}
+                  >
+                    save changes
+                  </LoadingButton>
+                </Buttons>
               </Content>
             </Form>
           )}

@@ -24,6 +24,5 @@ yarn-error.log*
 /.idea
 
 .npmrc
-.env
 .env.development
 .env.production
