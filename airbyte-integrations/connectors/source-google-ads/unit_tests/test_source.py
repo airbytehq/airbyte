@@ -22,8 +22,10 @@
 # SOFTWARE.
 #
 
+import pytest
+from source_google_ads.custom_query_stream import CustomQuery
 from source_google_ads.google_ads import GoogleAds
-from source_google_ads.streams import AdGroupAdReport, CustomQuery, chunk_date_range
+from source_google_ads.streams import AdGroupAdReport, chunk_date_range
 
 
 def test_chunk_date_range():
@@ -63,6 +65,40 @@ def get_instance_from_config(config, query):
         custom_query_config={"query": query, "table_name": "whatever_table"},
     )
     return instance
+
+
+@pytest.mark.parametrize(
+    "query, fields",
+    [
+        (
+            """
+    SELecT
+  campaign.id,
+  campaign.name,
+  campaign.status,
+  metrics.impressions FROM campaign
+wheRe campaign.status = 'PAUSED'
+AND metrics.impressions > 100
+order by campaign.status
+    """,
+            ["campaign.id", "campaign.name", "campaign.status", "metrics.impressions"],
+        ),
+        (
+            """
+        SELECT
+            campaign.accessible_bidding_strategy,
+            segments.ad_destination_type,
+            campaign.start_date,
+            campaign.end_date
+        FROM campaign
+    """,
+            ["campaign.accessible_bidding_strategy", "segments.ad_destination_type", "campaign.start_date", "campaign.end_date"],
+        ),
+        ("""selet aasdasd from aaa""", []),
+    ],
+)
+def test_get_query_fields(query, fields):
+    assert CustomQuery.get_query_fields(query) == fields
 
 
 def test_get_json_schema_parse_query(config):
@@ -118,4 +154,4 @@ def test_google_type_conversion(config):
     final_schema = instance.get_json_schema()
     schema_properties = final_schema.get("properties")
     for prop, value in schema_properties.items():
-        assert desired_mapping[prop] == value.get("type")
+        assert desired_mapping[prop] == value.get("type"), f"{prop} should be {value}"

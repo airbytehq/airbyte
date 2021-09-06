@@ -22,14 +22,11 @@
 # SOFTWARE.
 #
 
-import re
 from abc import ABC
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import pendulum
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.core import package_name_from_class
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from google.ads.googleads.v8.services.services.google_ads_service.pagers import SearchPager
 
 from .google_ads import GoogleAds
@@ -195,98 +192,6 @@ class ShoppingPerformanceReport(IncrementalGoogleAdsStream):
     ShoppingPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v8/shopping_performance_view
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance
     """
-
-
-class CustomQuery(IncrementalGoogleAdsStream):
-    def __init__(self, custom_query_config, **kwargs):
-        self.custom_query_config = custom_query_config
-        self.user_defined_query = custom_query_config["query"]
-        super().__init__(**kwargs)
-
-    @property
-    def primary_key(self) -> str:
-        """
-        The primary_key option is disabled. Config should not provide the primary key.
-        It will be ignored if provided.
-        If you need to enable it, uncomment the next line instead of `return None` and modify your config
-        """
-        # return self.custom_query_config.get("primary_key") or None
-        return None
-
-    @property
-    def name(self):
-        return self.custom_query_config["table_name"]
-
-    @property
-    def cursor_field(self) -> str:
-        """
-        The incremental is disabled. Config / spec should not provide the cursor_field.
-        It will be ignored if provided.
-        However, this return should be kept for case we wanna support it.
-        Disabled cursor_field should be always empty array or string, to keep the internal logic
-            (get length of cursor_field).
-        Since it is not provided, the stream will be full refresh anyway.
-        The inheritance from the Incremental stream is made for supporting both types,
-            and need to be kept.
-        If you need to enable this option, uncomment the first return and modify your config
-        """
-        # return self.custom_query_config.get("cursor_field") or []
-        return []
-
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        if not self.cursor_field:
-            return [None]
-        return super().stream_slices(stream_state=stream_state, **kwargs)
-
-    def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
-        if not self.cursor_field:
-            return self.user_defined_query
-        start_date, end_date = self.get_date_params(stream_slice, self.cursor_field)
-        final_query = (
-            self.user_defined_query
-            + f"\nWHERE {self.cursor_field} > '{start_date}' AND {self.cursor_field} < '{end_date}' ORDER BY {self.cursor_field} ASC"
-        )
-        return final_query
-
-    def get_json_schema(self):
-        local_json_schema = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "properties": {},
-            "additionalProperties": True,
-        }
-        # full list {'ENUM', 'STRING', 'DATE', 'DOUBLE', 'RESOURCE_NAME', 'INT32', 'INT64', 'BOOLEAN', 'MESSAGE'}
-        google_datatype_mapping = {
-            "INT64": "integer",
-            "INT32": "integer",
-            "DOUBLE": "number",
-            "STRING": "string",
-            "BOOLEAN": "boolean",
-            "DATE": "string",
-        }
-        fields = self.user_defined_query.lower().split("select")[1].split("from")[0].strip()
-        google_resource_name = self.user_defined_query.lower().split("from", 1)[1].strip()
-        google_resource_name = re.split("\\s+", google_resource_name)[0]
-
-        fields = fields.split(",")
-        fields = [i.strip() for i in fields]
-        fields = list(dict.fromkeys(fields))
-
-        google_schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(f"shared/v8_{google_resource_name}")
-        for field in fields:
-            node = google_schema.get("fields").get(field).get("field_details")
-            google_data_type = node.get("data_type")
-            if google_data_type == "ENUM":
-                field_value = {"type": "string", "enum": node.get("enum_values")}
-            elif google_data_type == "MESSAGE":  # this can be anything (or skip as additionalproperties) ?
-                output_type = ["string", "number", "array", "object", "boolean", "null"]
-                field_value = {"type": output_type}
-            else:
-                output_type = [google_datatype_mapping.get(google_data_type, "string"), "null"]
-                field_value = {"type": output_type}
-            local_json_schema["properties"][field] = field_value
-
-        return local_json_schema
 
 
 class UserLocationReport(IncrementalGoogleAdsStream):

@@ -31,6 +31,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.errors import GoogleAdsException
 
+from .custom_query_stream import CustomQuery
 from .google_ads import GoogleAds
 from .streams import (
     AccountPerformanceReport,
@@ -39,7 +40,6 @@ from .streams import (
     AdGroupAds,
     AdGroups,
     Campaigns,
-    CustomQuery,
     DisplayKeywordPerformanceReport,
     DisplayTopicsPerformanceReport,
     ShoppingPerformanceReport,
