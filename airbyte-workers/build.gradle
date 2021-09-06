@@ -26,6 +26,7 @@ dependencies {
     implementation project(':airbyte-db:lib')
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-scheduler:persistence')
 
     testImplementation 'org.mockito:mockito-inline:2.13.0'
     testImplementation 'org.testcontainers:testcontainers:1.15.3'

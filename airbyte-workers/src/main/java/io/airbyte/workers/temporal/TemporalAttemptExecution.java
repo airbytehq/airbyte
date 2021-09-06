@@ -27,11 +27,13 @@ package io.airbyte.workers.temporal;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedSupplier;
-import io.airbyte.commons.io.IOs;
-import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.db.Database;
+import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.scheduler.persistence.DefaultJobPersistence;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerUtils;
 import io.temporal.activity.Activity;
@@ -61,6 +63,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
   private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(10);
   public static String WORKFLOW_ID_FILENAME = "WORKFLOW_ID";
 
+  private final JobRunConfig jobRunConfig;
   private final Path jobRoot;
   private final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier;
   private final Supplier<INPUT> inputSupplier;
@@ -94,6 +97,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
                            CheckedConsumer<Path, IOException> jobRootDirCreator,
                            CancellationHandler cancellationHandler,
                            Supplier<String> workflowIdProvider) {
+    this.jobRunConfig = jobRunConfig;
     this.jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
     this.workerSupplier = workerSupplier;
     this.inputSupplier = inputSupplier;
@@ -111,17 +115,27 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
       LOGGER.info("Executing worker wrapper. Airbyte version: {}", new EnvConfigs().getAirbyteVersionOrWarning());
 
       // There are no shared volumes on Kube; only do this for Docker.
-      if (new EnvConfigs().getWorkerEnvironment().equals(WorkerEnvironment.DOCKER)) {
-        LOGGER.debug("Creating local workspace directory..");
-        jobRootDirCreator.accept(jobRoot);
+      // if (new EnvConfigs().getWorkerEnvironment().equals(WorkerEnvironment.DOCKER)) {
+      // LOGGER.debug("Creating local workspace directory..");
+      // jobRootDirCreator.accept(jobRoot);
+      //
+      // // This is actually used in cancellation.
+      // // Can we write this to the database? As part of the attempt?
+      // // DefaultJobPersistence.setLatestAttemptWorkflowId(jobId, workflowId) to get the latest attempt
+      // final String workflowId = workflowIdProvider.get();
+      // final Path workflowIdFile = jobRoot.getParent().resolve(WORKFLOW_ID_FILENAME);
+      // IOs.writeFile(workflowIdFile, workflowId);
+      // }
 
-        // This is actually used in cancellation.
-        // Can we write this to the database? As part of the attempt?
-        // DefaultJobPersistence.setLatestAttemptWorkflowId(jobId, workflowId) to get the latest attempt
-        final String workflowId = workflowIdProvider.get();
-        final Path workflowIdFile = jobRoot.getParent().resolve(WORKFLOW_ID_FILENAME);
-        IOs.writeFile(workflowIdFile, workflowId);
-      }
+      var configs = new EnvConfigs();
+      final Database jobDatabase = new JobsDatabaseInstance(
+          configs.getDatabaseUser(),
+          configs.getDatabasePassword(),
+          configs.getDatabaseUrl())
+              .getInitialized();
+      final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
+      final String workflowId = workflowIdProvider.get();
+      jobPersistence.setAttemptTemporalWorkflowId(Long.parseLong(jobRunConfig.getJobId()), jobRunConfig.getAttemptId().intValue(), workflowId);
 
       final Worker<INPUT, OUTPUT> worker = workerSupplier.get();
       final CompletableFuture<OUTPUT> outputFuture = new CompletableFuture<>();

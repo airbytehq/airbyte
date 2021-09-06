@@ -46,7 +46,6 @@ import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -71,8 +70,6 @@ import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.api.workflowservice.v1.RequestCancelWorkflowExecutionRequest;
@@ -356,10 +353,14 @@ public class SchedulerHandler {
     // second cancel the temporal execution
     // TODO: this is hacky, resolve https://github.com/airbytehq/airbyte/issues/2564 to avoid this
     // behavior
-    final Path attemptParentDir = WorkerUtils.getJobRoot(workspaceRoot, String.valueOf(jobId), 0L).getParent();
-    final String workflowId = IOs.readFile(attemptParentDir, TemporalAttemptExecution.WORKFLOW_ID_FILENAME);
+    // final Path attemptParentDir = WorkerUtils.getJobRoot(workspaceRoot, String.valueOf(jobId),
+    // 0L).getParent();
+    // final String workflowId = IOs.readFile(attemptParentDir,
+    // TemporalAttemptExecution.WORKFLOW_ID_FILENAME);
 
-    // instead of reading from a shared volume, pull this info from the database.
+    var latestAttemptId = jobPersistence.getJob(jobId).getAttempts().size() - 1; // attempts ids are monotonically increasing starting from 0 and
+                                                                                 // specific to a job id, allowing us to do this.
+    final String workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, latestAttemptId);
 
     final WorkflowExecution workflowExecution = WorkflowExecution.newBuilder()
         .setWorkflowId(workflowId)
