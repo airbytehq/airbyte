@@ -72,3 +72,4 @@ redirects:
   contributing-to-airbyte/building-new-connector/tutorials/building-a-python-source: ./connector-development/tutorials/building-a-python-source.md
   contributing-to-airbyte/building-new-connector/tutorials/building-a-python-destination: ./connector-development/tutorials/building-a-python-destination.md
   contributing-to-airbyte/building-new-connector/tutorials/building-a-java-destination: ./connector-development/tutorials/building-a-java-destination.md
+  project-overview/code-of-conduct: ./project-overview/slack-code-of-conduct
