@@ -3,7 +3,7 @@ import { Redirect, Route, Switch } from "react-router-dom";
 import { NetworkErrorBoundary as ErrorBoundary } from "rest-hooks";
 
 import { Routes } from "../routes";
-import LoadingPage from "../../components/LoadingPage";
+import LoadingPage from "components/LoadingPage";
 import AllDestinationsPage from "./pages/AllDestinationsPage";
 import DestinationItemPage from "./pages/DestinationItemPage";
 import CreateDestinationPage from "./pages/CreateDestinationPage";

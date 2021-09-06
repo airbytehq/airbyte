@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from "react";
+import { lazy, Suspense } from "react";
 import ReactDOM from "react-dom";
 import * as Sentry from "@sentry/react";
 import config from "config";

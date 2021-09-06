@@ -4,13 +4,15 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Field, FieldProps, Formik } from "formik";
 import styled from "styled-components";
 
+import { useConfig } from "config";
+
 import {
   BottomBlock,
   FieldItem,
   Form,
   RowFieldItem,
 } from "../components/FormComponents";
-import { Button, H5, LabeledInput } from "components";
+import { Button, H5, LabeledInput, Link } from "components";
 import { FormTitle } from "../components/FormTitle";
 import CheckBoxControl from "../components/CheckBoxControl";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
@@ -30,6 +32,7 @@ const SignupPageValidationSchema = yup.object().shape({
 
 const SignupPage: React.FC = () => {
   const formatMessage = useIntl().formatMessage;
+  const config = useConfig();
 
   const { signUp } = useAuthService();
 
@@ -168,7 +171,33 @@ const SignupPage: React.FC = () => {
                     {...field}
                     checked={!!field.value}
                     checkbox
-                    label={<FormattedMessage id="login.security" />}
+                    label={
+                      <FormattedMessage
+                        id="login.security"
+                        values={{
+                          terms: (...terms: React.ReactNode[]) => (
+                            <Link
+                              $clear
+                              target="_blank"
+                              href={config.ui.termsLink}
+                              as="a"
+                            >
+                              {terms}
+                            </Link>
+                          ),
+                          privacy: (...privacy: React.ReactNode[]) => (
+                            <Link
+                              $clear
+                              target="_blank"
+                              href={config.ui.privacyLink}
+                              as="a"
+                            >
+                              {privacy}
+                            </Link>
+                          ),
+                        }}
+                      />
+                    }
                     message={
                       meta.touched &&
                       meta.error &&

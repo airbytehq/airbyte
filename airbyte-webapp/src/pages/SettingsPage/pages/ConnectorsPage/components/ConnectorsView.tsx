@@ -13,7 +13,7 @@ import CreateConnector from "./CreateConnector";
 import HeadTitle from "components/HeadTitle";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import { Connector, ConnectorDefinition } from "core/domain/connector";
-import { WithFeature } from "../../../../../components/hooks/services/Feature";
+import { WithFeature } from "hooks/services/Feature";
 
 type ConnectorsViewProps = {
   type: "sources" | "destinations";
