@@ -66,6 +66,7 @@ import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class RunMigrationTest {
@@ -96,6 +97,7 @@ public class RunMigrationTest {
 
   @SuppressWarnings("UnstableApiUsage")
   @Test
+  @Disabled
   public void testRunMigration() throws Exception {
     try (final StubAirbyteDB stubAirbyteDB = new StubAirbyteDB()) {
       final File file = Path
