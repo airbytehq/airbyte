@@ -319,12 +319,12 @@ class AdCreativeAnalytics(AnalyticsStreamMixin):
 
 
 class SourceLinkedinAds(AbstractSource):
-    """ 
-    Abstract Source inheritance, 
-    provides: 
+    """
+    Abstract Source inheritance, provides:
     - implementation for `check` connector's connectivity
     - implementation to call each stream with it's input parameters.
     """
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         Testing connection availability for the connector.
