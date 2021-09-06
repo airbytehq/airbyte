@@ -42,7 +42,7 @@
 - destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   name: Snowflake
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.3.12
+  dockerImageTag: 0.3.13
   documentationUrl: https://docs.airbyte.io/integrations/destinations/snowflake
 - destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   name: S3
@@ -52,7 +52,7 @@
 - destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   name: Redshift
   dockerRepository: airbyte/destination-redshift
-  dockerImageTag: 0.3.12
+  dockerImageTag: 0.3.13
   documentationUrl: https://docs.airbyte.io/integrations/destinations/redshift
   icon: redshift.svg
 - destinationDefinitionId: af7c921e-5892-4ff2-b6c1-4a5ab258fb7e
@@ -80,6 +80,11 @@
   dockerRepository: airbyte/destination-kafka
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/destinations/kafka
+- destinationDefinitionId: 8ccd8909-4e99-4141-b48d-4984b70b2d89
+  name: DynamoDB
+  dockerRepository: airbyte/destination-dynamodb
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/dynamodb
 - destinationDefinitionId: 8aaf41d0-f6d2-46de-9e79-c9540f828142
   name: Keen
   dockerRepository: airbyte/destination-keen

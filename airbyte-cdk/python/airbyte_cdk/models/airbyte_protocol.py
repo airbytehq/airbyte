@@ -106,7 +106,7 @@ class DestinationSyncMode(Enum):
 class OAuth2Specification(BaseModel):
     oauthFlowInitParameters: Optional[List[List[str]]] = Field(
         None,
-        description="Pointers to the fields in the ConnectorSpecification which are needed to obtain the initial refresh/access tokens for the OAuth flow. Each inner array represents the path in the ConnectorSpecification of the referenced field.\nFor example.\nAssume the ConnectorSpecification contains params 'app_secret', 'app_id' which are needed to get the initial refresh token. If they are not nested in the config, then the array would look like this [['app_secret'], ['app_id']] If they are nested inside, say, an object called 'auth_params' then this array would be [['auth_params', 'app_secret'], ['auth_params', 'app_id']]",
+        description="Pointers to the fields in the ConnectorSpecification which are needed to obtain the initial refresh/access tokens for the OAuth flow. Each inner array represents the path in the ConnectorSpecification of the referenced field. For example. Assume the ConnectorSpecification contains params 'app_secret', 'app_id' which are needed to get the initial refresh token. If they are not nested in the config, then the array would look like this [['app_secret'], ['app_id']] If they are nested inside, say, an object called 'auth_params' then this array would be [['auth_params', 'app_secret'], ['auth_params', 'app_id']]",
     )
 
 

@@ -1,12 +1,19 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "required": ["name"],
+  "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": "integer",
+      "description": "The ID of the screen tab.",
+      "format": "int64",
+      "readOnly": true
     },
     "name": {
-      "type": "string"
+      "type": "string",
+      "description": "The name of the screen tab. The maximum length is 255 characters."
     }
   },
-  "type": "object"
+  "additionalProperties": false,
+  "description": "A screen tab."
 }

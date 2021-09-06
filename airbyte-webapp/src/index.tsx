@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from "react";
+import { lazy, Suspense } from "react";
 import ReactDOM from "react-dom";
 
 const CloudApp = lazy(() => import(`packages/cloud/App`));
