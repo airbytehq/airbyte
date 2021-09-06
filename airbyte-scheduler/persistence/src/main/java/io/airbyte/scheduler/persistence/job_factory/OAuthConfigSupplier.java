@@ -26,6 +26,7 @@ package io.airbyte.scheduler.persistence.job_factory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Strings;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceOAuthParameter;
@@ -44,34 +45,49 @@ public class OAuthConfigSupplier {
   }
 
   public JsonNode injectSourceOAuthParameters(UUID sourceDefinitionId, UUID workspaceId, JsonNode sourceConnectorConfig)
-      throws JsonValidationException, IOException {
-    configRepository.listSourceOAuthParam().stream()
-        .filter(p -> sourceDefinitionId.equals(p.getSourceDefinitionId()))
-        .filter(p -> p.getWorkspaceId() == null || workspaceId.equals(p.getWorkspaceId()))
-        // we prefer params specific to a workspace before global ones (ie workspace is null)
-        .min(Comparator.comparing(SourceOAuthParameter::getWorkspaceId, Comparator.nullsLast(Comparator.naturalOrder()))
-            .thenComparing(SourceOAuthParameter::getOauthParameterId))
-        .ifPresent(sourceOAuthParameter -> injectJsonNode((ObjectNode) sourceConnectorConfig, (ObjectNode) sourceOAuthParameter.getConfiguration()));
-    return sourceConnectorConfig;
+      throws IOException {
+    try {
+      configRepository.listSourceOAuthParam().stream()
+          .filter(p -> sourceDefinitionId.equals(p.getSourceDefinitionId()))
+          .filter(p -> p.getWorkspaceId() == null || workspaceId.equals(p.getWorkspaceId()))
+          // we prefer params specific to a workspace before global ones (ie workspace is null)
+          .min(Comparator.comparing(SourceOAuthParameter::getWorkspaceId, Comparator.nullsLast(Comparator.naturalOrder()))
+              .thenComparing(SourceOAuthParameter::getOauthParameterId))
+          .ifPresent(
+              sourceOAuthParameter -> injectJsonNode((ObjectNode) sourceConnectorConfig, (ObjectNode) sourceOAuthParameter.getConfiguration()));
+      return sourceConnectorConfig;
+    } catch (JsonValidationException e) {
+      throw new IOException(e);
+    }
   }
 
   public JsonNode injectDestinationOAuthParameters(UUID destinationDefinitionId, UUID workspaceId, JsonNode destinationConnectorConfig)
-      throws JsonValidationException, IOException {
-    configRepository.listDestinationOAuthParam().stream()
-        .filter(p -> destinationDefinitionId.equals(p.getDestinationDefinitionId()))
-        .filter(p -> p.getWorkspaceId() == null || workspaceId.equals(p.getWorkspaceId()))
-        // we prefer params specific to a workspace before global ones (ie workspace is null)
-        .min(Comparator.comparing(DestinationOAuthParameter::getWorkspaceId, Comparator.nullsLast(Comparator.naturalOrder()))
-            .thenComparing(DestinationOAuthParameter::getOauthParameterId))
-        .ifPresent(destinationOAuthParameter -> injectJsonNode((ObjectNode) destinationConnectorConfig,
-            (ObjectNode) destinationOAuthParameter.getConfiguration()));
-    return destinationConnectorConfig;
+      throws IOException {
+    try {
+      configRepository.listDestinationOAuthParam().stream()
+          .filter(p -> destinationDefinitionId.equals(p.getDestinationDefinitionId()))
+          .filter(p -> p.getWorkspaceId() == null || workspaceId.equals(p.getWorkspaceId()))
+          // we prefer params specific to a workspace before global ones (ie workspace is null)
+          .min(Comparator.comparing(DestinationOAuthParameter::getWorkspaceId, Comparator.nullsLast(Comparator.naturalOrder()))
+              .thenComparing(DestinationOAuthParameter::getOauthParameterId))
+          .ifPresent(destinationOAuthParameter -> injectJsonNode((ObjectNode) destinationConnectorConfig,
+              (ObjectNode) destinationOAuthParameter.getConfiguration()));
+      return destinationConnectorConfig;
+    } catch (JsonValidationException e) {
+      throw new IOException(e);
+    }
   }
 
   private static void injectJsonNode(ObjectNode config, ObjectNode fromConfig) {
     for (String key : Jsons.keys(fromConfig)) {
-      config.set(key, fromConfig.get(key));
+      if (!config.has(key) || isSecretMask(config.get(key).asText())) {
+        config.set(key, fromConfig.get(key));
+      }
     }
+  }
+
+  private static boolean isSecretMask(String input) {
+    return Strings.isNullOrEmpty(input.replaceAll("\\*", ""));
   }
 
 }

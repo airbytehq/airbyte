@@ -44,29 +44,18 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
 
   private final DefaultJobCreator jobCreator;
   private final ConfigRepository configRepository;
-  private final OAuthConfigSupplier oAuthConfigSupplier;
 
   public DefaultSyncJobFactory(final DefaultJobCreator jobCreator,
                                final ConfigRepository configRepository) {
-
     this.jobCreator = jobCreator;
     this.configRepository = configRepository;
-    this.oAuthConfigSupplier = new OAuthConfigSupplier(configRepository);
   }
 
   public Long create(final UUID connectionId) {
     try {
       final StandardSync standardSync = configRepository.getStandardSync(connectionId);
       final SourceConnection sourceConnection = configRepository.getSourceConnection(standardSync.getSourceId());
-      sourceConnection.withConfiguration(oAuthConfigSupplier.injectSourceOAuthParameters(
-          sourceConnection.getSourceDefinitionId(),
-          sourceConnection.getWorkspaceId(),
-          sourceConnection.getConfiguration()));
       final DestinationConnection destinationConnection = configRepository.getDestinationConnection(standardSync.getDestinationId());
-      destinationConnection.withConfiguration(oAuthConfigSupplier.injectDestinationOAuthParameters(
-          destinationConnection.getDestinationDefinitionId(),
-          destinationConnection.getWorkspaceId(),
-          destinationConnection.getConfiguration()));
       final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
       final StandardDestinationDefinition destinationDefinition =
           configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());

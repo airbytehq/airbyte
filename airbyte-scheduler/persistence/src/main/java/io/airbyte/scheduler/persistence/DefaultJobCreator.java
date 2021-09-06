@@ -24,6 +24,7 @@
 
 package io.airbyte.scheduler.persistence;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
@@ -38,6 +39,7 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -45,15 +47,21 @@ import java.util.Optional;
 public class DefaultJobCreator implements JobCreator {
 
   private final JobPersistence jobPersistence;
+  private final OAuthConfigSupplier oAuthConfigSupplier;
 
-  public DefaultJobCreator(JobPersistence jobPersistence) {
+  public DefaultJobCreator(JobPersistence jobPersistence, OAuthConfigSupplier oAuthConfigSupplier) {
     this.jobPersistence = jobPersistence;
+    this.oAuthConfigSupplier = oAuthConfigSupplier;
   }
 
   @Override
   public long createSourceCheckConnectionJob(SourceConnection source, String dockerImageName) throws IOException {
+    final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
+        source.getSourceDefinitionId(),
+        source.getWorkspaceId(),
+        source.getConfiguration());
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
-        .withConnectionConfiguration(source.getConfiguration())
+        .withConnectionConfiguration(sourceConfiguration)
         .withDockerImage(dockerImageName);
 
     final JobConfig jobConfig = new JobConfig()
@@ -65,9 +73,14 @@ public class DefaultJobCreator implements JobCreator {
   }
 
   @Override
-  public long createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImageName) throws IOException {
+  public long createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImageName)
+      throws IOException {
+    final JsonNode destinationConfiguration = oAuthConfigSupplier.injectDestinationOAuthParameters(
+        destination.getDestinationId(),
+        destination.getWorkspaceId(),
+        destination.getConfiguration());
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
-        .withConnectionConfiguration(destination.getConfiguration())
+        .withConnectionConfiguration(destinationConfiguration)
         .withDockerImage(dockerImageName);
 
     final JobConfig jobConfig = new JobConfig()
@@ -80,8 +93,12 @@ public class DefaultJobCreator implements JobCreator {
 
   @Override
   public long createDiscoverSchemaJob(SourceConnection source, String dockerImageName) throws IOException {
+    final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
+        source.getSourceDefinitionId(),
+        source.getWorkspaceId(),
+        source.getConfiguration());
     final JobDiscoverCatalogConfig jobDiscoverCatalogConfig = new JobDiscoverCatalogConfig()
-        .withConnectionConfiguration(source.getConfiguration())
+        .withConnectionConfiguration(sourceConfiguration)
         .withDockerImage(dockerImageName);
 
     final JobConfig jobConfig = new JobConfig()
@@ -109,15 +126,23 @@ public class DefaultJobCreator implements JobCreator {
                                       String destinationDockerImageName,
                                       List<StandardSyncOperation> standardSyncOperations)
       throws IOException {
+    final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
+        source.getSourceDefinitionId(),
+        source.getWorkspaceId(),
+        source.getConfiguration());
+    final JsonNode destinationConfiguration = oAuthConfigSupplier.injectDestinationOAuthParameters(
+        destination.getDestinationId(),
+        destination.getWorkspaceId(),
+        destination.getConfiguration());
     // reusing this isn't going to quite work.
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
         .withNamespaceDefinition(standardSync.getNamespaceDefinition())
         .withNamespaceFormat(standardSync.getNamespaceFormat())
         .withPrefix(standardSync.getPrefix())
         .withSourceDockerImage(sourceDockerImageName)
-        .withSourceConfiguration(source.getConfiguration())
+        .withSourceConfiguration(sourceConfiguration)
         .withDestinationDockerImage(destinationDockerImageName)
-        .withDestinationConfiguration(destination.getConfiguration())
+        .withDestinationConfiguration(destinationConfiguration)
         .withOperationSequence(standardSyncOperations)
         .withConfiguredAirbyteCatalog(standardSync.getCatalog())
         .withState(null)
@@ -149,13 +174,16 @@ public class DefaultJobCreator implements JobCreator {
       configuredAirbyteStream.setSyncMode(SyncMode.FULL_REFRESH);
       configuredAirbyteStream.setDestinationSyncMode(DestinationSyncMode.OVERWRITE);
     });
-
+    final JsonNode destinationConfiguration = oAuthConfigSupplier.injectDestinationOAuthParameters(
+        destination.getDestinationId(),
+        destination.getWorkspaceId(),
+        destination.getConfiguration());
     final JobResetConnectionConfig resetConnectionConfig = new JobResetConnectionConfig()
         .withNamespaceDefinition(standardSync.getNamespaceDefinition())
         .withNamespaceFormat(standardSync.getNamespaceFormat())
         .withPrefix(standardSync.getPrefix())
         .withDestinationDockerImage(destinationDockerImage)
-        .withDestinationConfiguration(destination.getConfiguration())
+        .withDestinationConfiguration(destinationConfiguration)
         .withOperationSequence(standardSyncOperations)
         .withConfiguredAirbyteCatalog(configuredAirbyteCatalog)
         .withResourceRequirements(standardSync.getResourceRequirements());
