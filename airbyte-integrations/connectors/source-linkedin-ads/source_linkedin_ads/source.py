@@ -353,10 +353,10 @@ class SourceLinkedinAds(AbstractSource):
         return [
             Accounts(config),
             AccountUsers(config),
+            AdCampaignAnalytics(config),
+            AdCreativeAnalytics(config),
+            AdDirectSponsoredContents(config),
             CampaignGroups(config),
             Campaigns(config),
             Creatives(config),
-            AdDirectSponsoredContents(config),
-            AdCampaignAnalytics(config),
-            AdCreativeAnalytics(config),
         ]
