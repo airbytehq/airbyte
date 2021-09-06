@@ -25,10 +25,8 @@ export default class NotificationsResource
       ...super.partialUpdateShape(),
       getFetchKey: (params) =>
         "POST /notifications/try" + JSON.stringify(params),
-      fetch: async (
-        params: Readonly<Record<string, unknown>>
-      ): Promise<Notifications> =>
-        await this.fetch("post", `${this.url(params)}/try`, params),
+      fetch: async (params) =>
+        this.fetch("post", `${this.url(params)}/try`, params),
       schema: this,
     };
   }
