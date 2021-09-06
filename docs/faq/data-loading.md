@@ -8,15 +8,15 @@ sync status in your connection detail page that you can access through the desti
 
 ## **What happens if a sync fails?**
 
-You won't loose data when a sync fails, however, no data will be added or updated in your destination.
+You won't lose data when a sync fails, however, no data will be added or updated in your destination.
 
 Airbyte will automatically attempt to replicate data 3 times. You can see and export the logs for those attempts in the connection 
 detail page. You can access this page through the Source or Destination detail page.
 
-You can configure a Slack webhook to warn you when a sync failed.
+You can configure a Slack webhook to warn you when a sync fails.
 
-In the future you will be able to configuration other notification method (email, Sentry) and an option to create a
-GitHub issue with the logs. We’re still working on it, and the purpose would be to help the community and the Airbyte team fix the
+In the future you will be able to configure other notification method (email, Sentry) and an option to create a
+GitHub issue with the logs. We’re still working on it, and the purpose would be to help the community and the Airbyte team to fix the
 issue as soon as possible, especially if it is a connector issue.
 
 Until Airbyte has this system in place, here is what you can do:
@@ -35,7 +35,7 @@ We truly appreciate any contribution you make to help the community. Airbyte wil
 
 ## **Can Airbyte support 2-way sync i.e. changes from A go to B and changes from B go to A?**
 
-Airbyte actually do not support this right now. There are some details around how we handle schema and tables names that isn't going to 
+Airbyte actually does not support this right now. There are some details around how we handle schema and tables names that isn't going to 
 work for you in the current iteration.
 If you attempt to do a circular dependency between source and destination, you'll end up with the following
 A.public.table_foo writes to B.public.public_table_foo to A.public.public_public_table_foo. You won't be writing into your original table,
