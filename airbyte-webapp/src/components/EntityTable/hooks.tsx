@@ -2,9 +2,9 @@ import { useFetcher } from "rest-hooks";
 
 import FrequencyConfig from "config/FrequencyConfig.json";
 import ConnectionResource, { Connection } from "core/resources/Connection";
-import useConnection from "components/hooks/services/useConnectionHook";
+import useConnection from "hooks/services/useConnectionHook";
 import { Status } from "./types";
-import { useAnalytics } from "components/hooks/useAnalytics";
+import { useAnalytics } from "hooks/useAnalytics";
 
 const useSyncActions = (): {
   changeStatus: (connection: Connection) => Promise<void>;

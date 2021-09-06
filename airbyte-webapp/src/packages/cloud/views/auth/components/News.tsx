@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { FormattedMessage } from "react-intl";
 
-import config from "config";
+import { useConfig } from "config";
 import { news } from "packages/cloud/data/news";
 
 import { H2, H4, H5 } from "components";
@@ -38,6 +38,7 @@ const NewsItemStyled = styled(NewsItem)`
 `;
 
 const News: React.FC = () => {
+  const config = useConfig();
   return (
     <>
       <div>

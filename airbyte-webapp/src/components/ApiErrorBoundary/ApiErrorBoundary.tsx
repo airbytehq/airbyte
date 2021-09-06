@@ -53,7 +53,7 @@ class ApiErrorBoundary extends React.Component<unknown, BoundaryState> {
       );
     }
 
-    return this.props.children;
+    return !this.state.errorId ? this.props.children : "Unknown error occured";
   }
 }
 

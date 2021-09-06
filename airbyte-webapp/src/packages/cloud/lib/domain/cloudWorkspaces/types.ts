@@ -3,7 +3,3 @@ export interface CloudWorkspace {
   workspaceId: string;
   billingUserId: string;
 }
-
-export interface Workspace {
-  workspaceId: string;
-}

@@ -27,4 +27,4 @@ class OperationService extends AirbyteRequestService {
   }
 }
 
-export const operationService = new OperationService();
+export { OperationService };

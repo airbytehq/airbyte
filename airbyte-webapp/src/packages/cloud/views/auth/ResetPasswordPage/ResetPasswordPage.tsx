@@ -8,14 +8,14 @@ import { LoadingButton, LabeledInput, Link } from "components";
 import { FormTitle } from "../components/FormTitle";
 import { Routes } from "../../../routes";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
-import useRouterHook from "components/hooks/useRouterHook";
+import useRouterHook from "hooks/useRouter";
 
 const ResetPasswordPageValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
 });
 
 const ResetPasswordPage: React.FC = () => {
-  const { resetPassword } = useAuthService();
+  const { requirePasswordReset } = useAuthService();
   const { push } = useRouterHook();
   const formatMessage = useIntl().formatMessage;
 
@@ -31,8 +31,8 @@ const ResetPasswordPage: React.FC = () => {
         }}
         validationSchema={ResetPasswordPageValidationSchema}
         onSubmit={async ({ email }) => {
-          await resetPassword(email);
-          push("/login");
+          await requirePasswordReset(email);
+          push(Routes.ConfirmPasswordReset);
         }}
         validateOnBlur={true}
         validateOnChange={false}

@@ -1,6 +1,6 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import useWorkspace from "components/hooks/services/useWorkspace";
+import useWorkspace from "hooks/services/useWorkspace";
 import useWorkspaceEditor from "pages/SettingsPage/components/useWorkspaceEditor";
 import HeadTitle from "components/HeadTitle";
 import AccountForm from "./components/AccountForm";

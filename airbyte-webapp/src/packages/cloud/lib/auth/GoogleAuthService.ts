@@ -1,28 +1,47 @@
-import firebase from "firebase";
+import {
+  Auth,
+  User,
+  UserCredential,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  confirmPasswordReset,
+  applyActionCode,
+  sendEmailVerification,
+} from "firebase/auth";
 
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
 import { ErrorCodes } from "packages/cloud/services/auth/types";
-import firebaseApp from "packages/cloud/config/firebase";
-
-type UserCredential = any;
+import { Provider } from "config";
 
 interface AuthService {
-  login(email: string, password: string): Promise<any>;
+  login(email: string, password: string): Promise<UserCredential>;
 
   signOut(): Promise<any>;
 
-  signUp(email: string, password: string): Promise<any>;
+  signUp(email: string, password: string): Promise<UserCredential>;
+
+  resetPassword(email: string): Promise<void>;
+
+  finishResetPassword(code: string, newPassword: string): Promise<void>;
+
+  sendEmailVerifiedLink(): Promise<void>;
 }
 
 export class GoogleAuthService implements AuthService {
-  getCurrentUser(): firebase.User | null {
-    return firebaseApp.auth().currentUser;
+  constructor(private firebaseAuthProvider: Provider<Auth>) {}
+
+  get auth(): Auth {
+    return this.firebaseAuthProvider();
   }
+
+  getCurrentUser(): User | null {
+    return this.auth.currentUser;
+  }
+
   async login(email: string, password: string): Promise<UserCredential> {
-    return firebaseApp
-      .auth()
-      .signInWithEmailAndPassword(email, password)
-      .catch((err) => {
+    return signInWithEmailAndPassword(this.auth, email, password).catch(
+      (err) => {
         switch (err.code) {
           case "auth/invalid-email":
             throw new FieldError("email", ErrorCodes.Invalid);
@@ -35,14 +54,13 @@ export class GoogleAuthService implements AuthService {
         }
 
         throw err;
-      });
+      }
+    );
   }
 
   async signUp(email: string, password: string): Promise<UserCredential> {
-    return firebaseApp
-      .auth()
-      .createUserWithEmailAndPassword(email, password)
-      .catch((err) => {
+    return createUserWithEmailAndPassword(this.auth, email, password).catch(
+      (err) => {
         switch (err.code) {
           case "auth/email-already-in-use":
             throw new FieldError("email", ErrorCodes.Duplicate);
@@ -53,28 +71,60 @@ export class GoogleAuthService implements AuthService {
         }
 
         throw err;
-      });
+      }
+    );
   }
 
-  async resetPassword(email: string): Promise<UserCredential> {
-    return firebaseApp
-      .auth()
-      .sendPasswordResetEmail(email)
-      .catch((err) => {
-        // switch (err.code) {
-        //   case "auth/email-already-in-use":
-        //     throw new FieldError("email", ErrorCodes.Duplicate);
-        //   case "auth/invalid-email":
-        //     throw new FieldError("email", ErrorCodes.Invalid);
-        //   case "auth/weak-password":
-        //     throw new FieldError("password", ErrorCodes.Invalid);
-        // }
+  async resetPassword(email: string): Promise<void> {
+    return sendPasswordResetEmail(this.auth, email).catch((err) => {
+      // switch (err.code) {
+      //   case "auth/email-already-in-use":
+      //     throw new FieldError("email", ErrorCodes.Duplicate);
+      //   case "auth/invalid-email":
+      //     throw new FieldError("email", ErrorCodes.Invalid);
+      //   case "auth/weak-password":
+      //     throw new FieldError("password", ErrorCodes.Invalid);
+      // }
 
-        throw err;
-      });
+      throw err;
+    });
+  }
+
+  async finishResetPassword(code: string, newPassword: string): Promise<void> {
+    return confirmPasswordReset(this.auth, code, newPassword).catch((err) => {
+      // switch (err.code) {
+      //   case "auth/email-already-in-use":
+      //     throw new FieldError("email", ErrorCodes.Duplicate);
+      //   case "auth/invalid-email":
+      //     throw new FieldError("email", ErrorCodes.Invalid);
+      //   case "auth/weak-password":
+      //     throw new FieldError("password", ErrorCodes.Invalid);
+      // }
+
+      throw err;
+    });
+  }
+
+  async sendEmailVerifiedLink(): Promise<void> {
+    return sendEmailVerification(this.getCurrentUser()!).catch((err) => {
+      // switch (err.code) {
+      //   case "auth/email-already-in-use":
+      //     throw new FieldError("email", ErrorCodes.Duplicate);
+      //   case "auth/invalid-email":
+      //     throw new FieldError("email", ErrorCodes.Invalid);
+      //   case "auth/weak-password":
+      //     throw new FieldError("password", ErrorCodes.Invalid);
+      // }
+
+      throw err;
+    });
+  }
+
+  async confirmEmailVerify(code: string): Promise<void> {
+    return applyActionCode(this.auth, code);
   }
 
   signOut(): Promise<void> {
-    return firebaseApp.auth().signOut();
+    return this.auth.signOut();
   }
 }

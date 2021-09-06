@@ -9,11 +9,11 @@ import ContentCard from "components/ContentCard";
 import ServiceForm from "views/Connector/ServiceForm";
 import { JobsLogItem } from "components/JobItem";
 
-import { useSourceDefinitionSpecificationLoad } from "components/hooks/services/useSourceHook";
+import { useSourceDefinitionSpecificationLoad } from "hooks/services/useSourceHook";
 
 import SkipOnboardingButton from "./SkipOnboardingButton";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
-import { useAnalytics } from "components/hooks/useAnalytics";
+import { useAnalytics } from "hooks/useAnalytics";
 
 type IProps = {
   onSubmit: (values: {

@@ -2,11 +2,8 @@ import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 import { RequestMiddleware } from "core/request/RequestMiddleware";
 
 class HealthService extends AirbyteRequestService {
-  constructor(
-    requestSigner: RequestMiddleware[] = [],
-    rootUrl: string = AirbyteRequestService.rootUrl
-  ) {
-    super(requestSigner, rootUrl);
+  constructor(rootUrl: string, requestSigner: RequestMiddleware[] = []) {
+    super(rootUrl, requestSigner);
   }
 
   async health(): Promise<void> {
