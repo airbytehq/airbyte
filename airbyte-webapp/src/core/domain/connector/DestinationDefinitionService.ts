@@ -11,4 +11,4 @@ class DestinationDefinitionService extends AirbyteRequestService {
   }
 }
 
-export const destinationDefinitionService = new DestinationDefinitionService();
+export { DestinationDefinitionService };

@@ -39,7 +39,7 @@
 - sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   name: GitHub
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.io/integrations/sources/github
   icon: github.svg
 - sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
@@ -56,7 +56,7 @@
 - sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   name: Postgres
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 0.3.10
+  dockerImageTag: 0.3.11
   documentationUrl: https://docs.airbyte.io/integrations/sources/postgres
   icon: postgresql.svg
 - sourceDefinitionId: 9fa5862c-da7c-11eb-8d19-0242ac130003
@@ -78,7 +78,7 @@
 - sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
   name: S3
   dockerRepository: airbyte/source-s3
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.io/integrations/sources/s3
 - sourceDefinitionId: fbb5fbe2-16ad-4cf4-af7d-ff9d9c316c87
   name: Sendgrid
@@ -140,6 +140,12 @@
   dockerImageTag: 0.2.14
   documentationUrl: https://docs.airbyte.io/integrations/sources/facebook-marketing
   icon: facebook.svg
+- sourceDefinitionId: 010eb12f-837b-4685-892d-0a39f76a98f5
+  name: Facebook Pages
+  dockerRepository: airbyte/source-facebook-pages
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-facebook-pages
+  icon: facebook.svg
 - sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   name: Hubspot
   dockerRepository: airbyte/source-hubspot
@@ -154,7 +160,7 @@
 - sourceDefinitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
   name: Shopify
   dockerRepository: airbyte/source-shopify
-  dockerImageTag: 0.1.13
+  dockerImageTag: 0.1.14
   documentationUrl: https://docs.airbyte.io/integrations/sources/shopify
 - sourceDefinitionId: e87ffa8e-a3b5-f69c-9076-6011339de1f6
   name: Redshift
@@ -200,7 +206,7 @@
 - sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
   name: Jira
   dockerRepository: airbyte/source-jira
-  dockerImageTag: 0.2.8
+  dockerImageTag: 0.2.10
   documentationUrl: https://docs.airbyte.io/integrations/sources/jira
   icon: jira.svg
 - sourceDefinitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
@@ -289,7 +295,7 @@
 - sourceDefinitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
   name: Oracle DB
   dockerRepository: airbyte/source-oracle
-  dockerImageTag: 0.3.2
+  dockerImageTag: 0.3.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/oracle
 - sourceDefinitionId: c8630570-086d-4a40-99ae-ea5b18673071
   name: Zendesk Talk
@@ -349,7 +355,7 @@
 - sourceDefinitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
   name: Slack
   dockerRepository: airbyte/source-slack
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.11
   documentationUrl: https://docs.airbyte.io/integrations/sources/slack
   icon: slack.svg
 - sourceDefinitionId: 6ff047c0-f5d5-4ce5-8c81-204a830fa7e1

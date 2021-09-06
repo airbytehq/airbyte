@@ -132,7 +132,11 @@ Each stream should have some data, if you can't guarantee this for particular st
 ||x||
 |||x|
 ||||
+### Schema format checking
 
+If some field has [format](https://json-schema.org/understanding-json-schema/reference/string.html#format) attribute specified on its catalog json schema, Source Acceptance Testing framework performs checking against format. It support checking of all [builtin](https://json-schema.org/understanding-json-schema/reference/string.html#built-in-formats) jsonschema formats for draft 7 specification: email, hostnames, ip addresses, time, date and date-time formats.
+
+Note: For date-time we are not checking against compliance against ISO8601 (and RFC3339 as subset of it). Since we are using specified format to set database column type on db normalization stage, value should be compliant to bigquery [timestamp](https://cloud.google.com/bigquery/docs/reference/standard-sql/data-types#timestamp_type) and SQL "timestamp with timezone" formats.
 ### Example of `expected_records.txt`:
 In general, the expected_records.json should contain the subset of output of the records of particular stream you need to test.
 The required fields are: `stream, data, emitted_at`

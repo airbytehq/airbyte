@@ -5,12 +5,12 @@ import { useResource } from "rest-hooks";
 import { Button, MainPageWithScroll } from "components";
 import { Routes } from "../../../routes";
 import PageTitle from "components/PageTitle";
-import useRouter from "components/hooks/useRouterHook";
+import useRouter from "hooks/useRouter";
 import DestinationsTable from "./components/DestinationsTable";
 import DestinationResource from "core/resources/Destination";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
-import useWorkspace from "components/hooks/services/useWorkspace";
+import useWorkspace from "hooks/services/useWorkspace";
 
 const AllDestinationsPage: React.FC = () => {
   const { push } = useRouter();
