@@ -385,7 +385,7 @@ class Activities(MarketoExportBase):
 class ActivityTypes(MarketoStream):
     """
     Return list of all activity types.
-    API Docs: https://developers.intercom.com/intercom-api-reference/reference#list-admins
+    API Docs: http://developers.marketo.com/rest-api/lead-database/activities/#describe
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -394,7 +394,7 @@ class ActivityTypes(MarketoStream):
 
 class Programs(IncrementalMarketoStream):
     """
-    Return list of all admins.
+    Return list of all programs.
     API Docs: http://developers.marketo.com/rest-api/assets/programs/#by_date_range
     """
 
