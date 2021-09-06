@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.18
+Fix checking date-time format againt nullable field.
+
 ## 0.1.17
 Fix serialize function for acceptance-tests: https://github.com/airbytehq/airbyte/pull/5738
 

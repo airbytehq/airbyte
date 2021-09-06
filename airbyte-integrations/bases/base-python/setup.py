@@ -37,7 +37,7 @@ setuptools.setup(
         "PyYAML==5.4",
         "pydantic==1.6.*",
         "airbyte-protocol",
-        "jsonschema==2.6.0",
+        "jsonschema==3.2.0",
         "requests",
         "backoff",
         "pytest",

@@ -59,14 +59,14 @@ KNOWN_CONVERTIBLE_SCHEMA_TYPES = {
     "phone_number": ("string", None),
 }
 
-CUSTOM_FIELD_VALUE_TYPE_CAST = {
+CUSTOM_FIELD_TYPE_TO_VALUE = {
     bool: "boolean",
     str: "string",
     float: "number",
     int: "integer",
 }
 
-CUSTOM_FIELD_VALUE_TYPE_CAST_REVERSED = {v: k for k, v in CUSTOM_FIELD_VALUE_TYPE_CAST.items()}
+CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k, v in CUSTOM_FIELD_TYPE_TO_VALUE.items()}
 
 
 def retry_connection_handler(**kwargs):
@@ -259,18 +259,31 @@ class Stream(ABC):
             yield record
 
     @staticmethod
-    def _cast_value(declared_field_types: List, field_name: str, field_value):
+    def _cast_value(declared_field_types: List, field_name: str, field_value: Any, declared_format: str = None) -> Any:
+        """
+        Convert record's received value according to its declared catalog json schema type / format / attribute name.
+        :param declared_field_types type from catalog schema
+        :param field_name value's attribute name
+        :param field_value actual value to cast
+        :param declared_format format field value from catalog schema
+        :return Converted value for record
+        """
 
-        if field_value is None and "null" in declared_field_types:
-            return field_value
+        if "null" in declared_field_types:
+            if field_value is None:
+                return field_value
+            # Sometime hubspot output empty string on field with format set.
+            # Set it to null to avoid errors on destination' normalization stage.
+            if declared_format and field_value == "":
+                return None
 
         actual_field_type = type(field_value)
-        actual_field_type_name = CUSTOM_FIELD_VALUE_TYPE_CAST.get(actual_field_type)
+        actual_field_type_name = CUSTOM_FIELD_TYPE_TO_VALUE.get(actual_field_type)
         if actual_field_type_name in declared_field_types:
             return field_value
 
         target_type_name = next(filter(lambda t: t != "null", declared_field_types))
-        target_type = CUSTOM_FIELD_VALUE_TYPE_CAST_REVERSED.get(target_type_name)
+        target_type = CUSTOM_FIELD_VALUE_TO_TYPE.get(target_type_name)
 
         if target_type_name == "number":
             # do not cast numeric IDs into float, use integer instead
@@ -300,10 +313,13 @@ class Stream(ABC):
         properties = properties or self.properties
 
         for field_name, field_value in record["properties"].items():
-            declared_field_types = properties[field_name].get("type") or []
+            declared_field_types = properties[field_name].get("type", [])
             if not isinstance(declared_field_types, Iterable):
                 declared_field_types = [declared_field_types]
-            record["properties"][field_name] = self._cast_value(declared_field_types, field_name, field_value)
+            format = properties[field_name].get("format")
+            record["properties"][field_name] = self._cast_value(
+                declared_field_types=declared_field_types, field_name=field_name, field_value=field_value, declared_format=format
+            )
 
         return record
 
