@@ -47,6 +47,18 @@ class CloudWorkspacesService extends AirbyteRequestService {
       cloudWorkspaceCreatePayload
     );
   }
+
+  public async update(
+    workspaceId: string,
+    cloudWorkspaceCreatePayload: {
+      name: string;
+    }
+  ): Promise<CloudWorkspace> {
+    return this.fetch<CloudWorkspace>(
+      `web_backend/permissioned_cloud_workspace/create`,
+      { workspaceId, ...cloudWorkspaceCreatePayload }
+    );
+  }
 }
 
 export { CloudWorkspacesService };
