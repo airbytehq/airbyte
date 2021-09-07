@@ -163,7 +163,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
   @Override
   protected void setup(final TestDestinationEnv testEnv) throws Exception {
     // do everything in a randomly generated schema so that we can wipe it out at the end.
-    schemaName = RandomStringUtils.randomAlphanumeric(5);
+    schemaName = RandomStringUtils.randomAlphabetic(8);
     SshTunnel.sshWrap(
         getConfig(),
         PostgresDestination.HOST_KEY,
