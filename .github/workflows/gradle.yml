@@ -456,6 +456,9 @@ jobs:
           - role: worker
           EOF
 
+      - name: Check Docker System Info
+        run: docker system info
+
       - name: KIND Kubernetes Cluster Setup
         uses: helm/kind-action@v1.2.0
         with:
@@ -465,9 +468,6 @@ jobs:
           USER: root
           HOME: /home/runner
           CHANGE_MINIKUBE_NONE_USER: true
-
-      - name: Check Docker System Info
-        run: docker system info
 
       - name: Build Platform Docker Images
         run: SUB_BUILD=PLATFORM ./gradlew composeBuild --scan
