@@ -81,7 +81,7 @@ public class TemporalPool implements Runnable {
     factory.start();
   }
 
-  private static final WorkerOptions getWorkerOptions(int max) {
+  private static WorkerOptions getWorkerOptions(int max) {
     return WorkerOptions.newBuilder()
         .setMaxConcurrentActivityExecutionSize(max)
         .build();
