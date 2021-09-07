@@ -26,11 +26,10 @@ package io.airbyte.integrations.destination.mongodb;
 
 import com.mongodb.client.MongoCollection;
 import io.airbyte.protocol.models.DestinationSyncMode;
-import org.bson.Document;
-
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import org.bson.Document;
 
 class MongodbWriteConfig {
 

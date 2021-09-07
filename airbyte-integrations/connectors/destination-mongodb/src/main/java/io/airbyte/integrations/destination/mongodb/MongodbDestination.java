@@ -24,6 +24,8 @@
 
 package io.airbyte.integrations.destination.mongodb;
 
+import static com.mongodb.client.model.Projections.excludeId;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
@@ -43,11 +45,6 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
-import org.bson.Document;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -55,8 +52,10 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
-import static com.mongodb.client.model.Projections.excludeId;
+import javax.annotation.Nullable;
+import org.bson.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MongodbDestination extends BaseConnector implements Destination {
 
