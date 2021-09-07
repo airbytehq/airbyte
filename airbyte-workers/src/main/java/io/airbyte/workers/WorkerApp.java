@@ -35,13 +35,21 @@ import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.process.WorkerHeartbeatServer;
-import io.airbyte.workers.temporal.TemporalPool;
+import io.airbyte.workers.temporal.CheckConnectionWorkflow;
+import io.airbyte.workers.temporal.DiscoverCatalogWorkflow;
+import io.airbyte.workers.temporal.SpecWorkflow;
+import io.airbyte.workers.temporal.SyncWorkflow;
+import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.util.Config;
+import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
+import io.temporal.worker.Worker;
+import io.temporal.worker.WorkerFactory;
+import io.temporal.worker.WorkerOptions;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Path;
@@ -83,8 +91,29 @@ public class WorkerApp {
           }
         });
 
-    final TemporalPool temporalPool = new TemporalPool(temporalService, workspaceRoot, processFactory, maxWorkers);
-    temporalPool.run();
+    final WorkerFactory factory = WorkerFactory.newInstance(WorkflowClient.newInstance(temporalService));
+
+    final Worker specWorker = factory.newWorker(TemporalJobType.GET_SPEC.name(), getWorkerOptions(maxWorkers.getMaxSpecWorkers()));
+    specWorker.registerWorkflowImplementationTypes(SpecWorkflow.WorkflowImpl.class);
+    specWorker.registerActivitiesImplementations(new SpecWorkflow.SpecActivityImpl(processFactory, workspaceRoot));
+
+    final Worker checkConnectionWorker =
+        factory.newWorker(TemporalJobType.CHECK_CONNECTION.name(), getWorkerOptions(maxWorkers.getMaxCheckWorkers()));
+    checkConnectionWorker.registerWorkflowImplementationTypes(CheckConnectionWorkflow.WorkflowImpl.class);
+    checkConnectionWorker.registerActivitiesImplementations(new CheckConnectionWorkflow.CheckConnectionActivityImpl(processFactory, workspaceRoot));
+
+    final Worker discoverWorker = factory.newWorker(TemporalJobType.DISCOVER_SCHEMA.name(), getWorkerOptions(maxWorkers.getMaxDiscoverWorkers()));
+    discoverWorker.registerWorkflowImplementationTypes(DiscoverCatalogWorkflow.WorkflowImpl.class);
+    discoverWorker.registerActivitiesImplementations(new DiscoverCatalogWorkflow.DiscoverCatalogActivityImpl(processFactory, workspaceRoot));
+
+    final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
+    syncWorker.registerWorkflowImplementationTypes(SyncWorkflow.WorkflowImpl.class);
+    syncWorker.registerActivitiesImplementations(
+        new SyncWorkflow.ReplicationActivityImpl(processFactory, workspaceRoot),
+        new SyncWorkflow.NormalizationActivityImpl(processFactory, workspaceRoot),
+        new SyncWorkflow.DbtTransformationActivityImpl(processFactory, workspaceRoot));
+
+    factory.start();
   }
 
   private static ProcessFactory getProcessBuilderFactory(Configs configs) throws IOException {
@@ -121,6 +150,12 @@ public class WorkerApp {
         Thread.sleep(2000);
       }
     }
+  }
+
+  private static final WorkerOptions getWorkerOptions(int max) {
+    return WorkerOptions.newBuilder()
+        .setMaxConcurrentActivityExecutionSize(max)
+        .build();
   }
 
   public static void main(String[] args) throws IOException, InterruptedException {
