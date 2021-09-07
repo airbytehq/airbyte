@@ -19,7 +19,7 @@
         "null",
         "string"
       ],
-      "format": "date-time"
+      "format": "date"
     },
     "query": {
       "type": [
