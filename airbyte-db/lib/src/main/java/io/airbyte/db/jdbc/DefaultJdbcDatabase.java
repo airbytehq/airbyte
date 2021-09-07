@@ -52,6 +52,10 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
     this(new DataSourceConnectionSupplier(dataSource), JdbcUtils.getDefaultSourceOperations());
   }
 
+  public DefaultJdbcDatabase(final DataSource dataSource, JdbcSourceOperations sourceOperations) {
+    this(new DataSourceConnectionSupplier(dataSource), sourceOperations);
+  }
+
   public DefaultJdbcDatabase(CloseableConnectionSupplier connectionSupplier, JdbcSourceOperations sourceOperations) {
     super(sourceOperations);
     this.connectionSupplier = connectionSupplier;

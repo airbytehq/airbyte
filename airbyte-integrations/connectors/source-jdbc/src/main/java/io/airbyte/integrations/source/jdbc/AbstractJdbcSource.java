@@ -281,4 +281,8 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
     return database;
   }
 
+  protected JdbcSourceOperations getSourceOperations() {
+    return JdbcUtils.getDefaultSourceOperations();
+  }
+
 }
