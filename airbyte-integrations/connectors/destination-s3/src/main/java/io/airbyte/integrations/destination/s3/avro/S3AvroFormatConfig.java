@@ -106,7 +106,9 @@ public class S3AvroFormatConfig implements S3FormatConfig {
     return codecFactory;
   }
 
-  public Long getPartSize(){return partSize;}
+  public Long getPartSize() {
+    return partSize;
+  }
 
   @Override
   public S3Format getFormat() {

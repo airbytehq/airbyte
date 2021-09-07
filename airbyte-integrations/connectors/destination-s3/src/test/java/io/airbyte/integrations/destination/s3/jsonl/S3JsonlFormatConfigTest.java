@@ -25,17 +25,14 @@
 package io.airbyte.integrations.destination.s3.jsonl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
-import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
 import io.airbyte.integrations.destination.s3.util.ConfigTestUtils;
 import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
-import java.lang.reflect.Field;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -68,7 +65,6 @@ public class S3JsonlFormatConfigTest {
     assertEquals(6291456, partSizeBytes);
   }
 
-
   @Test
   public void testHandleAbsenceOfPartSizeConfig() throws IllegalAccessException {
 
@@ -85,6 +81,7 @@ public class S3JsonlFormatConfigTest {
         s3DestinationConfig.getFormatConfig().getPartSize());
 
     Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
-    assertEquals(5242880, partSizeBytes); //5MB is a default value if nothing provided explicitly
+    assertEquals(5242880, partSizeBytes); // 5MB is a default value if nothing provided explicitly
   }
+
 }

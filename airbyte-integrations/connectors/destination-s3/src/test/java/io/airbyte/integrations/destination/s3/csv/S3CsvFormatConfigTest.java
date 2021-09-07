@@ -78,7 +78,6 @@ public class S3CsvFormatConfigTest {
     assertEquals(6291456, partSizeBytes);
   }
 
-
   @Test
   public void testHandleAbsenceOfPartSizeConfig() throws IllegalAccessException {
 
@@ -96,6 +95,7 @@ public class S3CsvFormatConfigTest {
         s3DestinationConfig.getFormatConfig().getPartSize());
 
     Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
-    assertEquals(5242880, partSizeBytes); //5MB is a default value if nothing provided explicitly
+    assertEquals(5242880, partSizeBytes); // 5MB is a default value if nothing provided explicitly
   }
+
 }

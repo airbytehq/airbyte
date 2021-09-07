@@ -78,7 +78,9 @@ public class S3CsvFormatConfig implements S3FormatConfig {
     return flattening;
   }
 
-  public Long getPartSize(){return partSize;}
+  public Long getPartSize() {
+    return partSize;
+  }
 
   @Override
   public String toString() {

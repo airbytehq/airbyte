@@ -43,6 +43,8 @@ public class S3JsonlFormatConfig implements S3FormatConfig {
     return S3Format.JSONL;
   }
 
-  public Long getPartSize(){return partSize;}
+  public Long getPartSize() {
+    return partSize;
+  }
 
 }

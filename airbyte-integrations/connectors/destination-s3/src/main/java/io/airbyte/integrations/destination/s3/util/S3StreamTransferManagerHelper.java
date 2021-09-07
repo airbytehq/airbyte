@@ -40,30 +40,31 @@ public class S3StreamTransferManagerHelper {
   public static final int DEFAULT_UPLOAD_THREADS = 2;
   public static final int DEFAULT_QUEUE_CAPACITY = 2;
   public static final int DEFAULT_PART_SIZE_MB = 5;
-  // MAX object size for AWS and GCS is 5TB (max allowed 10,000 parts*525mb) (https://aws.amazon.com/s3/faqs/, https://cloud.google.com/storage/quotas)
+  // MAX object size for AWS and GCS is 5TB (max allowed 10,000 parts*525mb)
+  // (https://aws.amazon.com/s3/faqs/, https://cloud.google.com/storage/quotas)
   public static final int MAX_ALLOWED_PART_SIZE_MB = 525;
   public static final int DEFAULT_NUM_STREAMS = 1;
 
-
   public static StreamTransferManager getDefault(String bucketName, String objectKey, AmazonS3 s3Client, Long partSize) {
-    if (partSize == null){
+    if (partSize == null) {
       LOGGER.warn(String.format("Part side for StreamTransferManager is not set explicitly. Will use the default one = %sMB. "
           + "Please note server allows up to 10,000 parts to be uploaded for a single object, i.e. 50GB for stream. "
           + "Fell free to increase partSize arg, but make sure you have enough memory resources allocated", DEFAULT_PART_SIZE_MB));
       return getDefault(bucketName, objectKey, s3Client);
     }
-    if (partSize < DEFAULT_PART_SIZE_MB){
+    if (partSize < DEFAULT_PART_SIZE_MB) {
       LOGGER.warn(String.format("By the server limitation part size can't be less than %sMB which is already set by default. "
           + "Will use the default value", DEFAULT_PART_SIZE_MB));
       return getDefault(bucketName, objectKey, s3Client);
     }
-    if (partSize > MAX_ALLOWED_PART_SIZE_MB){
-      LOGGER.warn("Server allows up to 10,000 parts to be uploaded for a single object, and each part must be identified by a unique number from 1 to 10,000."
-          + " These part numbers are allocated evenly by the manager to each output stream. Therefore the maximum amount of"
-          + " data that can be written to a stream is 10000/numStreams * partSize. If you try to write more, an IndexOutOfBoundsException"
-          + " will be thrown. The total object size can be at most 5 TB, so there is no reason to set this higher"
-          + " than 525MB. If you're using more streams, you may want a higher value in case some streams get more data than others. "
-          + "So will use max allowed value =" + MAX_ALLOWED_PART_SIZE_MB);
+    if (partSize > MAX_ALLOWED_PART_SIZE_MB) {
+      LOGGER.warn(
+          "Server allows up to 10,000 parts to be uploaded for a single object, and each part must be identified by a unique number from 1 to 10,000."
+              + " These part numbers are allocated evenly by the manager to each output stream. Therefore the maximum amount of"
+              + " data that can be written to a stream is 10000/numStreams * partSize. If you try to write more, an IndexOutOfBoundsException"
+              + " will be thrown. The total object size can be at most 5 TB, so there is no reason to set this higher"
+              + " than 525MB. If you're using more streams, you may want a higher value in case some streams get more data than others. "
+              + "So will use max allowed value =" + MAX_ALLOWED_PART_SIZE_MB);
       return new StreamTransferManager(bucketName, objectKey, s3Client)
           .numStreams(DEFAULT_NUM_STREAMS)
           .queueCapacity(DEFAULT_QUEUE_CAPACITY)
@@ -80,8 +81,8 @@ public class S3StreamTransferManagerHelper {
   }
 
   /**
-   * Depracated due to https://github.com/airbytehq/airbyte/issues/5720
-   * Use method with partSize args instead. This one limits uploaded object to 50GB max and will be set as private soon.
+   * Depracated due to https://github.com/airbytehq/airbyte/issues/5720 Use method with partSize args
+   * instead. This one limits uploaded object to 50GB max and will be set as private soon.
    */
   @Deprecated
   public static StreamTransferManager getDefault(String bucketName, String objectKey, AmazonS3 s3Client) {
