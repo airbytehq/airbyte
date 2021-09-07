@@ -490,7 +490,7 @@ from {{ from_table }} tmp
         operation. Because the quote is injected inside a jinja macro we need to remove
         the curly brackets.
         """
-        quote_in_parenthesis = re.compile(r"quote\((.*)\)")
+
         if "type" not in definition:
             col = column_name
         elif is_boolean(definition["type"]):
@@ -501,6 +501,7 @@ from {{ from_table }} tmp
             col = column_name
 
         if destination_type == DestinationType.ORACLE:
+            quote_in_parenthesis = re.compile(r"quote\((.*)\)")
             return remove_jinja(col) if quote_in_parenthesis.findall(col) else col
 
         return col
