@@ -50,7 +50,7 @@ public class S3FormatConfigs {
         return new S3CsvFormatConfig(formatConfig);
       }
       case JSONL -> {
-        return new S3JsonlFormatConfig();
+        return new S3JsonlFormatConfig(formatConfig);
       }
       case PARQUET -> {
         return new S3ParquetFormatConfig(formatConfig);
