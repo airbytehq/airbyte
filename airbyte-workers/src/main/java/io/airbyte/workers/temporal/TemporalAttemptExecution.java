@@ -49,6 +49,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -129,14 +130,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
       // IOs.writeFile(workflowIdFile, workflowId);
       // }
 
-      final Database jobDatabase = new JobsDatabaseInstance(
-          configs.getDatabaseUser(),
-          configs.getDatabasePassword(),
-          configs.getDatabaseUrl())
-              .getInitialized();
-      final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
-      final String workflowId = workflowIdProvider.get();
-      jobPersistence.setAttemptTemporalWorkflowId(Long.parseLong(jobRunConfig.getJobId()), jobRunConfig.getAttemptId().intValue(), workflowId);
+      saveWorkflowIdForCancellation();
 
       final Worker<INPUT, OUTPUT> worker = workerSupplier.get();
       final CompletableFuture<OUTPUT> outputFuture = new CompletableFuture<>();
@@ -159,6 +153,22 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
       }
     } catch (Exception e) {
       throw Activity.wrap(e);
+    }
+  }
+
+  private void saveWorkflowIdForCancellation() throws IOException {
+    // If the jobId is not a number, it means the job is a synchronous job. No attempt is created for
+    // it, and it cannot be cancelled, so do not
+    // save the workflowId. See SynchronosSchedulerClient.java for info.
+    if (NumberUtils.isCreatable(jobRunConfig.getJobId())) {
+      final Database jobDatabase = new JobsDatabaseInstance(
+          configs.getDatabaseUser(),
+          configs.getDatabasePassword(),
+          configs.getDatabaseUrl())
+              .getInitialized();
+      final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
+      final String workflowId = workflowIdProvider.get();
+      jobPersistence.setAttemptTemporalWorkflowId(Long.parseLong(jobRunConfig.getJobId()), jobRunConfig.getAttemptId().intValue(), workflowId);
     }
   }
 
