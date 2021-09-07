@@ -477,10 +477,10 @@ from {{ from_table }} tmp
 
     def safe_cast_to_strings(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
 
-        return [StreamProcessor.safe_cast_to_string(self.properties[field], column_names[field][1]) for field in column_names]
+        return [StreamProcessor.safe_cast_to_string(self.properties[field], column_names[field][1], self.destination_type) for field in column_names]
 
     @staticmethod
-    def safe_cast_to_string(definition: Dict, column_name: str) -> str:
+    def safe_cast_to_string(definition: Dict, column_name: str, destination_type: DestinationType) -> str:
         """
         Note that the result from this static method should always be used within a
         jinja context (for example, from jinja macro surrogate_key call)
@@ -500,10 +500,10 @@ from {{ from_table }} tmp
         else:
             col = column_name
 
-        if quote_in_parenthesis.findall(col):
-            return remove_jinja(col)
-        else:
-            return col
+        if destination_type == DestinationType.ORACLE:
+            return remove_jinja(col) if quote_in_parenthesis.findall(col) else col
+
+        return col
 
     def generate_dedup_record_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
         template = Template(
