@@ -158,8 +158,8 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
 
   private void saveWorkflowIdForCancellation() throws IOException {
     // If the jobId is not a number, it means the job is a synchronous job. No attempt is created for
-    // it, and it cannot be cancelled, so do not
-    // save the workflowId. See SynchronosSchedulerClient.java for info.
+    // it, and it cannot be cancelled, so do not save the workflowId. See SynchronosSchedulerClient.java
+    // for info.
     if (NumberUtils.isCreatable(jobRunConfig.getJobId())) {
       final Database jobDatabase = new JobsDatabaseInstance(
           configs.getDatabaseUser(),
