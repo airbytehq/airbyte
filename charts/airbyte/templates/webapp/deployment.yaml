@@ -19,6 +19,12 @@ spec:
         {{- include "common.tplvalues.render" (dict "value" .Values.webapp.podAnnotations "context" $) | nindent 8 }}
       {{- end }}
     spec:
+      {{- if .Values.webapp.nodeSelector }}
+      nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.webapp.nodeSelector "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.webapp.tolerations }}
+      tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.webapp.tolerations "context" $) | nindent 8 }}
+      {{- end }}
       containers:
       - name: airbyte-webapp-container
         image: "{{ .Values.webapp.image.repository }}:{{ default .Chart.AppVersion .Values.webapp.image.tag }}"

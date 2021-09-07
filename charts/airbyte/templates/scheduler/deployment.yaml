@@ -20,6 +20,12 @@ spec:
     spec:
       serviceAccountName: {{ include "airbyte.serviceAccountName" . }}
       automountServiceAccountToken: true
+      {{- if .Values.scheduler.nodeSelector }}
+      nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.scheduler.nodeSelector "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.scheduler.tolerations }}
+      tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.scheduler.tolerations "context" $) | nindent 8 }}
+      {{- end }}
       containers:
       - name: airbyte-scheduler-container
         image: "{{ .Values.scheduler.image.repository }}:{{ default .Chart.AppVersion .Values.scheduler.image.tag }}"

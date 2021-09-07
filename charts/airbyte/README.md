@@ -26,6 +26,8 @@
 | `webapp.service.port`        | The service port to expose the webapp on                         | `80`             |
 | `webapp.resources.limits`    | The resources limits for the Web container                       | `{}`             |
 | `webapp.resources.requests`  | The requested resources for the Web container                    | `{}`             |
+| `webapp.nodeSelector`        | Node labels for pod assignment                                   | `{}`             |
+| `webapp.tolerations`         | Tolerations for webapp pod assignment.                           | `[]`             |
 | `webapp.ingress.enabled`     | Set to true to enable ingress record generation                  | `false`          |
 | `webapp.ingress.className`   | Specifies ingressClassName for clusters >= 1.18+                 | `""`             |
 | `webapp.ingress.hosts`       | Ingress Hosts configuration                                      | `[]`             |
@@ -45,6 +47,8 @@
 | `scheduler.podAnnotations`     | Add extra annotations to the scheduler pod                          | `{}`                |
 | `scheduler.resources.limits`   | The resources limits for the scheduler container                    | `{}`                |
 | `scheduler.resources.requests` | The requested resources for the scheduler container                 | `{}`                |
+| `scheduler.nodeSelector`       | Node labels for pod assignment                                      | `{}`                |
+| `scheduler.tolerations`        | Tolerations for scheduler pod assignment.                           | `[]`                |
 
 
 ### Pod Sweeper parameters
@@ -57,6 +61,8 @@
 | `podSweeper.podAnnotations`     | Add extra annotations to the podSweeper pod          | `{}`              |
 | `podSweeper.resources.limits`   | The resources limits for the podSweeper container    | `{}`              |
 | `podSweeper.resources.requests` | The requested resources for the podSweeper container | `{}`              |
+| `podSweeper.nodeSelector`       | Node labels for pod assignment                       | `{}`              |
+| `podSweeper.tolerations`        | Tolerations for podSweeper pod assignment.           | `[]`              |
 
 
 ### Server parameters
@@ -87,6 +93,8 @@
 | `server.persistence.accessMode`             | The access mode for the airbyte server pvc                       | `ReadWriteOnce`  |
 | `server.persistence.storageClass`           | The storage class to use for the airbyte server pvc              | `standard`       |
 | `server.persistence.size`                   | The size of the pvc to use for the airbyte server pvc            | `1Gi`            |
+| `server.nodeSelector`                       | Node labels for pod assignment                                   | `{}`             |
+| `server.tolerations`                        | Tolerations for server pod assignment.                           | `[]`             |
 
 
 ### Temporal parameters
@@ -99,6 +107,8 @@
 | `temporal.image.tag`        | The temporal image tag to use                 | `1.7.0`                 |
 | `temporal.service.type`     | The Kubernetes Service Type                   | `ClusterIP`             |
 | `temporal.service.port`     | The temporal port and exposed kubernetes port | `7233`                  |
+| `temporal.nodeSelector`     | Node labels for pod assignment                | `{}`                    |
+| `temporal.tolerations`      | Tolerations for pod assignment.               | `[]`                    |
 
 
 ### Airbyte Database parameters

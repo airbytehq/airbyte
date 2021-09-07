@@ -20,6 +20,12 @@ spec:
       {{- end }}
     spec:
       serviceAccountName: {{ include "airbyte.serviceAccountName" . }}
+      {{- if .Values.podSweeper.nodeSelector }}
+      nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.podSweeper.nodeSelector "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.podSweeper.tolerations }}
+      tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.podSweeper.tolerations "context" $) | nindent 8 }}
+      {{- end }}
       containers:
       - name: airbyte-pod-sweeper
         image: "{{ .Values.podSweeper.image.repository }}:{{ .Values.podSweeper.image.tag}}"

@@ -15,6 +15,12 @@ spec:
       labels:
         airbyte: temporal
     spec:
+      {{- if .Values.temporal.nodeSelector }}
+      nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.temporal.nodeSelector "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.temporal.tolerations }}
+      tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.temporal.tolerations "context" $) | nindent 8 }}
+      {{- end }}
       containers:
       - name: airbyte-temporal
         image: "{{ .Values.temporal.image.repository}}:{{ .Values.temporal.image.tag }}"
