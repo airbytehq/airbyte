@@ -16,6 +16,10 @@
     jsonb
 {% endmacro %}
 
+{%- macro oracle__type_json() -%}
+    varchar2(4000)
+{%- endmacro -%}
+
 {% macro snowflake__type_json() %}
     variant
 {% endmacro %}
@@ -31,9 +35,17 @@
     char
 {%- endmacro -%}
 
+{%- macro oracle__type_string() -%}
+    varchar2(4000)
+{%- endmacro -%}
+
 
 {# float ------------------------------------------------- #}
 {% macro mysql__type_float() %}
+    float
+{% endmacro %}
+
+{% macro oracle__type_float() %}
     float
 {% endmacro %}
 
@@ -43,10 +55,17 @@
     signed
 {% endmacro %}
 
+{% macro oracle__type_int() %}
+    int
+{% endmacro %}
 
 {# bigint ------------------------------------------------- #}
 {% macro mysql__type_bigint() %}
     signed
+{% endmacro %}
+
+{% macro oracle__type_bigint() %}
+    numeric
 {% endmacro %}
 
 
@@ -81,6 +100,10 @@
     char
 {%- endmacro -%}
 
+{% macro oracle__type_timestamp_with_timezone() %}
+    varchar2(4000)
+{% endmacro %}
+
 
 {# date  -------------------------------------------------     #}
 
@@ -90,4 +113,8 @@
 
 {% macro default__type_date() %}
     date
+{% endmacro %}
+
+{% macro oracle__type_date() %}
+    varchar2(4000)
 {% endmacro %}

@@ -25,6 +25,7 @@
 
 import json
 import os
+import re
 from typing import Any, Dict, List, Set
 
 import yaml
@@ -118,7 +119,17 @@ class CatalogProcessor:
                 schema = stream_config["namespace"]
 
             schema_name = name_transformer.normalize_schema_name(schema, truncate=False)
-            raw_schema_name = name_transformer.normalize_schema_name(f"_airbyte_{schema}", truncate=False)
+            if destination_type == DestinationType.ORACLE:
+                quote_in_parenthesis = re.compile(r"quote\((.*)\)")
+                raw_schema_name = name_transformer.normalize_schema_name(schema, truncate=False)
+                if not quote_in_parenthesis.findall(json_column_name):
+                    json_column_name = name_transformer.normalize_column_name(json_column_name, in_jinja=True)
+            else:
+                column_inside_single_quote = re.compile(r"\'(.*)\'")
+                raw_schema_name = name_transformer.normalize_schema_name(f"_airbyte_{schema}", truncate=False)
+                if not column_inside_single_quote.findall(json_column_name):
+                    json_column_name = f"'{json_column_name}'"
+
             stream_name = get_field(stream_config, "name", f"Invalid Stream: 'name' is not defined in stream: {str(stream_config)}")
             # MySQL table names need to be manually truncated, because it does not do it automatically
             truncate = destination_type == DestinationType.MYSQL
@@ -148,12 +159,13 @@ class CatalogProcessor:
                 stream_name=stream_name,
                 destination_type=destination_type,
                 raw_schema=raw_schema_name,
+                default_schema=default_schema,
                 schema=schema_name,
                 source_sync_mode=source_sync_mode,
                 destination_sync_mode=destination_sync_mode,
                 cursor_field=cursor_field,
                 primary_key=primary_key,
-                json_column_name=f"'{json_column_name}'",
+                json_column_name=json_column_name,
                 properties=properties,
                 tables_registry=tables_registry,
                 from_table=from_table,
