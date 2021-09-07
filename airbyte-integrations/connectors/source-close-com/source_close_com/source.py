@@ -39,7 +39,7 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 class CloseComStream(HttpStream, ABC):
     url_base: str = "https://api.close.com/api/v1/"
     primary_key: str = "id"
-    number_of_items_per_page: int = 100
+    number_of_items_per_page = None
 
     def __init__(self, **kwargs: Mapping[str, Any]):
         super().__init__(authenticator=kwargs["authenticator"])
@@ -47,15 +47,27 @@ class CloseComStream(HttpStream, ABC):
         self.start_date: str = kwargs["start_date"]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        In one case, Close.com uses two params for pagination: _skip and _limit.
+        _skip - number of records from stream data we need skip.
+        _limit - number of records in stream, that we received from API.
+        For next_page_token need use sum of _skip and _limit values.
+
+        In other case, Close.com uses _cursor param for pagination.
+        _cursor - value from API response - cursor_next field.
+        """
         decoded_response = response.json()
         has_more = bool(decoded_response.get("has_more", None))
         data = decoded_response.get("data", [])
+        cursor_next = decoded_response.get("cursor_next", None)
         if has_more and data:
             parsed = dict(parse_qsl(urlparse(response.url).query))
             # close.com has default skip param - 0. Used for pagination
             skip = parsed.get("_skip", 0)
-            limit = parsed.get("_limit", self.number_of_items_per_page)
+            limit = parsed.get("_limit", len(data))
             return {"_skip": int(skip) + int(limit)}
+        if cursor_next and data:
+            return {"_cursor": cursor_next}
         return None
 
     def request_params(
@@ -65,7 +77,9 @@ class CloseComStream(HttpStream, ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
 
-        params = {"_limit": self.number_of_items_per_page}
+        params = {}
+        if self.number_of_items_per_page:
+            params.update({"_limit": self.number_of_items_per_page})
 
         # Handle pagination by inserting the next page's token in the request parameters
         if next_page_token:
@@ -110,12 +124,13 @@ class IncrementalCloseComStream(CloseComStream):
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
 
-class CloseComActivitiesMixin(IncrementalCloseComStream):
+class CloseComActivitiesStream(IncrementalCloseComStream):
     """
     General class for activities. Define request params based on cursor_field value.
     """
 
     cursor_field = "date_created"
+    number_of_items_per_page = 100
 
     def request_params(self, stream_state=None, **kwargs):
         stream_state = stream_state or {}
@@ -128,7 +143,7 @@ class CloseComActivitiesMixin(IncrementalCloseComStream):
         return f"activity/{self._type}"
 
 
-class CreatedActivities(CloseComActivitiesMixin):
+class CreatedActivities(CloseComActivitiesStream):
     """
     Get created activities on a specific date
     API Docs: https://developer.close.com/#activities-list-or-filter-all-created-activities
@@ -137,7 +152,7 @@ class CreatedActivities(CloseComActivitiesMixin):
     _type = "created"
 
 
-class NoteActivities(CloseComActivitiesMixin):
+class NoteActivities(CloseComActivitiesStream):
     """
     Get note activities on a specific date
     API Docs: https://developer.close.com/#activities-list-or-filter-all-note-activities
@@ -146,7 +161,7 @@ class NoteActivities(CloseComActivitiesMixin):
     _type = "note"
 
 
-class EmailThreadActivities(CloseComActivitiesMixin):
+class EmailThreadActivities(CloseComActivitiesStream):
     """
     Get email thread activities on a specific date
     API Docs: https://developer.close.com/#activities-list-or-filter-all-emailthread-activities
@@ -155,7 +170,7 @@ class EmailThreadActivities(CloseComActivitiesMixin):
     _type = "emailthread"
 
 
-class EmailActivities(CloseComActivitiesMixin):
+class EmailActivities(CloseComActivitiesStream):
     """
     Get email activities on a specific date
     API Docs: https://developer.close.com/#activities-list-or-filter-all-email-activities
@@ -164,7 +179,7 @@ class EmailActivities(CloseComActivitiesMixin):
     _type = "email"
 
 
-class SmsActivities(CloseComActivitiesMixin):
+class SmsActivities(CloseComActivitiesStream):
     """
     Get SMS activities on a specific date
     API Docs: https://developer.close.com/#activities-list-or-filter-all-sms-activities
@@ -173,7 +188,7 @@ class SmsActivities(CloseComActivitiesMixin):
     _type = "sms"
 
 
-class CallActivities(CloseComActivitiesMixin):
+class CallActivities(CloseComActivitiesStream):
     """
     Get call activities on a specific date
     API Docs: https://developer.close.com/#activities-list-or-filter-all-call-activities
@@ -182,7 +197,7 @@ class CallActivities(CloseComActivitiesMixin):
     _type = "call"
 
 
-class MeetingActivities(CloseComActivitiesMixin):
+class MeetingActivities(CloseComActivitiesStream):
     """
     Get meeting activities on a specific date
     API Docs: https://developer.close.com/#activities-list-or-filter-all-meeting-activities
@@ -191,7 +206,7 @@ class MeetingActivities(CloseComActivitiesMixin):
     _type = "meeting"
 
 
-class LeadStatusChangeActivities(CloseComActivitiesMixin):
+class LeadStatusChangeActivities(CloseComActivitiesStream):
     """
     Get lead status change activities on a specific date
     API Docs: https://developer.close.com/#activities-list-or-filter-all-leadstatuschange-activities
@@ -200,7 +215,7 @@ class LeadStatusChangeActivities(CloseComActivitiesMixin):
     _type = "status_change/lead"
 
 
-class OpportunityStatusChangeActivities(CloseComActivitiesMixin):
+class OpportunityStatusChangeActivities(CloseComActivitiesStream):
     """
     Get opportunity status change activities on a specific date
     API Docs: https://developer.close.com/#activities-list-or-filter-all-opportunitystatuschange-activities
@@ -209,7 +224,7 @@ class OpportunityStatusChangeActivities(CloseComActivitiesMixin):
     _type = "status_change/opportunity"
 
 
-class TaskCompletedActivities(CloseComActivitiesMixin):
+class TaskCompletedActivities(CloseComActivitiesStream):
     """
     Get task completed activities on a specific date
     API Docs: https://developer.close.com/#activities-list-or-filter-all-taskcompleted-activities
@@ -243,6 +258,8 @@ class Leads(IncrementalCloseComStream):
     API Docs: https://developer.close.com/#leads
     """
 
+    number_of_items_per_page = 200
+
     def path(self, **kwargs) -> str:
         return "lead"
 
@@ -254,12 +271,13 @@ class Leads(IncrementalCloseComStream):
         return params
 
 
-class CloseComTasksMixin(IncrementalCloseComStream):
+class CloseComTasksStream(IncrementalCloseComStream):
     """
     General class for tasks. Define request params based on _type value.
     """
 
     cursor_field = "date_created"
+    number_of_items_per_page = 1000
 
     def request_params(self, stream_state=None, **kwargs):
         stream_state = stream_state or {}
@@ -273,7 +291,7 @@ class CloseComTasksMixin(IncrementalCloseComStream):
         return "task"
 
 
-class LeadTasks(CloseComTasksMixin):
+class LeadTasks(CloseComTasksStream):
     """
     Get lead tasks on a specific date
     API Docs: https://developer.close.com/#task
@@ -282,7 +300,7 @@ class LeadTasks(CloseComTasksMixin):
     _type = "lead"
 
 
-class IncomingEmailTasks(CloseComTasksMixin):
+class IncomingEmailTasks(CloseComTasksStream):
     """
     Get incoming email tasks on a specific date
     API Docs: https://developer.close.com/#tasks
@@ -291,7 +309,7 @@ class IncomingEmailTasks(CloseComTasksMixin):
     _type = "incoming_email"
 
 
-class EmailFollowupTasks(CloseComTasksMixin):
+class EmailFollowupTasks(CloseComTasksStream):
     """
     Get email followup tasks on a specific date
     API Docs: https://developer.close.com/#tasks
@@ -300,7 +318,7 @@ class EmailFollowupTasks(CloseComTasksMixin):
     _type = "email_followup"
 
 
-class MissedCallTasks(CloseComTasksMixin):
+class MissedCallTasks(CloseComTasksStream):
     """
     Get missed call tasks on a specific date
     API Docs: https://developer.close.com/#task
@@ -309,7 +327,7 @@ class MissedCallTasks(CloseComTasksMixin):
     _type = "missed_call"
 
 
-class AnsweredDetachedCallTasks(CloseComTasksMixin):
+class AnsweredDetachedCallTasks(CloseComTasksStream):
     """
     Get answered detached call tasks on a specific date
     API Docs: https://developer.close.com/#task
@@ -318,7 +336,7 @@ class AnsweredDetachedCallTasks(CloseComTasksMixin):
     _type = "answered_detached_call"
 
 
-class VoicemailTasks(CloseComTasksMixin):
+class VoicemailTasks(CloseComTasksStream):
     """
     Get voicemail tasks on a specific date
     API Docs: https://developer.close.com/#task
@@ -327,7 +345,7 @@ class VoicemailTasks(CloseComTasksMixin):
     _type = "voicemail"
 
 
-class OpportunityDueTasks(CloseComTasksMixin):
+class OpportunityDueTasks(CloseComTasksStream):
     """
     Get opportunity due tasks on a specific date
     API Docs: https://developer.close.com/#task
@@ -336,7 +354,7 @@ class OpportunityDueTasks(CloseComTasksMixin):
     _type = "opportunity_due"
 
 
-class IncomingSmsTasks(CloseComTasksMixin):
+class IncomingSmsTasks(CloseComTasksStream):
     """
     Get incoming SMS tasks on a specific date
     API Docs: https://developer.close.com/#task
@@ -345,16 +363,18 @@ class IncomingSmsTasks(CloseComTasksMixin):
     _type = "incoming_sms"
 
 
-class CloseComCustomFieldsMixin(CloseComStream):
+class CloseComCustomFieldsStream(CloseComStream):
     """
     General class for custom fields. Define path based on _type value.
     """
+
+    number_of_items_per_page = 1000
 
     def path(self, **kwargs) -> str:
         return f"custom_field/{self._type}"
 
 
-class LeadCustomFields(CloseComCustomFieldsMixin):
+class LeadCustomFields(CloseComCustomFieldsStream):
     """
     Get lead custom fields for Close.com account organization
     API Docs: https://developer.close.com/#custom-fields-list-all-the-lead-custom-fields-for-your-organization
@@ -363,7 +383,7 @@ class LeadCustomFields(CloseComCustomFieldsMixin):
     _type = "lead"
 
 
-class ContactCustomFields(CloseComCustomFieldsMixin):
+class ContactCustomFields(CloseComCustomFieldsStream):
     """
     Get contact custom fields for Close.com account organization
     API Docs: https://developer.close.com/#custom-fields-list-all-the-contact-custom-fields-for-your-organization
@@ -372,7 +392,7 @@ class ContactCustomFields(CloseComCustomFieldsMixin):
     _type = "contact"
 
 
-class OpportunityCustomFields(CloseComCustomFieldsMixin):
+class OpportunityCustomFields(CloseComCustomFieldsStream):
     """
     Get opportunity custom fields for Close.com account organization
     API Docs: https://developer.close.com/#custom-fields-list-all-the-opportunity-custom-fields-for-your-organization
@@ -381,7 +401,7 @@ class OpportunityCustomFields(CloseComCustomFieldsMixin):
     _type = "opportunity"
 
 
-class ActivityCustomFields(CloseComCustomFieldsMixin):
+class ActivityCustomFields(CloseComCustomFieldsStream):
     """
     Get activity custom fields for Close.com account organization
     API Docs: https://developer.close.com/#custom-fields-list-all-the-activity-custom-fields-for-your-organization
@@ -396,6 +416,8 @@ class Users(CloseComStream):
     API Docs: https://developer.close.com/#users
     """
 
+    number_of_items_per_page = 1000
+
     def path(self, **kwargs) -> str:
         return "user"
 
@@ -405,6 +427,8 @@ class Contacts(CloseComStream):
     Get contacts for Close.com account organization
     API Docs: https://developer.close.com/#contacts
     """
+
+    number_of_items_per_page = 100
 
     def path(self, **kwargs) -> str:
         return "contact"
@@ -417,6 +441,7 @@ class Opportunities(IncrementalCloseComStream):
     """
 
     cursor_field = "date_created"
+    number_of_items_per_page = 250
 
     def path(self, **kwargs) -> str:
         return "opportunity"
@@ -445,6 +470,8 @@ class LeadStatuses(CloseComStream):
     API Docs: https://developer.close.com/#lead-statuses
     """
 
+    number_of_items_per_page = 100
+
     def path(self, **kwargs) -> str:
         return "status/lead"
 
@@ -454,6 +481,8 @@ class OpportunityStatuses(CloseComStream):
     Get opportunity statuses for Close.com account organization
     API Docs: https://developer.close.com/#opportunity-statuses
     """
+
+    number_of_items_per_page = 100
 
     def path(self, **kwargs) -> str:
         return "status/opportunity"
@@ -475,14 +504,18 @@ class EmailTemplates(CloseComStream):
     API Docs: https://developer.close.com/#email-templates
     """
 
+    number_of_items_per_page = 100
+
     def path(self, **kwargs) -> str:
         return "email_template"
 
 
-class CloseComConnectedAccountsMixin(CloseComStream):
+class CloseComConnectedAccountsStream(CloseComStream):
     """
     General class for connected accounts. Define request params based on _type value.
     """
+
+    number_of_items_per_page = 100
 
     def request_params(self, stream_state=None, **kwargs):
         stream_state = stream_state or {}
@@ -494,7 +527,7 @@ class CloseComConnectedAccountsMixin(CloseComStream):
         return "connected_account"
 
 
-class GoogleConnectedAccounts(CloseComConnectedAccountsMixin):
+class GoogleConnectedAccounts(CloseComConnectedAccountsStream):
     """
     Get google connected accounts for Close.com account
     API Docs: https://developer.close.com/#connected-accounts
@@ -503,7 +536,7 @@ class GoogleConnectedAccounts(CloseComConnectedAccountsMixin):
     _type = "google"
 
 
-class CustomEmailConnectedAccounts(CloseComConnectedAccountsMixin):
+class CustomEmailConnectedAccounts(CloseComConnectedAccountsStream):
     """
     Get custom email connected accounts for Close.com account
     API Docs: https://developer.close.com/#connected-accounts
@@ -512,7 +545,7 @@ class CustomEmailConnectedAccounts(CloseComConnectedAccountsMixin):
     _type = "custom_email"
 
 
-class ZoomConnectedAccounts(CloseComConnectedAccountsMixin):
+class ZoomConnectedAccounts(CloseComConnectedAccountsStream):
     """
     Get zoom connected accounts for Close.com account
     API Docs: https://developer.close.com/#connected-accounts
@@ -538,6 +571,8 @@ class EmailSequences(CloseComStream):
     API Docs: https://developer.close.com/#email-sequences
     """
 
+    number_of_items_per_page = 1000
+
     def path(self, **kwargs) -> str:
         return "sequence"
 
@@ -559,11 +594,13 @@ class SmartViews(CloseComStream):
     API Docs: https://developer.close.com/#dialer
     """
 
+    number_of_items_per_page = 600
+
     def path(self, **kwargs) -> str:
         return "saved_search"
 
 
-class CloseComBulkActionsMixin(CloseComStream):
+class CloseComBulkActionsStream(CloseComStream):
     """
     General class for Bulk Actions. Define path based on _type value.
     Bulk actions are used to perform an "action" (send an email, update a lead status, etc.) on a number of leads
@@ -571,11 +608,13 @@ class CloseComBulkActionsMixin(CloseComStream):
     API Docs: https://developer.close.com/#bulk-actions
     """
 
+    number_of_items_per_page = 100
+
     def path(self, **kwargs) -> str:
         return f"bulk_action/{self._type}"
 
 
-class EmailBulkActions(CloseComBulkActionsMixin):
+class EmailBulkActions(CloseComBulkActionsStream):
     """
     Get all email bulk actions of Close.com organization.
     API Docs: https://developer.close.com/#bulk-actions-list-bulk-emails
@@ -584,7 +623,7 @@ class EmailBulkActions(CloseComBulkActionsMixin):
     _type = "email"
 
 
-class SequenceSubscriptionBulkActions(CloseComBulkActionsMixin):
+class SequenceSubscriptionBulkActions(CloseComBulkActionsStream):
     """
     Get all sequence subscription bulk actions of Close.com organization.
     API Docs: https://developer.close.com/#bulk-actions-list-bulk-sequence-subscriptions
@@ -593,7 +632,7 @@ class SequenceSubscriptionBulkActions(CloseComBulkActionsMixin):
     _type = "sequence_subscription"
 
 
-class DeleteBulkActions(CloseComBulkActionsMixin):
+class DeleteBulkActions(CloseComBulkActionsStream):
     """
     Get all bulk deletes actions of Close.com organization.
     API Docs: https://developer.close.com/#bulk-actions-list-bulk-deletes
@@ -602,7 +641,7 @@ class DeleteBulkActions(CloseComBulkActionsMixin):
     _type = "delete"
 
 
-class EditBulkActions(CloseComBulkActionsMixin):
+class EditBulkActions(CloseComBulkActionsStream):
     """
     Get all bulk edits actions of Close.com organization.
     API Docs: https://developer.close.com/#bulk-actions-list-bulk-edits
@@ -616,6 +655,8 @@ class IntegrationLinks(CloseComStream):
     Get all integration links of Close.com organization.
     API Docs: https://developer.close.com/#integration-links
     """
+
+    number_of_items_per_page = 100
 
     def path(self, **kwargs) -> str:
         return "integration_link"

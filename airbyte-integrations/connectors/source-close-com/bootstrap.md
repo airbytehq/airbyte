@@ -5,10 +5,14 @@ The Close.com API allows users to retrieve information about leads, contacts, ac
 **API** doc available [here](https://developer.close.com/).
 
 Auth uses a pre-created API token which can be created in the UI. 
-`skip_` and `limit_` params are used for pagination. 
+
+In one case, `_skip` and `_limit` params are used for pagination. 
+Some streams have `_limit` param (`number_of_items_per_page` variable in code) due to maximum Close.com limit of data per request.
+In other case, the `cursor_next` field from response is used for pagination in `_cursor` param.
+
 Rate limiting is just a standard exponential backoff when you see a 429 HTTP status code. Close.com puts the retry time in the `rate_reset` response body. Rate-reset is the same as retry-after.
 
 Some of streams supports Incremental sync. Incremental sync available when API endpoint supports one of query params: `date_created` or `date_updated`.
 
-Also, Close.com source has Mixin streams for *activities*, *tasks*, *custom fields*, *connected accounts*, and *bulk actions*. 
-It is implemented due to different schema for each of mixin type stream.
+Also, Close.com source has general stream classes for *activities*, *tasks*, *custom fields*, *connected accounts*, and *bulk actions*.
+It is implemented due to different schema for each of stream.
