@@ -377,9 +377,6 @@ from {{ from_table }} {{ table_alias }}
         table_alias = f"{table_alias}"
         if "unnested_column_value" in json_column_name:
             table_alias = ""
-        # if json_column_name.startswith("'_") and self.destination_type == DestinationType.ORACLE:
-        #     json_column_name = json_column_name.replace("'", "")
-        #     json_column_name = self.name_transformer.normalize_column_name(json_column_name, True, False)
 
         json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path})")
         if "type" in definition:
