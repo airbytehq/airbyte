@@ -115,6 +115,33 @@ public class OAuthConfigSupplierTest {
     assertEquals(expectedConfig, actualConfig);
   }
 
+  @Test
+  void testInjectMaskedOAuthParameters() throws JsonValidationException, IOException {
+    final OAuthConfigSupplier maskingSupplier = new OAuthConfigSupplier(configRepository, true);
+
+    final JsonNode config = generateJsonConfig();
+    final UUID sourceDefinitionId = UUID.randomUUID();
+    final UUID workspaceId = UUID.randomUUID();
+    final Map<String, String> oauthParameters = generateOAuthParameters();
+    when(configRepository.listSourceOAuthParam()).thenReturn(List.of(
+        new SourceOAuthParameter()
+            .withOauthParameterId(UUID.randomUUID())
+            .withSourceDefinitionId(sourceDefinitionId)
+            .withWorkspaceId(null)
+            .withConfiguration(Jsons.jsonNode(oauthParameters)),
+        new SourceOAuthParameter()
+            .withOauthParameterId(UUID.randomUUID())
+            .withSourceDefinitionId(UUID.randomUUID())
+            .withWorkspaceId(null)
+            .withConfiguration(Jsons.jsonNode(generateOAuthParameters()))));
+    final JsonNode actualConfig = maskingSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
+    final ObjectNode expectedConfig = ((ObjectNode) Jsons.clone(config));
+    for (String key : oauthParameters.keySet()) {
+      expectedConfig.set(key, Jsons.jsonNode(OAuthConfigSupplier.SECRET_MASK));
+    }
+    assertEquals(expectedConfig, actualConfig);
+  }
+
   private JsonNode generateJsonConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("apiSecret", "123")

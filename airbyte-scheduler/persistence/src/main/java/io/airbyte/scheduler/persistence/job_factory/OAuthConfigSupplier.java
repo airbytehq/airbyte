@@ -38,7 +38,7 @@ import java.util.UUID;
 
 public class OAuthConfigSupplier {
 
-  private static final JsonNode SECRET_MASK = Jsons.jsonNode("******");
+  public static final String SECRET_MASK = "******";
   final private ConfigRepository configRepository;
   private final boolean maskSecrets;
 
@@ -84,7 +84,7 @@ public class OAuthConfigSupplier {
   private void injectJsonNode(ObjectNode config, ObjectNode fromConfig) {
     for (String key : Jsons.keys(fromConfig)) {
       if (maskSecrets) {
-        config.set(key, SECRET_MASK);
+        config.set(key, Jsons.jsonNode(SECRET_MASK));
       } else {
         if (!config.has(key) || isSecretMask(config.get(key).asText())) {
           config.set(key, fromConfig.get(key));
