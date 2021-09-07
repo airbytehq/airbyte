@@ -120,3 +120,6 @@ be displayed with adapting the file source spec to this example:
 } 
 ```
 
+### Previewing a specfication in the UI
+
+While iterating on your specification, you can preview what it will look like in the UI in realtime by following the instructions [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-webapp/docs/HowTo-ConnectionSpecification.md).
