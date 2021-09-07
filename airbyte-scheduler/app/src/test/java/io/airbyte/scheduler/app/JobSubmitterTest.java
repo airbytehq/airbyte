@@ -49,6 +49,7 @@ import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.app.worker_run.WorkerRun;
 import io.airbyte.scheduler.models.Job;
+import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
@@ -83,6 +84,7 @@ public class JobSubmitterTest {
 
   private JobSubmitter jobSubmitter;
   private JobTracker jobTracker;
+  private JobNotifier jobNotifier;
 
   @BeforeEach
   public void setup() throws IOException {
@@ -102,12 +104,14 @@ public class JobSubmitterTest {
     this.logPath = jobRoot.resolve(LogClientSingleton.LOG_FILENAME);
     when(persistence.getNextJob()).thenReturn(Optional.of(job));
     when(persistence.createAttempt(JOB_ID, logPath)).thenReturn(ATTEMPT_NUMBER);
+    jobNotifier = mock(JobNotifier.class);
 
     jobSubmitter = spy(new JobSubmitter(
         MoreExecutors.newDirectExecutorService(),
         persistence,
         workerRunFactory,
-        jobTracker));
+        jobTracker,
+        jobNotifier));
   }
 
   @Test

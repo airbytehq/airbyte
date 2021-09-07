@@ -28,10 +28,12 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.concurrency.LifecycledCallable;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.app.worker_run.WorkerRun;
 import io.airbyte.scheduler.models.Job;
+import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
@@ -52,6 +54,7 @@ public class JobSubmitter implements Runnable {
   private final JobPersistence persistence;
   private final TemporalWorkerRunFactory temporalWorkerRunFactory;
   private final JobTracker jobTracker;
+  private final JobNotifier jobNotifier;
 
   // See attemptJobSubmit() to understand the need for this Concurrent Set.
   private final Set<Long> runningJobs = Sets.newConcurrentHashSet();
@@ -59,11 +62,13 @@ public class JobSubmitter implements Runnable {
   public JobSubmitter(final ExecutorService threadPool,
                       final JobPersistence persistence,
                       final TemporalWorkerRunFactory temporalWorkerRunFactory,
-                      final JobTracker jobTracker) {
+                      final JobTracker jobTracker,
+                      final JobNotifier jobNotifier) {
     this.threadPool = threadPool;
     this.persistence = persistence;
     this.temporalWorkerRunFactory = temporalWorkerRunFactory;
     this.jobTracker = jobTracker;
+    this.jobNotifier = jobNotifier;
   }
 
   @Override
@@ -133,6 +138,9 @@ public class JobSubmitter implements Runnable {
 
           if (output.getStatus() == io.airbyte.workers.JobStatus.SUCCEEDED) {
             persistence.succeedAttempt(job.getId(), attemptNumber);
+            if (job.getConfigType() == ConfigType.SYNC) {
+              jobNotifier.successJob(job);
+            }
           } else {
             persistence.failAttempt(job.getId(), attemptNumber);
           }

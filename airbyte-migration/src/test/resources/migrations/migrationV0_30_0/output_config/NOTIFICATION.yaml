@@ -6,8 +6,6 @@ description: Notification Settings
 type: object
 required:
   - notificationType
-  - sendOnSuccess
-  - sendOnFailure
 additionalProperties: false
 properties:
   # Instead of this type field, we would prefer a json schema "oneOf" but unfortunately,

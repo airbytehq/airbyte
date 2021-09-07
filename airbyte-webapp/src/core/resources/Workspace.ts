@@ -3,6 +3,8 @@ import BaseResource from "./BaseResource";
 
 export interface Notification {
   notificationType: string;
+  sendOnSuccess: boolean;
+  sendOnFailure: boolean;
   slackConfiguration: {
     webhook: string;
   };
