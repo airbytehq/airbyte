@@ -22,6 +22,7 @@
 # SOFTWARE.
 #
 
+
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
@@ -32,7 +33,9 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+
+from .utils import ShopifyRateLimiter as limiter
 
 
 class ShopifyStream(HttpStream, ABC):
@@ -46,11 +49,10 @@ class ShopifyStream(HttpStream, ABC):
     order_field = "updated_at"
     filter_field = "updated_at_min"
 
-    def __init__(self, shop: str, start_date: str, api_password: str, **kwargs):
+    def __init__(self, shop: str, start_date: str, **kwargs):
         super().__init__(**kwargs)
         self.start_date = start_date
         self.shop = shop
-        self.api_password = api_password
 
     @property
     def url_base(self) -> str:
@@ -73,6 +75,7 @@ class ShopifyStream(HttpStream, ABC):
             params[self.filter_field] = self.start_date
         return params
 
+    @limiter.balance_rate_limit()
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
         records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
@@ -125,7 +128,7 @@ class OrderSubstream(IncrementalShopifyStream):
     def read_records(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
-        orders_stream = Orders(authenticator=self.authenticator, shop=self.shop, start_date=self.start_date, api_password=self.api_password)
+        orders_stream = Orders(authenticator=self.authenticator, shop=self.shop, start_date=self.start_date)
         for data in orders_stream.read_records(sync_mode=SyncMode.full_refresh):
             slice = super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
             yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
@@ -300,25 +303,20 @@ class DiscountCodes(IncrementalShopifyStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
-        price_rules_stream = PriceRules(
-            authenticator=self.authenticator, shop=self.shop, start_date=self.start_date, api_password=self.api_password
-        )
+        price_rules_stream = PriceRules(authenticator=self.authenticator, shop=self.shop, start_date=self.start_date)
         for data in price_rules_stream.read_records(sync_mode=SyncMode.full_refresh):
             discount_slice = super().read_records(stream_slice={"price_rule_id": data["id"]}, **kwargs)
             yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=discount_slice)
 
 
-class ShopifyAuthenticator(HttpAuthenticator):
+class ShopifyAuthenticator(TokenAuthenticator):
 
     """
     Making Authenticator to be able to accept Header-Based authentication.
     """
 
-    def __init__(self, token: str):
-        self.token = token
-
     def get_auth_header(self) -> Mapping[str, Any]:
-        return {"X-Shopify-Access-Token": f"{self.token}"}
+        return {"X-Shopify-Access-Token": f"{self._token}"}
 
 
 # Basic Connections Check
@@ -328,16 +326,13 @@ class SourceShopify(AbstractSource):
         """
         Testing connection availability for the connector.
         """
-
-        shop = config["shop"]
-        api_pass = config["api_password"]
+        auth = ShopifyAuthenticator(token=config["api_password"]).get_auth_header()
         api_version = "2021-07"  # Latest Stable Release
 
-        headers = {"X-Shopify-Access-Token": api_pass}
-        url = f"https://{shop}.myshopify.com/admin/api/{api_version}/shop.json"
+        url = f"https://{config['shop']}.myshopify.com/admin/api/{api_version}/shop.json"
 
         try:
-            session = requests.get(url, headers=headers)
+            session = requests.get(url, headers=auth)
             session.raise_for_status()
             return True, None
         except requests.exceptions.RequestException as e:
@@ -351,7 +346,7 @@ class SourceShopify(AbstractSource):
         """
 
         auth = ShopifyAuthenticator(token=config["api_password"])
-        args = {"authenticator": auth, "shop": config["shop"], "start_date": config["start_date"], "api_password": config["api_password"]}
+        args = {"authenticator": auth, "shop": config["shop"], "start_date": config["start_date"]}
         return [
             Customers(**args),
             Orders(**args),

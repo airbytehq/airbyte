@@ -24,6 +24,7 @@
 
 
 import json
+from http import HTTPStatus
 from typing import Any, Iterable, Mapping, Optional
 from unittest.mock import ANY
 
@@ -31,7 +32,7 @@ import pytest
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.exceptions import RequestBodyException, UserDefinedBackoffException
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 
 
 class StubBasicReadHttpStream(HttpStream):
@@ -66,12 +67,13 @@ def test_request_kwargs_used(mocker, requests_mock):
     stream = StubBasicReadHttpStream()
     request_kwargs = {"cert": None, "proxies": "google.com"}
     mocker.patch.object(stream, "request_kwargs", return_value=request_kwargs)
-    mocker.patch.object(stream._session, "send", wraps=stream._session.send)
+    send_mock = mocker.patch.object(stream._session, "send", wraps=stream._session.send)
     requests_mock.register_uri("GET", stream.url_base)
 
     list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
     stream._session.send.assert_any_call(ANY, **request_kwargs)
+    assert send_mock.call_count == 1
 
 
 def test_stub_basic_read_http_stream_read_records(mocker):
@@ -100,7 +102,7 @@ class StubNextPageTokenHttpStream(StubBasicReadHttpStream):
 
 
 def test_next_page_token_is_input_to_other_methods(mocker):
-    """ Validates that the return value from next_page_token is passed into other methods that need it like request_params, headers, body, etc.."""
+    """Validates that the return value from next_page_token is passed into other methods that need it like request_params, headers, body, etc.."""
     pages = 5
     stream = StubNextPageTokenHttpStream(pages=pages)
     blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
@@ -144,16 +146,127 @@ class StubCustomBackoffHttpStream(StubBasicReadHttpStream):
 
 
 def test_stub_custom_backoff_http_stream(mocker):
+    mocker.patch("time.sleep", lambda x: None)
     stream = StubCustomBackoffHttpStream()
     req = requests.Response()
     req.status_code = 429
 
-    mocker.patch.object(requests.Session, "send", return_value=req)
+    send_mock = mocker.patch.object(requests.Session, "send", return_value=req)
 
     with pytest.raises(UserDefinedBackoffException):
         list(stream.read_records(SyncMode.full_refresh))
+    assert send_mock.call_count == stream.max_retries + 1
 
     # TODO(davin): Figure out how to assert calls.
+
+
+@pytest.mark.parametrize("retries", [-20, -1, 0, 1, 2, 10])
+def test_stub_custom_backoff_http_stream_retries(mocker, retries):
+    mocker.patch("time.sleep", lambda x: None)
+
+    class StubCustomBackoffHttpStreamRetries(StubCustomBackoffHttpStream):
+        @property
+        def max_retries(self):
+            return retries
+
+    stream = StubCustomBackoffHttpStreamRetries()
+    req = requests.Response()
+    req.status_code = HTTPStatus.TOO_MANY_REQUESTS
+    send_mock = mocker.patch.object(requests.Session, "send", return_value=req)
+
+    with pytest.raises(UserDefinedBackoffException):
+        list(stream.read_records(SyncMode.full_refresh))
+    if retries <= 0:
+        assert send_mock.call_count == 1
+    else:
+        assert send_mock.call_count == stream.max_retries + 1
+
+
+def test_stub_custom_backoff_http_stream_endless_retries(mocker):
+    mocker.patch("time.sleep", lambda x: None)
+
+    class StubCustomBackoffHttpStreamRetries(StubCustomBackoffHttpStream):
+        @property
+        def max_retries(self):
+            return None
+
+    infinite_number = 20
+
+    stream = StubCustomBackoffHttpStreamRetries()
+    req = requests.Response()
+    req.status_code = HTTPStatus.TOO_MANY_REQUESTS
+    send_mock = mocker.patch.object(requests.Session, "send", side_effect=[req] * infinite_number)
+
+    # Expecting mock object to raise a RuntimeError when the end of side_effect list parameter reached.
+    with pytest.raises(RuntimeError):
+        list(stream.read_records(SyncMode.full_refresh))
+    assert send_mock.call_count == infinite_number + 1
+
+
+@pytest.mark.parametrize("http_code", [400, 401, 403])
+def test_4xx_error_codes_http_stream(mocker, http_code):
+    stream = StubCustomBackoffHttpStream()
+    req = requests.Response()
+    req.status_code = http_code
+    mocker.patch.object(requests.Session, "send", return_value=req)
+
+    with pytest.raises(requests.exceptions.HTTPError):
+        list(stream.read_records(SyncMode.full_refresh))
+
+
+class AutoFailFalseHttpStream(StubBasicReadHttpStream):
+    raise_on_http_errors = False
+    max_retries = 3
+    retry_factor = 0.01
+
+
+def test_raise_on_http_errors_off_429(mocker):
+    stream = AutoFailFalseHttpStream()
+    req = requests.Response()
+    req.status_code = 429
+
+    mocker.patch.object(requests.Session, "send", return_value=req)
+    with pytest.raises(DefaultBackoffException):
+        list(stream.read_records(SyncMode.full_refresh))
+
+
+@pytest.mark.parametrize("status_code", [500, 501, 503, 504])
+def test_raise_on_http_errors_off_5xx(mocker, status_code):
+    stream = AutoFailFalseHttpStream()
+    req = requests.Response()
+    req.status_code = status_code
+
+    send_mock = mocker.patch.object(requests.Session, "send", return_value=req)
+    with pytest.raises(DefaultBackoffException):
+        list(stream.read_records(SyncMode.full_refresh))
+    assert send_mock.call_count == stream.max_retries + 1
+
+
+@pytest.mark.parametrize("status_code", [400, 401, 402, 403, 416])
+def test_raise_on_http_errors_off_non_retryable_4xx(mocker, status_code):
+    stream = AutoFailFalseHttpStream()
+    req = requests.Response()
+    req.status_code = status_code
+
+    mocker.patch.object(requests.Session, "send", return_value=req)
+    response = stream._send_request(req, {})
+    assert response.status_code == status_code
+
+
+def test_raise_on_http_errors_off_timeout(requests_mock):
+    stream = AutoFailFalseHttpStream()
+    requests_mock.register_uri("GET", stream.url_base, exc=requests.exceptions.ConnectTimeout)
+
+    with pytest.raises(requests.exceptions.ConnectTimeout):
+        list(stream.read_records(SyncMode.full_refresh))
+
+
+def test_raise_on_http_errors_off_connection_error(requests_mock):
+    stream = AutoFailFalseHttpStream()
+    requests_mock.register_uri("GET", stream.url_base, exc=requests.exceptions.ConnectionError)
+
+    with pytest.raises(requests.exceptions.ConnectionError):
+        list(stream.read_records(SyncMode.full_refresh))
 
 
 class PostHttpStream(StubBasicReadHttpStream):

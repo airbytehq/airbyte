@@ -9,7 +9,7 @@ import {
   SyncSchema,
   SyncSchemaStream,
 } from "core/domain/catalog";
-import { ValuesProps } from "components/hooks/services/useConnectionHook";
+import { ValuesProps } from "hooks/services/useConnectionHook";
 import {
   Normalization,
   NormalizationType,
@@ -23,7 +23,7 @@ import { DestinationDefinitionSpecification } from "core/resources/DestinationDe
 import { Connection, ScheduleProperties } from "core/resources/Connection";
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
 import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
-import useWorkspace from "../../../components/hooks/services/useWorkspace";
+import useWorkspace from "hooks/services/useWorkspace";
 
 type FormikConnectionFormValues = {
   schedule?: ScheduleProperties | null;

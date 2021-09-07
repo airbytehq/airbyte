@@ -173,6 +173,7 @@ there are any other issues blocking your adoption of Airbyte or if you would lik
 
 * The server and scheduler deployments must run on the same node. ([#4232](https://github.com/airbytehq/airbyte/issues/4232))
 * Some UI operations have higher latency on Kubernetes than Docker-Compose. ([#4233](https://github.com/airbytehq/airbyte/issues/4233))
+* Logging to Azure Storage is not supported. ([#4200](https://github.com/airbytehq/airbyte/issues/4200))
 * Large log files might take a while to load. ([#4201](https://github.com/airbytehq/airbyte/issues/4201))
 * UI does not include configured buckets in the displayed log path. ([#4204](https://github.com/airbytehq/airbyte/issues/4204))
 * Logs are not reset when Airbyte is re-deployed. ([#4235](https://github.com/airbytehq/airbyte/issues/4235))
@@ -237,8 +238,7 @@ kubectl exec -it airbyte-scheduler-6b5747df5c-bj4fx cat /tmp/workspace/8/0/logs.
 
 ### Persistent storage on GKE regional cluster
 Running Airbyte on GKE regional cluster requires enabling persistent regional storage. To do so, enable [CSI driver](https://cloud.google.com/kubernetes-engine/docs/how-to/persistent-volumes/gce-pd-csi-driver)
-on GKE. After enabling, add `storageClassName: standard-rwo` to the [volume-configs](../../kube/resources/volume-configs.yaml) and [volume-workspace](../../kube/resources/volume-workspace.yaml)
-yamls.
+on GKE. After enabling, add `storageClassName: standard-rwo` to the [volume-configs](../../kube/resources/volume-configs.yaml) yaml.
 
 `volume-configs.yaml` example:
 ```yaml
