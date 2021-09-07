@@ -1,5 +1,6 @@
 {
   "access_token": "WRONG KEY",
   "repository": "airbytehq/integration-test",
-  "start_date": "2021-06-30T11:30:03Z"
+  "start_date": "2021-06-30T11:30:03Z",
+  "minimize_fields": true
 }

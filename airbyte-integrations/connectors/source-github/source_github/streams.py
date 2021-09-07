@@ -67,9 +67,10 @@ class GithubStream(HttpStream, ABC):
     #   - lists `[]`, like `labels`, `assignees` etc.
     fields_to_minimize = ()
 
-    def __init__(self, repositories: List[str], **kwargs):
+    def __init__(self, repositories: List[str], minimize_fields: bool, **kwargs):
         super().__init__(**kwargs)
         self.repositories = repositories
+        self.minimize_fields = minimize_fields
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/{self.name}"
@@ -186,18 +187,19 @@ class GithubStream(HttpStream, ABC):
               ... <other fields>
             }
 
-            `user` subelement contains almost all possible fields fo user and it's not optimal to store such data in
+            `user` subelement contains almost all possible fields of user and it's not optimal to store such data in
             `reviews` record. We may leave only `user.id` field and save in to `user_id` field in the record. So if you
             need to do something similar with your record you may use this method.
         """
-        for field in self.fields_to_minimize:
-            field_value = record.pop(field, None)
-            if field_value is None:
-                record[field] = field_value
-            elif isinstance(field_value, dict):
-                record[f"{field}_id"] = field_value.get("id") if field_value else None
-            elif isinstance(field_value, list):
-                record[field] = [value.get("id") for value in field_value]
+        if self.minimize_fields:
+            for field in self.fields_to_minimize:
+                field_value = record.pop(field, None)
+                if field_value is None:
+                    record[field] = field_value
+                elif isinstance(field_value, dict):
+                    record[f"{field}_id"] = field_value.get("id") if field_value else None
+                elif isinstance(field_value, list):
+                    record[field] = [value.get("id") for value in field_value]
         if repository:
             record["repository"] = repository
         if organization:
