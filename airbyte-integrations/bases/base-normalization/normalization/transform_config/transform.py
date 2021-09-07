@@ -93,9 +93,9 @@ class TransformConfig:
     def is_ssh_tunnelling(config: Dict[str, Any]) -> bool:
         tunnel_methods = ["SSH_KEY_AUTH", "SSH_PASSWORD_AUTH"]
         if (
-            "tunnel_method" in config.keys() and 
-            "tunnel_method" in config["tunnel_method"] and 
-            config["tunnel_method"]["tunnel_method"].upper() in tunnel_methods
+            "tunnel_method" in config.keys()
+            and "tunnel_method" in config["tunnel_method"]
+            and config["tunnel_method"]["tunnel_method"].upper() in tunnel_methods
         ):
             return True
         else:
@@ -127,6 +127,18 @@ class TransformConfig:
         return port_to_check
 
     @staticmethod
+    def get_ssh_altered_config(config: Dict[str, Any], port_key: str = "port", host_key: str = "host") -> Dict[str, Any]:
+        """
+        This should be called only if ssh tunneling is on.
+        It will return config with appropriately altered port and host values
+        """
+        # make a copy of config rather than mutate in place
+        ssh_ready_config = {k: v for k, v in config.items()}
+        ssh_ready_config[port_key] = TransformConfig.pick_a_port()
+        ssh_ready_config[host_key] = "localhost"
+        return ssh_ready_config
+
+    @staticmethod
     def transform_bigquery(config: Dict[str, Any]):
         print("transform_bigquery")
         # https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile
@@ -149,21 +161,16 @@ class TransformConfig:
     def transform_postgres(config: Dict[str, Any]):
         print("transform_postgres")
 
-        # set port & host correctly depending on whether we're ssh tunnelling
-        # TODO: this should be a separate function to stay DRY when adding support for other destinations
-        port = config["port"]
-        host = config["host"]
         if TransformConfig.is_ssh_tunnelling(config):
-            port = TransformConfig.pick_a_port()
-            host = "localhost"
+            config = TransformConfig.get_ssh_altered_config(config, port_key="port", host_key="host")
 
         # https://docs.getdbt.com/reference/warehouse-profiles/postgres-profile
         dbt_config = {
             "type": "postgres",
-            "host": host,
+            "host": config["host"],
             "user": config["username"],
             "pass": config.get("password", ""),
-            "port": port,
+            "port": config["port"],
             "dbname": config["database"],
             "schema": config["schema"],
             "threads": 32,

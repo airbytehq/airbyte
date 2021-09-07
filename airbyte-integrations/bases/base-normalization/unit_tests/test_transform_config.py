@@ -50,74 +50,85 @@ class TestTransformConfig:
         os.chdir(request.config.invocation_dir)
 
     def test_is_ssh_tunnelling(self):
-
         def single_test(config, expected_output):
             assert TransformConfig.is_ssh_tunnelling(config) == expected_output
 
         inputs = [
             ({}, False),
-            ({
-                "type": "postgres",
-                "dbname": "my_db",
-                "host": "airbyte.io",
-                "pass": "password123",
-                "port": 5432,
-                "schema": "public",
-                "threads": 32,
-                "user": "a user",
-            }, False),
-            ({
-                "type": "postgres",
-                "dbname": "my_db",
-                "host": "airbyte.io",
-                "pass": "password123",
-                "port": 5432,
-                "schema": "public",
-                "threads": 32,
-                "user": "a user",
-                "tunnel_method": {
-                    "tunnel_host": "1.2.3.4",
-                    "tunnel_method": "SSH_PASSWORD_AUTH",
-                    "tunnel_port": 22,
-                    "tunnel_user": "user",
-                    "tunnel_user_password": "pass"
-                }
-            }, True),
-            ({
-                "type": "postgres",
-                "dbname": "my_db",
-                "host": "airbyte.io",
-                "pass": "password123",
-                "port": 5432,
-                "schema": "public",
-                "threads": 32,
-                "user": "a user",
-                "tunnel_method": {
-                    "tunnel_method": "SSH_KEY_AUTH",
-                }
-            }, True),
-            ({
-                "type": "postgres",
-                "dbname": "my_db",
-                "host": "airbyte.io",
-                "pass": "password123",
-                "port": 5432,
-                "schema": "public",
-                "threads": 32,
-                "user": "a user",
-                "tunnel_method": {
-                    "nothing": "nothing",
-                }
-            }, False),
+            (
+                {
+                    "type": "postgres",
+                    "dbname": "my_db",
+                    "host": "airbyte.io",
+                    "pass": "password123",
+                    "port": 5432,
+                    "schema": "public",
+                    "threads": 32,
+                    "user": "a user",
+                },
+                False,
+            ),
+            (
+                {
+                    "type": "postgres",
+                    "dbname": "my_db",
+                    "host": "airbyte.io",
+                    "pass": "password123",
+                    "port": 5432,
+                    "schema": "public",
+                    "threads": 32,
+                    "user": "a user",
+                    "tunnel_method": {
+                        "tunnel_host": "1.2.3.4",
+                        "tunnel_method": "SSH_PASSWORD_AUTH",
+                        "tunnel_port": 22,
+                        "tunnel_user": "user",
+                        "tunnel_user_password": "pass",
+                    },
+                },
+                True,
+            ),
+            (
+                {
+                    "type": "postgres",
+                    "dbname": "my_db",
+                    "host": "airbyte.io",
+                    "pass": "password123",
+                    "port": 5432,
+                    "schema": "public",
+                    "threads": 32,
+                    "user": "a user",
+                    "tunnel_method": {
+                        "tunnel_method": "SSH_KEY_AUTH",
+                    },
+                },
+                True,
+            ),
+            (
+                {
+                    "type": "postgres",
+                    "dbname": "my_db",
+                    "host": "airbyte.io",
+                    "pass": "password123",
+                    "port": 5432,
+                    "schema": "public",
+                    "threads": 32,
+                    "user": "a user",
+                    "tunnel_method": {
+                        "nothing": "nothing",
+                    },
+                },
+                False,
+            ),
         ]
         for input_tuple in inputs:
             single_test(input_tuple[0], input_tuple[1])
 
     def test_is_port_free(self):
         # to test that this accurately identifies 'free' ports, we'll find a 'free' port and then try to use it
-        test_port=13055
+        test_port = 13055
         while not TransformConfig.is_port_free(test_port):
-            test_port+=1
+            test_port += 1
             if test_port > 65535:
                 raise RuntimeError("couldn't find a free port...")
 
@@ -210,8 +221,8 @@ class TestTransformConfig:
                 "tunnel_method": "SSH_PASSWORD_AUTH",
                 "tunnel_port": 22,
                 "tunnel_user": "user",
-                "tunnel_user_password": "pass"
-            }
+                "tunnel_user_password": "pass",
+            },
         }
         port = TransformConfig.pick_a_port()
 
