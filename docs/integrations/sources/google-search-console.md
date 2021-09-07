@@ -104,4 +104,4 @@ You should now be ready to use the Google Workspace Admin Reports API connector 
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| `0.1.0` | 2021-09-03 | [5350](https://github.com/airbytehq/airbyte/pull/5350) | New Source: `Google Search Console` |
+| `0.1.0` | 2021-09-03 | [5350](https://github.com/airbytehq/airbyte/pull/5350) | Initial Release |
