@@ -1,9 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
-import NotificationsForm from "./components/NotificationsForm";
-import useWorkspace, {
-  WebhookPayload,
-} from "components/hooks/services/useWorkspace";
+import useWorkspace, { WebhookPayload } from "hooks/services/useWorkspace";
 import WebHookForm from "./components/WebHookForm";
 import HeadTitle from "components/HeadTitle";
 
@@ -48,9 +45,7 @@ const NotificationPage: React.FC = () => {
     call: onSubmitWebhook,
     errorMessage,
     successMessage,
-  } = useAsyncWithTimeout(async (data: { webhook: string }) =>
-    updateWebhook(data)
-  );
+  } = useAsyncWithTimeout(async (data: WebhookPayload) => updateWebhook(data));
 
   const onTestWebhook = async (data: WebhookPayload) => {
     await testWebhook(data);
