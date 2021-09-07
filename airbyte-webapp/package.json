@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.29.14-alpha",
+  "version": "0.29.15-alpha",
   "private": true,
   "scripts": {
     "start": "react-scripts start",
@@ -21,10 +21,8 @@
     "@papercups-io/chat-widget": "^1.1.5",
     "@papercups-io/storytime": "^1.0.6",
     "@rest-hooks/legacy": "^2.0.5",
-    "@storybook/preset-create-react-app": "^3.2.0",
-    "@storybook/react": "^6.3.2",
     "dayjs": "^1.8.35",
-    "firebase": "^8.8.1",
+    "firebase": "^9.0.1",
     "flat": "^5.0.2",
     "formik": "2.1.5",
     "lodash.get": "^4.4.2",
@@ -53,6 +51,8 @@
   "devDependencies": {
     "@rest-hooks/test": "^6.2.0",
     "@storybook/addon-essentials": "^6.3.6",
+    "@storybook/preset-create-react-app": "^3.2.0",
+    "@storybook/react": "^6.3.2",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/react-hooks": "^7.0.1",
@@ -85,7 +85,7 @@
     "prettier": "^2.2.1",
     "react-scripts": "4.0.2",
     "storybook-addon-styled-component-theme": "^2.0.0",
-    "typescript": "4.1.5"
+    "typescript": "4.2.4"
   },
   "husky": {
     "hooks": {
