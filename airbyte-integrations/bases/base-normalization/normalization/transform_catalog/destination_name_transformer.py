@@ -41,6 +41,8 @@ DESTINATION_SIZE_LIMITS = {
     DestinationType.POSTGRES.value: 63,
     # https://dev.mysql.com/doc/refman/8.0/en/identifier-length.html
     DestinationType.MYSQL.value: 64,
+    # https://oracle-base.com/articles/12c/long-identifiers-12cr2
+    DestinationType.ORACLE.value: 128,
 }
 
 # DBT also needs to generate suffix to table names, so we need to make sure it has enough characters to do so...
@@ -74,6 +76,8 @@ class DestinationNameTransformer:
             return True
         if self.destination_type.value == DestinationType.BIGQUERY.value:
             return False
+        if self.destination_type.value == DestinationType.ORACLE.value and input_name.startswith("_"):
+            return True
         doesnt_start_with_alphaunderscore = match("[^A-Za-z_]", input_name[0]) is not None
         contains_non_alphanumeric = match(".*[^A-Za-z0-9_].*", input_name) is not None
         return doesnt_start_with_alphaunderscore or contains_non_alphanumeric
@@ -85,6 +89,8 @@ class DestinationNameTransformer:
         @param truncate force ignoring truncate operation on resulting normalized name. For example, if we don't
         control how the name would be normalized
         """
+        if self.destination_type == DestinationType.ORACLE and schema_name.startswith("_"):
+            schema_name = schema_name[1:]
         return self.__normalize_non_column_identifier_name(input_name=schema_name, in_jinja=in_jinja, truncate=truncate)
 
     def normalize_table_name(
@@ -98,6 +104,8 @@ class DestinationNameTransformer:
         @param conflict if there is a conflict between stream name and fields
         @param conflict_level is the json_path level conflict happened
         """
+        if self.destination_type == DestinationType.ORACLE and table_name.startswith("_"):
+            table_name = table_name[1:]
         return self.__normalize_non_column_identifier_name(
             input_name=table_name, in_jinja=in_jinja, truncate=truncate, conflict=conflict, conflict_level=conflict_level
         )
@@ -172,8 +180,12 @@ class DestinationNameTransformer:
             else:
                 result = result.replace("`", "_")
             result = result.replace("'", "\\'")
-            result = f"adapter.quote('{result}')"
             result = self.__normalize_identifier_case(result, is_quoted=True)
+            if self.destination_type == DestinationType.ORACLE:
+                # Oracle dbt lib doesn't implemented adapter quote yet.
+                result = f"quote('{result}')"
+            else:
+                result = f"adapter.quote('{result}')"
             if not in_jinja:
                 result = jinja_call(result)
             return result
@@ -186,7 +198,9 @@ class DestinationNameTransformer:
 
     def __normalize_naming_conventions(self, input_name: str) -> str:
         result = input_name
-        if self.destination_type.value == DestinationType.BIGQUERY.value:
+        if self.destination_type.value == DestinationType.ORACLE.value:
+            return transform_standard_naming(result)
+        elif self.destination_type.value == DestinationType.BIGQUERY.value:
             result = transform_standard_naming(result)
             doesnt_start_with_alphaunderscore = match("[^A-Za-z_]", result[0]) is not None
             if doesnt_start_with_alphaunderscore:
@@ -209,6 +223,11 @@ class DestinationNameTransformer:
         elif self.destination_type.value == DestinationType.MYSQL.value:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.lower()
+        elif self.destination_type.value == DestinationType.ORACLE.value:
+            if not is_quoted and not self.needs_quotes(input_name):
+                result = input_name.lower()
+            else:
+                result = input_name.upper()
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result

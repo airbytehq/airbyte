@@ -16,6 +16,10 @@
     {{ '.' ~ json_path_list|join('.') }}
 {%- endmacro %}
 
+{% macro oracle__format_json_path(json_path_list) -%}
+  {{ '\'$."' ~ json_path_list|join('."') ~ '"\'' }}
+{%- endmacro %}
+
 {% macro bigquery__format_json_path(json_path_list) -%}
     {%- set str_list = [] -%}
     {%- for json_path in json_path_list -%}
@@ -61,6 +65,10 @@
 
 {% macro default__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
     json_extract({{ from_table}}.{{ json_column }}, {{ format_json_path(json_path_list) }})
+{%- endmacro %}
+
+{% macro oracle__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
+    json_value({{ json_column }}, {{ format_json_path(normalized_json_path) }})
 {%- endmacro %}
 
 {% macro bigquery__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
@@ -113,6 +121,10 @@
     json_extract_scalar({{ json_column }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
+{% macro oracle__json_extract_scalar(json_column, json_path_list, normalized_json_path) -%}
+    json_value({{ json_column }}, {{ format_json_path(normalized_json_path) }})
+{%- endmacro %}
+
 {% macro bigquery__json_extract_scalar(json_column, json_path_list, normalized_json_path) -%}
     json_extract_scalar({{ json_column }}, {{ format_json_path(normalized_json_path) }})
 {%- endmacro %}
@@ -141,6 +153,10 @@
 
 {% macro default__json_extract_array(json_column, json_path_list, normalized_json_path) -%}
     json_extract_array({{ json_column }}, {{ format_json_path(json_path_list) }})
+{%- endmacro %}
+
+{% macro oracle__json_extract_array(json_column, json_path_list, normalized_json_path) -%}
+    json_value({{ json_column }}, {{ format_json_path(normalized_json_path) }})
 {%- endmacro %}
 
 {% macro bigquery__json_extract_array(json_column, json_path_list, normalized_json_path) -%}

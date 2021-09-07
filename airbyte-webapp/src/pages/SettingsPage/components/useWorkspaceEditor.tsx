@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useAsyncFn } from "react-use";
 
-import useWorkspace from "components/hooks/services/useWorkspace";
+import useWorkspace from "hooks/services/useWorkspace";
 
 const useWorkspaceEditor = (): {
   updateData: (data: {

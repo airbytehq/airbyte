@@ -8,6 +8,15 @@
       "\\\"column`_'with\\\"\\\"_quotes\\\" is not null": "array_length(column___with__quotes) > 0"
     }
   ],
+  "oracle": [
+    { "HKD_special___characters": "HKD_special___characters_1" },
+    { "'\"HKD@spéçiäl & characters\"'": "HKD_special___characters" },
+    { "double_array_data is not null": "array_length(double_array_data) > 0" },
+    { "DATA is not null": "array_length(DATA) > 0" },
+    {
+      "\\\"column`_'with\\\"\\\"_quotes\\\" is not null": "array_length(column___with__quotes) > 0"
+    }
+  ],
   "postgres": [
     {
       "nested_stream_with_complex_columns_resulting_into_long_names_partition_double_array_data": "nested_stream_with_c__ion_double_array_data"

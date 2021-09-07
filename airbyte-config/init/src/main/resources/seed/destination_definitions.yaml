@@ -27,7 +27,7 @@
 - destinationDefinitionId: 079d5540-f236-4294-ba7c-ade8fd918496
   name: BigQuery (denormalized typed struct)
   dockerRepository: airbyte/destination-bigquery-denormalized
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
 - destinationDefinitionId: ca8f6566-e555-4b40-943a-545bf123117a
   name: Google Cloud Storage (GCS)
@@ -42,7 +42,7 @@
 - destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   name: Snowflake
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.3.12
+  dockerImageTag: 0.3.13
   documentationUrl: https://docs.airbyte.io/integrations/destinations/snowflake
 - destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   name: S3
@@ -95,3 +95,8 @@
   dockerRepository: airbyte/destination-keen
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/keen
+- destinationDefinitionId: 8b746512-8c2e-6ac1-4adc-b59faafd473c
+  name: MongoDB
+  dockerRepository: airbyte/destination-mongodb
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/mongodb

@@ -84,14 +84,18 @@ def test_normalization(destination_type: DestinationType, test_resource_name: st
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
     test_root_dir = setup_test_dir(integration_type, test_resource_name)
     destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, test_root_dir)
+    dbt_test_utils.generate_project_yaml_file(destination_type, test_root_dir)
     # Use destination connector to create _airbyte_raw_* tables to use as input for the test
     assert setup_input_raw_data(integration_type, test_resource_name, test_root_dir, destination_config)
     # Normalization step
     generate_dbt_models(destination_type, test_resource_name, test_root_dir)
     dbt_test_utils.dbt_run(test_root_dir)
-    # Run checks on Tests results
-    dbt_test(destination_type, test_resource_name, test_root_dir)
-    check_outputs(destination_type, test_resource_name, test_root_dir)
+
+    if integration_type != DestinationType.ORACLE.value:
+        # Oracle doesnt support nested with clauses
+        # Run checks on Tests results
+        dbt_test(destination_type, test_resource_name, test_root_dir)
+        check_outputs(destination_type, test_resource_name, test_root_dir)
 
 
 def setup_test_dir(integration_type: str, test_resource_name: str) -> str:
