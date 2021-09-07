@@ -42,8 +42,10 @@ class WoocommerceStream(HttpStream, ABC):
 
     # Latest Stable Release
     api_version = "wc/v3"
+
     # Page size
     limit = 100
+
     # Define primary key as sort key for full_refresh, or very first sync for incremental_refresh
     primary_key = "id"
     order_field = "date"
