@@ -17,10 +17,18 @@ task copySshScript(type: Copy, dependsOn: [project(':airbyte-workers').processRe
     from "${project(':airbyte-workers').buildDir}/resources/main"
     into "${buildDir}"
     include "sshtunneling.sh"
-    if(inputs.sourceFiles.empty) throw new StopExecutionException("Couldn't find sshtunneling.sh to copy")
 }
-test.dependsOn copySshScript
-assemble.dependsOn copySshScript
+
+// make sure the copy task above worked (if it fails, it fails silently annoyingly)
+task checkSshScriptCopy(type: Task, dependsOn: copySshScript) {
+    doFirst {
+        assert file("${buildDir}/sshtunneling.sh").exists() :
+                "Copy of sshtunneling.sh failed, check that it is present in airbyte-workers."
+    }
+}
+
+test.dependsOn checkSshScriptCopy
+assemble.dependsOn checkSshScriptCopy
 
 installReqs.dependsOn(":airbyte-integrations:bases:airbyte-protocol:installReqs")
 integrationTest.dependsOn(build)
