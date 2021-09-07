@@ -8,7 +8,7 @@ set -e
 
 connector="$1"
 all_integration_tests=$(./gradlew integrationTest --dry-run | grep 'integrationTest SKIPPED' | cut -d: -f 4)
-
+run() {
 if [[ "$connector" == "all" ]] ; then
   echo "Running: ./gradlew --no-daemon --scan integrationTest"
   ./gradlew --no-daemon --scan integrationTest
@@ -36,6 +36,20 @@ else
     ./gradlew --no-daemon --scan "$integrationTestCommand"
   else
     echo "Connector '$connector' not found..."
-    exit 1
+    return 1
   fi
 fi
+}
+
+# Copy command output to extract gradle scan link.
+run | tee build.out
+# return status of "run" command, not "tee"
+# https://tldp.org/LDP/abs/html/internalvariables.html#PIPESTATUSREF
+run_status=${PIPESTATUS[0]}
+test $run_status == "0" || {
+   # Save gradle scan link to github GRADLE_SCAN_LINK variable for next job.
+   # https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
+   LINK=$(cat build.out | grep -A1 "Publishing build scan..." | tail -n1 | tr -d "\n")
+   echo "GRADLE_SCAN_LINK=$LINK" >> $GITHUB_ENV
+}
+exit $run_status
