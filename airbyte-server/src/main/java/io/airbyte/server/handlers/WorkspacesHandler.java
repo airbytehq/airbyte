@@ -188,9 +188,10 @@ public class WorkspacesHandler {
   public NotificationRead tryNotification(final Notification notification) {
     try {
       final NotificationClient notificationClient = NotificationClient.createNotificationClient(NotificationConverter.toConfig(notification));
-      final String message = String.format("Hello World! This is a test from Airbyte to try %s notification settings",
-          notification.getNotificationType());
-      if (notificationClient.notify(message)) {
+      final String messageFormat = "Hello World! This is a test from Airbyte to try %s notification settings for sync %s";
+      final boolean failureNotified = notificationClient.notifyFailure(String.format(messageFormat, notification.getNotificationType(), "failures"));
+      final boolean successNotified = notificationClient.notifySuccess(String.format(messageFormat, notification.getNotificationType(), "successes"));
+      if (failureNotified || successNotified) {
         return new NotificationRead().status(StatusEnum.SUCCEEDED);
       }
     } catch (final IllegalArgumentException e) {
