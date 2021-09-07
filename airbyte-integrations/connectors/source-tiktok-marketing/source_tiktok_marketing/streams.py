@@ -3,6 +3,7 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from airbyte_cdk.models import SyncMode
 import json
+import pendulum
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 import requests
 
@@ -12,6 +13,9 @@ class TiktokException(Exception):
 
 
 class ParserMixin:
+    # endpoints can have different list names
+    response_list_field = "list"
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """returns data from API"""
 
@@ -19,8 +23,8 @@ class ParserMixin:
         if data["code"]:
             raise TiktokException(data["message"])
         data = data["data"]
-        if "list" in data:
-            data = data["list"]
+        if self. response_list_field in data:
+            data = data[self. response_list_field]
         for record in data:
             yield record
 
@@ -90,7 +94,10 @@ class TiktokStream(ParserMixin, HttpStream, ABC):
 
     def __init__(self, advertiser_id: int, app_id: int, secret: str, start_time: str, **kwargs):
         super().__init__(**kwargs)
-        self._start_time = start_time
+        # convert a start date to TikTok format
+        # example:  "2021-08-24" => "2021-08-24 00:00:00"
+        self._start_time = pendulum.parse(
+            start_time or "1970-01-01").strftime('%Y-%m-%d 00:00:00')
         self._advertiser_storage = ListAdvertiserIdsStream(
             advertiser_id=advertiser_id, app_id=app_id, secret=secret, access_token=self.authenticator.token)
         self._max_cursor_date = None
@@ -124,6 +131,7 @@ class TiktokStream(ParserMixin, HttpStream, ABC):
 
 
 class IncrementalTiktokStream(TiktokStream, ABC):
+    cursor_field = "modify_time"
     # test
     page_size = 1
 
@@ -143,31 +151,23 @@ class IncrementalTiktokStream(TiktokStream, ABC):
             params.update(next_page_token)
         return params
 
-    def parse_response(self, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         """returns data from API"""
-        for record in super().parse_response(**kwargs):
-            if not self._max_cursor_date or self._max_cursor_date < record[self.cursor_field]:
-                self._max_cursor_date = record[self.cursor_field]
+        state = stream_state.get(self.cursor_field) or self._start_time
+        for record in super().parse_response(response, **kwargs):
+            updated = record[self.cursor_field]
+            if updated <= state:
+                continue
+            elif not self._max_cursor_date or self._max_cursor_date < updated:
+                self._max_cursor_date = updated
             yield record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        max_updated_at = self.datetime2str(
-            self._max_cursor_date) if self._max_cursor_date else ""
+        max_updated_at = self._max_cursor_date or ""
         return {self.cursor_field: max(max_updated_at, (current_stream_state or {}).get(self.cursor_field, ""))}
 
 
 class Advertisers(TiktokStream):
-    # fields = [
-    #     "promotion_area", "telephone", "contacter",
-    #     "currency", "phonenumber", "timezone",
-    #     "id", "role", "company",
-    #     "status", "description", "reason",
-    #     "address", "name", "language",
-    #     "industry", "license_no", "email",
-    #     "license_url", "country", "balance",
-    #           "create_time"
-    # ]
-
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
         params["advertiser_ids"] = self.convert_array_param(
@@ -184,27 +184,20 @@ class Advertisers(TiktokStream):
 
 class Campaigns(IncrementalTiktokStream):
     primary_key = "campaign_id"
-    cursor_field = "modify_time"
-    # fields = [
-    #     "campaign_id", "campaign_name", "advertiser_id",
-    #     "budget", "budget_mode", "status",
-    #     "opt_status", "objective", "objective_type",
-    #     "create_time", "modify_time", "is_new_structure",
-    #     "split_test_variable"
-    # ]
 
     def path(self, *args, **kwargs) -> str:
         return "campaign/get/"
 
-    # def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-    #     """returns data from API"""
 
-    #     data = response.json()
-    #     if data["code"]:
-    #         raise TiktokException(data["message"])
-    #     raise Exception(data)
-    #     data = data["data"]
-    #     if "list" in data:
-    #         data = data["list"]
-    #     for record in data:
-    #         yield record
+class AdGroups(IncrementalTiktokStream):
+    primary_key = "adgroup_id"
+
+    def path(self, *args, **kwargs) -> str:
+        return "adgroup/get/"
+
+
+class Ads(IncrementalTiktokStream):
+    primary_key = "ad_id"
+
+    def path(self, *args, **kwargs) -> str:
+        return "ad/get/"

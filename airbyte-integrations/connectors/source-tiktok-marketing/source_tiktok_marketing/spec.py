@@ -34,6 +34,9 @@ import re
 class SandboxEnvSpec(BaseModel):
     class Config:
         title = "Sandbox"
+
+    environment: str = Field("sandbox", const=True)
+
     advertiser_id: int = Field(
         description="The Advertiser ID  which generated for the developer's Sandbox application.",
     )
@@ -42,6 +45,9 @@ class SandboxEnvSpec(BaseModel):
 class ProductionEnvSpec(BaseModel):
     class Config:
         title = "Production"
+
+    environment: str = Field("prod", const=True)
+
     app_id: int = Field(
         description="The App id applied by the developer.",
     )

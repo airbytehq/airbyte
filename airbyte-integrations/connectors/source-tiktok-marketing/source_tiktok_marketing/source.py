@@ -27,6 +27,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 # from airbyte_cdk.models import (
 #     AirbyteCatalog,
 #     AirbyteMessage,
@@ -40,7 +41,7 @@ from typing import Mapping, Any, Tuple, List
 from airbyte_cdk.sources import AbstractSource
 from .spec import SourceTikTokMarketingSpec
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from .streams import (Advertisers, Campaigns)
+from .streams import (Advertisers, Campaigns, AdGroups, Ads)
 
 
 DOCUMENTATION_URL = "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
@@ -63,18 +64,13 @@ class SourceTiktokMarketing(AbstractSource):
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
         """Returns the spec for this integration."""
-        # make dummy instance of stream_class in order to get 'supports_incremental' property
-        # incremental = self.stream_class(dataset="", provider="", format="", path_pattern="").supports_incremental
-
-        # supported_dest_sync_modes = [DestinationSyncMode.overwrite]
-        # if incremental:
-        #     supported_dest_sync_modes.extend([DestinationSyncMode.append, DestinationSyncMode.append_dedup])
 
         return ConnectorSpecification(
             documentationUrl=DOCUMENTATION_URL,
             changelogUrl=DOCUMENTATION_URL,
-            # supportsIncremental=incremental,
-            # supported_destination_sync_modes=supported_dest_sync_modes,
+            supportsIncremental=True,
+            supported_destination_sync_modes=[
+                DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
             connectionSpecification=SourceTikTokMarketingSpec.schema(),
         )
 
@@ -102,4 +98,4 @@ class SourceTiktokMarketing(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         args = self._prepare_stream_args(config)
-        return [Advertisers(**args), Campaigns(**args)]
+        return [Ads(**args), Advertisers(**args), AdGroups(**args), Campaigns(**args)]
