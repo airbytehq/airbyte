@@ -340,6 +340,22 @@ class BudgetSummaryReport(ReportsMixin, BingAdsStream):
     ]
 
 
+class BudgetSummaryReportHourly(BudgetSummaryReport):
+    report_aggregation = "Hourly"
+
+
+class BudgetSummaryReportDaily(BudgetSummaryReport):
+    report_aggregation = "Daily"
+
+
+class BudgetSummaryReportWeekly(BudgetSummaryReport):
+    report_aggregation = "Weekly"
+
+
+class BudgetSummaryReportMonthly(BudgetSummaryReport):
+    report_aggregation = "Monthly"
+
+
 class CampaignPerformanceReport(ReportsMixin, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
@@ -366,6 +382,22 @@ class CampaignPerformanceReport(ReportsMixin, BingAdsStream):
         "RevenuePerConversion",
         "ConversionRate",
     ]
+
+
+class CampaignPerformanceReportHourly(CampaignPerformanceReport):
+    report_aggregation = "Hourly"
+
+
+class CampaignPerformanceReportDaily(CampaignPerformanceReport):
+    report_aggregation = "Daily"
+
+
+class CampaignPerformanceReporteekly(CampaignPerformanceReport):
+    report_aggregation = "Weekly"
+
+
+class CampaignPerformanceReportMonthly(CampaignPerformanceReport):
+    report_aggregation = "Monthly"
 
 
 class AdPerformanceReport(ReportsMixin, BingAdsStream):
@@ -401,6 +433,22 @@ class AdPerformanceReport(ReportsMixin, BingAdsStream):
     ]
 
 
+class AdPerformanceReportHourly(AdPerformanceReport):
+    report_aggregation = "Hourly"
+
+
+class AdPerformanceReportDaily(AdPerformanceReport):
+    report_aggregation = "Daily"
+
+
+class AdPerformanceReportWeekly(AdPerformanceReport):
+    report_aggregation = "Weekly"
+
+
+class AdPerformanceReportMonthly(AdPerformanceReport):
+    report_aggregation = "Monthly"
+
+
 class AdGroupPerformanceReport(ReportsMixin, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
@@ -429,6 +477,22 @@ class AdGroupPerformanceReport(ReportsMixin, BingAdsStream):
         "AdGroupName",
         "AdGroupId",
     ]
+
+
+class AdGroupPerformanceReportHourly(AdGroupPerformanceReport):
+    report_aggregation = "Hourly"
+
+
+class AdGroupPerformanceReportDaily(AdGroupPerformanceReport):
+    report_aggregation = "Daily"
+
+
+class AdGroupPerformanceReportWeekly(AdGroupPerformanceReport):
+    report_aggregation = "Weekly"
+
+
+class AdGroupPerformanceReportMonthly(AdGroupPerformanceReport):
+    report_aggregation = "Monthly"
 
 
 class KeywordPerformanceReport(ReportsMixin, BingAdsStream):
@@ -464,7 +528,24 @@ class KeywordPerformanceReport(ReportsMixin, BingAdsStream):
         "KeywordId",
         "QualityScore",
         "BidMatchType",
+        "AbsoluteTopImpressionRatePercent",
     ]
+
+
+class KeywordPerformanceReportHourly(KeywordPerformanceReport):
+    report_aggregation = "Hourly"
+
+
+class KeywordPerformanceReportDaily(KeywordPerformanceReport):
+    report_aggregation = "Daily"
+
+
+class KeywordPerformanceReportWeekly(KeywordPerformanceReport):
+    report_aggregation = "Weekly"
+
+
+class KeywordPerformanceReportMonthly(KeywordPerformanceReport):
+    report_aggregation = "Monthly"
 
 
 class AccountPerformanceReport(ReportsMixin, BingAdsStream):
@@ -493,6 +574,22 @@ class AccountPerformanceReport(ReportsMixin, BingAdsStream):
     ]
 
 
+class AccountPerformanceReportHourly(AccountPerformanceReport):
+    report_aggregation = "Hourly"
+
+
+class AccountPerformanceReportDaily(AccountPerformanceReport):
+    report_aggregation = "Daily"
+
+
+class AccountPerformanceReportWeekly(AccountPerformanceReport):
+    report_aggregation = "Weekly"
+
+
+class AccountPerformanceReportMonthly(AccountPerformanceReport):
+    report_aggregation = "Monthly"
+
+
 class SourceBingAds(AbstractSource):
     """
     Source implementation of Bing Ads API. Fetches advertising data from accounts
@@ -517,17 +614,23 @@ class SourceBingAds(AbstractSource):
 
         return True, None
 
+    def get_report_streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        streams = []
+        if config['hourly_reports']:
+            streams.extend([
+                AccountPerformanceReportHourly,
+                KeywordPerformanceReportHourly,
+                AdGroupPerformanceReportHourly,
+                AdPerformanceReportHourly,
+                CampaignPerformanceReportHourly,
+                BudgetSummaryReportHourly
+            ])
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         client = Client(**config)
         return [
             Accounts(client, config),
-            AccountPerformanceReport(client, config),
             AdGroups(client, config),
             Ads(client, config),
-            AdGroupPerformanceReport(client, config),
-            AdPerformanceReport(client, config),
-            BudgetSummaryReport(client, config),
             Campaigns(client, config),
-            CampaignPerformanceReport(client, config),
-            KeywordPerformanceReport(client, config),
         ]

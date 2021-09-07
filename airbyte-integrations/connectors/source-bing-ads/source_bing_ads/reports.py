@@ -29,6 +29,7 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 import pendulum
 import source_bing_ads.source
 from airbyte_cdk.models import SyncMode
+from bingads.service_client import ServiceClient
 from bingads.v13.internal.reporting.row_report import _RowReport
 from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord
 from bingads.v13.reporting import ReportingDownloadParameters
@@ -84,6 +85,7 @@ REPORT_FIELD_TYPES = {
     "MonthlyBudget": "number",
     "DailySpend": "number",
     "MonthToDateSpend": "number",
+    "AbsoluteTopImpressionRatePercent": "number",
 }
 
 
@@ -111,7 +113,22 @@ class ReportsMixin(ABC):
         """
         pass
 
-    def get_request_date(self, reporting_service, date: datetime) -> sudsobject.Object:
+    @property
+    @abstractmethod
+    def report_aggregation(self) -> str:
+        """
+        Specifies bing ads report aggregation type
+        Supported types: Hourly, Daily, Weekly, Monthly
+        """
+        pass
+
+    def get_request_date(self, reporting_service: ServiceClient, date: datetime) -> sudsobject.Object:
+        """
+        Creates XML Date object based on datetime.
+        https://docs.microsoft.com/en-us/advertising/reporting-service/date?view=bingads-13
+        The [suds.client.Factory-class.html factory] namespace provides a factory that may be used
+        to create instances of objects and types defined in the WSDL.
+        """
         request_date = reporting_service.factory.create("Date")
         request_date.Day = date.day
         request_date.Month = date.month
@@ -128,13 +145,11 @@ class ReportsMixin(ABC):
             start_date = pendulum.from_timestamp(stream_state[account_id][self.cursor_field])
 
         reporting_service = self.client.get_service("ReportingService")
-        request_start_date = self.get_request_date(reporting_service, start_date)
-        request_end_date = self.get_request_date(reporting_service, datetime.utcnow())
         request_time_zone = reporting_service.factory.create("ReportTimeZone")
 
         report_time = reporting_service.factory.create("ReportTime")
-        report_time.CustomDateRangeStart = request_start_date
-        report_time.CustomDateRangeEnd = request_end_date
+        report_time.CustomDateRangeStart = self.get_request_date(reporting_service, start_date)
+        report_time.CustomDateRangeEnd = self.get_request_date(reporting_service, datetime.utcnow())
         report_time.PredefinedTime = None
         report_time.ReportTimeZone = request_time_zone.GreenwichMeanTimeDublinEdinburghLisbonLondon
 
@@ -184,7 +199,7 @@ class ReportsMixin(ABC):
         reporting_service = self.client.get_service(self.service_name)
         report_request = reporting_service.factory.create(f"{self.report_name}Request")
         if not self.aggregation_disabled:
-            report_request.Aggregation = self.client.report_aggregation
+            report_request.Aggregation = self.report_aggregation
 
         report_request.ExcludeColumnHeaders = exclude_column_headers
         report_request.ExcludeReportFooter = exclude_report_footer
@@ -224,7 +239,13 @@ class ReportsMixin(ABC):
             if REPORT_FIELD_TYPES[column] == "integer":
                 value = 0 if value == "--" else int(value.replace(",", ""))
             elif REPORT_FIELD_TYPES[column] == "number":
-                value = 0.0 if value == "--" else float(value.replace("%", "").replace(",", ""))
+                if value == "--":
+                    value = 0.0
+                else:
+                    if "%" in value:
+                        value = float(value.replace("%", "").replace(",", "")) / 100
+                    else:
+                        value = float(value.replace(",", ""))
 
         return value
 
@@ -235,7 +256,7 @@ class ReportsMixin(ABC):
         if self.aggregation_disabled:
             date = pendulum.from_format(datestring, "M/D/YYYY")
         else:
-            if self.client.report_aggregation == "Hourly":
+            if self.report_aggregation == "Hourly":
                 date = pendulum.from_format(datestring, "YYYY-MM-DD|H")
             else:
                 date = pendulum.parse(datestring)

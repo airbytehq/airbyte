@@ -53,7 +53,7 @@ def test_get_column_value():
     assert test_report.get_column_value(record, "AverageCpc") == 11.5
     assert test_report.get_column_value(record, "AdGroupId") == 0
     assert test_report.get_column_value(record, "AccountName") == "123456789"
-    assert test_report.get_column_value(record, "Spend") == 120.3
+    assert test_report.get_column_value(record, "Spend") == 1.203
 
 
 def test_get_updated_state_new_state():

@@ -93,64 +93,29 @@
         "default": "2020-01-01",
         "description": "From which date perform initial sync for report related streams. In YYYY-MM-DD format"
       },
-      "report_aggregation": {
-        "title": "Report Aggregation Type",
-        "type": "object",
-        "description": "Defines how report data will be aggregated",
-        "oneOf": [
-          {
-            "title": "Daily",
-            "additionalProperties": false,
-            "description": "The report data will be aggregated by each day.",
-            "required": ["value"],
-            "properties": {
-              "value": {
-                "type": "string",
-                "enum": ["Daily"],
-                "const": "Daily"
-              }
-            }
-          },
-          {
-            "title": "Hourly",
-            "additionalProperties": false,
-            "description": "The report data will be aggregated by each hour of the day.",
-            "required": ["value"],
-            "properties": {
-              "value": {
-                "type": "string",
-                "enum": ["Hourly"],
-                "const": "Hourly"
-              }
-            }
-          },
-          {
-            "title": "Weekly",
-            "additionalProperties": false,
-            "description": "The report data will be aggregated by each week running from Sunday through Saturday.",
-            "required": ["value"],
-            "properties": {
-              "value": {
-                "type": "string",
-                "enum": ["Weekly"],
-                "const": "Weekly"
-              }
-            }
-          },
-          {
-            "title": "Monthly",
-            "additionalProperties": false,
-            "description": "The report data will be aggregated by each month.",
-            "required": ["value"],
-            "properties": {
-              "value": {
-                "type": "string",
-                "enum": ["Monthly"],
-                "const": "Monthly"
-              }
-            }
-          }
-        ]
+      "hourly_reports": {
+        "title": "Hourly reports",
+        "type": "boolean",
+        "description": "The report data will be aggregated by each hour of the day.",
+        "default": false
+      },
+      "daily_reports": {
+        "title": "Daily reports",
+        "type": "boolean",
+        "description": "The report data will be aggregated by each day.",
+        "default": false
+      },
+      "weekly_reports": {
+        "title": "Weekly reports",
+        "type": "boolean",
+        "description": "The report data will be aggregated by each week running from Sunday through Saturday.",
+        "default": false
+      },
+      "monthly_reports": {
+        "title": "Monthly reports",
+        "type": "boolean",
+        "description": "The report data will be aggregated by each month.",
+        "default": false
       }
     }
   }
