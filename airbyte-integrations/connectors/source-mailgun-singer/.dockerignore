@@ -1,0 +1,7 @@
+*
+!Dockerfile
+!Dockerfile.test
+!main.py
+!source_mailgun_singer
+!setup.py
+!secrets
