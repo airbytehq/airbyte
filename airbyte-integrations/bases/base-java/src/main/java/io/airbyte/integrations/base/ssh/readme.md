@@ -23,7 +23,13 @@ Our SSH connector support is designed to be easy to plug into any existing conne
 1. The only difference between existing acceptance testing and acceptance testing with SSH is that the configuration that is used for testing needs to contain additional fields. You can see the `Postgres Source ssh key creds` in lastpass to see an example of what that might look like. Those credentials leverage an existing bastion host in our test infrastructure. (As future work, we want to get rid of the need to use a static bastion server and instead do it in docker so we can run it all locally.)
 
 ### Normalization Support for Destinations
-1. 
+1. The core functionality for ssh tunnelling with normalization is already in place but you'll need to add a small tweak to `transform_config/transform.py` in the normalization module. Find the function `transform_{connector}()` and add at the start:
+    ```
+    if TransformConfig.is_ssh_tunnelling(config):
+        config = TransformConfig.get_ssh_altered_config(config, port_key="port", host_key="host")
+    ```
+    Replace port_key and host_key as necessary. Look at `transform_postgres()` to see an example.
+2. If your `host_key="host"` and `port_key="port"` then step 1 should be sufficient. However if the key names differ for your connector, you will also need to add some logic into `sshtunneling.sh` (within airbyte-workers) to handle this, as currently it assumes that the keys are exactly `host` and `port`.
 
 ## Misc
 
