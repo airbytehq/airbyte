@@ -4,6 +4,8 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Field, FieldProps, Formik } from "formik";
 import styled from "styled-components";
 
+import { useConfig } from "config";
+
 import {
   BottomBlock,
   FieldItem,
@@ -15,7 +17,6 @@ import { FormTitle } from "../components/FormTitle";
 import CheckBoxControl from "../components/CheckBoxControl";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
-import config from "config";
 
 const MarginBlock = styled.div`
   margin-bottom: 15px;
@@ -31,6 +32,7 @@ const SignupPageValidationSchema = yup.object().shape({
 
 const SignupPage: React.FC = () => {
   const formatMessage = useIntl().formatMessage;
+  const config = useConfig();
 
   const { signUp } = useAuthService();
 

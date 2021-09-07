@@ -34,4 +34,5 @@ export const H4 = styled(H1).attrs({ as: "h4" })`
 export const H5 = styled(H1).attrs({ as: "h5" })`
   font-size: ${({ theme }) => theme.h5?.fontSize || "15px"};
   line-height: ${({ theme }) => theme.h5?.lineHeight || "18px"};
+  font-weight: normal;
 `;

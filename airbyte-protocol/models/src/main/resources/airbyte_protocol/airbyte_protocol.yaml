@@ -208,6 +208,24 @@ definitions:
       - overwrite
       #- upsert_dedup # TODO chris: SCD Type 1 can be implemented later
       - append_dedup # SCD Type 1 & 2
+  OAuth2Specification:
+    description: An object containing any metadata needed to describe this connector's Oauth flow
+    type: object
+    properties:
+      oauthFlowInitParameters:
+        description:
+          "Pointers to the fields in the ConnectorSpecification which are needed to obtain the initial refresh/access tokens for the OAuth flow.
+          Each inner array represents the path in the ConnectorSpecification of the referenced field.
+          For example.
+          Assume the ConnectorSpecification contains params 'app_secret', 'app_id' which are needed to get the initial refresh token.
+          If they are not nested in the config, then the array would look like this [['app_secret'], ['app_id']]
+          If they are nested inside, say, an object called 'auth_params' then this array would be [['auth_params', 'app_secret'], ['auth_params', 'app_id']]"
+        type: array
+        items:
+          description: A list of strings which describe the path inside a JSON object for finding the
+          type: array
+          items:
+            type: string
   ConnectorSpecification:
     description: Specification of a connector (source/destination)
     type: object
@@ -250,3 +268,12 @@ definitions:
         type: array
         items:
           "$ref": "#/definitions/DestinationSyncMode"
+      authSpecification:
+        type: object
+        properties:
+          auth_type:
+            type: string
+            enum: ["oauth2.0"] # Future auth types should be added here
+          oauth2Specification:
+            description: If the connector supports OAuth, this field should be non-null.
+            "$ref": "#/definitions/OAuth2Specification"

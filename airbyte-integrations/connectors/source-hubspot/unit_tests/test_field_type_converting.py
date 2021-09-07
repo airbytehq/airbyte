@@ -67,28 +67,37 @@ def test_bad_field_type_converting(field_type, expected, capsys):
 
 
 @pytest.mark.parametrize(
-    "declared_field_types,field_name,field_value,casted_value",
+    "declared_field_types,field_name,field_value,format,casted_value",
     [
         # test for None in field_values
-        (["null", "string"], "some_field", None, None),
-        (["null", "number"], "some_field", None, None),
-        (["null", "integer"], "some_field", None, None),
-        (["null", "object"], "some_field", None, None),
-        (["null", "boolean"], "some_field", None, None),
+        (["null", "string"], "some_field", None, None, None),
+        (["null", "number"], "some_field", None, None, None),
+        (["null", "integer"], "some_field", None, None, None),
+        (["null", "object"], "some_field", None, None, None),
+        (["null", "boolean"], "some_field", None, None, None),
         # specific cases
-        ("string", "some_field", "test", "test"),
-        (["null", "number"], "some_field", "123.456", 123.456),
-        (["null", "number"], "user_id", "123", 123),
-        (["null", "string"], "some_field", "123", "123"),
+        ("string", "some_field", "test", None, "test"),
+        (["null", "number"], "some_field", "123.456", None, 123.456),
+        (["null", "number"], "user_id", "123", None, 123),
+        (["null", "string"], "some_field", "123", None, "123"),
         # when string has empty field_value (empty string)
-        (["null", "string"], "some_field", "", ""),
+        (["null", "string"], "some_field", "", None, ""),
         # when NOT string type but has empty sting in field_value, instead of double or null,
         # we should use None instead, to have it properly casted to the correct type
-        (["null", "number"], "some_field", "", None),
-        (["null", "integer"], "some_field", "", None),
-        (["null", "object"], "some_field", "", None),
-        (["null", "boolean"], "some_field", "", None),
+        (["null", "number"], "some_field", "", None, None),
+        (["null", "integer"], "some_field", "", None, None),
+        (["null", "object"], "some_field", "", None, None),
+        (["null", "boolean"], "some_field", "", None, None),
+        # Test casting fields with format specified
+        (["null", "string"], "some_field", "", "date-time", None),
+        (["string"], "some_field", "", "date-time", ""),
+        (["null", "string"], "some_field", "2020", "date-time", "2020"),
     ],
 )
-def test_cast_type_if_needed(declared_field_types, field_name, field_value, casted_value):
-    assert Stream._cast_value(declared_field_types, field_name, field_value) == casted_value
+def test_cast_type_if_needed(declared_field_types, field_name, field_value, format, casted_value):
+    assert (
+        Stream._cast_value(
+            declared_field_types=declared_field_types, field_name=field_name, field_value=field_value, declared_format=format
+        )
+        == casted_value
+    )
