@@ -25,6 +25,7 @@
 package io.airbyte.scheduler.persistence;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.analytics.TrackingClient;
@@ -56,6 +57,7 @@ public class JobNotifier {
   private static final Logger LOGGER = LoggerFactory.getLogger(JobNotifier.class);
 
   public static final String FAILURE_NOTIFICATION = "Failure Notification";
+  public static final String SUCCESS_NOTIFICATION = "Success Notification";
 
   private final String connectionPageUrl;
   private final ConfigRepository configRepository;
@@ -78,7 +80,7 @@ public class JobNotifier {
     this.trackingClient = trackingClient;
   }
 
-  public void failJob(final String reason, final Job job) {
+  private void notifyJob(final String reason, final String action, final Job job) {
     final UUID connectionId = UUID.fromString(job.getScope());
     final UUID sourceDefinitionId = configRepository.getSourceDefinitionFromConnection(connectionId).getSourceDefinitionId();
     final UUID destinationDefinitionId = configRepository.getDestinationDefinitionFromConnection(connectionId).getDestinationDefinitionId();
@@ -88,15 +90,17 @@ public class JobNotifier {
       final Instant jobStartedDate = Instant.ofEpochSecond(job.getStartedAtInSecond().orElse(job.getCreatedAtInSecond()));
       final DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).withZone(ZoneId.systemDefault());
       final Instant jobUpdatedDate = Instant.ofEpochSecond(job.getUpdatedAtInSecond());
-      final Duration duration = Duration.between(jobStartedDate, jobUpdatedDate);
+      final Instant adjustedJobUpdatedDate = jobUpdatedDate.equals(jobStartedDate) ? Instant.now() : jobUpdatedDate;
+      final Duration duration = Duration.between(jobStartedDate, adjustedJobUpdatedDate);
       final String durationString = formatDurationPart(duration.toDaysPart(), "day")
           + formatDurationPart(duration.toHoursPart(), "hour")
           + formatDurationPart(duration.toMinutesPart(), "minute")
           + formatDurationPart(duration.toSecondsPart(), "second");
       final String sourceConnector = String.format("%s version %s", sourceDefinition.getName(), sourceDefinition.getDockerImageTag());
       final String destinationConnector = String.format("%s version %s", destinationDefinition.getName(), destinationDefinition.getDockerImageTag());
+      final String failReason = Strings.isNullOrEmpty(reason) ? "" : String.format(", as the %s", reason);
       final String jobDescription =
-          String.format("sync started on %s, running for%s, as the %s.", formatter.format(jobStartedDate), durationString, reason);
+          String.format("sync started on %s, running for%s%s.", formatter.format(jobStartedDate), durationString, failReason);
       final String logUrl = connectionPageUrl + connectionId;
       final UUID workspaceId = workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(job.getId());
       final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
@@ -118,10 +122,16 @@ public class JobNotifier {
           }
           trackingClient.track(
               workspaceId,
-              FAILURE_NOTIFICATION,
+              action,
               MoreMaps.merge(jobMetadata, sourceMetadata, destinationMetadata, notificationMetadata.build()));
-          if (!notificationClient.notifyJobFailure(sourceConnector, destinationConnector, jobDescription, logUrl)) {
-            LOGGER.warn("Failed to successfully notify: {}", notification);
+          if (FAILURE_NOTIFICATION.equals(action)) {
+            if (!notificationClient.notifyJobFailure(sourceConnector, destinationConnector, jobDescription, logUrl)) {
+              LOGGER.warn("Failed to successfully notify failure: {}", notification);
+            }
+          } else if (SUCCESS_NOTIFICATION.equals(action)) {
+            if (!notificationClient.notifyJobSuccess(sourceConnector, destinationConnector, jobDescription, logUrl)) {
+              LOGGER.warn("Failed to successfully notify success: {}", notification);
+            }
           }
         } catch (InterruptedException | IOException e) {
           LOGGER.error("Failed to notify: {} due to an exception", notification, e);
@@ -130,6 +140,14 @@ public class JobNotifier {
     } catch (JsonValidationException | IOException | ConfigNotFoundException e) {
       LOGGER.error("Unable to read configuration:", e);
     }
+  }
+
+  public void failJob(final String reason, final Job job) {
+    notifyJob(reason, FAILURE_NOTIFICATION, job);
+  }
+
+  public void successJob(final Job job) {
+    notifyJob(null, SUCCESS_NOTIFICATION, job);
   }
 
   protected NotificationClient getNotificationClient(final Notification notification) {
