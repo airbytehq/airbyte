@@ -324,8 +324,9 @@ class BudgetSummaryReport(ReportsMixin, BingAdsStream):
     report_name: str = "BudgetSummaryReport"
     operation_name: str = "download_report"
     additional_fields: str = ""
-    aggregation_disabled = True
+    report_aggregation = None
     cursor_field = "Date"
+    report_schema_name = "budget_summary_report"
 
     report_columns = [
         "AccountName",
@@ -340,22 +341,6 @@ class BudgetSummaryReport(ReportsMixin, BingAdsStream):
     ]
 
 
-class BudgetSummaryReportHourly(BudgetSummaryReport):
-    report_aggregation = "Hourly"
-
-
-class BudgetSummaryReportDaily(BudgetSummaryReport):
-    report_aggregation = "Daily"
-
-
-class BudgetSummaryReportWeekly(BudgetSummaryReport):
-    report_aggregation = "Weekly"
-
-
-class BudgetSummaryReportMonthly(BudgetSummaryReport):
-    report_aggregation = "Monthly"
-
-
 class CampaignPerformanceReport(ReportsMixin, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
@@ -363,6 +348,7 @@ class CampaignPerformanceReport(ReportsMixin, BingAdsStream):
     operation_name: str = "download_report"
     additional_fields: str = ""
     cursor_field = "TimePeriod"
+    report_schema_name = "campaign_performance_report"
 
     report_columns = [
         "AccountName",
@@ -407,6 +393,7 @@ class AdPerformanceReport(ReportsMixin, BingAdsStream):
     operation_name: str = "download_report"
     additional_fields: str = ""
     cursor_field = "TimePeriod"
+    report_schema_name = "ad_performance_report"
 
     report_columns = [
         "AccountName",
@@ -456,6 +443,7 @@ class AdGroupPerformanceReport(ReportsMixin, BingAdsStream):
     operation_name: str = "download_report"
     additional_fields: str = ""
     cursor_field = "TimePeriod"
+    report_schema_name = "ad_group_performance_report"
 
     report_columns = [
         "AccountName",
@@ -502,6 +490,7 @@ class KeywordPerformanceReport(ReportsMixin, BingAdsStream):
     operation_name: str = "download_report"
     additional_fields: str = ""
     cursor_field = "TimePeriod"
+    report_schema_name = "keyword_performance_report"
 
     report_columns = [
         "AccountName",
@@ -555,6 +544,7 @@ class AccountPerformanceReport(ReportsMixin, BingAdsStream):
     operation_name: str = "download_report"
     additional_fields: str = ""
     cursor_field = "TimePeriod"
+    report_schema_name = "account_performance_report"
 
     report_columns = [
         "AccountName",
@@ -614,23 +604,34 @@ class SourceBingAds(AbstractSource):
 
         return True, None
 
-    def get_report_streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        streams = []
-        if config['hourly_reports']:
-            streams.extend([
-                AccountPerformanceReportHourly,
-                KeywordPerformanceReportHourly,
-                AdGroupPerformanceReportHourly,
-                AdPerformanceReportHourly,
-                CampaignPerformanceReportHourly,
-                BudgetSummaryReportHourly
-            ])
+    def get_report_streams(self, aggregation_type: str) -> List[Stream]:
+        return [
+            globals()[f"AccountPerformanceReport{aggregation_type}"],
+            globals()[f'KeywordPerformanceReport{aggregation_type}'],
+            globals()[f'AdGroupPerformanceReport{aggregation_type}'],
+            globals()[f'AdPerformanceReport{aggregation_type}'],
+            globals()[f'CampaignPerformanceReport{aggregation_type}'],
+        ]
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         client = Client(**config)
-        return [
+        streams = [
             Accounts(client, config),
             AdGroups(client, config),
             Ads(client, config),
             Campaigns(client, config),
         ]
+
+        if config["hourly_reports"] or config["daily_reports"] or config["weekly_reports"] or config["monthly_reports"]:
+            streams.append(BudgetSummaryReport(client, config))
+
+        if config["hourly_reports"]:
+            streams.extend([c(client, config) for c in self.get_report_streams("Hourly")])
+        if config["daily_reports"]:
+            streams.extend([c(client, config) for c in self.get_report_streams("Daily")])
+        if config["weekly_reports"]:
+            streams.extend([c(client, config) for c in self.get_report_streams("Weekly")])
+        if config["monthly_reports"]:
+            streams.extend([c(client, config) for c in self.get_report_streams("Monthly")])
+
+        return streams

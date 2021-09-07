@@ -13,7 +13,10 @@
       "refresh_token",
       "user_id",
       "reports_start_date",
-      "report_aggregation"
+      "hourly_reports",
+      "daily_reports",
+      "weekly_reports",
+      "monthly_reports"
     ],
     "additionalProperties": false,
     "properties": {

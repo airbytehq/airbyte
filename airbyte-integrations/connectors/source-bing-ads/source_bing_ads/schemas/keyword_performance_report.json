@@ -73,6 +73,9 @@
     },
     "BidMatchType": {
       "type": ["null", "string"]
+    },
+    "AbsoluteTopImpressionRatePercent": {
+      "type": ["null", "number"]
     }
   }
 }

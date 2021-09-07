@@ -31,11 +31,12 @@ from source_bing_ads.source import SourceBingAds
 
 
 class TestClient:
-    report_aggregation = "Monthly"
+    pass
 
 
 class TestReport(ReportsMixin, SourceBingAds):
     date_format, report_columns, report_name, cursor_field = "YYYY-MM-DD", None, None, "Time"
+    report_aggregation = "Monthly"
 
     def __init__(self) -> None:
         self.client = TestClient()
@@ -89,11 +90,11 @@ def test_get_report_record_timestamp_daily():
 
 def test_get_report_record_timestamp_without_aggregation():
     test_report = TestReport()
-    test_report.aggregation_disabled = True
+    test_report.report_aggregation = None
     assert pendulum.parse("2020-07-20").timestamp() == test_report.get_report_record_timestamp("7/20/2020")
 
 
 def test_get_report_record_timestamp_hourly():
     test_report = TestReport()
-    test_report.client.report_aggregation = "Hourly"
+    test_report.report_aggregation = "Hourly"
     assert pendulum.parse("2020-01-01T15:00:00").timestamp() == test_report.get_report_record_timestamp("2020-01-01|15")

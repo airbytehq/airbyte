@@ -29,6 +29,8 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 import pendulum
 import source_bing_ads.source
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from bingads.service_client import ServiceClient
 from bingads.v13.internal.reporting.row_report import _RowReport
 from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord
@@ -95,7 +97,6 @@ class ReportsMixin(ABC):
     # timeout for reporting download operations in milliseconds
     timeout: int = 300000
     report_file_format: str = "Csv"
-    aggregation_disabled: bool = False
 
     @property
     @abstractmethod
@@ -115,12 +116,23 @@ class ReportsMixin(ABC):
 
     @property
     @abstractmethod
-    def report_aggregation(self) -> str:
+    def report_aggregation(self) -> Optional[str]:
         """
         Specifies bing ads report aggregation type
         Supported types: Hourly, Daily, Weekly, Monthly
         """
         pass
+
+    @property
+    @abstractmethod
+    def report_schema_name(self) -> str:
+        """
+        Specifies file name with schema
+        """
+        pass
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(self.report_schema_name)
 
     def get_request_date(self, reporting_service: ServiceClient, date: datetime) -> sudsobject.Object:
         """
@@ -198,7 +210,7 @@ class ReportsMixin(ABC):
     ) -> sudsobject.Object:
         reporting_service = self.client.get_service(self.service_name)
         report_request = reporting_service.factory.create(f"{self.report_name}Request")
-        if not self.aggregation_disabled:
+        if self.report_aggregation:
             report_request.Aggregation = self.report_aggregation
 
         report_request.ExcludeColumnHeaders = exclude_column_headers
@@ -253,7 +265,7 @@ class ReportsMixin(ABC):
         """
         Parse report date field based on aggregation type
         """
-        if self.aggregation_disabled:
+        if not self.report_aggregation:
             date = pendulum.from_format(datestring, "M/D/YYYY")
         else:
             if self.report_aggregation == "Hourly":
