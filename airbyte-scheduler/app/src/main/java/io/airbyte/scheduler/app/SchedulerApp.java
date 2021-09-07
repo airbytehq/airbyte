@@ -27,15 +27,19 @@ package io.airbyte.scheduler.app;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.invoker.ApiException;
+import io.airbyte.api.client.model.HealthCheckRead;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.persistence.ConfigPersistence;
-import io.airbyte.config.persistence.ConfigPersistenceBuilder;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.db.Database;
+import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.models.Job;
@@ -64,7 +68,6 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -191,17 +194,39 @@ public class SchedulerApp {
     }
   }
 
+  private static void waitForServer(Configs configs) throws InterruptedException {
+    final AirbyteApiClient apiClient = new AirbyteApiClient(
+        new io.airbyte.api.client.invoker.ApiClient().setScheme("http")
+            .setHost(configs.getAirbyteApiHost())
+            .setPort(configs.getAirbyteApiPort())
+            .setBasePath("/api"));
+
+    boolean isHealthy = false;
+    while (!isHealthy) {
+      try {
+        HealthCheckRead healthCheck = apiClient.getHealthApi().getHealthCheck();
+        isHealthy = healthCheck.getDb();
+      } catch (ApiException e) {
+        LOGGER.info("Waiting for server to become available...");
+        Thread.sleep(2000);
+      }
+    }
+  }
+
   public static void main(String[] args) throws IOException, InterruptedException {
 
     final Configs configs = new EnvConfigs();
 
-    MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, LogClientSingleton.getSchedulerLogsRoot(configs).toString());
+    LogClientSingleton.setWorkspaceMdc(LogClientSingleton.getSchedulerLogsRoot(configs));
 
     final Path workspaceRoot = configs.getWorkspaceRoot();
     LOGGER.info("workspaceRoot = " + workspaceRoot);
 
     final String temporalHost = configs.getTemporalHost();
     LOGGER.info("temporalHost = " + temporalHost);
+
+    // Wait for the server to initialize the database and run migration
+    waitForServer(configs);
 
     LOGGER.info("Creating Job DB connection pool...");
     final Database jobDatabase = new JobsDatabaseInstance(
@@ -213,7 +238,12 @@ public class SchedulerApp {
     final ProcessFactory processFactory = getProcessBuilderFactory(configs);
 
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
-    final ConfigPersistence configPersistence = ConfigPersistenceBuilder.getDbPersistence(configs);
+    final Database configDatabase = new ConfigsDatabaseInstance(
+        configs.getConfigDatabaseUser(),
+        configs.getConfigDatabasePassword(),
+        configs.getConfigDatabaseUrl())
+            .getInitialized();
+    final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).withValidation();
     final ConfigRepository configRepository = new ConfigRepository(configPersistence);
     final JobCleaner jobCleaner = new JobCleaner(
         configs.getWorkspaceRetentionConfig(),
@@ -241,20 +271,7 @@ public class SchedulerApp {
           });
     }
 
-    Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
-    int loopCount = 0;
-    while ((airbyteDatabaseVersion.isEmpty() || !AirbyteVersion.isCompatible(configs.getAirbyteVersion(), airbyteDatabaseVersion.get()))
-        && loopCount < 300) {
-      LOGGER.warn("Waiting for Server to start...");
-      TimeUnit.SECONDS.sleep(1);
-      airbyteDatabaseVersion = jobPersistence.getVersion();
-      loopCount++;
-    }
-    if (airbyteDatabaseVersion.isPresent()) {
-      AirbyteVersion.assertIsCompatible(configs.getAirbyteVersion(), airbyteDatabaseVersion.get());
-    } else {
-      throw new IllegalStateException("Unable to retrieve Airbyte Version, aborting...");
-    }
+    AirbyteVersion.assertIsCompatible(configs.getAirbyteVersion(), jobPersistence.getVersion().get());
 
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
