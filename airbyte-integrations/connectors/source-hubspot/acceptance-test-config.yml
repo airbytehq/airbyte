@@ -7,8 +7,8 @@ tests:
       status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
-#  discovery: fixme (eugene): contacts schema does not match
-#    - config_path: "secrets/config.json"
+  discovery:
+    - config_path: "secrets/config.json"
   basic_read:
     - config_path: "secrets/config.json"
       # TODO: permissions error with Workflows stream for Test Account
