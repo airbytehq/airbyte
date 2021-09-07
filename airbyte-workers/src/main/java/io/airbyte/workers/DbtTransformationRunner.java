@@ -84,8 +84,7 @@ public class DbtTransformationRunner implements AutoCloseable {
     try {
       final Map<String, String> files = ImmutableMap.of(
           DBT_ENTRYPOINT_SH, MoreResources.readResource("dbt_transformation_entrypoint.sh"),
-          "sshtunneling.sh", MoreResources.readResource("sshtunneling.sh")
-      );
+          "sshtunneling.sh", MoreResources.readResource("sshtunneling.sh"));
       final List<String> dbtArguments = new ArrayList<>();
       dbtArguments.add(DBT_ENTRYPOINT_SH);
       if (Strings.isNullOrEmpty(dbtConfig.getDbtArguments())) {
