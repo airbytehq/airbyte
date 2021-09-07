@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
 import PageTitle from "components/PageTitle";
-import useRouter from "components/hooks/useRouterHook";
+import useRouter from "hooks/useRouter";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import ConnectionResource from "core/resources/Connection";
 import { Routes } from "../../../routes";
@@ -24,7 +24,7 @@ import { getIcon } from "utils/imageUtils";
 import ImageBlock from "components/ImageBlock";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import HeadTitle from "components/HeadTitle";
-import useWorkspace from "components/hooks/services/useWorkspace";
+import useWorkspace from "hooks/services/useWorkspace";
 import { DropDownRow } from "components";
 
 const DestinationItemPage: React.FC = () => {

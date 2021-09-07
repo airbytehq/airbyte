@@ -24,6 +24,8 @@
 
 package io.airbyte.workers;
 
+import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.workers.normalization.NormalizationRunner;
 import java.nio.file.Files;
@@ -60,7 +62,13 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
     try (normalizationRunner) {
       LOGGER.info("Running normalization.");
       normalizationRunner.start();
-      final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
+
+      Path normalizationRoot = null;
+      // There are no shared volumes on Kube; only create this for Docker.
+      if (new EnvConfigs().getWorkerEnvironment().equals(WorkerEnvironment.DOCKER)) {
+        normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
+      }
+
       if (!normalizationRunner.normalize(jobId, attempt, normalizationRoot, input.getDestinationConfiguration(), input.getCatalog(),
           input.getResourceRequirements())) {
         throw new WorkerException("Normalization Failed.");
