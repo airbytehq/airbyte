@@ -4,20 +4,18 @@
 
 The Google Search Console source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This source wraps the [Singer Google Search Console Tap](https://github.com/singer-io/tap-google-search-console).
-
 ### Output schema
 
 This Source is capable of syncing the following Streams:
 
 * [Sites](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites/get)
 * [Sitemaps](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps/list)
-* [Performance report country](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-* [Performance report custom](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-* [Performance report date](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-* [Performance report device](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-* [Performance report page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-* [Performance report query \(keyword\)](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+* [Full Analytics report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query) (this stream has a long sync time because it is very detailed, use with care)
+* [Analytics report by country](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+* [Analytics report by date](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+* [Analytics report by device](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+* [Analytics report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+* [Analytics report by query](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 
 ### Data type mapping
 
@@ -45,13 +43,13 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 
 ### Requirements
 
-* Credentials to a Google Service Account (or Google Service Account with delegated Domain Wide Authority)
-* Email address of the workspace admin who created the Service Account
+* Credentials to a Google Service Account (or Google Service Account with delegated Domain Wide Authority) or Google User Account
 
 ## How to create the client credentials for Google Search Console, to use with Airbyte?
 
 You can either:
 * Use the existing `Service Account` for your Google Project with granted Admin Permissions
+* Use the existing `User Account` for your Google Project with granted Admin Permissions
 * Create the new `Service Account` credentials for your Google Project, and grant Admin Permissions to it
 * Follow the `Delegating domain-wide authority` process to obtain the necessary permissions to your google account from the administrator of Workspace
 
@@ -82,6 +80,15 @@ If you lose this key pair, you will need to generate a new one!
 ### Note
 You can return to the [API Console/Credentials](https://console.cloud.google.com/apis/credentials) at any time to view the email address, public key fingerprints, and other information, or to generate additional public/private key pairs. For more details about service account credentials in the API Console, see [Service accounts](https://cloud.google.com/iam/docs/understanding-service-accounts) in the API Console help file.
 
+### Using the existing User Account 
+1. Follow instructions [here](https://www.balbooa.com/gridbox-documentation/how-to-get-google-client-id-and-client-secret), to get `CLIENT_ID, CLIENT_SECRET and REDIRECTED_URI`
+2. Source `Google Search Console` provides scripts to easy get User Account credentials:
+   1. Go to the `connectors/google-search-console/credentials` directory.
+   2. Fill the file `credentials.json` with your personal credentials from step 1.
+   3. Run the `./get_credentials.sh` script and follow the instructions.
+   4. Copy the `refresh_token` from the console.
+
+
 ### Create a Service Account with delegated domain-wide authority
 
 Follow the Google Documentation for performing [Delegating domain-wide authority](https://developers.google.com/identity/protocols/oauth2/service-account#delegatingauthority) to create a Service account with delegated domain-wide authority. This account must be created by an administrator of your Google Workspace. Please make sure to grant the following `OAuth scopes` to the service user:
@@ -92,8 +99,9 @@ At the end of this process, you should have JSON credentials to this Google Serv
 
 You should now be ready to use the Google Workspace Admin Reports API connector in Airbyte.
 
+
 ## CHANGELOG
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| `0.1.3` | 2021-07-06 | [4539](https://github.com/airbytehq/airbyte/pull/4539) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
+| `0.1.0` | 2021-09-03 | [5350](https://github.com/airbytehq/airbyte/pull/5350) | New Source: `Google Search Console` |
