@@ -99,6 +99,7 @@ class TransformConfig:
             DestinationType.redshift.value: self.transform_redshift,
             DestinationType.snowflake.value: self.transform_snowflake,
             DestinationType.mysql.value: self.transform_mysql,
+            DestinationType.oracle.value: self.transform_oracle,
         }[integration_type.value](config)
 
         # merge pre-populated base_profile with destination-specific configuration.
