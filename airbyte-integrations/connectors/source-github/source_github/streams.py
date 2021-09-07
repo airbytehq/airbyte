@@ -700,8 +700,7 @@ class ReactionStream(GithubStream, ABC):
 
     def __init__(self, **kwargs):
         self._parent_stream = self.parent_entity(**kwargs)
-        if "start_date" in kwargs:
-            kwargs.pop("start_date")
+        kwargs.pop("start_date", None)
         super().__init__(**kwargs)
 
     @property
