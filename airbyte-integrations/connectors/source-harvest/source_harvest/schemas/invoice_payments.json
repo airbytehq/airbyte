@@ -14,7 +14,7 @@
     },
     "paid_date": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date"
     },
     "recorded_by": {
       "type": ["null", "string"]
