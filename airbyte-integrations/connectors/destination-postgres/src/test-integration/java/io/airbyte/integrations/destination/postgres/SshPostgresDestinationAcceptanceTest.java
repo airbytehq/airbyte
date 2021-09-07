@@ -73,7 +73,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
   }
 
   private JsonNode getConfigFromSecretsFile() {
-    return Jsons.deserialize(IOs.readFile(Path.of("secrets/ssh-pwd-config.json")));
+    return Jsons.deserialize(IOs.readFile(getConfigFilePath()));
   }
 
   @Override
