@@ -32,7 +32,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs;
 import io.airbyte.db.Database;
@@ -106,14 +105,12 @@ class TemporalAttemptExecutionTest {
 
     execution = mock(CheckedSupplier.class);
     mdcSetter = mock(Consumer.class);
-    final CheckedConsumer<Path, IOException> jobRootDirCreator = Files::createDirectories;
 
     attemptExecution = new TemporalAttemptExecution<>(
         workspaceRoot,
         JOB_RUN_CONFIG, execution,
         () -> "",
         mdcSetter,
-        jobRootDirCreator,
         mock(CancellationHandler.class), () -> "workflow_id",
         configs);
   }

@@ -75,7 +75,6 @@ import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.api.workflowservice.v1.RequestCancelWorkflowExecutionRequest;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -93,7 +92,6 @@ public class SchedulerHandler {
   private final ConfigurationUpdate configurationUpdate;
   private final JsonSchemaValidator jsonSchemaValidator;
   private final JobPersistence jobPersistence;
-  private final Path workspaceRoot;
   private final JobNotifier jobNotifier;
   private final WorkflowServiceStubs temporalService;
 
@@ -101,7 +99,6 @@ public class SchedulerHandler {
                           SchedulerJobClient schedulerJobClient,
                           SynchronousSchedulerClient synchronousSchedulerClient,
                           JobPersistence jobPersistence,
-                          Path workspaceRoot,
                           JobNotifier jobNotifier,
                           WorkflowServiceStubs temporalService) {
     this(
@@ -112,7 +109,6 @@ public class SchedulerHandler {
         new JsonSchemaValidator(),
         new SpecFetcher(synchronousSchedulerClient),
         jobPersistence,
-        workspaceRoot,
         jobNotifier,
         temporalService);
   }
@@ -125,7 +121,6 @@ public class SchedulerHandler {
                    JsonSchemaValidator jsonSchemaValidator,
                    SpecFetcher specFetcher,
                    JobPersistence jobPersistence,
-                   Path workspaceRoot,
                    JobNotifier jobNotifier,
                    WorkflowServiceStubs temporalService) {
     this.configRepository = configRepository;
@@ -135,7 +130,6 @@ public class SchedulerHandler {
     this.jsonSchemaValidator = jsonSchemaValidator;
     this.specFetcher = specFetcher;
     this.jobPersistence = jobPersistence;
-    this.workspaceRoot = workspaceRoot;
     this.jobNotifier = jobNotifier;
     this.temporalService = temporalService;
   }
@@ -349,14 +343,14 @@ public class SchedulerHandler {
 
     // prevent this job from being scheduled again
     jobPersistence.cancelJob(jobId);
-    cancelExistingTemporalWorkflow(jobId);
+    cancelTemporalWorkflowIfPresent(jobId);
 
     final Job job = jobPersistence.getJob(jobId);
     jobNotifier.failJob("job was cancelled", job);
     return JobConverter.getJobInfoRead(job);
   }
 
-  private void cancelExistingTemporalWorkflow(long jobId) {
+  private void cancelTemporalWorkflowIfPresent(long jobId) {
     String workflowId = null;
     try {
       var latestAttemptId = jobPersistence.getJob(jobId).getAttempts().size() - 1; // attempts ids are monotonically increasing starting from 0 and

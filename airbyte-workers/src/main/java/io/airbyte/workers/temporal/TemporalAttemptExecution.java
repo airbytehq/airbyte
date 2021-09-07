@@ -25,7 +25,6 @@
 package io.airbyte.workers.temporal;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
@@ -39,7 +38,6 @@ import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerUtils;
 import io.temporal.activity.Activity;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
@@ -84,7 +82,6 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
         workerSupplier,
         inputSupplier,
         LogClientSingleton::setJobMdc,
-        Files::createDirectories,
         cancellationHandler,
         () -> Activity.getExecutionContext().getInfo().getWorkflowId(),
         new EnvConfigs());
@@ -96,7 +93,6 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
                            CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
                            Supplier<INPUT> inputSupplier,
                            Consumer<Path> mdcSetter,
-                           CheckedConsumer<Path, IOException> jobRootDirCreator,
                            CancellationHandler cancellationHandler,
                            Supplier<String> workflowIdProvider,
                            Configs configs) {
