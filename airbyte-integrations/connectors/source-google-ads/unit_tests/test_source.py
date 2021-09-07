@@ -101,6 +101,91 @@ def test_get_query_fields(query, fields):
     assert CustomQuery.get_query_fields(query) == fields
 
 
+@pytest.mark.parametrize(
+    "original_query, expected_query",
+    [
+        (
+            """
+SELect
+  campaign.id,
+  campaign.name,
+  campaign.status,
+  metrics.impressions FROM campaign
+wheRe campaign.status = 'PAUSED'
+AND metrics.impressions > 100
+order by campaign.status
+""",
+            """
+SELect
+  campaign.id,
+  campaign.name,
+  campaign.status,
+  metrics.impressions , segments.date
+FROM campaign
+wheRe campaign.status = 'PAUSED'
+AND metrics.impressions > 100
+ AND segments.date BETWEEN '1980-01-01' AND '2000-01-01'
+order by campaign.status
+""",
+        ),
+        (
+            """
+SELect
+  campaign.id,
+  campaign.name,
+  campaign.status,
+  metrics.impressions
+FROM campaign
+order by campaign.status
+""",
+            """
+SELect
+  campaign.id,
+  campaign.name,
+  campaign.status,
+  metrics.impressions
+, segments.date
+FROM campaign
+
+WHERE segments.date BETWEEN '1980-01-01' AND '2000-01-01'
+order by campaign.status
+""",
+        ),
+        (
+            """
+SELect
+  campaign.id,
+  campaign.name,
+  campaign.status,
+  metrics.impressions FROM campaign
+wheRe campaign.status = 'PAUSED'
+AND metrics.impressions > 100
+""",
+            """
+SELect
+  campaign.id,
+  campaign.name,
+  campaign.status,
+  metrics.impressions , segments.date
+FROM campaign
+wheRe campaign.status = 'PAUSED'
+AND metrics.impressions > 100
+ AND segments.date BETWEEN '1980-01-01' AND '2000-01-01'
+""",
+        ),
+        (
+            "SELECT campaign.accessible_bidding_strategy, segments.ad_destination_type, campaign.start_date, campaign.end_date FROM campaign",
+            """SELECT campaign.accessible_bidding_strategy, segments.ad_destination_type, campaign.start_date, campaign.end_date , segments.date
+FROM campaign
+WHERE segments.date BETWEEN '1980-01-01' AND '2000-01-01'
+""",
+        ),
+    ],
+)
+def test_insert_date(original_query, expected_query):
+    assert CustomQuery.insert_segments_date_expr(original_query, "1980-01-01", "2000-01-01") == expected_query
+
+
 def test_get_json_schema_parse_query(config):
     query = """
         SELECT
@@ -110,7 +195,13 @@ def test_get_json_schema_parse_query(config):
             campaign.end_date
         FROM campaign
         """
-    final_fields = ["campaign.accessible_bidding_strategy", "segments.ad_destination_type", "campaign.start_date", "campaign.end_date"]
+    final_fields = [
+        "campaign.accessible_bidding_strategy",
+        "segments.ad_destination_type",
+        "campaign.start_date",
+        "campaign.end_date",
+        "segments.date",
+    ]
 
     instance = get_instance_from_config(config=config, query=query)
     final_schema = instance.get_json_schema()
@@ -134,6 +225,7 @@ def test_google_type_conversion(config):
         "campaign.shopping_setting.merchant_id": ["integer", "null"],  # INT64
         "campaign_budget.explicitly_shared": ["boolean", "null"],  # BOOLEAN
         "bidding_strategy.enhanced_cpc": ["string", "number", "array", "object", "boolean", "null"],  # MESSAGE
+        "segments.date": ["string", "null"],  # autoadded, should be DATE
     }
 
     # query is select field of each type

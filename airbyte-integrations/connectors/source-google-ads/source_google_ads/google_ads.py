@@ -61,6 +61,27 @@ class GoogleAds:
 
         return self.ga_service.search(search_request)
 
+    def get_fields_metadata(self, fields: List[str]) -> Mapping[str, Any]:
+        """
+        Issue Google API request to get detailed information on data type for custom query columns.
+        :params fields list of columns for user defined query.
+        :return dict of fields type info.
+        """
+
+        ga_field_service = self.client.get_service("GoogleAdsFieldService")
+        request = self.client.get_type("SearchGoogleAdsFieldsRequest")
+        request.page_size = len(fields)
+        fields_sql = ",".join([f"'{field}'" for field in fields])
+        request.query = f"""
+        SELECT
+          name,
+          data_type,
+          enum_values
+        WHERE name in ({fields_sql})
+        """
+        response = ga_field_service.search_google_ads_fields(request=request)
+        return {r.name: r for r in response}
+
     @staticmethod
     def get_fields_from_schema(schema: Mapping[str, Any]) -> List[str]:
         properties = schema.get("properties")

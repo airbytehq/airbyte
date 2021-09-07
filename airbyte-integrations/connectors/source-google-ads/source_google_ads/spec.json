@@ -76,9 +76,10 @@
             "query": {
               "type": "string",
               "title": "Custom query",
-              "description": "A custom defined GAQL query for building the report. At the moment the only supported format is SELECT XYZ FROM ABC",
-              "examples": ["SELECT segments.ad_destination_type, campaign.advertising_channel_sub_type FROM campaign"],
-              "pattern": "(?i)^select(\\s)+[a-zA-Z0-9._,(\\s)-]*(\\s+)from(\\s+)[a-zA-Z0-9._]*$"
+              "description": "A custom defined GAQL query for building the report. Should not contain segments.date expression as it used by incremental streams",
+              "examples": [
+                "SELECT segments.ad_destination_type, campaign.advertising_channel_sub_type FROM campaign WHERE campaign.status = 'PAUSED'"
+              ]
             },
             "table_name": {
               "type": "string",
