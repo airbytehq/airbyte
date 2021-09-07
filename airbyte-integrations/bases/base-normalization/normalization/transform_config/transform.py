@@ -39,6 +39,7 @@ class DestinationType(Enum):
     redshift = "redshift"
     snowflake = "snowflake"
     mysql = "mysql"
+    oracle = "oracle"
 
 
 class TransformConfig:
@@ -46,8 +47,12 @@ class TransformConfig:
         inputs = self.parse(args)
         original_config = self.read_json_config(inputs["config"])
         integration_type = inputs["integration_type"]
+
+        transformed_dbt_project = self.transform_dbt_project(integration_type)
+        self.write_yaml_config(inputs["output_path"], transformed_dbt_project, "dbt_project.yml")
+
         transformed_config = self.transform(integration_type, original_config)
-        self.write_yaml_config(inputs["output_path"], transformed_config)
+        self.write_yaml_config(inputs["output_path"], transformed_config, "profiles.yml")
 
     @staticmethod
     def parse(args):
@@ -67,6 +72,18 @@ class TransformConfig:
             "output_path": parsed_args.out,
         }
 
+    def transform_dbt_project(self, integration_type: DestinationType):
+        data = pkgutil.get_data(self.__class__.__module__.split(".")[0], "transform_config/dbt_project_base.yml")
+        if not data:
+            raise FileExistsError("Failed to load profile_base.yml")
+        base_project = yaml.load(data, Loader=yaml.FullLoader)
+
+        if integration_type.value == DestinationType.oracle.value:
+            base_project["quoting"]["database"] = False
+            base_project["quoting"]["identifier"] = False
+
+        return base_project
+
     def transform(self, integration_type: DestinationType, config: Dict[str, Any]):
         data = pkgutil.get_data(self.__class__.__module__.split(".")[0], "transform_config/profile_base.yml")
         if not data:
@@ -79,6 +96,7 @@ class TransformConfig:
             DestinationType.redshift.value: self.transform_redshift,
             DestinationType.snowflake.value: self.transform_snowflake,
             DestinationType.mysql.value: self.transform_mysql,
+            DestinationType.oracle.value: self.transform_oracle,
         }[integration_type.value](config)
 
         # merge pre-populated base_profile with destination-specific configuration.
@@ -179,16 +197,32 @@ class TransformConfig:
         return dbt_config
 
     @staticmethod
+    def transform_oracle(config: Dict[str, Any]):
+        print("transform_oracle")
+        # https://github.com/techindicium/dbt-oracle#configure-your-profile
+        dbt_config = {
+            "type": "oracle",
+            "host": config["host"],
+            "user": config["username"],
+            "pass": config["password"],
+            "port": config["port"],
+            "dbname": config["sid"],
+            "schema": config["schema"],
+            "threads": 4,
+        }
+        return dbt_config
+
+    @staticmethod
     def read_json_config(input_path: str):
         with open(input_path, "r") as file:
             contents = file.read()
         return json.loads(contents)
 
     @staticmethod
-    def write_yaml_config(output_path: str, config: Dict[str, Any]):
+    def write_yaml_config(output_path: str, config: Dict[str, Any], filename: str):
         if not os.path.exists(output_path):
             os.makedirs(output_path)
-        with open(os.path.join(output_path, "profiles.yml"), "w") as fh:
+        with open(os.path.join(output_path, filename), "w") as fh:
             fh.write(yaml.dump(config))
 
 

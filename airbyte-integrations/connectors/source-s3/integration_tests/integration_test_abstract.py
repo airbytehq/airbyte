@@ -32,7 +32,7 @@ from uuid import uuid4
 import pytest
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
-from source_s3.source_files_abstract.fileformatparser import CsvParser
+from source_s3.source_files_abstract.formats.csv_parser import CsvParser
 from source_s3.source_files_abstract.stream import FileStream
 
 HERE = Path(__file__).resolve().parent
@@ -136,7 +136,8 @@ class AbstractTestIncrementalFileStream(ABC):
             fs = self.stream_class("dataset", provider, format, path_pattern, str_user_schema)
             LOGGER.info(f"Testing stream_records() in SyncMode:{sync_mode.value}")
 
-            assert fs._get_schema_map() == full_expected_schema  # check we return correct schema from get_json_schema()
+            # check we return correct schema from get_json_schema()
+            assert fs._get_schema_map() == full_expected_schema
 
             records = []
             for stream_slice in fs.stream_slices(sync_mode=sync_mode, stream_state=current_state):
@@ -144,7 +145,8 @@ class AbstractTestIncrementalFileStream(ABC):
                     # we need to do this in order to work out which extra columns (if any) we expect in this stream_slice
                     expected_columns = []
                     for file_dict in stream_slice:
-                        file_reader = CsvParser(format)  # TODO: if we ever test other filetypes in these tests this will need fixing
+                        # TODO: if we ever test other filetypes in these tests this will need fixing
+                        file_reader = CsvParser(format)
                         with file_dict["storagefile"].open(file_reader.is_binary) as f:
                             expected_columns.extend(list(file_reader.get_inferred_schema(f).keys()))
                     expected_columns = set(expected_columns)  # de-dupe
@@ -550,7 +552,8 @@ class AbstractTestIncrementalFileStream(ABC):
                         state=latest_state,
                     )
                     LOGGER.info(f"incremental state: {latest_state}")
-                    time.sleep(1)  # small delay to ensure next file gets later last_modified timestamp
+                    # small delay to ensure next file gets later last_modified timestamp
+                    time.sleep(1)
                 self.teardown_infra(cloud_bucket_name, self.credentials)
 
         except Exception as e:

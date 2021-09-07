@@ -14,6 +14,13 @@ if [[ -z "${CLOUDREPO_PASSWORD}" ]]; then
   exit 1;
 fi
 
+if [[ -z "${DOCKER_PASSWORD}" ]]; then
+  echo 'DOCKER_PASSWORD for airbytebot not set.';
+  exit 1;
+fi
+
+docker login -u airbytebot -p "${DOCKER_PASSWORD}"
+
 PREV_VERSION=$(grep VERSION .env | cut -d"=" -f2)
 
 [[ -z "$PART_TO_BUMP" ]] && echo "Usage ./tools/bin/release_version.sh (major|minor|patch)" && exit 1
