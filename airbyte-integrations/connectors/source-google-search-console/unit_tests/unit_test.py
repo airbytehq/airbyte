@@ -72,3 +72,26 @@ def test_slice(site_urls, sync_mode):
             expected = {"site_url": quote_plus(site_url), "search_type": search_type}
 
             assert expected == next(stream_slice)
+
+
+@pytest.mark.parametrize(
+    "current_stream_state, latest_record, expected",
+    [
+        ({"https://example.com": {"web": {"date": "2023-01-01"}}},
+         {"site_url": "https://example.com", "search_type": "web", "date": "2021-01-01"},
+         {"https://example.com": {"web": {"date": "2023-01-01"}}}),
+
+        ({},
+         {"site_url": "https://example.com", "search_type": "web", "date": "2021-01-01"},
+         {"https://example.com": {"web": {"date": "2021-01-01"}}}),
+
+        ({"https://example.com": {"web": {"date": "2021-01-01"}}},
+         {"site_url": "https://example.com", "search_type": "web", "date": "2022-01-01"},
+         {"https://example.com": {"web": {"date": "2022-01-01"}}}),
+    ],
+)
+def test_state(current_stream_state, latest_record, expected):
+    stream = SearchAnalyticsByDate(CLIENT_AUTH, ["https://example.com"], "start_date", "end_date")
+
+    value = stream.get_updated_state(current_stream_state, latest_record)
+    assert value == expected

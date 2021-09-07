@@ -186,13 +186,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Union[Dict[str, Any], str]]:
 
-        start_date = self._start_date
-        if start_date and stream_state:
-            if stream_state.get(self.cursor_field):
-                start_date = max(
-                    pendulum.parse(stream_state[self.cursor_field]),
-                    pendulum.parse(start_date),
-                ).to_date_string()
+        start_date = self._get_start_data(stream_state, stream_slice)
 
         data = {
             "startDate": start_date,
@@ -205,6 +199,24 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         }
         return data
 
+    def _get_start_data(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+    ) -> str:
+        start_date = self._start_date
+
+        if start_date and stream_state:
+            if stream_state.get(unquote_plus(stream_slice["site_url"]), {}).get(stream_slice["search_type"]):
+                stream_state_value = stream_state.get(unquote_plus(stream_slice["site_url"]), {}).get(stream_slice["search_type"])
+
+                start_date = max(
+                    pendulum.parse(stream_state_value[self.cursor_field]),
+                    pendulum.parse(start_date),
+                ).to_date_string()
+
+        return start_date
+
     def parse_response(
         self,
         response: requests.Response,
@@ -216,7 +228,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
 
         for record in records:
             record["site_url"] = unquote_plus(stream_slice.get("site_url"))
-            record["searchType"] = stream_slice.get("search_type")
+            record["search_type"] = stream_slice.get("search_type")
 
             for dimension in self.dimensions:
                 record[dimension] = record["keys"].pop(0)
@@ -232,9 +244,20 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         latest_record: Mapping[str, Any],
     ) -> Mapping[str, Any]:
         latest_benchmark = latest_record[self.cursor_field]
-        if current_stream_state.get(self.cursor_field):
-            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
-        return {self.cursor_field: latest_benchmark}
+
+        site_url = latest_record.get("site_url")
+        search_type = latest_record.get("search_type")
+
+        if current_stream_state.get(site_url, {}).get(search_type):
+            current_stream_state[site_url][search_type] = {self.cursor_field: max(latest_benchmark, current_stream_state[site_url][search_type][self.cursor_field])}
+
+        elif current_stream_state.get(site_url):
+            current_stream_state[site_url][search_type] = {self.cursor_field: latest_benchmark}
+
+        else:
+            current_stream_state = {site_url: {search_type: {self.cursor_field: latest_benchmark}}}
+
+        return current_stream_state
 
 
 class SearchAnalyticsByDate(SearchAnalytics):
