@@ -46,6 +46,7 @@ if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD")
     include ':airbyte-e2e-testing'
     include ':airbyte-migration'
     include ':airbyte-notification'
+    include ':airbyte-oauth'
     include ':airbyte-scheduler:app'
     include ':airbyte-scheduler:client'
     include ':airbyte-scheduler:models'

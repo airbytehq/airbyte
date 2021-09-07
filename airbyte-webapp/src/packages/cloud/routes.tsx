@@ -6,14 +6,13 @@ import {
   Switch,
 } from "react-router-dom";
 import { FormattedMessage } from "react-intl";
-
-import config from "config";
+import { useAsync } from "react-use";
 
 import SourcesPage from "pages/SourcesPage";
 import DestinationPage from "pages/DestinationPage";
 import {
-  SourcesPage as SettingsSourcesPage,
   DestinationsPage as SettingsDestinationPage,
+  SourcesPage as SettingsSourcesPage,
 } from "pages/SettingsPage/pages/ConnectorsPage";
 import ConnectionPage from "pages/ConnectionPage";
 import SettingsPage from "pages/SettingsPage";
@@ -23,22 +22,23 @@ import NotificationPage from "pages/SettingsPage/pages/NotificationPage";
 import LoadingPage from "components/LoadingPage";
 import MainView from "packages/cloud/views/layout/MainView";
 import { WorkspacesPage } from "packages/cloud/views/workspaces";
-import { useApiHealthPoll } from "components/hooks/services/Health";
+import { useApiHealthPoll } from "hooks/services/Health";
 import { Auth } from "packages/cloud/views/auth";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
-import useConnector from "components/hooks/services/useConnector";
+import useConnector from "hooks/services/useConnector";
 
 import {
   useGetWorkspace,
   useWorkspaceService,
   WorkspaceServiceProvider,
 } from "packages/cloud/services/workspaces/WorkspacesService";
-import { HealthService } from "core/health/HealthService";
-import { useDefaultRequestMiddlewares } from "./services/useDefaultRequestMiddlewares";
 import { PageConfig } from "pages/SettingsPage/SettingsPage";
 import { WorkspaceSettingsView } from "./views/workspaces/WorkspaceSettingsView";
 import { UsersSettingsView } from "packages/cloud/views/users/UsersSettingsView/UsersSettingsView";
 import { AccountSettingsView } from "packages/cloud/views/users/AccountSettingsView/AccountSettingsView";
+import { ConfirmEmailPage } from "./views/auth/ConfirmEmailPage";
+import useRouter from "hooks/useRouter";
+import { WithPageAnalytics } from "pages/withPageAnalytics";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -55,14 +55,19 @@ export enum Routes {
   Settings = "/settings",
   Metrics = "/metrics",
   Account = "/account",
-  Signup = "/signup",
-  Login = "/login",
-  ResetPassword = "/reset-password",
   Root = "/",
   SelectWorkspace = "/workspaces",
   Configuration = "/configuration",
   AccessManagement = "/access-management",
   Notifications = "/notifications",
+
+  // Auth routes
+  Signup = "/signup",
+  Login = "/login",
+  ResetPassword = "/reset-password",
+  ConfirmPasswordReset = "/confirm-password-reset",
+  VerifyEmail = "/verify-email",
+  ConfirmVerifyEmail = "/confirm-verify-email",
 }
 
 const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
@@ -149,12 +154,7 @@ const MainRoutes: React.FC<{ currentWorkspaceId: string }> = ({
 };
 
 const MainViewRoutes = () => {
-  const middlewares = useDefaultRequestMiddlewares();
-  const healthService = useMemo(() => new HealthService(middlewares), [
-    middlewares,
-  ]);
-
-  useApiHealthPoll(config.healthCheckInterval, healthService);
+  useApiHealthPoll();
   const { currentWorkspaceId } = useWorkspaceService();
 
   return (
@@ -177,17 +177,39 @@ const MainViewRoutes = () => {
   );
 };
 
+const VerifyEmailRoute: React.FC = () => {
+  const { query } = useRouter<{ oobCode: string }>();
+  const { verifyEmail } = useAuthService();
+
+  useAsync(async () => await verifyEmail(query.oobCode), []);
+
+  return <LoadingPage />;
+};
+
 export const Routing: React.FC = () => {
-  const { user, inited } = useAuthService();
+  const { user, inited, emailVerified } = useAuthService();
+
   return (
     <Router>
+      <WithPageAnalytics />
       <Suspense fallback={<LoadingPage />}>
         {inited ? (
           <>
-            {user && (
+            {user && emailVerified && (
               <WorkspaceServiceProvider>
                 <MainViewRoutes />
               </WorkspaceServiceProvider>
+            )}
+            {user && !emailVerified && (
+              <Switch>
+                <Route path={Routes.VerifyEmail}>
+                  <VerifyEmailRoute />
+                </Route>
+                <Route path={Routes.ConfirmVerifyEmail}>
+                  <ConfirmEmailPage />
+                </Route>
+                <Redirect to={Routes.ConfirmVerifyEmail} />
+              </Switch>
             )}
             {!user && <Auth />}
           </>

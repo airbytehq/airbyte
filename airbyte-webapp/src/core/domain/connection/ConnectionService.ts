@@ -19,4 +19,4 @@ class ConnectionService extends AirbyteRequestService {
   }
 }
 
-export const connectionService = new ConnectionService();
+export { ConnectionService };
