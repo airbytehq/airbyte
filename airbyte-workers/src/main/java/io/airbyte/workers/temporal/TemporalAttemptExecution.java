@@ -116,20 +116,6 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
       mdcSetter.accept(jobRoot);
 
       LOGGER.info("Executing worker wrapper. Airbyte version: {}", new EnvConfigs().getAirbyteVersionOrWarning());
-
-      // There are no shared volumes on Kube; only do this for Docker.
-      // if (new EnvConfigs().getWorkerEnvironment().equals(WorkerEnvironment.DOCKER)) {
-      // LOGGER.debug("Creating local workspace directory..");
-      // jobRootDirCreator.accept(jobRoot);
-      //
-      // // This is actually used in cancellation.
-      // // Can we write this to the database? As part of the attempt?
-      // // DefaultJobPersistence.setLatestAttemptWorkflowId(jobId, workflowId) to get the latest attempt
-      // final String workflowId = workflowIdProvider.get();
-      // final Path workflowIdFile = jobRoot.getParent().resolve(WORKFLOW_ID_FILENAME);
-      // IOs.writeFile(workflowIdFile, workflowId);
-      // }
-
       saveWorkflowIdForCancellation();
 
       final Worker<INPUT, OUTPUT> worker = workerSupplier.get();

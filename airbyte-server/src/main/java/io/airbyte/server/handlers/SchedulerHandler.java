@@ -347,33 +347,37 @@ public class SchedulerHandler {
   public JobInfoRead cancelJob(JobIdRequestBody jobIdRequestBody) throws IOException {
     final long jobId = jobIdRequestBody.getId();
 
-    // first prevent this job from being scheduled again
+    // prevent this job from being scheduled again
     jobPersistence.cancelJob(jobId);
+    cancelExistingTemporalWorkflow(jobId);
 
-    // second cancel the temporal execution
-    // TODO: this is hacky, resolve https://github.com/airbytehq/airbyte/issues/2564 to avoid this
-    // behavior
-    // final Path attemptParentDir = WorkerUtils.getJobRoot(workspaceRoot, String.valueOf(jobId),
-    // 0L).getParent();
-    // final String workflowId = IOs.readFile(attemptParentDir,
-    // TemporalAttemptExecution.WORKFLOW_ID_FILENAME);
-
-    var latestAttemptId = jobPersistence.getJob(jobId).getAttempts().size() - 1; // attempts ids are monotonically increasing starting from 0 and
-                                                                                 // specific to a job id, allowing us to do this.
-    final String workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, latestAttemptId);
-
-    final WorkflowExecution workflowExecution = WorkflowExecution.newBuilder()
-        .setWorkflowId(workflowId)
-        .build();
-    final RequestCancelWorkflowExecutionRequest cancelRequest = RequestCancelWorkflowExecutionRequest.newBuilder()
-        .setWorkflowExecution(workflowExecution)
-        .setNamespace(TemporalUtils.DEFAULT_NAMESPACE)
-        .build();
-
-    temporalService.blockingStub().requestCancelWorkflowExecution(cancelRequest);
     final Job job = jobPersistence.getJob(jobId);
     jobNotifier.failJob("job was cancelled", job);
     return JobConverter.getJobInfoRead(job);
+  }
+
+  private void cancelExistingTemporalWorkflow(long jobId) {
+    String workflowId = null;
+    try {
+      var latestAttemptId = jobPersistence.getJob(jobId).getAttempts().size() - 1; // attempts ids are monotonically increasing starting from 0 and
+                                                                                   // specific to a job id, allowing us to do this.
+      workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, latestAttemptId);
+
+    } catch (Exception e) {
+      LOGGER.info("Skipping temporal workflow cancellation as workflow has not yet been created.");
+    }
+
+    if (workflowId != null) {
+      LOGGER.info("Cancelling workflow: {}", workflowId);
+      final WorkflowExecution workflowExecution = WorkflowExecution.newBuilder()
+          .setWorkflowId(workflowId)
+          .build();
+      final RequestCancelWorkflowExecutionRequest cancelRequest = RequestCancelWorkflowExecutionRequest.newBuilder()
+          .setWorkflowExecution(workflowExecution)
+          .setNamespace(TemporalUtils.DEFAULT_NAMESPACE)
+          .build();
+      temporalService.blockingStub().requestCancelWorkflowExecution(cancelRequest);
+    }
   }
 
   private CheckConnectionRead reportConnectionStatus(final SynchronousResponse<StandardCheckConnectionOutput> response) {

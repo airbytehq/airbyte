@@ -486,6 +486,27 @@ public class AcceptanceTests {
   }
 
   @Test
+  @Order(7)
+  public void testCancelSync() throws Exception {
+    final String connectionName = "test-connection";
+    final UUID sourceId = createPostgresSource().getSourceId();
+    final UUID destinationId = createDestination().getDestinationId();
+    final UUID operationId = createOperation().getOperationId();
+    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+    final SyncMode syncMode = SyncMode.FULL_REFRESH;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
+    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+    final UUID connectionId =
+        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+
+    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.PENDING));
+
+    var resp = apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()));
+    assertEquals(JobStatus.CANCELLED, resp.getJob().getStatus());
+  }
+
+  @Test
   @Order(8)
   public void testIncrementalSync() throws Exception {
     final String connectionName = "test-connection";
