@@ -477,7 +477,10 @@ from {{ from_table }} tmp
 
     def safe_cast_to_strings(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
 
-        return [StreamProcessor.safe_cast_to_string(self.properties[field], column_names[field][1], self.destination_type) for field in column_names]
+        return [
+            StreamProcessor.safe_cast_to_string(self.properties[field], column_names[field][1], self.destination_type)
+            for field in column_names
+        ]
 
     @staticmethod
     def safe_cast_to_string(definition: Dict, column_name: str, destination_type: DestinationType) -> str:
