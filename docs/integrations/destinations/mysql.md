@@ -28,7 +28,8 @@ Each stream will be output into its own table in MySQL. Each table will contain 
 
 To use the MySQL destination, you'll need:
 
-* A MySQL database version 5.7.8 or above
+* To sync data to MySQL **with** normalization MySQL database 8.0.0 or above
+* To sync data to MySQL **without** normalization you'll need MySQL 5.0 or above. 
 
 ### Setup guide
 
