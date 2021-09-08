@@ -14,5 +14,7 @@ Rate limiting is just a standard exponential backoff when you see a 429 HTTP sta
 
 Some of streams supports Incremental sync. Incremental sync available when API endpoint supports one of query params: `date_created` or `date_updated`.
 
+There are not `state_checkpoint_interval` for *activities* and *events* due to impossibility ordering data ascending. 
+
 Also, Close.com source has general stream classes for *activities*, *tasks*, *custom fields*, *connected accounts*, and *bulk actions*.
 It is implemented due to different schema for each of stream.

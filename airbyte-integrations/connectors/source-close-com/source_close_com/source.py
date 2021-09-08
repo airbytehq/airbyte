@@ -131,12 +131,13 @@ class CloseComActivitiesStream(IncrementalCloseComStream):
 
     cursor_field = "date_created"
     number_of_items_per_page = 100
+    state_checkpoint_interval = None
 
     def request_params(self, stream_state=None, **kwargs):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
         if stream_state.get(self.cursor_field):
-            params["date_created__gt"] = stream_state.get(self.cursor_field)
+            params["date_created__gte"] = stream_state.get(self.cursor_field)
         return params
 
     def path(self, **kwargs) -> str:
@@ -240,6 +241,7 @@ class Events(IncrementalCloseComStream):
     """
 
     number_of_items_per_page = 50
+    state_checkpoint_interval = None
 
     def path(self, **kwargs) -> str:
         return "event"
@@ -248,7 +250,7 @@ class Events(IncrementalCloseComStream):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
         if stream_state.get(self.cursor_field):
-            params["date_updated__gt"] = stream_state.get(self.cursor_field)
+            params["date_updated__gte"] = stream_state.get(self.cursor_field)
         return params
 
 
@@ -267,7 +269,7 @@ class Leads(IncrementalCloseComStream):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
         if stream_state.get(self.cursor_field):
-            params["query"] = f"date_updated > {stream_state.get(self.cursor_field)}"
+            params["query"] = f"sort:updated date_updated >= {stream_state.get(self.cursor_field)}"
         return params
 
 
@@ -283,8 +285,9 @@ class CloseComTasksStream(IncrementalCloseComStream):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
         params["_type"] = self._type
+        params["_order_by"] = self.cursor_field
         if stream_state.get(self.cursor_field):
-            params["date_created__gt"] = stream_state.get(self.cursor_field)
+            params["date_created__gte"] = stream_state.get(self.cursor_field)
         return params
 
     def path(self, **kwargs) -> str:
@@ -440,7 +443,7 @@ class Opportunities(IncrementalCloseComStream):
     API Docs: https://developer.close.com/#opportunities
     """
 
-    cursor_field = "date_created"
+    cursor_field = "date_updated"
     number_of_items_per_page = 250
 
     def path(self, **kwargs) -> str:
@@ -449,8 +452,9 @@ class Opportunities(IncrementalCloseComStream):
     def request_params(self, stream_state=None, **kwargs):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
+        params["_order_by"] = self.cursor_field
         if stream_state.get(self.cursor_field):
-            params["date_created__gt"] = stream_state.get(self.cursor_field)
+            params["date_updated__gte"] = stream_state.get(self.cursor_field)
         return params
 
 
