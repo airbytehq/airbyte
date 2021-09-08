@@ -131,7 +131,8 @@
       "type": ["null", "string"]
     },
     "initially_assigned_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "datetime"
     },
     "assigned_at": {
       "type": ["null", "string"],

@@ -86,7 +86,7 @@ class SourceZendeskSupportStream(HttpStream, ABC):
         rate_limit = float(response.headers.get("X-Rate-Limit", 2))
         if rate_limit and rate_limit > 0:
             return (60.0 / rate_limit) * 2
-        return 60
+        return super().backoff_time(response)
 
     @staticmethod
     def str2datetime(str_dt: str) -> datetime:
@@ -218,7 +218,6 @@ class IncrementalExportStream(IncrementalEntityStream, ABC):
                 # try to search all reconds with generated_timestamp > start_time
                 current_state = stream_state.get(self.cursor_field)
                 if current_state and isinstance(current_state, str) and not current_state.isdigit():
-                    # try to save a stage with UnixTime format
                     current_state = self.str2unixtime(current_state)
 
             start_time = int(current_state or time.mktime(self._start_date.timetuple()))
