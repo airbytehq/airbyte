@@ -82,7 +82,6 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
       "airbyte/source-mixpanel-singer",
       "airbyte/source-twilio-singer",
       "airbyte/source-braintree-singer",
-      "airbyte/source-salesforce-singer",
       "airbyte/source-stripe-singer",
       "airbyte/source-exchange-rates",
       "airbyte/source-stripe",

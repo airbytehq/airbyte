@@ -1,0 +1,8 @@
+{
+  "sourceDefinitionId": "b117307c-14b6-41aa-9422-947e34922962",
+  "name": "Salesforce",
+  "dockerRepository": "airbyte/source-salesforce",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/salesforce",
+  "icon": "salesforce.svg"
+}

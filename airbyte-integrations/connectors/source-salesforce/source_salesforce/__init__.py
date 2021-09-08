@@ -23,21 +23,6 @@
 #
 
 
-from setuptools import find_packages, setup
+from .source import SourceSalesforce
 
-setup(
-    name="source-salesforce-singer",
-    description="Source implementation for Salesforce.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    package_data={"": ["*.json"]},
-    install_requires=[
-        "airbyte-protocol",
-        "base-python",
-        "base-singer",
-        "pytest==6.1.2",
-        "requests",
-        "tap-salesforce @ https://github.com/airbytehq/tap-salesforce/tarball/v1.4.38-airbyte",
-    ],
-)
+__all__ = ["SourceSalesforce"]

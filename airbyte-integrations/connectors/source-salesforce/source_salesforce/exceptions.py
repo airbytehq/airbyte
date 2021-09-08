@@ -23,11 +23,7 @@
 #
 
 
-import sys
-
-from base_python.entrypoint import launch
-from source_salesforce_singer import SourceSalesforceSinger
-
-if __name__ == "__main__":
-    source = SourceSalesforceSinger()
-    launch(source, sys.argv[1:])
+class TypeSalesforceException(Exception):
+    """
+    We use this exception for unknown input data types for Salesforce.
+    """
