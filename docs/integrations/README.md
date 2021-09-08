@@ -33,6 +33,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Drupal](./sources/drupal.md)| Beta |
 |[Exchange Rates API](./sources/exchangeratesapi.md)| Certified |
 |[Facebook Marketing](./sources/facebook-marketing.md)| Beta |
+|[Facebook Pages](./sources/facebook-pages.md)| Alpha |
 |[Files](./sources/file.md)| Certified |
 |[Freshdesk](./sources/freshdesk.md)| Certified |
 |[GitHub](./sources/github.md)| Beta |
@@ -123,6 +124,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Local CSV](./destinations/local-csv.md)| Certified |
 |[Local JSON](./destinations/local-json.md)| Certified |
 |[MeiliSearch](./destinations/meilisearch.md)| Beta |
+|[MongoDB](./destinations/mongodb.md)| Alpha |
 |[MySQL](./destinations/mysql.md)| Beta |
 |[Oracle](./destinations/oracle.md)| Alpha |
 |[Postgres](./destinations/postgres.md)| Certified |
