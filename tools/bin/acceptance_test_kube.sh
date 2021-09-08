@@ -56,5 +56,11 @@ kubectl port-forward svc/airbyte-server-svc 8001:8001 &
 echo "Running worker integration tests..."
 SUB_BUILD=PLATFORM  ./gradlew :airbyte-workers:integrationTest --scan
 
+echo "Printing system disk usage..."
+df -h
+
+echo "Printing docker disk usage..."
+docker system df
+
 echo "Running e2e tests via gradle..."
 KUBE=true SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan
