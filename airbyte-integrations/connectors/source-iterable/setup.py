@@ -26,12 +26,12 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk==0.1.3",
-    "pendulum==1.2.0",
-    "requests==2.25.1",
+    "airbyte-cdk~=0.1",
+    "pendulum~=1.2",
+    "requests",
 ]
 
-TEST_REQUIREMENTS = ["pytest==6.1.2"]
+TEST_REQUIREMENTS = ["pytest~=6.1"]
 
 
 setup(
