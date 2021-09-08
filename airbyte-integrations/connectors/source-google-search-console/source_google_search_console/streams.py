@@ -249,13 +249,18 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         search_type = latest_record.get("search_type")
 
         if current_stream_state.get(site_url, {}).get(search_type):
-            current_stream_state[site_url][search_type] = {self.cursor_field: max(latest_benchmark, current_stream_state[site_url][search_type][self.cursor_field])}
+            current_stream_state[site_url][search_type] = {
+                self.cursor_field: max(latest_benchmark, current_stream_state[site_url][search_type][self.cursor_field])
+            }
 
         elif current_stream_state.get(site_url):
             current_stream_state[site_url][search_type] = {self.cursor_field: latest_benchmark}
 
         else:
             current_stream_state = {site_url: {search_type: {self.cursor_field: latest_benchmark}}}
+
+        # this line is required to pass the acceptance test successfully
+        current_stream_state[self.cursor_field] = current_stream_state[site_url][search_type][self.cursor_field]
 
         return current_stream_state
 

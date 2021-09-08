@@ -77,17 +77,21 @@ def test_slice(site_urls, sync_mode):
 @pytest.mark.parametrize(
     "current_stream_state, latest_record, expected",
     [
-        ({"https://example.com": {"web": {"date": "2023-01-01"}}},
-         {"site_url": "https://example.com", "search_type": "web", "date": "2021-01-01"},
-         {"https://example.com": {"web": {"date": "2023-01-01"}}}),
-
-        ({},
-         {"site_url": "https://example.com", "search_type": "web", "date": "2021-01-01"},
-         {"https://example.com": {"web": {"date": "2021-01-01"}}}),
-
-        ({"https://example.com": {"web": {"date": "2021-01-01"}}},
-         {"site_url": "https://example.com", "search_type": "web", "date": "2022-01-01"},
-         {"https://example.com": {"web": {"date": "2022-01-01"}}}),
+        (
+            {"https://example.com": {"web": {"date": "2023-01-01"}}},
+            {"site_url": "https://example.com", "search_type": "web", "date": "2021-01-01"},
+            {"https://example.com": {"web": {"date": "2023-01-01"}}, "date": "2023-01-01"},
+        ),
+        (
+            {},
+            {"site_url": "https://example.com", "search_type": "web", "date": "2021-01-01"},
+            {"https://example.com": {"web": {"date": "2021-01-01"}}, "date": "2021-01-01"},
+        ),
+        (
+            {"https://example.com": {"web": {"date": "2021-01-01"}}},
+            {"site_url": "https://example.com", "search_type": "web", "date": "2022-01-01"},
+            {"https://example.com": {"web": {"date": "2022-01-01"}}, "date": "2022-01-01"},
+        ),
     ],
 )
 def test_state(current_stream_state, latest_record, expected):
