@@ -117,7 +117,10 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
             if (fieldDefinition.has("items")) {
               items = fieldDefinition.get("items");
             } else {
-              items = fieldDefinition;
+              LOGGER.warn("Source connector provided schema for ARRAY with missed \"items\", will assume that it's a String type");
+              // this is handler for case when we get "array" without "items"
+              // (https://github.com/airbytehq/airbyte/issues/5486)
+              items = getTypeStringSchema();
             }
             final Builder subField = getField(namingResolver, fieldName, items).setMode(Mode.REPEATED);
             // "Array of Array of" (nested arrays) are not permitted by BigQuery ("Array of Record of Array of"
@@ -150,6 +153,14 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
       }
     }
     return builder;
+  }
+
+  private static JsonNode getTypeStringSchema() {
+    return Jsons.deserialize("{\n"
+        + "    \"type\": [\n"
+        + "      \"string\"\n"
+        + "    ]\n"
+        + "  }");
   }
 
   private static List<JsonSchemaType> getTypes(String fieldName, JsonNode type) {
