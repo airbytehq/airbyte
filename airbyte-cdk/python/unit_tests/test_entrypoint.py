@@ -152,7 +152,7 @@ def config_mock(mocker, request):
     ],
     indirect=["config_mock"],
 )
-def test_config_validate(entrypoint: AirbyteEntrypoint, mocker, config_mock, schema, config_valid):
+def test_config_validate(entrypoint: AirbyteEntrypoint, mocker, config_mock, schema, config_valid, capsys):
     parsed_args = Namespace(command="check", config="config_path")
     check_value = AirbyteConnectionStatus(status=Status.SUCCEEDED)
     mocker.patch.object(MockSource, "check", return_value=check_value)
@@ -161,9 +161,10 @@ def test_config_validate(entrypoint: AirbyteEntrypoint, mocker, config_mock, sch
         messages = list(entrypoint.run(parsed_args))
         assert [_wrap_message(check_value)] == messages
     else:
-        with pytest.raises(Exception) as ex_info:
+        with pytest.raises(SystemExit):
             list(entrypoint.run(parsed_args))
-        assert "Config validation error:" in str(ex_info.value)
+        out, err = capsys.readouterr()
+        assert "Config validation error:" in out + err
 
 
 def test_run_check(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
