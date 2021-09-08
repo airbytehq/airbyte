@@ -28,12 +28,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Strings;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.DestinationOAuthParameter;
-import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.oauth.MoreOAuthParameters;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.UUID;
 
 public class OAuthConfigSupplier {
@@ -50,12 +48,7 @@ public class OAuthConfigSupplier {
   public JsonNode injectSourceOAuthParameters(UUID sourceDefinitionId, UUID workspaceId, JsonNode sourceConnectorConfig)
       throws IOException {
     try {
-      configRepository.listSourceOAuthParam().stream()
-          .filter(p -> sourceDefinitionId.equals(p.getSourceDefinitionId()))
-          .filter(p -> p.getWorkspaceId() == null || workspaceId.equals(p.getWorkspaceId()))
-          // we prefer params specific to a workspace before global ones (ie workspace is null)
-          .min(Comparator.comparing(SourceOAuthParameter::getWorkspaceId, Comparator.nullsLast(Comparator.naturalOrder()))
-              .thenComparing(SourceOAuthParameter::getOauthParameterId))
+      MoreOAuthParameters.getSourceOAuthParameter(configRepository.listSourceOAuthParam().stream(), workspaceId, sourceDefinitionId)
           .ifPresent(
               sourceOAuthParameter -> injectJsonNode((ObjectNode) sourceConnectorConfig, (ObjectNode) sourceOAuthParameter.getConfiguration()));
       return sourceConnectorConfig;
@@ -67,12 +60,7 @@ public class OAuthConfigSupplier {
   public JsonNode injectDestinationOAuthParameters(UUID destinationDefinitionId, UUID workspaceId, JsonNode destinationConnectorConfig)
       throws IOException {
     try {
-      configRepository.listDestinationOAuthParam().stream()
-          .filter(p -> destinationDefinitionId.equals(p.getDestinationDefinitionId()))
-          .filter(p -> p.getWorkspaceId() == null || workspaceId.equals(p.getWorkspaceId()))
-          // we prefer params specific to a workspace before global ones (ie workspace is null)
-          .min(Comparator.comparing(DestinationOAuthParameter::getWorkspaceId, Comparator.nullsLast(Comparator.naturalOrder()))
-              .thenComparing(DestinationOAuthParameter::getOauthParameterId))
+      MoreOAuthParameters.getDestinationOAuthParameter(configRepository.listDestinationOAuthParam().stream(), workspaceId, destinationDefinitionId)
           .ifPresent(destinationOAuthParameter -> injectJsonNode((ObjectNode) destinationConnectorConfig,
               (ObjectNode) destinationOAuthParameter.getConfiguration()));
       return destinationConnectorConfig;

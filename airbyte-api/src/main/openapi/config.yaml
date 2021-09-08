@@ -2945,20 +2945,30 @@ components:
       type: object
       required:
         - sourceDefinitionId
+        - workspaceId
+        - redirectUrl
       properties:
         sourceDefinitionId:
           $ref: "#/components/schemas/SourceDefinitionId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
+        redirectUrl:
+          description: The url to redirect to after getting the user consent
+          type: string
     DestinationOauthConsentRequest:
       type: object
       required:
         - destinationDefinitionId
+        - workspaceId
+        - redirectUrl
       properties:
         destinationDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
+        redirectUrl:
+          description: The url to redirect to after getting the user consent
+          type: string
     OAuthConsentRead:
       type: object
       required:
@@ -2970,11 +2980,15 @@ components:
       type: object
       required:
         - sourceDefinitionId
+        - workspaceId
       properties:
         sourceDefinitionId:
           $ref: "#/components/schemas/SourceDefinitionId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
+        redirectUrl:
+          description: The url to redirect to after getting the oauth token
+          type: string
         queryParams:
           description: The query parameters present in the redirect URL after a user granted consent e.g auth code
           type: object
@@ -2983,11 +2997,15 @@ components:
       type: object
       required:
         - destinationDefinitionId
+        - workspaceId
       properties:
         destinationDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
+        redirectUrl:
+          description: The url to redirect to after getting the oauth token
+          type: string
         queryParams:
           description: The query parameters present in the redirect URL after a user granted consent e.g auth code
           type: object

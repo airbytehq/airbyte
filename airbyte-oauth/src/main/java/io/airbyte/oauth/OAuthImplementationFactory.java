@@ -25,15 +25,20 @@
 package io.airbyte.oauth;
 
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.config.persistence.ConfigRepository;
 import java.util.Map;
 
 public class OAuthImplementationFactory {
 
-  static final Map<String, OAuthFlowImplementation> OAUTH_FLOW_MAPPING =
-      ImmutableMap.<String, OAuthFlowImplementation>builder()
-          .build();
+  private final Map<String, OAuthFlowImplementation> OAUTH_FLOW_MAPPING;
 
-  public static OAuthFlowImplementation create(String imageName) {
+  public OAuthImplementationFactory(ConfigRepository configRepository) {
+    OAUTH_FLOW_MAPPING = ImmutableMap.<String, OAuthFlowImplementation>builder()
+        .put("airbyte/source-google-analytics-v4", new GoogleOAuthFlow(configRepository))
+        .build();
+  }
+
+  public OAuthFlowImplementation create(String imageName) {
     if (OAUTH_FLOW_MAPPING.containsKey(imageName)) {
       return OAUTH_FLOW_MAPPING.get(imageName);
     } else {
