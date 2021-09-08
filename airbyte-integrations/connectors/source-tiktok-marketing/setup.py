@@ -29,10 +29,8 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.1.7",
 ]
 
-TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-    "source-acceptance-test",
-]
+TEST_REQUIREMENTS = ["pytest~=6.1", "source-acceptance-test", "requests-mock==1.9.3", "timeout-decorator==0.5.0"]
+
 
 setup(
     name="source_tiktok_marketing",

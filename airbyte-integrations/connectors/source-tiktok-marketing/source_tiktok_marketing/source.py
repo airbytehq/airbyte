@@ -23,11 +23,6 @@
 #
 
 
-from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.models import ConnectorSpecification
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 # from airbyte_cdk.models import (
 #     AirbyteCatalog,
 #     AirbyteMessage,
@@ -37,12 +32,17 @@ from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 #     Status,
 #     Type,
 # )
-from typing import Mapping, Any, Tuple, List
-from airbyte_cdk.sources import AbstractSource
-from .spec import SourceTikTokMarketingSpec
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from .streams import (Advertisers, Campaigns, AdGroups, Ads)
+from typing import Any, List, Mapping, Tuple
 
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import ConnectorSpecification, SyncMode
+from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+
+from .spec import SourceTikTokMarketingSpec
+from .streams import AdGroups, Ads, Advertisers, Campaigns
 
 DOCUMENTATION_URL = "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
 
@@ -61,28 +61,25 @@ class TiktokTokenAuthenticator(TokenAuthenticator):
 
 
 class SourceTiktokMarketing(AbstractSource):
-
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
         """Returns the spec for this integration."""
-
         return ConnectorSpecification(
             documentationUrl=DOCUMENTATION_URL,
             changelogUrl=DOCUMENTATION_URL,
             supportsIncremental=True,
-            supported_destination_sync_modes=[
-                DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
+            supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
             connectionSpecification=SourceTikTokMarketingSpec.schema(),
         )
 
-    def _prepare_stream_args(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
+    @staticmethod
+    def _prepare_stream_args(config: Mapping[str, Any]) -> Mapping[str, Any]:
         """Converts an input configure to stream arguments"""
         return {
             "authenticator": TiktokTokenAuthenticator(config["access_token"]),
             "start_time": config.get("start_time") or "1970-01-01",
-
-            "advertiser_id": config['environment'].get("advertiser_id"),
-            "app_id": config['environment'].get("app_id"),
-            "secret": config['environment'].get("secret"),
+            "advertiser_id": config["environment"].get("advertiser_id"),
+            "app_id": config["environment"].get("app_id"),
+            "secret": config["environment"].get("secret"),
         }
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
@@ -90,8 +87,7 @@ class SourceTiktokMarketing(AbstractSource):
         Tests if the input configuration can be used to successfully connect to the integration
         """
         try:
-            next(Advertisers(**self._prepare_stream_args(config)
-                             ).read_records(SyncMode.full_refresh))
+            next(Advertisers(**self._prepare_stream_args(config)).read_records(SyncMode.full_refresh))
         except Exception as err:
             return False, err
         return True, None

@@ -1,5 +1,11 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "todo-abnormal-value"
+  "ads": {
+    "modify_time": "2030-08-30 09:16:10"
+  },
+  "ad_groups": {
+    "modify_time": "2030-08-30 09:16:10"
+  },
+  "campaigns": {
+    "modify_time": "2030-08-30 09:16:10"
   }
 }
