@@ -163,8 +163,8 @@ class IncrementalEntityStream(SourceZendeskSupportStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         # try to save maximum value of a cursor field
         old_value = str((current_stream_state or {}).get(self.cursor_field, ""))
-        new_value = max(str((latest_record or {}).get(self.cursor_field, "")), old_value)
-        return {self.cursor_field: new_value}
+        new_value = str((latest_record or {}).get(self.cursor_field, ""))
+        return {self.cursor_field: max(new_value, old_value)}
 
 
 class IncrementalExportStream(IncrementalEntityStream, ABC):

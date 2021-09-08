@@ -53,7 +53,8 @@
       "type": ["null", "integer"]
     },
     "deleted_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     }
   }
 }
