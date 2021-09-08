@@ -261,6 +261,17 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return getRecordConsumer(bigquery, writeConfigs, catalog, outputRecordCollector, isGcsUploadingMode, isKeepFilesInGcs);
   }
 
+  /**
+   * Despite the fact that uploading to going to be done to GCS, you may see the S3 client
+   * initialization. The S3 client appears to be compatible with GCS and widely used in
+   * destination-gcs connector. Since the destination-gcs connector is partially re-used here - we
+   * also need to init S3 client.
+   *
+   * @param gcsDestinationConfig
+   * @param configuredStream
+   * @return GcsCsvWriter
+   * @throws IOException
+   */
   private GcsCsvWriter initGcsWriter(GcsDestinationConfig gcsDestinationConfig,
                                      ConfiguredAirbyteStream configuredStream)
       throws IOException {
