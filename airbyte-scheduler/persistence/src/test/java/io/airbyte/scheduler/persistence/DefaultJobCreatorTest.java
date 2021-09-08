@@ -53,7 +53,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
-import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -135,7 +134,7 @@ public class DefaultJobCreatorTest {
   @BeforeEach
   void setup() {
     jobPersistence = mock(JobPersistence.class);
-    jobCreator = new DefaultJobCreator(jobPersistence, mock(OAuthConfigSupplier.class));
+    jobCreator = new DefaultJobCreator(jobPersistence);
   }
 
   @Test
