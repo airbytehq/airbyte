@@ -1,6 +1,7 @@
 *
 !Dockerfile
 !entrypoint.sh
+!build/sshtunneling.sh
 !setup.py
 !normalization
 !dbt-project-template

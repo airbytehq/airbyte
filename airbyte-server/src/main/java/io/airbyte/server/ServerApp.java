@@ -235,9 +235,9 @@ public class ServerApp implements ServerRunnable {
       final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(configs.getTemporalHost());
       final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot());
       final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, false);
-      final SchedulerJobClient schedulerJobClient =
-          new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence, oAuthConfigSupplier));
-      final DefaultSynchronousSchedulerClient syncSchedulerClient = new DefaultSynchronousSchedulerClient(temporalClient, jobTracker);
+      final SchedulerJobClient schedulerJobClient = new DefaultSchedulerJobClient(jobPersistence, new DefaultJobCreator(jobPersistence));
+      final DefaultSynchronousSchedulerClient syncSchedulerClient =
+          new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
       final SpecCachingSynchronousSchedulerClient cachingSchedulerClient = new SpecCachingSynchronousSchedulerClient(syncSchedulerClient);
 
       return apiFactory.create(

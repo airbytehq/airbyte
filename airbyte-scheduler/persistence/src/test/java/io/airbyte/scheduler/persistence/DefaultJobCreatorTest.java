@@ -26,8 +26,6 @@ package io.airbyte.scheduler.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -55,7 +53,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
-import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -79,7 +76,6 @@ public class DefaultJobCreatorTest {
 
   private JobPersistence jobPersistence;
   private JobCreator jobCreator;
-  private OAuthConfigSupplier oAuthConfigSupplier;
 
   static {
     final UUID workspaceId = UUID.randomUUID();
@@ -138,12 +134,7 @@ public class DefaultJobCreatorTest {
   @BeforeEach
   void setup() throws IOException {
     jobPersistence = mock(JobPersistence.class);
-    oAuthConfigSupplier = mock(OAuthConfigSupplier.class);
-    jobCreator = new DefaultJobCreator(jobPersistence, oAuthConfigSupplier);
-    when(oAuthConfigSupplier.injectSourceOAuthParameters(any(), any(), eq(SOURCE_CONNECTION.getConfiguration())))
-        .thenReturn(SOURCE_CONNECTION.getConfiguration());
-    when(oAuthConfigSupplier.injectDestinationOAuthParameters(any(), any(), eq(DESTINATION_CONNECTION.getConfiguration())))
-        .thenReturn(DESTINATION_CONNECTION.getConfiguration());
+    jobCreator = new DefaultJobCreator(jobPersistence);
   }
 
   @Test
