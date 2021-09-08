@@ -10,9 +10,9 @@ The Airbyte Oracle destination allows you to sync data to Oracle.
 
 Each stream will be output into its own table in Oracle. Each table will contain 3 columns:
 
-* `airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in Oracle is `VARCHAR(64)`.
-* `airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in Oracle is `TIMESTAMP WITH TIME ZONE`.
-* `airbyte_data`: a json blob representing with the event data. The column type in Oracles is `NCLOB`.
+* `_AIRBYTE_AB_ID`: a uuid assigned by Airbyte to each event that is processed. The column type in Oracle is `VARCHAR(64)`.
+* `_AIRBYTE_EMITTED_AT`: a timestamp representing when the event was pulled from the data source. The column type in Oracle is `TIMESTAMP WITH TIME ZONE`.
+* `_AIRBYTE_DATA`: a json blob representing with the event data. The column type in Oracles is `NCLOB`.
 
 #### Features
 
@@ -21,6 +21,8 @@ Each stream will be output into its own table in Oracle. Each table will contain
 | Full Refresh Sync | Yes |  |
 | Incremental - Append Sync | Yes |  |
 | Namespaces | Yes |  |
+| Basic Normalization | Yes | Only for raw tables, doesn't support for nested json yet |
+
 
 ## Getting started
 
@@ -28,7 +30,8 @@ Each stream will be output into its own table in Oracle. Each table will contain
 
 To use the Oracle destination, you'll need:
 
-* An Oracle server version 11 or above
+* An Oracle server version 18 or above
+* It's possible to use Oracle 12+ but you need to configure the table name length to 120 chars.
 
 ### Setup guide
 
