@@ -211,7 +211,7 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.STANDARD_SYNC_OPERATION, StandardSyncOperation.class);
   }
 
-  public <T> void replaceAllConfigs(final Map<AirbyteConfig, Stream<T>> configs, final boolean dryRun) throws IOException {
+  public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
     persistence.replaceAllConfigs(configs, dryRun);
   }
 

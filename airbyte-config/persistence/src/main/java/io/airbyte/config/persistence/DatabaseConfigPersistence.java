@@ -158,7 +158,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> void replaceAllConfigs(Map<AirbyteConfig, Stream<T>> configs, boolean dryRun) throws IOException {
+  public void replaceAllConfigs(Map<AirbyteConfig, Stream<?>> configs, boolean dryRun) throws IOException {
     if (dryRun) {
       return;
     }
