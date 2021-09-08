@@ -14,8 +14,8 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "user_id": {
-      "type": ["null", "integer"]
+    "user": {
+      "$ref": "user.json"
     },
     "repository": {
       "type": ["null", "string"]
