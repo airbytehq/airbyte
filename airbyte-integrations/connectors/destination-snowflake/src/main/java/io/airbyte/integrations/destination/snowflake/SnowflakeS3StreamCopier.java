@@ -44,7 +44,7 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier {
                                  S3Config s3Config,
                                  ExtendedNameTransformer nameTransformer,
                                  SqlOperations sqlOperations) {
-    super(stagingFolder, destSyncMode, schema, streamName, client, db, s3Config, nameTransformer, sqlOperations);
+    super(stagingFolder, destSyncMode, schema, streamName, streamName + ".csv", client, db, s3Config, nameTransformer, sqlOperations);
   }
 
   @Override

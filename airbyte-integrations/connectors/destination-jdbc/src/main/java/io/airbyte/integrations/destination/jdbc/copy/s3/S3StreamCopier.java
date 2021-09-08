@@ -92,7 +92,7 @@ public abstract class S3StreamCopier implements StreamCopier {
     this.s3Client = client;
     this.s3Config = s3Config;
 
-    this.s3StagingFile = String.join("/", stagingFolder, schemaName, streamName);
+    this.s3StagingFile = prepareS3StagingFile(stagingFolder, streamName);
     LOGGER.info("S3 upload part size: {} MB", s3Config.getPartSize());
     // The stream transfer manager lets us greedily stream into S3. The native AWS SDK does not
     // have support for streaming multipart uploads;
@@ -102,10 +102,10 @@ public abstract class S3StreamCopier implements StreamCopier {
     // configured part size.
     // Memory consumption is queue capacity * part size = 10 * 10 = 100 MB at current configurations.
     this.multipartUploadManager =
-        new StreamTransferManager(s3Config.getBucketName(), s3StagingFile, client)
-            .numUploadThreads(DEFAULT_UPLOAD_THREADS)
-            .queueCapacity(DEFAULT_QUEUE_CAPACITY)
-            .partSize(s3Config.getPartSize());
+            new StreamTransferManager(s3Config.getBucketName(), s3StagingFile, client)
+                    .numUploadThreads(DEFAULT_UPLOAD_THREADS)
+                    .queueCapacity(DEFAULT_QUEUE_CAPACITY)
+                    .partSize(s3Config.getPartSize());
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     // See the above comment.
     this.outputStream = multipartUploadManager.getMultiPartOutputStreams().get(0);
@@ -116,6 +116,47 @@ public abstract class S3StreamCopier implements StreamCopier {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public S3StreamCopier(String stagingFolder,
+                        DestinationSyncMode destSyncMode,
+                        String schema,
+                        String streamName,
+                        String s3FileName,
+                        AmazonS3 client,
+                        JdbcDatabase db,
+                        S3Config s3Config,
+                        ExtendedNameTransformer nameTransformer,
+                        SqlOperations sqlOperations) {
+    this.destSyncMode = destSyncMode;
+    this.schemaName = schema;
+    this.streamName = streamName;
+    this.db = db;
+    this.nameTransformer = nameTransformer;
+    this.sqlOperations = sqlOperations;
+    this.tmpTableName = nameTransformer.getTmpTableName(streamName);
+    this.s3Client = client;
+    this.s3Config = s3Config;
+
+    this.s3StagingFile = prepareS3StagingFile(stagingFolder, s3FileName);
+    LOGGER.info("S3 upload part size: {} MB", s3Config.getPartSize());
+    this.multipartUploadManager =
+        new StreamTransferManager(s3Config.getBucketName(), s3StagingFile, client)
+            .numUploadThreads(DEFAULT_UPLOAD_THREADS)
+            .queueCapacity(DEFAULT_QUEUE_CAPACITY)
+            .partSize(s3Config.getPartSize());
+    this.outputStream = multipartUploadManager.getMultiPartOutputStreams().get(0);
+
+    var writer = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
+    try {
+      this.csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private String prepareS3StagingFile(String stagingFolder, String s3FileName) {
+    return String.join("/", stagingFolder, schemaName, s3FileName);
   }
 
   @Override
