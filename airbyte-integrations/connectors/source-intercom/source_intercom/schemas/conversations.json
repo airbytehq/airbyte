@@ -123,8 +123,7 @@
           "type": ["null", "string"]
         },
         "created_at": {
-          "type": ["null", "integer"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         }
       }
     },
@@ -215,8 +214,7 @@
       "additionalProperties": false,
       "properties": {
         "created_at": {
-          "type": ["null", "integer"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "customer": {
           "type": ["null", "object"],
@@ -251,16 +249,14 @@
       }
     },
     "created_at": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "customer_first_reply": {
       "type": ["null", "object"],
       "additionalProperties": false,
       "properties": {
         "created_at": {
-          "type": ["null", "integer"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "type": {
           "type": ["null", "string"]
@@ -302,12 +298,10 @@
       "type": ["null", "boolean"]
     },
     "sent_at": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "snoozed_until": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "sla_applied": {
       "type": ["null", "object"],
@@ -345,40 +339,31 @@
           "type": ["null", "integer"]
         },
         "first_contact_reply_at": {
-          "type": ["null", "integer"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "first_assignment_at": {
-          "type": ["null", "integer"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "first_admin_reply_at": {
-          "type": ["null", "integer"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "first_close_at": {
-          "type": ["null", "integer"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "last_assignment_at": {
-          "type": ["null", "integer"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "last_assignment_admin_reply_at": {
-          "type": ["null", "integer"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "last_contact_reply_at": {
-          "type": ["null", "integer"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "last_admin_reply_at": {
-          "type": ["null", "integer"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "last_close_at": {
-          "type": ["null", "integer"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "last_closed_by_id": {
           "type": ["null", "integer"]
@@ -401,8 +386,7 @@
         "additionalProperties": false,
         "properties": {
           "applied_at": {
-            "type": ["null", "integer"],
-            "format": "date-time"
+            "type": ["null", "integer"]
           },
           "applied_by": {
             "type": ["null", "object"],
@@ -448,8 +432,7 @@
       }
     },
     "waiting_since": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "admin_assignee_id": {
       "type": ["null", "integer"]

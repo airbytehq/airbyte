@@ -3,8 +3,7 @@
   "additionalProperties": false,
   "properties": {
     "created_at": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "count": {
       "type": ["null", "integer"]
