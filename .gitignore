@@ -14,6 +14,9 @@ data
 secrets
 !airbyte-integrations/connector-templates/**/secrets
 
+# Test logs
+acceptance_tests_logs
+
 # Python
 *.egg-info
 __pycache__
