@@ -699,7 +699,7 @@ class ReactionStream(GithubStream, ABC):
     parent_key = "id"
 
     def __init__(self, **kwargs):
-        self._kwargs = deepcopy(kwargs)
+        self._stream_kwargs = deepcopy(kwargs)
         self._parent_stream = self.parent_entity(**kwargs)
         kwargs.pop("start_date", None)
         super().__init__(**kwargs)
