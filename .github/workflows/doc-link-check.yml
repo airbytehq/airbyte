@@ -3,8 +3,8 @@ name: Doc Link Checker (Full)
 
 on:
   push:
-#    branches:
-#      - master
+    branches:
+      - master
 
 jobs:
   markdown-link-check:
