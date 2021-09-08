@@ -311,7 +311,7 @@ class Salesforce:
         if sf_type in STRING_TYPES:
             property_schema["type"] = ["string", "null"]
         elif sf_type in DATE_TYPES:
-            property_schema = {"type": ["string", "null"], "format": "date-time"}
+            property_schema = {"type": ["string", "null"], "format": "date-time" if sf_type == "datetime" else "date"}
         elif sf_type in NUMBER_TYPES:
             property_schema["type"] = ["number", "null"]
         elif sf_type == "address":
