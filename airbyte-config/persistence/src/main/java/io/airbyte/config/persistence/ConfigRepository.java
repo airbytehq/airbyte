@@ -38,6 +38,7 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -169,35 +170,28 @@ public class ConfigRepository {
   }
 
   public SourceConnection getSourceConnection(final UUID sourceId) throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(ConfigSchema.SOURCE_CONNECTION, sourceId.toString(), SourceConnection.class);
-    // TODO: secretsPersistence
-    // have sourceId available only. Called by WorkspaceHelperTest.
+    return secretsPersistence.getConfig(ConfigSchema.SOURCE_CONNECTION, sourceId.toString(), SourceConnection.class);
   }
 
   public void writeSourceConnection(final SourceConnection source) throws JsonValidationException, IOException {
-    persistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, source.getSourceId().toString(), source);
-    // TODO: secretsPersistence. Called by WorkspaceHelperTest.
+    secretsPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, source.getSourceId().toString(), source);
   }
 
   public List<SourceConnection> listSourceConnection() throws JsonValidationException, IOException {
-    return persistence.listConfigs(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class);
+    return secretsPersistence.listConfigs(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class);
   }
 
   public DestinationConnection getDestinationConnection(final UUID destinationId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return persistence.getConfig(ConfigSchema.DESTINATION_CONNECTION, destinationId.toString(), DestinationConnection.class);
-    // TODO: secretsPersistence
-    // have destinationId available only. Called by WorkspaceHelperTest.
+    return secretsPersistence.getConfig(ConfigSchema.DESTINATION_CONNECTION, destinationId.toString(), DestinationConnection.class);
   }
 
   public void writeDestinationConnection(final DestinationConnection destinationConnection) throws JsonValidationException, IOException {
-    persistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, destinationConnection.getDestinationId().toString(), destinationConnection);
-    // TODO: secretsPersistence on destinationConnection.getConfiguration()
-    // also have destinationConnection.getName() available. Called by WorkspaceHelperTest.
+    secretsPersistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, destinationConnection.getDestinationId().toString(), destinationConnection);
   }
 
   public List<DestinationConnection> listDestinationConnection() throws JsonValidationException, IOException {
-    return persistence.listConfigs(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class);
+    return secretsPersistence.listConfigs(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class);
   }
 
   public StandardSync getStandardSync(final UUID connectionId) throws JsonValidationException, IOException, ConfigNotFoundException {
@@ -225,11 +219,36 @@ public class ConfigRepository {
   }
 
   public <T> void replaceAllConfigs(final Map<AirbyteConfig, Stream<T>> configs, final boolean dryRun) throws IOException {
-    persistence.replaceAllConfigs(configs, dryRun);
+    // if we're using a single persistence layer, this is the easy route.
+    if (persistence == secretsPersistence) {
+      persistence.replaceAllConfigs(configs, dryRun);
+      return;
+    }
+
+    // Or if we're using secrets storage, split into sets by where they should be stored.
+    Map<AirbyteConfig, Stream<T>> secretConfigs = new LinkedHashMap<AirbyteConfig, Stream<T>>();
+    Map<AirbyteConfig, Stream<T>> nonsecretConfigs = new LinkedHashMap<AirbyteConfig, Stream<T>>();
+    for (AirbyteConfig configType : configs.keySet()) {
+      if (configType.isSecret()) {
+        secretConfigs.put(configType, configs.get(configType));
+      } else {
+        nonsecretConfigs.put(configType, configs.get(configType));
+      }
+    }
+    // And store each type in its own persistence store.
+    persistence.replaceAllConfigs(nonsecretConfigs, dryRun);
+    secretsPersistence.replaceAllConfigs(secretConfigs, dryRun);
   }
 
   public Map<String, Stream<JsonNode>> dumpConfigs() throws IOException {
-    return persistence.dumpConfigs();
+    Map<String, Stream<JsonNode>> bothConfigTypes = persistence.dumpConfigs();
+    // Secrets and nonsecrets might be stored separately, and if they are, go looking for the rest.
+    // No need to do that if they're in the same single store, because we don't need duplicates or
+    // double work.
+    if (secretsPersistence != persistence) {
+      bothConfigTypes.putAll(secretsPersistence.dumpConfigs());
+    }
+    return bothConfigTypes;
   }
 
 }

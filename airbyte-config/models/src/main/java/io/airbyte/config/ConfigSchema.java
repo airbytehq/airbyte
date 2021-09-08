@@ -35,37 +35,37 @@ public enum ConfigSchema implements AirbyteConfig {
   STANDARD_WORKSPACE("StandardWorkspace.yaml",
       StandardWorkspace.class,
       standardWorkspace -> standardWorkspace.getWorkspaceId().toString(),
-      "workspaceId"),
+      "workspaceId", false),
 
   // source
   STANDARD_SOURCE_DEFINITION("StandardSourceDefinition.yaml",
       StandardSourceDefinition.class,
       standardSourceDefinition -> standardSourceDefinition.getSourceDefinitionId().toString(),
-      "sourceDefinitionId"),
+      "sourceDefinitionId", false),
   SOURCE_CONNECTION("SourceConnection.yaml",
       SourceConnection.class,
       sourceConnection -> sourceConnection.getSourceId().toString(),
-      "sourceId"),
+      "sourceId", true),
 
   // destination
   STANDARD_DESTINATION_DEFINITION("StandardDestinationDefinition.yaml",
       StandardDestinationDefinition.class,
       standardDestinationDefinition -> standardDestinationDefinition.getDestinationDefinitionId().toString(),
-      "destinationDefinitionId"),
+      "destinationDefinitionId", false),
   DESTINATION_CONNECTION("DestinationConnection.yaml",
       DestinationConnection.class,
       destinationConnection -> destinationConnection.getDestinationId().toString(),
-      "destinationId"),
+      "destinationId", true),
 
   // sync
   STANDARD_SYNC("StandardSync.yaml",
       StandardSync.class,
       standardSync -> standardSync.getConnectionId().toString(),
-      "connectionId"),
+      "connectionId", false),
   STANDARD_SYNC_OPERATION("StandardSyncOperation.yaml",
       StandardSyncOperation.class,
       standardSyncOperation -> standardSyncOperation.getOperationId().toString(),
-      "operationId"),
+      "operationId", false),
   STANDARD_SYNC_SUMMARY("StandardSyncSummary.yaml", StandardSyncSummary.class),
 
   // worker
@@ -82,21 +82,25 @@ public enum ConfigSchema implements AirbyteConfig {
   private final Class<?> className;
   private final Function<?, String> extractId;
   private final String idFieldName;
+  private final boolean isSecret;
 
   <T> ConfigSchema(final String schemaFilename,
                    Class<T> className,
                    Function<T, String> extractId,
-                   String idFieldName) {
+                   String idFieldName,
+                   boolean isSecret) {
     this.schemaFilename = schemaFilename;
     this.className = className;
     this.extractId = extractId;
     this.idFieldName = idFieldName;
+    this.isSecret = isSecret;
   }
 
   <T> ConfigSchema(final String schemaFilename,
                    Class<T> className) {
     this.schemaFilename = schemaFilename;
     this.className = className;
+    this.isSecret = false;
     this.extractId = object -> {
       throw new RuntimeException(className.getSimpleName() + " doesn't have an id");
     };
@@ -110,6 +114,11 @@ public enum ConfigSchema implements AirbyteConfig {
 
   public <T> Class<T> getClassName() {
     return (Class<T>) className;
+  }
+
+  @Override
+  public boolean isSecret() {
+    return isSecret;
   }
 
   @Override

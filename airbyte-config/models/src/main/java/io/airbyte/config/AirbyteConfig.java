@@ -48,4 +48,6 @@ public interface AirbyteConfig {
    */
   File getConfigSchemaFile();
 
+  boolean isSecret();
+
 }

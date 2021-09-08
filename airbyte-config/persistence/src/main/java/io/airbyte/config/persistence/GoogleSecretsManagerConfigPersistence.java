@@ -27,9 +27,11 @@ package io.airbyte.config.persistence;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
+import io.airbyte.config.ConfigSchema;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -43,14 +45,23 @@ public class GoogleSecretsManagerConfigPersistence implements ConfigPersistence 
     this.workspaceId = workspaceId;
   }
 
+  public String getVersion() {
+    return "secrets-v1";
+  }
+
+  public String getWorkspacePattern() {
+    return "workspace-%s".format(workspaceId.toString());
+  }
+
   /**
    * Determines the secrets manager key name for storing a particular config
    */
   protected <T> String generateKeyNameFromType(AirbyteConfig configType, String configId) {
-    return String.format("secrets-v1-workspace-%s-%s-%s-configuration", this.workspaceId, configType.getIdFieldName(), configId);
+    return String.format("%s-%s-%s-%s-configuration", getVersion(), getWorkspacePattern(), configType.getIdFieldName(), configId);
   }
+
   protected <T> String generateKeyPrefixFromType(AirbyteConfig configType) {
-    return String.format("secrets-v1-workspace-%s-%s-", this.workspaceId, configType.getIdFieldName());
+    return String.format("%s-%s-%s-", getVersion(), getWorkspacePattern(), configType.getIdFieldName());
   }
 
   @Override
@@ -72,8 +83,7 @@ public class GoogleSecretsManagerConfigPersistence implements ConfigPersistence 
   @Override
   public <T> void writeConfig(AirbyteConfig configType, String configId, T config) throws JsonValidationException, IOException {
     String keyName = generateKeyNameFromType(configType, configId);
-    String configuration = Jsons.serialize(config);
-    GoogleSecretsManager.saveSecret(keyName, configuration);
+    GoogleSecretsManager.saveSecret(keyName, Jsons.serialize(config));
   }
 
   @Override
@@ -84,13 +94,38 @@ public class GoogleSecretsManagerConfigPersistence implements ConfigPersistence 
 
   @Override
   public <T> void replaceAllConfigs(Map<AirbyteConfig, Stream<T>> configs, boolean dryRun) throws IOException {
-    // TODO Implement
+    if (dryRun) {
+      for (final Map.Entry<AirbyteConfig, Stream<T>> configuration : configs.entrySet()) {
+        configuration.getValue().forEach(Jsons::serialize);
+      }
+      return;
+    }
+    for (final Map.Entry<AirbyteConfig, Stream<T>> configuration : configs.entrySet()) {
+      AirbyteConfig configType = configuration.getKey();
+      configuration.getValue().forEach(config -> {
+        try {
+          GoogleSecretsManager.saveSecret(generateKeyNameFromType(configType, configType.getId(config)), Jsons.serialize(config));
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      });
+    }
   }
 
   @Override
   public Map<String, Stream<JsonNode>> dumpConfigs() throws IOException {
-    // TODO Implement
-    return null;
+    final Map<String, Stream<JsonNode>> configs = new HashMap<>();
+
+    for (AirbyteConfig ctype : new ConfigSchema[] {ConfigSchema.SOURCE_CONNECTION, ConfigSchema.DESTINATION_CONNECTION}) {
+      List<String> names = GoogleSecretsManager.listSecretsMatching(generateKeyPrefixFromType(ctype));
+      final List<JsonNode> configList = new ArrayList<JsonNode>();
+      for (String name : names) {
+        configList.add(Jsons.deserialize(GoogleSecretsManager.readSecret(name), JsonNode.class));
+      }
+      configs.put(ctype.name(), configList.stream());
+    }
+
+    return configs;
   }
 
 }

@@ -25,13 +25,16 @@
 package io.airbyte.config.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.google.common.collect.Sets;
 import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -61,7 +64,7 @@ public class GoogleSecretsManagerConfigPersistenceTest {
   @Test
   void testReadWriteConfig() throws IOException, JsonValidationException, ConfigNotFoundException {
     configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), SOURCE_1);
-    assertEquals(SOURCE_1,
+    Assertions.assertEquals(SOURCE_1,
         configPersistence.getConfig(
             ConfigSchema.STANDARD_SOURCE_DEFINITION,
             UUID_1.toString(),
@@ -73,9 +76,60 @@ public class GoogleSecretsManagerConfigPersistenceTest {
     configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), SOURCE_1);
     configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_2.toString(), SOURCE_2);
 
-    assertEquals(
+    Assertions.assertEquals(
         Sets.newHashSet(SOURCE_1, SOURCE_2),
         Sets.newHashSet(configPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class)));
+  }
+
+  @Test
+  public void testReplaceAllConfigs() throws Exception {
+    /*
+     * writeDestination(configPersistence, DESTINATION_S3); writeDestination(configPersistence,
+     * DESTINATION_SNOWFLAKE);
+     *
+     * final Map<AirbyteConfig, Stream<Object>> newConfigs =
+     * Map.of(ConfigSchema.STANDARD_SOURCE_DEFINITION, Stream.of(SOURCE_GITHUB, SOURCE_POSTGRES));
+     *
+     * configPersistence.replaceAllConfigs(newConfigs, true);
+     *
+     * // dry run does not change anything assertRecordCount(2); assertHasDestination(DESTINATION_S3);
+     * assertHasDestination(DESTINATION_SNOWFLAKE);
+     *
+     * configPersistence.replaceAllConfigs(newConfigs, false); assertRecordCount(2);
+     * assertHasSource(SOURCE_GITHUB); assertHasSource(SOURCE_POSTGRES);
+     */
+    fail();
+  }
+
+  @Test
+  public void testDumpConfigs() throws Exception {
+    /*
+     * writeSource(configPersistence, SOURCE_GITHUB); writeSource(configPersistence, SOURCE_POSTGRES);
+     * writeDestination(configPersistence, DESTINATION_S3); Map<String, Stream<JsonNode>> actual =
+     * configPersistence.dumpConfigs(); Map<String, Stream<JsonNode>> expected = Map.of(
+     * ConfigSchema.STANDARD_SOURCE_DEFINITION.name(), Stream.of(Jsons.jsonNode(SOURCE_GITHUB),
+     * Jsons.jsonNode(SOURCE_POSTGRES)), ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(),
+     * Stream.of(Jsons.jsonNode(DESTINATION_S3))); assertSameConfigDump(expected, actual);
+     */
+    fail();
+  }
+
+  private void assertRecordCount(int expectedCount) throws Exception {
+    // Result<Record1<Integer>> recordCount = database.query(ctx ->
+    // ctx.select(count(asterisk())).from(table("airbyte_configs")).fetch());
+    assertEquals(expectedCount, 999);// TODO: Fix // recordCount.get(0).value1());
+  }
+
+  private void assertHasSource(StandardSourceDefinition source) throws Exception {
+    Assertions.assertEquals(source, configPersistence
+        .getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, source.getSourceDefinitionId().toString(),
+            StandardSourceDefinition.class));
+  }
+
+  private void assertHasDestination(StandardDestinationDefinition destination) throws Exception {
+    Assertions.assertEquals(destination, configPersistence
+        .getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId().toString(),
+            StandardDestinationDefinition.class));
   }
 
 }
