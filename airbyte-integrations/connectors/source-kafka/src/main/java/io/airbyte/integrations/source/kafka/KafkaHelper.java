@@ -32,6 +32,8 @@ import java.util.stream.Collectors;
 
 public class KafkaHelper {
 
+  private KafkaHelper() {}
+
   public static Set<String> getTopicsFromPartitionInfo(JsonNode topicPartitionInfo) {
     String topicPartitions = topicPartitionInfo.get("topic_partitions").asText();
     String[] topicPartitionsStr = topicPartitions.replaceAll("\\s+", "").split(",");
