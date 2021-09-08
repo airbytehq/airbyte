@@ -27,6 +27,7 @@ import argparse
 import json
 import os
 import pkgutil
+import socket
 from enum import Enum
 from typing import Any, Dict
 
@@ -53,6 +54,8 @@ class TransformConfig:
 
         transformed_config = self.transform(integration_type, original_config)
         self.write_yaml_config(inputs["output_path"], transformed_config, "profiles.yml")
+        if self.is_ssh_tunnelling(original_config):
+            self.write_ssh_port(inputs["output_path"], self.pick_a_port())
 
     @staticmethod
     def parse(args):
@@ -105,6 +108,55 @@ class TransformConfig:
         return base_profile
 
     @staticmethod
+    def is_ssh_tunnelling(config: Dict[str, Any]) -> bool:
+        tunnel_methods = ["SSH_KEY_AUTH", "SSH_PASSWORD_AUTH"]
+        if (
+            "tunnel_method" in config.keys()
+            and "tunnel_method" in config["tunnel_method"]
+            and config["tunnel_method"]["tunnel_method"].upper() in tunnel_methods
+        ):
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def is_port_free(port: int) -> bool:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind(("localhost", port))
+            except Exception as e:
+                print(f"port {port} unsuitable: {e}")
+                return False
+            else:
+                print(f"port {port} is free")
+                return True
+
+    @staticmethod
+    def pick_a_port() -> int:
+        """
+        This function finds a free port, starting with 50001 and adding 1 until we find an open port.
+        """
+        port_to_check = 50001  # just past start of dynamic port range (49152:65535)
+        while not TransformConfig.is_port_free(port_to_check):
+            port_to_check += 1
+            # error if we somehow hit end of port range
+            if port_to_check > 65535:
+                raise RuntimeError("Couldn't find a free port to use.")
+        return port_to_check
+
+    @staticmethod
+    def get_ssh_altered_config(config: Dict[str, Any], port_key: str = "port", host_key: str = "host") -> Dict[str, Any]:
+        """
+        This should be called only if ssh tunneling is on.
+        It will return config with appropriately altered port and host values
+        """
+        # make a copy of config rather than mutate in place
+        ssh_ready_config = {k: v for k, v in config.items()}
+        ssh_ready_config[port_key] = TransformConfig.pick_a_port()
+        ssh_ready_config[host_key] = "localhost"
+        return ssh_ready_config
+
+    @staticmethod
     def transform_bigquery(config: Dict[str, Any]):
         print("transform_bigquery")
         # https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile
@@ -126,6 +178,10 @@ class TransformConfig:
     @staticmethod
     def transform_postgres(config: Dict[str, Any]):
         print("transform_postgres")
+
+        if TransformConfig.is_ssh_tunnelling(config):
+            config = TransformConfig.get_ssh_altered_config(config, port_key="port", host_key="host")
+
         # https://docs.getdbt.com/reference/warehouse-profiles/postgres-profile
         dbt_config = {
             "type": "postgres",
@@ -224,6 +280,19 @@ class TransformConfig:
             os.makedirs(output_path)
         with open(os.path.join(output_path, filename), "w") as fh:
             fh.write(yaml.dump(config))
+
+    @staticmethod
+    def write_ssh_port(output_path: str, port: int):
+        """
+        This function writes a small json file with content like {"port":xyz}
+        This is being used only when ssh tunneling.
+        We do this because we need to decide on and save this port number into our dbt config
+        and then use that same port in sshtunneling.sh when opening the tunnel.
+        """
+        if not os.path.exists(output_path):
+            os.makedirs(output_path)
+        with open(os.path.join(output_path, "localsshport.json"), "w") as fh:
+            json.dump({"port": port}, fh)
 
 
 def main(args=None):
