@@ -18,8 +18,7 @@
       "type": ["null", "string"]
     },
     "created_at": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "updated_at": {
       "type": ["null", "string"],
@@ -39,43 +38,61 @@
       "type": ["null", "integer"]
     },
     "tags": {
-      "anyOf": [
-        {
-          "type": ["null", "object"],
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
           "items": {
             "type": ["null", "object"],
-            "additionalProperties": false,
-            "properties": {
-              "id": {
-                "type": ["null", "string"]
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "integer"
+                  }
+                }
               }
-            }
+            ]
           }
-        },
-        {
-          "type": "null"
         }
-      ]
+      }
     },
-
     "segments": {
-      "anyOf": [
-        {
-          "type": ["null", "object"],
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "segments": {
+          "type": "array",
           "items": {
             "type": ["null", "object"],
-            "additionalProperties": false,
-            "properties": {
-              "id": {
-                "type": ["null", "string"]
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                }
               }
-            }
+            ]
           }
-        },
-        {
-          "type": "null"
         }
-      ]
+      }
     },
     "plan": {
       "type": ["null", "object"],
@@ -100,8 +117,7 @@
       "type": ["null", "string"]
     },
     "remote_created_at": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "website": {
       "type": ["null", "string"]
