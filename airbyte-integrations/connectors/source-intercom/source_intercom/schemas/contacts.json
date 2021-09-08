@@ -69,36 +69,29 @@
       "type": ["null", "boolean"]
     },
     "created_at": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "updated_at": {
       "type": ["null", "string"],
       "format": "date-time"
     },
     "signed_up_at": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "last_seen_at": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "last_replied_at": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "last_contacted_at": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "last_email_opened_at": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "last_email_clicked_at": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "language_override": {
       "type": ["null", "string"]
@@ -149,8 +142,7 @@
       "type": ["null", "string"]
     },
     "android_last_seen_at": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "ios_app_name": {
       "type": ["null", "string"]
@@ -168,8 +160,7 @@
       "type": ["null", "string"]
     },
     "ios_last_seen_at": {
-      "type": ["null", "integer"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "custom_attributes": {
       "type": ["null", "object"],

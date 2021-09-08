@@ -22,28 +22,36 @@
  * SOFTWARE.
  */
 
-package io.airbyte.config.persistence;
+package io.airbyte.config;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.config.AirbyteConfig;
-import io.airbyte.validation.json.JsonValidationException;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
+public class MaxWorkersConfig {
 
-public interface ConfigPersistence {
+  private final int maxSpecWorkers;
+  private final int maxCheckWorkers;
+  private final int maxDiscoverWorkers;
+  private final int maxSyncWorkers;
 
-  <T> T getConfig(AirbyteConfig configType, String configId, Class<T> clazz) throws ConfigNotFoundException, JsonValidationException, IOException;
+  public MaxWorkersConfig(final int maxSpecWorkers, final int maxCheckWorkers, final int maxDiscoverWorkers, final int maxSyncWorkers) {
+    this.maxSpecWorkers = maxSpecWorkers;
+    this.maxCheckWorkers = maxCheckWorkers;
+    this.maxDiscoverWorkers = maxDiscoverWorkers;
+    this.maxSyncWorkers = maxSyncWorkers;
+  }
 
-  <T> List<T> listConfigs(AirbyteConfig configType, Class<T> clazz) throws JsonValidationException, IOException;
+  public int getMaxSpecWorkers() {
+    return maxSpecWorkers;
+  }
 
-  <T> void writeConfig(AirbyteConfig configType, String configId, T config) throws JsonValidationException, IOException;
+  public int getMaxCheckWorkers() {
+    return maxCheckWorkers;
+  }
 
-  void deleteConfig(AirbyteConfig configType, String configId) throws ConfigNotFoundException, IOException;
+  public int getMaxDiscoverWorkers() {
+    return maxDiscoverWorkers;
+  }
 
-  void replaceAllConfigs(Map<AirbyteConfig, Stream<?>> configs, boolean dryRun) throws IOException;
-
-  Map<String, Stream<JsonNode>> dumpConfigs() throws IOException;
+  public int getMaxSyncWorkers() {
+    return maxSyncWorkers;
+  }
 
 }
