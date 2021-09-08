@@ -36,7 +36,7 @@ import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.Databases;
 import io.airbyte.db.SqlDatabase;
 import io.airbyte.db.bigquery.BigQueryDatabase;
-import io.airbyte.db.bigquery.BigQueryUtils;
+import io.airbyte.db.bigquery.BigQuerySourceOperations;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
@@ -64,6 +64,7 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
 
   private String quote = "";
   private JsonNode dbConfig;
+  private final BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
 
   @Override
   public JsonNode toDatabaseConfig(JsonNode config) {
@@ -105,7 +106,7 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
 
   @Override
   protected JsonSchemaPrimitive getType(StandardSQLTypeName columnType) {
-    return BigQueryUtils.getType(columnType);
+    return sourceOperations.getType(columnType);
   }
 
   @Override
@@ -161,7 +162,7 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
         enquoteIdentifierList(columnNames),
         getFullTableName(schemaName, tableName),
         cursorField),
-        BigQueryUtils.getQueryParameter(cursorFieldType, cursor));
+        sourceOperations.getQueryParameter(cursorFieldType, cursor));
   }
 
   private AutoCloseableIterator<JsonNode> queryTableWithParams(BigQueryDatabase database, String sqlQuery, QueryParameterValue... params) {

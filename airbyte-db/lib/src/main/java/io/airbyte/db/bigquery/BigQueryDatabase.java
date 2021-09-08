@@ -62,9 +62,15 @@ public class BigQueryDatabase extends SqlDatabase {
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDatabase.class);
 
   private final BigQuery bigQuery;
+  private final BigQuerySourceOperations sourceOperations;
 
   public BigQueryDatabase(String projectId, String jsonCreds) {
+    this(projectId, jsonCreds, new BigQuerySourceOperations());
+  }
+
+  public BigQueryDatabase(String projectId, String jsonCreds, BigQuerySourceOperations sourceOperations) {
     try {
+      this.sourceOperations = sourceOperations;
       BigQueryOptions.Builder bigQueryBuilder = BigQueryOptions.newBuilder();
       ServiceAccountCredentials credentials = null;
       if (jsonCreds != null && !jsonCreds.isEmpty()) {
@@ -122,7 +128,7 @@ public class BigQueryDatabase extends SqlDatabase {
     if (result.getLeft() != null) {
       FieldList fieldList = result.getLeft().getQueryResults().getSchema().getFields();
       return Streams.stream(result.getLeft().getQueryResults().iterateAll())
-          .map(fieldValues -> BigQueryUtils.rowToJson(fieldValues, fieldList));
+          .map(fieldValues -> sourceOperations.rowToJson(new BigQueryResultSet(fieldValues, fieldList)));
     } else
       throw new Exception(
           "Failed to execute query " + sql + (params != null && !params.isEmpty() ? " with params " + params : "") + ". Error: " + result.getRight());

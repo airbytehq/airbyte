@@ -22,14 +22,27 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db.jdbc;
+package io.airbyte.db.bigquery;
 
-public class JdbcUtils {
+import com.google.cloud.bigquery.FieldList;
+import com.google.cloud.bigquery.FieldValueList;
 
-  private static final JdbcSourceOperations defaultSourceOperations = new JdbcSourceOperations();
+public class BigQueryResultSet {
 
-  public static JdbcSourceOperations getDefaultSourceOperations() {
-    return defaultSourceOperations;
+  private final FieldValueList rowValues;
+  private final FieldList fieldList;
+
+  public BigQueryResultSet(FieldValueList rowValues, FieldList fieldList) {
+    this.rowValues = rowValues;
+    this.fieldList = fieldList;
+  }
+
+  public FieldValueList getRowValues() {
+    return rowValues;
+  }
+
+  public FieldList getFieldList() {
+    return fieldList;
   }
 
 }

@@ -190,9 +190,9 @@ public class ConfigDumpImporter {
     // STANDARD_SOURCE_DEFINITION and DESTINATION_CONNECTION before STANDARD_DESTINATION_DEFINITION
     // so that we can identify which definitions should not be upgraded to the latest version
     Collections.sort(directories);
-    final Map<AirbyteConfig, Stream<T>> data = new LinkedHashMap<>();
+    final Map<AirbyteConfig, Stream<?>> data = new LinkedHashMap<>();
 
-    final Map<ConfigSchema, Map<String, T>> seeds = getSeeds(seedPersistence);
+    final Map<ConfigSchema, Map<String, ?>> seeds = getSeeds(seedPersistence);
 
     for (final String directory : directories) {
       final Optional<ConfigSchema> configSchemaOptional = Enums.toEnum(directory.replace(".yaml", ""), ConfigSchema.class);
@@ -202,7 +202,7 @@ public class ConfigDumpImporter {
       }
 
       final ConfigSchema configSchema = configSchemaOptional.get();
-      Stream<T> configs = readConfigsFromArchive(sourceRoot, configSchema);
+      Stream<?> configs = readConfigsFromArchive(sourceRoot, configSchema);
 
       // If there is no source or destination connection, mark them as processed respectively.
       if (configSchema == ConfigSchema.STANDARD_SOURCE_DEFINITION && !data.containsKey(ConfigSchema.SOURCE_CONNECTION)) {
@@ -228,27 +228,27 @@ public class ConfigDumpImporter {
    * Convert config dumps from {@link ConfigPersistence#dumpConfigs} to the desired format.
    */
   @SuppressWarnings("unchecked")
-  private static <T> Map<ConfigSchema, Map<String, T>> getSeeds(ConfigPersistence configSeedPersistence) throws IOException {
-    Map<ConfigSchema, Map<String, T>> allData = new HashMap<>(2);
+  private static Map<ConfigSchema, Map<String, ?>> getSeeds(ConfigPersistence configSeedPersistence) throws IOException {
+    Map<ConfigSchema, Map<String, ?>> allData = new HashMap<>(2);
     for (Map.Entry<String, Stream<JsonNode>> configStream : configSeedPersistence.dumpConfigs().entrySet()) {
       ConfigSchema configSchema = ConfigSchema.valueOf(configStream.getKey());
-      Map<String, T> configSeeds = configStream.getValue()
+      Map<String, ?> configSeeds = configStream.getValue()
           .map(node -> Jsons.object(node, configSchema.getClassName()))
           .collect(Collectors.toMap(
               configSchema::getId,
-              object -> (T) object));
+              object -> object));
       allData.put(configSchema, configSeeds);
     }
     return allData;
   }
 
-  private <T> Stream<T> streamWithAdditionalOperation(Set<String> sourceDefinitionsInUse,
-                                                      Set<String> destinationDefinitionsInUse,
-                                                      boolean[] sourceProcessed,
-                                                      boolean[] destinationProcessed,
-                                                      ConfigSchema configSchema,
-                                                      Stream<T> configs,
-                                                      Map<ConfigSchema, Map<String, T>> latestSeeds) {
+  private Stream<?> streamWithAdditionalOperation(Set<String> sourceDefinitionsInUse,
+                                                  Set<String> destinationDefinitionsInUse,
+                                                  boolean[] sourceProcessed,
+                                                  boolean[] destinationProcessed,
+                                                  ConfigSchema configSchema,
+                                                  Stream<?> configs,
+                                                  Map<ConfigSchema, Map<String, ?>> latestSeeds) {
     if (configSchema == ConfigSchema.SOURCE_CONNECTION) {
       sourceProcessed[0] = true;
       configs = configs.peek(config -> sourceDefinitionsInUse.add(((SourceConnection) config).getSourceDefinitionId().toString()));
@@ -256,10 +256,10 @@ public class ConfigDumpImporter {
       destinationProcessed[0] = true;
       configs = configs.peek(config -> destinationDefinitionsInUse.add(((DestinationConnection) config).getDestinationDefinitionId().toString()));
     } else if (configSchema == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
-      Map<String, T> sourceDefinitionSeeds = latestSeeds.get(configSchema);
+      Map<String, ?> sourceDefinitionSeeds = latestSeeds.get(configSchema);
       configs = getDefinitionStream(sourceDefinitionsInUse, sourceProcessed[0], configSchema, configs, sourceDefinitionSeeds);
     } else if (configSchema == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
-      Map<String, T> destinationDefinitionSeeds = latestSeeds.get(configSchema);
+      Map<String, ?> destinationDefinitionSeeds = latestSeeds.get(configSchema);
       configs = getDefinitionStream(destinationDefinitionsInUse, destinationProcessed[0], configSchema, configs, destinationDefinitionSeeds);
     }
     return configs;
@@ -270,11 +270,11 @@ public class ConfigDumpImporter {
    * user, it will continue to be at the same version, otherwise it will be migrated to the latest
    * version
    */
-  private <T> Stream<T> getDefinitionStream(Set<String> definitionsInUse,
-                                            boolean definitionsPopulated,
-                                            ConfigSchema configSchema,
-                                            Stream<T> currentDefinitions,
-                                            Map<String, T> latestDefinitions) {
+  private Stream<?> getDefinitionStream(Set<String> definitionsInUse,
+                                        boolean definitionsPopulated,
+                                        ConfigSchema configSchema,
+                                        Stream<?> currentDefinitions,
+                                        Map<String, ?> latestDefinitions) {
     if (!definitionsPopulated) {
       throw new RuntimeException("Trying to process " + configSchema + " without populating the definitions in use");
     }
