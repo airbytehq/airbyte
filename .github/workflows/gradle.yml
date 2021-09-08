@@ -245,7 +245,7 @@ jobs:
 
       # todo (cgardens) - scope by platform.
       - name: Check documentation
-        if: success()
+        if: success() && github.ref == 'refs/heads/master'
         run: ./tools/site/link_checker.sh check_docs
 
       # This is only required on the usual github runner. The usual runner does not contain enough disk space for our use.
