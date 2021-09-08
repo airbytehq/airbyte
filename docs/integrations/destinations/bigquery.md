@@ -6,6 +6,15 @@ description: >-
 
 # BigQuery
 
+## Uploading options
+There are 2 available options to upload data to bigquery `Standard` and `GCS Staging`.
+- `Standard` is option to upload data directly from your source to BigQuery storage. This way is faster and requires less resources than GCS one.
+Please be aware you may see some fails for big datasets and slow sources, i.e. if reading from source takes more than 10-12 hours. 
+This is caused by the Google BigQuery SDK client limitations. For more details please check https://github.com/airbytehq/airbyte/issues/3549
+- `GCS Uploading (CSV format)`. This approach has been implemented in order to avoid the issue for big datasets mentioned above.
+At the first step all data is uploaded to GCS bucket and then all moved to BigQuery at one shot stream by stream.
+The destination-gcs connector is partially used under the hood here, so you may check its documentation for more details.
+
 ## Overview
 
 The Airbyte BigQuery destination allows you to sync data to BigQuery. BigQuery is a serverless, highly scalable, and cost-effective data warehouse offered by Google Cloud Provider.
@@ -21,7 +30,7 @@ There are two flavors of connectors for this destination:
 Each stream will be output into its own table in BigQuery. Each table will contain 3 columns:
 
 * `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in BigQuery is `String`.
-* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in BigQuery is `Timestamp`.
+* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in BigQuery is `String`. Due to a Google [limitations](https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv#data_types) for data migration from GCs to BigQuery by its native job - the timestamp (seconds from 1970' can't be used). Only date format, so only String is accepted for us in this case.
 * `_airbyte_data`: a json blob representing with the event data. The column type in BigQuery is `String`.
 
 #### Features
@@ -42,6 +51,10 @@ To use the BigQuery destination, you'll need:
 * A BigQuery Dataset into which Airbyte can sync your data
 * A Google Cloud Service Account with the "BigQuery User" and "BigQuery Data Editor" roles in your GCP project
 * A Service Account Key to authenticate into your Service Account
+
+For GCS Staging upload mode:
+* GCS role enabled for same user as used for biqquery
+* HMAC key obtained for user. Currently, only the [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) is supported. More credential types will be added in the future.
 
 See the setup guide for more information about how to create the required resources.
 
@@ -91,6 +104,27 @@ You should now have all the requirements needed to configure BigQuery as a desti
 
 Once you've configured BigQuery as a destination, delete the Service Account Key from your computer.
 
+For the GCS Staging upload type additional params must be configured:
+
+  * **GCS Bucket Name**
+  * **GCS Bucket Path**
+  * **GCS Bucket Keep files after migration**
+    * See [this](https://cloud.google.com/storage/docs/creating-buckets) to create an S3 bucket.
+  * **HMAC Key Access ID**
+    * See [this](https://cloud.google.com/storage/docs/authentication/hmackeys) on how to generate an access key.
+    * We recommend creating an Airbyte-specific user or service account. This user or account will require read and write permissions to objects in the bucket.
+  * **Secret Access Key**
+    * Corresponding key to the above access ID.
+* Make sure your GCS bucket is accessible from the machine running Airbyte.
+  * This depends on your networking setup.
+  * The easiest way to verify if Airbyte is able to connect to your GCS bucket is via the check connection tool in the UI.
+
+
+Note:
+It partially re-uses the destination-gcs connector under the hood. So you may also refer to its guide for additional clarifications. 
+**GCS Region** for GCS would be used the same as set for BigQuery
+**Format** - Gcs format is set to CSV
+
 ## Notes about BigQuery Naming Conventions
 
 From [BigQuery Datasets Naming](https://cloud.google.com/bigquery/docs/datasets#dataset-naming):
@@ -113,6 +147,7 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
+| 0.4.0 | 2021-08-26 | [#5296](https://github.com/airbytehq/airbyte/issues/5296) | Added GCS Staging uploading option |
 | 0.3.12 | 2021-08-03 | [#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add optional arg to make a possibility to change the BigQuery client's chunk\buffer size |
 | 0.3.11 | 2021-07-30 | [#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
 | 0.3.10 | 2021-07-28 | [#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add extended logs and made JobId filled with region and projectId |
@@ -124,6 +159,7 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
+| 0.1.5 | 2021-09-07 | [#5881](https://github.com/airbytehq/airbyte/pull/5881) | BigQuery Denormalized NPE fix
 | 0.1.4 | 2021-09-04 | [#5813](https://github.com/airbytehq/airbyte/pull/5813) | fix Stackoverflow error when receive a schema from source where "Array" type doesn't contain a required "items" element |
 | 0.1.3 | 2021-08-07 | [#5261](https://github.com/airbytehq/airbyte/pull/5261) | 🐛 Destination BigQuery(Denormalized): Fix processing arrays of records |
 | 0.1.2 | 2021-07-30 | [#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
