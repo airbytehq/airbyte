@@ -8,7 +8,9 @@ This is caused by the Google BigQuery SDK client limitations. For more details p
 At the first step all data is uploaded to GCS bucket and then all moved to BigQuery at one shot stream by stream.
 The destination-gcs connector is partially used under the hood here, so you may check its documentation for more details.
 There is no sense to use this uploading method if your migration doesn't take more than 10 hours and if you don't see the error like this in logs: 
+<!-- markdown-link-check-disable -->
 "PUT https://www.googleapis.com/upload/bigquery/v2/projects/some-project-name/jobs?uploadType=resumable&upload_id=some_randomly_generated_upload_id".
+<!-- markdown-link-check-enable -->
 
 # BigQuery Test Configuration
 
@@ -27,8 +29,8 @@ As a community contributor, you will need access to a GCP project and BigQuery t
 1. Download this key as a JSON file
 1. Create an GCS bucket for testing.
 1. Generate a [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) for the bucket with reading and writing permissions. Please note that currently only the HMAC key credential is supported. More credential types will be added in the future.
-1. Paste the bucket and key information into the config files under [`./sample_secrets`](./sample_secrets).
-1. Rename the directory from `sample_secrets` to `secrets`.
+1. Paste the bucket and key information into the config files under [`./sample_secret`](./sample_secret).
+1. Rename the directory from `sample_secret` to `secrets`.
 1. Feel free to modify the config files with different settings in the acceptance test file as long as they follow the schema defined in [spec.json](src/main/resources/spec.json).
 1. Move and rename this file to `secrets/credentials.json`
 
