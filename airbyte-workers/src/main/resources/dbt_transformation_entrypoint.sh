@@ -34,6 +34,10 @@ if [[ -f "${CWD}/bq_keyfile.json" ]]; then
   cp "${CWD}/bq_keyfile.json" /tmp/bq_keyfile.json
 fi
 
+. $CWD/sshtunneling.sh
+openssh $CWD/destination_config.json $CWD/localsshport.json
+trap 'closessh' EXIT
+
 # Add mandatory flags profiles-dir and project-dir when calling dbt when necessary
 case "${CONTAINS_PROFILES_DIR}-${CONTAINS_PROJECT_DIR}" in
   true-true)
@@ -53,3 +57,5 @@ case "${CONTAINS_PROFILES_DIR}-${CONTAINS_PROJECT_DIR}" in
     dbt $@ "--profiles-dir=${CWD}" "--project-dir=${CWD}/git_repo" --profile normalize
     ;;
 esac
+
+closessh

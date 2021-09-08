@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.base;
 
+import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.protocol.models.AirbyteMessage;
 
@@ -55,5 +56,30 @@ public interface AirbyteMessageConsumer extends CheckedConsumer<AirbyteMessage, 
 
   @Override
   void close() throws Exception;
+
+  /**
+   * Append a function to be called on {@link AirbyteMessageConsumer#close}.
+   */
+  static AirbyteMessageConsumer appendOnClose(final AirbyteMessageConsumer consumer, final VoidCallable voidCallable) {
+    return new AirbyteMessageConsumer() {
+
+      @Override
+      public void start() throws Exception {
+        consumer.start();
+      }
+
+      @Override
+      public void accept(final AirbyteMessage message) throws Exception {
+        consumer.accept(message);
+      }
+
+      @Override
+      public void close() throws Exception {
+        consumer.close();
+        voidCallable.call();
+      }
+
+    };
+  }
 
 }

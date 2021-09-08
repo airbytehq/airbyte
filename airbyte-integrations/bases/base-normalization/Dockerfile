@@ -17,8 +17,11 @@ RUN pip install cx_Oracle
 
 COPY --from=airbyte/base-airbyte-protocol-python:0.1.1 /airbyte /airbyte
 
+RUN apt-get update && apt-get install -y jq sshpass
+
 WORKDIR /airbyte
 COPY entrypoint.sh .
+COPY build/sshtunneling.sh .
 
 WORKDIR /airbyte/normalization_code
 COPY normalization ./normalization
@@ -42,5 +45,5 @@ WORKDIR /airbyte
 ENV AIRBYTE_ENTRYPOINT "/airbyte/entrypoint.sh"
 ENTRYPOINT ["/airbyte/entrypoint.sh"]
 
-LABEL io.airbyte.version=0.1.43
+LABEL io.airbyte.version=0.1.44
 LABEL io.airbyte.name=airbyte/normalization
