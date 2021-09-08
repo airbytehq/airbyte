@@ -66,7 +66,7 @@ public class MigrationCurrentSchemaTest {
   // from the output schema of the last migration. make sure they match.
   @Test
   @Disabled
-  //TODO(#5902): Liren will adapt this to the new migration system.
+  // TODO(#5902): Liren will adapt this to the new migration system.
   void testJobsOfLastMigrationMatchSource() {
     final Map<ResourceId, JsonNode> lastMigrationSchema = getSchemaOfLastMigration(ResourceType.JOB);
     final Map<ResourceId, JsonNode> currentSchema = MigrationUtils.getNameToSchemasFromResourcePath(

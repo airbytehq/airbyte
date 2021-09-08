@@ -111,7 +111,8 @@ class TemporalAttemptExecutionTest {
         JOB_RUN_CONFIG, execution,
         () -> "",
         mdcSetter,
-        mock(CancellationHandler.class), () -> "workflow_id",
+        mock(CancellationHandler.class),
+        () -> "workflow_id",
         configs);
   }
 

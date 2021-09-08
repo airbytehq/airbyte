@@ -38,7 +38,7 @@ public class V0_29_15_001__Add_temporalWorkflowId_col_to_Attempts extends BaseJa
     // As database schema changes, the generated jOOQ code can be deprecated. So
     // old migration may not compile if there is any generated code.
     DSLContext ctx = DSL.using(context.getConnection());
-    ctx.alterTable("attempts").addColumn(DSL.field("temporal_workflow_id", SQLDataType.VARCHAR.nullable(true)))
+    ctx.alterTable("attempts").addColumn(DSL.field("temporal_workflow_id", SQLDataType.VARCHAR(256).nullable(true)))
         .execute();
   }
 
