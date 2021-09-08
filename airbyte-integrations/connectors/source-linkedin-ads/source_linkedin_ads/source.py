@@ -131,7 +131,6 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
     def parent_stream(self) -> object:
         """ Defines the parrent stream for slicing, the class object should be provided. """
 
-
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
         """ Define the checkpoint from the records output size. """
@@ -172,13 +171,15 @@ class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream):
         else:
             yield from records_slice
 
-    def read_records(self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         parent_stream = self.parent_stream(config=self.config)
         for record in parent_stream.read_records(**kwargs):
             child_stream_slice = super().read_records(stream_slice=get_parent_stream_values(record, self.parent_values_map), **kwargs)
             yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=child_stream_slice)
-    
+
 
 class AccountUsers(LinkedInAdsStreamSlicing):
     """
