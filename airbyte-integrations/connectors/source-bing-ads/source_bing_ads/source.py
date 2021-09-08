@@ -378,7 +378,7 @@ class CampaignPerformanceReportDaily(CampaignPerformanceReport):
     report_aggregation = "Daily"
 
 
-class CampaignPerformanceReporteekly(CampaignPerformanceReport):
+class CampaignPerformanceReportWeekly(CampaignPerformanceReport):
     report_aggregation = "Weekly"
 
 
@@ -607,10 +607,10 @@ class SourceBingAds(AbstractSource):
     def get_report_streams(self, aggregation_type: str) -> List[Stream]:
         return [
             globals()[f"AccountPerformanceReport{aggregation_type}"],
-            globals()[f'KeywordPerformanceReport{aggregation_type}'],
-            globals()[f'AdGroupPerformanceReport{aggregation_type}'],
-            globals()[f'AdPerformanceReport{aggregation_type}'],
-            globals()[f'CampaignPerformanceReport{aggregation_type}'],
+            globals()[f"KeywordPerformanceReport{aggregation_type}"],
+            globals()[f"AdGroupPerformanceReport{aggregation_type}"],
+            globals()[f"AdPerformanceReport{aggregation_type}"],
+            globals()[f"CampaignPerformanceReport{aggregation_type}"],
         ]
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

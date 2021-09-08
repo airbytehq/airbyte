@@ -60,6 +60,10 @@ API limits number of requests for all Microsoft Advertising clients. You can fin
 * client_id: Id generated during application registration
 * reports_start_date: From which date report generation should start
 * report_aggregation: Defines how report data will be aggregated
+* hourly_reports: includes hourly report streams if true
+* daily_reports: includes daily report streams if true
+* weekly_reports: includes weekly report streams if true
+* monthly_reports: includes monthly report streams if true
 
 ### Setup guide
 

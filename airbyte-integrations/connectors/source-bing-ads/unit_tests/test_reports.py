@@ -37,6 +37,7 @@ class TestClient:
 class TestReport(ReportsMixin, SourceBingAds):
     date_format, report_columns, report_name, cursor_field = "YYYY-MM-DD", None, None, "Time"
     report_aggregation = "Monthly"
+    report_schema_name = "campaign_performance_report"
 
     def __init__(self) -> None:
         self.client = TestClient()

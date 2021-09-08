@@ -38,7 +38,7 @@
     },
     {
       "stream": {
-        "name": "account_performance_report_hourly",
+        "name": "account_performance_report_weekly",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"]
       },
@@ -58,7 +58,7 @@
     },
     {
       "stream": {
-        "name": "ad_group_performance_report_hourly",
+        "name": "ad_group_performance_report_weekly",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"]
       },
@@ -78,7 +78,7 @@
     },
     {
       "stream": {
-        "name": "ad_performance_report_hourly",
+        "name": "ad_performance_report_weekly",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"]
       },
@@ -108,7 +108,7 @@
     },
     {
       "stream": {
-        "name": "campaign_performance_report_hourly",
+        "name": "campaign_performance_report_weekly",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"]
       },
@@ -128,7 +128,7 @@
     },
     {
       "stream": {
-        "name": "keyword_performance_report_hourly",
+        "name": "keyword_performance_report_weekly",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"]
       },

@@ -31,7 +31,7 @@ Initially all fields in report streams have string values, connector uses `repor
 
 Connector uses `reports_start_date` config for initial reports sync and current date as an end data.
 
-Connector has `report_aggregation` config which allows to select aggregation time range. Available options: Daily, Hourly, Weekly, Monthly
+Connector has `hourly_reports`, `daily_reports`, `weekly_reports`, `monthly_reports` configs which allows to enable appropriate report streams. For example `account_performance_report_daily`, `ad_group_performance_report_daily` etc ... By default all report streams are disabled
 
 ## Request caching
 
