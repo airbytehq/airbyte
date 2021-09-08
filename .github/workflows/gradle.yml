@@ -478,6 +478,11 @@ jobs:
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
           GOOGLE_CLOUD_STORAGE_TEST_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
 
+      - name: Show Disk Usage
+        run: |
+          df -h
+          docker system df
+
       - name: Run Kubernetes End-to-End Acceptance Tests
         env:
           USER: root
