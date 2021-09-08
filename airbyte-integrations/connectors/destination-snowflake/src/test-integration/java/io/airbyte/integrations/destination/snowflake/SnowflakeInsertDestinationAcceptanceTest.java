@@ -129,7 +129,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     return SnowflakeDatabase.getDatabase(getConfig()).bufferedResultSetQuery(
         connection -> connection.createStatement()
             .executeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT)),
-        JdbcUtils::rowToJson);
+        JdbcUtils.getDefaultSourceOperations()::rowToJson);
   }
 
   // for each test we create a new schema in the database. run the test in there and then remove it.

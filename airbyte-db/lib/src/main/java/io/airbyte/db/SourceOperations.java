@@ -22,14 +22,15 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db.jdbc;
+package io.airbyte.db;
 
-public class JdbcUtils {
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 
-  private static final JdbcSourceOperations defaultSourceOperations = new JdbcSourceOperations();
+public interface SourceOperations<QueryResult, SourceType> {
 
-  public static JdbcSourceOperations getDefaultSourceOperations() {
-    return defaultSourceOperations;
-  }
+  JsonNode rowToJson(QueryResult queryResult) throws Exception;
+
+  JsonSchemaPrimitive getType(SourceType sourceType);
 
 }

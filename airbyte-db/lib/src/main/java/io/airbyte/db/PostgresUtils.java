@@ -36,7 +36,8 @@ public class PostgresUtils {
   public static PgLsn getLsn(JdbcDatabase database) throws SQLException {
     // pg version 10+.
     final List<JsonNode> jsonNodes = database
-        .bufferedResultSetQuery(conn -> conn.createStatement().executeQuery("SELECT pg_current_wal_lsn()"), JdbcUtils::rowToJson);
+        .bufferedResultSetQuery(conn -> conn.createStatement().executeQuery("SELECT pg_current_wal_lsn()"),
+            resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
 
     Preconditions.checkState(jsonNodes.size() == 1);
     return PgLsn.fromPgString(jsonNodes.get(0).get("pg_current_wal_lsn").asText());

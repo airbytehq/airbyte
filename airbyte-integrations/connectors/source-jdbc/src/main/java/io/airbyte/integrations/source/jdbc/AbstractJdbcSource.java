@@ -34,6 +34,7 @@ import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.Databases;
 import io.airbyte.db.SqlDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Source;
@@ -80,11 +81,20 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
 
   private final String driverClass;
   private final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration;
+  protected final JdbcSourceOperations sourceOperations;
+
   private String quoteString;
 
   public AbstractJdbcSource(final String driverClass, final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration) {
+    this(driverClass, jdbcStreamingQueryConfiguration, JdbcUtils.getDefaultSourceOperations());
+  }
+
+  public AbstractJdbcSource(final String driverClass,
+                            final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration,
+                            JdbcSourceOperations sourceOperations) {
     this.driverClass = driverClass;
     this.jdbcStreamingQueryConfiguration = jdbcStreamingQueryConfiguration;
+    this.sourceOperations = sourceOperations;
   }
 
   /**
@@ -95,7 +105,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
   public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(JsonNode config) throws Exception {
     return ImmutableList.of(database -> {
       LOGGER.info("Attempting to get metadata from the database to see if we can connect.");
-      database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils::rowToJson);
+      database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), sourceOperations::rowToJson);
     });
   }
 
@@ -246,7 +256,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
               LOGGER.info("Executing query for table: {}", tableName);
               return preparedStatement;
             },
-            JdbcUtils::rowToJson);
+            sourceOperations::rowToJson);
         return AutoCloseableIterators.fromStream(stream);
       } catch (SQLException e) {
         throw new RuntimeException(e);
@@ -269,6 +279,10 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
 
     return database;
+  }
+
+  protected JdbcSourceOperations getSourceOperations() {
+    return JdbcUtils.getDefaultSourceOperations();
   }
 
 }

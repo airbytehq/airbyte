@@ -34,11 +34,11 @@ import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.FieldValue;
 import com.google.cloud.bigquery.FieldValue.Attribute;
-import com.google.cloud.bigquery.FieldValueList;
 import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DataTypeUtils;
+import io.airbyte.db.SourceOperations;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -48,21 +48,22 @@ import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQueryUtils {
+public class BigQuerySourceOperations implements SourceOperations<BigQueryResultSet, StandardSQLTypeName> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUtils.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySourceOperations.class);
 
-  public static final DateFormat BIG_QUERY_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
-  public static final DateFormat BIG_QUERY_DATETIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-  public static final DateFormat BIG_QUERY_TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS z");
+  private final DateFormat BIG_QUERY_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+  private final DateFormat BIG_QUERY_DATETIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+  private final DateFormat BIG_QUERY_TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS z");
 
-  public static JsonNode rowToJson(FieldValueList rowValues, FieldList fieldList) {
+  @Override
+  public JsonNode rowToJson(BigQueryResultSet bigQueryResultSet) {
     ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-    fieldList.forEach(field -> setJsonField(field, rowValues.get(field.getName()), jsonNode));
+    bigQueryResultSet.getFieldList().forEach(field -> setJsonField(field, bigQueryResultSet.getRowValues().get(field.getName()), jsonNode));
     return jsonNode;
   }
 
-  private static void fillObjectNode(String fieldName, StandardSQLTypeName fieldType, FieldValue fieldValue, ObjectNode node) {
+  private void fillObjectNode(String fieldName, StandardSQLTypeName fieldType, FieldValue fieldValue, ObjectNode node) {
     switch (fieldType) {
       case BOOL -> node.put(fieldName, fieldValue.getBooleanValue());
       case INT64 -> node.put(fieldName, fieldValue.getLongValue());
@@ -79,7 +80,7 @@ public class BigQueryUtils {
     }
   }
 
-  private static void setJsonField(Field field, FieldValue fieldValue, ObjectNode node) {
+  private void setJsonField(Field field, FieldValue fieldValue, ObjectNode node) {
     String fieldName = field.getName();
     if (fieldValue.getAttribute().equals(Attribute.PRIMITIVE)) {
       if (fieldValue.isNull()) {
@@ -113,7 +114,7 @@ public class BigQueryUtils {
     }
   }
 
-  public static Date getDateValue(FieldValue fieldValue, DateFormat dateFormat) {
+  public Date getDateValue(FieldValue fieldValue, DateFormat dateFormat) {
     Date parsedValue = null;
     String value = fieldValue.getStringValue();
     try {
@@ -124,7 +125,8 @@ public class BigQueryUtils {
     return parsedValue;
   }
 
-  public static JsonSchemaPrimitive getType(StandardSQLTypeName bigQueryType) {
+  @Override
+  public JsonSchemaPrimitive getType(StandardSQLTypeName bigQueryType) {
     return switch (bigQueryType) {
       case BOOL -> JsonSchemaPrimitive.BOOLEAN;
       case INT64, FLOAT64, NUMERIC, BIGNUMERIC -> JsonSchemaPrimitive.NUMBER;
@@ -135,7 +137,7 @@ public class BigQueryUtils {
     };
   }
 
-  private static String getFormattedValue(StandardSQLTypeName paramType, String paramValue) {
+  private String getFormattedValue(StandardSQLTypeName paramType, String paramValue) {
     try {
       return switch (paramType) {
         case DATE -> BIG_QUERY_DATE_FORMAT.format(DataTypeUtils.DATE_FORMAT.parse(paramValue));
@@ -150,7 +152,7 @@ public class BigQueryUtils {
     }
   }
 
-  public static QueryParameterValue getQueryParameter(StandardSQLTypeName paramType, String paramValue) {
+  public QueryParameterValue getQueryParameter(StandardSQLTypeName paramType, String paramValue) {
     String value = getFormattedValue(paramType, paramValue);
     LOGGER.info("Query parameter for set : " + value + ". Type: " + paramType.name());
     return QueryParameterValue.newBuilder().setType(paramType).setValue(value).build();

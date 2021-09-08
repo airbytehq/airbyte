@@ -106,7 +106,7 @@ class SqlOperationsUtilsTest {
 
     final List<JsonNode> actualRecords = database.bufferedResultSetQuery(
         connection -> connection.createStatement().executeQuery("SELECT * FROM RIVERS"),
-        JdbcUtils::rowToJson);
+        JdbcUtils.getDefaultSourceOperations()::rowToJson);
 
     final List<JsonNode> expectedRecords = Lists.newArrayList(
         Jsons.jsonNode(ImmutableMap.builder()
