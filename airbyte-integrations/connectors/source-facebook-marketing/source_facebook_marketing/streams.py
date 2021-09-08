@@ -46,7 +46,13 @@ from .common import FacebookAPIException, JobTimeoutException, batch, deep_merge
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
 
-def remove_params_from_url(url, params):
+def remove_params_from_url(url: str, params: [str]) -> str:
+    """
+    Parses a URL and removes the query parameters specified in params
+    :param url: URL
+    :param params: list of query parameters
+    :return: URL with params removed
+    """
     parsed = urlparse.urlparse(url)
     query = urlparse.parse_qs(parsed.query, keep_blank_values=True)
     filtered = dict((k, v) for k, v in query.items() if k not in params)
