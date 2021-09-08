@@ -88,19 +88,16 @@
       "null",
       {
         "type": "record",
-        "name": "_object_field",
-        "doc":"_airbyte_original_name:object_field",
+        "name": "object_field",
         "fields": [
           {
-            "name": "_id",
+            "name": "id",
             "type": ["null", "int"],
-            "doc":"_airbyte_original_name:id",
             "default": null
           },
           {
-            "name": "_node_id",
+            "name": "node_id",
             "type": ["null", "string"],
-            "doc":"_airbyte_original_name:node_id",
             "default": null
           }
         ]

@@ -13,14 +13,12 @@
     },
     "avroSchema": {
       "type": "record",
-      "name": "_simple_schema",
+      "name": "simple_schema",
       "namespace": "namespace1",
-      "doc":"_airbyte_original_name:simple_schema",
       "fields": [
         {
-          "name": "_node_id",
+          "name": "node_id",
           "type": ["null", "string"],
-          "doc":"_airbyte_original_name:node_id",
           "default": null
         }
       ]
@@ -51,42 +49,36 @@
     },
     "avroSchema": {
       "type": "record",
-      "name": "_nested_record",
+      "name": "nested_record",
       "namespace": "namespace2",
-      "doc":"_airbyte_original_name:nested_record",
       "fields": [
         {
-          "name": "_node_id",
+          "name": "node_id",
           "type": ["null", "string"],
-          "doc":"_airbyte_original_name:node_id",
           "default": null
         },
         {
-          "name": "_user",
+          "name": "user",
           "type": [
             "null",
             {
               "type": "record",
-              "name": "_user",
+              "name": "user",
               "namespace": "",
-              "doc":"_airbyte_original_name:user",
               "fields": [
                 {
-                  "name": "_first_name",
+                  "name": "first_name",
                   "type": ["null", "string"],
-                  "doc":"_airbyte_original_name:first_name",
                   "default": null
                 },
                 {
-                  "name": "_last_name",
+                  "name": "last_name",
                   "type": ["null", "string"],
-                  "doc":"_airbyte_original_name:last_name",
                   "default": null
                 }
               ]
             }
           ],
-          "doc":"_airbyte_original_name:user",
           "default": null
         }
       ]
@@ -106,9 +98,8 @@
     },
     "avroSchema": {
       "type": "record",
-      "name": "_record_with_airbyte_fields",
+      "name": "record_with_airbyte_fields",
       "namespace": "namespace3",
-      "doc":"_airbyte_original_name:record_with_airbyte_fields",
       "fields": [
         {
           "name": "_airbyte_ab_id",
@@ -125,9 +116,8 @@
           }
         },
         {
-          "name": "_node_id",
+          "name": "node_id",
           "type": ["null", "string"],
-          "doc":"_airbyte_original_name:node_id",
           "default": null
         }
       ]
@@ -147,12 +137,12 @@
     },
     "avroSchema": {
       "type": "record",
-      "name": "_name_with_special_characters",
+      "name": "name_with_special_characters",
       "namespace": "namespace4",
       "doc": "_airbyte_original_name:name_with:spécial:characters",
       "fields": [
         {
-          "name": "_node_id",
+          "name": "node_id",
           "doc": "_airbyte_original_name:node:id",
           "type": ["null", "string"],
           "default": null
@@ -174,14 +164,12 @@
     },
     "avroSchema": {
       "type": "record",
-      "name": "_record_with_union_type",
+      "name": "record_with_union_type",
       "namespace": "namespace5",
-      "doc":"_airbyte_original_name:record_with_union_type",
       "fields": [
         {
-          "name": "_identifier",
+          "name": "identifier",
           "type": ["null", "double", "string"],
-          "doc":"_airbyte_original_name:identifier",
           "default": null
         }
       ]
@@ -204,12 +192,11 @@
     },
     "avroSchema": {
       "type": "record",
-      "name": "_array_with_same_type",
+      "name": "array_with_same_type",
       "namespace": "namespace6",
-      "doc":"_airbyte_original_name:array_with_same_type",
       "fields": [
         {
-          "name": "_identifier",
+          "name": "identifier",
           "type": [
             "null",
             {
@@ -217,7 +204,6 @@
               "items": ["null", "string"]
             }
           ],
-          "doc":"_airbyte_original_name:identifier",
           "default": null
         }
       ]
@@ -251,12 +237,11 @@
     },
     "avroSchema": {
       "type": "record",
-      "name": "_array_with_union_type",
+      "name": "array_with_union_type",
       "namespace": "namespace7",
-      "doc":"_airbyte_original_name:array_with_union_type",
       "fields": [
         {
-          "name": "_identifiers",
+          "name": "identifiers",
           "type": [
             "null",
             {
@@ -264,7 +249,6 @@
               "items": ["null", "string", "int", "boolean"]
             }
           ],
-          "doc":"_airbyte_original_name:identifiers",
           "default": null
         }
       ]
@@ -294,14 +278,12 @@
     },
     "avroSchema": {
       "type": "record",
-      "name": "_field_with_combined_restriction",
+      "name": "field_with_combined_restriction",
       "namespace": "namespace8",
-      "doc":"_airbyte_original_name:field_with_combined_restriction",
       "fields": [
         {
-          "name": "_created_at",
+          "name": "created_at",
           "type": ["null", "string", "int"],
-          "doc":"_airbyte_original_name:created_at",
           "default": null
         }
       ]
@@ -336,30 +318,26 @@
     },
     "avroSchema": {
       "type": "record",
-      "name": "_record_with_combined_restriction_field",
+      "name": "record_with_combined_restriction_field",
       "namespace": "namespace9",
-      "doc":"_airbyte_original_name:record_with_combined_restriction_field",
       "fields": [
         {
-          "name": "_user",
+          "name": "user",
           "type": [
             "null",
             {
               "type": "record",
-              "name": "_user",
+              "name": "user",
               "namespace": "",
-              "doc":"_airbyte_original_name:user",
               "fields": [
                 {
-                  "name": "_created_at",
+                  "name": "created_at",
                   "type": ["null", "string", "int"],
-                  "doc":"_airbyte_original_name:created_at",
                   "default": null
                 }
               ]
             }
           ],
-          "doc":"_airbyte_original_name:user",
           "default": null
         }
       ]
@@ -386,12 +364,11 @@
     },
     "avroSchema": {
       "type": "record",
-      "name": "_array_with_combined_restriction_field",
+      "name": "array_with_combined_restriction_field",
       "namespace": "namespace10",
-      "doc":"_airbyte_original_name:array_with_combined_restriction_field",
       "fields": [
         {
-          "name": "_identifiers",
+          "name": "identifiers",
           "type": [
             "null",
             {
@@ -399,7 +376,6 @@
               "items": ["null", "int", "string", "boolean"]
             }
           ],
-          "doc":"_airbyte_original_name:identifiers",
           "default": null
         }
       ]

@@ -37,7 +37,15 @@ public class S3NameTransformer extends ExtendedNameTransformer {
 
   @Override
   public String getIdentifier(String name) {
-    return "_" + convertStreamName(name);
+    return checkFirsCharInStreamName(convertStreamName(name));
+  }
+
+  private String checkFirsCharInStreamName(String name) {
+    if (name.substring(0, 1).matches("\\d")) {
+      return "_" + name;
+    } else {
+      return name;
+    }
   }
 
 }
