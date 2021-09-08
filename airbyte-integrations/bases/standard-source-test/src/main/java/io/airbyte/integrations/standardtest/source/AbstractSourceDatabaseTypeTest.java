@@ -139,7 +139,6 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
       if (jsonNode.isArray()) {
         return jsonNode.toString();
       }
-
       String value = jsonNode.asText();
       value = (value != null && value.equals("null") ? null : value);
       return value;
