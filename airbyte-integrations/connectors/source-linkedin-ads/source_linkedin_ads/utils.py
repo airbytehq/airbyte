@@ -27,7 +27,7 @@ from typing import Any, Dict, Iterable, List, Mapping
 import pendulum as pdm
 
 
-def make_slice(record: Dict, key_value_map: Dict) -> Dict:
+def get_parent_stream_values(record: Dict, key_value_map: Dict) -> Dict:
     """
     Outputs the Dict with key:value slices for the stream.
     :: EXAMPLE:

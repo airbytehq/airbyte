@@ -23,7 +23,7 @@
 #
 
 
-from abc import ABC
+from abc import ABC, abstractproperty
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import urlencode
 
@@ -36,7 +36,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 from .analytics import make_analytics_slices, merge_chunks, update_analytics_params
-from .utils import make_slice, transform_data
+from .utils import get_parent_stream_values, transform_data
 
 
 class LinkedinAdsStream(HttpStream, ABC):
@@ -126,12 +126,12 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
             in : {"k1": "v1", "k2": "v2", ...}
             out : "k1"
         """
-        return list(self.slice_key_value_map.keys())[0]
+        return list(self.parent_values_map.keys())[0]
 
-    @property
-    def slice_from_stream(self) -> object:
+    @abstractproperty
+    def parent_stream(self) -> object:
         """ Defines the parrent stream for slicing, the class object should be provided. """
-        return self.slice_from_stream
+
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
@@ -146,15 +146,15 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
 class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream):
     """
     This class stands for provide stream slicing for other dependent streams.
-    :: `slice_from_stream` - the reference to the parent stream class,
+    :: `parent_stream` - the reference to the parent stream class,
         by default it's referenced to the Accounts stream class, as far as majority of streams are using it.
-    :: `slice_key_value_map` - key_value map for stream slices in a format: {<slice_key_name>: <key inside record>}
+    :: `parent_values_map` - key_value map for stream slices in a format: {<slice_key_name>: <key inside record>}
     :: `search_param` - the query param to pass with request_params
     :: `search_param_value` - the value for `search_param` to pass with request_params
     """
 
-    slice_from_stream = Accounts
-    slice_key_value_map = {"account_id": "id"}
+    parent_stream = Accounts
+    parent_values_map = {"account_id": "id"}
     # define default additional request params
     search_param = "search.account.values[0]"
     search_param_value = "urn:li:sponsoredAccount:"
@@ -173,15 +173,13 @@ class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream):
         else:
             yield from records_slice
 
-    def read_records(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
-    ) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
-        parent_stream = self.slice_from_stream(config=self.config)
+        parent_stream = self.parent_stream(config=self.config)
         for record in parent_stream.read_records(**kwargs):
-            child_stream_slice = super().read_records(stream_slice=make_slice(record, self.slice_key_value_map), **kwargs)
+            child_stream_slice = super().read_records(stream_slice=get_parent_stream_values(record, self.parent_values_map), **kwargs)
             yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=child_stream_slice)
-
+    
 
 class AccountUsers(LinkedInAdsStreamSlicing):
     """
@@ -228,8 +226,8 @@ class Creatives(LinkedInAdsStreamSlicing):
     """
 
     endpoint = "adCreativesV2"
-    slice_from_stream = Campaigns
-    slice_key_value_map = {"campaign_id": "id"}
+    parent_stream = Campaigns
+    parent_values_map = {"campaign_id": "id"}
     search_param = "search.campaign.values[0]"
     search_param_value = "urn:li:sponsoredCampaign:"
 
@@ -244,7 +242,7 @@ class AdDirectSponsoredContents(LinkedInAdsStreamSlicing):
     endpoint = "adDirectSponsoredContents"
     # AdDirectSponsoredContents stream doesn't have `id` property, so the "account" is used instead.
     primary_key = "account"
-    slice_key_value_map = {"account_id": "id", "reference_id": "reference"}
+    parent_values_map = {"account_id": "id", "reference_id": "reference"}
     search_param = "account"
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
@@ -280,10 +278,10 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {self.cursor_field: self.start_date}
-        parent_stream = self.slice_from_stream(config=self.config)
+        parent_stream = self.parent_stream(config=self.config)
         result_chunks = []
-        for record in parent_stream.read_records(sync_mode=SyncMode.full_refresh):
-            for analytics_slice in make_analytics_slices(record, self.slice_key_value_map, stream_state.get(self.cursor_field)):
+        for record in parent_stream.read_records(**kwargs):
+            for analytics_slice in make_analytics_slices(record, self.parent_values_map, stream_state.get(self.cursor_field)):
                 child_stream_slice = super().read_records(stream_slice=analytics_slice, **kwargs)
                 result_chunks.append(child_stream_slice)
             yield from merge_chunks(result_chunks, self.cursor_field)
@@ -295,8 +293,8 @@ class AdCampaignAnalytics(LinkedInAdsAnalyticsStream):
     See the AnalyticsStreamMixin class for more information.
     """
 
-    slice_from_stream = Campaigns
-    slice_key_value_map = {"campaign_id": "id"}
+    parent_stream = Campaigns
+    parent_values_map = {"campaign_id": "id"}
     search_param = "campaigns[0]"
     search_param_value = "urn:li:sponsoredCampaign:"
     pivot_by = "CAMPAIGN"
@@ -308,8 +306,8 @@ class AdCreativeAnalytics(LinkedInAdsAnalyticsStream):
     See the AnalyticsStreamMixin class for more information.
     """
 
-    slice_from_stream = Creatives
-    slice_key_value_map = {"creative_id": "id"}
+    parent_stream = Creatives
+    parent_values_map = {"creative_id": "id"}
     search_param = "creatives[0]"
     search_param_value = "urn:li:sponsoredCreative:"
     pivot_by = "CREATIVE"

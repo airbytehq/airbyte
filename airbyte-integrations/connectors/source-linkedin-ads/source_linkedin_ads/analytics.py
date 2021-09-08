@@ -27,7 +27,7 @@ from typing import Any, Dict, Iterable, List, Mapping
 
 import pendulum as pdm
 
-from .utils import make_slice
+from .utils import get_parent_stream_values
 
 # LinkedIn has a max of 20 fields per request. We make chunks by size of 17 fields
 # to have the `dateRange`, `pivot`, and `pivotValue` be included as well.
@@ -156,7 +156,7 @@ def make_analytics_slices(record: Dict, key_value_map: Dict, start_date: str, en
     The output of this method is ready slices for analytics streams:
     """
     # define the base_slice
-    base_slice = make_slice(record, key_value_map)
+    base_slice = get_parent_stream_values(record, key_value_map)
     # add chunked fields, date_slices to the base_slice
     analytics_slices = []
     for fields_set in chunk_analytics_fields():
