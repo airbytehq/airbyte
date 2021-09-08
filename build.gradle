@@ -117,6 +117,7 @@ allprojects {
                 ":airbyte-db:lib",
                 ":airbyte-migration",
                 ":airbyte-scheduler:app",
+                ":airbyte-workers",
                 ":airbyte-server",
                 ":airbyte-webapp",
         ].toSet().asImmutable()

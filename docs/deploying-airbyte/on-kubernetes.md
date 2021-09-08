@@ -145,6 +145,14 @@ Now visit [http://localhost:8000](http://localhost:8000) in your browser and sta
 * Volume sizes
   * You can modify `kube/resources/volume-*` files to specify different volume sizes for the persistent volumes backing Airbyte.
 
+### Increasing job parallelism
+
+The number of simultaneous jobs (getting specs, checking connections, discovering schemas, and performing syncs) is limited by a few factors. First of all, the `SUBMITTER_NUM_THREADS` (set in the `.env` file for your Kustimization overlay) provides a global limit on the number of simultaneous jobs that can run across all worker pods. 
+
+The number of worker pods can be changed by increasing the number of replicas for the `airbyte-worker` deployment. An example of a Kustomization patch that increases this number can be seen in `airbyte/kube/overlays/dev-integration-test/kustomization.yaml` and `airbyte/kube/overlays/dev-integration-test/parallelize-worker.yaml`. The number of simultaneous jobs on a specific worker pod is also limited by the number of ports exposed by the worker deployment and set by `TEMPORAL_WORKER_PORTS` in your `.env` file. Without additional ports used to communicate to connector pods, jobs will start to run but will hang until ports become available. 
+
+You can also tune environment variables for the max simultaneous job types that can run on the worker pod by setting `MAX_SPEC_WORKERS`, `MAX_CHECK_WORKERS`, `MAX_DISCOVER_WORKERS`, `MAX_SYNC_WORKERS` for the worker pod deployment (not in the `.env` file). These values can be used if you want to create separate worker deployments for separate types of workers with different resource allocations.
+
 ### Cloud logging
 
 Airbyte writes logs to two directories. App logs, including server and scheduler logs, are written to the `app-logging` directory.

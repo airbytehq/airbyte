@@ -29,6 +29,20 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: airbyte-worker
+spec:
+  template:
+    spec:
+      containers:
+        - name: airbyte-worker-container
+          resources:
+            limits:
+              cpu: 2
+              memory: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
   name: airbyte-server
 spec:
   template:

@@ -25,6 +25,7 @@ if(!System.getenv().containsKey("SUB_BUILD")) {
 }
 
 // shared
+include ':airbyte-api'
 include ':airbyte-commons'
 include ':airbyte-commons-docker'
 include ':airbyte-json-validation'
@@ -38,7 +39,6 @@ include ':airbyte-test-utils'
 // platform
 if(!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
     include ':airbyte-analytics'
-    include ':airbyte-api'
     include ':airbyte-cli'
     include ':airbyte-db:jooq'
     include ':airbyte-config:init'

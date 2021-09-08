@@ -13,3 +13,4 @@ resources:
   - volume-configs.yaml
   - volume-db.yaml
   - webapp.yaml
+  - worker.yaml
