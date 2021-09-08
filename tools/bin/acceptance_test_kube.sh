@@ -12,6 +12,7 @@ echo "Loading images into KIND..."
 kind load docker-image airbyte/server:dev --name chart-testing
 kind load docker-image airbyte/scheduler:dev --name chart-testing
 kind load docker-image airbyte/webapp:dev --name chart-testing
+kind load docker-image airbyte/worker:dev --name chart-testing
 kind load docker-image airbyte/db:dev --name chart-testing
 
 echo "Starting app..."
