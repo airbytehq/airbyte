@@ -645,16 +645,90 @@ class Commits(IncrementalGithubStream):
         "committer",
     )
 
-    def transform(self, record: MutableMapping[str, Any], repository: str = None, **kwargs) -> MutableMapping[str, Any]:
+    def __init__(self, branches_to_pull: Mapping[str, List[str]], **kwargs):
+        super().__init__(**kwargs)
+        self.branches_to_pull = branches_to_pull
+
+    """
+    Pull commits from each branch of each repository, tracking state for each branch
+    """
+
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+        params["sha"] = stream_slice["branch"]
+        return params
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        for stream_slice in super().stream_slices(**kwargs):
+            repository = stream_slice["repository"]
+            for branch in self.branches_to_pull.get(repository, []):
+                yield {"branch": branch, "repository": repository}
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        for record in response.json():  # GitHub puts records in an array.
+            yield self.transform(record=record, repository=stream_slice["repository"], branch=stream_slice["branch"])
+
+    def transform(self, record: MutableMapping[str, Any], repository: str = None, branch: str = None, **kwargs) -> MutableMapping[str, Any]:
         record = super().transform(record=record, repository=repository)
 
         # Record of the `commits` stream doesn't have an updated_at/created_at field at the top level (so we could
         # just write `record["updated_at"]` or `record["created_at"]`). Instead each record has such value in
         # `commit.author.date`. So the easiest way is to just enrich the record returned from API with top level
         # field `created_at` and use it as cursor_field.
+        # Include the branch in the record
         record["created_at"] = record["commit"]["author"]["date"]
+        record["branch"] = branch
 
         return record
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        state_value = latest_cursor_value = latest_record.get(self.cursor_field)
+        current_repository = latest_record["repository"]
+        current_branch = latest_record["branch"]
+
+        if current_stream_state.get(current_repository, {}).get(current_branch, {}).get(self.cursor_field):
+            state_value = max(latest_cursor_value, current_stream_state[current_repository][current_branch][self.cursor_field])
+        if current_repository not in current_stream_state:
+            current_stream_state[current_repository] = {}
+        current_stream_state[current_repository][current_branch] = {self.cursor_field: state_value}
+        return current_stream_state
+
+    def get_starting_point(self, stream_state: Mapping[str, Any], repository: str, branch: str = None) -> str:
+        if not branch:
+            return super().get_starting_point(stream_state=stream_state, repository=repository)
+
+        start_point = self._start_date
+
+        if stream_state and stream_state.get(repository, {}).get(branch, {}).get(self.cursor_field):
+            start_point = max(start_point, stream_state[repository][branch][self.cursor_field])
+
+        return start_point
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        repository = stream_slice["repository"]
+        branches_stream = Branches(authenticator=self.authenticator, repositories=[repository])
+        branches = [branch["name"] for branch in branches_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)]
+
+        start_point_map = {branch: self.get_starting_point(stream_state=stream_state, repository=repository, branch=branch) for branch in branches}
+        for record in super(SemiIncrementalGithubStream, self).read_records(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+        ):
+            if record.get(self.cursor_field) > start_point_map[stream_slice["branch"]]:
+                yield record
+            elif self.is_sorted_descending and record.get(self.cursor_field) < start_point_map[stream_slice["branch"]]:
+                break
 
 
 class Issues(IncrementalGithubStream):

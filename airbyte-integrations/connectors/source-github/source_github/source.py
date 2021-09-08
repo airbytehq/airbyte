@@ -102,10 +102,32 @@ class SourceGithub(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self._get_authenticator(config["access_token"])
         repositories = self._generate_repositories(config=config, authenticator=authenticator)
-        organizations = list({org.split("/")[0] for org in repositories})
+        organizations = list(set({org.split("/")[0] for org in repositories}))
         full_refresh_args = {"authenticator": authenticator, "repositories": repositories}
         incremental_args = {**full_refresh_args, "start_date": config["start_date"]}
         organization_args = {"authenticator": authenticator, "organizations": organizations}
+
+        # Get the default branch for each repository
+        default_branches = {}
+        repository_stream = Repositories(authenticator=authenticator, organizations=organizations)
+        for stream in repository_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+            default_branches.update({r["full_name"]: r["default_branch"] for r in repository_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream)})
+
+        # Create mapping of repository to list of branches to pull commits for
+        # If no branches are specified for a repo, use its default branch
+        branches = set(filter(None, config.get("branch", "").split(" ")))
+        branches_to_pull: Mapping[str, List[str]] = {}
+        for branch in branches:
+            parts = branch.split("/", 2)
+            repo = parts[0] + "/" + parts[1]
+            if repo not in repositories:
+                continue
+            if repo not in branches_to_pull:
+                branches_to_pull[repo] = []
+            branches_to_pull[repo].append(parts[2])
+        for repo in repositories:
+            if not branches_to_pull.get(repo, []):
+                branches_to_pull[repo] = [default_branches[repo]]
 
         return [
             Assignees(**full_refresh_args),
@@ -113,7 +135,7 @@ class SourceGithub(AbstractSource):
             Collaborators(**full_refresh_args),
             Comments(**incremental_args),
             CommitComments(**incremental_args),
-            Commits(**incremental_args),
+            Commits(**{**incremental_args, "branches_to_pull": branches_to_pull}),
             Events(**incremental_args),
             IssueEvents(**incremental_args),
             IssueLabels(**full_refresh_args),
