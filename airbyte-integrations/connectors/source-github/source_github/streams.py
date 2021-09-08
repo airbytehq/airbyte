@@ -25,6 +25,7 @@
 import os
 import time
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
 
@@ -696,9 +697,9 @@ class ReviewComments(IncrementalGithubStream):
 class ReactionStream(GithubStream, ABC):
 
     parent_key = "id"
-    fields_to_minimize = ("user",)
 
     def __init__(self, **kwargs):
+        self._kwargs = deepcopy(kwargs)
         self._parent_stream = self.parent_entity(**kwargs)
         kwargs.pop("start_date", None)
         super().__init__(**kwargs)
