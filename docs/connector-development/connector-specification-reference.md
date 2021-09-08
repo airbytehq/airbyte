@@ -1,6 +1,9 @@
 # Connector Specification Reference
 The [connector specification](../understanding-airbyte/airbyte-specification.md#spec) describes what inputs can be used to configure a connector. Like the rest of the Airbyte Protocol, it uses [JsonSchema](https://json-schema.org), but with some slight modifications.  
 
+{% hint style="info" %}
+While iterating on your specification, you can preview what it will look like in the UI in realtime by following the instructions [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-webapp/docs/HowTo-ConnectionSpecification.md).
+{% endhint %}
 
 ### Secret obfuscation
 By default, any fields in a connector's specification are visible can be read in the UI. However, if you want to obfuscate fields in the UI and API (for example when working with a password), add the `airbyte_secret` annotation to your connector's `spec.json` e.g: 
@@ -119,4 +122,3 @@ be displayed with adapting the file source spec to this example:
   }
 } 
 ```
-
