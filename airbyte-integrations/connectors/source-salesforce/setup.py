@@ -23,10 +23,24 @@
 #
 
 
-from source_salesforce_singer import SourceSalesforceSinger
+from setuptools import find_packages, setup
 
-CONNECTOR = SourceSalesforceSinger()
+MAIN_REQUIREMENTS = ["airbyte-cdk", "vcrpy==4.1.1"]
 
+TEST_REQUIREMENTS = [
+    "pytest~=6.1",
+    "source-acceptance-test",
+]
 
-def test_transform_config_adds_is_sandbox_if_empty():
-    assert {"is_sandbox": False, "select_fields_by_default": True} == CONNECTOR.transform_config({})
+setup(
+    name="source_salesforce",
+    description="Source implementation for Salesforce.",
+    author="Airbyte",
+    author_email="contact@airbyte.io",
+    packages=find_packages(),
+    install_requires=MAIN_REQUIREMENTS,
+    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
+    extras_require={
+        "tests": TEST_REQUIREMENTS,
+    },
+)
