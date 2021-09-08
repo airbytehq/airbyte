@@ -80,10 +80,10 @@ class SourceZendeskSupportStream(HttpStream, ABC):
         retry_after = int(response.headers.get("Retry-After", 0))
         if retry_after and retry_after > 0:
             return int(retry_after)
+
         # the header X-Rate-Limit returns a amount of requests per minute
         # we try to wait twice as long
-
-        rate_limit = float(response.headers.get("X-Rate-Limit", 2))
+        rate_limit = float(response.headers.get("X-Rate-Limit", 0))
         if rate_limit and rate_limit > 0:
             return (60.0 / rate_limit) * 2
         return super().backoff_time(response)

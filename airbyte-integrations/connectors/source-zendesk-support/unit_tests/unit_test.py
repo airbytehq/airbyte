@@ -49,22 +49,22 @@ class TestZendeskSupport(TestCase):
         """Zendesk sends the header different value for backoff logic"""
 
         stream = Tags(**self.prepare_stream_args())
-        default_timeout = 60
+        default_timeout = None
         with requests_mock.Mocker() as m:
             url = stream.url_base + stream.path()
 
             # with the Retry-After header > 0
-            m.get(url, headers={"Retry-After": str(123)})
+            m.get(url, headers={"Retry-After": str(123)}, status_code=429)
             assert stream.backoff_time(requests.get(url)) == 123
             # with the Retry-After header < 0,  must return a default value
-            m.get(url, headers={"Retry-After": str(-123)})
+            m.get(url, headers={"Retry-After": str(-123)}, status_code=429)
             assert stream.backoff_time(requests.get(url)) == default_timeout
 
             # with the Retry-After header > 0
-            m.get(url, headers={"X-Rate-Limit": str(100)})
+            m.get(url, headers={"X-Rate-Limit": str(100)}, status_code=429)
             assert (stream.backoff_time(requests.get(url)) - 1.2) < 0.0005
             # with the Retry-After header < 0,  must return a default value
-            m.get(url, headers={"X-Rate-Limit": str(-100)})
+            m.get(url, headers={"X-Rate-Limit": str(-100)}, status_code=429)
             assert stream.backoff_time(requests.get(url)) == default_timeout
 
             # without rate headers
