@@ -65,8 +65,7 @@ public class DefaultJobCreator implements JobCreator {
   }
 
   @Override
-  public long createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImageName)
-      throws IOException {
+  public long createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImageName) throws IOException {
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
         .withConnectionConfiguration(destination.getConfiguration())
         .withDockerImage(dockerImageName);
