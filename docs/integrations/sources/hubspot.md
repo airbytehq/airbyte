@@ -39,7 +39,7 @@ Several output streams are available from this source:
 
 The connector is restricted by normal Hubspot [rate limitations](https://legacydocs.hubspot.com/apps/api_guidelines).
 
-When connector reads the stream using `API Key` that doesn't have neccessary permissions to read particular stream, like `workflows`, which requires to be enabled in order to be processed, the log message returned to the output and sync operation goes on with other streams available. 
+When connector reads the stream using `API Key` that doesn't have neccessary permissions to read particular stream, like `workflows`, which requires to be enabled in order to be processed, the log message returned to the output and sync operation goes on with other streams available.
 
 Example of the output message when trying to read `workflows` stream with missing permissions for the `API Key`:
 ```
@@ -73,7 +73,9 @@ This connector supports only authentication with API Key. To obtain API key for 
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.11   | 2021-08-26 | [5463](https://github.com/airbytehq/airbyte/pull/5463) | Remove all date-time format from schemas |
+| 0.1.13   | 2021-09-08 | [5834](https://github.com/airbytehq/airbyte/pull/5834) | Fixed array fields without items property in schema |
+| 0.1.12   | 2021-09-02 | [5798](https://github.com/airbytehq/airbyte/pull/5798) | Treat empty string values as None for field with format to fix normalization errors |
+| 0.1.11   | 2021-08-26 | [5685](https://github.com/airbytehq/airbyte/pull/5685) | Remove all date-time format from schemas |
 | 0.1.10   | 2021-08-17 | [5463](https://github.com/airbytehq/airbyte/pull/5463) | Fix fail on reading stream using `API Key` without required permissions |
 | 0.1.9   | 2021-08-11 | [5334](https://github.com/airbytehq/airbyte/pull/5334) | Fix empty strings inside float datatype |
 | 0.1.8   | 2021-08-06 | [5250](https://github.com/airbytehq/airbyte/pull/5250) | Fix issue with printing exceptions |
