@@ -64,7 +64,7 @@ docker system df
 
 if [ -n "$CI" ]; then
   echo "Pruning all images..."
-  docker image prune -all
+  docker image prune --all
 
   echo "Printing system disk usage after pruning..."
   df -h
