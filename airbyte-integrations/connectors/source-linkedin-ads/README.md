@@ -102,10 +102,14 @@ If your connector requires to create or destroy resources for use during accepta
 To run your integration tests with acceptance tests, from the connector root, run
 ```
 docker build . --no-cache -t airbyte/source-linkedin-ads:dev \
-&& python -m pytest integration_tests -p integration_tests.acceptance
+&& python -m pytest -p source_acceptance_test.plugin
 ```
 
-To run your integration tests with docker
+To run your acceptance-tests with pre-build connector docker image:
+From `.venv` of the connector, run:
+```
+python -m pytest -p source_acceptance_test.plugin
+```
 
 ### Using gradle to run tests
 All commands should be run from airbyte project root.

@@ -44,7 +44,7 @@ def make_slice(record: Dict, key_value_map: Dict) -> Dict:
     for key in key_value_map:
         value = record[key_value_map.get(key)]
         if value:
-            result.update(**{key: value})
+            result[key] = value
     return result
 
 

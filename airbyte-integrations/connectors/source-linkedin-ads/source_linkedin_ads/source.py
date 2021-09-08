@@ -51,7 +51,7 @@ class LinkedinAdsStream(HttpStream, ABC):
     def __init__(self, config: Dict):
         super().__init__(authenticator=config.get("authenticator"))
         self.start_date = config.get("start_date")
-        self.accounts = config.get("account_ids", None)
+        self.accounts = ",".join(map(str, config.get("account_ids")))
         self.config = config
 
     def path(self, **kwargs) -> str:
@@ -109,8 +109,7 @@ class Accounts(LinkedinAdsStream):
         """
         params = super().request_params(stream_state=stream_state, **kwargs)
         if self.accounts:
-            account_list = ",".join(map(str, self.accounts))
-            params["search"] = f"(id:(values:List({account_list})))"
+            params["search"] = f"(id:(values:List({self.accounts})))"
             return urlencode(params, safe=":(),")
         return params
 
@@ -135,18 +134,16 @@ class IncrementalLinkedinAdsStream(LinkedinAdsStream):
         return self.slice_from_stream
 
     @property
-    def interval(self) -> str:
+    def state_checkpoint_interval(self) -> Optional[int]:
         """ Define the checkpoint from the records output size. """
         return super().records_limit
-
-    state_checkpoint_interval = interval
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = {self.cursor_field: self.start_date} if not current_stream_state else current_stream_state
         return {self.cursor_field: max(latest_record.get(self.cursor_field), current_stream_state.get(self.cursor_field))}
 
 
-class StreamMixin(IncrementalLinkedinAdsStream):
+class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream):
     """
     This class stands for provide stream slicing for other dependent streams.
     :: `slice_from_stream` - the reference to the parent stream class,
@@ -181,12 +178,12 @@ class StreamMixin(IncrementalLinkedinAdsStream):
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         parent_stream = self.slice_from_stream(config=self.config)
-        for record in parent_stream.read_records(sync_mode=SyncMode.full_refresh):
+        for record in parent_stream.read_records(**kwargs):
             child_stream_slice = super().read_records(stream_slice=make_slice(record, self.slice_key_value_map), **kwargs)
             yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=child_stream_slice)
 
 
-class AccountUsers(StreamMixin):
+class AccountUsers(LinkedInAdsStreamSlicing):
     """
     Get AccountUsers data using `account_id` slicing. More info about LinkedIn Ads / AccountUsers:
     https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-account-users?tabs=http
@@ -203,7 +200,7 @@ class AccountUsers(StreamMixin):
         return params
 
 
-class CampaignGroups(StreamMixin):
+class CampaignGroups(LinkedInAdsStreamSlicing):
     """
     Get CampaignGroups data using `account_id` slicing.
     More info about LinkedIn Ads / CampaignGroups:
@@ -213,7 +210,7 @@ class CampaignGroups(StreamMixin):
     endpoint = "adCampaignGroupsV2"
 
 
-class Campaigns(StreamMixin):
+class Campaigns(LinkedInAdsStreamSlicing):
     """
     Get Campaigns data using `account_id` slicing.
     More info about LinkedIn Ads / Campaigns:
@@ -223,7 +220,7 @@ class Campaigns(StreamMixin):
     endpoint = "adCampaignsV2"
 
 
-class Creatives(StreamMixin):
+class Creatives(LinkedInAdsStreamSlicing):
     """
     Get Creatives data using `campaign_id` slicing.
     More info about LinkedIn Ads / Creatives:
@@ -237,7 +234,7 @@ class Creatives(StreamMixin):
     search_param_value = "urn:li:sponsoredCampaign:"
 
 
-class AdDirectSponsoredContents(StreamMixin):
+class AdDirectSponsoredContents(LinkedInAdsStreamSlicing):
     """
     Get AdDirectSponsoredContents data using `account_id` slicing.
     More info about LinkedIn Ads / adDirectSponsoredContents:
@@ -257,7 +254,7 @@ class AdDirectSponsoredContents(StreamMixin):
         return params
 
 
-class AnalyticsStreamMixin(IncrementalLinkedinAdsStream):
+class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream):
     """
     AdAnalytics Streams more info:
     https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl#ad-analytics
@@ -292,7 +289,7 @@ class AnalyticsStreamMixin(IncrementalLinkedinAdsStream):
             yield from merge_chunks(result_chunks, self.cursor_field)
 
 
-class AdCampaignAnalytics(AnalyticsStreamMixin):
+class AdCampaignAnalytics(LinkedInAdsAnalyticsStream):
     """
     Campaing Analytics stream.
     See the AnalyticsStreamMixin class for more information.
@@ -305,7 +302,7 @@ class AdCampaignAnalytics(AnalyticsStreamMixin):
     pivot_by = "CAMPAIGN"
 
 
-class AdCreativeAnalytics(AnalyticsStreamMixin):
+class AdCreativeAnalytics(LinkedInAdsAnalyticsStream):
     """
     Creative Analytics stream.
     See the AnalyticsStreamMixin class for more information.
